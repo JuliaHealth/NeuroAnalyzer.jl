@@ -1,3 +1,12 @@
+function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
+    units = ""
+    obj.header.recording[:channel_type][ch] == "eeg" && (units = "μV")
+    obj.header.recording[:channel_type][ch] == "csd" && (units = "μV/m²")
+    obj.header.recording[:channel_type][ch] == "meg" && (units = "fT")
+    obj.header.recording[:channel_type][ch] == "grad" && (units = "fT/cm")
+    return units
+end
+
 function _channel2channel_name(channel::Union{Int64, Vector{Int64}, <:AbstractRange})
     if typeof(channel) == Int64
         return channel

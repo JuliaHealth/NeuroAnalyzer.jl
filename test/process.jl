@@ -277,8 +277,11 @@ e10_tmp = reference_car(e10)
 e10_tmp = reference_plap(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 35/39: reference_plap()"
-e10_tmp, g, h = slaplacian(e10)
+@info "test 35/39: csd()"
+g, h = gh(e10.locs)
+@test size(g) == (19, 19)
+@test size(h) == (19, 19)
+e10_tmp = csd(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 36/39: standardize()"

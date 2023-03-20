@@ -119,6 +119,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._s2epoch(e10, 256, 512) == 1
 @test NeuroAnalyzer._s2epoch(e10, 3256, 3512) == 2
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
+@test NeuroAnalyzer._set_units(e10, 1) == "μV"
 
 # these function are still in work:
 ## FIFF

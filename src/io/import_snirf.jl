@@ -27,11 +27,6 @@ function import_snirf(file_name::String; n::Int64=0)
 
     nirs = FileIO.load(file_name)
 
-    for (k, v) in nirs
-        println("key: $k")
-        println("value: $v")
-    end
-
     parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected.")
 
     # check for multi-subject recordings
@@ -124,15 +119,15 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # Coordinate system used in probe description
     k = "$n_id/probe/coordinateSystem"
-    k in keys(nirs) && (coord_system = nirs[k])[1]
+    k in keys(nirs) && (coord_system = nirs[k][1])
 
     # Description of coordinate system
     k = "$n_id/probe/coordinateSystemDescription"
-    k in keys(nirs) && (coord_system = nirs[k])[1]
+    k in keys(nirs) && (coord_system = nirs[k][1])
 
     # If source/detector index is within a module
     k = "$n_id/probe/useLocalIndex"
-    k in keys(nirs) && (coord_system = nirs[k])[1]
+    k in keys(nirs) && (coord_system = nirs[k][1])
 
     # measurements
     data_n = 0
@@ -145,80 +140,93 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     data_n -= 1
+    data_n > 1 && _info("Multiple data SNIRF files are not supported yet.")
 
-    for data_idx in 1:data_n
-        d_id = "data$data_idx"
-        
-        data = nirs["$n_id/$d_id/dataTimeSeries"]
+    d_id = "data1"
+    
+    data = nirs["$n_id/$d_id/dataTimeSeries"]
 
-        time_pts = nirs["$n_id/$d_id/time"]
-        if length(time_pts) > 2
-            sampling_rate = 1 / time_pts[2] - time_pts[1]
-        else
-            sampling_rate = 1 / time_pts[2]
-            time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
-        end
+    time_pts = nirs["$n_id/$d_id/time"]
+    if length(time_pts) > 2
+        sampling_rate = 1 / time_pts[2] - time_pts[1]
+    else
+        sampling_rate = 1 / time_pts[2]
+        time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
+    end
 
-        channel_n = size(data, 1)
+    channel_n = size(data, 1)
 
-        for ch_idx in 1:ch_n
-            # Source index for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
-            k in keys(nirs) && (source_index = Int.(nirs[k])[1])
+    source_index = Int64[]
+    detector_index = Int64[]
+    wavelength_index = Int64[]
+    wavelength_actual = Float64
+    wavelength_emission_actual = Float64[]
+    data_type = Int64[]
+    data_unit = String[]
+    data_type_label = String[]
+    data_type_index = Int64[]
+    source_power = Float64[]
+    detector_gain = Float64[]
+    module_index = Int64[]
+    src_module_index = Int64[]
+    detector_module_index = Int64[]
 
-            # Detector index for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/detectorIndex"
-            k in keys(nirs) && (detector_index = Int.(nirs[k])[1])
+    for ch_idx in 1:channel_n
+        # Source index for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
+        k in keys(nirs) && (push!(source_index, Int.(nirs[k][1])))
 
-            # Wavelength index for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/wavelengthIndex"
-            k in keys(nirs) && (wavelength_index = Int.(nirs[k])[1])
+        # Detector index for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/detectorIndex"
+        k in keys(nirs) && (push!(detector_index, Int.(nirs[k][1])))
 
-            # Actual wavelength for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/wavelengthActual"
-            k in keys(nirs) && (wavelength_actual = nirs[k])[1]
+        # Wavelength index for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/wavelengthIndex"
+        k in keys(nirs) && (push!(wavelength_index, Int.(nirs[k][1])))
 
-            # Actual emission wavelength for a channel
-            k = "$n_id/$d_id/measurementList$ch_idx/wavelengthEmissionActual"
-            k in keys(nirs) && (wavelength_emission_actual = nirs[k])[1]
+        # Actual wavelength for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/wavelengthActual"
+        k in keys(nirs) && (push!(wavelength_actual, nirs[k][1]))
 
-            # Data type for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/dataType"
-            k in keys(nirs) && (data_type = Int.(nirs[k])[1])
+        # Actual emission wavelength for a channel
+        k = "$n_id/$d_id/measurementList$ch_idx/wavelengthEmissionActual"
+        k in keys(nirs) && (push!(wavelength_emission_actual, nirs[k][1]))
 
-            # SI unit for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/dataUnit"
-            k in keys(nirs) && (data_unit = nirs[k])[1]
+        # Data type for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/dataType"
+        k in keys(nirs) && (push!(data_type, Int.(nirs[k][1])))
 
-            # Data type name for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
-            k in keys(nirs) && (data_type_label = nirs[k])[1]
+        # SI unit for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/dataUnit"
+        k in keys(nirs) && (push!(data_unit, nirs[k][1]))
 
-            # Data type index for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/dataTypeIndex"
-            k in keys(nirs) && (data_type_index = Int.(nirs[k])[1])
+        # Data type name for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
+        k in keys(nirs) && (push!(data_type_label, nirs[k][1]))
 
-            # Source power for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/sourcePower"
-            k in keys(nirs) && (source_power = nirs[k])[1]
+        # Data type index for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/dataTypeIndex"
+        k in keys(nirs) && (push!(data_type_index, Int.(nirs[k][1])))
 
-            # Detector gain for a given channel
-            k = "$n_id/$d_id/measurementList$ch_idx/detectorGain"
-            k in keys(nirs) && (detector_gain = nirs[k])[1]
+        # Source power for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/sourcePower"
+        k in keys(nirs) && (push!(source_power, nirs[k][1]))
 
-            # Index of the parent module (if modular)
-            k = "$n_id/$d_id/measurementList$ch_idx/moduleIndex"
-            k in keys(nirs) && (module_index = Int.(nirs[k])[1])
+        # Detector gain for a given channel
+        k = "$n_id/$d_id/measurementList$ch_idx/detectorGain"
+        k in keys(nirs) && (push!(detector_gain, nirs[k][1]))
 
-            # Index of the source's parent module
-            k = "$n_id/$d_id/measurementList$ch_idx/sourceModuleIndex"
-            k in keys(nirs) && (src_module_index = Int.(nirs[k])[1])
+        # Index of the parent module (if modular)
+        k = "$n_id/$d_id/measurementList$ch_idx/moduleIndex"
+        k in keys(nirs) && (push!(module_index, Int.(nirs[k][1])))
 
-            # Index of the detector's parent module
-            k = "$n_id/$d_id/measurementList$ch_idx/detectorModuleIndex"
-            k in keys(nirs) && (detector_module_index = Int.(nirs[k])[1])
+        # Index of the source's parent module
+        k = "$n_id/$d_id/measurementList$ch_idx/sourceModuleIndex"
+        k in keys(nirs) && (push!(src_module_index, Int.(nirs[k][1])))
 
-        end
+        # Index of the detector's parent module
+        k = "$n_id/$d_id/measurementList$ch_idx/detectorModuleIndex"
+        k in keys(nirs) && (push!(detector_module_index, Int.(nirs[k][1])))
     end
 
     # stimulus measurements
@@ -232,22 +240,21 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     stim_n -= 1
+    stim_n > 1 && _info("Multiple stimulus SNIRF files are not supported yet.")
 
-    for stim_idx in 1:stim_n
-        s_id = "stim$stim_idx"
+    s_id = "stim1"
 
-        # Name of the stimulus data
-        k = "$n_id/$s_id/name"
-        k in keys(nirs) && (stim_name = nirs[k])[1]
+    # Name of the stimulus data
+    k = "$n_id/$s_id/name"
+    k in keys(nirs) && (stim_name = nirs[k][1])
 
-        # Data stream of the stimulus channel
-        k = "$n_id/$s_id/data"
-        k in keys(nirs) && (stim_data = nirs[k])
+    # Data stream of the stimulus channel
+    k = "$n_id/$s_id/data"
+    k in keys(nirs) && (stim_data = nirs[k])
 
-        # Data stream of the stimulus channel
-        k = "$n_id/$s_id/dataLabels"
-        k in keys(nirs) && (stim_labels = nirs[k])
-    end
+    # Data stream of the stimulus channel
+    k = "$n_id/$s_id/dataLabels"
+    k in keys(nirs) && (stim_labels = nirs[k])
 
     # auxiliary measurements
     aux_n = 0
@@ -260,29 +267,28 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     aux_n -= 1
+    aux_n > 1 && _info("Multiple aux SNIRF files are not supported yet.")
 
-    for aux_idx in 1:aux_n
-        a_id = "aux$aux_idx"
+    a_id = "aux$aux_idx"
 
-        # Name of the auxiliary channel
-        k = "$n_id/$a_id/name"
-        k in keys(nirs) && (aux_name = nirs[k])[1]
+    # Name of the auxiliary channel
+    k = "$n_id/$a_id/name"
+    k in keys(nirs) && (aux_name = nirs[k][1])
 
-        # Data acquired from the auxiliary channel
-        k = "$n_id/$a_id/dataTimeSeries"
-        k in keys(nirs) && (aux_data = nirs[k])
+    # Data acquired from the auxiliary channel
+    k = "$n_id/$a_id/dataTimeSeries"
+    k in keys(nirs) && (aux_data = nirs[k])
 
-        # SI unit of the auxiliary channel
-        k = "$n_id/$a_id/dataUnit"
-        k in keys(nirs) && (aux_data = nirs[k])
+    # SI unit of the auxiliary channel
+    k = "$n_id/$a_id/dataUnit"
+    k in keys(nirs) && (aux_data = nirs[k])
 
-        # Time (in TimeUnit) for auxiliary data 
-        k = "$n_id/$a_id/time"
-        k in keys(nirs) && (aux_time = nirs[k])
+    # Time (in TimeUnit) for auxiliary data 
+    k = "$n_id/$a_id/time"
+    k in keys(nirs) && (aux_time = nirs[k])
 
-        # Time offset of auxiliary channel data
-        k = "$n_id/$a_id/timeOffset"
-        k in keys(nirs) && (aux_timeoffset = nirs[k])
-    end
+    # Time offset of auxiliary channel data
+    k = "$n_id/$a_id/timeOffset"
+    k in keys(nirs) && (aux_timeoffset = nirs[k])
 
 end

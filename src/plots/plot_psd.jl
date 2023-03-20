@@ -715,8 +715,8 @@ Plot power spectrum density.
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [μV^2/Hz]
-- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [μV^2/Hz]
+- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or grey palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
@@ -736,6 +736,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64, ch::Union{Int64, Vector{I
 
     _check_epochs(obj, ep)
     _check_channels(obj, ch)
+
+    # set units
+    units = _set_units(obj, ch[1])
 
     clabels = labels(obj)[ch]
     length(ch) == 1 && (clabels = [clabels])
@@ -791,7 +794,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64, ch::Union{Int64, Vector{I
         if norm == true
             ylabel == "default" && (ylabel = "Power [dB]")
         else
-            ylabel == "default" && (ylabel = "Power [μV^2/Hz]")
+            ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
         end
     end
 
@@ -853,7 +856,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64, ch::Union{Int64, Vector{I
         ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(s_frq,
                         s_pow,
@@ -872,7 +875,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64, ch::Union{Int64, Vector{I
         ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(s_frq,
                         s_pow,
@@ -940,18 +943,19 @@ Plot power spectrum density of embedded or external component.
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [μV^2/Hz]
-- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [μV^2/Hz]
+- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or grey palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
+- `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Int64, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Int64, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
@@ -1016,7 +1020,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         if norm == true
             ylabel == "default" && (ylabel = "Power [dB]")
         else
-            ylabel == "default" && (ylabel = "Power [μV^2/Hz]")
+            ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
         end
     end
 
@@ -1064,7 +1068,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(s_frq,
                         s_pow,
@@ -1083,7 +1087,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(s_frq,
                         s_pow,
