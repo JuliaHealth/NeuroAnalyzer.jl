@@ -1,14 +1,14 @@
 export import_snirf
 
 """
-    import_snirf(file_name)
+    import_snirf(file_name; n)
 
 Load Shared Near Infrared Spectroscopy Format (SNIRF) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `n::Int64=0`: number of subject to extract in case of multi-subject file
+- `n::Int64=0`: subject number to extract in case of multi-subject file
 
 # Returns
 
