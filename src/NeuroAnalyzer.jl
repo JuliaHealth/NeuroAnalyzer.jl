@@ -92,7 +92,7 @@ end
 
 # set constans
 
-const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecg, :eog, :emg, :ref, :mrk, :other]
+const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :nirs, :dod, :dmean, :dvar, :dskew, :mua, :musp, :hbo, :hbr, :hbt, :h2o, :lipid, :bfi, :hrf_dod, :hrf_dmean, :hrf_dvar, :hrf_dskew, :hrf_hbo, :hrf_hbr, :hrf_hbt, :hrf_bfi, :ecg, :eog, :emg, :ref, :mrk, :other]
 
 # set package options
 
@@ -222,6 +222,7 @@ include("io/load_locs.jl")
 include("io/export_locs.jl")
 include("io/import_locs.jl")
 include("io/save_load.jl")
+include("io/import_snirf.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")
@@ -281,6 +282,8 @@ include("plots/plot_varia.jl")
 include("plots/plot_weights.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
+include("plots/plot_locs_nirs.jl")
+
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

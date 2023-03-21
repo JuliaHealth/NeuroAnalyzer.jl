@@ -5,8 +5,10 @@ export signal_len
 export epoch_len
 export signal_channels
 export get_channel_bytype
+export get_channel_bywl
 export history
 export labels
+export info
 export channel_cluster
 export band_frq
 
@@ -161,8 +163,11 @@ function signal_channels(obj::NeuroAnalyzer.NEURO)
 
     if dt !== :meg
         chs = get_channel_bytype(obj, type=dt)
-    else
+    elseif dt === :meg
         chs = union(get_channel_bytype(obj, type=dt), get_channel_bytype(obj, type=:mag), get_channel_bytype(obj, type=:grad))
+    elseif dt === :nirs
+        chs = union(get_channel_bytype(obj, type=dt), get_channel_bytype(obj, type=:mag), get_channel_bytype(obj, type=:grad))
+
     end
 
     return chs
@@ -191,13 +196,42 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
     else
         ch_idx = Vector{Int64}()
         for idx in 1:channel_n(obj)
-            obj.header.recording[:channel_type][idx] == string(type) && (push!(ch_idx, idx))
+            lowercase(obj.header.recording[:channel_type][idx]) == string(type) && (push!(ch_idx, idx))
         end
     end
 
     return ch_idx
 
 end
+
+"""
+    get_channel_bywl(obj; wl)
+
+Return NIRS channel number(s) for wavelength `wl`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `wl::Real`: wavelength (in nm)
+
+# Returns
+
+- `ch_idx::Vector{Int64}`
+"""
+function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
+
+    obj.header.recording[:data_type] == "nirs" || throw(ArgumentError("This operation only works for NIRS objects."))
+    wl in obj.header.recording[:wavelengths] || throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
+    wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
+    ch_idx = Int64[]
+    for idx in 1:length(obj.header.recording[:wavelength_index])
+        obj.header.recording[:wavelength_index][idx] == wl_idx && push!(ch_idx, idx)
+    end
+
+    return ch_idx
+
+end
+
 
 """
     history(obj)
@@ -257,7 +291,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("            Source file: $(obj.header.recording[:file_name])")
     println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
     println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
-    println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+    println("                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
     println("              Recording: $(obj.header.recording[:recording])")
     println("        Recording notes: $(obj.header.recording[:recording_notes])")
     println("         Recording date: $(obj.header.recording[:recording_date])")
@@ -269,10 +303,15 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("       Number of epochs: $(epoch_n(obj))")
     println(" Epoch length [samples]: $(epoch_len(obj))")
     println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
-    if obj.header.recording[:reference] == ""
-        println("         Reference type: unknown")
-    else
-        println("         Reference type: $(obj.header.recording[:reference])")
+    if obj.header.recording[:data_type] == "eeg"
+        if obj.header.recording[:reference] == ""
+            println("         Reference type: unknown")
+        else
+            println("         Reference type: $(obj.header.recording[:reference])")
+        end
+    end
+    if obj.header.recording[:data_type] == "nirs"
+        println("        Wavelength [nm]: $(obj.header.recording[:wavelengths])")
     end
     if length(labels(obj)) == 0
         println("                 Labels: no")
@@ -304,8 +343,14 @@ function info(obj::NeuroAnalyzer.NEURO)
         println("             Components: no")
     end
     println("Channels:")
-    for idx in eachindex(obj.header.recording[:labels])
-        println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))")
+    if obj.header.recording[:data_type] != "nirs"
+        for idx in eachindex(obj.header.recording[:labels])
+            println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))")
+        end
+    else
+        for idx in eachindex(obj.header.recording[:labels])
+            println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))\twavelength: $(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]]) nm")
+        end
     end
 end
 

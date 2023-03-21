@@ -12,6 +12,7 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `channel_labels::Bool=true`: plot channel labels
+- `head::Bool=true`: draw head
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
@@ -22,7 +23,7 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
 
     pal = mono == true ? :grays : :darktest
 
@@ -75,8 +76,11 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                        xlim=(-1.22, 1.23),
                        ylim=(-1.1, 1.2))
     end
-    hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
-    p = Plots.plot!(hd)
+
+    if head == true
+        hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
+        p = Plots.plot!(hd)
+    end
 
     for idx in eachindex(locs[!, :labels])
         if idx in ch
@@ -240,7 +244,10 @@ Preview of channel locations.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: which channel should be highlighted
 - `channel_labels::Bool=true`: plot channel labels
-- `head::Bool`=true: plot head
+- `src_labels::Bool=false`: plot source labels
+- `det_labels::Bool=false`: plot detector labels
+- `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
+- `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
 - `plot_size::Int64=400`: plot dimensions in pixels (plot_size×plot_size)
 - `head_details::Bool=true`: draw nose and ears
@@ -253,7 +260,7 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
 
     _has_locs(obj) == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 
@@ -262,7 +269,14 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     selected != 0 && _check_channels(obj, selected)
 
     if threed == false
-        p = plot_locs(obj.locs, ch=ch, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size, grid=grid)
+        if obj.header.recording[:data_type] == "nirs"
+            ch_pairs = obj.header.recording[:channel_pairs]
+            src_n = length(unique(ch_pairs[:, 1]))
+            det_n = length(unique(ch_pairs[:, 2]))
+            p = plot_locs_nirs(obj.locs, ch_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono)
+        else
+            p = plot_locs(obj.locs, ch=ch, selected=selected, channel_labels=channel_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono)
+        end
     else
         p = plot_locs3d(obj.locs, ch=ch, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
     end

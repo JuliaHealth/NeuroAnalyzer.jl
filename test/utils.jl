@@ -3,6 +3,7 @@ using Test
 
 @info "Initializing"
 eeg = import_edf("files/eeg-test-edf.edf")
+n = import_snirf("files/fnirs-test-snirf.snirf")
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]
@@ -255,5 +256,8 @@ delete_note!(e10)
 @info "test 62/62: s2t()"
 @test s2t(2560, 256) == 10.0
 @test s2t(e10, s=256) == 1.0
+
+@info "test 38/663: get_channel_bywl()"
+@test get_channel_bywl(n, wl=760) == 1:36
 
 true

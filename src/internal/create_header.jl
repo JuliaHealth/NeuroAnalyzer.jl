@@ -1,15 +1,15 @@
 function _create_subject(;id::String, first_name::String, middle_name::String, last_name::String, handedness::String, weight::Real, height::Real)
 
-    return Dict(:subject_id=>id,
-                :subject_first_name=>first_name,
-                :subject_middle_name=>middle_name,
-                :subject_last_name=>last_name,
-                :subject_handedness=>handedness,
-                :subject_weight=>weight,
-                :subject_height=>height)
+    return Dict(:id=>id,
+                :first_name=>first_name,
+                :middle_name=>middle_name,
+                :last_name=>last_name,
+                :handedness=>handedness,
+                :weight=>weight,
+                :height=>height)
 end
 
-function _create_recording_eeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String},units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
+function _create_recording_eeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -50,6 +50,26 @@ function _create_recording_meg(;data_type::String, file_name::String, file_size_
                 :gradiometers_planar=>gradiometers_planar,
                 :gradiometers_axial=>gradiometers_axial,
                 :coils=>coils)
+end
+
+function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, channel_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64, detector_gain::Vector{Float64})
+
+    return Dict(:data_type=>data_type,
+                :file_name=>file_name,
+                :file_size_mb=>file_size_mb,
+                :file_type=>file_type,
+                :recording=>recording,
+                :recording_date=>recording_date,
+                :recording_time=>recording_time,
+                :recording_notes=>recording_notes,
+                :wavelengths=>wavelengths,
+                :wavelength_index=>wavelength_index,
+                :channel_pairs=>channel_pairs,
+                :channel_type=>ch_type,
+                :labels=>clabels,
+                :optode_labels=>opt_labels,
+                :sampling_rate=>sampling_rate,
+                :detector_gain=>detector_gain)
 end
 
 function _create_experiment(;experiment_name::String, experiment_notes::String, experiment_design::String)

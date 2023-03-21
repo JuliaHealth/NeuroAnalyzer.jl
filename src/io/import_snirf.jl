@@ -1,4 +1,4 @@
-# export import_snirf
+export import_snirf
 
 """
     import_snirf(file_name)
@@ -20,12 +20,16 @@ https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """
 function import_snirf(file_name::String; n::Int64=0)
 
-    file_name = "/home/eb/Documents/Data/EEG-testing-data/SNIRF/SfNIRS/snirf_homer3/1.0.3/nirx_15_3_recording.snirf"
-    file_name = "test/files/fnirs-test-snirf.snirf"
-
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    nirs = FileIO.load(file_name)
+    nirs = nothing
+    try
+        nirs = FileIO.load(file_name)
+    catch
+        throw(ArgumentError("File $file_name cannot be loaded."))
+    end
+
+    file_type = "SNIRF"
 
     parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected.")
 
@@ -41,17 +45,37 @@ function import_snirf(file_name::String; n::Int64=0)
     end
 
     # read metadata
-    subject_id = nirs["$n_id/metaDataTags/SubjectID"]
-    recording_date = nirs["$n_id/metaDataTags/MeasurementDate"]
-    recording_time = nirs["$n_id/metaDataTags/MeasurementTime"]
-    length_unit = nirs["$n_id/metaDataTags/LengthUnit"]
-    time_unit = nirs["$n_id/metaDataTags/TimeUnit"]
-    frq_unit = nirs["$n_id/metaDataTags/FrequencyUnit"]
+    subject_id = nirs["$n_id/metaDataTags/SubjectID"][1]
+    recording_date = nirs["$n_id/metaDataTags/MeasurementDate"][1]
+    recording_time = nirs["$n_id/metaDataTags/MeasurementTime"][1]
+    length_unit = nirs["$n_id/metaDataTags/LengthUnit"][1]
+    time_unit = nirs["$n_id/metaDataTags/TimeUnit"][1]
+    frq_unit = nirs["$n_id/metaDataTags/FrequencyUnit"][1]
 
     # probes
 
     # List of wavelengths (in nm)
     wavelengths = nirs["$n_id/probe/wavelengths"]
+
+    wavelengths_emission = nothing
+    src_pos2d = nothing
+    src_pos3d = nothing
+    detector_pos2d = nothing
+    detector_pos3d = nothing
+    frequencies = nothing
+    t_delay = nothing
+    t_delay_width = nothing
+    moment_orders = nothing
+    t_cor_delay = nothing
+    t_cor_delay_width = nothing
+    src_labels = nothing
+    detector_labels = nothing
+    landmark_pos2d = nothing
+    landmark_pos3d = nothing
+    landmark_labels = nothing
+    coord_system = nothing
+    coord_system_desc = nothing
+    local_index = nothing
 
     # List of emission wavelengths (in nm)
     k = "$n_id/probe/wavelengthsEmission"
@@ -63,7 +87,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # Source 3-D positions in LengthUnit
     k = "$n_id/probe/sourcePos3D"
-    k in keys(nirs) && (src_pos2d = nirs[k])
+    k in keys(nirs) && (src_pos3d = nirs[k])
 
     # Detector 2-D positions in LengthUnit
     k = "$n_id/probe/detectorPos2D"
@@ -71,7 +95,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # Detector 3-D positions in LengthUnit
     k = "$n_id/probe/detectorPos3D"
-    k in keys(nirs) && (detector_pos2d = nirs[k])
+    k in keys(nirs) && (detector_pos3d = nirs[k])
 
     # Modulation frequency list
     k = "$n_id/probe/frequencies"
@@ -123,11 +147,11 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # Description of coordinate system
     k = "$n_id/probe/coordinateSystemDescription"
-    k in keys(nirs) && (coord_system = nirs[k][1])
+    k in keys(nirs) && (coord_system_desc = nirs[k][1])
 
     # If source/detector index is within a module
     k = "$n_id/probe/useLocalIndex"
-    k in keys(nirs) && (coord_system = nirs[k][1])
+    k in keys(nirs) && (local_index = nirs[k][1])
 
     # measurements
     data_n = 0
@@ -153,8 +177,9 @@ function import_snirf(file_name::String; n::Int64=0)
         sampling_rate = 1 / time_pts[2]
         time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
     end
-
-    channel_n = size(data, 1)
+    epoch_time = time_pts
+    
+    ch_n = size(data, 1)
 
     source_index = Int64[]
     detector_index = Int64[]
@@ -171,7 +196,7 @@ function import_snirf(file_name::String; n::Int64=0)
     src_module_index = Int64[]
     detector_module_index = Int64[]
 
-    for ch_idx in 1:channel_n
+    for ch_idx in 1:ch_n
         # Source index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
         k in keys(nirs) && (push!(source_index, Int.(nirs[k][1])))
@@ -203,6 +228,7 @@ function import_snirf(file_name::String; n::Int64=0)
         # Data type name for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
         k in keys(nirs) && (push!(data_type_label, nirs[k][1]))
+        data_type_label == String[] && (data_type_label = repeat(["nirs"], ch_n))
 
         # Data type index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeIndex"
@@ -228,6 +254,51 @@ function import_snirf(file_name::String; n::Int64=0)
         k = "$n_id/$d_id/measurementList$ch_idx/detectorModuleIndex"
         k in keys(nirs) && (push!(detector_module_index, Int.(nirs[k][1])))
     end
+
+    if data_type !== nothing
+        tmp = String[]
+        for idx in 1:length(data_type)
+            data_type[idx] == 1 && push!(tmp, "Amplitude")
+            data_type[idx] == 51 && push!(tmp, "Fluorescence Amplitude")
+            data_type[idx] == 101 && push!(tmp, "Raw: Frequency Domain (FD): AC Amplitude")
+            data_type[idx] == 102 && push!(tmp, "Raw: Frequency Domain (FD): Phase")
+            data_type[idx] == 151 && push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Amplitude")
+            data_type[idx] == 152 && push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Phase")
+            data_type[idx] == 201 && push!(tmp, "Raw: Time Domain: Gated (TD Gated): Amplitude")
+            data_type[idx] == 251 && push!(tmp, "Raw: Time Domain: Gated (TD Gated): Fluorescence Amplitude")
+            data_type[idx] == 301 && push!(tmp, "Raw: Time Domain: Moments (TD Moments): Amplitude")
+            data_type[idx] == 351 && push!(tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude")
+            data_type[idx] == 351 && push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): g2")
+            data_type[idx] == 410 && push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): BFi")
+            data_type[idx] == 99999 && push!(tmp, "Processed")
+        end
+        data_type = tmp
+    end
+
+    # collect channels
+    ch_pairs = zeros(Int64, ch_n, 2)
+    clabels = repeat([""], ch_n)
+    for idx in 1:ch_n
+        ch_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
+        clabels[idx] = "S" * string(source_index[idx]) * "-D" * string(detector_index[idx])
+    end
+
+    # source and detector names
+    if src_labels === nothing
+        s = sort(unique(source_index))
+        src_labels = String[]
+        for idx in 1:length(s)
+            push!(src_labels, "S" * string(s[idx]))
+        end
+    end
+    if detector_labels === nothing
+        d = sort(unique(detector_index))
+        detector_labels = String[]
+        for idx in 1:length(d)
+            push!(detector_labels, "D" * string(d[idx]))
+        end
+    end
+    opt_labels = vcat(src_labels, detector_labels)
 
     # stimulus measurements
     stim_n = 0
@@ -256,6 +327,8 @@ function import_snirf(file_name::String; n::Int64=0)
     k = "$n_id/$s_id/dataLabels"
     k in keys(nirs) && (stim_labels = nirs[k])
 
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+
     # auxiliary measurements
     aux_n = 0
     while true
@@ -269,7 +342,7 @@ function import_snirf(file_name::String; n::Int64=0)
     aux_n -= 1
     aux_n > 1 && _info("Multiple aux SNIRF files are not supported yet.")
 
-    a_id = "aux$aux_idx"
+    a_id = "aux$aux_n"
 
     # Name of the auxiliary channel
     k = "$n_id/$a_id/name"
@@ -290,5 +363,91 @@ function import_snirf(file_name::String; n::Int64=0)
     # Time offset of auxiliary channel data
     k = "$n_id/$a_id/timeOffset"
     k in keys(nirs) && (aux_timeoffset = nirs[k])
+
+    # locations
+    pos2d = hcat(src_pos2d, detector_pos2d)
+    pos3d = hcat(src_pos3d, detector_pos3d)
+    if src_pos3d === nothing
+        if src_pos2d === nothing
+            _info("The data does not contain 3D nor 2D location information for the optode positions.")
+            x = zeros(length(opt_labels))
+        else
+            _info("The data only contains 2D location information for the optode positions.")
+            x = pos2d[1, :]
+        end
+    else
+        x = pos3d[1, :]
+    end
+    if src_pos3d === nothing
+        if src_pos2d === nothing            
+            y = zeros(length(opt_labels))
+        else
+            y = pos2d[2, :]
+        end
+    else
+        y = pos3d[2, :]
+    end
+    if src_pos3d === nothing
+        z = zeros(length(opt_labels))
+    else
+        z = pos3d[3, :]
+    end
+    # swap x and y
+    # x, y = y, x
+    # normalize to a unit-sphere
+    if z != zeros(length(opt_labels))
+        x, y, z = _locnorm(x, y, z)
+    else
+        x, y = _locnorm(x, y)
+    end
+    radius = zeros(length(opt_labels))
+    theta = zeros(length(opt_labels))
+    radius_sph = zeros(length(opt_labels))
+    theta_sph = zeros(length(opt_labels))
+    phi_sph = zeros(length(opt_labels))
+    locs = DataFrame(:channel=>1:length(opt_labels), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = locs_cart2sph(locs)
+    locs = locs_cart2pol(locs)
+
+    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    
+    data_type = "nirs"
+
+    s = _create_subject(id=subject_id,
+                        first_name="",
+                        middle_name="",
+                        last_name="",
+                        handedness="",
+                        weight=-1,
+                        height=-1)
+    r = _create_recording_nirs(data_type=data_type,
+                               file_name=file_name,
+                               file_size_mb=file_size_mb,
+                               file_type=file_type,
+                               recording="",
+                               recording_date=recording_date,
+                               recording_time=recording_time,
+                               recording_notes="",
+                               wavelengths=wavelengths,
+                               wavelength_index=wavelength_index,
+                               channel_pairs=ch_pairs,
+                               ch_type=data_type_label,
+                               clabels=clabels,
+                               opt_labels=opt_labels,
+                               sampling_rate=round(Int64, sampling_rate),
+                               detector_gain=detector_gain)
+    e = _create_experiment(experiment_name="",
+                           experiment_notes="",
+                           experiment_design="")
+
+    hdr = _create_header(s,
+                         r,
+                         e)
+
+    components = Dict()
+
+    history = String[]
+
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
 
 end
