@@ -21,6 +21,7 @@ https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 function import_snirf(file_name::String; n::Int64=0)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    splitext(file_name)[2] == ".snirf" || throw(ArgumentError("This is not a SNIRF file."))
 
     nirs = nothing
     try

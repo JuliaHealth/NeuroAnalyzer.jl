@@ -27,6 +27,7 @@ https://www.biosemi.com/faq/file_format.htm
 function import_bdf(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    splitext(file_name)[2] == ".bdf" || throw(ArgumentError("This is not a BDF file."))
 
     file_type = ""
 

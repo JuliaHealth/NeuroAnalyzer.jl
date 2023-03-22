@@ -20,6 +20,7 @@ https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 function import_nirs(file_name::String; n::Int64=0)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    splitext(file_name)[2] == ".nirs" || throw(ArgumentError("This is not a NIRS file."))
 
     nirs = nothing
     try

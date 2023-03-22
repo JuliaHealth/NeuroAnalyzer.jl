@@ -17,6 +17,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 function import_set(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    splitext(file_name)[2] == ".set" || throw(ArgumentError("This is not an EEGLAB file."))
 
     file_type = "SET"
 

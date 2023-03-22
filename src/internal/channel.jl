@@ -1,10 +1,12 @@
 function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
     units = ""
-    obj.header.recording[:channel_type][ch] == "eeg" && (units = "μV")
-    obj.header.recording[:channel_type][ch] == "csd" && (units = "μV/m²")
-    obj.header.recording[:channel_type][ch] == "meg" && (units = "fT")
-    obj.header.recording[:channel_type][ch] == "grad" && (units = "fT/cm")
-    obj.header.recording[:channel_type][ch] == "ecg" && (units = "mV")
+    lowercase(obj.header.recording[:channel_type][ch]) == "eeg" && (units = "μV")
+    lowercase(obj.header.recording[:channel_type][ch]) == "csd" && (units = "μV/m²")
+    lowercase(obj.header.recording[:channel_type][ch]) == "meg" && (units = "fT")
+    lowercase(obj.header.recording[:channel_type][ch]) == "grad" && (units = "fT/cm")
+    lowercase(obj.header.recording[:channel_type][ch]) == "ecg" && (units = "mV")
+    lowercase(obj.header.recording[:channel_type][ch]) == "dod" && (units = "V")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs" && (units = "V")
     return units
 end
 

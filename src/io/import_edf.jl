@@ -29,6 +29,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 function import_edf(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    splitext(file_name)[2] == ".edf" || throw(ArgumentError("This is not an EDF file."))
 
     file_type = ""
 
