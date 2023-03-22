@@ -434,7 +434,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         end
     end
 
-
     # do not show epoch markers if there are no epochs
     epoch_n(obj) == 1 && (emarkers = false)
     if emarkers == true
@@ -474,6 +473,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                             units=units,
                             mono=mono;
                             kwargs...)
+            return p
         else
             xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Bad channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
             length(ch) > size(bad, 1) && throw(ArgumentError("Number of channels cannot be larger than number of bad channels rows."))

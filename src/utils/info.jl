@@ -291,7 +291,11 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("            Source file: $(obj.header.recording[:file_name])")
     println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
     println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
-    println("                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+    if length(obj.header.subject[:id]) > 0
+        println("                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+    else
+        println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+    end
     println("              Recording: $(obj.header.recording[:recording])")
     println("        Recording notes: $(obj.header.recording[:recording_notes])")
     println("         Recording date: $(obj.header.recording[:recording_date])")

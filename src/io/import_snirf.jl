@@ -3,7 +3,7 @@ export import_snirf
 """
     import_snirf(file_name; n)
 
-Load Shared Near Infrared Spectroscopy Format (SNIRF) and return `NeuroAnalyzer.NEURO` object.
+Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -172,7 +172,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     time_pts = nirs["$n_id/$d_id/time"]
     if length(time_pts) > 2
-        sampling_rate = 1 / time_pts[2] - time_pts[1]
+        sampling_rate = 1 / (time_pts[2] - time_pts[1])
     else
         sampling_rate = 1 / time_pts[2]
         time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]

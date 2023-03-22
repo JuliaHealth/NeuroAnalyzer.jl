@@ -223,6 +223,7 @@ include("io/export_locs.jl")
 include("io/import_locs.jl")
 include("io/save_load.jl")
 include("io/import_snirf.jl")
+include("io/import_nirs.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")

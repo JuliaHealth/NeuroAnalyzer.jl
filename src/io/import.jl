@@ -11,19 +11,21 @@ Load recording file and return `NeuroAnalyzer.NEURO` object. Supported formats:
 - SET (EEGLAB dataset)
 - FIFF
 - SNIRF
+- NIRS
 
-This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set|.fif|.fiff|.snirf). Signal data type (e.g. EEG or MEG is auto-detected) and stored in the `obj.header.recording[:data_type]` field.
+This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set|.fif|.fiff|.snirf|.nirs). Signal data type (e.g. EEG or MEG is auto-detected) and stored in the `obj.header.recording[:data_type]` field.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: detect channel type based on its label
+- `n::Int64=0`: subject number to extract in case of multi-subject file
 
 # Returns
 
 - `::NeuroAnalyzer.NEURO`
 """
-function import_recording(file_name::String; detect_type::Bool=true)
+function import_recording(file_name::String; detect_type::Bool=true, n::Int64=0)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -35,6 +37,7 @@ function import_recording(file_name::String; detect_type::Bool=true)
     splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".snirf" && return import_snirf(file_name)
+    splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n=n)
+    splitext(file_name)[2] == ".nirs" && return import_nirs(file_name)
     
 end
