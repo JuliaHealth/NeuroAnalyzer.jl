@@ -92,7 +92,7 @@ end
 
 # set constans
 
-const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :nirs, :dod, :dmean, :dvar, :dskew, :mua, :musp, :hbo, :hbr, :hbt, :h2o, :lipid, :bfi, :hrf_dod, :hrf_dmean, :hrf_dvar, :hrf_dskew, :hrf_hbo, :hrf_hbr, :hrf_hbt, :hrf_bfi, :ecg, :eog, :emg, :ref, :mrk, :other]
+const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :ecg, :eog, :emg, :ref, :mrk, :other]
 
 # set package options
 
@@ -153,6 +153,7 @@ include("internal/reflect_chop.jl")
 include("internal/select.jl")
 include("internal/tester.jl")
 include("internal/time.jl")
+include("internal/wl2ext.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/ampdiff.jl")
@@ -268,6 +269,8 @@ include("process/taper.jl")
 include("process/tconv.jl")
 include("process/wbp.jl")
 include("process/ch_zero.jl")
+include("process/intensity2od.jl")
+include("process/od2conc.jl")
 # plot
 include("plots/misc.jl")
 include("plots/plot_connections.jl")

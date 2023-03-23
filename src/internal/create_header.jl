@@ -52,7 +52,7 @@ function _create_recording_meg(;data_type::String, file_name::String, file_size_
                 :coils=>coils)
 end
 
-function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, channel_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64, detector_gain::Vector{Float64})
+function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, channel_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64)
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -67,9 +67,9 @@ function _create_recording_nirs(;data_type::String, file_name::String, file_size
                 :channel_pairs=>channel_pairs,
                 :channel_type=>ch_type,
                 :labels=>clabels,
+                :units=>units,
                 :optode_labels=>opt_labels,
-                :sampling_rate=>sampling_rate,
-                :detector_gain=>detector_gain)
+                :sampling_rate=>sampling_rate)
 end
 
 function _create_experiment(;experiment_name::String, experiment_notes::String, experiment_design::String)

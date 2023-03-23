@@ -88,6 +88,9 @@ function import_nirs(file_name::String; n::Int64=0)
         clabels[idx] = "S" * string(Int.(probes["MeasList"])[idx, 1]) * "-D" * string(Int.(probes["MeasList"])[idx, 2])
     end
 
+    # data contains intensity (RAW) data
+    data_unit = repeat(["V"], ch_n)
+
     # measurements
     data = Matrix(nirs["d"]')
 
@@ -124,8 +127,6 @@ function import_nirs(file_name::String; n::Int64=0)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     
-    data_type = "nirs"
-
     s = _create_subject(id="",
                         first_name="",
                         middle_name="",
@@ -133,7 +134,7 @@ function import_nirs(file_name::String; n::Int64=0)
                         handedness="",
                         weight=-1,
                         height=-1)
-    r = _create_recording_nirs(data_type=data_type,
+    r = _create_recording_nirs(data_type="nirs",
                                file_name=file_name,
                                file_size_mb=file_size_mb,
                                file_type=file_type,
@@ -144,11 +145,11 @@ function import_nirs(file_name::String; n::Int64=0)
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,
                                channel_pairs=ch_pairs,
-                               ch_type=repeat(["nirs"], ch_n),
+                               ch_type=repeat(["nirs_int"], ch_n),
                                clabels=clabels,
+                               units=data_unit,
                                opt_labels=opt_labels,
-                               sampling_rate=sampling_rate,
-                               detector_gain=ones(ch_n))
+                               sampling_rate=sampling_rate)
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
                            experiment_design="")

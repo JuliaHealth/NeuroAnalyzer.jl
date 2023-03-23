@@ -23,8 +23,8 @@ end
 
 function _check_channels(channels::Union{Int64, Vector{Int64}, <:AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
-        idx in channels || throw(ArgumentError("ch $idx does not match signal channels."))
-        (idx < 1 || idx > length(channels)) && throw(ArgumentError("ch must be in [1, $(channel_n(obj))]."))
+        idx in channels || throw(ArgumentError("ch $idx does not match required channels."))
+        (idx < 1 || idx > sort(channels)[end]) && throw(ArgumentError("ch must be in [1, $(channel_n(obj))]."))
     end
 end
 
@@ -106,4 +106,12 @@ end
 function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)
     marker in unique(obj.markers[!, :description]) || throw(ArgumentError("Marker: $marker not found in markers."))
     return nothing
+end
+
+function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{Symbol, Vector{Symbol}})
+    if typeof(type) == Symbol
+        Symbol(obj.header.recording[:data_type]) == type || throw(ArgumentError("This function works only for $(uppercase(string(type))) objects. Think carefully."))
+    else
+        Symbol(obj.header.recording[:data_type]) in type || throw(ArgumentError("This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects. Think carefully."))
+    end
 end

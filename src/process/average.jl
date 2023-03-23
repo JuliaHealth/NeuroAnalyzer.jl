@@ -11,7 +11,7 @@ Average all channels.
 
 # Returns
 
-- `s_averaged::AbstractArray`
+- `average::AbstractArray`
 """
 function average(s::AbstractArray)
 
@@ -31,7 +31,7 @@ Averages two signals.
 
 # Returns
 
-- `s_averaged::Vector{Float64}`
+- `average::Vector{Float64}`
 """
 function average(s1::AbstractArray, s2::AbstractArray)
 

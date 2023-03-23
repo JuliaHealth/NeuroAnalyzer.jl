@@ -26,6 +26,8 @@ Reference to selected channel(s). Only signal channels are processed.
 """
 function reference_ch(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
+    _check_datatype(obj, :eeg)
+
     # keep signal channels
     _check_channels(obj, ch)
     chs = signal_channels(obj)
@@ -103,6 +105,8 @@ Reference to common average reference. Only signal channels are processed.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
+
+    _check_datatype(obj, :eeg)
 
     # keep signal channels
     chs = signal_channels(obj)
@@ -186,6 +190,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 """
 function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
+    _check_datatype(obj, :eeg)
     _check_var(type, [:l, :i, :c], "type")
     all(iszero, occursin.("a1", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain A1 channel."))
     all(iszero, occursin.("a2", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain A2 channel."))
@@ -320,6 +325,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 """
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
+    _check_datatype(obj, :eeg)
     _check_var(type, [:l, :i, :c], "type")
     all(iszero, occursin.("m1", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain M1 channel."))
     all(iszero, occursin.("m2", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain M2 channel."))
@@ -452,6 +458,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 """
 function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
+    _check_datatype(obj, :eeg)
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
     # keep signal channels

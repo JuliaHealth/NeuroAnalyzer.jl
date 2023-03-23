@@ -5,8 +5,11 @@ function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
     lowercase(obj.header.recording[:channel_type][ch]) == "meg" && (units = "fT")
     lowercase(obj.header.recording[:channel_type][ch]) == "grad" && (units = "fT/cm")
     lowercase(obj.header.recording[:channel_type][ch]) == "ecg" && (units = "mV")
-    lowercase(obj.header.recording[:channel_type][ch]) == "dod" && (units = "V")
-    lowercase(obj.header.recording[:channel_type][ch]) == "nirs" && (units = "V")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs_int" && (units = "V")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs_od" && (units = "")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbo" && (units = "μM/mm")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbr" && (units = "μM/mm")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbt" && (units = "μM/mm")
     return units
 end
 

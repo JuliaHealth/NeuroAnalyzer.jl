@@ -78,6 +78,7 @@ load(tmp)
 eeg = import_edf("test/files/eeg-test-edf.edf")
 e10 = epoch(eeg, ep_len=2560)
 load_locs!(e10, file_name="test/files/standard-10-20-cap19-elmiko.ced")
+n = import_nirs("files/fnirs-test-nirs.nirs")
 
 @info "Benchmarking: EDIT"
 println()
@@ -259,6 +260,12 @@ tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
 print(rpad("Wavelet band-pass filtering", 36))
 wbp(e10, frq=4)
 @time wbp(e10, frq=4)
+print(rpad("NIRS: int2od", 36))
+n_tmp = intensity2od(n)
+@time intensity2od(n)
+print(rpad("NIRS: od2conc", 36))
+od2conc(n_tmp)
+@time od2conc(n_tmp)
 
 @info "Benchmarking: ANALYZE"
 println()

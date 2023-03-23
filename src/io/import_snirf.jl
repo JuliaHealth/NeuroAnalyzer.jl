@@ -225,11 +225,47 @@ function import_snirf(file_name::String; n::Int64=0)
         # SI unit for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataUnit"
         k in keys(nirs) && (push!(data_unit, nirs[k][1]))
+        data_unit == String[] && (data_unit = repeat(["V"], ch_n))
 
         # Data type name for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
         k in keys(nirs) && (push!(data_type_label, nirs[k][1]))
-        data_type_label == String[] && (data_type_label = repeat(["nirs"], ch_n))
+        # assume its raw data (intensity) if there is no data type
+        data_type_label == String[] && (data_type_label = repeat(["nirs_int"], ch_n))
+        # Change in optical density
+        data_type_label = replace(lowercase.(data_type_label), "dod" => "nirs_od")
+        data_type_label = replace(lowercase.(data_type_label), "dmean" => "nirs_dmean")
+        data_type_label = replace(lowercase.(data_type_label), "dvar" => "nirs_dvar")
+        data_type_label = replace(lowercase.(data_type_label), "dskew" => "nirs_dskew")
+        # Absorption coefficient
+        data_type_label = replace(lowercase.(data_type_label), "mua" => "nirs_mua")
+        # Scattering coefficient
+        data_type_label = replace(lowercase.(data_type_label), "musp" => "nirs_musp")
+        # Oxygenated hemoglobin (oxyhemoglobin) concentration
+        data_type_label = replace(lowercase.(data_type_label), "hbo" => "nirs_hbo")
+        # Deoxygenated hemoglobin (deoxyhemoglobin) concentration
+        data_type_label = replace(lowercase.(data_type_label), "hbr" => "nirs_hbr")
+        # Total hemoglobin concentration
+        data_type_label = replace(lowercase.(data_type_label), "hbt" => "nirs_hbt")
+        # Water content
+        data_type_label = replace(lowercase.(data_type_label), "h2o" => "nirs_h2o")
+        # Lipid concentration
+        data_type_label = replace(lowercase.(data_type_label), "lipid" => "nirs_lipid")
+        # Hemodynamic response function for blood flow index (BFi)
+        data_type_label = replace(lowercase.(data_type_label), "bfi" => "nirs_bfi")
+        # Hemodynamic response function for change in optical density
+        data_type_label = replace(lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod")
+        data_type_label = replace(lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean")
+        data_type_label = replace(lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar")
+        data_type_label = replace(lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew")
+        # Hemodynamic response function for oxyhemoglobin concentration
+        data_type_label = replace(lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo")
+        # emodynamic response function for deoxyhemoglobin concentration
+        data_type_label = replace(lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr")
+        # Hemodynamic response function for total hemoglobin concentration
+        data_type_label = replace(lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt")
+        # Hemodynamic response function for blood flow index (BFi)
+        data_type_label = replace(lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi")
 
         # Data type index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeIndex"
@@ -256,6 +292,7 @@ function import_snirf(file_name::String; n::Int64=0)
         k in keys(nirs) && (push!(detector_module_index, Int.(nirs[k][1])))
     end
 
+    # currently data type is not used
     if data_type !== nothing
         tmp = String[]
         for idx in 1:length(data_type)
@@ -412,8 +449,6 @@ function import_snirf(file_name::String; n::Int64=0)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     
-    data_type = "nirs"
-
     s = _create_subject(id=subject_id,
                         first_name="",
                         middle_name="",
@@ -421,7 +456,7 @@ function import_snirf(file_name::String; n::Int64=0)
                         handedness="",
                         weight=-1,
                         height=-1)
-    r = _create_recording_nirs(data_type=data_type,
+    r = _create_recording_nirs(data_type="nirs",
                                file_name=file_name,
                                file_size_mb=file_size_mb,
                                file_type=file_type,
@@ -434,9 +469,9 @@ function import_snirf(file_name::String; n::Int64=0)
                                channel_pairs=ch_pairs,
                                ch_type=data_type_label,
                                clabels=clabels,
+                               units=data_unit,
                                opt_labels=opt_labels,
-                               sampling_rate=round(Int64, sampling_rate),
-                               detector_gain=detector_gain)
+                               sampling_rate=round(Int64, sampling_rate))
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
                            experiment_design="")
