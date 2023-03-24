@@ -799,6 +799,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
     end
 
     if type === :normal
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
         # ndims(sp) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
         if ndims(sp) == 1
             p = plot_psd(sf,
@@ -825,6 +828,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
                          kwargs...)
         end
     elseif type === :butterfly
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
         ndims(sp) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
         title = replace(title, "channel" => "channels")
         p = plot_psd_butterfly(sf,
@@ -839,6 +845,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
                                mono=mono;
                                kwargs...)
     elseif type === :mean
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
         ndims(sp) < 2 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
         title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
         title = replace(title, "channel" => "averaged channels")
@@ -853,6 +862,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
                          mono=mono;
                          kwargs...)
     elseif type === :w3d
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
         ndims(sp) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
@@ -872,6 +884,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
                         variant=:w;
                         kwargs...)
     elseif type === :s3d
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
         ndims(sp) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
@@ -891,6 +906,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
                         variant=:s;
                         kwargs...)
     elseif type === :topo
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
         _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available."))
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
         xlabel == "default" && (xlabel = "")

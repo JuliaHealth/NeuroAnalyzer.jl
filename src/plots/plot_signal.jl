@@ -56,8 +56,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     end
 
     # prepare plot
-    ch_n == 1 && (plot_size = (1200, 500))
-    ch_n > 1 && (plot_size = (1200, 800))
+    ch_n <= 2 && (plot_size = (1200, 400))
+    ch_n > 2 && (plot_size = (1200, 800))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -66,7 +66,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    title=title,
                    palette=pal,
                    size=plot_size,
-                   margins=20Plots.px,
+                   top_margin=0Plots.px,
+                   bottom_margin=15Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -94,7 +95,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
 
     # draw scale
     if scale == true
-        p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=5, label="")
+        p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
         p = Plots.plot!(annotation=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
@@ -151,8 +152,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     end
 
     # prepare plot
-    ch_n == 1 && (plot_size = (1200, 500))
-    ch_n > 1 && (plot_size = (1200, 800))
+    ch_n <= 2 && (plot_size = (1200, 400))
+    ch_n > 2 && (plot_size = (1200, 800))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -161,7 +162,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    title=title,
                    palette=pal,
                    size=plot_size,
-                   margins=20Plots.px,
+                   margins=10Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -391,7 +392,7 @@ Plot signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
 - `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
@@ -412,7 +413,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
+function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
@@ -442,7 +443,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     # check channels
     _check_channels(obj, ch)
-    clabels = labels(obj)[ch]
+    clabels = labels(obj)
     length(ch) == 1 && (clabels = [clabels])
 
     # set units
@@ -450,9 +451,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     # get time vector
     if seg[2] <= epoch_len(obj)
-        s = obj.data[ch, seg[1]:seg[2], 1]
+        s = obj.data[:, seg[1]:seg[2], 1]
     else
-        s = epoch(obj, ep_n=1).data[ch, seg[1]:seg[2], 1]
+        s = epoch(obj, ep_n=1).data[:, seg[1]:seg[2], 1]
     end
     #t = _get_t(seg[1], seg[2], sr(obj))
     t = obj.time_pts[seg[1]:seg[2]]
@@ -460,57 +461,178 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     ep = _s2epoch(obj, seg[1], seg[2])
 
+    ch_t = obj.header.recording[:channel_type]
+    ch_t_uni = unique(ch_t[ch])
+    ch_tmp = Vector{Vector{Int64}}()
+    for cht_idx in 1:length(ch_t_uni)
+        ch_tmp2 = Vector{Int64}()
+        for ch_idx in 1:length(ch)
+            ch_t[ch[ch_idx]] == ch_t_uni[cht_idx] && push!(ch_tmp2, ch[ch_idx])
+        end
+        push!(ch_tmp, ch_tmp2)
+    end
+
+    p = Plots.Plot[]
+
     if type === :normal
         if bad == false
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channel$(_pl(length(ch))) $(_channel2channel_name(ch)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-            p = plot_signal(t,
-                            s,
-                            clabels=clabels,
-                            xlabel=xlabel,
-                            ylabel=ylabel,
-                            title=title,
-                            scale=scale,
-                            units=units,
-                            mono=mono;
-                            kwargs...)
-            return p
+            if length(ch_t_uni) > 1
+                for cht_idx in 1:length(ch_t_uni)
+                    units = _set_units(obj, ch_tmp[cht_idx][1])
+                    if ch_t[ch_tmp[cht_idx][1]] == "eeg"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG signal channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "grad"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "mag"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Magnetometer$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_int"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS intensity channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_od"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS optical density channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbo"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbO concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbr"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbR concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbt"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "ref"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "eog"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EOG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "emg"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EMG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "ecg"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "other"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+                    if ch_t[ch_tmp[cht_idx][1]] == "mrk"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
+
+                    cht_idx < length(ch_t_uni) && (xl = "")
+                    p_tmp = plot_signal(t,
+                                        s[ch_tmp[cht_idx], :],
+                                        clabels=clabels[ch_tmp[cht_idx]],
+                                        xlabel=xl,
+                                        ylabel=yl,
+                                        title=tt,
+                                        scale=scale,
+                                        units=units,
+                                        mono=mono;
+                                        kwargs...)
+                    push!(p, p_tmp)
+
+                end
+            else
+                if ch_t[ch_tmp[1][1]] == "eeg"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG signal channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "grad"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "mag"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Magnetometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "nirs_int"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS intensity channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "nirs_od"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS optical density channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "nirs_hbo"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbO concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "nirs_hbr"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbR concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "nirs_hbt"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "ref"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "eog"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EOG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "emg"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EMG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "ecg"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[1])))")
+                end
+                if ch_t[ch_tmp[1][1]] == "other"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "mrk"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                p = plot_signal(t,
+                                s[ch, :],
+                                clabels=clabels[ch, ],
+                                xlabel=xl,
+                                ylabel=yl,
+                                title=tt,
+                                scale=scale,
+                                units=units,
+                                mono=mono;
+                                kwargs...)
+            end
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Bad channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Bad channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
             length(ch) > size(bad, 1) && throw(ArgumentError("Number of channels cannot be larger than number of bad channels rows."))
             ep > size(bad, 2) && throw(ArgumentError("Epoch number cannot be larger than number of bad channels columns."))
             p = plot_signal(t,
-                            s,
+                            s[ch, :],
                             bad[ch, ep],
-                            clabels=clabels,
-                            xlabel=xlabel,
-                            ylabel=ylabel,
-                            title=title,
+                            clabels=clabels[ch, :],
+                            xlabel=xl,
+                            ylabel=yl,
+                            title=tt,
                             scale=scale,
                             units=units;
                             kwargs...)
         end
-    elseif type === :butterfly
+    end
+    
+    if type === :butterfly
+        length(ch_t_uni) > 1 && throw(ArgumentError("For type=:butterfly plot all channels should be of the same type."))
         size(s, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Channels $(_channel2channel_name(ch)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Channels $(_channel2channel_name(ch)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
-                                  s,
-                                  clabels=clabels,
-                                  xlabel=xlabel,
-                                  ylabel=ylabel,
-                                  title=title,
+                                  s[ch, :],
+                                  clabels=clabels[ch, :],
+                                  xlabel=xl,
+                                  ylabel=yl,
+                                  title=tt,
                                   scale=scale,
                                   units=units,
                                   norm=norm,
                                   mono=mono;
                                   kwargs...)
-    elseif type === :mean
+    end
+    
+    if type === :mean
+        length(ch_t_uni) > 1 && throw(ArgumentError("For type=:mean plot all channels should be of the same type."))
         size(s, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged channels $(_channel2channel_name(ch)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged channels $(_channel2channel_name(ch)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
-                            s,
-                            xlabel=xlabel,
-                            ylabel=ylabel,
-                            title=title,
+                            s[ch, :],
+                            xlabel=xl,
+                            ylabel=yl,
+                            title=tt,
                             scale=scale,
                             units=units,
                             norm=norm,
@@ -521,11 +643,22 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     # add epochs markers
     # TODO: draw epoch numbers
     if emarkers == true
-        p = Plots.vline!(epoch_markers,
-                         linestyle=:dash,
-                         linewidth=0.5,
-                         linecolor=:blue,
-                         label="")
+        if length(p) > 1
+            for p_idx in 1:length(p)
+                p[p_idx] = Plots.vline!(p[p_idx],
+                                        epoch_markers,
+                                        linestyle=:dash,
+                                        linewidth=0.5,
+                                        linecolor=:blue,
+                                        label="")
+            end
+        else
+            p = Plots.vline!(epoch_markers,
+                             linestyle=:dash,
+                             linewidth=0.5,
+                             linecolor=:blue,
+                             label="")
+        end
     end
 
     # plot markers if available
@@ -533,13 +666,45 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if markers == true && _has_markers(obj) == true
         markers_pos = obj.markers[!, :start] ./ sr(obj)
         markers_desc = obj.markers[!, :description]
-        p = Plots.vline!(markers_pos,
-                         linestyle=:dash,
-                         linewidth=0.5,
-                         linecolor=:black,
-                         label=false)
-        for idx in eachindex(markers_desc)
-            p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+        if length(p) > 1
+            for p_idx in 1:length(p)
+                p[p_idx] = Plots.vline!(p[p_idx],
+                                        markers_pos,
+                                        linestyle=:dash,
+                                        linewidth=0.5,
+                                        linecolor=:black,
+                                        label=false)
+            end
+            for idx in eachindex(markers_desc)
+                p[p_idx] = Plots.plot!(p[p_idx], annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+            end
+        else
+            p = Plots.vline!(markers_pos,
+                             linestyle=:dash,
+                             linewidth=0.5,
+                             linecolor=:black,
+                             label=false)
+            for idx in eachindex(markers_desc)
+                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+            end
+        end
+    end
+
+    if length(p) > 1
+        if obj.header.recording[:data_type] == "eeg"
+            h_primary = (0.75 + 0.05 * (5 - length(p)))
+            h_secondary = 1.0 - h_primary
+            h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
+            p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
+        end
+        if obj.header.recording[:data_type] == "meg"
+            h_primary = (0.75 + 0.05 * (5 - length(p)))
+            h_secondary = 1.0 - h_primary
+            h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
+            p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
+        end
+        if obj.header.recording[:data_type] == "nirs"
+            p = Plots.plot!(p..., layout=(length(ch_t_uni), 1); kwargs...)
         end
     end
 
@@ -556,7 +721,7 @@ Plot embedded or external component.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj::NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
@@ -577,7 +742,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
@@ -619,26 +784,26 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     ep = _s2epoch(obj, seg[1], seg[2])
 
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal(t,
                         s,
                         clabels=clabels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
+                        xlabel=xl,
+                        ylabel=yl,
+                        title=tt,
                         scale=scale,
                         units=units,
                         mono=mono;
                         kwargs...)
     elseif type === :butterfly
         size(s, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   s,
                                   clabels=clabels,
-                                  xlabel=xlabel,
-                                  ylabel=ylabel,
-                                  title=title,
+                                  xlabel=xl,
+                                  ylabel=yl,
+                                  title=tt,
                                   scale=scale,
                                   units=units,
                                   norm=norm,
@@ -646,13 +811,13 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                                   kwargs...)
     elseif type === :mean
         size(s, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
                             s,
                             clabels=clabels,
-                            xlabel=xlabel,
-                            ylabel=ylabel,
-                            title=title,
+                            xlabel=xl,
+                            ylabel=yl,
+                            title=tt,
                             scale=scale,
                             units=units,
                             norm=norm,

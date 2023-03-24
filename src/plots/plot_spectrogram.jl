@@ -220,6 +220,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
         end
 
     else
+        ch_t = obj.header.recording[:channel_type]
+        ch_t_uni = unique(ch_t[ch])
+        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel spectrogram all channels should be of the same type."))
         ylabel == "default" && (ylabel = "Channel")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")

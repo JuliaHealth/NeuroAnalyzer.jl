@@ -6,12 +6,13 @@ export plot_empty
 
 Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
 - `(2, 2)`: 2 × 2 plots, regular layout
+- `grid(4, 1, heights=[0.6, 0.1, 0.1, 0.1]`: 4 × 1 plots, irregular layout
 - `@layout [a{0.2w} b{0.8w};_ c{0.6}]`: complex layout using Plots.jl `@layout` macro
 
 # Arguments
 
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
-- `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
+- `layout::Union(Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}`: layout
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for `p` vector plots
 
@@ -19,7 +20,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
+function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
