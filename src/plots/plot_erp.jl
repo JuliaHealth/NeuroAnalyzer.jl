@@ -440,6 +440,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     # check channels
     _check_channels(obj, ch)
+    _check_channels(signal_channels(obj), ch)
 
     # set units
     units = _set_units(obj, ch[1])

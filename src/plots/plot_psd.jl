@@ -800,8 +800,10 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
 
     if type === :normal
         ch_t = obj.header.recording[:channel_type]
-        ch_t_uni = unique(ch_t[ch])
-        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
+        if length(ch) > 1
+            ch_t_uni = unique(ch_t[ch])
+            length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
+        end
         # ndims(sp) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
         if ndims(sp) == 1
             p = plot_psd(sf,

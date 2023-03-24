@@ -462,21 +462,27 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
     ep = _s2epoch(obj, seg[1], seg[2])
 
     ch_t = obj.header.recording[:channel_type]
-    ch_t_uni = unique(ch_t[ch])
     ch_tmp = Vector{Vector{Int64}}()
-    for cht_idx in 1:length(ch_t_uni)
-        ch_tmp2 = Vector{Int64}()
-        for ch_idx in 1:length(ch)
-            ch_t[ch[ch_idx]] == ch_t_uni[cht_idx] && push!(ch_tmp2, ch[ch_idx])
+    ch_t_uni = nothing
+    if length(ch) > 1
+        ch_t_uni = unique(ch_t[ch])
+        for cht_idx in 1:length(ch_t_uni)
+            ch_tmp2 = Vector{Int64}()
+            for ch_idx in 1:length(ch)
+                ch_t[ch[ch_idx]] == ch_t_uni[cht_idx] && push!(ch_tmp2, ch[ch_idx])
+            end
+            push!(ch_tmp, ch_tmp2)
         end
-        push!(ch_tmp, ch_tmp2)
+    else
+        ch_t_uni = ch_t[ch]
+        ch_tmp = [[ch]]
     end
 
     p = Plots.Plot[]
 
     if type === :normal
         if bad == false
-            if length(ch_t_uni) > 1
+            if length(ch_tmp) > 1
                 for cht_idx in 1:length(ch_t_uni)
                     units = _set_units(obj, ch_tmp[cht_idx][1])
                     if ch_t[ch_tmp[cht_idx][1]] == "eeg"
@@ -579,16 +585,29 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
                 if ch_t[ch_tmp[1][1]] == "mrk"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
-                p = plot_signal(t,
-                                s[ch, :],
-                                clabels=clabels[ch, ],
-                                xlabel=xl,
-                                ylabel=yl,
-                                title=tt,
-                                scale=scale,
-                                units=units,
-                                mono=mono;
-                                kwargs...)
+                if length(ch) == 1
+                    p = plot_signal(t,
+                                    s[ch, :],
+                                    clabels=clabels[ch_tmp[1][1]],
+                                    xlabel=xl,
+                                    ylabel=yl,
+                                    title=tt,
+                                    scale=scale,
+                                    units=units,
+                                    mono=mono;
+                                    kwargs...)
+                else
+                    p = plot_signal(t,
+                                    s[ch, :],
+                                    clabels=clabels[ch_tmp[1][:]],
+                                    xlabel=xl,
+                                    ylabel=yl,
+                                    title=tt,
+                                    scale=scale,
+                                    units=units,
+                                    mono=mono;
+                                    kwargs...)
+                end
             end
         else
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Bad channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -597,7 +616,7 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
             p = plot_signal(t,
                             s[ch, :],
                             bad[ch, ep],
-                            clabels=clabels[ch, :],
+                            clabels=clabels[ch],
                             xlabel=xl,
                             ylabel=yl,
                             title=tt,
@@ -613,7 +632,7 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Channels $(_channel2channel_name(ch)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   s[ch, :],
-                                  clabels=clabels[ch, :],
+                                  clabels=clabels[ch],
                                   xlabel=xl,
                                   ylabel=yl,
                                   title=tt,

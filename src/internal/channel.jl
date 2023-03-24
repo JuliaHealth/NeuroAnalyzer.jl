@@ -1,17 +1,19 @@
 function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
     units = ""
     lowercase(obj.header.recording[:channel_type][ch]) == "eeg" && (units = "μV")
+    lowercase(obj.header.recording[:channel_type][ch]) == "csd" && (units = "μV/m²")
+    lowercase(obj.header.recording[:channel_type][ch]) == "mag" && (units = "fT")
+    lowercase(obj.header.recording[:channel_type][ch]) == "grad" && (units = "fT/cm")
+    lowercase(obj.header.recording[:channel_type][ch]) == "emg" && (units = "μV")
     lowercase(obj.header.recording[:channel_type][ch]) == "eog" && (units = "μV")
     lowercase(obj.header.recording[:channel_type][ch]) == "ref" && (units = "μV")
-    lowercase(obj.header.recording[:channel_type][ch]) == "csd" && (units = "μV/m²")
-    lowercase(obj.header.recording[:channel_type][ch]) == "meg" && (units = "fT")
-    lowercase(obj.header.recording[:channel_type][ch]) == "grad" && (units = "fT/cm")
     lowercase(obj.header.recording[:channel_type][ch]) == "ecg" && (units = "mV")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_int" && (units = "V")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_od" && (units = "")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbo" && (units = "μM/mm")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbr" && (units = "μM/mm")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbt" && (units = "μM/mm")
+    lowercase(obj.header.recording[:channel_type][ch]) == "other" && (units = "")
     return units
 end
 
