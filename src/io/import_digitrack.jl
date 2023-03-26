@@ -18,14 +18,12 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
  
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    fid = ""
+    buffer = nothing
     try
-        fid = open(file_name, "r")
+        buffer = readlines(file_name)
     catch
-        error("File $file_name cannot be loaded.")
+        throw(ArgumentError("File $file_name cannot be loaded."))
     end
-
-    buffer = readline(fid)
     occursin("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
     file_type = "Digitrack"
 

@@ -18,7 +18,12 @@ function import_bv(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     splitext(file_name)[2] == ".vhdr" || throw(ArgumentError("file_name must specify .VHDR file."))
 
-    vhdr = readlines(file_name)
+    vhdr = nothing
+    try
+        vhdr = readlines(file_name)
+    catch
+        throw(ArgumentError("File $file_name cannot be loaded."))
+    end
     startswith(lowercase(replace(vhdr[1], " " => "")), "brainvision") == false && throw(ArgumentError("This is not a BrainVision .VHDR file."))
 
     file_type = "BrainVision"
