@@ -34,394 +34,208 @@ function import_nirx(file_name::String0)
 
     # parse header
     hdr = replace.(hdr, "=\""=>"=", "\""=>"")
-    date = ""
-    time = ""
+    recording_date = ""
+    recording_time = ""
     device = ""
     source = ""
     mod = ""
     apd = ""
     nirstar = ""
     subject = ""
-    for idx in 1:length(hdr)
-        startswith(lowercase(hdr[idx]), "date=") && (date = split(hdr[idx], '=')[2])
-        startswith(lowercase(hdr[idx]), "time=") && (time = split(hdr[idx], '=')[2])
-        startswith(lowercase(hdr[idx]), "device=") && (device = split(hdr[idx], '=')[2])
-        startswith(lowercase(hdr[idx]), "source=") && (source = split(hdr[idx], '=')[2])
-        startswith(lowercase(hdr[idx]), "mod=") && (mod = split(hdr[idx], '=')[2])
-        startswith(lowercase(hdr[idx]), "apd=") && (apd = split(hdr[idx], '=')[2])
+
+    recording_date = split(hdr[startswith.(lowercase.(hdr), "date=")][1], '=')[2]
+    recording_time = split(hdr[startswith.(lowercase.(hdr), "time=")][1], '=')[2]
+    device = split(hdr[startswith.(lowercase.(hdr), "device=")][1], '=')[2]
+    source = split(hdr[startswith.(lowercase.(hdr), "source=")][1], '=')[2]
+    mod = split(hdr[startswith.(lowercase.(hdr), "mod=")][1], '=')[2]
+    apd = split(hdr[startswith.(lowercase.(hdr), "apd=")][1], '=')[2]
+    nirstar = split(hdr[startswith.(lowercase.(hdr), "nirstar=")][1], '=')[2]
+    subject = split(hdr[startswith.(lowercase.(hdr), "subject=")][1], '=')[2]
+
+    sources = -1
+    detectors = -1
+    shortbundles = -1
+    shortdetindex = -1
+    steps = -1
+    wavelengths = -1
+    trigins = -1
+    trigouts = -1
+    anins = -1
+    sampling_rate = -1
+    modamp = -1
+    threshold = -1
+
+    any(startswith.(lowercase.(hdr), "sources=")) && (sources = split(hdr[startswith.(lowercase.(hdr), "sources=")][1], '=')[2])
+    sources = parse(Int64, sources)
+    any(startswith.(lowercase.(hdr), "detectors=")) && (detectors = split(hdr[startswith.(lowercase.(hdr), "detectors=")][1], '=')[2])
+    detectors = parse(Int64, detectors)
+    shortbundles = split(hdr[startswith.(lowercase.(hdr), "shortbundles=")][1], '=')[2]
+    shortbundles = parse(Int64, shortbundles)
+    if any(startswith.(lowercase.(hdr), "shortdetindex=")) == true
+        shortdetindex = split(hdr[startswith.(lowercase.(hdr), "shortdetindex=")][1], '=')[2]
+        shortdetindex = parse.(Int64, split(shortdetindex, '\t'))
+    end
+    any(startswith.(lowercase.(hdr), "steps=")) && (steps = split(hdr[startswith.(lowercase.(hdr), "steps=")][1], '=')[2])
+    steps = parse(Int64, steps)
+    if any(startswith.(lowercase.(hdr), "wavelengths=")) == true
+        wavelengths = split(hdr[startswith.(lowercase.(hdr), "wavelengths=")][1], '=')[2]
+        wavelengths = parse.(Float64, split(wavelengths, '\t'))
+    end
+    any(startswith.(lowercase.(hdr), "trigins=")) && (trigins = split(hdr[startswith.(lowercase.(hdr), "trigins=")][1], '=')[2])
+    trigins = parse(Int64, trigins)
+    any(startswith.(lowercase.(hdr), "trigouts=")) && (trigouts = split(hdr[startswith.(lowercase.(hdr), "trigouts=")][1], '=')[2])
+    trigouts = parse(Int64, trigouts)
+    any(startswith.(lowercase.(hdr), "anins=")) && (anins = split(hdr[startswith.(lowercase.(hdr), "anins=")][1], '=')[2])
+    anins = parse(Int64, anins)
+    any(startswith.(lowercase.(hdr), "samplingrate=")) && (sampling_rate = split(hdr[startswith.(lowercase.(hdr), "samplingrate=")][1], '=')[2])
+    sampling_rate = round(Int64, parse(Float64, sampling_rate))
+    if any(startswith.(lowercase.(hdr), "mod amp=")) == true
+        modamp = split(hdr[startswith.(lowercase.(hdr), "mod amp=")][1], '=')[2]
+        modamp = parse.(Float64, split(modamp, '\t'))
+    end
+    if any(startswith.(lowercase.(hdr), "threshold=")) == true
+        threshold = split(hdr[startswith.(lowercase.(hdr), "threshold=")][1], '=')[2]
+        threshold = parse.(Float64, split(threshold, '\t'))
     end
 
+    stim_type = ""
+    any(startswith.(lowercase.(hdr), "stimulustype=")) && (stim_type = split(hdr[startswith.(lowercase.(hdr), "stimulustype=")][1], '=')[2])
+    notes = ""
+    any(startswith.(lowercase.(hdr), "notes=")) && (notes = split(hdr[startswith.(lowercase.(hdr), "notes=")][1], '=')[2])
 
+    # parse .inf
+    subject = ""
+    age = -1
+    gender = ""
+    study_type1 = ""
+    study_type2 = ""
+    study_type3 = ""
+    if isfile(splitext(file_name)[1] * ".inf")
+        inf = readlines(splitext(file_name)[1] * ".inf")
+        inf = replace.(inf, "=\""=>"=", "\""=>"")
+        subject = split(inf[findfirst(startswith.(lowercase.(inf), "name="))], "=")[2]
+        subject = split(subject, "\\0")
+        age = parse(Float64, split(inf[findfirst(startswith.(lowercase.(inf), "age="))], "=")[2])
+        gender = split(inf[findfirst(startswith.(lowercase.(inf), "gender="))], "=")[2]
+        study_type1 = split(inf[findfirst(startswith.(lowercase.(inf), "study type="))], "=")[2]
+        study_type2 = split(inf[findfirst(startswith.(lowercase.(inf), "experiment history="))], "=")[2]
+        study_type3 = split(inf[findfirst(startswith.(lowercase.(inf), "additional notes="))], "=")[2]
+    end
 
-
-
-    # check for multi-subject recordings
-    n_id = "nirs"
-    n !== 0 && any(occursin.("nirs$n" , keys(nirs))) == false && throw(ArgumentError("No data for subject $n found in the recording."))
-    if any(occursin.("nirs1" , keys(nirs))) == true
-        if n == 0
-            throw(ArgumentError("This is a multi-subject SfNIR file. Subject number must be specified via 'n' parameter."))
-        else
-            n_id = "nirs$n"
+    # parse gains if .set is not available
+    if isfile(splitext(file_name)[1] * ".set") == false
+        gains_start = findfirst(startswith.(hdr, "Gains="))
+        buf = hdr[gains_start + 1:gains_start + sources]
+        gains = zeros(Int64, sources, detectors)
+        for idx in 1:length(buf)
+            gains[idx, :] = parse.(Int64, split(buf[idx], '\t'))
         end
-    end
-
-    # read metadata
-    subject_id = nirs["$n_id/metaDataTags/SubjectID"][1]
-    recording_date = nirs["$n_id/metaDataTags/MeasurementDate"][1]
-    recording_time = nirs["$n_id/metaDataTags/MeasurementTime"][1]
-    length_unit = nirs["$n_id/metaDataTags/LengthUnit"][1]
-    time_unit = nirs["$n_id/metaDataTags/TimeUnit"][1]
-    frq_unit = nirs["$n_id/metaDataTags/FrequencyUnit"][1]
-
-    # probes
-
-    # List of wavelengths (in nm)
-    wavelengths = nirs["$n_id/probe/wavelengths"]
-
-    wavelengths_emission = nothing
-    src_pos2d = nothing
-    src_pos3d = nothing
-    detector_pos2d = nothing
-    detector_pos3d = nothing
-    frequencies = nothing
-    t_delay = nothing
-    t_delay_width = nothing
-    moment_orders = nothing
-    t_cor_delay = nothing
-    t_cor_delay_width = nothing
-    src_labels = nothing
-    detector_labels = nothing
-    landmark_pos2d = nothing
-    landmark_pos3d = nothing
-    landmark_labels = nothing
-    coord_system = nothing
-    coord_system_desc = nothing
-    local_index = nothing
-
-    # List of emission wavelengths (in nm)
-    k = "$n_id/probe/wavelengthsEmission"
-    k in keys(nirs) && (wavelengths_emission = nirs[k])
-
-    # Source 2-D positions in LengthUnit
-    k = "$n_id/probe/sourcePos2D"
-    k in keys(nirs) && (src_pos2d = nirs[k])
-
-    # Source 3-D positions in LengthUnit
-    k = "$n_id/probe/sourcePos3D"
-    k in keys(nirs) && (src_pos3d = nirs[k])
-
-    # Detector 2-D positions in LengthUnit
-    k = "$n_id/probe/detectorPos2D"
-    k in keys(nirs) && (detector_pos2d = nirs[k])
-
-    # Detector 3-D positions in LengthUnit
-    k = "$n_id/probe/detectorPos3D"
-    k in keys(nirs) && (detector_pos3d = nirs[k])
-
-    # Modulation frequency list
-    k = "$n_id/probe/frequencies"
-    k in keys(nirs) && (frequencies = nirs[k])
-
-    # Time delays for gated time-domain data
-    k = "$n_id/probe/timeDelays"
-    k in keys(nirs) && (t_delay = nirs[k])
-
-    # Time delay width for gated time-domain data
-    k = "$n_id/probe/timeDelaysWidths"
-    k in keys(nirs) && (t_delay_width = nirs[k])
-
-    # Moment orders of the moment TD data
-    k = "$n_id/probe/momentOrders"
-    k in keys(nirs) && (moment_orders = nirs[k])
-
-    # Time delays for DCS measurements
-    k = "$n_id/probe/correlationTimeDelays"
-    k in keys(nirs) && (t_cor_delay = nirs[k])
-
-    # Time delay width for DCS measurements
-    k = "$n_id/probe/correlationTimeDelayWidths"
-    k in keys(nirs) && (t_cor_delay_width = nirs[k])
-
-    # String arrays specifying source names
-    k = "$n_id/probe/sourceLabels"
-    k in keys(nirs) && (src_labels = nirs[k])
-
-    # String arrays specifying detector names
-    k = "$n_id/probe/detectorLabels"
-    k in keys(nirs) && (detector_labels = nirs[k])
-
-    # Anatomical landmark 2-D positions
-    k = "$n_id/probe/landmarkPos2D"
-    k in keys(nirs) && (landmark_pos2d = nirs[k])
-
-    # Anatomical landmark 3-D positions
-    k = "$n_id/probe/landmarkPos3D"
-    k in keys(nirs) && (landmark_pos3d = nirs[k])
-
-    # String arrays specifying landmark names
-    k = "$n_id/probe/landmarkLabels"
-    k in keys(nirs) && (landmark_labels = nirs[k])
-
-    # Coordinate system used in probe description
-    k = "$n_id/probe/coordinateSystem"
-    k in keys(nirs) && (coord_system = nirs[k][1])
-
-    # Description of coordinate system
-    k = "$n_id/probe/coordinateSystemDescription"
-    k in keys(nirs) && (coord_system_desc = nirs[k][1])
-
-    # If source/detector index is within a module
-    k = "$n_id/probe/useLocalIndex"
-    k in keys(nirs) && (local_index = nirs[k][1])
-
-    # measurements
-    data_n = 0
-    while true
-        data_n += 1
-        if "$n_id/data$data_n/dataTimeSeries" in keys(nirs)
-            continue
-        else
-            break
-        end
-    end
-    data_n -= 1
-    data_n > 1 && _info("Multiple data SNIRF files are not supported yet.")
-
-    d_id = "data1"
-    
-    data = nirs["$n_id/$d_id/dataTimeSeries"]
-
-    time_pts = nirs["$n_id/$d_id/time"]
-    if length(time_pts) > 2
-        sampling_rate = 1 / (time_pts[2] - time_pts[1])
     else
-        sampling_rate = 1 / time_pts[2]
-        time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
-    end
-    epoch_time = time_pts
-    
-    ch_n = size(data, 1)
-
-    source_index = Int64[]
-    detector_index = Int64[]
-    wavelength_index = Int64[]
-    wavelength_actual = Float64
-    wavelength_emission_actual = Float64[]
-    data_type = Int64[]
-    data_unit = String[]
-    data_type_label = String[]
-    data_type_index = Int64[]
-    source_power = Float64[]
-    detector_gain = Float64[]
-    module_index = Int64[]
-    src_module_index = Int64[]
-    detector_module_index = Int64[]
-
-    for ch_idx in 1:ch_n
-        # Source index for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
-        k in keys(nirs) && (push!(source_index, Int.(nirs[k][1])))
-
-        # Detector index for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/detectorIndex"
-        k in keys(nirs) && (push!(detector_index, Int.(nirs[k][1])))
-
-        # Wavelength index for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/wavelengthIndex"
-        k in keys(nirs) && (push!(wavelength_index, Int.(nirs[k][1])))
-
-        # Actual wavelength for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/wavelengthActual"
-        k in keys(nirs) && (push!(wavelength_actual, nirs[k][1]))
-
-        # Actual emission wavelength for a channel
-        k = "$n_id/$d_id/measurementList$ch_idx/wavelengthEmissionActual"
-        k in keys(nirs) && (push!(wavelength_emission_actual, nirs[k][1]))
-
-        # Data type for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/dataType"
-        k in keys(nirs) && (push!(data_type, Int.(nirs[k][1])))
-
-        # SI unit for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/dataUnit"
-        k in keys(nirs) && (push!(data_unit, nirs[k][1]))
-        data_unit == String[] && (data_unit = repeat(["V"], ch_n))
-
-        # Data type name for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
-        k in keys(nirs) && (push!(data_type_label, nirs[k][1]))
-        # assume its raw data (intensity) if there is no data type
-        data_type_label == String[] && (data_type_label = repeat(["nirs_int"], ch_n))
-        # Change in optical density
-        data_type_label = replace(lowercase.(data_type_label), "dod" => "nirs_od")
-        data_type_label = replace(lowercase.(data_type_label), "dmean" => "nirs_dmean")
-        data_type_label = replace(lowercase.(data_type_label), "dvar" => "nirs_dvar")
-        data_type_label = replace(lowercase.(data_type_label), "dskew" => "nirs_dskew")
-        # Absorption coefficient
-        data_type_label = replace(lowercase.(data_type_label), "mua" => "nirs_mua")
-        # Scattering coefficient
-        data_type_label = replace(lowercase.(data_type_label), "musp" => "nirs_musp")
-        # Oxygenated hemoglobin (oxyhemoglobin) concentration
-        data_type_label = replace(lowercase.(data_type_label), "hbo" => "nirs_hbo")
-        # Deoxygenated hemoglobin (deoxyhemoglobin) concentration
-        data_type_label = replace(lowercase.(data_type_label), "hbr" => "nirs_hbr")
-        # Total hemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hbt" => "nirs_hbt")
-        # Water content
-        data_type_label = replace(lowercase.(data_type_label), "h2o" => "nirs_h2o")
-        # Lipid concentration
-        data_type_label = replace(lowercase.(data_type_label), "lipid" => "nirs_lipid")
-        # Hemodynamic response function for blood flow index (BFi)
-        data_type_label = replace(lowercase.(data_type_label), "bfi" => "nirs_bfi")
-        # Hemodynamic response function for change in optical density
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dod" => "nirs_hrf_dod")
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dmean" => "nirs_hrf_dmean")
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dvar" => "nirs_hrf_dvar")
-        data_type_label = replace(lowercase.(data_type_label), "hrf_dskew" => "nirs_hrf_dskew")
-        # Hemodynamic response function for oxyhemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hrf_hbo" => "nirs_hrf_hbo")
-        # emodynamic response function for deoxyhemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hrf_hbr" => "nirs_hrf_hbr")
-        # Hemodynamic response function for total hemoglobin concentration
-        data_type_label = replace(lowercase.(data_type_label), "hrf_hbt" => "nirs_hrf_hbt")
-        # Hemodynamic response function for blood flow index (BFi)
-        data_type_label = replace(lowercase.(data_type_label), "hrf_bfi" => "nirs_hrf_bfi")
-
-        # Data type index for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/dataTypeIndex"
-        k in keys(nirs) && (push!(data_type_index, Int.(nirs[k][1])))
-
-        # Source power for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/sourcePower"
-        k in keys(nirs) && (push!(source_power, nirs[k][1]))
-
-        # Detector gain for a given channel
-        k = "$n_id/$d_id/measurementList$ch_idx/detectorGain"
-        k in keys(nirs) && (push!(detector_gain, nirs[k][1]))
-
-        # Index of the parent module (if modular)
-        k = "$n_id/$d_id/measurementList$ch_idx/moduleIndex"
-        k in keys(nirs) && (push!(module_index, Int.(nirs[k][1])))
-
-        # Index of the source's parent module
-        k = "$n_id/$d_id/measurementList$ch_idx/sourceModuleIndex"
-        k in keys(nirs) && (push!(src_module_index, Int.(nirs[k][1])))
-
-        # Index of the detector's parent module
-        k = "$n_id/$d_id/measurementList$ch_idx/detectorModuleIndex"
-        k in keys(nirs) && (push!(detector_module_index, Int.(nirs[k][1])))
-    end
-
-    # currently data type is not used
-    if data_type !== nothing
-        tmp = String[]
-        for idx in 1:length(data_type)
-            data_type[idx] == 1 && push!(tmp, "Amplitude")
-            data_type[idx] == 51 && push!(tmp, "Fluorescence Amplitude")
-            data_type[idx] == 101 && push!(tmp, "Raw: Frequency Domain (FD): AC Amplitude")
-            data_type[idx] == 102 && push!(tmp, "Raw: Frequency Domain (FD): Phase")
-            data_type[idx] == 151 && push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Amplitude")
-            data_type[idx] == 152 && push!(tmp, "Raw: Frequency Domain (FD): Fluorescence Phase")
-            data_type[idx] == 201 && push!(tmp, "Raw: Time Domain: Gated (TD Gated): Amplitude")
-            data_type[idx] == 251 && push!(tmp, "Raw: Time Domain: Gated (TD Gated): Fluorescence Amplitude")
-            data_type[idx] == 301 && push!(tmp, "Raw: Time Domain: Moments (TD Moments): Amplitude")
-            data_type[idx] == 351 && push!(tmp, "Raw: Time Domain: Moments (TD Moments): Fluorescence Amplitude")
-            data_type[idx] == 351 && push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): g2")
-            data_type[idx] == 410 && push!(tmp, "Raw: Diffuse Correlation Spectroscopy (DCS): BFi")
-            data_type[idx] == 99999 && push!(tmp, "Processed")
+        buf = readlines(splitext(file_name)[1] * ".set")
+        buf = split.(buf, ' ')
+        gains = zeros(Int64, sources, detectors)
+        for idx in 1:length(buf)
+            gains[idx, :] = parse.(Int64, buf[idx])
         end
-        data_type = tmp
     end
 
-    # collect channels
+    # parse events if .evt is not available
+    if isfile(splitext(file_name)[1] * ".evt") == false
+        events_start = findfirst(startswith.(hdr, "Events="))
+        events_end = events_start + findfirst(startswith.(hdr[events_start:end], "#"))
+        buf = hdr[events_start + 1:events_end - 2]
+        buf = split.(buf, '\t')
+        events = zeros(Float64, length(buf), length(buf[1]))
+        for idx in 1:length(buf)
+            events[idx, :] = parse.(Float64, buf[idx])
+        end
+    else
+        buf = readlines(splitext(file_name)[1] * ".evt")
+        buf = split.(buf, '\t')
+        events = zeros(Int64, length(buf), length(buf[1]))
+        for idx in 1:length(buf)
+            events[idx, :] = parse.(Int64, buf[idx])
+        end
+    end
+
+    # parse ch_pairs
+    pairs = hdr[findfirst(startswith.(lowercase.(hdr), "s-d-key="))]
+    pairs = split(replace(lowercase.(pairs), "s-d-key="=>""), ",")[1:end - 1]
+    ch_n = length(pairs)
     ch_pairs = zeros(Int64, ch_n, 2)
-    clabels = repeat([""], ch_n)
     for idx in 1:ch_n
-        ch_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
-        clabels[idx] = "S" * string(source_index[idx]) * "-D" * string(detector_index[idx])
+        ch_pairs[idx, :] = [parse(Int64, split(pairs[idx], "-")[1]), parse(Int64, split(split(pairs[idx], "-")[2], ":")[1])]
+    end
+    ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
+    masks = hdr[ch_mask_start + 1:ch_mask_start + sources]
+    masks = split.(masks, '\t')
+    ch_masks = zeros(Int64, sources, detectors)
+    for idx in 1:sources
+        ch_masks[idx, :] = parse.(Int64, masks[idx, :][1])
     end
 
-    # source and detector names
-    if src_labels === nothing
-        s = sort(unique(source_index))
-        src_labels = String[]
-        for idx in 1:length(s)
-            push!(src_labels, "S" * string(s[idx]))
-        end
+    # parse dark noise
+    dark_noise = zeros(length(wavelengths), detectors)
+    for wv_idx in 1:length(wavelengths)
+        dn = hdr[findfirst(startswith.(lowercase.(hdr), "wavelength$wv_idx=")) + 1]
+        dark_noise[wv_idx, :] = parse.(Float64, split.(dn, '\t')[1:end])
     end
-    if detector_labels === nothing
-        d = sort(unique(detector_index))
-        detector_labels = String[]
-        for idx in 1:length(d)
-            push!(detector_labels, "D" * string(d[idx]))
-        end
+
+    chd = hdr[findfirst(startswith.(lowercase.(hdr), "chandis="))]
+    chd = replace(lowercase.(chd), "chandis="=>"")
+    chd = split.(chd, '\t')
+    channel_distance = zeros(length(chd))
+    for idx in 1:length(chd)
+        channel_distance[idx] = parse(Float64, chd[idx])
     end
-    opt_labels = vcat(src_labels, detector_labels)
 
-    # stimulus measurements
-    stim_n = 0
-    while true
-        stim_n += 1
-        if "$n_id/stim$stim_n/name" in keys(nirs)
-            continue
-        else
-            break
-        end
+    # read raw light intensity channels (V)
+    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", DataFrame, header=false))'
+    wavelength_index = repeat([1], ch_n)
+    data_type_label = repeat(["nirs_int"], ch_n)
+    data_unit = repeat(["V"], ch_n)
+    for idx in 2:length(wavelengths)
+        nirs_int = vcat(nirs_int, Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", DataFrame, header=false))')
+        wavelength_index = vcat(wavelength_index, repeat([idx], ch_n))
+        ch_pairs = vcat(ch_pairs, ch_pairs)
+        data_type_label = vcat(data_type_label, repeat(["nirs_int"], ch_n))
+        data_unit = vcat(data_unit, repeat(["V"], ch_n))
     end
-    stim_n -= 1
-    stim_n > 1 && _info("Multiple stimulus SNIRF files are not supported yet.")
 
-    s_id = "stim1"
-
-    # Name of the stimulus data
-    k = "$n_id/$s_id/name"
-    k in keys(nirs) && (stim_name = nirs[k][1])
-
-    # Data stream of the stimulus channel
-    k = "$n_id/$s_id/data"
-    k in keys(nirs) && (stim_data = nirs[k])
-
-    # Data stream of the stimulus channel
-    k = "$n_id/$s_id/dataLabels"
-    k in keys(nirs) && (stim_labels = nirs[k])
-
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
-
-    # auxiliary measurements
-    aux_n = 0
-    while true
-        aux_n += 1
-        if "$n_id/aux$aux_n/name" in keys(nirs)
-            continue
-        else
-            break
-        end
+    # read data ???
+    buf = CSV.read(splitext(file_name)[1] * ".dat", DataFrame, header=false)
+    data = zeros(ncol(buf), nrow(buf))
+    for idx in 1:ncol(buf)
+        data[idx, :] = buf[!, idx]
     end
-    aux_n -= 1
-    aux_n > 1 && _info("Multiple aux SNIRF files are not supported yet.")
 
-    a_id = "aux$aux_n"
+    # read probes data
+    probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
+    head_model = probes["probeInfo"]["headmodel"]
+    det_labels = probes["probeInfo"]["probes"]["labels_d"]
+    probes["probeInfo"]["probes"]["coords_o2"]
+    probes["probeInfo"]["probes"]["coords_c3"]
+    probes["probeInfo"]["probes"]["nDetector0"]
+    probes["probeInfo"]["probes"]["normals_c"]
+    probes["probeInfo"]["probes"]["labels_s"]
+    probes["probeInfo"]["probes"]["nChannel0"]
+    probes["probeInfo"]["probes"]["coords_s2"]
+    probes["probeInfo"]["probes"]["coords_d3"]
+    probes["probeInfo"]["probes"]["coords_d2"]
+    probes["probeInfo"]["probes"]["coords_o3"]
+    probes["probeInfo"]["probes"]["normals_o"]
+    probes["probeInfo"]["probes"]["coords_c2"]
+    probes["probeInfo"]["probes"]["index_c"]
+    probes["probeInfo"]["probes"]["normals_d"]
+    probes["probeInfo"]["probes"]["nSource0"]
+    probes["probeInfo"]["probes"]["coords_s3"]
+    probes["probeInfo"]["probes"]["labels_o"]
+    probes["probeInfo"]["probes"]["normals_s"]
 
-    # Name of the auxiliary channel
-    k = "$n_id/$a_id/name"
-    k in keys(nirs) && (aux_name = nirs[k][1])
+    # TPL file ???
+    # AVG file ???
 
-    # Data acquired from the auxiliary channel
-    k = "$n_id/$a_id/dataTimeSeries"
-    k in keys(nirs) && (aux_data = nirs[k])
-
-    # SI unit of the auxiliary channel
-    k = "$n_id/$a_id/dataUnit"
-    k in keys(nirs) && (aux_data = nirs[k])
-
-    # Time (in TimeUnit) for auxiliary data 
-    k = "$n_id/$a_id/time"
-    k in keys(nirs) && (aux_time = nirs[k])
-
-    # Time offset of auxiliary channel data
-    k = "$n_id/$a_id/timeOffset"
-    k in keys(nirs) && (aux_timeoffset = nirs[k])
+########################################################################
 
     # locations
     pos2d = hcat(src_pos2d, detector_pos2d)
@@ -470,7 +284,7 @@ function import_nirx(file_name::String0)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     
-    s = _create_subject(id=subject_id,
+    s = _create_subject(id="",
                         first_name="",
                         middle_name="",
                         last_name="",
@@ -492,7 +306,7 @@ function import_nirx(file_name::String0)
                                clabels=clabels,
                                units=data_unit,
                                opt_labels=opt_labels,
-                               sampling_rate=round(Int64, sampling_rate))
+                               sampling_rate=sampling_rate)
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
                            experiment_design="")
