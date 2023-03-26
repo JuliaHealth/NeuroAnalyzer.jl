@@ -319,7 +319,7 @@ st, sts, p = NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
 m = NeuroAnalyzer.mutual_information(e10)
 @test size(m) == (19, 19, 10) 
 m = NeuroAnalyzer.mutual_information(e10, e10, ch1=1, ch2=2)
-@test size(m) == (1, 1, 10)
+@test size(m) == (1, 10)
 
 @info "test 25/48: msci95()"
 @test NeuroAnalyzer.msci95(v1) == (sm = 3.0, ss = 0.7071067811865476, su = 4.385929291125633, sl = 1.6140707088743669)

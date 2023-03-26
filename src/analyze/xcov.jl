@@ -175,7 +175,7 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     # create vector of lags
     l = 1/sr(obj1) .* collect(-lag:lag) .* 1000
 
-    xc, _ = @views xcov(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], lag=lag, norm=norm)
+    xc, _ = @views xcov(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), lag=lag, norm=norm)
 
     return (xc=xc, l=l)
 

@@ -24,7 +24,8 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     catch
         throw(ArgumentError("File $file_name cannot be loaded."))
     end
-    occursin("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
+    any(occursin.("Start time ", buffer)) || throw(ArgumentError("File $file_name is not a Digitrack file."))
+
     file_type = "Digitrack"
 
     patient = ""

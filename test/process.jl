@@ -309,10 +309,10 @@ e10_tmp = wbp(e10, frq=4)
 
 @info "test 40/41: intensity2od()"
 n_tmp = intensity2od(n)
-@test size(n_tmp.data) == (8, 9015, 1)
+@test size(n_tmp.data) == (16, 9015, 1)
 
 @info "test 41/41: od2conc()"
 n_tmp2 = od2conc(n_tmp)
-@test size(n_tmp2.data) == (14, 9015, 1)
+@test size(n_tmp2.data) == (22, 9015, 1)
 
 true

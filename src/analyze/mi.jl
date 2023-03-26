@@ -118,7 +118,6 @@ function mutual_information(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int6
     m = zeros(ch_n, ch_n, ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
-
         # create half of the matrix
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
@@ -168,7 +167,7 @@ function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO
     length(ep1) == length(ep2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
     epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    m = @views mutual_information(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
+    m = @views mutual_information(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)))
 
     return m
 

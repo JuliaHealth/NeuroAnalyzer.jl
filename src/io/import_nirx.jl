@@ -139,25 +139,6 @@ function import_nirx(file_name::String)
         end
     end
 
-    # parse events if .evt is not available
-    if isfile(splitext(file_name)[1] * ".evt") == false
-        events_start = findfirst(startswith.(hdr, "Events="))
-        events_end = events_start + findfirst(startswith.(hdr[events_start:end], "#"))
-        buf = hdr[events_start + 1:events_end - 2]
-        buf = split.(buf, '\t')
-        events = zeros(Float64, length(buf), length(buf[1]))
-        for idx in 1:length(buf)
-            events[idx, :] = parse.(Float64, buf[idx])
-        end
-    else
-        buf = readlines(splitext(file_name)[1] * ".evt")
-        buf = split.(buf, '\t')
-        events = zeros(Int64, length(buf), length(buf[1]))
-        for idx in 1:length(buf)
-            events[idx, :] = parse.(Int64, buf[idx])
-        end
-    end
-
     # parse ch_pairs
     pairs = hdr[findfirst(startswith.(lowercase.(hdr), "s-d-key="))]
     pairs = split(replace(lowercase.(pairs), "s-d-key="=>""), ",")[1:end - 1]
@@ -179,7 +160,7 @@ function import_nirx(file_name::String)
     ch_masks = Bool.(ch_masks)
     ch_pairs = ch_pairs[ch_masks, :]
 
-    # parse dark noise
+    # parse dark noise ???
     dark_noise = zeros(length(wavelengths), detectors)
     for wv_idx in 1:length(wavelengths)
         dn = hdr[findfirst(startswith.(lowercase.(hdr), "wavelength$wv_idx=")) + 1]
@@ -208,8 +189,43 @@ function import_nirx(file_name::String)
     end
     ch_n = size(nirs_int, 1)
 
-    time_pts = round.(collect(0:1/sampling_rate:size(nirs_int, 2))[1:end - 1], digits=3)
-    epoch_time = round.(collect(0:1/sampling_rate:size(nirs_int, 2))[1:end - 1], digits=3)
+    time_pts = round.(collect(0:1/sampling_rate:(size(nirs_int, 2) / sampling_rate))[1:end - 1], digits=3)
+    epoch_time = round.(collect(0:1/sampling_rate:(size(nirs_int, 2) / sampling_rate))[1:end - 1], digits=3)
+
+    # parse events if .evt is not available
+    stim_onset = nothing
+    stim_id = String[]
+    if any(startswith.(hdr, "Events="))
+        events_start = findfirst(startswith.(hdr, "Events="))
+        events_end = events_start + findfirst(startswith.(hdr[events_start:end], "#"))
+        buf = hdr[events_start + 1:events_end - 2]
+        buf = split.(buf, '\t')
+        events = zeros(Float64, length(buf), length(buf[1]))
+        for idx in 1:length(buf)
+            events[idx, :] = parse.(Float64, buf[idx])
+        end
+        stim_onset = Int.(events[:, 3])
+        stim_id = string.(Int.(events[:, 2]))
+    elseif isfile(splitext(file_name)[1] * ".evt") == true
+        buf = readlines(splitext(file_name)[1] * ".evt")
+        buf = split.(buf, '\t')
+        events = zeros(Int64, length(buf), length(buf[1]))
+        for idx in 1:length(buf)
+            events[idx, :] = parse.(Int64, buf[idx])
+        end
+        # what are those 0s and 1s in events[] ???
+        stim_onset = events[:, 1]
+        stim_id = String[]
+        for idx in 1:size(events, 1)
+            push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end])))
+        end
+    end
+
+    if stim_onset !== nothing
+        markers = DataFrame(:id=>stim_id, :start=>stim_onset, :length=>repeat([1], length(stim_id)), :description=>repeat(["stim"], length(stim_id)), :channel=>zeros(Int64, length(stim_id)))
+    else
+        markers = DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :description=>nothing, :channel=>nothing)
+    end
 
     # read data ???
     buf = readlines(splitext(file_name)[1] * ".dat")
@@ -221,8 +237,9 @@ function import_nirx(file_name::String)
 
     # read probes data
     probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
-    head_model = probes["probeInfo"]["headmodel"]
+    # head_model = probes["probeInfo"]["headmodel"]
     ch_pairs = Int64.(probes["probeInfo"]["probes"]["index_c"])
+    ch_pairs = vcat(ch_pairs, ch_pairs)
     # probes["probeInfo"]["probes"]["labels_o"]
     det_labels = probes["probeInfo"]["probes"]["labels_d"][:]
     src_labels = probes["probeInfo"]["probes"]["labels_s"][:]
@@ -230,7 +247,7 @@ function import_nirx(file_name::String)
 
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
-        clabels[idx] = src_labels[vcat(ch_pairs, ch_pairs)[idx, :][1]] * "_" * det_labels[vcat(ch_pairs, ch_pairs)[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]])
+        clabels[idx] = src_labels[ch_pairs[idx, :][1]] * "_" * det_labels[ch_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]])
     end
     clabels = replace.(clabels, ".0"=>"")
 
@@ -254,8 +271,6 @@ function import_nirx(file_name::String)
 
     # TPL file ???
     # AVG file ???
-
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
     # locations
     pos2d = hcat(src_pos2d, detector_pos2d)

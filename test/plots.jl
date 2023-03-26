@@ -81,9 +81,9 @@ isfile("test.png") && rm("test.png")
 @info "test 8/21: plot()"
 p = NeuroAnalyzer.plot(e10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot(e10, type=:mean)
+p = NeuroAnalyzer.plot(e10, ch=1:19, type=:mean)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot(e10, type=:butterfly)
+p = NeuroAnalyzer.plot(e10, ch=1:19, type=:butterfly)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 @info "test 9/21: plot_spectrogram()"

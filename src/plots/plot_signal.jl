@@ -699,9 +699,9 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
                                         linewidth=0.5,
                                         linecolor=:black,
                                         label=false)
-            end
-            for idx in eachindex(markers_desc)
-                p[p_idx] = Plots.plot!(p[p_idx], annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                for idx in eachindex(markers_desc)
+                    p[p_idx] = Plots.plot!(p[p_idx], annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                end
             end
         else
             p = Plots.vline!(markers_pos,

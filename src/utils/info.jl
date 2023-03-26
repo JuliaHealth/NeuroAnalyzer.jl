@@ -565,3 +565,22 @@ function describe(obj::NeuroAnalyzer.NEURO)
                 rpad(round(maximum(obj.data[idx, :, :]), digits=3), 8))
     end
 end
+
+"""
+    size(obj)
+
+Return size of the `obj` data.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `size::Tuple{Int64, Int64, Int64}`
+"""
+function Base.size(obj::NeuroAnalyzer.NEURO)
+    
+    return size(obj.data)
+
+end
