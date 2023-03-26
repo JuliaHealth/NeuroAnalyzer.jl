@@ -85,8 +85,9 @@ function import_nirs(file_name::String)
     # channel labels
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
-        clabels[idx] = "S" * string(Int.(probes["MeasList"])[idx, 1]) * "-D" * string(Int.(probes["MeasList"])[idx, 2])
+        clabels[idx] = "S" * string(Int.(probes["MeasList"])[idx, 1]) * "_D" * string(Int.(probes["MeasList"])[idx, 2]) * " " * string(wavelengths[wavelength_index[idx]])
     end
+    clabels = replace.(clabels, ".0"=>"")
 
     # data contains intensity (RAW) data
     data_unit = repeat(["V"], ch_n)

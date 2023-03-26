@@ -17,7 +17,7 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 https://nirx.net/file-formats
 """
-function import_nirx(file_name::String0)
+function import_nirx(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     splitext(file_name)[2] == ".hdr" || throw(ArgumentError("This is not a .hdr file."))
@@ -41,7 +41,7 @@ function import_nirx(file_name::String0)
     mod = ""
     apd = ""
     nirstar = ""
-    subject = ""
+    subject_id = ""
 
     recording_date = split(hdr[startswith.(lowercase.(hdr), "date=")][1], '=')[2]
     recording_time = split(hdr[startswith.(lowercase.(hdr), "time=")][1], '=')[2]
@@ -50,7 +50,7 @@ function import_nirx(file_name::String0)
     mod = split(hdr[startswith.(lowercase.(hdr), "mod=")][1], '=')[2]
     apd = split(hdr[startswith.(lowercase.(hdr), "apd=")][1], '=')[2]
     nirstar = split(hdr[startswith.(lowercase.(hdr), "nirstar=")][1], '=')[2]
-    subject = split(hdr[startswith.(lowercase.(hdr), "subject=")][1], '=')[2]
+    subject_id = split(hdr[startswith.(lowercase.(hdr), "subject=")][1], '=')[2]
 
     sources = -1
     detectors = -1
@@ -104,7 +104,7 @@ function import_nirx(file_name::String0)
     any(startswith.(lowercase.(hdr), "notes=")) && (notes = split(hdr[startswith.(lowercase.(hdr), "notes=")][1], '=')[2])
 
     # parse .inf
-    subject = ""
+    #subject = ""
     age = -1
     gender = ""
     study_type1 = ""
@@ -169,10 +169,15 @@ function import_nirx(file_name::String0)
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = hdr[ch_mask_start + 1:ch_mask_start + sources]
     masks = split.(masks, '\t')
-    ch_masks = zeros(Int64, sources, detectors)
-    for idx in 1:sources
-        ch_masks[idx, :] = parse.(Int64, masks[idx, :][1])
+    ch_masks = zeros(Int64, sources * detectors)
+    idx = 1
+    for idx1 in 1:sources, idx2 in 1:detectors
+        ch_masks[idx] = parse(Int64, masks[idx1][idx2])
+        idx += 1
     end
+    ch_n = sum(ch_masks)
+    ch_masks = Bool.(ch_masks)
+    ch_pairs = ch_pairs[ch_masks, :]
 
     # parse dark noise
     dark_noise = zeros(length(wavelengths), detectors)
@@ -190,52 +195,67 @@ function import_nirx(file_name::String0)
     end
 
     # read raw light intensity channels (V)
-    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", DataFrame, header=false))'
+    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", DataFrame, header=false))'[ch_masks, :]
     wavelength_index = repeat([1], ch_n)
     data_type_label = repeat(["nirs_int"], ch_n)
     data_unit = repeat(["V"], ch_n)
     for idx in 2:length(wavelengths)
-        nirs_int = vcat(nirs_int, Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", DataFrame, header=false))')
+        nirs_int = vcat(nirs_int, Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", DataFrame, header=false))'[ch_masks, :])
         wavelength_index = vcat(wavelength_index, repeat([idx], ch_n))
         ch_pairs = vcat(ch_pairs, ch_pairs)
         data_type_label = vcat(data_type_label, repeat(["nirs_int"], ch_n))
         data_unit = vcat(data_unit, repeat(["V"], ch_n))
     end
+    ch_n = size(nirs_int, 1)
+
+    time_pts = round.(collect(0:1/sampling_rate:size(nirs_int, 2))[1:end - 1], digits=3)
+    epoch_time = round.(collect(0:1/sampling_rate:size(nirs_int, 2))[1:end - 1], digits=3)
 
     # read data ???
-    buf = CSV.read(splitext(file_name)[1] * ".dat", DataFrame, header=false)
-    data = zeros(ncol(buf), nrow(buf))
-    for idx in 1:ncol(buf)
-        data[idx, :] = buf[!, idx]
+    buf = readlines(splitext(file_name)[1] * ".dat")
+    buf_r = length(parse.(Float64, split(buf[1], ' ')))
+    data = zeros(buf_r, length(buf))
+    for idx in 1:length(buf)
+        data[:, idx] = parse.(Float64, split(buf[idx], ' '))
     end
 
     # read probes data
     probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
     head_model = probes["probeInfo"]["headmodel"]
-    det_labels = probes["probeInfo"]["probes"]["labels_d"]
-    probes["probeInfo"]["probes"]["coords_o2"]
-    probes["probeInfo"]["probes"]["coords_c3"]
-    probes["probeInfo"]["probes"]["nDetector0"]
-    probes["probeInfo"]["probes"]["normals_c"]
-    probes["probeInfo"]["probes"]["labels_s"]
-    probes["probeInfo"]["probes"]["nChannel0"]
-    probes["probeInfo"]["probes"]["coords_s2"]
-    probes["probeInfo"]["probes"]["coords_d3"]
-    probes["probeInfo"]["probes"]["coords_d2"]
-    probes["probeInfo"]["probes"]["coords_o3"]
-    probes["probeInfo"]["probes"]["normals_o"]
-    probes["probeInfo"]["probes"]["coords_c2"]
-    probes["probeInfo"]["probes"]["index_c"]
-    probes["probeInfo"]["probes"]["normals_d"]
-    probes["probeInfo"]["probes"]["nSource0"]
-    probes["probeInfo"]["probes"]["coords_s3"]
-    probes["probeInfo"]["probes"]["labels_o"]
-    probes["probeInfo"]["probes"]["normals_s"]
+    ch_pairs = Int64.(probes["probeInfo"]["probes"]["index_c"])
+    # probes["probeInfo"]["probes"]["labels_o"]
+    det_labels = probes["probeInfo"]["probes"]["labels_d"][:]
+    src_labels = probes["probeInfo"]["probes"]["labels_s"][:]
+    opt_labels = string.(vcat(src_labels, det_labels))
+
+    clabels = repeat([""], ch_n)
+    for idx in 1:ch_n
+        clabels[idx] = src_labels[vcat(ch_pairs, ch_pairs)[idx, :][1]] * "_" * det_labels[vcat(ch_pairs, ch_pairs)[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]])
+    end
+    clabels = replace.(clabels, ".0"=>"")
+
+    # probes["probeInfo"]["probes"]["coords_c2"]
+    # probes["probeInfo"]["probes"]["coords_c3"]
+    # probes["probeInfo"]["probes"]["coords_o2"]
+    # probes["probeInfo"]["probes"]["coords_o3"]
+    src_pos2d = probes["probeInfo"]["probes"]["coords_s2"]'
+    src_pos3d = probes["probeInfo"]["probes"]["coords_s3"]'
+    detector_pos2d = probes["probeInfo"]["probes"]["coords_d2"]'
+    detector_pos3d = probes["probeInfo"]["probes"]["coords_d3"]'
+
+    # probes["probeInfo"]["probes"]["nChannel0"]
+    # src_n = Int64(probes["probeInfo"]["probes"]["nSource0"])
+    # det_n = Int64(probes["probeInfo"]["probes"]["nDetector0"])
+
+    # probes["probeInfo"]["probes"]["normals_c"]
+    # probes["probeInfo"]["probes"]["normals_o"]
+    # probes["probeInfo"]["probes"]["normals_s"]
+    # probes["probeInfo"]["probes"]["normals_d"]
 
     # TPL file ???
     # AVG file ???
 
-########################################################################
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
     # locations
     pos2d = hcat(src_pos2d, detector_pos2d)
@@ -268,11 +288,8 @@ function import_nirx(file_name::String0)
     # swap x and y
     # x, y = y, x
     # normalize to a unit-sphere
-    if z != zeros(length(opt_labels))
-        x, y, z = _locnorm(x, y, z)
-    else
-        x, y = _locnorm(x, y)
-    end
+    z = normalize(z, method=:n)
+    x, y = NeuroAnalyzer._locnorm(x, y)
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))
@@ -283,11 +300,11 @@ function import_nirx(file_name::String0)
     locs = locs_cart2pol(locs)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
-    s = _create_subject(id="",
-                        first_name="",
+
+    s = _create_subject(id=string(subject_id[1]),
+                        first_name=string(subject[1]),
                         middle_name="",
-                        last_name="",
+                        last_name=string(subject[2]),
                         handedness="",
                         weight=-1,
                         height=-1)
@@ -295,10 +312,10 @@ function import_nirx(file_name::String0)
                                file_name=file_name,
                                file_size_mb=file_size_mb,
                                file_type=file_type,
-                               recording="",
-                               recording_date=recording_date,
-                               recording_time=recording_time,
-                               recording_notes="",
+                               recording=string(device[1]),
+                               recording_date=string(recording_date[1]),
+                               recording_time=string(recording_time[1]),
+                               recording_notes="NIRStar: $nirstar",
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,
                                channel_pairs=ch_pairs,
@@ -307,9 +324,9 @@ function import_nirx(file_name::String0)
                                units=data_unit,
                                opt_labels=opt_labels,
                                sampling_rate=sampling_rate)
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(experiment_name=string(study_type1),
+                           experiment_notes=string(study_type2),
+                           experiment_design=string(study_type3))
 
     hdr = _create_header(s,
                          r,
@@ -319,6 +336,6 @@ function import_nirx(file_name::String0)
 
     history = String[]
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, nirs_int[:, :, :], components, markers, locs, history)
 
 end

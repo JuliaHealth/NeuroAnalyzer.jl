@@ -164,7 +164,7 @@ function signal_channels(obj::NeuroAnalyzer.NEURO)
     if dt === :meg
         chs = union(get_channel_bytype(obj, type=[:meg, :mag, :grad]))
     elseif dt === :nirs
-        chs = union(get_channel_bytype(obj, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi]))
+        chs = union(get_channel_bytype(obj, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
     else
         chs = get_channel_bytype(obj, type=dt)
     end
@@ -352,7 +352,11 @@ function info(obj::NeuroAnalyzer.NEURO)
         end
     else
         for idx in eachindex(obj.header.recording[:labels])
-            println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))\twavelength: $(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]]) nm")
+            if obj.header.recording[:channel_type][idx] !== "nirs_aux"
+                println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))\twavelength: $(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]]) nm")
+            else
+                println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))")
+            end
         end
     end
 end
@@ -472,7 +476,7 @@ Return frequency limits of a `band`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+- `fs::Int64`: sampling rate
 - `band::Symbol`: band range name:
     - `:list`
     - `:total`
@@ -524,4 +528,40 @@ function band_frq(fs::Int64; band::Symbol)
     end
 
     return bf
+end
+
+"""
+    describe(obj)
+
+Return basic descriptive statistics of `obj.data`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+"""
+function describe(obj::NeuroAnalyzer.NEURO)
+    println(rpad("ch", 4) * 
+            rpad("label", 16) * 
+            rpad("type", 12) * 
+            rpad("unit", 6) * 
+            rpad("mean", 8) * 
+            rpad("sd", 8) * 
+            rpad("min", 8) * 
+            rpad("Q1", 8) * 
+            rpad("median", 8) * 
+            rpad("Q3", 8) * 
+            rpad("max", 8))
+    for idx in 1:channel_n(obj)
+        println(rpad(string(idx), 4) * 
+                rpad(labels(obj)[idx], 16) * 
+                rpad(obj.header.recording[:channel_type][idx], 12) * 
+                rpad(obj.header.recording[:units][idx], 6) * 
+                rpad(round(mean(obj.data[idx, :, :]), digits=3), 8) * 
+                rpad(round(std(obj.data[idx, :, :]), digits=3), 8) * 
+                rpad(round(minimum(obj.data[idx, :, :]), digits=3), 8) * 
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=3), 8) * 
+                rpad(round(median(obj.data[idx, :, :]), digits=3), 8) * 
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=3), 8) * 
+                rpad(round(maximum(obj.data[idx, :, :]), digits=3), 8))
+    end
 end

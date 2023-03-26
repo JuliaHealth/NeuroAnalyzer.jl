@@ -318,8 +318,9 @@ function import_snirf(file_name::String; n::Int64=0)
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
         ch_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
-        clabels[idx] = "S" * string(source_index[idx]) * "-D" * string(detector_index[idx])
+        clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx]) * " " * string(wavelengths[wavelength_index[idx]])
     end
+    clabels = replace.(clabels, ".0"=>"")
 
     # source and detector names
     if src_labels === nothing

@@ -21,7 +21,20 @@ Normalize.
 
 - `s::AbstractArray`
 - `n::Real`
-- `method::Symbol`: :zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :none
+- `method::Symbol`:
+    - `:zscore`: by z-score
+    - `:minmax`: in [-1, +1]
+    - `:log`: using log-transformation
+    - `:log10`: using log10-transformation
+    - `:neglog`: using -log-transformation
+    - `:neglog10`: using -log10-transformation
+    - `:neg`: in [0, -∞]
+    - `:pos`: in [0, +∞]
+    - `:perc`: in percentages
+    - `:gauss`: to Gaussian
+    - `:invroot`: in inverse root (1/sqrt(x))
+    - `:n`: in [0, n]
+    - `:none`
 
 # Returns
 
