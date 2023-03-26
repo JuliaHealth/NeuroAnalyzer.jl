@@ -80,15 +80,19 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     obj_new.header.recording[:channel_type] = vcat(obj_new.header.recording[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
     obj_new.header.recording[:units] = vcat(obj_new.header.recording[:units], repeat(["μM/mm"], 3 * size(dc, 3)))
 
+    #=
     for idx in 1:size(dc, 3)
         obj_new.header.recording[:channel_pairs] = vcat(obj_new.header.recording[:channel_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
     end
+    =#
 
     for idx in 1:size(dc, 3)
-        obj_new.header.recording[:labels] = vcat(obj_new.header.recording[:labels], repeat([unique(obj_new.header.recording[:labels])[idx]], 3))
+        # obj_new.header.recording[:labels] = vcat(obj_new.header.recording[:labels], repeat([unique(obj_new.header.recording[:labels])[idx]], 3))
+        obj_new.header.recording[:labels] = vcat(obj_new.header.recording[:labels], ["HbO $(obj.header.recording[:wavelengths][idx])", "HbR $(obj.header.recording[:wavelengths][idx])", "HbT $(obj.header.recording[:wavelengths][idx])"])
     end
+    obj_new.header.recording[:labels] = replace.(obj_new.header.recording[:labels], ".0"=>"")
 
-    obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
+    # obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
 
     reset_components!(obj_new)
     push!(obj_new.history, "od2conc(OBJ, ch=$ch)")
