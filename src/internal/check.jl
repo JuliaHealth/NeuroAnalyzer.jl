@@ -37,15 +37,23 @@ end
 
 function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
     c, _ = _get_component(obj, c)
-    for idx in cc
-        (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be in [1, $(size(c, 1))]."))
+    if ndims(c) == 1
+        cc != ndims(c) && throw(ArgumentError("cc must be in 1."))
+    else
+        for idx in cc
+            (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be in [1, $(size(c, 1))]."))
+        end
     end
     return nothing
 end
 
-function _check_cidx(c::Array{Float64, 3}, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
-    for idx in cc
-        (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be in [1, $(size(c, 1))]."))
+function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
+    if ndims(c) == 1
+        cc != ndims(c) && throw(ArgumentError("cc must be in 1."))
+    else
+        for idx in cc
+            (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be in [1, $(size(c, 1))]."))
+        end
     end
     return nothing
 end

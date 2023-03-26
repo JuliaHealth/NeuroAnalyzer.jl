@@ -509,6 +509,9 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
                     if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbt"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
                     end
+                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_aux"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS AUX channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
                     if ch_t[ch_tmp[cht_idx][1]] == "ref"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
                     end
@@ -566,6 +569,9 @@ function plot(obj::NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Ve
                 end
                 if ch_t[ch_tmp[1][1]] == "nirs_hbt"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                end
+                if ch_t[ch_tmp[1][1]] == "nirs_aux"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS AUX channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
                 if ch_t[ch_tmp[1][1]] == "ref"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -785,10 +791,19 @@ function plot(obj::NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, Abst
     end
 
     # select component channels, default is all channels
-    typeof(c) == Symbol && (c = _get_component(obj, c).c)
-    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
-    _check_cidx(c, c_idx)
-    clabels = _gen_clabels(c)[c_idx]
+    c_name = ""
+    if typeof(c) == Symbol
+        c_name = string(c)
+        c = NeuroAnalyzer._get_component(obj, c)
+    end
+    c_idx == 0 && (c_idx = NeuroAnalyzer._select_cidx(c, c_idx))
+    NeuroAnalyzer._check_cidx(c, c_idx)
+    if size(c, 1) == 1
+        clabels = c_name
+    else
+        clabels = NeuroAnalyzer._gen_clabels(c)[c_idx]
+        clabels = c_name .* clabels
+    end
     length(c_idx) == 1 && (clabels = [clabels])
 
     # get time vector

@@ -352,6 +352,7 @@ function import_snirf(file_name::String; n::Int64=0)
     stim_n > 1 && _info("Multiple stimulus SNIRF files are not supported yet.")
 
     s_id = "stim1"
+    stim_data = nothing
 
     # Name of the stimulus data
     k = "$n_id/$s_id/name"
@@ -365,7 +366,11 @@ function import_snirf(file_name::String; n::Int64=0)
     k = "$n_id/$s_id/dataLabels"
     k in keys(nirs) && (stim_labels = nirs[k])
 
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    if stim_data !== nothing
+        markers = DataFrame(:id=>stim_name, :start=>stim_data[1, :], :length=>stim_data[2, :], :description=>repeat(["stim"], size(stim_data, 2)), :channel=>repeat([0], size(stim_data, 2)))
+    else
+        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    end
 
     # auxiliary measurements
     aux_n = 0
@@ -381,7 +386,8 @@ function import_snirf(file_name::String; n::Int64=0)
     aux_n > 1 && _info("Multiple aux SNIRF files are not supported yet.")
 
     a_id = "aux$aux_n"
-
+    aux_data = nothing
+    
     # Name of the auxiliary channel
     k = "$n_id/$a_id/name"
     k in keys(nirs) && (aux_name = nirs[k][1])
@@ -392,7 +398,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # SI unit of the auxiliary channel
     k = "$n_id/$a_id/dataUnit"
-    k in keys(nirs) && (aux_data = nirs[k])
+    k in keys(nirs) && (aux_unit = nirs[k])
 
     # Time (in TimeUnit) for auxiliary data 
     k = "$n_id/$a_id/time"
@@ -401,6 +407,15 @@ function import_snirf(file_name::String; n::Int64=0)
     # Time offset of auxiliary channel data
     k = "$n_id/$a_id/timeOffset"
     k in keys(nirs) && (aux_timeoffset = nirs[k])
+
+    if aux_data !== nothing
+        data = vcat(data, aux_data)
+        for idx in 1:size(aux_data, 1)
+            push!(clabels, "AUX$idx")
+            push!(ch_type, "nirs_aux")
+            data_unit = vcat(data_unit, aux_unit)
+        end
+    end
 
     # locations
     pos2d = hcat(src_pos2d, detector_pos2d)

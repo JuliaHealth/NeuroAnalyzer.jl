@@ -308,7 +308,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
     _check_epochs(obj, ep)
 
     # select component c_idxs, default is all c_idxs
-    typeof(c) == Symbol && (c = _get_component(obj, c).c)
+    typeof(c) == Symbol && (c = _get_component(obj, c))
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     clabels = _gen_clabels(c)[c_idx]

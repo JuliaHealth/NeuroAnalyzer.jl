@@ -13,6 +13,7 @@ function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbo" && (units = "μM/mm")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbr" && (units = "μM/mm")
     lowercase(obj.header.recording[:channel_type][ch]) == "nirs_hbt" && (units = "μM/mm")
+    lowercase(obj.header.recording[:channel_type][ch]) == "nirs_aux" && (units = "")
     lowercase(obj.header.recording[:channel_type][ch]) == "other" && (units = "")
     return units
 end

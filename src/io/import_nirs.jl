@@ -17,7 +17,7 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 
 https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
-function import_nirs(file_name::String; n::Int64=0)
+function import_nirs(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     splitext(file_name)[2] == ".nirs" || throw(ArgumentError("This is not a NIRS file."))
@@ -31,8 +31,8 @@ function import_nirs(file_name::String; n::Int64=0)
 
     file_type = "NIRS"
 
-    "d" in keys(nirs) || _info("This does not seem to be a NIRS file.")
-    "t" in keys(nirs) || _info("This does not seem to be a NIRS file.")
+    "d" in keys(nirs) || _info("This is not a NIRS file.")
+    "t" in keys(nirs) || _info("This is not a NIRS file.")
 
     # time points
     time_pts = nirs["t"][:]
@@ -93,13 +93,33 @@ function import_nirs(file_name::String; n::Int64=0)
 
     # measurements
     data = Matrix(nirs["d"]')
+    ch_type = repeat(["nirs_int"], ch_n)
 
     # stimuli
     s = nirs["s"][:]
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    if s == zeros(length(time_pts))    
+        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    else
+        s_n = size(s, 2)
+        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+        for idx1 in 1:s_n
+            s_start = findall(s[:, idx1] .!= 0.0)
+            for idx2 in 1:length(s_start)
+                push!(markers, ("stim", s_start[idx2], 0, "stim", 0))
+            end
+        end
+    end
 
-    # auxiliary measurements
+    # add auxiliary measurements as AUX components
     aux = Matrix(nirs["aux"]')
+    if length(aux) > 0
+        data = vcat(data, aux)
+        for idx in 1:size(aux, 1)
+            push!(clabels, "AUX$idx")
+            push!(ch_type, "nirs_aux")
+            push!(data_unit, "")
+        end
+    end
 
     # locations
     src_pos3d = Matrix(probes["SrcPos"]')
@@ -145,7 +165,7 @@ function import_nirs(file_name::String; n::Int64=0)
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,
                                channel_pairs=ch_pairs,
-                               ch_type=repeat(["nirs_int"], ch_n),
+                               ch_type=ch_type,
                                clabels=clabels,
                                units=data_unit,
                                opt_labels=opt_labels,
