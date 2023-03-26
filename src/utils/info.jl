@@ -161,12 +161,12 @@ function signal_channels(obj::NeuroAnalyzer.NEURO)
 
     dt = Symbol(obj.header.recording[:data_type])
 
-    if dt !== :meg && dt !== :nirs
-        chs = get_channel_bytype(obj, type=dt)
-    elseif dt === :meg
+    if dt === :meg
         chs = union(get_channel_bytype(obj, type=[:meg, :mag, :grad]))
     elseif dt === :nirs
         chs = union(get_channel_bytype(obj, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi]))
+    else
+        chs = get_channel_bytype(obj, type=dt)
     end
 
     return chs
