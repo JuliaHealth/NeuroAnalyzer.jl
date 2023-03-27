@@ -261,6 +261,6 @@ delete_note!(e10)
 @test get_channel_bywl(n, wl=760) == 1:36
 
 @info "test 64/64: size()"
-@test size(eeg) == (24, 2560, 10)
+@test size(e10) == (24, 2560, 10)
 
 true

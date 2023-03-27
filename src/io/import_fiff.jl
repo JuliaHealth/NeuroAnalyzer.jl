@@ -219,9 +219,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                               gradiometers_planar=gradiometers_planar,
                               gradiometers_axial=gradiometers_axial,
                               coils=coils)
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

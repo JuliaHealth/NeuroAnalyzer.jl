@@ -159,12 +159,12 @@ p, _, _ = cps(zeros(100), ones(100), fs=10)
 @test normalize_n([1, 2, 3], 2) == [0.0, 1.0, 2.0]
 @test normalize([1, 2, 3], method=:zscore) == normalize_zscore([1, 2, 3])
 @test phases(ones(ComplexF64, 10)) == zeros(10)
-@test length(cwtspectrogram(rand(100), wt=wavelet(Morlet(π), β=2), fs=10, frq_lim=(0, 5))) == 2
+@test length(cwtspectrogram(rand(100), wt=wavelet(Morlet(2π), β=2), fs=10, frq_lim=(0, 5))) == 2
 @test size(dw_trans(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
 @test length(idw_trans(dw_trans(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
 @test round.(normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
-@test size(cw_trans(rand(100), wt=wavelet(Morlet(π), β=2))) == (14, 100)
-@test length(icw_trans(cw_trans(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
+@test size(cw_trans(rand(100), wt=wavelet(Morlet(2π), β=2))) == (14, 100)
+@test length(icw_trans(cw_trans(rand(100), wt=wavelet(Morlet(2π), β=2)), wt=wavelet(Morlet(2π), β=2), type=:pd)) == 100
 @test t2s(1, 256) == 256
 @test s2t(256, 256) == 1.0
 @test length(generate_noise(256, 10)) == 256

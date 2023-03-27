@@ -7,7 +7,7 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractMatrix`
 - `fs::Int64`: sampling rate
 - `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
@@ -18,7 +18,7 @@ Named tuple containing:
 - `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
-function fcoherence(s::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+function fcoherence(s::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
@@ -47,8 +47,8 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::AbstractMatrix`
+- `s2::AbstractMatrix`
 - `fs::Int64`
 - `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
@@ -58,12 +58,12 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 - `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
-function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    s = hcat(s1, s2)'
+    s = vcat(s1, s2)
 
     c = mt_coherence(s, fs=fs)
     f = Vector(c.freq)
@@ -81,6 +81,44 @@ function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Un
     c = c[1, 2, :]
     
     return (c=c, msc=c.^2, f=f)
+
+end
+
+"""
+    fcoherence(s1, s2; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `s1` and `s2`.
+
+# Arguments
+
+- `s1::AbstractArray`
+- `s2::AbstractArray`
+- `fs::Int64`
+- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
+
+# Returns
+
+- `c::Array{Float64, 3}`: coherence
+- `msc::Array{Float64, 3}`: MSC
+- `f::Vector{Float64}`: frequencies
+"""
+function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+
+    ep_n = size(s1, 3)
+    
+    c, msc, f = fcoherence(s1[:, :, 1], s2[:, :, 1], fs=fs, frq_lim=frq_lim)
+
+    c = zeros(length(c), ep_n)
+    msc = zeros(length(msc), ep_n)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        c[:, ep_idx], msc[:, ep_idx], _ = fcoherence(s1[:, :, ep_idx], s2[:, :, ep_idx], fs=fs, frq_lim=frq_lim)
+    end
+
+    return (c=c, msc=msc, f=f)
 
 end
 

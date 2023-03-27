@@ -368,7 +368,12 @@ function import_snirf(file_name::String; n::Int64=0)
     k in keys(nirs) && (stim_labels = nirs[k])
 
     if stim_data !== nothing
-        markers = DataFrame(:id=>stim_name, :start=>stim_data[1, :], :length=>stim_data[2, :], :description=>repeat(["stim"], size(stim_data, 2)), :channel=>repeat([0], size(stim_data, 2)))
+        markers = DataFrame(:id=>repeat([""], size(stim_data, 2)), :start=>stim_data[1, :], :length=>stim_data[2, :], :description=>stim_name, :channel=>repeat([0], size(stim_data, 2)))
+        # generate unique IDs
+        desc = unique(markers[!, :description])
+        for idx1 in 1:nrow(markers), idx2 in 1:length(desc)
+            markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
+        end
     else
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     end
@@ -488,9 +493,7 @@ function import_snirf(file_name::String; n::Int64=0)
                                units=data_unit,
                                opt_labels=opt_labels,
                                sampling_rate=round(Int64, sampling_rate))
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

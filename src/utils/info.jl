@@ -543,30 +543,30 @@ Return basic descriptive statistics of `obj.data`.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function describe(obj::NeuroAnalyzer.NEURO)
-    println("< " * rpad(obj.header.recording[:data_type], 8) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) * sr(obj)) s) >")
+    println("< " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
     println(rpad("ch", 4) * 
             rpad("label", 16) * 
             rpad("type", 12) * 
             rpad("unit", 6) * 
-            rpad("mean", 8) * 
-            rpad("sd", 8) * 
-            rpad("min", 8) * 
-            rpad("Q1", 8) * 
-            rpad("median", 8) * 
-            rpad("Q3", 8) * 
-            rpad("max", 8))
+            rpad("mean", 10) * 
+            rpad("sd", 10) * 
+            rpad("min", 10) * 
+            rpad("Q1", 10) * 
+            rpad("median", 10) * 
+            rpad("Q3", 10) * 
+            rpad("max", 10))
     for idx in 1:channel_n(obj)
         println(rpad(string(idx), 4) * 
                 rpad(labels(obj)[idx], 16) * 
                 rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) * 
                 rpad(obj.header.recording[:units][idx], 6) * 
-                rpad(round(mean(obj.data[idx, :, :]), digits=3), 8) * 
-                rpad(round(std(obj.data[idx, :, :]), digits=3), 8) * 
-                rpad(round(minimum(obj.data[idx, :, :]), digits=3), 8) * 
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=3), 8) * 
-                rpad(round(median(obj.data[idx, :, :]), digits=3), 8) * 
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=3), 8) * 
-                rpad(round(maximum(obj.data[idx, :, :]), digits=3), 8))
+                rpad(round(mean(obj.data[idx, :, :]), digits=3), 10) * 
+                rpad(round(std(obj.data[idx, :, :]), digits=3), 10) * 
+                rpad(round(minimum(obj.data[idx, :, :]), digits=3), 10) * 
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=3), 10) * 
+                rpad(round(median(obj.data[idx, :, :]), digits=3), 10) * 
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=3), 10) * 
+                rpad(round(maximum(obj.data[idx, :, :]), digits=3), 10))
     end
 end
 

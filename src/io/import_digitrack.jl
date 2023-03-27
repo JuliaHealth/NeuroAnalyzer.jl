@@ -18,13 +18,14 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
  
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    buffer = nothing
+    fid = nothing
     try
-        buffer = readlines(file_name)
+        fid = open(file_name)
     catch
         throw(ArgumentError("File $file_name cannot be loaded."))
     end
-    any(occursin.("Start time ", buffer)) || throw(ArgumentError("File $file_name is not a Digitrack file."))
+    buffer = readline(fid)
+    occursin.("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
 
     file_type = "Digitrack"
 
@@ -38,9 +39,6 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     buffer = replace(buffer, "Sampling rate " => "")
     buffer = replace(buffer, "," => ".")
     sampling_rate = round(Int64, parse(Float64, replace(buffer, " Hz" => "")))
-
-    data_records = -1
-    data_records_duration  = -1
 
     buffer = readline(fid)
 
@@ -71,7 +69,6 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
         channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
-    has_markers, markers_channel = _has_markers(channel_type)
 
     buffer = readlines(fid)
 
@@ -117,9 +114,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
                               prefiltering=prefiltering[channel_order],
                               sampling_rate=sampling_rate,
                               gain=gain[channel_order])
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

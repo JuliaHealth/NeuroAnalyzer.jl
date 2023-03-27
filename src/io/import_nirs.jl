@@ -106,8 +106,12 @@ function import_nirs(file_name::String)
         for idx1 in 1:s_n
             s_start = findall(s[:, idx1] .!= 0.0)
             for idx2 in 1:length(s_start)
-                push!(markers, ("stim", s_start[idx2], 0, "stim", 0))
+                push!(markers, ("", s_start[idx2], 0, "stim", 0))
             end
+        end
+        desc = unique(markers[!, :description])
+        for idx1 in 1:nrow(markers), idx2 in 1:length(desc)
+            markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
         end
     end
 
@@ -171,9 +175,7 @@ function import_nirs(file_name::String)
                                units=data_unit,
                                opt_labels=opt_labels,
                                sampling_rate=sampling_rate)
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

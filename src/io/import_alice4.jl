@@ -307,9 +307,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               prefiltering=prefiltering[channel_order],
                               sampling_rate=max_sampling_rate,
                               gain=gain[channel_order])
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

@@ -111,15 +111,33 @@ function __init__()
     # load preferences
     @info "Loading preferences"
     if Sys.isunix() || Sys.isapple()
-        def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
+        global plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
     elseif Sys.iswindows()
-        def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
+        global plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
     end
     global use_cuda = @load_preference("use_cuda", false)
     global progress_bar = @load_preference("progress_bar", true)
-    global plugins_path = @load_preference("plugins_path", def_plugins_path)
     global verbose = @load_preference("verbose", true)
-    na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
+    na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose)
+
+    # setup resources
+    @info "Preparing resources"
+    if Sys.isunix() || Sys.isapple()
+        global res_path = "$(homedir())/NeuroAnalyzer/resources/"
+    elseif Sys.iswindows()
+        global res_path = "$(homedir())\\NeuroAnalyzer\\resources\\"
+    end
+    isdir(res_path) == false && mkdir(res_path)
+    isfile("$(res_path)head_t.png") || run(`cp resources/head_t.png $res_path`)
+    isfile("$(res_path)head_s.png") || run(`cp resources/head_s.png $res_path`)
+    isfile("$(res_path)head_f.png") || run(`cp resources/head_f.png $res_path`)
+    isfile("$(res_path)head_t2.png") || run(`cp resources/head_t2.png $res_path`)
+    isfile("$(res_path)head_s2.png") || run(`cp resources/head_s2.png $res_path`)
+    isfile("$(res_path)head_f2.png") || run(`cp resources/head_f2.png $res_path`)
+    isfile("$(res_path)head_b2.png") || run(`cp resources/head_b2.png $res_path`)
+    isfile("$(res_path)brain_f.png") || run(`cp resources/brain_f.png $res_path`)
+    isfile("$(res_path)brain_s.png") || run(`cp resources/brain_s.png $res_path`)
+    isfile("$(res_path)brain_t.png") || run(`cp resources/brain_t.png $res_path`)
 
     # load plugins
     @info "Loading plugins"

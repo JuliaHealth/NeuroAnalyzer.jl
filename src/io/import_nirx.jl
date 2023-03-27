@@ -1,7 +1,7 @@
 export import_nirx
 
 """
-    import_nirx(file_name; n)
+    import_nirx(file_name)
 
 Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnalyzer.NEURO` object.
 
@@ -339,9 +339,7 @@ function import_nirx(file_name::String)
                                units=data_unit,
                                opt_labels=opt_labels,
                                sampling_rate=sampling_rate)
-    e = _create_experiment(experiment_name=string(study_type1),
-                           experiment_notes=string(study_type2),
-                           experiment_design=string(study_type3))
+    e = _create_experiment(name=string(study_type1), notes=string(study_type2), design=string(study_type3))
 
     hdr = _create_header(s,
                          r,

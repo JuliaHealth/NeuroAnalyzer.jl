@@ -119,19 +119,19 @@ export_locs(eeg, file_name="test_out.locs")
 isfile("test_out.locs") && rm("test_out.locs")
 
 @info "test 23/25: import_snirf()"
-n = import_snirf("test/files/fnirs-test-snirf.snirf")
+n = import_snirf("files/fnirs-test-snirf.snirf")
 @test typeof(n) == NeuroAnalyzer.NEURO
 @test n.header.recording[:data_type] == "nirs"
 @test n.header.recording[:file_type] == "SNIRF"
 
 @info "test 24/25: import_nirs()"
-n = import_nirs("test/files/fnirs-test-nirs.nirs")
+n = import_nirs("files/fnirs-test-nirs.nirs")
 @test typeof(n) == NeuroAnalyzer.NEURO
 @test n.header.recording[:data_type] == "nirs"
 @test n.header.recording[:file_type] == "NIRS"
 
 @info "test 25/25: import_nirx()"
-n = import_nirx("test/files/nirx/NIRS-2020-08-18_001.hdr")
+n = import_nirx("files/nirx/NIRS-2020-08-18_001.hdr")
 @test typeof(n) == NeuroAnalyzer.NEURO
 @test n.header.recording[:data_type] == "nirs"
 @test n.header.recording[:file_type] == "NIRX"

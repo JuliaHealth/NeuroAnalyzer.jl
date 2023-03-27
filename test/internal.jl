@@ -37,7 +37,7 @@ r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size
 @test typeof(r) == Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], gradiometers_planar=[0], gradiometers_axial=[0], coils=[0])
 @test typeof(r) == Dict{Symbol, Any}
-e = NeuroAnalyzer._create_experiment(experiment_name="a", experiment_notes="a", experiment_design="a")
+e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
 @test typeof(e) == Dict{Symbol, String}
 hdr = NeuroAnalyzer._create_header(s, r, e)
 @test typeof(hdr) == NeuroAnalyzer.HEADER

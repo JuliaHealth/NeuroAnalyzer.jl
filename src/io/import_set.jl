@@ -97,9 +97,7 @@ function import_set(file_name::String; detect_type::Bool=true)
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
                               gain=gain)
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

@@ -199,12 +199,12 @@ c, msc, f = fcoherence(rand(10, 100), fs=10)
 @test size(msc) == (10, 10, 65)
 @test length(f) == 65
 c, msc, f = fcoherence(rand(10, 100), rand(10, 100), fs=10)
-@test length(c) == 9
-@test length(msc) == 9
-@test length(f) == 9
+@test length(c) == 65
+@test length(msc) == 65
+@test length(f) == 65
 c, msc, f = fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
-@test length(c) == 2049
-@test length(msc) == 2049
+@test size(c) == (2049, 1)
+@test size(msc) == (2049, 1)
 @test length(f) == 2049
 
 @info "test 17/48: frqinst()"
@@ -491,8 +491,8 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:stft)
 @test length(sf) == 1281
 @test length(st) == 37
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:cwt)
-@test size(sp) == (18, 2560, 19, 10)
-@test length(sf) == 18
+@test size(sp) == (13, 2560, 19, 10)
+@test length(sf) == 13
 @test length(st) == 2560
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:mt)
 @test size(sp) == (257, 15, 19, 10)
@@ -587,9 +587,9 @@ c, mc, ic = NeuroAnalyzer.tcoherence(rand(10, 100), rand(10, 100))
 @test size(mc) == (10, 100)
 @test size(ic) == (10, 100)
 c, mc, ic = NeuroAnalyzer.tcoherence(e10, e10, ch1=1:10, ch2=1:10, ep1=1, ep2=2)
-@test size(c) == (10, 2560)
-@test size(mc) == (10, 2560)
-@test size(ic) == (10, 2560)
+@test size(c) == (10, 2560, 1)
+@test size(mc) == (10, 2560, 1)
+@test size(ic) == (10, 2560, 1)
 
 @info "test 44/48: tkeo()"
 @test NeuroAnalyzer.tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]

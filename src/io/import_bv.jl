@@ -159,6 +159,13 @@ function import_bv(file_name::String; detect_type::Bool=true)
             m_ch[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[5])
         end
         markers = DataFrame(:id=>m_id, :start=>m_pos, :length=>m_len, :description=>m_desc, :channel=>m_ch)
+        if markers[!, :id] == repeat([""], nrow(markers))
+            # generate unique IDs
+            desc = unique(markers[!, :description])
+            for idx1 in 1:nrow(markers), idx2 in 1:length(desc)
+                markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
+            end
+        end
     else
         has_markers = false
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
@@ -247,9 +254,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
                               prefiltering=prefiltering[channel_order],
                               sampling_rate=sampling_rate,
                               gain=gain[channel_order])
-    e = _create_experiment(experiment_name="",
-                           experiment_notes="",
-                           experiment_design="")
+    e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
                          r,

@@ -37,9 +37,9 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
     brain_front_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_front, uv = brain_front_uvs, normals = normals(brain_front, brain_front_fs)), brain_front_fs)
 
     # load textures
-    brain_top_texture = FileIO.load("resources/brain_top.png")
-    brain_side_texture = FileIO.load("resources/brain_side.png")
-    brain_front_texture = FileIO.load("resources/brain_front.png")
+    brain_top_texture = FileIO.load(res_path * "brain_t.png")
+    brain_side_texture = FileIO.load(res_path * "brain_s.png")
+    brain_front_texture = FileIO.load(res_path * "brain_f.png")
 
     # get dipole position
     x = d.pos[1]

@@ -72,11 +72,11 @@ function _create_recording_nirs(;data_type::String, file_name::String, file_size
                 :sampling_rate=>sampling_rate)
 end
 
-function _create_experiment(;experiment_name::String, experiment_notes::String, experiment_design::String)
+function _create_experiment(;name::String, notes::String, design::String)
 
-    return Dict(:experiment_name=>experiment_name,
-                :experiment_notes=>experiment_notes,
-                :experiment_design=>experiment_design)
+    return Dict(:name=>name,
+                :notes=>notes,
+                :design=>design)
 end
 
 function _create_header(subject::Dict, recording::Dict, experiment::Dict)
