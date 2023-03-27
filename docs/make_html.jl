@@ -1,4 +1,4 @@
-@info "Generate Markdown documentation"
+@info "Generate HTML documentation"
 
 using Pkg
 Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])

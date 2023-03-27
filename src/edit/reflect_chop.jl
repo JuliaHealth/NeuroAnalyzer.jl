@@ -107,7 +107,7 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
 end
 
 """
-    chop!(obj; c, v)
+    chop!(obj; v)
 
 Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
 

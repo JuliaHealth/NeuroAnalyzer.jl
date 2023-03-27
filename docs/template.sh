@@ -5,65 +5,65 @@ echo ""
 echo "## NeuroAnalyzer"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/na.jl | grep ^function | sed s/"function "//g
+cat ../src/na.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Utils"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/utils/*.jl | grep ^function | sed s/"function "//g
+cat ../src/utils/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## IO"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/io/*.jl | grep ^function | sed s/"function "//g
+cat ../src/io/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Edit"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/edit/*.jl | grep ^function | sed s/"function "//g
+cat ../src/edit/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Process"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/process/*.jl | grep ^function | sed s/"function "//g
+cat ../src/process/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Locs"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/locs/*.jl | grep ^function | sed s/"function "//g
+cat ../src/locs/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Analyze"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/analyze/*.jl | grep ^function | sed s/"function "//g
+cat ../src/analyze/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Plot"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/plots/*.jl | grep ^function | sed s/"function "//g
+cat ../src/plots/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Statistics"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/statistics/*.jl | grep ^function | sed s/"function "//g
+cat ../src/statistics/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## Study"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/study/*.jl | grep ^function | sed s/"function "//g
+cat ../src/study/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## NIBS"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/stim/*.jl | grep ^function | sed s/"function "//g
+cat ../src/stim/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"

@@ -11,6 +11,9 @@ export labels
 export info
 export channel_cluster
 export band_frq
+export describe
+export size
+
 
 """
     sr(obj)
@@ -540,6 +543,7 @@ Return basic descriptive statistics of `obj.data`.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function describe(obj::NeuroAnalyzer.NEURO)
+    println("< " * rpad(obj.header.recording[:data_type], 8) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) * sr(obj)) s) >")
     println(rpad("ch", 4) * 
             rpad("label", 16) * 
             rpad("type", 12) * 
@@ -554,7 +558,7 @@ function describe(obj::NeuroAnalyzer.NEURO)
     for idx in 1:channel_n(obj)
         println(rpad(string(idx), 4) * 
                 rpad(labels(obj)[idx], 16) * 
-                rpad(obj.header.recording[:channel_type][idx], 12) * 
+                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) * 
                 rpad(obj.header.recording[:units][idx], 6) * 
                 rpad(round(mean(obj.data[idx, :, :]), digits=3), 8) * 
                 rpad(round(std(obj.data[idx, :, :]), digits=3), 8) * 

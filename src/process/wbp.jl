@@ -1,4 +1,5 @@
 export wbp
+export wbp!
 
 """
     wbp(s; pad, frq, fs, ncyc)
