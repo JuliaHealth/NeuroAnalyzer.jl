@@ -436,11 +436,12 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
+    (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) && throw(ArgumentError("All channels must be of the same type."))
+
     type in [:normal, :mean] && length(ch) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one channel must be specified."))
 
     # check channels
     _check_channels(obj, ch)
-    _check_channels(signal_channels(obj), ch)
 
     # set units
     units = _set_units(obj, ch[1])
