@@ -1,3 +1,15 @@
+export na_info
+export na_plugins_reload
+export na_plugins_list
+export na_plugins_remove
+export na_plugins_install
+export na_plugins_update
+export na_set_use_cuda
+export na_set_progress_bar
+export na_set_prefs
+export na_set_verbose
+export na_version
+
 """
     na_info()
 
@@ -13,6 +25,7 @@ function na_info()
         println("             CUDA: not available (use_cuda = $use_cuda)")
     end
     println("     Plugins path: $plugins_path")
+    println("   Resources path: $res_path")
     println("Show progress bar: $progress_bar")
     println("          Verbose: $verbose")
     println("          Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
@@ -112,15 +125,18 @@ end
 List NeuroAnalyzer plugins.
 """
 function na_plugins_list()
+
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
-    @info "Available plugins:"
+    println("Available plugins:")
     for idx in 1:length(plugins)
-        println("\t$idx. $(replace(plugins[idx]))")
+        println("$idx. $(replace(plugins[idx]))")
     end
     cd(path_tmp)
+
 end
 
 """
@@ -133,8 +149,10 @@ Remove NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin name
 """
 function na_plugins_remove(plugin::String)
+
     _info("This will remove the whole $plugin directory, along with its file contents.")
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
@@ -146,6 +164,7 @@ function na_plugins_remove(plugin::String)
     end
     na_plugins_reload()
     cd(path_tmp)
+
 end
 
 """
@@ -158,7 +177,9 @@ Install NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin Git repository URL
 """
 function na_plugins_install(plugin::String)
+
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+
     path_tmp = pwd()
     cd(plugins_path)
     try
@@ -168,6 +189,7 @@ function na_plugins_install(plugin::String)
     end
     na_plugins_reload()
     cd(path_tmp)
+
 end
 
 """
@@ -180,7 +202,9 @@ Install NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin to update; if empty, update all
 """
 function na_plugins_update(plugin::Union{String, Nothing}=nothing)
+
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
@@ -207,6 +231,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
     end
     na_plugins_reload()
     cd(path_tmp)
+
 end
 
 """
@@ -219,8 +244,10 @@ Change `use_cuda` preference.
 - `use_cuda::Bool`: value
 """
 function na_set_use_cuda(use_cuda::Bool)
+
     @set_preferences!("use_cuda" => use_cuda)
     _info("New option value set, restart your Julia session for this change to take effect!")
+
 end
 
 """
@@ -233,25 +260,10 @@ Change `progress_bar` preference.
 - `progress_bar::Bool`: value
 """
 function na_set_progress_bar(progress_bar::Bool)
+
     @set_preferences!("progress_bar" => progress_bar)
     _info("New option value set, restart your Julia session for this change to take effect!")
-end
 
-"""
-    na_set_plugins_path(plugins_path)
-
-Change `plugins_path` preference.
-
-# Arguments
-
-- `plugins_path::String`: value
-"""
-function na_set_plugins_path(plugins_path::String)
-    plugins_path = expanduser(plugins_path)
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    plugins_path[end] == '/' || (plugins_path *= '/')
-    @set_preferences!("plugins_path" => plugins_path)
-    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -262,18 +274,15 @@ Save NeuroAnalyzer preferences.
 # Arguments
 
 - `use_cuda::Bool`
-- `plugins_path::String`
 - `progress_bar::Bool`
 - `verbose::Bool`
 """
-function na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool, verbose::Bool)
-    plugins_path = expanduser(plugins_path)
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    plugins_path[end] == '/' || (plugins_path *= '/')
+function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)
+
     @set_preferences!("use_cuda" => use_cuda)
-    @set_preferences!("plugins_path" => plugins_path)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
+
 end
 
 """
@@ -286,8 +295,10 @@ Change `verbose` preference.
 - `verbose::Bool`: value
 """
 function na_set_verbose(verbose::Bool)
+
     @set_preferences!("verbose" => verbose)
     _info("New option value set, restart your Julia session for this change to take effect!")
+
 end
 
 """
@@ -300,5 +311,7 @@ Convert NeuroAnalyzer version to string.
 - `na_ver::String`
 """
 function na_version()
+
     return string(Int(na_ver.major)) * "." * string(Int(na_ver.minor)) * "." * string(Int(na_ver.patch))
+
 end

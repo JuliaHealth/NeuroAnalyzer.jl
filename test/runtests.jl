@@ -2,24 +2,37 @@ using NeuroAnalyzer
 using Test
 
 @testset "runtests.jl" begin
-    println("\tRunning low_level.jl tests.. ")
-    @test include("low_level.jl")
+    @info "Running internal.jl tests"
+    @test include("internal.jl")
 
-    println("\tRunning statistics.jl tests.. ")
+    @info "Running io.jl tests"
+    @test include("io.jl")
+
+    @info "Running utils.jl tests"
+    @test include("utils.jl")
+
+    @info "Running locs.jl tests"
+    @test include("locs.jl")
+
+    @info "Running edit.jl tests"
+    @test include("edit.jl")
+
+    @info "Running process.jl tests"
+    @test include("process.jl")
+
+    @info "Running analyze.jl tests"
+    @test include("analyze.jl")
+
+    @info "Running plots.jl tests"
+    @test include("plots.jl")
+
+    @info "Running statistics.jl tests"
     @test include("statistics.jl")
 
-    println("\tRunning eeg_io.jl tests.. ")
-    @test include("eeg_io.jl")
+    @info "Running stim.jl tests"
+    @test include("stim.jl")
 
-    println("\tRunning eeg.jl tests.. ")
-    @test include("eeg.jl")
+    @info "Running study.jl tests"
+    @test include("study.jl")
 
-    println("\tRunning eeg_plots.jl tests.. ")
-    @test include("eeg_plots.jl")
-
-    println("\tRunning eeg_study.jl tests.. ")
-    @test include("eeg_study.jl")
-
-    println("\tRunning tes.jl tests.. ")
-    @test include("tes.jl")
 end
