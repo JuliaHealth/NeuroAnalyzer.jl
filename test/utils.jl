@@ -2,8 +2,8 @@ using NeuroAnalyzer
 using Test
 
 @info "Initializing"
-eeg = import_edf("files/eeg-test-edf.edf")
-n = import_snirf("files/fnirs-test-snirf.snirf")
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
+n = import_snirf(joinpath(testfiles_path, "fnirs-test-snirf.snirf"))
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]

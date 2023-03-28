@@ -4,10 +4,10 @@ using GLMakie
 using Test
  
 @info "Initializing"
-eeg = import_edf("files/eeg-test-edf.edf")
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, ep=1:10)
-load_locs!(e10, file_name="../locs/standard-10-20-cap19-elmiko.ced")
+load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 
 isfile("test.png") && rm("test.png")
 

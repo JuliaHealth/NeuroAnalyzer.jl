@@ -3,8 +3,8 @@ using Test
 using DataFrames
 
 @info "Initializing"
-eeg = import_edf("files/eeg-test-edf.edf")
-locs = import_locs("files/standard-10-20-cap19-elmiko.ced")
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
+locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 
 @info "test 1/21: add_locs()"
 eeg_tmp = add_locs(eeg, locs=locs)

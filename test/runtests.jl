@@ -1,5 +1,8 @@
 using NeuroAnalyzer
 using Test
+using Artifacts
+
+global testfiles_path = joinpath(artifact"test-files", "test-files")
 
 @testset "runtests.jl" begin
     @info "Running internal.jl tests"

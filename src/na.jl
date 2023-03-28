@@ -99,20 +99,11 @@ function na_plugins_reload()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     for idx1 in 1:length(plugins)
-        if Sys.isunix() || Sys.isapple()
-            plugin = readdir(plugins[idx1] * "/src/")
-        elseif Sys.iswindows()
-            plugin = readdir(plugins[idx1] * "\\src\\")
-        end
+        plugin = readdir(joinpath(plugins[idx1], "src"))
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
-                if Sys.isunix() || Sys.isapple()
-                    include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
-                    _info("Loaded: $(plugin[idx2])")
-                elseif Sys.iswindows()
-                    include(plugins_path * plugins[idx1] * "\\src\\" * plugin[idx2])
-                    _info("Loaded: $(plugin[idx2])")
-                end
+                include(joinpath(plugins_path, plugins[idx1], "src", plugin[idx2]))
+                _info("Loaded: $(plugin[idx2])")
             end
         end
     end

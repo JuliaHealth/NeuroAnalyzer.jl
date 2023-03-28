@@ -4,7 +4,7 @@ using Wavelets
 using ContinuousWavelets
 
 @info "Initializing"
-eeg = import_edf("files/eeg-test-edf.edf")
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]

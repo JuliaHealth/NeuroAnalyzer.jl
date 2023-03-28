@@ -111,11 +111,6 @@ function __init__()
 
     # load preferences
     @info "Loading preferences"
-    if Sys.isunix() || Sys.isapple()
-        global plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
-    elseif Sys.iswindows()
-        global plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
-    end
     global use_cuda = @load_preference("use_cuda", false)
     global progress_bar = @load_preference("progress_bar", true)
     global verbose = @load_preference("verbose", true)
@@ -123,25 +118,11 @@ function __init__()
 
     # setup resources
     @info "Preparing resources"
-    if Sys.isunix() || Sys.isapple()
-        global res_path = artifact"resources" * "/resources/"
-    elseif Sys.iswindows()
-        global res_path = artifact"resources" * "\\resources\\"
-    end
-    # isdir(res_path) == false && mkdir(res_path)
-    # isfile("$(res_path)head_t.png") || run(`cp resources/head_t.png $res_path`)
-    # isfile("$(res_path)head_s.png") || run(`cp resources/head_s.png $res_path`)
-    # isfile("$(res_path)head_f.png") || run(`cp resources/head_f.png $res_path`)
-    # isfile("$(res_path)head_t2.png") || run(`cp resources/head_t2.png $res_path`)
-    # isfile("$(res_path)head_s2.png") || run(`cp resources/head_s2.png $res_path`)
-    # isfile("$(res_path)head_f2.png") || run(`cp resources/head_f2.png $res_path`)
-    # isfile("$(res_path)head_b2.png") || run(`cp resources/head_b2.png $res_path`)
-    # isfile("$(res_path)brain_f.png") || run(`cp resources/brain_f.png $res_path`)
-    # isfile("$(res_path)brain_s.png") || run(`cp resources/brain_s.png $res_path`)
-    # isfile("$(res_path)brain_t.png") || run(`cp resources/brain_t.png $res_path`)
+    global res_path = joinpath(artifact"resources", "resources")
 
     # load plugins
     @info "Loading plugins"
+    global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
     isdir(plugins_path) || mkdir(plugins_path)
     na_plugins_reload()
 
