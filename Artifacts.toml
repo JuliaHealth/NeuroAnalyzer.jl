@@ -1,0 +1,6 @@
+[resources]
+git-tree-sha1 = "6727c373ccc88eb1a7f0908e67404312ef0eb048"
+
+    [[resources.download]]
+    url = "https://neuroanalyzer.org/artifacts/resources.tar.gz"
+    sha256 = "77fd2c3d0b0380e1203872506622625103ef72da63ba6fae4996b0b0b594a4cc"

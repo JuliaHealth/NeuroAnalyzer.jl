@@ -14,6 +14,7 @@ progress_bar = nothing
 plugins_path = nothing
 verbose = nothing
 
+using Artifacts
 using ColorSchemes
 using CSV
 using CubicSplines
@@ -123,21 +124,21 @@ function __init__()
     # setup resources
     @info "Preparing resources"
     if Sys.isunix() || Sys.isapple()
-        global res_path = "$(homedir())/NeuroAnalyzer/resources/"
+        global res_path = artifact"resources" * "/resources/"
     elseif Sys.iswindows()
-        global res_path = "$(homedir())\\NeuroAnalyzer\\resources\\"
+        global res_path = artifact"resources" * "\\resources\\"
     end
-    isdir(res_path) == false && mkdir(res_path)
-    isfile("$(res_path)head_t.png") || run(`cp resources/head_t.png $res_path`)
-    isfile("$(res_path)head_s.png") || run(`cp resources/head_s.png $res_path`)
-    isfile("$(res_path)head_f.png") || run(`cp resources/head_f.png $res_path`)
-    isfile("$(res_path)head_t2.png") || run(`cp resources/head_t2.png $res_path`)
-    isfile("$(res_path)head_s2.png") || run(`cp resources/head_s2.png $res_path`)
-    isfile("$(res_path)head_f2.png") || run(`cp resources/head_f2.png $res_path`)
-    isfile("$(res_path)head_b2.png") || run(`cp resources/head_b2.png $res_path`)
-    isfile("$(res_path)brain_f.png") || run(`cp resources/brain_f.png $res_path`)
-    isfile("$(res_path)brain_s.png") || run(`cp resources/brain_s.png $res_path`)
-    isfile("$(res_path)brain_t.png") || run(`cp resources/brain_t.png $res_path`)
+    # isdir(res_path) == false && mkdir(res_path)
+    # isfile("$(res_path)head_t.png") || run(`cp resources/head_t.png $res_path`)
+    # isfile("$(res_path)head_s.png") || run(`cp resources/head_s.png $res_path`)
+    # isfile("$(res_path)head_f.png") || run(`cp resources/head_f.png $res_path`)
+    # isfile("$(res_path)head_t2.png") || run(`cp resources/head_t2.png $res_path`)
+    # isfile("$(res_path)head_s2.png") || run(`cp resources/head_s2.png $res_path`)
+    # isfile("$(res_path)head_f2.png") || run(`cp resources/head_f2.png $res_path`)
+    # isfile("$(res_path)head_b2.png") || run(`cp resources/head_b2.png $res_path`)
+    # isfile("$(res_path)brain_f.png") || run(`cp resources/brain_f.png $res_path`)
+    # isfile("$(res_path)brain_s.png") || run(`cp resources/brain_s.png $res_path`)
+    # isfile("$(res_path)brain_t.png") || run(`cp resources/brain_t.png $res_path`)
 
     # load plugins
     @info "Loading plugins"
