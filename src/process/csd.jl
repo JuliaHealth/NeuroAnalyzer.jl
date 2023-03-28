@@ -24,6 +24,7 @@ Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a ge
 """
 function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
 
+    _check_datatype(obj, [:eeg])
     _has_locs(obj) == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 
     m < 2 || m > 10 && throw(ArgumentError("m must be in [2, 10]."))

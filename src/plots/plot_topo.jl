@@ -49,7 +49,7 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate(s, loc_x, loc_y, 100, imethod, nmethod)
+    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
 
     p = Plots.plot(grid=true,
                    framestyle=:none,

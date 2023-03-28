@@ -44,7 +44,7 @@ hdr = NeuroAnalyzer._create_header(s, r, e)
 r = NeuroAnalyzer._fir_response(rand(100), range(0, stop=π, length=1024))
 @test typeof(r) == Vector{ComplexF32}
 @test length(r) == 1024
-s, x, y = NeuroAnalyzer._interpolate(rand(10), rand(10), rand(10))
+s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 @test size(s) == (100, 100)
 @test length(x) == 100
 @test length(y) == 100

@@ -222,8 +222,9 @@ Return NIRS channel number(s) for wavelength `wl`.
 """
 function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
 
-    obj.header.recording[:data_type] == "nirs" || throw(ArgumentError("This operation only works for NIRS objects."))
+    _check_datatype(obj, [:nirs])
     wl in obj.header.recording[:wavelengths] || throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
+
     wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
     ch_idx = Int64[]
     for idx in 1:length(obj.header.recording[:wavelength_index])
