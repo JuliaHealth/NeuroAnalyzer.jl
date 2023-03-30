@@ -40,59 +40,67 @@ function _make_epochs(signal::Array{<:Real, 3}; ep_n::Union{Int64, Nothing}=noth
     return epochs
 end
 
-function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, ep_len::Int64)
+function _make_epochs_bymarkers(signal::Array{<:Real, 3}; marker::String, markers::DataFrame, marker_start::Vector{Int64}, ep_offset::Int64, ep_len::Int64)
 
     if size(signal, 3) > 1
         _info("Signal has already been epoched, parts of the signal might have been removed.")
         signal = reshape(signal, ch_n, (size(signal, 2) * size(signal, 3)), 1)
     end
 
-    marker_n = length(marker_start)
-    epoch_start = marker_start .- epoch_offset
-    epoch_end = epoch_start .+ ep_len .- 1
+    ep_offset < 1 && throw(ArgumentError("ep_offset must be ≥ 1."))
+    ep_len < 1 && throw(ArgumentError("ep_len must be ≥ 1."))
+    (ep_offset + ep_len > size(signal, 2)) && throw(ArgumentError("ep_offset + ep_len must be ≤ signal length $(size(signal, 2))."))
+
+    mrk_n = length(marker_start)
+    ep_start = @. marker_start - ep_offset
+    ep_end = @. ep_start + ep_len - 1
 
     # delete epochs outside signal limits
-    for marker_idx in marker_n:-1:1
-        if epoch_start[marker_idx] < 1
-            deleteat!(epoch_start, marker_idx)
-            deleteat!(epoch_end, marker_idx)
-            marker_n -= 1
-        elseif epoch_end[marker_idx] > size(signal, 2)
-            deleteat!(epoch_start, marker_idx)
-            deleteat!(epoch_end, marker_idx)
-            marker_n -= 1
+    for mrk_idx in mrk_n:-1:1
+        if ep_start[mrk_idx] < 1
+            deleteat!(ep_start, mrk_idx)
+            deleteat!(ep_end, mrk_idx)
+        elseif ep_end[mrk_idx] > size(signal, 2)
+            deleteat!(ep_start, mrk_idx)
+            deleteat!(ep_end, mrk_idx)
         end
     end
+    mrk_n = length(ep_start)
 
-    (epoch_offset < 1) && throw(ArgumentError("epoch_offset must be ≥ 1."))
-    (ep_len !== nothing && ep_len < 1) && throw(ArgumentError("ep_len must be ≥ 1."))
-
-    (epoch_offset + ep_len > size(signal, 2)) && throw(ArgumentError("epoch_offset + ep_len must be ≤ signal length $(size(signal, 2))."))
-
-    epochs = zeros(size(signal, 1), ep_len, marker_n)
-    for marker_idx in 1:marker_n
-        epochs[:, :, marker_idx] = reshape(signal[:, epoch_start[marker_idx]:epoch_end[marker_idx], :],
-                                           size(signal, 1), 
-                                           ep_len)
+    epochs = zeros(size(signal, 1), ep_len, mrk_n)
+    @inbounds for mrk_idx in 1:mrk_n
+        epochs[:, :, mrk_idx] = @views reshape(signal[:, ep_start[mrk_idx]:ep_end[mrk_idx], :],
+                                               size(signal, 1),
+                                               ep_len)
     end
 
     # remove markers outside epoch limits
-    for marker_idx in nrow(markers):-1:1
+    @inbounds for mrk_idx in nrow(markers):-1:1
         within_epoch = false
-        for ep_idx in 1:marker_n
-            markers[!, :start][marker_idx] in epoch_start[ep_idx]:epoch_end[ep_idx] && (within_epoch = true)
+        for ep_idx in 1:mrk_n
+            markers[mrk_idx, :start] in ep_start[ep_idx]:ep_end[ep_idx] && (within_epoch = true)
         end
-        within_epoch == false && deleteat!(markers, marker_idx)
+        within_epoch == false && deleteat!(markers, mrk_idx)
+    end
+
+    # keep only markers of the given type and shift their offsets
+    markers = markers[markers[!, :description] .== marker, :]
+    markers[1, :start] = ep_offset
+    if nrow(markers) > 1
+        @inbounds for idx in 2:nrow(markers)
+            markers[idx, :start] = markers[(idx - 1), :start] + ep_len
+        end
     end
 
     # calculate marker offsets
-    for ep_idx in 1:marker_n
-        for marker_idx in 1:nrow(markers)
-            if markers[!, :start][marker_idx] in epoch_start[ep_idx]:epoch_end[ep_idx]
-                markers[!, :start][marker_idx] = (ep_idx - 1) * ep_len + markers[!, :start][marker_idx] .- epoch_start[ep_idx]
-            end
-        end
-    end
+    # @inbounds for ep_idx in 1:mrk_n
+    #     for mrk_idx in 1:nrow(markers)
+    #         if markers[mrk_idx, :start] in ep_start[ep_idx]:ep_end[ep_idx]
+    #             markers[mrk_idx, :start] = (ep_idx - 1) * ep_len + markers[mrk_idx, :start] .- ep_start[ep_idx]
+    #         end
+    #     end
+    # end
 
     return epochs, markers
+
 end

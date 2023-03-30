@@ -61,6 +61,7 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
     end
 
     pw = pw[1:length(pf)]
+    
     norm == true && (pw = pow2db.(pw))
 
     return (pw=pw, pf=pf)

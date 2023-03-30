@@ -11,7 +11,7 @@ Split OBJ into epochs. Return signal that is split either by markers (if specifi
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `marker::String="": marker name to split at
+- `marker::String="": marker description to split at
 - `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at `marker time - ep_offset`)
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Int64, Nothing}`=nothing: epoch length in samples
@@ -32,14 +32,15 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
             _check_markers(obj, marker)
 
             # get marker positions
-            marker_idx = []
-            for idx in 1:length(obj.markers[!, :description])
-                obj_new.markers[idx, :description] == marker && push!(marker_idx, idx)
-            end
-            marker_start = obj_new.markers[!, :start][marker_idx]
+            any(obj_new.markers[!, :description] .== marker) == false && throw(ArgumentError("OBJ does not contain marker $marker."))
+            mrk_idx = getindex.(findall(obj_new.markers[!, :description] .== marker))
+            mrk_start = obj_new.markers[mrk_idx, :start]
+            mrk_len = obj_new.markers[mrk_idx, :length]
+            ep_offset + ep_len < maximum(mrk_len) && throw(ArgumentError("ep_offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."))
 
             # split into epochs
-            epochs, obj_new.markers = _make_epochs_bymarkers(obj.data, markers=obj_new.markers, marker_start=marker_start, ep_offset=ep_offset, ep_len=ep_len)
+            epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=obj_new.markers, marker_start=mrk_start, ep_offset=ep_offset, ep_len=ep_len)
+
         else
             throw(ArgumentError("OBJ does not contain markers."))
         end
@@ -58,6 +59,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
 
     # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    obj_new.epoch_time .-= (ep_offset / sr(obj))
 
     reset_components!(obj_new)
     push!(obj_new.history, "epoch(OBJ, marker=$marker, ep_offset=$ep_offset, ep_n=$ep_n, ep_len=$ep_len)")

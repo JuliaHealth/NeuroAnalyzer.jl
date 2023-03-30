@@ -208,8 +208,8 @@ Convert event channel to markers.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Int64`: event channel number
 - `v::Real=1.0`: event channel value interpreted as an event
-- `id::String`: prefix for marker ID; default is "mrk_"
-- `desc::String=""`: prefix for marker description; default is based on event channel name (e.g. "stim1_")
+- `id::String`: prefix for marker ID; default is based on event channel name (e.g. "stim1_")
+- `desc::String=""`: marker description; default is based on event channel name (e.g. "stim1")
 
 # Returns
 
@@ -227,7 +227,7 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
     # extract events
     ev_v = unique(ev_ch)
     v in ev_v || throw(ArgumentError("Event channel does not contain value $v."))
-    _info("Event channel contain values: $ev_v")
+    _info("Event channel contains values: $ev_v")
 
     ev_start = getindex.(findall(ev_ch .== v), 1)
 
@@ -251,15 +251,20 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
     ev_len = ev_end .- ev_start
 
     # generate descriptors and IDs
-    desc == "" && (desc = labels(obj)[ch] * "_")
-    id == "" && (id = "mrk_")
-    ev_id = String[]
     ev_desc = String[]
-    ev_ch = zeros(Int64, length(ev_start))
+    if desc == ""
+        ev_desc = repeat([labels(obj)[ch]], length(ev_start))
+    else
+        ev_desc = repeat([desc], length(ev_start))
+    end
+
+    ev_id = String[]
+    id == "" && (id = labels(obj)[ch] * "_")
     for idx in 1:length(ev_start)
         push!(ev_id, "$id$idx")
-        push!(ev_desc, "$desc$idx")
     end
+
+    ev_ch = zeros(Int64, length(ev_start))
     
     _info("$(length(ev_start)) events added.")
 
