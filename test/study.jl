@@ -10,7 +10,7 @@ eeg2.data .*= 0.75
 
 @info "test 1/6: create_study()"
 s = create_study([eeg1, eeg2], [:a, :b])
-@test typeof(s) == NeuroAnalyzer.STUDY
+@test s isa NeuroAnalyzer.STUDY
 
 @info "test 2/6: obj_n()"
 @test obj_n(s) == 2

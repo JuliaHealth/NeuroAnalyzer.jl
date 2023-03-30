@@ -18,30 +18,30 @@ function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
     return units
 end
 
-function _channel2channel_name(channel::Union{Int64, Vector{Int64}, <:AbstractRange})
-    if typeof(channel) == Int64
-        return channel
-    elseif length(channel) == 1
-        channel_name = string(channel)
-        channel_name = replace(channel_name, "["=>"", "]"=>"")
+function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})
+    if ch isa Int64
+        return ch
+    elseif length(ch) == 1
+        ch_name = string(ch)
+        ch_name = replace(ch_name, "["=>"", "]"=>"")
     else
-        if collect(channel[1]:channel[end]) == channel
-            channel_name = string(channel[1]) * ":" * string(channel[end])
+        if collect(ch[1]:ch[end]) == ch
+            ch_name = string(ch[1]) * ":" * string(ch[end])
         else
-            channel_name = ""
-            for idx in 1:(length(channel) - 1)
-                channel_name *= string(channel[idx])
-                channel_name *= ", "
+            ch_name = ""
+            for idx in 1:(length(ch) - 1)
+                ch_name *= string(ch[idx])
+                ch_name *= ", "
             end
-            channel_name *= string(channel[end])
+            ch_name *= string(ch[end])
         end
     end
-    return channel_name
+    return ch_name
 end
 
 function _map_channels(channel::Union{Int64, Vector{Int64}, <:AbstractRange}, channels=Vector{Int64})
     channel_orig = channel
-    if typeof(channel) == Int64
+    if channel isa Int64
         channel = vsearch(channel, channels)
     else
         for idx in eachindex(channel)

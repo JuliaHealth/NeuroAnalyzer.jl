@@ -513,7 +513,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         s = mean(s, dims=3)[:, :]
         ndims(s) == 1 && (s = reshape(s, 1, length(s)))
         clabels = labels(obj)[ch]
-        typeof(clabels) == String && (clabels = [clabels])
+        clabels isa String && (clabels = [clabels])
         p = plot_erp_topo(obj.locs,
                           t,
                           s,
@@ -712,7 +712,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
     # select component channels, default is all channels
-    typeof(c) == Symbol && (c = _get_component(obj, c).c)
+    c isa Symbol && (c = _get_component(obj, c).c)
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     if channel_labels == true
@@ -791,7 +791,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         peaks = false
         s = mean(s, dims=3)[:, :]
         ndims(s) == 1 && (s = reshape(s, 1, length(s)))
-        typeof(clabels) == String && (clabels = [clabels])
+        clabels isa String && (clabels = [clabels])
         p = plot_erp_topo(obj.locs,
                           t,
                           s,

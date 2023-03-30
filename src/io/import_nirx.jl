@@ -349,6 +349,10 @@ function import_nirx(file_name::String)
 
     history = String[]
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, nirs_int[:, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
+
+    _info("Imported: < " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
+
+    return obj
 
 end

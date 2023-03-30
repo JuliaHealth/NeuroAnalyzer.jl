@@ -426,7 +426,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-            if typeof(ep) == Int64
+            if ep isa Int64
                 seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
             else
                 seg = (seg[1], (ep[end] * epoch_len(obj)))
@@ -444,7 +444,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     # check channels
     _check_channels(obj, ch)
     clabels = labels(obj)
-    length(ch) == 1 && (clabels = [clabels])
 
     # set units
     units = _set_units(obj, ch[1])
@@ -594,7 +593,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 if length(ch) == 1
                     p = plot_signal(t,
                                     s[ch, :],
-                                    clabels=clabels[ch_tmp[1][1]],
+                                    clabels=[clabels[ch_tmp[1][1]]],
                                     xlabel=xl,
                                     ylabel=yl,
                                     title=tt,
@@ -865,7 +864,7 @@ function NeuroAnalyzer.plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractA
     if ep != 0
         _check_epochs(obj, ep)
         seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-        if typeof(ep) == Int64
+        if ep isa Int64
             seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
         else
             seg = (seg[1], (ep[end] * epoch_len(obj)))

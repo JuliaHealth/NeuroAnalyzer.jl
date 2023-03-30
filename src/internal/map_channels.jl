@@ -1,11 +1,11 @@
-function _map_channels(channel::Union{Int64, Vector{Int64}, <:AbstractRange}, channels=Vector{Int64})
-    channel_orig = channel
-    if typeof(channel) == Int64
-        channel = vsearch(channel, channels)
+function _map_channels(ch::Union{Int64, Vector{Int64}, <:AbstractRange}, chs=Vector{Int64})
+    ch_orig = ch
+    if ch isa Int64
+        ch = vsearch(ch, chs)
     else
-        for idx in eachindex(channel)
-            channel[idx] = vsearch(channel[idx], channels)
+        for idx in eachindex(ch)
+            ch[idx] = vsearch(ch[idx], chs)
         end
     end
-    return channel, channel_orig
+    return ch, ch_orig
 end

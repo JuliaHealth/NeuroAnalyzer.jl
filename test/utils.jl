@@ -178,7 +178,7 @@ s = generate_morlet_fwhm(100, 10)
 @test get_channel_bytype(e10, type=:eeg) == 1:19
 
 @info "test 39/64: history()"
-@test typeof(history(e10)) == Vector{String}
+@test history(e10) isa Vector{String}
 
 @info "test 40/64: labels()"
 @test length(labels(e10)) == 24

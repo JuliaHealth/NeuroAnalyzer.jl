@@ -22,7 +22,7 @@ Extract channel data.
 function extract_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
 
     clabels = labels(obj)
-    if typeof(ch) == String
+    if ch isa String
         # get ch by name
         ch_idx = nothing
         for idx in eachindex(clabels)

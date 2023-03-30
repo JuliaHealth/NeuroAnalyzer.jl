@@ -3,9 +3,6 @@ export channel_n
 export epoch_n
 export signal_len
 export epoch_len
-export signal_channels
-export get_channel_bytype
-export get_channel_bywl
 export history
 export labels
 export info
@@ -13,7 +10,6 @@ export channel_cluster
 export band_frq
 export describe
 export size
-
 
 """
     sr(obj)
@@ -146,95 +142,6 @@ function epoch_len(obj::NeuroAnalyzer.NEURO)
     return ep_len
 
 end
-
-"""
-    signal_channels(obj)
-
-Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_type` variable in `obj.header.recording`). For MEG data type, 'meg', `grad` and `mag` channels are returned.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`:
-
-# Returns
- 
-- `chs::Vector{Int64}`
-"""
-function signal_channels(obj::NeuroAnalyzer.NEURO)
-
-    dt = Symbol(obj.header.recording[:data_type])
-
-    if dt === :meg
-        chs = union(get_channel_bytype(obj, type=[:meg, :mag, :grad]))
-    elseif dt === :nirs
-        chs = union(get_channel_bytype(obj, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
-    else
-        chs = get_channel_bytype(obj, type=dt)
-    end
-
-    return chs
-
-end
-
-"""
-    get_channel_bytype(obj; type)
-
-Return channel number(s) for channel of `type` type.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `type::Vector{Symbol}=:all`: channel type
-
-# Returns
-
-- `ch_idx::Vector{Int64}`
-"""
-function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
-
-    _check_var(type, channel_types, "type")
-    if type === :all
-        ch_idx = collect(1:channel_n(obj))
-    else
-        ch_idx = Vector{Int64}()
-        for idx in 1:channel_n(obj)
-            lowercase(obj.header.recording[:channel_type][idx]) == string(type) && (push!(ch_idx, idx))
-        end
-    end
-
-    return ch_idx
-
-end
-
-"""
-    get_channel_bywl(obj; wl)
-
-Return NIRS channel number(s) for wavelength `wl`.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `wl::Real`: wavelength (in nm)
-
-# Returns
-
-- `ch_idx::Vector{Int64}`
-"""
-function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
-
-    _check_datatype(obj, [:nirs])
-    wl in obj.header.recording[:wavelengths] || throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
-
-    wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
-    ch_idx = Int64[]
-    for idx in 1:length(obj.header.recording[:wavelength_index])
-        obj.header.recording[:wavelength_index][idx] == wl_idx && push!(ch_idx, idx)
-    end
-
-    return ch_idx
-
-end
-
 
 """
     history(obj)

@@ -25,7 +25,7 @@ function pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
 
     length(labels(obj)) == 0 && throw(ArgumentError("OBJ does not contain channel labels."))
 
-    if typeof(p) == Vector{Symbol}
+    if p isa Vector{Symbol}
         for idx in p
             _check_var(idx, [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p")
         end

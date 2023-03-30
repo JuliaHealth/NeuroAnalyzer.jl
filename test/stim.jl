@@ -9,6 +9,6 @@ using Test
 
 @info "test 3/3: tes_protocol()"
 p = tes_protocol(type=:tDCS, hd=false, current=2.0, anode_size=(50, 70), cathode_size=(50, 70), anode_loc=:F3, cathode_loc=:F4, duration=1200, ramp_in=20, ramp_out=20, sham=false)
-@test typeof(p) == Dict{Symbol, Any}
+@test p isa Dict{Symbol, Any}
 
 true

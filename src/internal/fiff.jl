@@ -30,7 +30,7 @@ function _read_fiff_tag(fid::IOStream, fiff_blocks::Matrix{Int64}, tag_id::Int64
         return nothing
     elseif length(id) == 1
         out = _read_fiff_data(fid, fiff_blocks, id)
-        if typeof(out) == String
+        if out isa String
             return out
         else
             return out[]
