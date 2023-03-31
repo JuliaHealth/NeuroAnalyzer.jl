@@ -18,25 +18,25 @@ This is a meta-function that triggers appropriate `import_*()` function. File fo
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+- `default_type::String="eeg"`: default channel type
 - `n::Int64=0`: subject number to extract in case of multi-subject file
 
 # Returns
 
 - `::NeuroAnalyzer.NEURO`
 """
-function import_recording(file_name::String; detect_type::Bool=true, n::Int64=0)
+function import_recording(file_name::String; default_type::String="eeg", n::Int64=0)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    splitext(file_name)[2] == ".edf" && return import_edf(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".bdf" && return import_bdf(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".vhdr" && return import_bv(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".csv" && return import_csv(file_name, detect_type=detect_type)
-    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return import_csv(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".fif" && return import_fiff(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".edf" && return import_edf(file_name, default_type=default_type)
+    splitext(file_name)[2] == ".bdf" && return import_bdf(file_name, default_type=default_type)
+    splitext(file_name)[2] == ".vhdr" && return import_bv(file_name, default_type=default_type)
+    splitext(file_name)[2] == ".csv" && return import_csv(file_name, default_type=default_type)
+    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return import_csv(file_name, default_type=default_type)
+    splitext(file_name)[2] == ".set" && return import_set(file_name, default_type=default_type)
+    splitext(file_name)[2] == ".fif" && return import_fiff(file_name, default_type=default_type)
+    splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, default_type=default_type)
     splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n=n)
     splitext(file_name)[2] == ".nirs" && return import_nirs(file_name)
     

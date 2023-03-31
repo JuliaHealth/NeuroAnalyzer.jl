@@ -6,7 +6,8 @@ _pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
 
 _pl(x::Real) = x > 1 ? "s" : ""
 
-_get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
+# _get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
+_get_range(signal::Union{AbstractVector, AbstractArray}) = round(rng(signal), digits=0)
 
 _c(n) = collect(1:n)
 

@@ -1,14 +1,14 @@
 export import_bdf
 
 """
-    import_bdf(file_name; detect_type)
+    import_bdf(file_name; default_type)
 
 Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+- `default_type::String="eeg"`: default channel type
 
 # Returns
 
@@ -24,7 +24,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 https://www.biosemi.com/faq/file_format.htm
 """
-function import_bdf(file_name::String; detect_type::Bool=true)
+function import_bdf(file_name::String; default_type::String="eeg")
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     splitext(file_name)[2] == ".bdf" || throw(ArgumentError("This is not a BDF file."))
@@ -134,14 +134,16 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    clabels = _clean_labels(clabels)
-    if detect_type == true
-        channel_type = _set_channel_types(clabels, "eeg")
+    clabels = NeuroAnalyzer._clean_labels(clabels)
+    ch_type = NeuroAnalyzer._set_channel_types(clabels, default_type)
+    # ch_order = NeuroAnalyzer._sort_channels(copy(ch_type))
+    if file_type == "BDF"
+        # in BDF files the last channel is always the Status channel
+        markers_channel = ch_n
     else
-        channel_type = repeat(["eeg"], ch_n)
+        # in BDF+ files the last channel is always the Status channel + additional annotations channels are possible
+        markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
-    channel_order = _sort_channels(copy(channel_type))
-    has_markers, markers_channel = _has_markers(channel_type)
 
     sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
     gain = Vector{Float64}(undef, ch_n)
@@ -155,77 +157,45 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     catch
         error("File $file_name cannot be loaded.")
     end
-
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
-    markers = repeat([""], data_records)
     for idx1 in 1:data_records
         for idx2 in 1:ch_n
             signal24 = zeros(UInt8, samples_per_datarecord[idx2] * 3)
             readbytes!(fid, signal24, samples_per_datarecord[idx2] * 3)
-            if idx2 != markers_channel
-                signal = Vector{Float64}()
+            signal = Vector{Float64}()
+            if idx2 in markers_channel
+                # status = Vector{Int64}()
+                for byte_idx in 1:3:length(signal24)
+                    b1 = Int32(signal24[byte_idx]) << 8
+                    b2 = Int32(signal24[byte_idx + 1]) << 16
+                    b3 = Int64(signal24[byte_idx + 2])
+                    push!(signal, Float64(b1 | b2) * gain[idx2])
+                    # push!(status, b3 * gain[idx2])
+                end
+            else
                 for byte_idx in 1:3:length(signal24)
                     b1 = Int32(signal24[byte_idx]) << 8
                     b2 = Int32(signal24[byte_idx + 1]) << 16
                     b3 = -Int32(-signal24[byte_idx + 2]) << 24
                     push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
                 end
-                if channel_type[idx2] == "mrk"
-                    for idx3 in eachindex(signal)
-                        if signal[idx3] == digital_minimum[idx2]
-                            signal[idx3] = 0
-                        else
-                            signal[idx3] = 1
-                        end
-                    end
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                elseif channel_type[idx2] == "mrk"
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                else
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                    #=
-                    if occursin("uV", units[idx2]) 
-                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                    elseif occursin("mV", units[idx2])
-                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
-                    else
-                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                    end
-                    =#
-                end
-            else
-                markers[idx1] = String(Char.(signal24))
             end
+            lowercase(units[idx2]) == "mv" && (signal ./= 1000)
+            lowercase(units[idx2]) == "nv" && (signal .*= 1000)
+            if idx2 in markers_channel
+                signal = round.(signal, digits=0)
+                signal[signal .== minimum(signal)] .= 0
+                signal[signal .<= digital_minimum[idx2]] .= 0
+                signal[signal .!= 0] .= 1
+            end
+            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
         end
     end
     close(fid)
 
-    if has_markers
-        deleteat!(channel_order, vsearch(markers_channel, channel_order))
-        data = data[setdiff(1:ch_n, markers_channel), :, :]
-        deleteat!(channel_type, markers_channel)
-        deleteat!(clabels, markers_channel)
-        deleteat!(transducers, markers_channel)
-        deleteat!(units, markers_channel)
-        deleteat!(prefiltering, markers_channel)
-        deleteat!(gain, markers_channel)
-        ch_n -= 1
-        markers = _m2df(markers)
-        if markers[!, :id] == repeat([""], nrow(markers))
-            # generate unique IDs
-            desc = unique(markers[!, :description])
-            for idx1 in 1:nrow(markers), idx2 in 1:length(desc)
-                markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
-            end
-        end
-        # convert markers time to samples
-        markers[!, :start] = t2s.(markers[!, :start], sampling_rate)
-        markers[!, :length] = t2s.(markers[!, :length], sampling_rate)
-    else
-        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
-    end
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
@@ -249,14 +219,14 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_type=channel_type[channel_order],
+                              channel_type=ch_type,
                               reference="",
-                              clabels=clabels[channel_order],
-                              transducers=transducers[channel_order],
-                              units=units[channel_order],
-                              prefiltering=prefiltering[channel_order],
+                              clabels=clabels,
+                              transducers=transducers,
+                              units=units,
+                              prefiltering=prefiltering,
                               sampling_rate=sampling_rate,
-                              gain=gain[channel_order])
+                              gain=gain)
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
@@ -278,7 +248,11 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    
+    for idx in 1:length(markers_channel)
+        length(unique(data[markers_channel[idx], :, 1])) > 1 && channel2marker!(obj, ch=markers_channel[idx])
+    end
 
     _info("Imported: < " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
 

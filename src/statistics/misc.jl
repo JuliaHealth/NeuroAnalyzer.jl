@@ -89,6 +89,25 @@ function rng(x::AbstractVector)
 end
 
 """
+    rng(x)
+
+Calculate range.
+
+# Arguments
+
+- `x::AbstractArray`
+
+# Returns
+
+- `rng::Float64`
+"""
+function rng(x::AbstractArray)
+
+    return maximum(x) - minimum(x)
+
+end
+
+"""
     moe(n)
 
 Calculate margin of error for given sample size `n`.

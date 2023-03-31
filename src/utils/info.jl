@@ -455,7 +455,8 @@ function describe(obj::NeuroAnalyzer.NEURO)
     println(rpad("ch", 4) * 
             rpad("label", 16) * 
             rpad("type", 12) * 
-            rpad("unit", 6) * 
+            rpad("unit", 8) * 
+            rpad("range", 10) * 
             rpad("mean", 10) * 
             rpad("sd", 10) * 
             rpad("min", 10) * 
@@ -467,7 +468,8 @@ function describe(obj::NeuroAnalyzer.NEURO)
         println(rpad(string(idx), 4) * 
                 rpad(labels(obj)[idx], 16) * 
                 rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) * 
-                rpad(obj.header.recording[:units][idx], 6) * 
+                rpad(obj.header.recording[:units][idx], 8) * 
+                rpad(round(rng(obj.data[idx, :, :]), digits=3), 10) * 
                 rpad(round(mean(obj.data[idx, :, :]), digits=3), 10) * 
                 rpad(round(std(obj.data[idx, :, :]), digits=3), 10) * 
                 rpad(round(minimum(obj.data[idx, :, :]), digits=3), 10) * 
