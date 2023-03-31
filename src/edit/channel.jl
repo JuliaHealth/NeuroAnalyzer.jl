@@ -34,6 +34,8 @@ function signal_channels(obj::NeuroAnalyzer.NEURO)
         chs = union(get_channel_bytype(obj, type=[:meg, :mag, :grad]))
     elseif dt === :nirs
         chs = union(get_channel_bytype(obj, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
+    elseif dt === :erp
+        chs = union(get_channel_bytype(obj, type=[:eeg, :meg, :mag, :grad, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
     else
         chs = get_channel_bytype(obj, type=dt)
     end
@@ -50,22 +52,36 @@ Return channel number(s) for channel of `type` type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::Vector{Symbol}=:all`: channel type
+- `type::Union{Symbol, Vector{Symbol}}=:all`: channel type
 
 # Returns
 
 - `ch_idx::Vector{Int64}`
 """
-function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
+function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector{Symbol}}=:all)
 
-    _check_var(type, channel_types, "type")
+    if type isa Symbol
+        _check_var(type, channel_types, "type")
+    else
+        for idx in 1:length(type)
+            _check_var(type[idx], channel_types, "type")
+        end
+    end
+        
     if type === :all
         ch_idx = collect(1:channel_n(obj))
-    else
+    elseif type isa Symbol
         ch_idx = Vector{Int64}()
         for idx in 1:channel_n(obj)
             lowercase(obj.header.recording[:channel_type][idx]) == string(type) && (push!(ch_idx, idx))
         end
+    else
+        ch_idx = Vector{Int64}()
+        for idx1 in 1:channel_n(obj)
+            for idx2 in 1:length(type)
+                lowercase(obj.header.recording[:channel_type][idx1]) == string(type[idx2]) && (push!(ch_idx, idx1))
+            end
+        end        
     end
 
     return ch_idx

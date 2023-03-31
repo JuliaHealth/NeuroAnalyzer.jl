@@ -121,9 +121,9 @@ e10 = epoch(eeg, ep_n=10)
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 @test e10.epoch_time[1] == 0.0
-e10_tmp = epoch_time(e10, ts=-1.0)
+e10_tmp = epoch_ts(e10, ts=-1.0)
 @test e10_tmp.epoch_time[1] == -1.0
-epoch_time!(e10_tmp, ts=-2.0)
+epoch_ts!(e10_tmp, ts=-2.0)
 @test e10_tmp.epoch_time[1] == -3.0
 
 @info "test 14/24: extract_channel()"

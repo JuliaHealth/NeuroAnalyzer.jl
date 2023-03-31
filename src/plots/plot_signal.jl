@@ -417,7 +417,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
-    _check_var(type, [:normal, :butterfly, :mean], "type")
+    _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
     _check_segment(obj, seg[1], seg[2])
 
     if ep != 0
@@ -546,7 +546,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 end
             else
                 if ch_t[ch_tmp[1][1]] == "eeg"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                    xl, yl, tt = NeuroAnalyzer._set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(NeuroAnalyzer._pl(length(ch_tmp[1]))) ($(NeuroAnalyzer._channel2channel_name(ch_tmp[1])))\n[epoch$(NeuroAnalyzer._pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
                 if ch_t[ch_tmp[1][1]] == "grad"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -854,11 +854,11 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function NeuroAnalyzer.plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
-    _check_var(type, [:normal, :butterfly, :mean], "type")
+    _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
     _check_segment(obj, seg[1], seg[2])
 
     if ep != 0

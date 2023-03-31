@@ -96,7 +96,7 @@ function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, 
 end
 
 """
-    epoch_time(obj; ts)
+    epoch_ts(obj; ts)
 
 Edit epochs time start.
 
@@ -109,19 +109,19 @@ Edit epochs time start.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function epoch_time(obj::NeuroAnalyzer.NEURO; ts::Real)
+function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)
 
     obj_new = deepcopy(obj)
     obj_new.epoch_time .+= ts
 
-    push!(obj_new.history, "epoch_time(OBJ, ts=$ts)")
+    push!(obj_new.history, "epoch_ts(OBJ, ts=$ts)")
 
     return obj_new
 
 end
 
 """
-    epoch_time!(obj; ts)
+    epoch_ts!(obj; ts)
 
 Edit OBJ epochs time start.
 
@@ -134,9 +134,9 @@ Edit OBJ epochs time start.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function epoch_time!(obj::NeuroAnalyzer.NEURO; ts::Real)
+function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)
 
-    obj_new = epoch_time(obj, ts=ts)
+    obj_new = epoch_ts(obj, ts=ts)
     obj.history = obj_new.history
     obj.epoch_time = obj_new.epoch_time
 

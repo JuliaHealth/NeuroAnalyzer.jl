@@ -15,15 +15,14 @@ Detect a pair of positive and negative peaks of ERP.
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)
 
-    ch = signal_channels(obj)
-    erp_obj = erp(obj).data[ch, :]
+    _check_datatype(obj, :erp)
 
-    ch_n = size(erp_obj, 1)
+    ch_n = size(obj)[1]
     p = zeros(Int64, ch_n, 2)
     @inbounds @simd for ch_idx in 1:ch_n
-        pp_pos = @views maximum(erp_obj[ch_idx, :])
-        pp_neg = @views minimum(erp_obj[ch_idx, :])
-        p[ch_idx, :] = @views [vsearch(pp_pos, erp_obj[ch_idx, :]), vsearch(pp_neg, erp_obj[ch_idx, :])]
+        pp_pos = @views maximum(obj.data[ch_idx, :, 1])
+        pp_neg = @views minimum(obj.data[ch_idx, :, 1])
+        p[ch_idx, :] = @views [vsearch(pp_pos, obj.data[ch_idx, :, 1]), vsearch(pp_neg, obj.data[ch_idx, :, 1])]
     end
 
     return p

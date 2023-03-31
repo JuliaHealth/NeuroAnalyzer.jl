@@ -45,9 +45,9 @@ function import_csv(file_name::String; detect_type::Bool=true)
 
     clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(clabels)
+        channel_type = _set_channel_types(clabels, "eeg")
     else
-        channel_type = repeat(["???"], ch_n)
+        channel_type = repeat(["eeg"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
 

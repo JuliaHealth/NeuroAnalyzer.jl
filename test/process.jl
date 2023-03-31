@@ -122,7 +122,7 @@ s = dwtsplit(e10, ch=1, wt = wavelet(WT.haar), type=:sdwt)
 
 @info "test 15/41: erp()"
 e = erp(e10)
-@test size(e.data) == (24, 2560, 1)
+@test size(e.data) == (24, 2560, 11)
 
 @info "test 16/41: bpsplit()"
 s, bn, bf = bpsplit(e10)

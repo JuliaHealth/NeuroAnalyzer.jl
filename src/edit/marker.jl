@@ -21,8 +21,20 @@ function view_marker(obj::NeuroAnalyzer.NEURO)
 
     _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
     
-    for marker_idx in 1:nrow(obj.markers)
-        println("n: $(rpad(string(marker_idx), 6)) ID: $(rpad(("'" * obj.markers[marker_idx, :id] * "'"), 24, " ")) start [sample]: $(rpad(obj.markers[marker_idx, :start], 8, " ")) length [samples]: $(rpad(obj.markers[marker_idx, :length], 8, " ")) description: $(rpad(("'" * obj.markers[marker_idx, :description] * "'"), 24, " ")) channel: $(obj.markers[marker_idx, :channel])")
+    println(rpad("n", 5) * 
+            rpad("ID", 24) * 
+            rpad("start [sample]", 18) * 
+            rpad("length [sample]", 18) * 
+            rpad("description", 24) * 
+            rpad("channel", 1))
+
+    for mrk_idx in 1:nrow(obj.markers)
+        println(rpad(string(mrk_idx), 5) * 
+                rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) * 
+                rpad(string(obj.markers[mrk_idx, :start]), 18) * 
+                rpad(string(obj.markers[mrk_idx, :length]), 18) * 
+                rpad("'" * obj.markers[mrk_idx, :description] * "'", 24) * 
+                rpad(string(obj.markers[mrk_idx, :channel]), 1))
     end
 
 end

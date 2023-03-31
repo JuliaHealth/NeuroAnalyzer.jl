@@ -136,9 +136,9 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(clabels)
+        channel_type = _set_channel_types(clabels, "eeg")
     else
-        channel_type = repeat(["???"], ch_n)
+        channel_type = repeat(["eeg"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
@@ -172,7 +172,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                     b3 = -Int32(-signal24[byte_idx + 2]) << 24
                     push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
                 end
-                if channel_type[idx2] == "markers"
+                if channel_type[idx2] == "mrk"
                     for idx3 in eachindex(signal)
                         if signal[idx3] == digital_minimum[idx2]
                             signal[idx3] = 0
@@ -181,7 +181,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                         end
                     end
                     data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                elseif channel_type[idx2] == "events"
+                elseif channel_type[idx2] == "mrk"
                     data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
                 else
                     data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
@@ -201,7 +201,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
         end
     end
     close(fid)
-    
+
     if has_markers
         deleteat!(channel_order, vsearch(markers_channel, channel_order))
         data = data[setdiff(1:ch_n, markers_channel), :, :]

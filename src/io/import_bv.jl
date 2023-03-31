@@ -47,20 +47,24 @@ function import_bv(file_name::String; detect_type::Bool=true)
     segmentation = false
     channels_idx = 0
     locs_idx = 0
+
+    vhdr = replace.(vhdr, " "=>"")
+
+    any(startswith.(lowercase.(vhdr), "datafile=")) && (eeg_file = split(vhdr[startswith.(lowercase.(vhdr), "datafile=")][1], '=')[2])
+    eeg_file = replace(eeg_file, raw"$b" => split(file_name)[1])
+    any(startswith.(lowercase.(vhdr), "markerfile=")) && (marker_file = split(vhdr[startswith.(lowercase.(vhdr), "markerfile=")][1], '=')[2])
+    replace(marker_file, raw"$b" => split(file_name)[1])
+    any(startswith.(lowercase.(vhdr), "dataformat=")) && (data_format = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "dataformat=")][1], '=')[2])) # BINARY or ASCII
+    any(startswith.(lowercase.(vhdr), "numberofchannels=")) && (ch_n = parse(Int64, split(vhdr[startswith.(lowercase.(vhdr), "numberofchannels=")][1], '=')[2]))
+    any(startswith.(lowercase.(vhdr), "dataorientation=")) && (data_orientation = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "dataorientation=")][1], '=')[2])) # MULTIPLEXED
+    any(startswith.(lowercase.(vhdr), "samplinginterval=")) && (sampling_interval = parse(Float64, split(vhdr[startswith.(lowercase.(vhdr), "samplinginterval=")][1], '=')[2]))
+    any(startswith.(lowercase.(vhdr), "binaryformat=")) && (binary_format = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "binaryformat=")][1], '=')[2])) # IEEE_FLOAT_32 / INT_16
+    any(startswith.(lowercase.(vhdr), "averaged=")) && (averaged = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "averaged=")][1], '=')[2]) == "yes" ? true : false) # YES|NO
+    any(startswith.(lowercase.(vhdr), "averagedsegments=")) && (averaged_segments = parse(Int64, split(vhdr[startswith.(lowercase.(vhdr), "averagedsegments=")][1], '=')[2]))
+    any(startswith.(lowercase.(vhdr), "averageddatapoints=")) && (averaged_points = parse(Int64, split(vhdr[startswith.(lowercase.(vhdr), "averageddatapoints=")][1], '=')[2]))
+    any(startswith.(lowercase.(vhdr), "segmentation=")) && (segmentation = lowercase(split(vhdr[startswith.(lowercase.(vhdr), "segmentation=")][1], '=')[2]) == "yes" ? true : false) # YES|NO
+
     for idx in eachindex(vhdr)
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "datafile=") && (eeg_file = split(vhdr[idx], '=')[2])
-        replace(eeg_file, raw"$b" => split(file_name)[1])
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "markerfile=") && (marker_file = split(vhdr[idx], '=')[2])
-        replace(marker_file, raw"$b" => split(file_name)[1])
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "dataformat=") && (data_format = lowercase(split(vhdr[idx], '=')[2])) # BINARY or ASCII
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "numberofchannels=") && (ch_n = parse(Int64, split(vhdr[idx], '=')[2])) # 32
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "dataorientation=") && (data_orientation = lowercase(split(vhdr[idx], '=')[2])) # MULTIPLEXED
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "samplinginterval=") && (sampling_interval = parse(Float64, split(vhdr[idx], '=')[2])) # 1000
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "binaryformat=") && (binary_format = lowercase(split(vhdr[idx], '=')[2])) # INT_16
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "averaged=") && (averaged = lowercase(split(vhdr[idx], '=')[2]) == "yes" ? true : false) # YES|NO
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "averagedsegments=") && (averaged_segments = parse(Int64, split(vhdr[idx], '=')[2]))
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "averageddatapoints=") && (averaged_points = parse(Int64, split(vhdr[idx], '=')[2]))
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "segmentation=") && (segmentation = lowercase(split(vhdr[idx], '=')[2]) == "markerbased" ? true : false) # YES|NO
         startswith(lowercase(replace(vhdr[idx], " " => "")), "[channelinfos]") && (channels_idx = idx)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "[coordinates]") && (locs_idx = idx)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters") && _info("Software filters are not supported yet.")
@@ -76,24 +80,29 @@ function import_bv(file_name::String; detect_type::Bool=true)
     prefiltering = repeat([""], ch_n)
 
     clabels = repeat([""], ch_n)
+    ref_chs = repeat([""], ch_n)
     for idx in 1:ch_n
         tmp = split(split(vhdr[idx + channels_idx], '=')[2], ',')
         # channel label
         clabels[idx] = replace(split(split(vhdr[idx + channels_idx], '=')[2], ',')[1], "\1" => ",")
         # reference channel name
-        # split(split(vhdr[idx + channels_idx], '=')[2], ',')[2]
+        ref_chs = split(split(vhdr[idx + channels_idx], '=')[2], ',')[2]
         # resolution in units
-        length(tmp) >= 3 && (gain[idx] = parse(Float64, split(split(vhdr[idx + channels_idx], '=')[2], ',')[3]))
+        if length(tmp) >= 3
+            if split(split(vhdr[idx + channels_idx], '=')[2], ',')[3] != ""
+                gain[idx] = parse(Float64, split(split(vhdr[idx + channels_idx], '=')[2], ',')[3])
+            end
+        end
         # units name, e.g. μV
         length(tmp) >= 4 && (units[idx] = split(split(vhdr[idx + channels_idx], '=')[2], ',')[4])
     end
     clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(clabels)
+        ch_type = _set_channel_types(clabels, "eeg")
     else
-        channel_type = repeat(["???"], ch_n)
+        ch_type = repeat(["eeg"], ch_n)
     end
-    channel_order = _sort_channels(copy(channel_type))
+    channel_order = _sort_channels(copy(ch_type))
 
     # read locs
     loc_theta = zeros(ch_n)
@@ -107,9 +116,14 @@ function import_bv(file_name::String; detect_type::Bool=true)
     if locs_idx != 0
         channel_locations = true
         for idx in 1:ch_n
-            loc_radius_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[1])
-            loc_theta_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[2])
-            loc_phi_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[3])
+            if occursin('=', vhdr[locs_idx + idx])
+                l = split(vhdr[locs_idx + idx], '=')[2]
+            else
+                l = vhdr[locs_idx + idx]
+            end
+            loc_radius_sph[idx] = parse(Float64, split(l, ',')[1])
+            loc_theta_sph[idx] = parse(Float64, split(l, ',')[2])
+            loc_phi_sph[idx] = parse(Float64, split(l, ',')[3])
             loc_theta[idx] = loc_theta_sph[idx]
             loc_radius[idx] = loc_radius_sph[idx]
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
@@ -146,13 +160,13 @@ function import_bv(file_name::String; detect_type::Bool=true)
             startswith(lowercase(markers[idx]), "mk") == false && deleteat!(markers, idx)
         end
         m_id = repeat([""], length(markers))
-        m_desc = repeat([""], length(markers))
+        m_desc = repeat(["marker"], length(markers))
         m_pos = zeros(Int64, length(markers))
         m_len = zeros(Int64, length(markers))
         m_ch = zeros(Int64, length(markers))
         for idx in eachindex(markers)
             m_id[idx] = replace(split(split(markers[idx], '=')[2], ',')[1], "\1" => ",")
-            m_desc[idx] = replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ",")
+            replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ",") != "" && (m_desc[idx] = replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ","))
             m_pos[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[3])
             m_len[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[4])
             # 0 = marker is related to all channels
@@ -193,7 +207,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
 
         fid = ""
         try
-            fid = open(file_name, "r")
+            fid = open(eeg_file, "r")
         catch
             error("File $file_name cannot be loaded.")
         end
@@ -202,7 +216,9 @@ function import_bv(file_name::String; detect_type::Bool=true)
         for idx in 1:(filesize(eeg_file) ÷ bytes)
             buf = zeros(UInt8, bytes)
             readbytes!(fid, buf, bytes)
+            # buf = reverse(buf)
             if bytes == 4
+                # signal[idx] = Float64(reinterpret(Float32, reverse(buf))[1])
                 signal[idx] = Float64(reinterpret(Float32, buf)[1])
             else
                 signal[idx] = Float64(reinterpret(Int16, buf)[1])
@@ -224,8 +240,16 @@ function import_bv(file_name::String; detect_type::Bool=true)
         @error "ASCII format is not supported yet."
     end
 
+    # convert nV to μV
+    for idx in 1:ch_n
+        if lowercase(units[idx]) == "nv"
+            data[idx, :, :] ./= 1000
+            units[idx] = "μV"
+        end
+    end
+
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
-    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
+    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
     
     file_size_mb = round(filesize(eeg_file) / 1024^2, digits=2)
 
@@ -246,7 +270,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_type=channel_type[channel_order],
+                              channel_type=ch_type[channel_order],
                               reference="",
                               clabels=clabels[channel_order],
                               transducers=transducers[channel_order],
@@ -266,29 +290,29 @@ function import_bv(file_name::String; detect_type::Bool=true)
 
     if channel_locations == false
         locs = DataFrame(:channel=>Int64,
-                             :labels=>String[],
-                             :loc_theta=>Float64[],
-                             :loc_radius=>Float64[],
-                             :loc_x=>Float64[],
-                             :loc_y=>Float64[],
-                             :loc_z=>Float64[],
-                             :loc_radius_sph=>Float64[],
-                             :loc_theta_sph=>Float64[],
-                             :loc_phi_sph=>Float64[])
+                         :labels=>String[],
+                         :loc_theta=>Float64[],
+                         :loc_radius=>Float64[],
+                         :loc_x=>Float64[],
+                         :loc_y=>Float64[],
+                         :loc_z=>Float64[],
+                         :loc_radius_sph=>Float64[],
+                         :loc_theta_sph=>Float64[],
+                         :loc_phi_sph=>Float64[])
     else
         locs = DataFrame(:ch_n=>1:ch_n,
-                             :labels=>labels,
-                             :loc_theta=>loc_theta,
-                             :loc_radius=>loc_radius,
-                             :loc_x=>loc_x,
-                             :loc_y=>loc_y,
-                             :loc_z=>loc_z,
-                             :loc_radius_sph=>loc_radius_sph,
-                             :loc_theta_sph=>loc_theta_sph,
-                             :loc_phi_sph=>loc_phi_sph)
+                         :labels=>labels,
+                         :loc_theta=>loc_theta,
+                         :loc_radius=>loc_radius,
+                         :loc_x=>loc_x,
+                         :loc_y=>loc_y,
+                         :loc_z=>loc_z,
+                         :loc_radius_sph=>loc_radius_sph,
+                         :loc_theta_sph=>loc_theta_sph,
+                         :loc_phi_sph=>loc_phi_sph)
     end
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[channel_order, :, :], components, markers, locs, history)
 
     _info("Imported: < " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
 

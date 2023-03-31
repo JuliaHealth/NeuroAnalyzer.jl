@@ -52,7 +52,7 @@ function remove_dc(s::AbstractArray, n::Int64=0)
     s_new = similar(s)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = remove_dc(s[ch_idx, :, ep_idx], n)
+            s_new[ch_idx, :, ep_idx] = @views remove_dc(s[ch_idx, :, ep_idx], n)
         end
     end
 

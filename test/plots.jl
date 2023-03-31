@@ -24,25 +24,25 @@ p = NeuroAnalyzer.plot_connections(e10, connections=rand(19, 19), ch=1:19, thres
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 3/21: plot_erp()"
-p = NeuroAnalyzer.plot_erp(e10, ch=1)
+e10_erp = erp(e10)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10, ch=1, type=:mean)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1:10, type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10, ch=1, type=:butterfly)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10, ch=1, type=:stack)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1:10, type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-c = e10.data .^ 2
-p = NeuroAnalyzer.plot_erp(e10, c, c_idx=1)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10, c, c_idx=1, type=:mean)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1:10, type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10, c, c_idx=1, type=:butterfly)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10, c, c_idx=1, type=:stack)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=1:10, type=:topo)
+@test p isa GLMakie.Figure
 
-@info "test 4/21: plot_erp()"
+@info "test 4/21: plot_filter_response()"
 p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test p isa Plots.Plot{Plots.GRBackend}
 
