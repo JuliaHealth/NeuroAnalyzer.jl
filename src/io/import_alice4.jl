@@ -270,7 +270,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
         ch_n -= 1
-        markers = _m2df(markers)
+        markers = _a2df(markers)
         markers[!, :start] = t2s.(markers[!, :start], sampling_rate)
         markers[!, :length] = t2s.(markers[!, :length], sampling_rate)
     else

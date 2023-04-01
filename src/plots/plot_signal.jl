@@ -477,6 +477,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         ch_tmp = [[ch]]
     end
 
+    xl, yl, tt = "", "", ""
+
     p = Plots.Plot[]
 
     if type === :normal
@@ -531,6 +533,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                     end
 
                     cht_idx < length(ch_t_uni) && (xl = "")
+
                     p_tmp = plot_signal(t,
                                         s[ch_tmp[cht_idx], :],
                                         clabels=clabels[ch_tmp[cht_idx]],
@@ -545,6 +548,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
                 end
             else
+
                 if ch_t[ch_tmp[1][1]] == "eeg"
                     xl, yl, tt = NeuroAnalyzer._set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(NeuroAnalyzer._pl(length(ch_tmp[1]))) ($(NeuroAnalyzer._channel2channel_name(ch_tmp[1])))\n[epoch$(NeuroAnalyzer._pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end

@@ -34,22 +34,29 @@ function _has_markers(obj::NeuroAnalyzer.NEURO)
     return nrow(obj.markers) > 0 ? true : false
 end
 
-function _m2df(markers::Vector{String})
-    # convert EDF/BDF markers to DataFrame
-    markers = replace.(markers, "\x14\x14\0" => "|")
-    markers = replace.(markers, "\x14\x14" => "|")
-    markers = replace.(markers, "\x14" => "|")
-    markers = replace.(markers, "\x1c" => "|")
-    markers = replace.(markers, "\x1d" => "|")
-    markers = replace.(markers, "\0" => "")
+function _a2df(annotations::Vector{String})
+    # convert EDF/BDF annotations to markers DataFrame
+    annotations = replace.(annotations, "\x14\x14\0" => "|")
+    annotations = replace.(annotations, "\x14\x14" => "|")
+    annotations = replace.(annotations, "\x14" => "|")
+    annotations = replace.(annotations, "\0" => "")
     a_start = Vector{Float64}()
     a_event = Vector{String}()
-    # what about markers containing event duration?
-    for idx in eachindex(markers)
-        s = split(markers[idx], "|")
-        if length(s) > 2
+    # what about annotations containing event duration?
+    for idx in length(annotations):-1:1
+        length(annotations[idx]) == 0 && deleteat!(annotations, idx)
+    end
+    for idx in length(annotations):-1:1
+        length(split(annotations[idx], "|")) < 3 && deleteat!(annotations, idx)
+    end
+    for idx in 1:length(annotations)
+        s = split(annotations[idx], "|")
+        if length(s) > 3
             push!(a_start, parse(Float64, strip(s[2])))
             push!(a_event, strip(s[3]))
+        elseif length(s) < 4
+            push!(a_start, parse(Float64, strip(s[1])))
+            push!(a_event, strip(s[2]))
         end
     end
     return DataFrame(:id=>repeat([""], length(a_event)), :start=>a_start, :length=>zeros(Int64, length(a_event)), :description=>a_event, :channel=>zeros(Int64, length(a_event)))

@@ -8,7 +8,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `default_type::String="eeg"`: default channel type
+- `detect_type::Bool=true`: detect channel type based on channel label
 
 # Returns
 
@@ -24,7 +24,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 https://www.biosemi.com/faq/file_format.htm
 """
-function import_bdf(file_name::String; default_type::String="eeg")
+function import_bdf(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     splitext(file_name)[2] == ".bdf" || throw(ArgumentError("This is not a BDF file."))
@@ -134,14 +134,21 @@ function import_bdf(file_name::String; default_type::String="eeg")
 
     close(fid)
 
-    clabels = NeuroAnalyzer._clean_labels(clabels)
-    ch_type = NeuroAnalyzer._set_channel_types(clabels, default_type)
-    # ch_order = NeuroAnalyzer._sort_channels(copy(ch_type))
+    clabels = _clean_labels(clabels)
+    if detect_type == true
+        ch_type = _set_channel_types(clabels, "eeg")
+    else
+        ch_type = repeat(["eeg"], ch_n)
+        ch_type[clabels .== "Status"] .= "mrk"
+    end
+
+    annotation_channels = Int64[]
     if file_type == "BDF"
         # in BDF files the last channel is always the Status channel
         markers_channel = ch_n
     else
         # in BDF+ files the last channel is always the Status channel + additional annotations channels are possible
+        annotation_channels = sort(unique(vcat(ch_n, getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))))
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
@@ -160,42 +167,55 @@ function import_bdf(file_name::String; default_type::String="eeg")
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
+    annotations = String[]
     for idx1 in 1:data_records
         for idx2 in 1:ch_n
             signal24 = zeros(UInt8, samples_per_datarecord[idx2] * 3)
             readbytes!(fid, signal24, samples_per_datarecord[idx2] * 3)
             signal = Vector{Float64}()
-            if idx2 in markers_channel
-                # status = Vector{Int64}()
-                for byte_idx in 1:3:length(signal24)
-                    b1 = Int32(signal24[byte_idx]) << 8
-                    b2 = Int32(signal24[byte_idx + 1]) << 16
-                    b3 = Int64(signal24[byte_idx + 2])
-                    push!(signal, Float64(b1 | b2) * gain[idx2])
-                    # push!(status, b3 * gain[idx2])
-                end
+            if idx2 in annotation_channels
+                push!(annotations, String(Char.(signal24)))
+                signal = zeros(samples_per_datarecord[idx2])
             else
-                for byte_idx in 1:3:length(signal24)
-                    b1 = Int32(signal24[byte_idx]) << 8
-                    b2 = Int32(signal24[byte_idx + 1]) << 16
-                    b3 = -Int32(-signal24[byte_idx + 2]) << 24
-                    push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
+                if idx2 in markers_channel
+                    # status = Vector{Int64}()
+                    for byte_idx in 1:3:length(signal24)
+                        b1 = Int32(signal24[byte_idx])
+                        b2 = Int32(signal24[byte_idx + 1])
+                        # b3 = Int64(signal24[byte_idx + 2])
+                        push!(signal, Float64(b1 | b2) * gain[idx2])
+                        # push!(status, b3 * gain[idx2])
+                    end
+                else
+                    for byte_idx in 1:3:length(signal24)
+                        b1 = Int32(signal24[byte_idx]) << 8
+                        b2 = Int32(signal24[byte_idx + 1]) << 16
+                        b3 = -Int32(-signal24[byte_idx + 2]) << 24
+                        push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
+                    end
                 end
-            end
-            lowercase(units[idx2]) == "mv" && (signal ./= 1000)
-            lowercase(units[idx2]) == "nv" && (signal .*= 1000)
-            if idx2 in markers_channel
-                signal = round.(signal, digits=0)
-                signal[signal .== minimum(signal)] .= 0
-                signal[signal .<= digital_minimum[idx2]] .= 0
-                signal[signal .!= 0] .= 1
+                lowercase(units[idx2]) == "mv" && (signal ./= 1000)
+                lowercase(units[idx2]) == "nv" && (signal .*= 1000)
             end
             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
         end
     end
     close(fid)
 
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    if length(annotation_channels) == 0
+        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    else
+        markers = _a2df(annotations)
+        deleteat!(ch_type, annotation_channels)
+        deleteat!(transducers, annotation_channels)
+        deleteat!(units, annotation_channels)
+        deleteat!(prefiltering, annotation_channels)
+        deleteat!(clabels, annotation_channels)
+        data = data[setdiff(collect(1:ch_n), annotation_channels), :, :]
+        ch_n -= length(annotation_channels)
+    end
+
+    ch_order = NeuroAnalyzer._sort_channels(ch_type)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
@@ -219,14 +239,14 @@ function import_bdf(file_name::String; default_type::String="eeg")
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_type=ch_type,
+                              channel_type=ch_type[ch_order],
                               reference="",
-                              clabels=clabels,
-                              transducers=transducers,
-                              units=units,
-                              prefiltering=prefiltering,
+                              clabels=clabels[ch_order],
+                              transducers=transducers[ch_order],
+                              units=units[ch_order],
+                              prefiltering=prefiltering[ch_order],
                               sampling_rate=sampling_rate,
-                              gain=gain)
+                              gain=gain[ch_order])
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
@@ -248,11 +268,17 @@ function import_bdf(file_name::String; default_type::String="eeg")
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[ch_order, :, :], components, markers, locs, history)
     
-    for idx in 1:length(markers_channel)
-        length(unique(data[markers_channel[idx], :, 1])) > 1 && channel2marker!(obj, ch=markers_channel[idx])
-    end
+    # for idx in 1:length(markers_channel)
+    #     if idx2 in markers_channel
+    #         signal = round.(signal, digits=0)
+    #         signal[signal .== minimum(signal)] .= 0
+    #         signal[signal .<= digital_minimum[idx2]] .= 0
+    #         signal[signal .!= 0] .= 1
+    #     end
+    #     length(unique(data[markers_channel[idx], :, 1])) > 1 && channel2marker!(obj, ch=markers_channel[idx])
+    # end
 
     _info("Imported: < " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
 

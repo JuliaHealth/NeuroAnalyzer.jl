@@ -216,7 +216,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
         ch_n -= 1
-        markers = _m2df(markers)
+        markers = _a2df(markers)
         if markers[!, :id] == repeat([""], nrow(markers))
             # generate unique IDs
             desc = unique(markers[!, :description])
