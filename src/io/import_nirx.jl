@@ -304,7 +304,7 @@ function import_nirx(file_name::String)
     # x, y = y, x
     # normalize to a unit-sphere
     z = normalize(z, method=:n)
-    x, y = NeuroAnalyzer._locnorm(x, y)
+    x, y = _locnorm(x, y)
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))

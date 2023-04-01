@@ -550,7 +550,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             else
 
                 if ch_t[ch_tmp[1][1]] == "eeg"
-                    xl, yl, tt = NeuroAnalyzer._set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(NeuroAnalyzer._pl(length(ch_tmp[1]))) ($(NeuroAnalyzer._channel2channel_name(ch_tmp[1])))\n[epoch$(NeuroAnalyzer._pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
                 if ch_t[ch_tmp[1][1]] == "grad"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -780,7 +780,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     # plot markers if available
     # TODO: draw markers length
     if markers == true && _has_markers(obj) == true
-        markers_pos = obj.markers[!, :start] ./ sr(obj)
+        markers_pos = obj.markers[!, :start]
         markers_desc = obj.markers[!, :description]
         if length(p) > 1
             for p_idx in 1:length(p)
@@ -885,14 +885,14 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     c_name = ""
     if typeof(c) == Symbol
         c_name = string(c)
-        c = NeuroAnalyzer._get_component(obj, c)
+        c = _get_component(obj, c)
     end
-    c_idx == 0 && (c_idx = NeuroAnalyzer._select_cidx(c, c_idx))
-    NeuroAnalyzer._check_cidx(c, c_idx)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
     if size(c, 1) == 1
         clabels = c_name
     else
-        clabels = NeuroAnalyzer._gen_clabels(c)[c_idx]
+        clabels = _gen_clabels(c)[c_idx]
         clabels = c_name .* clabels
     end
     length(c_idx) == 1 && (clabels = [clabels])
@@ -963,7 +963,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     # plot markers if available
     # TODO: draw markers length
     if markers == true && _has_markers(obj) == true
-        markers_pos = obj.markers[!, :start] ./ sr(obj)
+        markers_pos = obj.markers[!, :start]
         markers_desc = obj.markers[!, :description]
         p = Plots.vline!(markers_pos,
                          linestyle=:dash,

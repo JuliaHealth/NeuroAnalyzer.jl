@@ -18,6 +18,27 @@ function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
     return units
 end
 
+function _get_units(ch_type::String)
+    units = ""
+    lowercase(ch_type) == "eeg" && (units = "μV")
+    lowercase(ch_type) == "csd" && (units = "μV/m²")
+    lowercase(ch_type) == "mag" && (units = "fT")
+    lowercase(ch_type) == "grad" && (units = "fT/cm")
+    lowercase(ch_type) == "emg" && (units = "μV")
+    lowercase(ch_type) == "eog" && (units = "μV")
+    lowercase(ch_type) == "ref" && (units = "μV")
+    lowercase(ch_type) == "ecg" && (units = "mV")
+    lowercase(ch_type) == "nirs_int" && (units = "V")
+    lowercase(ch_type) == "nirs_od" && (units = "")
+    lowercase(ch_type) == "nirs_hbo" && (units = "μM/mm")
+    lowercase(ch_type) == "nirs_hbr" && (units = "μM/mm")
+    lowercase(ch_type) == "nirs_hbt" && (units = "μM/mm")
+    lowercase(ch_type) == "nirs_aux" && (units = "")
+    lowercase(ch_type) == "other" && (units = "")
+    return units
+end
+
+
 function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     if ch isa Int64
         return ch

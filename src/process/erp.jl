@@ -22,7 +22,7 @@ function erp(obj::NeuroAnalyzer.NEURO; n::Int64=0)
     obj_new = keep_channel(obj, ch=signal_channels(obj))
     obj_new.data = cat(mean(obj_new.data, dims=3)[:, :, :], obj_new.data, dims=3)
     obj_new.header.recording[:data_type] = "erp"
-    obj_new.time_pts, obj_new.epoch_time = NeuroAnalyzer._get_t(obj_new)
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # remove DC
     if n != 0

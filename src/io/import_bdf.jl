@@ -142,9 +142,9 @@ function import_bdf(file_name::String; detect_type::Bool=true)
         ch_type[clabels .== "Status"] .= "mrk"
     end
 
-    annotation_channels = Int64[]
     if file_type == "BDF"
         # in BDF files the last channel is always the Status channel
+        annotation_channels = Int64[]
         markers_channel = ch_n
     else
         # in BDF+ files the last channel is always the Status channel + additional annotations channels are possible
@@ -168,7 +168,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     readbytes!(fid, header, data_offset)
     data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
     annotations = String[]
-    for idx1 in 1:data_records
+    @inbounds for idx1 in 1:data_records
         for idx2 in 1:ch_n
             signal24 = zeros(UInt8, samples_per_datarecord[idx2] * 3)
             readbytes!(fid, signal24, samples_per_datarecord[idx2] * 3)
@@ -215,10 +215,10 @@ function import_bdf(file_name::String; detect_type::Bool=true)
         ch_n -= length(annotation_channels)
     end
 
-    ch_order = NeuroAnalyzer._sort_channels(ch_type)
+    ch_order = _sort_channels(ch_type)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
-    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
+    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
     
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
@@ -268,18 +268,8 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[ch_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
     
-    # for idx in 1:length(markers_channel)
-    #     if idx2 in markers_channel
-    #         signal = round.(signal, digits=0)
-    #         signal[signal .== minimum(signal)] .= 0
-    #         signal[signal .<= digital_minimum[idx2]] .= 0
-    #         signal[signal .!= 0] .= 1
-    #     end
-    #     length(unique(data[markers_channel[idx], :, 1])) > 1 && channel2marker!(obj, ch=markers_channel[idx])
-    # end
-
     _info("Imported: < " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
 
     return obj

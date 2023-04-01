@@ -23,8 +23,8 @@ function view_marker(obj::NeuroAnalyzer.NEURO)
     
     println(rpad("n", 5) * 
             rpad("ID", 24) * 
-            rpad("start [sample]", 18) * 
-            rpad("length [sample]", 18) * 
+            rpad("start [s]", 18) * 
+            rpad("length [s]", 18) * 
             rpad("description", 24) * 
             rpad("channel", 1))
 
@@ -97,8 +97,8 @@ Add marker.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `id::String`: marker ID
-- `start::Int64`: marker time in samples
-- `len::Int64=1`: marker length in samples
+- `start::Float64`: marker time in seconds
+- `len::Float64=1.0`: marker length in seconds
 - `desc::String`: marker description
 - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
 
@@ -106,7 +106,7 @@ Add marker.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int64=1, desc::String, ch::Int64=0)
+function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Float64, len::Float64=1.0, desc::String, ch::Int64=0)
 
     start < 1 && throw(ArgumentError("start must be > 0."))
     len < 1 && throw(ArgumentError("len must be > 0."))
@@ -132,12 +132,12 @@ Add marker.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `id::String`: marker ID
-- `start::Int64`: marker time in samples
-- `len::Int64=1`: marker length in samples
+- `start::Float64`: marker time in seconds
+- `len::Float64=1.0`: marker length in seconds
 - `desc::String`: marker description
 - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
 """
-function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int64=1, desc::String, ch::Int64=0)
+function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Float64, len::Float64=1.0, desc::String, ch::Int64=0)
 
     obj_new = add_marker(obj, id=id, start=start, len=len, desc=desc, ch=ch)
     obj.history = obj_new.history
@@ -157,8 +157,8 @@ Edit marker.
 - `obj::NeuroAnalyzer.NEURO`
 - `n::Int64`: marker number
 - `id::String`: marker ID
-- `start::Int64`: marker time in samples
-- `len::Int64=1`: marker length in samples
+- `start::Float64`: marker time in seconds
+- `len::Float64=1.0`: marker length in seconds
 - `desc::String`: marker description
 - `ch::Int64`: channel number, if 0 then marker is related to all channels
 
@@ -166,19 +166,20 @@ Edit marker.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, ch::Int64)
+function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Float64, len::Float64=1.0, desc::String, ch::Int64)
 
     _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
     start < 1 && throw(ArgumentError("start must be > 0."))
     len < 1 && throw(ArgumentError("len must be > 0."))
-    start >= signal_len(obj) && throw(ArgumentError("start must be < $(signal_len(obj))."))
-    start + len > signal_len(obj) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj))."))
+    start >= signal_len(obj) / sr(obj) && throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
+    start + len > signal_len(obj) / sr(obj) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
 
     nn = size(obj.markers, 1)
     n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>ch)
      reset_components!(obj_new)
+    sort!(obj_new.markers, :start)
     push!(obj_new.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, ch=$ch)")
 
     return obj_new
@@ -195,12 +196,12 @@ Edit marker.
 - `obj::NeuroAnalyzer.NEURO`
 - `n::Int64`: marker number
 - `id::String`: marker ID
-- `start::Int64`: marker time in samples
-- `len::Int64=1`: marker length in samples
+- `start::Float64`: marker time in seconds
+- `len::Float64=1`: marker length in seconds
 - `desc::String`: marker description
 - `ch::Int64`: channel number, if 0 then marker is related to all channels
 """
-function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, ch::Int64)
+function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Float64, len::Float64=1.0, desc::String, ch::Int64)
 
     obj_new = edit_marker(obj, n=n, id=id, start=start, len=len, desc=desc, ch=ch)
     obj.history = obj_new.history
@@ -281,7 +282,7 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
     _info("$(length(ev_start)) events added.")
 
     obj_new = deepcopy(obj)
-    append!(obj_new.markers, DataFrame(:id=>ev_id, :start=>ev_start, :length=>ev_len, :description=>ev_desc, :channel=>ev_ch))
+    append!(obj_new.markers, DataFrame(:id=>ev_id, :start=>(ev_start ./ sr(obj)), :length=>(ev_len ./ sr(obj)), :description=>ev_desc, :channel=>ev_ch))
     sort!(obj_new.markers, :start)
     reset_components!(obj_new)
     push!(obj_new.history, "channel2marker(OBJ, ch=$ch, v=$v, id=$id, desc=$desc")

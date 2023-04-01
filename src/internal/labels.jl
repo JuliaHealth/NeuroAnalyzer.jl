@@ -1,12 +1,11 @@
 function _clean_labels(clabels::Vector{String})
-    clabels = replace.(clabels, "EEG " => "")
-    clabels = replace.(clabels, "eeg " => "")
-    clabels = replace.(clabels, "EOG EOG" => "EOG")
-    clabels = replace.(clabels, "eog eog" => "EOG")
-    clabels = replace.(clabels, "ECG EKG" => "ECG")
-    clabels = replace.(clabels, "ecg ekg" => "ECG")
-    clabels = replace.(clabels, "BDF " => "")
-    clabels = replace.(clabels, "bdf " => "")
+    clabels = replace.(lowercase.(clabels), "eeg " => "")
+    clabels = replace.(lowercase.(clabels), "eog eog" => "EOG")
+    clabels = replace.(lowercase.(clabels), "ecg ekg" => "ECG")
+    clabels = replace.(lowercase.(clabels), "edf " => "")
+    clabels = replace.(lowercase.(clabels), "bdf " => "")
+    clabels = replace.(clabels, ".." => "")
+    clabels = replace.(clabels, "." => "")
     return clabels
 end
 
