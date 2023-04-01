@@ -165,7 +165,7 @@ function import_edf_annotations(file_name::String)
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
-        markers = NeuroAnalyzer._a2df(annotations)
+        markers = _a2df(annotations)
     end
 
     return markers

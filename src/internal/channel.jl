@@ -38,7 +38,6 @@ function _get_units(ch_type::String)
     return units
 end
 
-
 function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     if ch isa Int64
         return ch

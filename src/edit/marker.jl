@@ -23,16 +23,16 @@ function view_marker(obj::NeuroAnalyzer.NEURO)
     
     println(rpad("n", 5) * 
             rpad("ID", 24) * 
-            rpad("start [s]", 18) * 
-            rpad("length [s]", 18) * 
+            rpad("start [s]", 12) * 
+            rpad("length [s]", 12) * 
             rpad("description", 24) * 
             rpad("channel", 1))
 
     for mrk_idx in 1:nrow(obj.markers)
         println(rpad(string(mrk_idx), 5) * 
                 rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) * 
-                rpad(string(obj.markers[mrk_idx, :start]), 18) * 
-                rpad(string(obj.markers[mrk_idx, :length]), 18) * 
+                rpad(string(round(obj.markers[mrk_idx, :start], digits=3)), 12) * 
+                rpad(string(round(obj.markers[mrk_idx, :length], digits=3)), 12) * 
                 rpad("'" * obj.markers[mrk_idx, :description] * "'", 24) * 
                 rpad(string(obj.markers[mrk_idx, :channel]), 1))
     end

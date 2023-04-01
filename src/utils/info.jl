@@ -469,14 +469,14 @@ function describe(obj::NeuroAnalyzer.NEURO)
                 rpad(labels(obj)[idx], 16) * 
                 rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) * 
                 rpad(obj.header.recording[:units][idx], 8) * 
-                rpad(round(rng(obj.data[idx, :, :]), digits=3), 10) * 
-                rpad(round(mean(obj.data[idx, :, :]), digits=3), 10) * 
-                rpad(round(std(obj.data[idx, :, :]), digits=3), 10) * 
-                rpad(round(minimum(obj.data[idx, :, :]), digits=3), 10) * 
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=3), 10) * 
-                rpad(round(median(obj.data[idx, :, :]), digits=3), 10) * 
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=3), 10) * 
-                rpad(round(maximum(obj.data[idx, :, :]), digits=3), 10))
+                rpad(round(rng(obj.data[idx, :, :]), digits=2), 10) * 
+                rpad(round(mean(obj.data[idx, :, :]), digits=2), 10) * 
+                rpad(round(std(obj.data[idx, :, :]), digits=2), 10) * 
+                rpad(round(minimum(obj.data[idx, :, :]), digits=2), 10) * 
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=2), 10) * 
+                rpad(round(median(obj.data[idx, :, :]), digits=2), 10) * 
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=2), 10) * 
+                rpad(round(maximum(obj.data[idx, :, :]), digits=2), 10))
     end
 end
 

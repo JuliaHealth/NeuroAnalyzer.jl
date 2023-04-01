@@ -194,8 +194,14 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                         push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
                     end
                 end
-                lowercase(units[idx2]) == "mv" && (signal ./= 1000)
-                lowercase(units[idx2]) == "nv" && (signal .*= 1000)
+                if lowercase(units[idx2]) == "mv"
+                    lowercase(units[idx2]) == "μV"
+                    signal ./= 1000
+                end
+                if lowercase(units[idx2]) == "nv"
+                    lowercase(units[idx2]) == "μV"
+                    signal .*= 1000
+                end
             end
             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
         end

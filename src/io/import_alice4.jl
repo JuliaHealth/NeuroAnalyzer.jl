@@ -184,8 +184,14 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                     signal = zeros(samples_per_datarecord[idx2])
                 else
                     signal = map(ltoh, reinterpret(Int16, signal))
-                    lowercase(units[idx2]) == "mv" && (signal ./= 1000)
-                    lowercase(units[idx2]) == "nv" && (signal .*= 1000)
+                    if lowercase(units[idx2]) == "mv"
+                        lowercase(units[idx2]) == "μV"
+                        signal ./= 1000
+                    end
+                    if lowercase(units[idx2]) == "nv"
+                        lowercase(units[idx2]) == "μV"
+                        signal .*= 1000
+                    end
                 end
                 data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
             end

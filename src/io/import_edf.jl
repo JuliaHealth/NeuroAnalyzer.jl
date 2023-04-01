@@ -194,8 +194,14 @@ function import_edf(file_name::String; detect_type::Bool=true)
                     signal = zeros(samples_per_datarecord[idx2])
                 else
                     signal = map(ltoh, reinterpret(Int16, signal))
-                    lowercase(units[idx2]) == "mv" && (signal ./= 1000)
-                    lowercase(units[idx2]) == "nv" && (signal .*= 1000)
+                    if lowercase(units[idx2]) == "mv"
+                        lowercase(units[idx2]) == "μV"
+                        signal ./= 1000
+                    end
+                    if lowercase(units[idx2]) == "nv"
+                        lowercase(units[idx2]) == "μV"
+                        signal .*= 1000
+                    end
                 end
                 data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
             end
@@ -236,8 +242,14 @@ function import_edf(file_name::String; detect_type::Bool=true)
                     signal = map(ltoh, reinterpret(Int16, signal))
                     signal = @. (signal - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
                     sampling_rate[idx2] != max_sampling_rate && (signal = FourierTools.resample(signal, max_sampling_rate))
-                    lowercase(units[idx2]) == "mv" && (signal ./= 1000)
-                    lowercase(units[idx2]) == "nv" && (signal .*= 1000)
+                    if lowercase(units[idx2]) == "mv"
+                        lowercase(units[idx2]) == "μV"
+                        signal ./= 1000
+                    end
+                    if lowercase(units[idx2]) == "nv"
+                        lowercase(units[idx2]) == "μV"
+                        signal .*= 1000
+                    end
                 end
                 data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = signal
             end
@@ -251,7 +263,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
-        markers = NeuroAnalyzer._a2df(annotations)
+        markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
         deleteat!(transducers, annotation_channels)
         deleteat!(units, annotation_channels)

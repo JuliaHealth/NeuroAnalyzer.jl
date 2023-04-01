@@ -38,6 +38,7 @@ using InformationMeasures
 using Interpolations
 using Jacobi
 using JLD2
+using JSON
 using LinearAlgebra
 using Loess
 using MAT
