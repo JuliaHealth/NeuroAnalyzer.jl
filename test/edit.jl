@@ -193,6 +193,6 @@ channel2marker!(eeg_mrk, ch=28)
 
 @info "test 24/24: epoch()"
 eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", offset=0.2, ep_len=1.2)
-@test size(eeg_mrk2) == (29, 600, 1127) 
+@test size(eeg_mrk2) == (29, 252, 996)
 
 true

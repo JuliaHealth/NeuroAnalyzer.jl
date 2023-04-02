@@ -75,15 +75,17 @@ Trim signal by removing parts of the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `seg::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
+- `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
 - `remove_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 # Returns
 
 - OBJ
 """
-function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Int64, Int64}, remove_epochs::Bool=true)
+function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, remove_epochs::Bool=true)
 
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+    
     if remove_epochs == true
         epoch_n(obj) == 1 && throw(ArgumentError("OBJ has only one epoch, cannot use remove_epochs=true."))
         eps = _s2epoch(obj, seg[1], seg[2])
@@ -120,10 +122,10 @@ Trim signal by removing parts of the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `seg::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
-- `remove_epochs::Bool=true`: remove epochs containing signal to trim (remove_epochs=true) or remove signal and remove epoching
+- `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
+- `remove_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 """
-function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Int64, Int64}, remove_epochs::Bool=true)
+function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, remove_epochs::Bool=true)
 
     obj_new = trim(obj, seg=seg, remove_epochs=remove_epochs)
     obj.data = obj_new.data

@@ -5,7 +5,7 @@ using DataFrames
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 locs = import_locs(joinpath(testfiles_path, "locs.ced"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
