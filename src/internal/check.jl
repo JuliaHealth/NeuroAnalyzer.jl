@@ -58,12 +58,14 @@ function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
-    from < 1 && throw(ArgumentError("from must be > 0."))
-    to < 1 && throw(ArgumentError("to must be > 0."))
-    to < from && throw(ArgumentError("to must be ≥ $from."))
-    (from > signal_len(obj)) && throw(ArgumentError("from must be ≤ $(signal_len(obj))."))
-    (to > signal_len(obj)) && throw(ArgumentError("to must be ≤ $(signal_len(obj))."))
+function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
+    from = seg[1]
+    to = seg[2]
+    from < 1 && throw(ArgumentError("from must be ≥ 0."))
+    to < 1 && throw(ArgumentError("to must be ≥ 0."))
+    to < from && throw(ArgumentError("to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."))
+    (from > signal_len(obj)) && throw(ArgumentError("from must be ≤ $(obj.time_pts[end])."))
+    (to > signal_len(obj)) && throw(ArgumentError("to must be ≤ $(obj.time_pts[end])."))
     return nothing
 end
 

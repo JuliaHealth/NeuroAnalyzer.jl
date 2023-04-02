@@ -68,6 +68,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    size=plot_size,
                    top_margin=0Plots.px,
                    bottom_margin=15Plots.px,
+                   right_margin=10Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -418,11 +419,12 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (1, signal_len(obj))
     else
+        (seg[1] < seg[2] && seg[2] > obj.time_pts[end]) && _info("Segment trimmed to the signal length.")
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     end
 
     _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
-    _check_segment(obj, seg[1], seg[2])
+    _check_segment(obj, seg)
 
     if ep != 0
         _check_epochs(obj, ep)
@@ -868,11 +870,12 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (1, signal_len(obj))
     else
+        (seg[1] < seg[2] && seg[2] > obj.time_pts[end]) && _info("Segment trimmed to the signal length.")
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     end
 
     _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
-    _check_segment(obj, seg[1], seg[2])
+    _check_segment(obj, seg)
 
     if ep != 0
         _check_epochs(obj, ep)

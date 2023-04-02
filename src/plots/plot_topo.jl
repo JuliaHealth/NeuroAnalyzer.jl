@@ -151,13 +151,14 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (1, signal_len(obj))
     else
+        (seg[1] < seg[2] && seg[2] > obj.time_pts[end]) && _info("Segment trimmed to the signal length.")
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     end
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
-    _check_segment(obj, seg[1], seg[2])
+    _check_segment(obj, seg)
 
     if ep != 0
         _check_epochs(obj, ep)
@@ -263,6 +264,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (1, signal_len(obj))
     else
+        (seg[1] < seg[2] && seg[2] > obj.time_pts[end]) && _info("Segment trimmed to the signal length.")
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     end
 
@@ -273,18 +275,18 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     no_timepoint = false
     if c isa Matrix{Float64}
         c = reshape(c, size(c, 1), size(c, 2), 1)
-        seg = (1, size(c, 2))
+        seg = (0, size(c, 2) / sr(obj))
         no_timepoint = true
     elseif c isa Vector{Float64}
         c = reshape(c, length(c), 1, 1)
-        seg = (1, 1)
+        seg = (0, 1)
         no_timepoint = true
     elseif size(c, 2) == 1
         no_timepoint = true
-        seg = (1, 1)
+        seg = (0, 1)
     end
 
-    _check_segment(obj, seg[1], seg[2])
+    _check_segment(obj, seg)
 
     if ep != 0
         _check_epochs(obj, ep)
