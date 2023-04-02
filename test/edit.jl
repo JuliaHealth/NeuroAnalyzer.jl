@@ -5,7 +5,7 @@ using ContinuousWavelets
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -112,14 +112,14 @@ bm, be = detect_bad(e10)
 
 @info "test 12/24: epoch()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 @test epoch_len(e10) == 10*sr(eeg)
 e10 = epoch(eeg, ep_n=10)
 @test epoch_n(e10) == 10
 
 @info "test 13/24: epoch_time()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 @test e10.epoch_time[1] == 0.0
 e10_tmp = epoch_ts(e10, ts=-1.0)
 @test e10_tmp.epoch_time[1] == -1.0
@@ -128,7 +128,7 @@ epoch_ts!(e10_tmp, ts=-2.0)
 
 @info "test 14/24: extract_channel()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 s = extract_channel(e10, ch=1)
 @test size(s) == (1, 2560, 121)
 
@@ -185,12 +185,14 @@ edit_marker!(eeg_mrk, n=45, id="TEST", start=1989, len=1, desc="test", ch=0)
 @test eeg_mrk.markers[45, :id] == "TEST"
 
 @info "test 23/24: channel2marker()"
-@test nrow(eeg_mrk.markers) == 45 
+@test nrow(eeg_mrk.markers) == 45
+eeg_mrk.data[28, :, :] = round.(eeg_mrk.data[28, :, :])
+eeg_mrk.data[28, :, :] .+= 12
 channel2marker!(eeg_mrk, ch=28)
-@test nrow(eeg_mrk.markers) == 1172 
+@test nrow(eeg_mrk.markers) == 1041
 
 @info "test 24/24: epoch()"
-eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", ep_offset=200, ep_len=600)
+eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", offset=0.2, ep_len=1.2)
 @test size(eeg_mrk2) == (29, 600, 1127) 
 
 true

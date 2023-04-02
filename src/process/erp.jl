@@ -2,20 +2,20 @@ export erp
 export erp!
 
 """
-    erp(obj; n)
+    erp(obj; bl)
 
 Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_type]` becomes `erp`. First epoch is the ERP.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `n::Int64=0`: baseline is the first `n` samples; if `n` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal.
+- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `bl` seconds and subtracted from the signal.
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function erp(obj::NeuroAnalyzer.NEURO; n::Int64=0)
+function erp(obj::NeuroAnalyzer.NEURO; bl::Real=0)
 
     channel_n(obj) > length(signal_channels(obj)) && _info("Non-signal channels will be removed.")
 
@@ -25,8 +25,8 @@ function erp(obj::NeuroAnalyzer.NEURO; n::Int64=0)
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # remove DC
-    if n != 0
-        obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, 1], n)
+    if bl != 0
+        obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, 1], round(Int64, bl * sr(obj)))
     end
 
     # remove markers of deleted epochs
@@ -36,24 +36,24 @@ function erp(obj::NeuroAnalyzer.NEURO; n::Int64=0)
     obj_new.markers[!, :start] .+= (obj_new.epoch_time[1] * sr(obj_new))
 
     reset_components!(obj_new)
-    push!(obj_new.history, "erp(OBJ)")
+    push!(obj_new.history, "erp(OBJ, bl=$bl)")
 
     return obj_new
 end
 
 """
-    erp!(obj)
+    erp!(obj; bl)
 
 Average epochs.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `n::Int64=0`: baseline is the first `n` samples; if `n` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal.
+- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal.
 """
-function erp!(obj::NeuroAnalyzer.NEURO; n::Int64=0)
+function erp!(obj::NeuroAnalyzer.NEURO; bl::Real=0)
 
-    obj_new = erp(obj, n=n)
+    obj_new = erp(obj, bl=bl)
     obj.data = obj_new.data
     obj.components = obj_new.components
     obj.history = obj_new.history

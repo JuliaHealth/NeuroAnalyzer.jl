@@ -50,9 +50,6 @@ function _a2df(annotations::Vector{String})
     for idx in length(mrk):-1:1
         (length(mrk[idx]) == 0 || occursin('|', mrk[idx]) == false) && deleteat!(mrk, idx)
     end
-    # for idx in length(mrk):-1:1
-    #     length(split(mrk[idx], "|")) < 3 && deleteat!(mrk, idx)
-    # end
 
     if length(mrk) == 1
         s = split(mrk[1], "|")

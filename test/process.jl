@@ -6,7 +6,7 @@ using ContinuousWavelets
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
 load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 v = [1, 2, 3, 4, 5]

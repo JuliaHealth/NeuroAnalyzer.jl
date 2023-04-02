@@ -2,7 +2,7 @@ using NeuroAnalyzer
 using Test
 
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-epoch!(eeg, ep_len=5*256)
+epoch!(eeg, ep_len=5)
 
 eeg1 = deepcopy(eeg)
 eeg2 = deepcopy(eeg)
