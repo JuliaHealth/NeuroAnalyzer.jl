@@ -258,15 +258,38 @@ function info(obj::NeuroAnalyzer.NEURO)
     end
     println("Channels:")
     if obj.header.recording[:data_type] != "nirs"
+        println(rpad(" ch", 8) * 
+                rpad("label", 16) * 
+                rpad("type", 12) * 
+                rpad("unit", 8))
         for idx in eachindex(obj.header.recording[:labels])
-            println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))")
+            println(rpad(" $idx", 8) * 
+                    rpad("$(obj.header.recording[:labels][idx])", 16) * 
+                    rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) * 
+                    rpad("$(obj.header.recording[:units][idx])", 8))
         end
     else
-        for idx in eachindex(obj.header.recording[:labels])
-            if obj.header.recording[:channel_type][idx] !== "nirs_aux"
-                println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))\twavelength: $(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]]) nm")
-            else
-                println("\tchannel: $idx\tlabel: $(rpad(obj.header.recording[:labels][idx], 16, " "))\ttype: $(uppercase(obj.header.recording[:channel_type][idx]))")
+        if obj.header.recording[:channel_type][idx] !== "nirs_aux"
+            println(rpad(" ch", 8) * 
+                    rpad("label", 16) * 
+                    rpad("type", 12) * 
+                    rpad("unit", 8) * 
+                    rpad("wavelength", 8))
+            for idx in eachindex(obj.header.recording[:labels])
+                println(rpad(" $idx", 8) * 
+                        rpad("$(obj.header.recording[:labels][idx])", 16) * 
+                        rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) * 
+                        rpad("$(obj.header.recording[:units][idx])", 8) * 
+                        rpad("$(obj.header.recording[:wavelength_index][idx])", 8))
+            end
+        else
+            println(rpad(" ch", 8) * 
+                    rpad("label", 16) * 
+                    rpad("type", 12))
+            for idx in eachindex(obj.header.recording[:labels])
+                println(rpad(" $idx", 8) * 
+                        rpad("$(obj.header.recording[:labels][idx])", 16) * 
+                        rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12))
             end
         end
     end
