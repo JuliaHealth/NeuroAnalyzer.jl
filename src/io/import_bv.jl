@@ -275,7 +275,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         elseif binary_format == "ieee_float_32"
             bytes = 4
         else
-            @error("Only Float32 and Int16 BVCDF binary formats are supported.")
+            @error("Binary formats other than Float32 and Int16 are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
         end
 
         fid = ""
@@ -308,10 +308,10 @@ function import_bv(file_name::String; detect_type::Bool=true)
                 idx2 += 1
             end
         else
-            @error "Only MULTIPLEXED data orientation is supported."
+            @error "Data orientation other than MULTIPLEXED is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
         end
     else
-        @error "ASCII format is not supported yet."
+        @error "ASCII format is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     end
 
     # apply gain
