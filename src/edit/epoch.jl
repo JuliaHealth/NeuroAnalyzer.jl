@@ -1,7 +1,7 @@
 export epoch
 export epoch!
-export epoch_time
-export epoch_time!
+export epoch_ts
+export epoch_ts!
 
 """
     epoch(obj; marker, ep_offset, ep_n, ep_len)

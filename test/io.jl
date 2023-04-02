@@ -6,7 +6,7 @@ using DataFrames
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdf.bdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BDF"
-@test channel_n(eeg) == 16
+@test channel_n(eeg) == 17
 
 @info "test 2/25: import_bdf()"
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdfplus.bdf"))

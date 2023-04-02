@@ -28,28 +28,29 @@ function import_csv(file_name::String; detect_type::Bool=true)
 
     df = CSV.read(file_name, DataFrame)
 
-    if df[!, 1] isa Vector{Float64}
+    if df[:, 1] isa Vector{Float64}
         # time by channels
-        time_pts = df[:, 1]
+        time_pts = df[!, 1]
         data = Array(df[:, 2:end])'
         ch_n = ncol(df) - 1
         clabels = String.(names(df)[2:end])
     else
         # channels by time
         time_pts = parse.(Float64, names(df)[2:end])
-        data = Array(df[:, 2:end])
+        data = Array(df[!, 2:end])
         ch_n = nrow(df)
-        clabels = String.(df[:, 1])
+        clabels = String.(df[!, 1])
     end
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
     clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(clabels, "eeg")
+        ch_type = _set_channel_types(clabels, "eeg")
     else
-        channel_type = repeat(["eeg"], ch_n)
+        ch_type = repeat(["eeg"], ch_n)
+        units = repeat(["μV"], ch_n)
     end
-    channel_order = _sort_channels(copy(channel_type))
+    ch_order = _sort_channels(ch_type)
 
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
@@ -79,9 +80,9 @@ function import_csv(file_name::String; detect_type::Bool=true)
                               recording_date="",
                               recording_time="",
                               recording_notes="",
-                              channel_type=channel_type,
+                              channel_type=ch_type[ch_order],
                               reference="",
-                              clabels=clabels,
+                              clabels=clabels[ch_order],
                               transducers=repeat([""], ch_n),
                               units=repeat([""], ch_n),
                               prefiltering=repeat([""], ch_n),
@@ -109,7 +110,7 @@ function import_csv(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[ch_order, :, :], components, markers, locs, history)
 
     _info("Imported: < " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
 

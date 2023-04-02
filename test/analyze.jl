@@ -190,35 +190,36 @@ ec, p = NeuroAnalyzer.env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:hamp)
 @test p[1] <= 1.0
 
 @info "test 15/48: erp_peaks()"
-p = NeuroAnalyzer.erp_peaks(e10)
+e = NeuroAnalyzer.erp(e10)
+p = NeuroAnalyzer.erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "test 16/48: fcoherence()"
-c, msc, f = fcoherence(rand(10, 100), fs=10)
+c, msc, f = NeuroAnalyzer.fcoherence(rand(10, 100), fs=10)
 @test size(c) == (10, 10, 65)
 @test size(msc) == (10, 10, 65)
 @test length(f) == 65
-c, msc, f = fcoherence(rand(10, 100), rand(10, 100), fs=10)
+c, msc, f = NeuroAnalyzer.fcoherence(rand(10, 100), rand(10, 100), fs=10)
 @test length(c) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, msc, f = fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
+c, msc, f = NeuroAnalyzer.fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
 @test size(c) == (2049, 1)
 @test size(msc) == (2049, 1)
 @test length(f) == 2049
 
 @info "test 17/48: frqinst()"
-f = frqinst(rand(100), fs=10)
+f = NeuroAnalyzer.frqinst(rand(100), fs=10)
 @test length(f) == 100
-f = frqinst(rand(10, 100, 10), fs=10)
+f = NeuroAnalyzer.frqinst(rand(10, 100, 10), fs=10)
 @test size(f) == (10, 100, 10)
 
 @info "test 18/48: ged()"
-s, r, rn = ged(rand(10, 10), rand(10, 10))
+s, r, rn = NeuroAnalyzer.ged(rand(10, 10), rand(10, 10))
 @test length(s) == 100
 @test length(r) == 10
 @test length(rn) == 10
-s, r, rn = ged(e10, e10)
+s, r, rn = NeuroAnalyzer.ged(e10, e10)
 @test length(s) == 486400
 @test length(r) == 190
 @test length(rn) == 190
