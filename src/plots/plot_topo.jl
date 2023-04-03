@@ -148,17 +148,17 @@ Topographical plot.
 """
 function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Vector{Int64}, AbstractRange}=signal_channels(obj), seg::Tuple{Real, Real}=(1, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
+    _check_segment(obj, seg)
+
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (1, signal_len(obj))
     else
-        (seg[1] < seg[2] && seg[2] > obj.time_pts[end]) && _info("Segment trimmed to the signal length.")
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     end
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
-    _check_segment(obj, seg)
 
     if ep != 0
         _check_epochs(obj, ep)

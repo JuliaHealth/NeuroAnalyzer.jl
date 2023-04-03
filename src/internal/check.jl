@@ -61,6 +61,15 @@ end
 function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
     from = seg[1]
     to = seg[2]
+    to < from && throw(ArgumentError("to must be > from."))
+    from < obj.time_pts[1] && throw(ArgumentError("from must be ≥ $(obj.time_pts[1])."))
+    to < obj.time_pts[1] && throw(ArgumentError("to must be ≥ $(obj.time_pts[1])."))
+    (from > obj.time_pts[end]) && throw(ArgumentError("from must be ≤ $(obj.time_pts[end])."))
+    (to > obj.time_pts[end]) && throw(ArgumentError("to must be ≤ $(obj.time_pts[end])."))
+    return nothing
+end
+
+function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
     from < 1 && throw(ArgumentError("from must be ≥ 0."))
     to < 1 && throw(ArgumentError("to must be ≥ 0."))
     to < from && throw(ArgumentError("to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."))

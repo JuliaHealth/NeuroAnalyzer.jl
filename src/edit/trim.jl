@@ -84,19 +84,22 @@ Trim signal by removing parts of the signal.
 """
 function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, remove_epochs::Bool=true)
 
+    _check_segment(obj, seg)
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-    
+
     if remove_epochs == true
         epoch_n(obj) == 1 && throw(ArgumentError("OBJ has only one epoch, cannot use remove_epochs=true."))
+        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
         eps = _s2epoch(obj, seg[1], seg[2])
         _info("Removing epochs: $eps.")
         obj_new = delete_epoch(obj, ep=eps)
     else
         obj_new = deepcopy(obj)
         epoch_n(obj) > 1 && (epoch!(obj_new, ep_n=1))
-        _check_segment(obj_new, seg[1], seg[2])
+
         obj_new.data = trim(obj_new.data, seg=seg)
         obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+
         if epoch_n(obj) > 1
             if epoch_len(obj) <= signal_len(obj_new)
                 epoch!(obj_new, ep_len=epoch_len(obj))
@@ -104,8 +107,10 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, remove_epochs::B
                 _info("Cannot apply original epoch length, returning single-epoch OBJ.")
             end
         end
+        
         obj_new.markers = _delete_markers(obj_new.markers, seg)
         obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]))
+
     end
 
     reset_components!(obj_new)
