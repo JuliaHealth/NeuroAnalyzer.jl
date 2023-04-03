@@ -416,13 +416,12 @@ Plot signal.
 """
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
-    _check_segment(obj, seg)
-
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
-        seg = (1, signal_len(obj))
+        seg = (0, obj.time_pts[end])
     else
-        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+        _check_segment(obj, seg)
     end
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
 
@@ -867,13 +866,12 @@ Plot embedded or external component.
 """
 function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
-    _check_segment(obj, seg)
-    
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
-        seg = (1, signal_len(obj))
+        seg = (0, obj.time_pts[end])
     else
-        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+        _check_segment(obj, seg)
     end
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
 

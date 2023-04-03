@@ -2,113 +2,113 @@ using NeuroAnalyzer
 using Test
 using DataFrames
 
-@info "test 1/25: import_bdf()"
+@info "test 1/26: import_bdf()"
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdf.bdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BDF"
 @test channel_n(eeg) == 17
 
-@info "test 2/25: import_bdf()"
+@info "test 2/26: import_bdf()"
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdfplus.bdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BDF+"
 @test channel_n(eeg) == 11
 
-@info "test 3/25: import_edf()"
+@info "test 3/26: import_edf()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "EDF"
 @test channel_n(eeg) == 24
 
-@info "test 4/25: import_edf()"
+@info "test 4/26: import_edf()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "EDF+"
 @test channel_n(eeg) == 29
 
-@info "test 5/25: import_digitrack()"
+@info "test 5/26: import_digitrack()"
 eeg = import_digitrack(joinpath(testfiles_path, "eeg-test-digitrack.txt"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "Digitrack"
 @test channel_n(eeg) == 24
 
-@info "test 6/25: import_bv()"
+@info "test 6/26: import_bv()"
 eeg = import_bv(joinpath(testfiles_path, "eeg-test-bv.vhdr"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BrainVision"
 @test channel_n(eeg) == 2
 
-@info "test 7/25: import_csv()"
+@info "test 7/26: import_csv()"
 eeg = import_csv(joinpath(testfiles_path, "eeg-test_txch.csv.gz"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "CSV"
 @test channel_n(eeg) == 24
 
-@info "test 8/25: import_csv()"
+@info "test 8/26: import_csv()"
 eeg = import_csv(joinpath(testfiles_path, "eeg-test_chxt.csv.gz"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "CSV"
 @test channel_n(eeg) == 24
 
-@info "test 9/25: import_set()"
+@info "test 9/26: import_set()"
 eeg = import_set(joinpath(testfiles_path, "eeg-test-eeglab.set"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "SET"
 @test channel_n(eeg) == 24
 
-@info "test 10/25: import_locs_ced()"
+@info "test 10/26: import_locs_ced()"
 l = import_locs_ced(joinpath(testfiles_path, "locs.ced"))
 @test l isa DataFrame
 
-@info "test 11/25: import_locs_locs()"
+@info "test 11/26: import_locs_locs()"
 l = import_locs_locs(joinpath(testfiles_path, "locs.locs"))
 @test l isa DataFrame
 
-@info "test 12/25: import_locs_elc()"
+@info "test 12/26: import_locs_elc()"
 l = import_locs_elc(joinpath(testfiles_path, "locs.elc"))
 @test l isa DataFrame
 
-@info "test 13/25: import_locs_tsv()"
+@info "test 13/26: import_locs_tsv()"
 l = import_locs_tsv(joinpath(testfiles_path, "locs.tsv"))
 @test l isa DataFrame
 
-@info "test 14/25: import_locs_sfp()"
+@info "test 14/26: import_locs_sfp()"
 l = import_locs_sfp(joinpath(testfiles_path, "locs.sfp"))
 @test l isa DataFrame
 
-@info "test 15/25: import_locs_csd()"
+@info "test 15/26: import_locs_csd()"
 l = import_locs_csd(joinpath(testfiles_path, "locs.csd"))
 @test l isa DataFrame
 
-@info "test 16/25: import_locs_geo()"
+@info "test 16/26: import_locs_geo()"
 l = import_locs_geo(joinpath(testfiles_path, "locs.geo"))
 @test l isa DataFrame
 
-@info "test 17/25: import_locs_mat()"
+@info "test 17/26: import_locs_mat()"
 l = import_locs_mat(joinpath(testfiles_path, "locs.mat"))
 @test l isa DataFrame
 
-@info "test 18/25: load_locs()"
+@info "test 18/26: load_locs()"
 eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 @test NeuroAnalyzer._has_locs(eeg) == true
 
-@info "test 19/25: save()"
+@info "test 19/26: save()"
 isfile("test.hdf5") && rm("test.hdf5")
 save(eeg, file_name="test.hdf5")
 @test isfile("test.hdf5") == true
 
-@info "test 20/25: load()"
+@info "test 20/26: load()"
 new = load("test.hdf5")
 @test new isa NeuroAnalyzer.NEURO
 isfile("test.hdf5") && rm("test.hdf5")
 
-@info "test 21/25: export_csv()"
+@info "test 21/26: export_csv()"
 isfile("eeg.csv") && rm("eeg.csv")
 export_csv(eeg, file_name="eeg.csv", header=false)
 @test isfile("eeg.csv") == true
 isfile("eeg.csv") && rm("eeg.csv")
 
-@info "test 22/25: export_locs()"
+@info "test 22/26: export_locs()"
 isfile("test_out.ced") && rm("test_out.ced")
 export_locs(eeg, file_name="test_out.ced")
 @test isfile("test_out.ced") == true
@@ -118,22 +118,29 @@ export_locs(eeg, file_name="test_out.locs")
 @test isfile("test_out.locs") == true
 isfile("test_out.locs") && rm("test_out.locs")
 
-@info "test 23/25: import_snirf()"
+@info "test 23/26: import_snirf()"
 n = import_snirf(joinpath(testfiles_path, "fnirs-test-snirf.snirf"))
 @test n isa NeuroAnalyzer.NEURO
 @test n.header.recording[:data_type] == "nirs"
 @test n.header.recording[:file_type] == "SNIRF"
 
-@info "test 24/25: import_nirs()"
+@info "test 24/26: import_nirs()"
 n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 @test n isa NeuroAnalyzer.NEURO
 @test n.header.recording[:data_type] == "nirs"
 @test n.header.recording[:file_type] == "NIRS"
 
-@info "test 25/25: import_nirx()"
+@info "test 25/26: import_nirx()"
 n = import_nirx(joinpath(testfiles_path, "nirx", "NIRS-2020-08-18_001.hdr"))
 @test n isa NeuroAnalyzer.NEURO
 @test n.header.recording[:data_type] == "nirs"
 @test n.header.recording[:file_type] == "NIRX"
+
+@info "test 25/26: export_markers()"
+eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdfplus.bdf"))
+isfile("markers.csv") && rm("markers.csv")
+export_markers(eeg, file_name="markers.csv")
+@test isfile("markers.csv") == true
+isfile("markers.csv") && rm("markers.csv")
 
 true

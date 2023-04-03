@@ -16,10 +16,6 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 - `locs::Bool=false`: export channel locations
 - `history::Bool=false`: export history
 - `overwrite::Bool=false`
-
-# Returns
-
-- `success::Bool`
 """
 function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=false, epoch_time::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, history::Bool=false, overwrite::Bool=false)
 
@@ -73,7 +69,7 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
     end
 
     # MARKERS
-    if markers && nrow(obj.markers)
+    if markers && nrow(obj.markers) > 0
         file_name = replace(file_name, ".csv" => "_markers.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.markers)
