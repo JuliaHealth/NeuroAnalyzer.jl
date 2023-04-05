@@ -48,7 +48,9 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     file_type != "GDF" && throw(ArgumentError("File $file_name is not a GDF file."))
 
     (file_type_ver == 1.25 || file_type_ver == 2.20) || _info("GDF versions other than 1.25 and 2.20 may not be supported correctly. ")
-    if file_type_ver >= 1.25 && file_type_ver < 2.20 
+
+    if file_type_ver >= 1.25 && file_type_ver < 2.20
+
         patient = replace(strip(String(Char.(header[9:88]))), '\0'=>"")
         recording = replace(strip(String(Char.(header[89:168]))), '\0'=>"")
         recording_date = replace(strip(String(Char.(header[169:184]))), '\0'=>"")
@@ -133,44 +135,131 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             push!(ch_type, reinterpret(Int32, buf)[1])
         end
 
-        data = zeros(ch_n, data_records * samples_per_datarecord[1])
-        #signal = Float64[]
-        for idx1 in 1:ch_n
-            buf = UInt8[]
-            if ch_type[idx1] == 0
-                # char => uint8
-                readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(UInt8, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 1
-                readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(Int8, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 2
-                readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(UInt8, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 3
-                readbytes!(fid, buf, 2 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(Int16, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 4
-                readbytes!(fid, buf, 2 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(UInt16, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 5
-                readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(Int32, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 6
-                readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(UInt32, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 7
-                readbytes!(fid, buf, 8 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(Int64, buf))[1:samples_per_datarecord[idx1]]
-            elseif ch_type[idx1] == 16
-                readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(Float32, buf))
-            elseif ch_type[idx1] == 17
-                readbytes!(fid, buf, 8 * samples_per_datarecord[idx1] * data_records)
-                data[idx1, :] = Float64.(reinterpret(Float64, buf))
-            else
-                @error "Unknown channel type: $(ch_type[idx1])."
-            end
+
+    elseif file_type_ver >= 2.20
+
+        patient = replace(strip(String(Char.(header[9:88]))), '\0'=>"")
+        recording = replace(strip(String(Char.(header[89:168]))), '\0'=>"")
+        recording_date = replace(strip(String(Char.(header[169:184]))), '\0'=>"")
+        recording_date == "" && (recording_time = "")
+        header_bytes = reinterpret(Int64, header[185:192])[1]
+        equipment_id = reinterpret(Int64, header[193:200])[1]
+        lab_id = reinterpret(Int64, header[201:208])[1]
+        technician_id = reinterpret(Int64, header[209:216])[1]
+        data_records = reinterpret(Int64, header[237:244])[1]
+        sampling_rate = Int64(reinterpret(Int32, header[245:252])[2] ÷ reinterpret(Int32, header[245:252])[1])
+        ch_n = reinterpret(Int32, header[253:256])[1]
+
+        clabels = String[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 16)
+            push!(clabels, replace(strip(String(Char.(buf))), '\0'=>""))
+        end
+
+        transducers = String[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 80)
+            push!(transducers, replace(strip(String(Char.(buf))), '\0'=>""))
+        end
+
+        units = String[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 8)
+            push!(units, replace(strip(String(Char.(buf))), '\0'=>"", '\x10'=>""))
+            # push!(units, strip(String(Char.(buf))))
+        end
+        units = replace(lowercase.(units), "uv"=>"μV")
+
+        physical_minimum = Float64[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 8)
+            push!(physical_minimum, reinterpret(Float64, buf)[1])
+        end
+
+        physical_maximum = Float64[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 8)
+            push!(physical_maximum, reinterpret(Float64, buf)[1])
+        end
+
+        digital_minimum = Int64[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 8)
+            push!(digital_minimum, reinterpret(Int64, buf)[1])
+        end
+
+        digital_maximum = Int64[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 8)
+            push!(digital_maximum, reinterpret(Int64, buf)[1])
+        end
+
+        prefiltering = String[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 80)
+            push!(prefiltering, replace(strip(String(Char.(buf))), '\0'=>""))
+        end
+
+        samples_per_datarecord = Int32[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 4)
+            push!(samples_per_datarecord, reinterpret(Int32, buf)[1])
+        end
+
+        ch_type = Int32[]
+        buf = UInt8[]
+        for idx in 1:ch_n
+            readbytes!(fid, buf, 4)
+            push!(ch_type, reinterpret(Int32, buf)[1])
+        end
+
+    end
+
+    data = zeros(ch_n, data_records * samples_per_datarecord[1])
+    for idx1 in 1:ch_n
+        buf = UInt8[]
+        if ch_type[idx1] == 0
+            # char => uint8
+            readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(UInt8, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 1
+            readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(Int8, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 2
+            readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(UInt8, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 3
+            readbytes!(fid, buf, 2 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(Int16, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 4
+            readbytes!(fid, buf, 2 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(UInt16, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 5
+            readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(Int32, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 6
+            readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(UInt32, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 7
+            readbytes!(fid, buf, 8 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(Int64, buf))[1:samples_per_datarecord[idx1]]
+        elseif ch_type[idx1] == 16
+            readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(Float32, buf))
+        elseif ch_type[idx1] == 17
+            readbytes!(fid, buf, 8 * samples_per_datarecord[idx1] * data_records)
+            data[idx1, :] = Float64.(reinterpret(Float64, buf))
+        else
+            @error "Unknown channel type: $(ch_type[idx1])."
         end
     end
 
@@ -178,11 +267,10 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     # cals = digital_maximum .- digital_minimum
     # cal = physical_ranges ./ cals
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
+    @show gain
     gain = ones(ch_n)
 
     data .*= gain
-
-#####
 
     annotation_channels = Int64[]
     ch_type = repeat(["eeg"], ch_n)
