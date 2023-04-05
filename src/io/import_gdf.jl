@@ -134,7 +134,8 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             readbytes!(fid, buf, 4)
             push!(ch_type, reinterpret(Int32, buf)[1])
         end
-
+    
+        close(fid)
 
     elseif file_type_ver >= 2.20
 
@@ -142,7 +143,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         recording = replace(strip(String(Char.(header[89:168]))), '\0'=>"")
         recording_date = replace(strip(String(Char.(header[169:184]))), '\0'=>"")
         recording_date == "" && (recording_time = "")
-        header_bytes = reinterpret(Int64, header[185:192])[1]
+        header_bytes = reinterpret(Int16, header[185:186])[1] * 256
         equipment_id = reinterpret(Int64, header[193:200])[1]
         lab_id = reinterpret(Int64, header[201:208])[1]
         technician_id = reinterpret(Int64, header[209:216])[1]
@@ -222,54 +223,69 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             push!(ch_type, reinterpret(Int32, buf)[1])
         end
 
+        close(fid)
+
     end
 
-    data = zeros(ch_n, data_records * samples_per_datarecord[1])
-    for idx1 in 1:ch_n
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
+    header = UInt8[]
+    readbytes!(fid, header, header_bytes)
+
+    signal = Float64[]
+    for idx in 1:ch_n
         buf = UInt8[]
-        if ch_type[idx1] == 0
+        if ch_type[idx] == 0
             # char => uint8
-            readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(UInt8, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 1
-            readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(Int8, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 2
-            readbytes!(fid, buf, 1 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(UInt8, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 3
-            readbytes!(fid, buf, 2 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(Int16, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 4
-            readbytes!(fid, buf, 2 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(UInt16, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 5
-            readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(Int32, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 6
-            readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(UInt32, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 7
-            readbytes!(fid, buf, 8 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(Int64, buf))[1:samples_per_datarecord[idx1]]
-        elseif ch_type[idx1] == 16
-            readbytes!(fid, buf, 4 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(Float32, buf))
-        elseif ch_type[idx1] == 17
-            readbytes!(fid, buf, 8 * samples_per_datarecord[idx1] * data_records)
-            data[idx1, :] = Float64.(reinterpret(Float64, buf))
+            readbytes!(fid, buf, 1 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(UInt8, buf)))
+        elseif ch_type[idx] == 1
+            readbytes!(fid, buf, 1 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(Int8, buf)))
+        elseif ch_type[idx] == 2
+            readbytes!(fid, buf, 1 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(UInt8, buf)))
+        elseif ch_type[idx] == 3
+            readbytes!(fid, buf, 2 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(Int16, buf)))
+        elseif ch_type[idx] == 4
+            readbytes!(fid, buf, 2 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(UInt16, buf)))
+        elseif ch_type[idx] == 5
+            readbytes!(fid, buf, 4 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(Int32, buf)))
+        elseif ch_type[idx] == 6
+            readbytes!(fid, buf, 4 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(UInt32, buf)))
+        elseif ch_type[idx] == 7
+            readbytes!(fid, buf, 8 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(Int64, buf)))
+        elseif ch_type[idx] == 16
+            readbytes!(fid, buf, 4 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(Float32, buf)))
+        elseif ch_type[idx] == 17
+            readbytes!(fid, buf, 8 * samples_per_datarecord[idx] * data_records)
+            signal = vcat(signal, Float64.(reinterpret(Float64, buf)))
         else
-            @error "Unknown channel type: $(ch_type[idx1])."
+            @error "Unknown channel type: $(ch_type[idx])."
         end
     end
 
-    physical_ranges = physical_maximum .- physical_minimum
-    # cals = digital_maximum .- digital_minimum
-    # cal = physical_ranges ./ cals
-    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-    @show gain
-    gain = ones(ch_n)
+    close(fid)
 
+    data = zeros(ch_n, data_records * samples_per_datarecord[1])
+    t_idx = 1
+    for idx in 1:ch_n:length(data)
+        data[:, t_idx] = signal[idx:(idx + ch_n - 1)]
+        t_idx += 1
+    end
+
+    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
     data .*= gain
 
     annotation_channels = Int64[]
