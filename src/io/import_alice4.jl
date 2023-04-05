@@ -37,7 +37,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
-    file_type !== "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
+    file_type != "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])

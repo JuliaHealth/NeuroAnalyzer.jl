@@ -46,7 +46,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
-    file_type !== "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
+    file_type != "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])
@@ -75,21 +75,21 @@ function import_edf(file_name::String; detect_type::Bool=true)
     prefiltering = Vector{String}(undef, ch_n)
     samples_per_datarecord = Vector{Int64}(undef, ch_n)
 
-    header = zeros(UInt8, ch_n * 16)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
     for idx in 1:ch_n
         clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
-    header = zeros(UInt8, ch_n * 80)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
     for idx in 1:ch_n
         transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, ch_n * 8)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
@@ -97,42 +97,42 @@ function import_edf(file_name::String; detect_type::Bool=true)
     end
     units = replace(lowercase.(units), "uv"=>"μV")
 
-    header = zeros(UInt8, ch_n * 8)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
         physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 8)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
         physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 8)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
         digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 8)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
         digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 80)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
     for idx in 1:ch_n
         prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, ch_n * 8)
+    header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
@@ -329,6 +329,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(signal_len(obj) / sr(obj)) s)")
+    
     return obj
     
 end

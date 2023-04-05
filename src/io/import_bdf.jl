@@ -44,7 +44,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     file_type = Int(header[1])
     file_type == 255 && (file_type = "BDF")
-    (file_type !== "BDF" && strip(header[3:9]) !== "BIOSEMI") && throw(ArgumentError("File $file_name is not a BDF file."))
+    (file_type != "BDF" && strip(header[3:9]) !== "BIOSEMI") && throw(ArgumentError("File $file_name is not a BDF file."))
 
     patient = strip(header[10:89])
     recording = strip(header[90:169])
