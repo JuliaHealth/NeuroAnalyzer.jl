@@ -329,6 +329,7 @@ include("utils/phase.jl")
 include("utils/pick.jl")
 include("utils/time.jl")
 include("utils/vector.jl")
+include("utils/to_df.jl")
 # study
 include("study/create.jl")
 include("study/info.jl")
