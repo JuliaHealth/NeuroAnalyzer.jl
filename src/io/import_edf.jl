@@ -141,18 +141,13 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    clabels = _clean_labels(clabels)
+    clabels = NeuroAnalyzer._clean_labels(clabels)
     if detect_type == true
-        ch_type = _set_channel_types(clabels, "eeg")
+        ch_type = NeuroAnalyzer._set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)
-        units = repeat(["μV"], ch_n)
     end
-    if units == repeat([""], ch_n)
-        for idx in 1:ch_n
-            units[idx] = _get_units(ch_type[idx])
-        end
-    end
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "EDF"
         annotation_channels = Int64[]
@@ -168,10 +163,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
     end
 
-    gain = Vector{Float64}(undef, ch_n)
-    for idx in 1:ch_n
-        gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
-    end
+    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
     fid = ""
     try
@@ -185,30 +177,27 @@ function import_edf(file_name::String; detect_type::Bool=true)
         readbytes!(fid, header, data_offset)
         data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
         annotations = String[]
+
         @inbounds for idx1 in 1:data_records
             for idx2 in 1:ch_n
                 signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
                 readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
                 if idx2 in annotation_channels
                     push!(annotations, String(Char.(signal)))
-                    signal = zeros(samples_per_datarecord[idx2])
+                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = zeros(samples_per_datarecord[idx2])
                 else
-                    signal = map(ltoh, reinterpret(Int16, signal))
-                    if lowercase(units[idx2]) == "mv"
-                        lowercase(units[idx2]) == "μV"
-                        signal ./= 1000
-                    end
-                    if lowercase(units[idx2]) == "nv"
-                        lowercase(units[idx2]) == "μV"
-                        signal .*= 1000
-                    end
+                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = reinterpret(Int16, signal)
                 end
-                data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
             end
         end
+        
+        data .*= gain
+
         close(fid)
     else
-        max_sampling_rate = maximum(sampling_rate)
+        # ignore annotations channels
+        max_sampling_rate = maximum(sampling_rate[setdiff(1:ch_n, annotation_channels)])
+        max_samples_per_datarecord = maximum(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])
 
         fid = ""
         try
@@ -221,49 +210,41 @@ function import_edf(file_name::String; detect_type::Bool=true)
         readbytes!(fid, header, data_offset)
 
         data_size = filesize(file_name) - data_offset
-        buf = UInt8[]
-        readbytes!(fid, buf, data_size, all=true)
-        data_records = length(buf) ÷ 2 ÷ sum(sampling_rate)        
+        signal = UInt8[]
+        readbytes!(fid, signal, data_size, all=true)
+        data_records = length(signal) ÷ 2 ÷ sum(sampling_rate)        
         data = zeros(ch_n, data_records * max_sampling_rate)
-        data_segment = max_sampling_rate
-
+        data_segment = max_samples_per_datarecord
         annotations = String[]
 
-        @inbounds for idx1 in 1:data_records            
+        @inbounds for idx1 in 1:data_records
             for idx2 in 1:ch_n
-                signal = UInt8[]
-                for idx3 in 1:samples_per_datarecord[idx2] * 2
-                    push!(signal, popat!(buf, 1))
-                end
+                tmp = signal[1:samples_per_datarecord[idx2] * 2]
+                deleteat!(signal, 1:samples_per_datarecord[idx2] * 2)
                 if idx2 in annotation_channels
-                    push!(annotations, String(Char.(signal)))
-                    signal = zeros(data_segment)
+                    push!(annotations, String(Char.(tmp)))
+                    tmp = zeros(data_segment)
                 else
-                    signal = map(ltoh, reinterpret(Int16, signal))
-                    signal = @. (signal - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
-                    sampling_rate[idx2] != max_sampling_rate && (signal = FourierTools.resample(signal, max_sampling_rate))
-                    if lowercase(units[idx2]) == "mv"
-                        lowercase(units[idx2]) == "μV"
-                        signal ./= 1000
-                    end
-                    if lowercase(units[idx2]) == "nv"
-                        lowercase(units[idx2]) == "μV"
-                        signal .*= 1000
-                    end
+                    tmp = Float64.(reinterpret(Int16, tmp))
+                    sampling_rate[idx2] != max_sampling_rate && (tmp = FourierTools.resample(tmp, max_sampling_rate))
                 end
-                data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = signal
+                # data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp
+                data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp
             end
         end
 
+        data .*= gain
+
         _info("Channels upsampled to $max_sampling_rate Hz.")
         sampling_rate = max_sampling_rate
+
         close(fid)
     end
 
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
-        markers = _a2df(annotations)
+        markers = NeuroAnalyzer._a2df(annotations)
         deleteat!(ch_type, annotation_channels)
         deleteat!(transducers, annotation_channels)
         deleteat!(units, annotation_channels)
@@ -273,7 +254,18 @@ function import_edf(file_name::String; detect_type::Bool=true)
         ch_n -= length(annotation_channels)
     end
 
-    ch_order = _sort_channels(ch_type)
+    @inbounds for idx in 1:ch_n
+        if lowercase(units[idx]) == "mv"
+            lowercase(units[idx]) == "μV"
+            data[idx, :] ./= 1000
+        end
+        if lowercase(units[idx]) == "nv"
+            lowercase(units[idx]) == "μV"
+            data[idx, :] ./= 1000
+        end
+    end
+
+    ch_order = NeuroAnalyzer._sort_channels(ch_type)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
@@ -282,14 +274,14 @@ function import_edf(file_name::String; detect_type::Bool=true)
     
     data_type = "eeg"
 
-    s = _create_subject(id="",
+    s = NeuroAnalyzer._create_subject(id="",
                         first_name="",
                         middle_name="",
                         last_name=string(patient),
                         handedness="",
                         weight=-1,
                         height=-1)
-    r = _create_recording_eeg(data_type=data_type,
+    r = NeuroAnalyzer._create_recording_eeg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,
                               file_type=file_type,
@@ -305,9 +297,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               prefiltering=prefiltering[ch_order],
                               sampling_rate=sampling_rate,
                               gain=gain[ch_order])
-    e = _create_experiment(name="", notes="", design="")
+    e = NeuroAnalyzer._create_experiment(name="", notes="", design="")
 
-    hdr = _create_header(s,
+    hdr = NeuroAnalyzer._create_header(s,
                          r,
                          e)
 
@@ -329,7 +321,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(signal_len(obj) / sr(obj)) s)")
-    
+
     return obj
     
 end

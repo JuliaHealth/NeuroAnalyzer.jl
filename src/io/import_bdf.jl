@@ -141,6 +141,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
         ch_type = repeat(["eeg"], ch_n)
         ch_type[clabels .== "Status"] .= "mrk"
     end
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "BDF"
         # in BDF files the last channel is always the Status channel
@@ -153,10 +154,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     end
 
     sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
-    gain = Vector{Float64}(undef, ch_n)
-    for idx in 1:ch_n
-        gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
-    end
+    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
     fid = ""
     try
@@ -183,7 +181,8 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                         b1 = Int32(signal24[byte_idx])
                         b2 = Int32(signal24[byte_idx + 1])
                         # b3 = Int64(signal24[byte_idx + 2])
-                        push!(signal, Float64(b1 | b2) * gain[idx2])
+                        # push!(signal, Float64(b1 | b2) * gain[idx2])
+                        push!(signal, Float64(b1 | b2))
                         # push!(status, b3 * gain[idx2])
                     end
                 else
@@ -191,7 +190,8 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                         b1 = Int32(signal24[byte_idx]) << 8
                         b2 = Int32(signal24[byte_idx + 1]) << 16
                         b3 = -Int32(-signal24[byte_idx + 2]) << 24
-                        push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
+                        # push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
+                        push!(signal, Float64(((b1 | b2 | b3) >> 8)))
                     end
                 end
                 if lowercase(units[idx2]) == "mv"
@@ -206,6 +206,9 @@ function import_bdf(file_name::String; detect_type::Bool=true)
             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
         end
     end
+
+    data .*= gain
+
     close(fid)
 
     if length(annotation_channels) == 0

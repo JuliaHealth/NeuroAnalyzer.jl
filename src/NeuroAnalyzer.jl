@@ -119,7 +119,7 @@ function __init__()
 
     # setup resources
     @info "Preparing resources"
-    global res_path = joinpath(artifact"resources", "resources")
+    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "resources")
 
     # load plugins
     @info "Loading plugins"

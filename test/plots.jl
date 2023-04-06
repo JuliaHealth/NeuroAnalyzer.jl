@@ -99,11 +99,11 @@ p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1:10)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 10/21: plot_topo()"
-p = NeuroAnalyzer.plot_topo(e10, seg=(1, 256))
+p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1))
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_topo(e10, seg=(1, 2), amethod=:median)
+p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1), amethod=:median)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_topo(e10, seg=(1, 2), amethod=:median, imethod=:nn)
+p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1), amethod=:median, imethod=:nn)
 
 @info "test 11/21: plot_matrix()"
 c = corm(e10)

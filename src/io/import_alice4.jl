@@ -136,13 +136,8 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         ch_type = _set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)
-        units = repeat(["μV"], ch_n)
     end
-    if units == repeat([""], ch_n)
-        for idx in 1:ch_n
-            units[idx] = _get_units(ch_type[idx])
-        end
-    end
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "EDF"
         annotation_channels = Int64[]
@@ -158,10 +153,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
     end
 
-    gain = Vector{Float64}(undef, ch_n)
-    for idx in 1:ch_n
-        gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
-    end
+    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
     fid = ""
     try
@@ -225,12 +217,13 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                 for idx3 in 1:sampling_rate[idx2]
                     push!(tmp, popat!(signal, 1))
                 end
-                tmp = @. (tmp - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
+                # tmp = @. (tmp - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
+                tmp .*= gain[idx2]
                 if sampling_rate[idx2] == max_sampling_rate
                     data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp
                 else
                     tmp_upsampled = FourierTools.resample(tmp, max_sampling_rate)
-                    data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp_upsampled
+                    data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = FourierTools.resample(tmp, max_sampling_rate)
                 end
             end
         end

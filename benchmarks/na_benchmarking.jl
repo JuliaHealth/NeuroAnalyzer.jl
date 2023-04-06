@@ -1,11 +1,14 @@
 using Wavelets
 using ContinuousWavelets
+using Artifacts
+
+global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "test-files")
 
 #=
 using BenchmarkTools
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 1
-b = @benchmarkable import_edf("test/files/eeg-test-edf.edf") evals=20
+b = @benchmarkable import_edf(joinpath(testfiles_path, "eeg-test-edf.edf")) evals=20
 run(b)
 
 =#
@@ -37,29 +40,35 @@ println("# IO")
 println()
 
 print(rpad("Import EDF", 36))
-eeg = import_edf("test/files/eeg-test-edf.edf")
-@time import_edf("test/files/eeg-test-edf.edf")
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
+@time import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 print(rpad("Import EDF+", 36))
-import_edf("test/files/eeg-test-edfplus.edf")
-@time import_edf("test/files/eeg-test-edfplus.edf")
+import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
+@time import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
 print(rpad("Import BDF+", 36))
-import_bdf("test/files/eeg-test-bdf.bdf")
-@time import_bdf("test/files/eeg-test-bdf.bdf")
+import_bdf(joinpath(testfiles_path, "eeg-test-bdf.bdf"))
+@time import_bdf(joinpath(testfiles_path, "eeg-test-bdf.bdf"))
+print(rpad("Import GDF 1.25", 36))
+import_gdf(joinpath(testfiles_path, "eeg-test-gdf_1.25.gdf"))
+@time import_gdf(joinpath(testfiles_path, "eeg-test-gdf_1.25.gdf"))
+print(rpad("Import GDF 2.20", 36))
+import_gdf(joinpath(testfiles_path, "eeg-test-gdf_2.20.gdf"))
+@time import_gdf(joinpath(testfiles_path, "eeg-test-gdf_2.20.gdf"))
 print(rpad("Import Digitrack", 36))
-import_digitrack("test/files/eeg-test-digitrack.txt")
-@time import_digitrack("test/files/eeg-test-digitrack.txt")
+import_digitrack(joinpath(testfiles_path, "eeg-test-digitrack.txt"))
+@time import_digitrack(joinpath(testfiles_path, "eeg-test-digitrack.txt"))
 print(rpad("Import BrainVision", 36))
-import_bv("test/files/eeg-test-bv.vhdr")
-@time import_bv("test/files/eeg-test-bv.vhdr")
+import_bv(joinpath(testfiles_path, "eeg-test-bv.vhdr"))
+@time import_bv(joinpath(testfiles_path, "eeg-test-bv.vhdr"))
 print(rpad("Import CSV ch×t", 36))
-import_csv("test/files/eeg-test_chxt.csv.gz")
-@time import_csv("test/files/eeg-test_chxt.csv.gz")
+import_csv(joinpath(testfiles_path, "eeg-test_chxt.csv.gz"))
+@time import_csv(joinpath(testfiles_path, "eeg-test_chxt.csv.gz"))
 print(rpad("Import CSV t×ch", 36))
-import_csv("test/files/eeg-test_txch.csv.gz")
-@time import_csv("test/files/eeg-test_txch.csv.gz")
+import_csv(joinpath(testfiles_path, "eeg-test_txch.csv.gz"))
+@time import_csv(joinpath(testfiles_path, "eeg-test_txch.csv.gz"))
 print(rpad("Import EEGLAB dataset", 36))
-import_set("test/files/eeg-test-eeglab.set")
-@time import_set("test/files/eeg-test-eeglab.set")
+import_set(joinpath(testfiles_path, "eeg-test-eeglab.set"))
+@time import_set(joinpath(testfiles_path, "eeg-test-eeglab.set"))
 print(rpad("Import SNIRF", 36))
 import_snirf("files/fnirs-test-snirf.snirf")
 @time import_snirf("files/fnirs-test-snirf.snirf")
@@ -67,8 +76,8 @@ print(rpad("Import NIRS", 36))
 import_nirs("files/fnirs-test-nirs.nirs")
 @time import_nirs("files/fnirs-test-nirs.nirs")
 print(rpad("Import NIRX", 36))
-import_nirx("test/files/nirx/NIRS-2020-08-18_001.hdr")
-@time import_nirx("test/files/nirx/NIRS-2020-08-18_001.hdr")
+import_nirx(joinpath(testfiles_path, "nirx/NIRS-2020-08-18_001.hdr"))
+@time import_nirx(joinpath(testfiles_path, "nirx/NIRS-2020-08-18_001.hdr"))
 print(rpad("Save HDF5", 36))
 tmp = tempname()
 save(eeg, file_name=tmp)
@@ -78,9 +87,9 @@ print(rpad("Load HDF5", 36))
 load(tmp)
 @time load(tmp)
 
-eeg = import_edf("test/files/eeg-test-edf.edf")
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=2560)
-load_locs!(e10, file_name="test/files/standard-10-20-cap19-elmiko.ced")
+load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 n = import_nirs("files/fnirs-test-nirs.nirs")
 
 @info "Benchmarking: EDIT"
