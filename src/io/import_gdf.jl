@@ -238,7 +238,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     readbytes!(fid, header, header_bytes)
 
     signal = Float64[]
-    for idx in 1:ch_n
+    @inbounds for idx in 1:ch_n
         buf = UInt8[]
         if ch_type[idx] == 0
             # char => uint8
@@ -280,8 +280,8 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
     data = zeros(ch_n, data_records * samples_per_datarecord[1])
     t_idx = 1
-    for idx in 1:ch_n:length(data)
-        data[:, t_idx] = signal[idx:(idx + ch_n - 1)]
+    @inbounds for idx in 1:ch_n:length(data)
+        data[:, t_idx] = @views signal[idx:(idx + ch_n - 1)]
         t_idx += 1
     end
 
@@ -289,7 +289,14 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     data .*= gain
 
     annotation_channels = Int64[]
-    ch_type = repeat(["eeg"], ch_n)
+
+    clabels = NeuroAnalyzer._clean_labels(clabels)
+    if detect_type == true
+        ch_type = NeuroAnalyzer._set_channel_types(clabels, "eeg")
+    else
+        ch_type = repeat(["eeg"], ch_n)
+    end
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
 
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])

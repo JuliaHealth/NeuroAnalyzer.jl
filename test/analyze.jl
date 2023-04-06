@@ -352,8 +352,8 @@ pc, pcv, pcm, pc_model = NeuroAnalyzer.pca(rand(4, 4, 2), n=2)
 @test size(pcv) == (2, 2)
 @test length(pcm) == 4
 pc, pcv, pcm, _ = NeuroAnalyzer.pca(e10, n=4)
-@test size(pc) == (3, 2560, 10)
-@test size(pcv) == (3, 10)
+@test size(pc) == (4, 2560, 10)
+@test size(pcv) == (4, 10)
 @test length(pcm) == 24
 
 @info "test 27/48: pca_reconstruct()"

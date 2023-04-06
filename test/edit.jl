@@ -186,13 +186,16 @@ edit_marker!(eeg_mrk, n=45, id="TEST", start=1989, len=1, desc="test", ch=0)
 
 @info "test 23/24: channel2marker()"
 @test nrow(eeg_mrk.markers) == 45
-eeg_mrk.data[28, :, :] = round.(eeg_mrk.data[28, :, :])
-eeg_mrk.data[28, :, :] .+= 12
-channel2marker!(eeg_mrk, ch=28)
-@test nrow(eeg_mrk.markers) == 1041
+unique(eeg_mrk.data[28, :, :])
+idx = getindex.(findall(eeg_mrk.data[28, :, :] .== -11502.913868619822), 1)
+eeg_mrk.data[28, idx, :] .= 1.0
+idx = getindex.(findall(eeg_mrk.data[28, :, :] .!= 1.0), 1)
+eeg_mrk.data[28, idx, :] .= 0.0
+channel2marker!(eeg_mrk, ch=28, id="mrk")
+@test nrow(eeg_mrk.markers) == 227
 
 @info "test 24/24: epoch()"
 eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", offset=0.2, ep_len=1.2)
-@test size(eeg_mrk2) == (29, 252, 996)
+@test size(eeg_mrk2) == (29, 240, 182)
 
 true

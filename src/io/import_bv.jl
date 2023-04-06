@@ -148,6 +148,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
             ch_type = repeat(["eeg"], ch_n)
         end
     end
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
     channel_order = _sort_channels(ch_type)
 
     # read locs
@@ -286,7 +287,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         end
 
         signal = zeros(filesize(eeg_file) ÷ bytes)
-        for idx in 1:(filesize(eeg_file) ÷ bytes)
+        @inbounds for idx in 1:(filesize(eeg_file) ÷ bytes)
             buf = zeros(UInt8, bytes)
             readbytes!(fid, buf, bytes)
             # buf = reverse(buf)
@@ -303,8 +304,8 @@ function import_bv(file_name::String; detect_type::Bool=true)
             length(signal) % ch_n != 0 && (signal = signal[1:(end - length(signal) % ch_n)])
             data = zeros(ch_n, length(signal) ÷ ch_n, 1)
             idx2 = 1
-            for idx1 in 1:ch_n:length(signal)
-                data[:, idx2, 1] = signal[idx1:(idx1 + (ch_n - 1))]
+            @inbounds for idx1 in 1:ch_n:length(signal)
+                data[:, idx2, 1] = @views signal[idx1:(idx1 + (ch_n - 1))]
                 idx2 += 1
             end
         else
@@ -315,9 +316,10 @@ function import_bv(file_name::String; detect_type::Bool=true)
     end
 
     # apply gain
-    for idx in 1:ch_n
-        data[idx, :, :] .*= gain[idx]
-    end
+    data .*= gain
+    # for idx in 1:ch_n
+    #     data[idx, :, :] .*= gain[idx]
+    # end
 
     # convert nV/mV to μV
     for idx in 1:ch_n

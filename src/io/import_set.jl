@@ -53,18 +53,20 @@ function import_set(file_name::String; detect_type::Bool=true)
         end
     end
     # dataset["chaninfo"]
-    clabels = NeuroAnalyzer._clean_labels(clabels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        ch_type = NeuroAnalyzer._set_channel_types(clabels, "eeg")
+        ch_type = _set_channel_types(clabels, "eeg")
+        units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
     else
         if length(dataset["chanlocs"]) > 0 && string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
             ch_type = repeat(["eeg"], ch_n)
+            units = repeat(["μV"], ch_n)
         else
             length(dataset["chanlocs"]) > 0 && (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
+            units = [NeuroAnalyzer._set_units(ch_type[idx]) for idx in 1:ch_n]
         end
-        units = repeat(["μV"], ch_n)
     end
-    channel_order = NeuroAnalyzer._sort_channels(ch_type)
+    channel_order = _sort_channels(ch_type)
     ref = dataset["ref"]
     ref == "common" && (ref = "CAR")
 
@@ -133,7 +135,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             chanlocs["sph_theta"][:][idx] isa Float64 && (theta_sph[idx] = chanlocs["sph_theta"][:][idx])
         end
         radius_sph == zeros(ch_n) && (radius_sph = radius)
-        locs = DataFrame(:channel=>NeuroAnalyzer._c(ch_n),
+        locs = DataFrame(:channel=>_c(ch_n),
                          :labels=>clabels,
                          :loc_theta=>theta,
                          :loc_radius=>radius,
@@ -146,7 +148,7 @@ function import_set(file_name::String; detect_type::Bool=true)
         for idx in nrow(locs):-1:1
             (chanlocs["X"][:][idx] isa Float64 && chanlocs["Y"][:][idx] isa Float64 && chanlocs["Z"][:][idx] isa Float64) || deleteat!(locs, idx)
         end
-        _info("Locs for $(nrow(locs)) found.")
+        nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found.")
         if nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
             locs_maximize!(locs)
@@ -168,15 +170,17 @@ function import_set(file_name::String; detect_type::Bool=true)
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     if "event" in keys(dataset)
         events = dataset["event"]
-        start = Float64.(events["latency"][:]) ./ sampling_rate
-        # for idx in 1:length(events["position"][:])
-        #     events["position"][idx] isa Matrix{Float64} && (events["position"][idx] = 0.0)
-        # end
-        # pos = Int.(events["position"][:])
-        len = zeros(length(start))
-        desc = String.(events["type"][:])
-        id = repeat(["stim"], length(start))
-        markers = DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>zeros(Int64, length(start)))
+        if size(events) != (0, 0)
+            start = Float64.(events["latency"][:]) ./ sampling_rate
+            # for idx in 1:length(events["position"][:])
+            #     events["position"][idx] isa Matrix{Float64} && (events["position"][idx] = 0.0)
+            # end
+            # pos = Int.(events["position"][:])
+            len = zeros(length(start))
+            desc = String.(events["type"][:])
+            id = repeat(["stim"], length(start))
+            markers = DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>zeros(Int64, length(start)))
+        end
     end
     # dataset["eventdescription"]
     # dataset["urevent"]
@@ -220,7 +224,7 @@ function import_set(file_name::String; detect_type::Bool=true)
                               reference=ref,
                               clabels=clabels,
                               transducers=repeat([""], ch_n),
-                              units=repeat([""], ch_n),
+                              units=repeat(["μV"], ch_n),
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
                               gain=gain)

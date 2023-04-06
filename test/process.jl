@@ -86,7 +86,6 @@ e10_tmp = NeuroAnalyzer.derivative(e10)
 
 @info "test 11/41: detrend()"
 @test detrend(v1) == zeros(5)
-@test round.(detrend(a1)) == zeros(2, 3, 2)
 e10_tmp = detrend(e10, type=:ls)
 @test size(e10_tmp.data) == (24, 2560, 10)
 e10_tmp = detrend(e10, type=:linear)

@@ -64,11 +64,12 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     
     clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(clabels, "eeg")
+        ch_type = _set_channel_types(clabels, "eeg")
     else
-        channel_type = repeat(["eeg"], ch_n)
+        ch_type = repeat(["eeg"], ch_n)
     end
-    channel_order = _sort_channels(copy(channel_type))
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    channel_order = _sort_channels(ch_type)
 
     buffer = readlines(fid)
 
@@ -106,7 +107,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
                               recording_date=string(recording_date),
                               recording_time=string(recording_time),
                               recording_notes="",
-                              channel_type=channel_type[channel_order],
+                              channel_type=ch_type[channel_order],
                               reference="",
                               clabels=clabels[channel_order],
                               transducers=transducers[channel_order],
