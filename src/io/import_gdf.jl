@@ -172,6 +172,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
         # obsolete
         units = String[]
+        unit = zeros(Int64, ch_n)
         buf = UInt8[]
         for idx in 1:ch_n
             readbytes!(fid, buf, 6)
@@ -186,20 +187,20 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             push!(units_code, reinterpret(UInt16, buf)[1])
         end
         for idx in 1:ch_n
-            unit = parse(Int, "0b" * bitstring(units_code[idx])[1:(end - 5)] * "00000")
-            unit == 512 && (push!(units, ""))
-            unit == 544 && (push!(units, "%"))
-            unit == 736 && (push!(units, "°"))
-            unit == 768 && (push!(units, "rad"))
-            unit == 2496 && (push!(units, "Hz"))
-            unit == 3872 && (push!(units, "mmHg"))
-            unit == 4256 && (push!(units, "V"))
-            unit == 4288 && (push!(units, "Ω"))
-            unit == 6048 && (push!(units, "°C"))
-            unit == 3072 && (push!(units, "l/min"))
-            unit == 2848 && (push!(units, "l/(min m²)"))
-            unit == 4128 && (push!(units, "dyn s/cm⁵"))
-            unit == 6016 && (push!(units, "dyn s/m² cm⁵"))
+            unit[idx] = parse(Int, "0b" * bitstring(units_code[idx])[1:(end - 5)] * "00000")
+            unit[idx] == 512 && (push!(units, ""))
+            unit[idx] == 544 && (push!(units, "%"))
+            unit[idx] == 736 && (push!(units, "°"))
+            unit[idx] == 768 && (push!(units, "rad"))
+            unit[idx] == 2496 && (push!(units, "Hz"))
+            unit[idx] == 3872 && (push!(units, "mmHg"))
+            unit[idx] == 4256 && (push!(units, "V"))
+            unit[idx] == 4288 && (push!(units, "Ω"))
+            unit[idx] == 6048 && (push!(units, "°C"))
+            unit[idx] == 3072 && (push!(units, "l/min"))
+            unit[idx] == 2848 && (push!(units, "l/(min m²)"))
+            unit[idx] == 4128 && (push!(units, "dyn s/cm⁵"))
+            unit[idx] == 6016 && (push!(units, "dyn s/m² cm⁵"))
         end
         for idx in 1:ch_n
             dec_factor = parse(Int, "0b" * bitstring(units_code[idx])[(end - 4):end])
@@ -275,6 +276,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             readbytes!(fid, buf, 4)
             push!(prefiltering_lp, reinterpret(Float32, buf)[1])
         end
+        prefiltering_lp[findall(isnan, prefiltering_lp)] .= 0
 
         prefiltering_hp = Float32[]
         buf = UInt8[]
@@ -282,6 +284,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             readbytes!(fid, buf, 4)
             push!(prefiltering_hp, reinterpret(Float32, buf)[1])
         end
+        prefiltering_hp[findall(isnan, prefiltering_hp)] .= 0
 
         prefiltering_bs = Float32[]
         buf = UInt8[]
@@ -289,6 +292,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             readbytes!(fid, buf, 4)
             push!(prefiltering_bs, reinterpret(Float32, buf)[1])
         end
+        prefiltering_bs[findall(isnan, prefiltering_bs)] .= 0
 
         samples_per_datarecord = Int32[]
         buf = UInt8[]
@@ -316,22 +320,32 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             readbytes!(fid, buf, 4)
             push!(loc_z, reinterpret(Float32, buf)[1])
         end
+        loc_x[findall(isnan, loc_x)] .= 0
+        loc_y[findall(isnan, loc_y)] .= 0
+        loc_z[findall(isnan, loc_z)] .= 0
+        loc_x = round.(loc_x, digits=3)
+        loc_y = round.(loc_y, digits=3)
+        loc_z = round.(loc_z, digits=3)
 
         imp = UInt8[]
-        buf = UInt8[]
-        for idx in 1:ch_n
-            readbytes!(fid, buf, 4)
-            push!(imp, reinterpret(Int32, buf)[1])
-        end
-
-        header = UInt8[]
-        readbytes!(fid, header, (256 * (ch_n + 1) + 1))
-
-        tlv = UInt8[]
-        buf = UInt8[]
-        for idx in 1:ch_n
-            readbytes!(fid, buf, 4)
-            push!(imp, reinterpret(Int32, buf)[1])
+        if file_type_ver >= 2.19
+            imp = zeros(ch_n)
+            buf = UInt8[]
+            for idx in 1:ch_n
+                readbytes!(fid, buf, 20)
+                unit[idx] == 4256 || unit[idx] == 4288 && (imp[idx] = reinterpret(Float32, buf[1:4])[1])
+            end
+            imp[findall(isnan, imp)] .= 0
+            imp = round.(imp, digits=3)
+        else
+            buf = UInt8[]
+            for idx in 1:ch_n
+                readbytes!(fid, buf, 1)
+                push!(imp, reinterpret(Int32, buf)[1])
+            end
+            buf = UInt8[]
+            readbytes!(fid, buf, 19 * ch_n)
+            imp = @. Float64(2 ^ (imp / 8))
         end
 
         close(fid)
