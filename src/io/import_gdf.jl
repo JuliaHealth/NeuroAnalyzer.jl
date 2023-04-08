@@ -430,6 +430,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
+    # split signal into channels
     data = zeros(ch_n, data_records * samples_per_datarecord[1])
     t_idx = 1
     @inbounds for idx in 1:ch_n:length(data)
