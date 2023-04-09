@@ -63,7 +63,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             units = repeat(["μV"], ch_n)
         else
             length(dataset["chanlocs"]) > 0 && (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
-            units = [NeuroAnalyzer._set_units(ch_type[idx]) for idx in 1:ch_n]
+            units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
         end
     end
     channel_order = _sort_channels(ch_type)

@@ -47,7 +47,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
             offset + ep_len < maximum(mrk_len) && throw(ArgumentError("offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."))
 
             # split into epochs
-            epochs, obj_new.markers = NeuroAnalyzer._make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
+            epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
 
         else
             throw(ArgumentError("OBJ does not contain markers."))

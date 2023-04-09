@@ -141,9 +141,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    clabels = NeuroAnalyzer._clean_labels(clabels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        ch_type = NeuroAnalyzer._set_channel_types(clabels, "eeg")
+        ch_type = _set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)
     end
@@ -244,7 +244,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
-        markers = NeuroAnalyzer._a2df(annotations)
+        markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
         deleteat!(transducers, annotation_channels)
         deleteat!(units, annotation_channels)
@@ -265,7 +265,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         end
     end
 
-    ch_order = NeuroAnalyzer._sort_channels(ch_type)
+    ch_order = _sort_channels(ch_type)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
@@ -274,14 +274,14 @@ function import_edf(file_name::String; detect_type::Bool=true)
     
     data_type = "eeg"
 
-    s = NeuroAnalyzer._create_subject(id="",
+    s = _create_subject(id="",
                         first_name="",
                         middle_name="",
                         last_name=string(patient),
                         handedness="",
                         weight=-1,
                         height=-1)
-    r = NeuroAnalyzer._create_recording_eeg(data_type=data_type,
+    r = _create_recording_eeg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,
                               file_type=file_type,
@@ -297,9 +297,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               prefiltering=prefiltering[ch_order],
                               sampling_rate=sampling_rate,
                               gain=gain[ch_order])
-    e = NeuroAnalyzer._create_experiment(name="", notes="", design="")
+    e = _create_experiment(name="", notes="", design="")
 
-    hdr = NeuroAnalyzer._create_header(s,
+    hdr = _create_header(s,
                          r,
                          e)
 
@@ -320,7 +320,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(signal_len(obj) / sr(obj)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(obj.time_pts[end]) s)")
 
     return obj
     

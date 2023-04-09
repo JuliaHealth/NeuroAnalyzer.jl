@@ -555,14 +555,14 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         end
     end
 
-    clabels = NeuroAnalyzer._clean_labels(clabels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        ch_type = NeuroAnalyzer._set_channel_types(clabels, "eeg")
+        ch_type = _set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)
     end
     units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
-    ch_order = NeuroAnalyzer._sort_channels(ch_type)
+    ch_order = _sort_channels(ch_type)
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
     
