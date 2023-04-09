@@ -121,6 +121,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
 @test NeuroAnalyzer._set_units(e10, 1) == "μV"
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
+@test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 
 # these function are still in work:
 ## FIFF

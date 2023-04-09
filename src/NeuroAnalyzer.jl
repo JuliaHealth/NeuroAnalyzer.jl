@@ -155,6 +155,7 @@ include("internal/select.jl")
 include("internal/tester.jl")
 include("internal/time.jl")
 include("internal/wl2ext.jl")
+include("internal/gdf_etp.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/ampdiff.jl")
