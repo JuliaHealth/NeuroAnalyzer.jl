@@ -1,6 +1,8 @@
 export erp_peaks
 export amp_at
 export avgamp_at
+export maxamp_at
+export minamp_at
 
 """
     erp_peaks(obj)
@@ -98,6 +100,82 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+        end
+    end
+
+    return p
+    
+end
+
+"""
+    maxamp_at(obj; t)
+
+Calculate maximum amplitude at given time segment.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `t::Tuple{Real, Real}`: time segment in seconds
+
+# Returns
+ 
+- `p::Matrix{Float64, 2}`: maximum amplitude for each channel per epoch
+"""
+function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
+
+    _check_datatype(obj, :erp)
+    t[1] < obj.epoch_time[1] && throw(ArgumentError("t[1] must be ≥ $(obj.epoch_time[1])."))
+    t[2] > obj.epoch_time[end] && throw(ArgumentError("t[2] must be ≤ $(obj.epoch_time[end])."))
+    t[1] > t[2] && throw(ArgumentError("t[1] must be < t[2]."))
+    
+    t_idx1 = vsearch(t[1], obj.epoch_time)
+    t_idx2 = vsearch(t[2], obj.epoch_time)
+
+    ch_n = size(obj)[1]
+    ep_n = size(obj)[3]
+    p = zeros(ch_n, ep_n)
+    
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            p[ch_idx, ep_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+        end
+    end
+
+    return p
+    
+end
+
+"""
+    minamp_at(obj; t)
+
+Calculate minimum amplitude at given time segment.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `t::Tuple{Real, Real}`: time segment in seconds
+
+# Returns
+ 
+- `p::Matrix{Float64, 2}`: minimum amplitude for each channel per epoch
+"""
+function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
+
+    _check_datatype(obj, :erp)
+    t[1] < obj.epoch_time[1] && throw(ArgumentError("t[1] must be ≥ $(obj.epoch_time[1])."))
+    t[2] > obj.epoch_time[end] && throw(ArgumentError("t[2] must be ≤ $(obj.epoch_time[end])."))
+    t[1] > t[2] && throw(ArgumentError("t[1] must be < t[2]."))
+    
+    t_idx1 = vsearch(t[1], obj.epoch_time)
+    t_idx2 = vsearch(t[2], obj.epoch_time)
+
+    ch_n = size(obj)[1]
+    ep_n = size(obj)[3]
+    p = zeros(ch_n, ep_n)
+    
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            p[ch_idx, ep_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
         end
     end
 
