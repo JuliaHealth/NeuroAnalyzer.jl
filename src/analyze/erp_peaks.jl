@@ -1,4 +1,6 @@
 export erp_peaks
+export amp_at
+export avgamp_at
 
 """
     erp_peaks(obj)
@@ -7,7 +9,7 @@ Detect a pair of positive and negative peaks of ERP.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`:
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
  
@@ -23,6 +25,80 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)
         pp_pos = @views maximum(obj.data[ch_idx, :, 1])
         pp_neg = @views minimum(obj.data[ch_idx, :, 1])
         p[ch_idx, :] = @views [vsearch(pp_pos, obj.data[ch_idx, :, 1]), vsearch(pp_neg, obj.data[ch_idx, :, 1])]
+    end
+
+    return p
+    
+end
+
+"""
+    amp_at(obj; t)
+
+Calculate amplitude at given time.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `t::Real`: time in seconds
+
+# Returns
+ 
+- `p::Matrix{Float64, 2}`: amplitude for each channel per epoch
+"""
+function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
+
+    _check_datatype(obj, :erp)
+    t < obj.epoch_time[1] && throw(ArgumentError("t must be ≥ $(obj.epoch_time[1])."))
+    t > obj.epoch_time[end] && throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
+
+    t_idx = vsearch(t, obj.epoch_time)
+
+    ch_n = size(obj)[1]
+    ep_n = size(obj)[3]
+    p = zeros(ch_n, ep_n)
+    
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            p[ch_idx, ep_idx] = obj.data[ch_idx, t_idx, ep_idx]
+        end
+    end
+
+    return p
+    
+end
+
+"""
+    avgamp_at(obj; t)
+
+Calculate average amplitude at given time segment.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `t::Tuple{Real, Real}`: time segment in seconds
+
+# Returns
+ 
+- `p::Matrix{Float64, 2}`: mean amplitude for each channel per epoch
+"""
+function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
+
+    _check_datatype(obj, :erp)
+    t[1] < obj.epoch_time[1] && throw(ArgumentError("t[1] must be ≥ $(obj.epoch_time[1])."))
+    t[2] > obj.epoch_time[end] && throw(ArgumentError("t[2] must be ≤ $(obj.epoch_time[end])."))
+    t[1] > t[2] && throw(ArgumentError("t[1] must be < t[2]."))
+    
+    t_idx1 = vsearch(t[1], obj.epoch_time)
+    t_idx2 = vsearch(t[2], obj.epoch_time)
+
+    ch_n = size(obj)[1]
+    ep_n = size(obj)[3]
+    p = zeros(ch_n, ep_n)
+    
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+        end
     end
 
     return p
