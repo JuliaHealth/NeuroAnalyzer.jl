@@ -1,6 +1,7 @@
 export meang
 export meanh
 export meanw
+export meanc
 
 """
     meang(x)
@@ -59,5 +60,29 @@ function meanw(x::AbstractVector, w::AbstractVector)
     length(x) == length(w) || throw(ArgumentError("Weights and values vectors must have the same length."))
 
     return length(x) / sum(1 ./ x)
+    
+end
+
+"""
+    meanc(x; rad)
+
+Calculate circular mean.
+
+# Arguments
+
+- `x::AbstractVector`: angles
+- `rad::Bool=false`: angles in radians (`rad=true`) or degrees (`rad=false`)
+
+# Returns
+
+- `m::Float64`
+"""
+function meanc(x::AbstractVector; rad::Bool=false)
+
+    if rad == true
+        return atan(sum(sin.(x)), sum(cos.(x)))
+    else
+        return rad2deg(atan(sum(sind.(x)), sum(cosd.(x))))
+    end
     
 end
