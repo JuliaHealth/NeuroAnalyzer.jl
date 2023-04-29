@@ -106,8 +106,13 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
         epoch_n(obj) == 1 && throw(ArgumentError("OBJ has only one epoch, cannot use remove_epochs=true."))
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
         eps = _s2epoch(obj, seg[1], seg[2])
-        _info("Removing epochs: $eps.")
-        obj_new = delete_epoch(obj, ep=eps)
+        if invserse == false
+            _info("Removing epochs: $eps.")
+            obj_new = delete_epoch(obj, ep=eps)
+        else
+            _info("Keeping epochs: $eps.")
+            obj_new = keep_epoch(obj, ep=eps)
+        end
     else
         obj_new = deepcopy(obj)
         epoch_n(obj) > 1 && (epoch!(obj_new, ep_n=1))
