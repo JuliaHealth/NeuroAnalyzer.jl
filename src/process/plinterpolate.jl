@@ -33,7 +33,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
-    typeof(ch) == Vector{Int64} && sort!(ch, rev=true)
+    ch isa Vector{Int64} && sort!(ch, rev=true)
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)

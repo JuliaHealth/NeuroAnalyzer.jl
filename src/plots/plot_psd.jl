@@ -931,7 +931,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64=1, ch::Union{Int64, Vector
                           kwargs...)
     end
 
-    if typeof(p) == Plots.Plot{Plots.GRBackend}
+    if p isa Plots.Plot{Plots.GRBackend}
         Plots.plot(p)
     else
         p
@@ -986,7 +986,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
     _check_epochs(obj, ep)
 
     # select component c_idxs, default is all c_idxs
-    typeof(c) == Symbol && (c = _get_component(obj, c))
+    c isa Symbol && (c = _get_component(obj, c))
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     clabels = _gen_clabels(c)[c_idx]

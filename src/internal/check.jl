@@ -23,7 +23,7 @@ end
 
 function _check_channels(channels::Union{Int64, Vector{Int64}, <:AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
-        idx in channels || throw(ArgumentError("ch $idx does not match required channels."))
+        idx in channels || throw(ArgumentError("ch must be in $channels."))
         (idx < 1 || idx > sort(channels)[end]) && throw(ArgumentError("ch must be in [1, $(channel_n(obj))]."))
     end
 end
@@ -58,12 +58,23 @@ function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc
     return nothing
 end
 
+function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
+    from = seg[1]
+    to = seg[2]
+    to < from && throw(ArgumentError("to must be > from."))
+    from < obj.time_pts[1] && throw(ArgumentError("from must be ≥ $(obj.time_pts[1])."))
+    to < obj.time_pts[1] && throw(ArgumentError("to must be ≥ $(obj.time_pts[1])."))
+    (from > obj.time_pts[end]) && throw(ArgumentError("from must be ≤ $(obj.time_pts[end])."))
+    (to > obj.time_pts[end]) && throw(ArgumentError("to must be ≤ $(obj.time_pts[end])."))
+    return nothing
+end
+
 function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
-    from < 1 && throw(ArgumentError("from must be > 0."))
-    to < 1 && throw(ArgumentError("to must be > 0."))
-    to < from && throw(ArgumentError("to must be ≥ $from."))
-    (from > signal_len(obj)) && throw(ArgumentError("from must be ≤ $(signal_len(obj))."))
-    (to > signal_len(obj)) && throw(ArgumentError("to must be ≤ $(signal_len(obj))."))
+    from < 1 && throw(ArgumentError("from must be ≥ 0."))
+    to < 1 && throw(ArgumentError("to must be ≥ 0."))
+    to < from && throw(ArgumentError("to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."))
+    (from > signal_len(obj)) && throw(ArgumentError("from must be ≤ $(obj.time_pts[end])."))
+    (to > signal_len(obj)) && throw(ArgumentError("to must be ≤ $(obj.time_pts[end])."))
     return nothing
 end
 
@@ -117,7 +128,7 @@ function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)
 end
 
 function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{Symbol, Vector{Symbol}})
-    if typeof(type) == Symbol
+    if type isa Symbol
         Symbol(obj.header.recording[:data_type]) == type || throw(ArgumentError("This function works only for $(uppercase(string(type))) objects. Think carefully."))
     else
         Symbol(obj.header.recording[:data_type]) in type || throw(ArgumentError("This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects. Think carefully."))

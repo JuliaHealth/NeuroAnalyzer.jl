@@ -17,10 +17,10 @@ function plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_n
 
     (isfile(file_name) && verbose == true) && _info("File $file_name will be overwritten.")
     
-    if typeof(p) == Plots.Plot{Plots.GRBackend}
+    if p isa Plots.Plot{Plots.GRBackend}
         savefig(p, file_name)
     else
-        save(file_name, p)
+        FileIO.save(file_name, p)
     end
 
     return nothing

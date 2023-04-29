@@ -37,7 +37,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
-    file_type !== "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
+    file_type != "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])
@@ -50,6 +50,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     reserved == "EDF+C" && (file_type = "EDF+")
     # we get -1 here
     data_records = parse(Int, strip(header[237:244]))
+    data_records == -1 || throw(ArgumentError("This seems to be a regular EDF file, use import_edf()."))
     # we get 1.0 here
     data_records_duration  = parse(Float64, strip(header[245:252]))
     ch_n  = parse(Int, strip(header[253:256]))
@@ -132,75 +133,63 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(clabels)
+        ch_type = _set_channel_types(clabels, "eeg")
     else
-        channel_type = repeat(["???"], ch_n)
+        ch_type = repeat(["eeg"], ch_n)
     end
-    channel_order = _sort_channels(copy(channel_type))
+    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "EDF"
-        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
-        markers_channel = -1
+        annotation_channels = Int64[]
+        markers_channel = []
     else
-        has_markers, markers_channel = _has_markers(channel_type)
-        markers = repeat([""], data_records)
-    end
-
-    gain = Vector{Float64}(undef, ch_n)
-    for idx in 1:ch_n
-        gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
+        annotation_channels = sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+        markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
     if length(unique(samples_per_datarecord)) == 1
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
+    else
+        sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
+    end
 
-        fid = ""
-        try
-            fid = open(file_name, "r")
-        catch
-            error("File $file_name cannot be loaded.")
-        end
+    gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
+    if sampling_rate isa Int64
         header = zeros(UInt8, data_offset)
         readbytes!(fid, header, data_offset)
         data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
-        for idx1 in 1:data_records
+        annotations = String[]
+        @inbounds for idx1 in 1:data_records
             for idx2 in 1:ch_n
                 signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
                 readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
-                if idx2 != markers_channel
-                    signal = map(ltoh, reinterpret(Int16, signal))
-                    if channel_type[idx2] == "markers"
-                        for idx3 in eachindex(signal)
-                            if signal[idx3] == digital_minimum[idx2]
-                                signal[idx3] = 0
-                            else
-                                signal[idx3] = 1
-                            end
-                        end
-                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                    elseif channel_type[idx2] == "events"
-                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                    else
-                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                        #=
-                        if occursin("uV", units[idx2]) 
-                            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                        elseif occursin("mV", units[idx2])
-                            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
-                        else
-                            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                        end
-                        =#
-                    end
+                if idx2 in annotation_channels
+                    push!(annotations, String(Char.(signal24)))
+                    signal = zeros(samples_per_datarecord[idx2])
                 else
-                    markers[idx1] = String(Char.(signal))
+                    signal = map(ltoh, reinterpret(Int16, signal))
+                    if lowercase(units[idx2]) == "mv"
+                        lowercase(units[idx2]) == "μV"
+                        signal ./= 1000
+                    end
+                    if lowercase(units[idx2]) == "nv"
+                        lowercase(units[idx2]) == "μV"
+                        signal .*= 1000
+                    end
                 end
+                data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
             end
         end
         close(fid)
     else
-        sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
         max_sampling_rate = maximum(sampling_rate)
 
         fid = ""
@@ -220,6 +209,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         data_records = length(signal) ÷ sum(sampling_rate)        
         data = zeros(ch_n, data_records * max_sampling_rate)
         data_segment = max_sampling_rate
+        annotations = String[]
 
         @inbounds for idx1 in 1:data_records            
             for idx2 in 1:ch_n
@@ -227,58 +217,39 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                 for idx3 in 1:sampling_rate[idx2]
                     push!(tmp, popat!(signal, 1))
                 end
-                tmp = @. (tmp - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
+                # tmp = @. (tmp - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
+                tmp .*= gain[idx2]
                 if sampling_rate[idx2] == max_sampling_rate
                     data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp
                 else
                     tmp_upsampled = FourierTools.resample(tmp, max_sampling_rate)
-                    data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp_upsampled
+                    data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = FourierTools.resample(tmp, max_sampling_rate)
                 end
             end
         end
 
-        # reject weird channels
-        for idx1 in 1:ch_n
-            if idx1 != markers_channel
-                if channel_type[idx1] == "mrk"
-                    for idx2 in 1:size(data, 2)
-                        if signal[idx1, idx2] == digital_minimum[idx1]
-                            signal[idx1, idx2] = 0
-                        else
-                            signal[idx1, idx2] = 1
-                        end
-                    end
-                end
-                # if occursin("mV", units[idx1])
-                #     data ./= 1000
-                # end
-            else
-                markers[idx1] = String(Char.(signal))
-            end
-        end
         _info("Channels upsampled to $max_sampling_rate Hz.")
         sampling_rate = max_sampling_rate
         close(fid)
     end
 
-    if has_markers
-        deleteat!(channel_order, vsearch(markers_channel, channel_order))
-        data = data[setdiff(1:ch_n, markers_channel), :, :]
-        deleteat!(clabels, markers_channel)
-        deleteat!(transducers, markers_channel)
-        deleteat!(units, markers_channel)
-        deleteat!(prefiltering, markers_channel)
-        deleteat!(gain, markers_channel)
-        ch_n -= 1
-        markers = _m2df(markers)
-        markers[!, :start] = t2s.(markers[!, :start], sampling_rate)
-        markers[!, :length] = t2s.(markers[!, :length], sampling_rate)
-    else
+    if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    else
+        markers = _a2df(annotations)
+        deleteat!(ch_type, annotation_channels)
+        deleteat!(transducers, annotation_channels)
+        deleteat!(units, annotation_channels)
+        deleteat!(prefiltering, annotation_channels)
+        deleteat!(clabels, annotation_channels)
+        data = data[setdiff(collect(1:ch_n), annotation_channels), :, :]
+        ch_n -= length(annotation_channels)
     end
 
+    ch_order = _sort_channels(ch_type)
+
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
-    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
+    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
@@ -299,14 +270,14 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_type=channel_type[channel_order],
+                              channel_type=ch_type[ch_order],
                               reference="",
-                              clabels=clabels[channel_order],
-                              units=units[channel_order],
-                              transducers=transducers[channel_order],
-                              prefiltering=prefiltering[channel_order],
+                              clabels=clabels[ch_order],
+                              units=units[ch_order],
+                              transducers=transducers[ch_order],
+                              prefiltering=prefiltering[ch_order],
                               sampling_rate=max_sampling_rate,
-                              gain=gain[channel_order])
+                              gain=gain[ch_order])
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
@@ -328,6 +299,10 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
+
+        _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(obj.time_pts[end]) s)")
+
+    return obj
     
 end

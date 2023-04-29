@@ -5,7 +5,7 @@ using DataFrames
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 locs = import_locs(joinpath(testfiles_path, "locs.ced"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -32,17 +32,17 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._get_ch_idx(["aa", "bb"], 1) == 1
 @test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
 s = NeuroAnalyzer._create_subject(id="a", first_name="a", middle_name="a", last_name="a", handedness="a", weight=0, height=0)
-@test typeof(s) == Dict{Symbol, Any}
+@test s isa Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0])
-@test typeof(r) == Dict{Symbol, Any}
+@test r isa Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], gradiometers_planar=[0], gradiometers_axial=[0], coils=[0])
-@test typeof(r) == Dict{Symbol, Any}
+@test r isa Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
-@test typeof(e) == Dict{Symbol, String}
+@test e isa Dict{Symbol, String}
 hdr = NeuroAnalyzer._create_header(s, r, e)
-@test typeof(hdr) == NeuroAnalyzer.HEADER
+@test hdr isa NeuroAnalyzer.HEADER
 r = NeuroAnalyzer._fir_response(rand(100), range(0, stop=π, length=1024))
-@test typeof(r) == Vector{ComplexF32}
+@test r isa Vector{ComplexF32}
 @test length(r) == 1024
 s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 @test size(s) == (100, 100)
@@ -51,7 +51,7 @@ s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 @test NeuroAnalyzer._has_markers(["eeg", "mrk"]) == (true, 2)
 @test NeuroAnalyzer._has_markers(e10) == false
 @test NeuroAnalyzer._set_channel_types(["fp1", "stim"]) == ["eeg", "mrk"]
-df = NeuroAnalyzer._m2df(["\x141.0\x14stim"])
+df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
 @test names(df) == ["id", "start", "length", "description", "channel"]
 @test NeuroAnalyzer._sort_channels(["emg", "eeg"]) == [2, 1]
 lm = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
@@ -121,6 +121,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
 @test NeuroAnalyzer._set_units(e10, 1) == "μV"
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
+@test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 
 # these function are still in work:
 ## FIFF

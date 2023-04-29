@@ -25,8 +25,8 @@ _erpticks(t::Union{Vector{<:Real}, AbstractRange}) = vcat(collect(range(floor(t[
 _erpticks(t::Tuple{Real, Real}) = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[2], digits=2), 9))[2:end])
 
 function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String, t::String)
-    xl == "default" && (xl = x)
     yl == "default" && (yl = y)
+    xl == "default" && (xl = x)
     tt == "default" && (tt = t)
     return xl, yl, tt
 end

@@ -68,6 +68,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    size=plot_size,
                    top_margin=0Plots.px,
                    bottom_margin=15Plots.px,
+                   right_margin=10Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -395,7 +396,7 @@ Plot signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
-- `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
@@ -413,12 +414,16 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
-    signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
+    if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
+        seg = (0, obj.time_pts[end])
+    else
+        _check_segment(obj, seg)
+    end
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    _check_var(type, [:normal, :butterfly, :mean], "type")
-    _check_segment(obj, seg[1], seg[2])
+    _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
 
     if ep != 0
         _check_epochs(obj, ep)
@@ -426,7 +431,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-            if typeof(ep) == Int64
+            if ep isa Int64
                 seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
             else
                 seg = (seg[1], (ep[end] * epoch_len(obj)))
@@ -444,7 +449,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     # check channels
     _check_channels(obj, ch)
     clabels = labels(obj)
-    length(ch) == 1 && (clabels = [clabels])
 
     # set units
     units = _set_units(obj, ch[1])
@@ -477,6 +481,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         ch_t_uni = ch_t[ch]
         ch_tmp = [[ch]]
     end
+
+    xl, yl, tt = "", "", ""
 
     p = Plots.Plot[]
 
@@ -532,6 +538,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                     end
 
                     cht_idx < length(ch_t_uni) && (xl = "")
+
                     p_tmp = plot_signal(t,
                                         s[ch_tmp[cht_idx], :],
                                         clabels=clabels[ch_tmp[cht_idx]],
@@ -546,6 +553,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
                 end
             else
+
                 if ch_t[ch_tmp[1][1]] == "eeg"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
@@ -594,7 +602,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 if length(ch) == 1
                     p = plot_signal(t,
                                     s[ch, :],
-                                    clabels=clabels[ch_tmp[1][1]],
+                                    clabels=[clabels[ch_tmp[1][1]]],
                                     xlabel=xl,
                                     ylabel=yl,
                                     title=tt,
@@ -777,7 +785,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     # plot markers if available
     # TODO: draw markers length
     if markers == true && _has_markers(obj) == true
-        markers_pos = obj.markers[!, :start] ./ sr(obj)
+        markers_pos = obj.markers[!, :start]
+        markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :description]
         if length(p) > 1
             for p_idx in 1:length(p)
@@ -788,7 +797,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                         linecolor=:black,
                                         label=false)
                 for idx in eachindex(markers_desc)
-                    p[p_idx] = Plots.plot!(p[p_idx], annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                    p[p_idx] = Plots.plot!(p[p_idx], annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
                 end
             end
         else
@@ -798,7 +807,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
     end
@@ -838,7 +847,7 @@ Plot embedded or external component.
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
-- `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
@@ -855,17 +864,21 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function NeuroAnalyzer.plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
-    signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
+    if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
+        seg = (0, obj.time_pts[end])
+    else
+        _check_segment(obj, seg)
+    end
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    _check_var(type, [:normal, :butterfly, :mean], "type")
-    _check_segment(obj, seg[1], seg[2])
+    _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
 
     if ep != 0
         _check_epochs(obj, ep)
         seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-        if typeof(ep) == Int64
+        if ep isa Int64
             seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
         else
             seg = (seg[1], (ep[end] * epoch_len(obj)))
@@ -882,14 +895,14 @@ function NeuroAnalyzer.plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractA
     c_name = ""
     if typeof(c) == Symbol
         c_name = string(c)
-        c = NeuroAnalyzer._get_component(obj, c)
+        c = _get_component(obj, c)
     end
-    c_idx == 0 && (c_idx = NeuroAnalyzer._select_cidx(c, c_idx))
-    NeuroAnalyzer._check_cidx(c, c_idx)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
     if size(c, 1) == 1
         clabels = c_name
     else
-        clabels = NeuroAnalyzer._gen_clabels(c)[c_idx]
+        clabels = _gen_clabels(c)[c_idx]
         clabels = c_name .* clabels
     end
     length(c_idx) == 1 && (clabels = [clabels])
@@ -960,7 +973,7 @@ function NeuroAnalyzer.plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractA
     # plot markers if available
     # TODO: draw markers length
     if markers == true && _has_markers(obj) == true
-        markers_pos = obj.markers[!, :start] ./ sr(obj)
+        markers_pos = obj.markers[!, :start]
         markers_desc = obj.markers[!, :description]
         p = Plots.vline!(markers_pos,
                          linestyle=:dash,

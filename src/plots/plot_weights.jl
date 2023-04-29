@@ -121,7 +121,7 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
 
     _check_channels(obj_tmp, ch, Symbol(obj.header.recording[:data_type]))
-    typeof(ch) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
+    ch isa Int64 && throw(ArgumentError("≥ 2 channels are required."))
     p = plot_weights(obj_tmp.locs, weights=weights, ch=ch, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
 
     Plots.plot!(p, title=title; kwargs)

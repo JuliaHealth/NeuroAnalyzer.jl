@@ -304,7 +304,7 @@ function import_nirx(file_name::String)
     # x, y = y, x
     # normalize to a unit-sphere
     z = normalize(z, method=:n)
-    x, y = NeuroAnalyzer._locnorm(x, y)
+    x, y = _locnorm(x, y)
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))
@@ -349,6 +349,10 @@ function import_nirx(file_name::String)
 
     history = String[]
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, nirs_int[:, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
+
+        _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(obj.time_pts[end]) s)")
+
+    return obj
 
 end

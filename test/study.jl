@@ -2,7 +2,7 @@ using NeuroAnalyzer
 using Test
 
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-epoch!(eeg, ep_len=5*256)
+epoch!(eeg, ep_len=5)
 
 eeg1 = deepcopy(eeg)
 eeg2 = deepcopy(eeg)
@@ -10,7 +10,7 @@ eeg2.data .*= 0.75
 
 @info "test 1/6: create_study()"
 s = create_study([eeg1, eeg2], [:a, :b])
-@test typeof(s) == NeuroAnalyzer.STUDY
+@test s isa NeuroAnalyzer.STUDY
 
 @info "test 2/6: obj_n()"
 @test obj_n(s) == 2

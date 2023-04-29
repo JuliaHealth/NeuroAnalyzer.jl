@@ -38,6 +38,7 @@ using InformationMeasures
 using Interpolations
 using Jacobi
 using JLD2
+using JSON
 using LinearAlgebra
 using Loess
 using MAT
@@ -154,6 +155,7 @@ include("internal/select.jl")
 include("internal/tester.jl")
 include("internal/time.jl")
 include("internal/wl2ext.jl")
+include("internal/gdf_etp.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/ampdiff.jl")
@@ -226,6 +228,9 @@ include("io/save_load.jl")
 include("io/import_snirf.jl")
 include("io/import_nirs.jl")
 include("io/import_nirx.jl")
+include("io/import_edf_annotations.jl")
+include("io/export_markers.jl")
+include("io/import_gdf.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")
@@ -325,6 +330,7 @@ include("utils/phase.jl")
 include("utils/pick.jl")
 include("utils/time.jl")
 include("utils/vector.jl")
+include("utils/to_df.jl")
 # study
 include("study/create.jl")
 include("study/info.jl")

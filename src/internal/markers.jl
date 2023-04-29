@@ -34,21 +34,61 @@ function _has_markers(obj::NeuroAnalyzer.NEURO)
     return nrow(obj.markers) > 0 ? true : false
 end
 
-function _m2df(markers::Vector{String})
-    # convert EDF/BDF markers to DataFrame
-    markers = replace.(markers, "\x14\x14\0" => "|")
-    markers = replace.(markers, "\x14\x14" => "|")
-    markers = replace.(markers, "\x14" => "|")
-    markers = replace.(markers, "\0" => "")
+function _a2df(annotations::Vector{String})
+    # convert EDF/BDF annotations to markers DataFrame
+    mrk = replace.(annotations, "\x14\x14\0" => "|")
+    mrk = replace.(mrk, "\x14\x14" => "|")
+    mrk = replace.(mrk, "\x14" => "|")
+    mrk = replace.(mrk, "\x15" => "|")
+    mrk = replace.(mrk, "\0" => "")
+    mrk = replace.(mrk, r"\|$" => "")
     a_start = Vector{Float64}()
+    a_length = Vector{Float64}()
     a_event = Vector{String}()
-    # what about markers containing event duration?
-    for idx in eachindex(markers)
-        s = split(markers[idx], "|")
-        if length(s) > 2
-            push!(a_start, parse(Float64, strip(s[2])))
-            push!(a_event, strip(s[3]))
-        end
+
+    # remove empty
+    for idx in length(mrk):-1:1
+        (length(mrk[idx]) == 0 || occursin('|', mrk[idx]) == false) && deleteat!(mrk, idx)
     end
-    return DataFrame(:id=>repeat([""], length(a_event)), :start=>a_start, :length=>zeros(Int64, length(a_event)), :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+
+    if length(mrk) == 1
+        s = split(mrk[1], "|")
+        for idx in length(s):-1:1
+            s[idx] == "" && deleteat!(s, idx)
+        end
+        if length(s) % 3 == 0
+            for idx in 1:3:length(s) ÷ 3
+                push!(a_start, parse(Float64, strip(s[idx])))
+                push!(a_length, parse(Float64, strip(s[idx + 1])))
+                push!(a_event, strip(s[idx + 2]))
+            end
+        else
+            offset = parse(Float64, strip(s[1]))
+            deleteat!(s, 1)
+            for idx in 1:3:length(s) ÷ 3
+                push!(a_start, parse(Float64, strip(s[idx])))
+                push!(a_length, parse(Float64, strip(s[idx + 1])))
+                push!(a_event, strip(s[idx + 2]))
+            end
+        end
+        all(isascii.(a_event)) == false && _info("Unicode labels were not converted.")
+        return DataFrame(:id=>string.(collect(1:length(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+    else
+        for idx in 1:length(mrk)
+            s = split(mrk[idx], "|")
+            # drop the first column if it contains annotation number
+            s[1][1] == '+' && s[2][1] == '+' && (s = s[2:end])
+            if length(s) == 3
+                push!(a_start, parse(Float64, strip(s[1])))
+                push!(a_length, parse(Float64, strip(s[2])))
+                push!(a_event, strip(s[3]))
+            elseif length(s) == 2
+                push!(a_start, parse(Float64, strip(s[1])))
+                push!(a_length, 0.0)
+                push!(a_event, strip(s[2]))
+            end
+        end
+        all(isascii.(a_event)) == false && _info("Unicode labels were not converted.")
+        return DataFrame(:id=>string.(collect(1:length(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+    end
 end

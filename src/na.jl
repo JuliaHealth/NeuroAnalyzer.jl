@@ -59,6 +59,7 @@ function na_info()
         "Interpolations",
         "Jacobi",
         "JLD2",
+        "JSON",
         "Loess",
         "MAT",
         "MultivariateStats",

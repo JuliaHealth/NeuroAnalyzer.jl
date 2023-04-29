@@ -11,10 +11,6 @@ Save `obj` to `file_name` file (HDF5-based).
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: name of the file to save to
 - `overwrite::Bool=false`
-
-# Returns
-
-- `::Bool`
 """
 function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
@@ -27,6 +23,7 @@ function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false
     rm("/tmp/$(basename(file_name))")
 
     save_object(file_name, obj)
+
 end
 
 """
@@ -40,12 +37,14 @@ Load `NeuroAnalyzer.NEURO` from `file_name` file (HDF5-based).
 
 # Returns
 
-- `::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 """
 function load(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    return load_object(file_name)
-end
+    obj = load_object(file_name)
 
+    return obj
+
+end

@@ -89,7 +89,7 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
 
     pad > 0 && (s = pad0(s, pad))
 
-    if typeof(ncyc) == Int64
+    if ncyc isa Int64
         ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
     else
         ncyc[1] < 1 && throw(ArgumentError("ncyc[1] must be ≥ 1."))

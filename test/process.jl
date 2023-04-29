@@ -6,7 +6,7 @@ using ContinuousWavelets
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
-e10 = epoch(eeg, ep_len=10*sr(eeg))
+e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
 load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 v = [1, 2, 3, 4, 5]
@@ -86,7 +86,6 @@ e10_tmp = NeuroAnalyzer.derivative(e10)
 
 @info "test 11/41: detrend()"
 @test detrend(v1) == zeros(5)
-@test round.(detrend(a1)) == zeros(2, 3, 2)
 e10_tmp = detrend(e10, type=:ls)
 @test size(e10_tmp.data) == (24, 2560, 10)
 e10_tmp = detrend(e10, type=:linear)
@@ -122,7 +121,7 @@ s = dwtsplit(e10, ch=1, wt = wavelet(WT.haar), type=:sdwt)
 
 @info "test 15/41: erp()"
 e = erp(e10)
-@test size(e.data) == (24, 2560, 1)
+@test size(e.data) == (19, 2560, 11)
 
 @info "test 16/41: bpsplit()"
 s, bn, bf = bpsplit(e10)

@@ -1,3 +1,6 @@
+export signal_channels
+export get_channel_bytype
+export get_channel_bywl
 export channel_type
 export channel_type!
 export get_channel
@@ -9,6 +12,110 @@ export replace_channel
 export replace_channel!
 export add_labels
 export add_labels!
+
+"""
+    signal_channels(obj)
+
+Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_type` variable in `obj.header.recording`). For MEG data type, 'meg', `grad` and `mag` channels are returned.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`:
+
+# Returns
+ 
+- `chs::Vector{Int64}`
+"""
+function signal_channels(obj::NeuroAnalyzer.NEURO)
+
+    dt = Symbol(obj.header.recording[:data_type])
+
+    if dt === :meg
+        chs = union(get_channel_bytype(obj, type=[:meg, :mag, :grad]))
+    elseif dt === :nirs
+        chs = union(get_channel_bytype(obj, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
+    elseif dt === :erp
+        chs = union(get_channel_bytype(obj, type=[:eeg, :meg, :mag, :grad, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
+    else
+        chs = get_channel_bytype(obj, type=dt)
+    end
+
+    return chs
+
+end
+
+"""
+    get_channel_bytype(obj; type)
+
+Return channel number(s) for channel of `type` type.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `type::Union{Symbol, Vector{Symbol}}=:all`: channel type
+
+# Returns
+
+- `ch_idx::Vector{Int64}`
+"""
+function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector{Symbol}}=:all)
+
+    if type isa Symbol
+        _check_var(type, channel_types, "type")
+    else
+        for idx in 1:length(type)
+            _check_var(type[idx], channel_types, "type")
+        end
+    end
+        
+    if type === :all
+        ch_idx = collect(1:channel_n(obj))
+    elseif type isa Symbol
+        ch_idx = Vector{Int64}()
+        for idx in 1:channel_n(obj)
+            lowercase(obj.header.recording[:channel_type][idx]) == string(type) && (push!(ch_idx, idx))
+        end
+    else
+        ch_idx = Vector{Int64}()
+        for idx1 in 1:channel_n(obj)
+            for idx2 in 1:length(type)
+                lowercase(obj.header.recording[:channel_type][idx1]) == string(type[idx2]) && (push!(ch_idx, idx1))
+            end
+        end        
+    end
+
+    return ch_idx
+
+end
+
+"""
+    get_channel_bywl(obj; wl)
+
+Return NIRS channel number(s) for wavelength `wl`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `wl::Real`: wavelength (in nm)
+
+# Returns
+
+- `ch_idx::Vector{Int64}`
+"""
+function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
+
+    _check_datatype(obj, [:nirs])
+    wl in obj.header.recording[:wavelengths] || throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
+
+    wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
+    ch_idx = Int64[]
+    for idx in 1:length(obj.header.recording[:wavelength_index])
+        obj.header.recording[:wavelength_index][idx] == wl_idx && push!(ch_idx, idx)
+    end
+
+    return ch_idx
+
+end
 
 """
     channel_type(obj; ch, type)
@@ -34,7 +141,7 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::
     obj_new = deepcopy(obj)
     types = obj_new.header.recording[:channel_type]
     
-    if typeof(ch) == String
+    if ch isa String
         ch_found = nothing
         for idx in eachindex(clabels)
             if ch == clabels[idx]
@@ -97,7 +204,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
 
     clabels = labels(obj)
 
-    if typeof(ch) == String
+    if ch isa String
         # get channel by name
         ch_idx = nothing
         for idx in eachindex(clabels)
@@ -139,7 +246,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
     clabels = labels(obj_new)
     name in clabels && throw(ArgumentError("Channel $name already exist."))
 
-    if typeof(ch) == String
+    if ch isa String
         # get channel by name
         ch_found = nothing
         for idx in eachindex(clabels)
@@ -208,7 +315,7 @@ function edit_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value:
     _check_var(field, [:channel_type, :labels], "field")    
 
     obj_new = deepcopy(obj)
-    typeof(obj_new.header.recording[field][ch]) == typeof(value) || throw(ArgumentError("field type ($(eltype(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."))
+    obj_new.header.recording[field][ch] isa typeof(value) || throw(ArgumentError("field type ($(eltype(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."))
     obj_new.header.recording[field][ch] = value
 
     push!(obj_new.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")   
@@ -259,7 +366,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s::
     ch_idx = nothing
     clabels = labels(obj)
 
-    if typeof(ch) == String
+    if ch isa String
         for idx in eachindex(clabels)
             if ch == clabels[idx]
                 ch_idx = idx
