@@ -49,7 +49,7 @@ function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
     for window_idx in window:window:window * (window_n - 1)
         s_tmp = @views s_filtered[window_idx - window ÷ 4:window_idx + window ÷ 4 - 1]
         t = collect(1.0:1:length(s_tmp))
-        model = loess(t, s_tmp, span=1.0)
+        model = Loess.loess(t, Vector(s_tmp), span=1.0)
         s_smoothed = Loess.predict(model, t)
         s_smoothed[1] = s_tmp[1]
         s_smoothed[end] = s_tmp[end]

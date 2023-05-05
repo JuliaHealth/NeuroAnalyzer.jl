@@ -55,12 +55,12 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
                     t_env[ch_idx, :, ep_idx] = model(s_t)
                 catch
                     @error "CubicSpline error, using Loess."
-                    model = loess(s_t[p_idx], s[p_idx], span=0.5)
+                    model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
                     t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
                 end
             else
                 _info("Less than 5 peaks detected, using Loess.")
-                model = loess(s_t[p_idx], s[p_idx], span=0.5)
+                model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
                 t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
             end
             t_env[ch_idx, 1, ep_idx] = t_env[ch_idx, 2, ep_idx]
@@ -887,12 +887,12 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
                     h_env[ch_idx, :, ep_idx] = model(s_t)
                 catch
                     @error "CubicSpline error, using Loess."
-                    model = loess(s_t[p_idx], s[p_idx], span=0.5)
+                    model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
                     h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
                 end
             else
                 _info("Less than 5 peaks detected, using Loess.")
-                model = loess(s_t[p_idx], s[p_idx], span=0.5)
+                model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
                 h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
             end
             h_env[ch_idx, 1, ep_idx] = h_env[ch_idx, 2, ep_idx]

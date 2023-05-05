@@ -1,5 +1,5 @@
 export plot_matrix
-export plot_covmatrix
+export plot_xac
 export plot_histogram
 export plot_bar
 export plot_line
@@ -66,14 +66,14 @@ function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vect
 end
 
 """
-    plot_covmatrix(m, lags; <keyword arguments>)
+    plot_xac(m, lags; <keyword arguments>)
 
-Plot cross/auto-covariance matrix.
+Plot cross/auto-covariance/correlation.
 
 # Arguments
 
 - `m::Abstractvector`: covariance matrix
-- `lags::AbstractVector`: covariance lags, lags will be displayed in ms
+- `lags::AbstractVector`: covariance lags, lags will be displayed in s
 - `xlabel::String="lag"`
 - `ylabel::String=""`
 - `title::String=""`
@@ -85,7 +85,7 @@ Plot cross/auto-covariance matrix.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_covmatrix(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [ms]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
     r = length(lags) > 10 ? 90 : 0
@@ -94,9 +94,9 @@ function plot_covmatrix(m::AbstractVector, lags::AbstractVector; xlabel::String=
                    title=title,
                    xlabel=xlabel,
                    ylabel=ylabel,
-                   xticks=round.(lags, digits=1),
-                   xaxis=(tickfontrotation=r),
-                   yticks=false,
+                   xticks=[lags[1], lags[end]],
+                   # xaxis=(tickfontrotation=r),
+                   yticks=[round(minimum(m), digits=1), round(maximum(m), digits=1)],
                    palette=pal,
                    size=(600, 200),
                    lw=0.5,

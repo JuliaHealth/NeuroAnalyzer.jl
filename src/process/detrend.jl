@@ -18,12 +18,11 @@ Perform piecewise detrending.
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
-- `fs::Int64=0`: sampling frequency
 
 # Returns
 - `s_new::Vector{Float64}`
 """
-function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0, fs::Int64=0)
+function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
     f <= 0 && throw(ArgumentError("f must be > 0."))
@@ -31,7 +30,7 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
 
     if type === :loess
         t = collect(1.0:1:length(s))
-        model = loess(t, s, span=f)
+        model = Loess.loess(t, Vector(s), span=f)
         trend = Loess.predict(model, t)
         s_new = s .- trend
     elseif type === :poly
@@ -84,13 +83,12 @@ Perform piecewise detrending.
 - `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
-- `fs::Int64=0`: sampling frequency
 
 # Returns
 
 - `s_new::Array`{Float64, 3}
 """
-function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0, fs::Int64=0)
+function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -98,7 +96,7 @@ function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::
     s_new = similar(s)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views detrend(s_new[ch_idx, :, ep_idx], type=type, offset=offset, order=order, f=f, fs=fs)
+            s_new[ch_idx, :, ep_idx] = @views detrend(s[ch_idx, :, ep_idx], type=type, offset=offset, order=order, f=f)
         end
     end
 
@@ -131,7 +129,7 @@ Perform piecewise detrending.
 function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :], type=type, offset=offset, order=order, f=f, fs=sr(obj))
+    obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :], type=type, offset=offset, order=order, f=f)
     reset_components!(obj_new)
     push!(obj_new.history, "detrend(OBJ, ch=$ch, type=$type, offset=$offset, order=$order, f=$f)")
 

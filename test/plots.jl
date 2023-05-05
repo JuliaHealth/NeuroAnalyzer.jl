@@ -111,12 +111,12 @@ channels = signal_channels(e10)
 p = NeuroAnalyzer.plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
 @test p isa Plots.Plot{Plots.GRBackend}
 
-@info "test 12/21: plot_covmatrix()"
-ac, lags = acov(e10, lag=5, norm=false)
-p = NeuroAnalyzer.plot_covmatrix(ac[1, :, 1], lags)
+@info "test 12/21: plot_xac()"
+ac, lags = acov(e10)
+p = NeuroAnalyzer.plot_xac(ac[1, :, 1], lags)
 @test p isa Plots.Plot{Plots.GRBackend}
-cc, lags = xcov(eeg, lag=5, norm=false)
-p = NeuroAnalyzer.plot_covmatrix(cc[1, :, 1], lags)
+xc, lags = xcov(e10, e10, ch1=1, ch2=2)
+p = NeuroAnalyzer.plot_xac(xc[1, :, 1], lags)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 13/21: plot_histogram()"

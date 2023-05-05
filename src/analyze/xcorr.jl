@@ -3,7 +3,7 @@ export xcorr
 """
    xcorr(s1, s2)
 
-Calculate cross-correlation.
+Calculate cross-correlation (a measure of similarity of two signals as a function of the displacement of one relative to the other).
 
 # Arguments
 
@@ -26,7 +26,7 @@ end
 """
    xcorr(s1, s2)
 
-Calculate cross-correlation.
+Calculate cross-correlation (a measure of similarity of two signals as a function of the displacement of one relative to the other).
 
 # Arguments
 
@@ -59,7 +59,7 @@ end
 """
     xcorr(obj1, obj2; ch1, ch2, ep1, ep2)
 
-Calculate cross correlation.
+Calculate cross correlation (a measure of similarity of two signals as a function of the displacement of one relative to the other).
 
 # Arguments
 
@@ -128,7 +128,7 @@ end
 """
    xcorr(obj; ch, lag, norm)
 
-Calculate cross-correlation.
+Calculate cross-correlation (a measure of similarity of two signals as a function of the displacement of one relative to the other).
 
 # Arguments
 
