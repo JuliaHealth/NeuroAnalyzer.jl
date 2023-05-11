@@ -129,8 +129,8 @@ end
 
 function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{Symbol, Vector{Symbol}})
     if type isa Symbol
-        Symbol(obj.header.recording[:data_type]) == type || throw(ArgumentError("This function works only for $(uppercase(string(type))) objects. Think carefully."))
+        Symbol(obj.header.recording[:data_type]) == type || throw(ArgumentError("This function works only for $(uppercase(string(type))) objects."))
     else
-        Symbol(obj.header.recording[:data_type]) in type || throw(ArgumentError("This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects. Think carefully."))
+        Symbol(obj.header.recording[:data_type]) in type || throw(ArgumentError("This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."))
     end
 end

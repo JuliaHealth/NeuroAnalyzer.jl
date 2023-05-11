@@ -53,7 +53,10 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
             throw(ArgumentError("OBJ does not contain markers."))
         end
     else
-        ep_len !== nothing && (ep_len = round(Int64, ep_len * sr(obj)))
+        if ep_len !== nothing
+            ep_len > signal_len(obj) / sr(obj) && throw(ArgumentError("ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)))."))
+            ep_len = round(Int64, ep_len * sr(obj))
+        end
         # split by ep_len or ep_n
         epochs = _make_epochs(obj.data, ep_n=ep_n, ep_len=ep_len)
 

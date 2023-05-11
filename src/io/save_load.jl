@@ -45,6 +45,8 @@ function load(file_name::String)
 
     obj = load_object(file_name)
 
+    _info("Loaded: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(round(obj.time_pts[end], digits=1)) s)")
+
     return obj
 
 end
