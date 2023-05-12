@@ -93,7 +93,7 @@ Split OBJ into epochs. Return signal that is split either by markers (if specifi
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 """
-function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
+function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)
 
     obj_new = epoch(obj, marker=marker, offset=offset, ep_n=ep_n, ep_len=ep_len)
     obj.header = obj_new.header
