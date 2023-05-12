@@ -2,6 +2,7 @@ using NeuroAnalyzer
 using Test
 using Wavelets
 using ContinuousWavelets
+using DataFrames
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -27,7 +28,7 @@ channel_type!(e10_tmp, ch=1, type="eeg")
 @test get_channel(e10, ch=1) == "Fp1"
 @test get_channel(e10, ch="Fp1") == 1
 
-@info "test 3/24: get_channel()"
+@info "test 3/24: rename_channel()"
 e10_tmp = rename_channel(e10, ch=1, name="FP1")
 @test get_channel(e10_tmp, ch=1) == "FP1"
 rename_channel!(e10_tmp, ch=1, name="Fp1")
@@ -157,17 +158,10 @@ m = rand(10, 100)
 @test size(trim(m, seg=(1, 10))) == (10, 90)
 a = rand(10, 100, 10)
 @test size(trim(a, seg=(1, 10))) == (10, 90, 10)
-e10_tmp = trim(e10, seg=(1, 100))
-size(e10_tmp.data) == (24, 2560, 9)
-e10_tmp.time_pts
-e10_tmp.epoch_time
-e10_tmp = trim(e10, seg=(1, 100), remove_epochs=false)
-size(e10_tmp.data) == (24, 2560, 9)
-e10_tmp.time_pts
-e10_tmp.epoch_time
-e10_tmp = trim(e10, seg=(1, 100), remove_epochs=false)
-size(e10_tmp.data)
-@test length(et) == 2560
+e10_tmp = trim(e10, seg=(0, 11), remove_epochs=true)
+@test size(e10_tmp) == (24, 2560, 119)
+e10_tmp = trim(e10, seg=(0, 21), remove_epochs=false)
+@test size(e10_tmp) == (24, 2560, 118)
 
 @info "test 20/24: delete_marker()"
 eeg_mrk = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))

@@ -5,6 +5,7 @@ using Artifacts
 global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "test-files")
 
 @testset "runtests.jl" begin
+
     @info "Running internal.jl tests"
     @test include("internal.jl")
 

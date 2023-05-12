@@ -100,12 +100,13 @@ Trim signal by removing parts of the signal.
 function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false, remove_epochs::Bool=true)
 
     _check_segment(obj, seg)
-    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+    
     if remove_epochs == true
         epoch_n(obj) == 1 && throw(ArgumentError("OBJ has only one epoch, cannot use remove_epochs=true."))
         # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-        eps = NeuroAnalyzer._s2epoch(obj, seg[1], seg[2])
+        eps = _s2epoch(obj, seg[1], seg[2])
         if inverse == false
             _info("Removing epochs: $eps.")
             obj_new = delete_epoch(obj, ep=eps)
@@ -122,7 +123,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
 
         if epoch_n(obj) > 1
             if epoch_len(obj) <= signal_len(obj_new)
-                epoch!(obj_new, ep_len=epoch_len(obj))
+                epoch!(obj_new, ep_len=epoch_len(obj) / sr(obj))
             else
                 _info("Cannot apply original epoch length, returning single-epoch OBJ.")
             end
