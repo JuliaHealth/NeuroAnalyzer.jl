@@ -127,14 +127,14 @@ function import_nirx(file_name::String)
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[gains_start + 1:gains_start + sources]
         gains = zeros(Int64, sources, detectors)
-        for idx in 1:length(buf)
+        for idx in eachindex(buf)
             gains[idx, :] = parse.(Int64, split(buf[idx], '\t'))
         end
     else
         buf = readlines(splitext(file_name)[1] * ".set")
         buf = split.(buf, ' ')
         gains = zeros(Int64, sources, detectors)
-        for idx in 1:length(buf)
+        for idx in eachindex(buf)
             gains[idx, :] = parse.(Int64, buf[idx])
         end
     end
@@ -171,7 +171,7 @@ function import_nirx(file_name::String)
     chd = replace(lowercase.(chd), "chandis="=>"")
     chd = split.(chd, '\t')
     channel_distance = zeros(length(chd))
-    for idx in 1:length(chd)
+    for idx in eachindex(chd)
         channel_distance[idx] = parse(Float64, chd[idx])
     end
 
@@ -201,7 +201,7 @@ function import_nirx(file_name::String)
         buf = hdr[events_start + 1:events_end - 2]
         buf = split.(buf, '\t')
         events = zeros(Float64, length(buf), length(buf[1]))
-        for idx in 1:length(buf)
+        for idx in eachindex(buf)
             events[idx, :] = parse.(Float64, buf[idx])
         end
         stim_onset = Int.(events[:, 3])
@@ -210,7 +210,7 @@ function import_nirx(file_name::String)
         buf = readlines(splitext(file_name)[1] * ".evt")
         buf = split.(buf, '\t')
         events = zeros(Int64, length(buf), length(buf[1]))
-        for idx in 1:length(buf)
+        for idx in eachindex(buf)
             events[idx, :] = parse.(Int64, buf[idx])
         end
         # what are those 0s and 1s in events[] ???
@@ -231,7 +231,7 @@ function import_nirx(file_name::String)
     buf = readlines(splitext(file_name)[1] * ".dat")
     buf_r = length(parse.(Float64, split(buf[1], ' ')))
     data = zeros(buf_r, length(buf))
-    for idx in 1:length(buf)
+    for idx in eachindex(buf)
         data[:, idx] = parse.(Float64, split(buf[idx], ' '))
     end
 

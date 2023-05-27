@@ -29,7 +29,6 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, 
 
     # remove epoch
     obj_new.data = obj_new.data[:, :, setdiff(1:end, (ep))]
-    ep_n = size(obj_new.data, 3)
 
     # remove markers within deleted epochs and shift markers after the deleted epoch
     for ep_idx in ep

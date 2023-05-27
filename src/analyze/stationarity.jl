@@ -116,7 +116,9 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
+                s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
+
         end
         return s
     end
@@ -127,6 +129,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
+                s[ch_idx, :, ep_idx] = @views stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
         end
         return s
@@ -138,6 +141,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
+                s[ch_idx, :, ep_idx] = @views stationarity_hilbert(obj.data[ch[ch_idx], :, ep_idx])
             end
         end
 
@@ -157,6 +161,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         # create covariance matrices per each window
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for window_idx = 1:window_n
+                cov_mat[:, :, window_idx, ep_idx] = @views covm(obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx])
             end
         end
 

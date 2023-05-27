@@ -119,7 +119,7 @@ function covm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     _check_channels(obj, ch)
 
-    cm = covm(obj.data[ch, :, :])
+    cm = covm(obj.data[ch, :, :], norm=norm)
 
     return cm
 

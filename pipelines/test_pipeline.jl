@@ -27,4 +27,5 @@ function test_pipeline(eeg::NeuroAnalyzer.NEURO, dc::Real=50, lp::Real=45, hp::R
     filter!(eeg_processed, fprototype=:butterworth, ftype=:lp, cutoff=lp, order=8)
     
     return eeg_processed
+    
 end

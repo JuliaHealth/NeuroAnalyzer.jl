@@ -119,7 +119,7 @@ function corm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     _check_channels(obj, ch)
 
-    cm = corm(obj.data[ch, :, :])
+    cm = corm(obj.data[ch, :, :], norm=norm)
 
     return cm
     
