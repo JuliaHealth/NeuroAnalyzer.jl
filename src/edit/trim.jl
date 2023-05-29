@@ -160,6 +160,7 @@ function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=f
     obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
+    obj.markers = obj_new.markers
 
     return nothing
 

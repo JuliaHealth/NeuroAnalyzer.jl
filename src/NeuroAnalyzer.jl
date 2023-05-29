@@ -12,6 +12,7 @@ const na_ver = v"0.23.6"
 use_cuda = nothing
 progress_bar = nothing
 plugins_path = nothing
+res_path = nothing
 verbose = nothing
 
 using Artifacts
@@ -206,6 +207,7 @@ include("edit/delete_epoch.jl")
 include("edit/detect_bad.jl")
 include("edit/epoch.jl")
 include("edit/extract.jl")
+include("edit/join.jl")
 include("edit/marker.jl")
 include("edit/reflect_chop.jl")
 include("edit/trim.jl")
