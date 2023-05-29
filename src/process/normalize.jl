@@ -366,19 +366,19 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    normalize!(obj; channel, method)
+    normalize!(obj; ch, method)
 
 Normalize channel(s)
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
+function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
 
-    obj_new = normalize(obj, channel=channel, method=method)
+    obj_new = normalize(obj, ch=ch, method=method)
     obj.data = obj_new.data
     obj.components = obj_new.components
     obj.history = obj_new.history

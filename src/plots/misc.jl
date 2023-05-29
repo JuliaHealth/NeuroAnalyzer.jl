@@ -24,7 +24,7 @@ function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matr
 
     pal = mono == true ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
-        for idx in 1:(layout[1] * layout[2]) - length(p)
+        for _ in 1:(layout[1] * layout[2]) - length(p)
             push!(p, Plots.plot(border=:none, title=""))
         end
     end

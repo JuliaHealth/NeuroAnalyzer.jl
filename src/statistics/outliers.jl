@@ -31,7 +31,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
     else
         length(x) > 6 || throw(ArgumentError("For :g method length(x) must be > 6."))
         x_tmp = deepcopy(x)
-        for idx in length(x_tmp):-1:6
+        for _ in length(x_tmp):-1:6
             _, m_idx = findmax(x_tmp)
             if grubbs(x_tmp, t=1) == true
                 o[m_idx] = true
@@ -39,7 +39,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
             end
         end
         x_tmp = deepcopy(x)
-        for idx in length(x_tmp):-1:6
+        for _ in length(x_tmp):-1:6
             _, m_idx = findmin(x_tmp)
             if grubbs(x_tmp, t=-1) == true
                 o[m_idx] = true

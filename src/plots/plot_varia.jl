@@ -95,7 +95,7 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
                    xlabel=xlabel,
                    ylabel=ylabel,
                    xticks=[lags[1], lags[end]],
-                   # xaxis=(tickfontrotation=r),
+                   xaxis=(tickfontrotation=r),
                    yticks=[round(minimum(m), digits=1), round(maximum(m), digits=1)],
                    palette=pal,
                    size=(600, 200),

@@ -20,11 +20,11 @@ function test_pipeline(eeg::NeuroAnalyzer.NEURO, dc::Real=50, lp::Real=45, hp::R
     eeg_processed = reference_car(eeg)
 
     # DC filtering
-    filter!(eeg_processed, fprototype=:iirnotch, cutoff=dc, bw=2)
+    NeuroAnalyzer.filter!(eeg_processed, fprototype=:iirnotch, cutoff=dc, bw=2)
     # HP filtering
-    filter!(eeg_processed, fprototype=:butterworth, ftype=:hp, cutoff=hp, order=8)
+    NeuroAnalyzer.filter!(eeg_processed, fprototype=:butterworth, ftype=:hp, cutoff=hp, order=8)
     # LP filtering
-    filter!(eeg_processed, fprototype=:butterworth, ftype=:lp, cutoff=lp, order=8)
+    NeuroAnalyzer.filter!(eeg_processed, fprototype=:butterworth, ftype=:lp, cutoff=lp, order=8)
     
     return eeg_processed
     
