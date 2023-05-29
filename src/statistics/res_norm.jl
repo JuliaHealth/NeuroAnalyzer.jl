@@ -27,23 +27,24 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
     if length(groups) > 1   
         adt_p = zeros(length(groups) + 1)
         ks_p = zeros(length(groups) + 1)
-        # check residuals normality per groups 
-        for group_idx in 1:length(groups)
-            m = mean(x[g .== groups[group_idx]])
-            res = x[g .== groups[group_idx]] .- m
-            adt = KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res)))
-            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
-            ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
-        end
     else
         adt_p = zeros(1)
         ks_p = zeros(1)
     end
 
+    if length(groups) > 1   
+        # check residuals normality per groups 
+        for group_idx in 1:length(groups)
+            m = mean(x[g .== groups[group_idx]])
+            res = x[g .== groups[group_idx]] .- m
+            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
+            ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
+        end
+    end
+
     # check residuals normality for the whole sample
     m = mean(x)
     res = x .- m
-    adt = KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res)))
     adt_p[end] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
     ks_p[end] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
 

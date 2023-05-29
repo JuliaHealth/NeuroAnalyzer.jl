@@ -88,6 +88,8 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
 
+    rev == true && reverse!(m_idx)
+
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1
         @inbounds @simd for idx = 1:size(m, 2)

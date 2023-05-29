@@ -63,6 +63,7 @@ function _a2df(annotations::Vector{String})
                 push!(a_event, strip(s[idx + 2]))
             end
         else
+            # TO DO: use offset if provided
             offset = parse(Float64, strip(s[1]))
             deleteat!(s, 1)
             for idx in 1:3:length(s) ÷ 3

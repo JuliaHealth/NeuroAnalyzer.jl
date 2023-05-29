@@ -1,13 +1,15 @@
 export msci95
 
 """
-    msci95(s)
+    msci95(s; n, method)
 
 Calculate mean, standard deviation and 95% confidence interval.
 
 # Arguments
 
 - `s::AbstractVector`
+- `n::Int64=3`: number of bootstraps
+- `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
 
 # Returns
 
@@ -17,13 +19,34 @@ Named tuple containing:
 - `su::Float64`: upper 95% CI
 - `sl::Float64`: lower 95% CI
 """
-function msci95(s::AbstractVector)
+function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
 
-    sm = mean(s)
-    ss = std(s) / sqrt(length(s))
-    su = sm + 1.96 * ss
-    sl = sm - 1.96 * ss
+    _check_var(method, [:normal, :boot], "method")
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
+    if method === :normal    
+        sm = mean(s)
+        ss = std(s) / sqrt(length(s))
+        su = sm + 1.96 * ss
+        sl = sm - 1.96 * ss
+    else
+        s_tmp1 = zeros(length(s) * n)
+        Threads.@threads for idx1 in 1:length(s) * n
+            s_tmp2 = zeros(length(s))
+            sample_idx = rand(1:length(s), length(s))
+            @inbounds @simd for idx2 in 1:length(s)
+                s_tmp2[idx2] = s[sample_idx[idx2]]
+            end
+            s_tmp1[idx1] = mean(s_tmp2)
+        end
+
+        sm = mean(s_tmp1)'
+        ss = std(s_tmp1)' / sqrt(length(s_tmp1))
+        ssorted = sort(s_tmp1)
+        sl = ssorted[round(Int, 0.025 * length(s_tmp1)), :]
+        su = ssorted[round(Int, 0.975 * length(s_tmp1)), :]
+    end
+    
     return (sm=sm, ss=ss, su=su, sl=sl)
 
 end
