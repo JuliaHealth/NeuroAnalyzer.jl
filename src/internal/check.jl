@@ -106,9 +106,9 @@ function _check_var(s1::String, s2::Vector{String}, var::String)
     if length(s2) > 1
         m = var * " must be "
         for idx in 1:(length(s2) - 2)
-            m *= ":" * s2[idx] * ", "
+            m *= s2[idx] * ", "
         end
-        m *= ":" * s2[end - 1] * " or " * s2[end] * "."
+        m *= s2[end - 1] * " or " * s2[end] * "."
         s1 in s2 || throw(ArgumentError(m))
     else
         m = var * " must be " * string(s2[1])

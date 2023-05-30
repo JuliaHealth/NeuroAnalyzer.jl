@@ -558,15 +558,15 @@ c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, h=true)
 
 @info "test 40/53: stationarity()"
 s = NeuroAnalyzer.stationarity(e10, method=:adf)
-@test size(s) == (24, 2, 10)
+@test size(s) == (19, 2, 10)
 s = NeuroAnalyzer.stationarity(e10, method=:cov)
 @test size(s) == (257, 10)
 s = NeuroAnalyzer.stationarity(e10, method=:hilbert)
-@test size(s) == (24, 2559, 10)
+@test size(s) == (19, 2559, 10)
 s = NeuroAnalyzer.stationarity(e10, method=:mean)
-@test size(s) == (24, 10, 10)
+@test size(s) == (19, 10, 10)
 s = NeuroAnalyzer.stationarity(e10, method=:var)
-@test size(s) == (24, 10, 10)
+@test size(s) == (19, 10, 10)
 
 @info "test 41/53: channel_stats()"
 c = NeuroAnalyzer.channel_stats(e10)

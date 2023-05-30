@@ -107,7 +107,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     window < 1 && throw(ArgumentError("window must be ≥ 1."))
     window > epoch_len(obj) && throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
 
-    ch_n = channel_n(obj)
+    ch_n = length(ch)
     ep_n = epoch_n(obj)
 
     if method === :mean
