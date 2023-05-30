@@ -47,7 +47,7 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
 end
 
 """
-    join(obj1, obj2)
+    join!(obj1, obj2)
 
 Join two NeuroAnalyzer objects. Both objects must have the same data type, number of channels, epochs and sampling rate.
 
