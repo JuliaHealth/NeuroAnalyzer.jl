@@ -17,11 +17,12 @@ verbose = nothing
 
 using Artifacts
 using ColorSchemes
+using ContinuousWavelets
 using CSV
 using CubicSplines
 using CUDA
-using Dates
 using DataFrames
+using Dates
 using Deconvolution
 using DICOM
 using Distances
@@ -61,7 +62,6 @@ using StatsPlots
 using TOML
 using Wavelets
 using WaveletsExt
-using ContinuousWavelets
 
 # define structures
 

@@ -74,8 +74,9 @@ function na_info()
         "StatsKit",
         "StatsModels",
         "StatsPlots",
+        "TOML",
         "Wavelets",
-        "WaveletsExt"]
+        "WaveletsExt" ]
 
     if isfile("Manifest.toml")
         versions = TOML.parsefile("Manifest.toml")["deps"]
