@@ -18,4 +18,6 @@ RUN mkdir ~/NeuroAnalyzer
 
 ENV DISPLAY :0
 
-CMD xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -O3 -g0 --cpu-target=native install.jl
+RUN xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -O3 -g0 --cpu-target=native install.jl
+
+CMD ["julia"]
