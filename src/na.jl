@@ -34,51 +34,51 @@ function na_info()
         @info "Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly"
     end
     println()
-    println("Imported packages:")
-    required_packages = [
-        "ColorSchemes",
-        "ContinuousWavelets",
-        "CSV",
-        "CubicSplines",
-        "CUDA",
-        "DataFrames",
-        "Deconvolution",
-        "DICOM",
-        "Distances",
-        "DSP",
-        "FFTW",
-        "FileIO",
-        "FindPeaks1D",
-        "FourierTools",
-        "GeometryBasics",
-        "Git",
-        "GLM",
-        "GLMakie",
-        "HypothesisTests",
-        "InformationMeasures",
-        "Interpolations",
-        "Jacobi",
-        "JLD2",
-        "JSON",
-        "Loess",
-        "MAT",
-        "MultivariateStats",
-        "Plots",
-        "Polynomials",
-        "Preferences",
-        "ProgressMeter",
-        "SavitzkyGolay",
-        "ScatteredInterpolation",
-        "Simpson",
-        "StatsFuns",
-        "StatsKit",
-        "StatsModels",
-        "StatsPlots",
-        "TOML",
-        "Wavelets",
-        "WaveletsExt" ]
 
     if isfile("Manifest.toml")
+        println("Imported packages:")
+        required_packages = [
+            "ColorSchemes",
+            "ContinuousWavelets",
+            "CSV",
+            "CubicSplines",
+            "CUDA",
+            "DataFrames",
+            "Deconvolution",
+            "DICOM",
+            "Distances",
+            "DSP",
+            "FFTW",
+            "FileIO",
+            "FindPeaks1D",
+            "FourierTools",
+            "GeometryBasics",
+            "Git",
+            "GLM",
+            "GLMakie",
+            "HypothesisTests",
+            "InformationMeasures",
+            "Interpolations",
+            "Jacobi",
+            "JLD2",
+            "JSON",
+            "Loess",
+            "MAT",
+            "MultivariateStats",
+            "Plots",
+            "Polynomials",
+            "Preferences",
+            "ProgressMeter",
+            "SavitzkyGolay",
+            "ScatteredInterpolation",
+            "Simpson",
+            "StatsFuns",
+            "StatsKit",
+            "StatsModels",
+            "StatsPlots",
+            "TOML",
+            "Wavelets",
+            "WaveletsExt" ]
         versions = TOML.parsefile("Manifest.toml")["deps"]
         for idx in 1:length(required_packages)
             pkg = lpad(required_packages[idx], 25 - length(idx), " ")
@@ -86,7 +86,7 @@ function na_info()
             println("$pkg $pkg_ver")
         end
     else
-        @warn "Manifest.toml file could not be found in $(pwd())."
+        @warn "Manifest.toml file could not be found in $(pwd()), cannot report versions of imported packages."
     end
 end
 
