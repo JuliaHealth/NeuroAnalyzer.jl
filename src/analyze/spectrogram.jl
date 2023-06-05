@@ -30,7 +30,7 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=fal
 
     nfft = length(s)
     interval = fs
-    overlap = round(Int64, fs * 0.75)
+    overlap = round(Int64, fs * 0.97)
 
     if st == true
         sp = abs.(stft(s, interval, overlap, nfft=nfft, fs=fs, window=hanning))
@@ -243,7 +243,7 @@ function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, fr
 end
 
 """
-    spectrogram(obj; ch, norm, mt, st)
+    spectrogram(obj; ch, pad, frq_lim, frq_n, method, norm, frq, gw, ncyc, wt)
 
 Calculate spectrogram.
 

@@ -9,7 +9,7 @@ Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_typ
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `bl` seconds and subtracted from the signal.
+- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `bl` seconds and subtracted from the signal
 
 # Returns
 
@@ -39,17 +39,18 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Real=0)
     push!(obj_new.history, "erp(OBJ, bl=$bl)")
 
     return obj_new
+    
 end
 
 """
     erp!(obj; bl)
 
-Average epochs.
+Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_type]` becomes `erp`. First epoch is the ERP.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal.
+- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
 """
 function erp!(obj::NeuroAnalyzer.NEURO; bl::Real=0)
 

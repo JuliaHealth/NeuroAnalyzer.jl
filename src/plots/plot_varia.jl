@@ -8,6 +8,7 @@ export plot_violin
 export plot_dots
 export plot_paired
 export plot_polar
+export plot_ero
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -655,6 +656,158 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
     end
 
     Plots.plot(p)
+
+    return p
+
+end
+
+"""
+    plot_ero(m; <keyword arguments>)
+
+Plot ERO (Event-Related Oscillations).
+
+# Arguments
+
+- `s::AbstractArray`: ERO spectrogram
+- `f::AbstractVector`: ERO frequencies
+- `t::AbstractVector`: ERO time
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
+- `xlabels::Vector{String}`
+- `ylabels::Vector{String}`
+- `xlabel::String=""`
+- `ylabel::String=""`
+- `title::String=""`
+- `cb_title::String=""`: color bar title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_ero(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="Power [dB]", mono::Bool=false, kwargs...)
+
+    size(s, 1) == length(f) || throw(ArgumentError("f vector length does not match spectrogram."))
+    size(s, 2) == length(t) || throw(ArgumentError("t vector length does not match spectrogram."))
+    ndims(s) != 3 && throw(ArgumentError("s must have 3-dimensions."))
+    size(s, 3) > 2 && throw(ArgumentError("s may contain ≤ 2 epochs."))
+
+    pal = mono == true ? :grays : :darktest
+
+    # set time markers
+    if tm != 0
+        for tm_idx in eachindex(tm)
+            tm[tm_idx] / 1000 < t[1] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            tm[tm_idx] / 1000 > t[end] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            tm[tm_idx] = vsearch(tm[tm_idx] / 1000, t)
+        end
+    end
+
+    t = t .* 1000
+
+    if size(s, 3) == 1
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of epochs")
+        p = Plots.heatmap(t,
+                          f,
+                          s[:, :, 1],
+                          title=tt,
+                          xlabel=xl,
+                          ylabel=yl,
+                          seriescolor=pal,
+                          colorbar_title=cb_title,
+                          size=(1200, 800),
+                          left_margin=20 * Plots.px,
+                          bottom_margin=20 * Plots.px,
+                          titlefontsize=8,
+                          xlabelfontsize=8,
+                          ylabelfontsize=8,
+                          xtickfontsize=6,
+                          ytickfontsize=6;
+                          kwargs...)
+
+        # draw time markers
+        if tm != 0
+            for tm_idx in eachindex(tm)
+                p = Plots.vline!([t[tm[tm_idx]]],
+                                 linewidth=1,
+                                 linecolor=:black,
+                                 label=false)
+            end
+        end
+    else
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "ERP spectrogram")
+        p1 = Plots.heatmap(t,
+                           f,                           
+                           s[:, :, 1],
+                           title=tt,
+                           xlabel=xl,
+                           ylabel=yl,
+                           seriescolor=pal,
+                           colorbar_title=cb_title,
+                           size=(1200, 800),
+                           left_margin=20 * Plots.px,
+                           bottom_margin=20 * Plots.px,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=6,
+                           ytickfontsize=6;
+                           kwargs...)
+        # plot 0 v-line
+        p1 = Plots.vline!([0],
+                          linestyle=:dash,
+                          linewidth=0.5,
+                          linecolor=:black,
+                          label=false)
+
+        # draw time markers
+        if tm != 0
+            for tm_idx in eachindex(tm)
+                p1 = Plots.vline!([t[tm[tm_idx]]],
+                                  linewidth=1,
+                                  linecolor=:black,
+                                  label=false)
+            end
+        end
+
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs")
+        p2 = Plots.heatmap(t,
+                           f,                           
+                           s[:, :, 2],
+                           title=tt,
+                           xlabel=xl,
+                           ylabel=yl,
+                           seriescolor=pal,
+                           colorbar_title=cb_title,
+                           size=(1200, 800),
+                           left_margin=20 * Plots.px,
+                           bottom_margin=20 * Plots.px,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=6,
+                           ytickfontsize=6;
+                           kwargs...)
+        # plot 0 v-line
+        p2 = Plots.vline!([0],
+                          linestyle=:dash,
+                          linewidth=0.5,
+                          linecolor=:black,
+                          label=false)
+
+        # draw time markers
+        if tm != 0
+            for tm_idx in eachindex(tm)
+                p2 = Plots.vline!([t[tm[tm_idx]]],
+                                  linewidth=1,
+                                  linecolor=:black,
+                                  label=false)
+            end
+        end
+
+        p = Plots.plot(p1, p2, layout=(2, 1))
+
+    end
 
     return p
 
