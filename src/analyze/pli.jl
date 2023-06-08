@@ -32,6 +32,7 @@ function pli(s1::AbstractVector, s2::AbstractVector)
     pv = abs(mean(sign.(imag.(exp.(1im .* phd)))))
 
     return (pv=pv, sd=sd, phd=phd, s1ph=s1ph, s2ph=s2ph)
+
 end
 
 """
@@ -84,6 +85,7 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     end
 
     return (pv=pv, sd=sd, phase_dif=phd, s1ph=s1ph, s2ph=s2ph)
+
 end
 
 """
@@ -119,4 +121,5 @@ function pli(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:Ab
     pv = _copy_lt2ut(pv)
 
     return pv
+    
 end

@@ -41,6 +41,7 @@ function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, Abstr
     p = _copy_lt2ut(p)
 
     return (f=f, p=p)
+    
 end
 
 """
@@ -91,4 +92,5 @@ function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Unio
     end
 
     return (f=f, p=p)
+
 end
