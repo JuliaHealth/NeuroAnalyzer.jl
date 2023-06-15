@@ -1,9 +1,9 @@
-export ero
+export eros
 
 """
-    ero(obj; bl)
+    eros(obj; <keyword arguments>)
 
-Calculate ERO (Event-Related Oscillations). If `obj` is ERP, `ero()` returns two epochs: ERP spectrogram (`ero_s[:, :, 1]`) and averaged spectrograms of all ERP epochs (`ero_s[:, :, 2]`). Otherwise, `ero()` returns averaged spectrograms of all `obj` epochs (`ero_s[:, :, 1]`)
+Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP, `ero()` returns two epochs: ERP spectrogram (`ero_s[:, :, 1]`) and averaged spectrograms of all ERP epochs (`ero_s[:, :, 2]`). Otherwise, `ero()` returns averaged spectrograms of all `obj` epochs (`ero_s[:, :, 1]`)
 
 # Arguments
 
@@ -32,9 +32,10 @@ Named tuple containing:
 - `ero_f::Vector{Float64}`: frequencies
 - `ero_t::Vector{Float64}`: time
 """
-function ero(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
+function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
 
     _check_channels(obj, ch)
+    _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
 
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
@@ -59,6 +60,6 @@ function ero(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{R
         ero_s = mean(ero_s, dims=3)
     end
 
-    return (ero_s=ero_s, erod_f=ero_f, ero_t=ero_t)
+    return (ero_s=ero_s, ero_f=ero_f, ero_t=ero_t)
 
 end

@@ -51,6 +51,7 @@ end
 Calculate power spectrum density.
 
 # Arguments
+
 - `s::AbstractMatrix`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
@@ -150,7 +151,11 @@ function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 
     _check_channels(obj, ch)
 
-    pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, nt=nt)
+    if length(ch) == 1
+        pw, pf = psd(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 2)), fs=sr(obj), norm=norm, mt=mt, nt=nt)
+    else
+        pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, nt=nt)
+    end
 
     return (pw=pw, pf=pf)
 

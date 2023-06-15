@@ -8,7 +8,8 @@ export plot_violin
 export plot_dots
 export plot_paired
 export plot_polar
-export plot_ero
+export plot_eros
+export plot_erop
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -662,9 +663,9 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
 end
 
 """
-    plot_ero(m; <keyword arguments>)
+    plot_eros(s, f, t; <keyword arguments>)
 
-Plot ERO (Event-Related Oscillations).
+Plot ERO (Event-Related Oscillations) spectrogram.
 
 # Arguments
 
@@ -672,12 +673,11 @@ Plot ERO (Event-Related Oscillations).
 - `f::AbstractVector`: ERO frequencies
 - `t::AbstractVector`: ERO time
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
-- `xlabels::Vector{String}`
-- `ylabels::Vector{String}`
-- `xlabel::String=""`
-- `ylabel::String=""`
-- `title::String=""`
-- `cb_title::String=""`: color bar title
+- `xlabel::String="default"`
+- `ylabel::String="default"`
+- `title::String="default"`
+- `cb::Bool=true`: draw color bar
+- `cb_title::String="Power [dB]"`: color bar title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -685,12 +685,12 @@ Plot ERO (Event-Related Oscillations).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_ero(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="Power [dB]", mono::Bool=false, kwargs...)
+function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="Power [dB]", mono::Bool=false, kwargs...)
 
     size(s, 1) == length(f) || throw(ArgumentError("f vector length does not match spectrogram."))
     size(s, 2) == length(t) || throw(ArgumentError("t vector length does not match spectrogram."))
     ndims(s) != 3 && throw(ArgumentError("s must have 3-dimensions."))
-    size(s, 3) > 2 && throw(ArgumentError("s may contain ≤ 2 epochs."))
+    size(s, 3) > 2 && throw(ArgumentError("s must contain ≤ 2 epochs."))
 
     pal = mono == true ? :grays : :darktest
 
@@ -804,6 +804,96 @@ function plot_ero(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::Un
                                   label=false)
             end
         end
+
+        p = Plots.plot(p1, p2, layout=(2, 1))
+
+    end
+
+    return p
+
+end
+
+"""
+    plot_erop(p, f; <keyword arguments>)
+
+Plot ERO (Event-Related Oscillations) power-spectrum.
+
+# Arguments
+
+- `p::AbstractArray`: ERO powers
+- `f::AbstractVector`: ERO frequencies
+- `xlabel::String="default"`
+- `ylabel::String="default"`
+- `title::String="default"`
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)
+
+    size(p, 1) == length(f) || throw(ArgumentError("f vector length does not match powers."))
+    ndims(p) != 2 && throw(ArgumentError("p must have 2-dimensions."))
+    size(p, 2) > 2 && throw(ArgumentError("p must contain ≤ 2 epochs."))
+
+    pal = mono == true ? :grays : :darktest
+
+    if size(p, 2) == 1
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "Averaged power-spectra of epochs")
+        p = Plots.plot(f,
+                       p[:, 1],
+                       title=tt,
+                       xlabel=xl,
+                       ylabel=yl,
+                       seriescolor=pal,
+                       size=(1200, 800),
+                       left_margin=20 * Plots.px,
+                       bottom_margin=20 * Plots.px,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6,
+                       label=false;
+                       kwargs...)
+    else
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "ERP power-spectrum")
+        p1 = Plots.plot(f,
+                        p[:, 1],
+                        title=tt,
+                        xlabel=xl,
+                        ylabel=yl,
+                        seriescolor=pal,
+                        size=(1200, 800),
+                        left_margin=20 * Plots.px,
+                        bottom_margin=20 * Plots.px,
+                        titlefontsize=8,
+                        xlabelfontsize=8,
+                        ylabelfontsize=8,
+                        xtickfontsize=6,
+                        ytickfontsize=6,
+                        label=false;
+                        kwargs...)
+
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "Averaged power-spectra of epochs")
+        p2 = Plots.plot(f,
+                        p[:, 2],
+                        title=tt,
+                        xlabel=xl,
+                        ylabel=yl,
+                        seriescolor=pal,
+                        size=(1200, 800),
+                        left_margin=20 * Plots.px,
+                        bottom_margin=20 * Plots.px,
+                        titlefontsize=8,
+                        xlabelfontsize=8,
+                        ylabelfontsize=8,
+                        xtickfontsize=6,
+                        ytickfontsize=6,
+                        label=false;
+                        kwargs...)
 
         p = Plots.plot(p1, p2, layout=(2, 1))
 

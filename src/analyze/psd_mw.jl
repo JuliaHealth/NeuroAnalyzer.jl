@@ -166,6 +166,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+
 # Returns
 
 Named tuple containing:
@@ -176,7 +177,11 @@ function psd_mw(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
 
     _check_channels(obj, ch)
 
-    pw, pf = @views psd_mw(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    if length(ch) == 1
+        pw, pf = @views psd_mw(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 2)), pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    else
+        pw, pf = @views psd_mw(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    end
 
     return (pw=pw, pf=pf)
 
