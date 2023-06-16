@@ -38,6 +38,7 @@ function na_info()
     if isfile("Manifest.toml")
         println("Imported packages:")
         required_packages = [
+            "Cairo",
             "ColorSchemes",
             "ContinuousWavelets",
             "CSV",
@@ -56,6 +57,7 @@ function na_info()
             "Git",
             "GLM",
             "GLMakie",
+            "Gtk",
             "HypothesisTests",
             "InformationMeasures",
             "Interpolations",

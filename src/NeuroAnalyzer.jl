@@ -16,6 +16,7 @@ res_path = nothing
 verbose = nothing
 
 using Artifacts
+using Cairo
 using ColorSchemes
 using ContinuousWavelets
 using CSV
@@ -35,6 +36,7 @@ using GeometryBasics
 using Git
 using GLM
 using GLMakie
+using Gtk
 using HypothesisTests
 using InformationMeasures
 using Interpolations
@@ -62,6 +64,9 @@ using StatsPlots
 using TOML
 using Wavelets
 using WaveletsExt
+
+# required for interactive preview
+const io = PipeBuffer()
 
 # define structures
 
@@ -302,6 +307,7 @@ include("plots/plot_weights.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_locs_nirs.jl")
+include("plots/preview.jl")
 
 # statistics
 include("statistics/dprime.jl")
