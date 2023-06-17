@@ -45,9 +45,12 @@ Interactive preview of epoched signal.
 function preview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false)
 
     epoch_n(obj) < 2 && @error "preview_cont() should be used for continuous object."
+    _check_channels(obj, ch)
 
-    win = GtkWindow("NeuroAnalyzer", 1200, 890)
-    can = GtkCanvas(1200, 800)
+    p = NeuroAnalyzer.plot(obj, ch=ch)
+    win = GtkWindow("NeuroAnalyzer", 1200, (p.attr[:size][2] + 90))
+    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+
     g = GtkGrid()
     slider_ep = GtkScale(false, 1:epoch_n(obj))
     label_ep = GtkLabel("Epoch")
@@ -211,9 +214,11 @@ Interactive preview of continuous signal.
 function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false)
 
     epoch_n(obj) > 1 && @error "preview_ep() should be used for epoched object."
+    _check_channels(obj, ch)
 
-    win = GtkWindow("NeuroAnalyzer", 1200, 980)
-    can = GtkCanvas(1200, 800)
+    p = NeuroAnalyzer.plot(obj, ch=ch)
+    win = GtkWindow("NeuroAnalyzer", 1200, (p.attr[:size][2] + 180))
+    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     g = GtkGrid()
     slider_time = GtkScale(false, obj.time_pts[1]:obj.time_pts[end])
     slider_ts1 = GtkScale(false, obj.time_pts[1]:obj.time_pts[1] + 10)
