@@ -9,7 +9,10 @@ Detect outliers.
 # Arguments
 
 - `x::AbstractVector`
-- `method::Symbol=iqr`: methods: `:iqr` (interquartile range), `:z` (z-score) or `:g` (Grubbs test)
+- `method::Symbol=iqr`: detecting methods:
+    - `:iqr`: interquartile range
+    - `:z`: z-score
+    - `:g`: Grubbs test
 
 # Returns
 

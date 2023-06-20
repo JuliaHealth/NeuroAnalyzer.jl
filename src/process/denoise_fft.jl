@@ -64,8 +64,6 @@ function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)
     return s_new
 end
 
-
-
 """
     denoise_fft(obj; ch, pad, t)
 

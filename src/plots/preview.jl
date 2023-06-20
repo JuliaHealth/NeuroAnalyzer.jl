@@ -214,6 +214,8 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     epoch_n(obj) > 1 && @error "preview_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
+    zoom_level = 10
+
     p = NeuroAnalyzer.plot(obj, ch=ch)
     win = GtkWindow("NeuroAnalyzer", 1200, (p.attr[:size][2] + 180))
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
@@ -230,20 +232,20 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     bt_next = GtkButton("→")
     bt_next10 = GtkButton("⇒")
     bt_end = GtkButton("⇥")
+    bt_zoomout = GtkButton("−")
+    bt_zoomin = GtkButton("+")
     bt_help = GtkButton("🛈")
     bt_delete = GtkButton("DEL")
     bt_close = GtkButton("✖")
+    separator1 = GtkLabel("")
+    separator2 = GtkLabel("")
+    separator3 = GtkLabel("")
+    separator4 = GtkLabel("")
 
     @guarded draw(can) do widget
         time1 = GAccessor.value(slider_time)
-        time2 = time1 + 10
+        time2 = time1 + zoom_level
         time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-        Gtk.@sigatom begin
-            GAccessor.range(slider_ts1, 0, 10)
-            GAccessor.range(slider_ts2, 0, 10)
-            GAccessor.range(slider_ts1, time1, time2)
-            GAccessor.range(slider_ts2, time1, time2)
-        end
         ctx = getgc(can)
         show(io, MIME("image/png"), NeuroAnalyzer.plot(obj, ch=ch, seg=(time1, time2), mono=mono))
         img = read_from_png(io)
@@ -251,7 +253,19 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         paint(ctx)
     end
 
-    signal_connect((w) -> draw(can), slider_time, "value-changed")
+    # signal_connect((w) -> draw(can), slider_time, "value-changed")
+    signal_connect(slider_time, "value-changed") do widget
+        time1 = GAccessor.value(slider_time)
+        time2 = time1 + zoom_level
+        time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
+        Gtk.@sigatom begin
+            GAccessor.range(slider_ts1, time1, time2)
+            GAccessor.range(slider_ts2, time1, time2)
+            GAccessor.value(slider_ts1, time1)
+            GAccessor.value(slider_ts2, time1)
+        end
+        draw(can)
+    end
 
     signal_connect(bt_prev, "clicked") do widget
         if GAccessor.value(slider_time) > obj.time_pts[1] + 1
@@ -300,7 +314,7 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     end
 
     signal_connect(bt_next10, "clicked") do widget
-        if obj.time_pts[end] % 10 == 0
+        if obj.time_pts[end] % zoom_level == 0
             if GAccessor.value(slider_time) < obj.time_pts[end] - 10
                 time_current = GAccessor.value(slider_time) + 10
                 Gtk.@sigatom begin
@@ -337,18 +351,70 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     end
 
     signal_connect(bt_end, "clicked") do widget
-        if obj.time_pts[end] % 10 == 0
+        if obj.time_pts[end] % zoom_level == 0
             Gtk.@sigatom begin
-                GAccessor.value(slider_time, obj.time_pts[end] - 10)
-                GAccessor.value(slider_ts1, obj.time_pts[end] - 10)
-                GAccessor.value(slider_ts2, obj.time_pts[end] - 10)
+                GAccessor.value(slider_time, obj.time_pts[end] - zoom_level)
+                GAccessor.value(slider_ts1, obj.time_pts[end] - zoom_level)
+                GAccessor.value(slider_ts2, obj.time_pts[end] - zoom_level)
             end
         else
             Gtk.@sigatom begin
-                GAccessor.value(slider_time, obj.time_pts[end] - obj.time_pts[end] % 10)
-                GAccessor.value(slider_ts1, obj.time_pts[end] - obj.time_pts[end] % 10)
-                GAccessor.value(slider_ts2, obj.time_pts[end] - obj.time_pts[end] % 10)
+                GAccessor.value(slider_time, obj.time_pts[end] - obj.time_pts[end] % zoom_level)
+                GAccessor.value(slider_ts1, obj.time_pts[end] - obj.time_pts[end] % zoom_level)
+                GAccessor.value(slider_ts2, obj.time_pts[end] - obj.time_pts[end] % zoom_level)
             end
+        end
+    end
+
+    signal_connect(bt_zoomin, "clicked") do widget
+        time_current = GAccessor.value(slider_time)
+        if zoom_level == 10
+            zoom_level = 5
+        elseif zoom_level == 5
+            zoom_level = 1
+        end
+        if time_current + zoom_level < obj.time_pts[end]
+            Gtk.@sigatom begin
+                GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
+                GAccessor.range(slider_ts2, time_current, time_current + zoom_level)
+                GAccessor.value(slider_ts1, time_current)
+                GAccessor.value(slider_ts2, time_current)
+            end
+            draw(can)
+        else
+            Gtk.@sigatom begin
+                GAccessor.range(slider_ts1, obj.time_pts[end])
+                GAccessor.range(slider_ts2, obj.time_pts[end])
+                GAccessor.value(slider_ts1, time_current)
+                GAccessor.value(slider_ts2, time_current)
+            end
+            draw(can)
+        end
+    end
+
+    signal_connect(bt_zoomout, "clicked") do widget
+        time_current = GAccessor.value(slider_time)
+        if zoom_level == 1
+            zoom_level = 5
+        elseif zoom_level == 5
+            zoom_level = 10
+        end
+        if time_current + zoom_level < obj.time_pts[end]
+            Gtk.@sigatom begin
+                GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
+                GAccessor.range(slider_ts2, time_current, time_current + zoom_level)
+                GAccessor.value(slider_ts1, time_current)
+                GAccessor.value(slider_ts2, time_current)
+            end
+            draw(can)
+        else
+            Gtk.@sigatom begin
+                GAccessor.range(slider_ts1, obj.time_pts[end])
+                GAccessor.range(slider_ts2, obj.time_pts[end])
+                GAccessor.value(slider_ts1, time_current)
+                GAccessor.value(slider_ts2, time_current)
+            end
+            draw(can)
         end
     end
 
@@ -362,25 +428,17 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                 _info("Deleted segment: $time1:$time2")
                 Gtk.@sigatom begin
                     GAccessor.range(slider_time, obj.time_pts[1], obj.time_pts[end])
-                    if obj.time_pts[end] % 10 == 0
-                        time_current >= (obj.time_pts[end] - 10) && (time_current = obj.time_pts[end] - 10)
+                    if obj.time_pts[end] % zoom_level == 0
+                        time_current >= (obj.time_pts[end] - zoom_level) && (time_current = obj.time_pts[end] - zoom_level)
                     else
-                        time_current >= obj.time_pts[end] - (obj.time_pts[end] % 10) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % 10))
+                        time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom_level) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom_level))
                     end
                     time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                     GAccessor.value(slider_time, time_current)
                     GAccessor.value(slider_ts1, time_current)
                     GAccessor.value(slider_ts2, time_current)
-                    ctx = getgc(can)
-                    if time_current + 10 < obj.time_pts[end]
-                        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj, ch=ch, seg=(time_current, time_current + 10), mono=mono))
-                    else
-                        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj, ch=ch, seg=(time_current, time_current + (obj.time_pts[end] % 10)), mono=mono))
-                    end
-                    img = read_from_png(io)
-                    set_source_surface(ctx, img, 0, 0)
-                    paint(ctx)
                 end
+                draw(can)
             end
         else
             info_dialog("Time segment start must be < time segment end.")
@@ -392,7 +450,7 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     end
 
     signal_connect(bt_help, "clicked") do widget
-        info_dialog("Keyboard shortcuts:\n\nHOME\tgo to the signal beginning\nEND\t\tgo to the signal end\n,\t\tgo back by 1 second\n.\t\tgo forward by 1 second\n<\t\tgo back by 10 seconds\n>\t\tgo forward by 10 seconds\n\nDEL\t\tdelete current segment\n\nh\t\tthis info\nq\t\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nHOME\tgo to the signal beginning\nEND\t\tgo to the signal end\n,\t\tgo back by 1 second\n.\t\tgo forward by 1 second\n<\t\tgo back by 10 seconds\n>\t\tgo forward by 10 seconds\n\n+\t\tzoom in\n−\t\tzoom out\n\nDEL\t\tdelete current segment\n\nh\t\tthis info\nq\t\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -420,7 +478,55 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                 end
             end
         elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\nHOME\tgo to the signal beginning\nEND\t\tgo to the signal end\n,\t\tgo back by 1 second\n.\t\tgo forward by 1 second\n<\t\tgo back by 10 seconds\n>\t\tgo forward by 10 seconds\n\nDEL\t\tdelete current segment\n\nh\t\tthis info\nq\t\texit\n")
+            info_dialog("Keyboard shortcuts:\n\nHOME\tgo to the signal beginning\nEND\t\tgo to the signal end\n,\t\tgo back by 1 second\n.\t\tgo forward by 1 second\n<\t\tgo back by 10 seconds\n>\t\tgo forward by 10 seconds\n\n+\t\tzoom in\n−\t\tzoom out\n\nDEL\t\tdelete current segment\n\nh\t\tthis info\nq\t\texit\n")
+        elseif k == 65451 || k == 43 # +
+            time_current = GAccessor.value(slider_time)
+            if zoom_level == 10
+                zoom_level = 5
+            elseif zoom_level == 5
+                zoom_level = 1
+            end
+            if time_current + zoom_level < obj.time_pts[end]
+                Gtk.@sigatom begin
+                    GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
+                    GAccessor.range(slider_ts2, time_current, time_current + zoom_level)
+                    GAccessor.value(slider_ts1, time_current)
+                    GAccessor.value(slider_ts2, time_current)
+                end
+                draw(can)
+            else
+                Gtk.@sigatom begin
+                    GAccessor.range(slider_ts1, obj.time_pts[end])
+                    GAccessor.range(slider_ts2, obj.time_pts[end])
+                    GAccessor.value(slider_ts1, time_current)
+                    GAccessor.value(slider_ts2, time_current)
+                end
+                draw(can)
+            end
+        elseif k == 65453 || k == 95 # +
+            time_current = GAccessor.value(slider_time)
+            if zoom_level == 1
+                zoom_level = 5
+            elseif zoom_level == 5
+                zoom_level = 10
+            end
+            if time_current + zoom_level < obj.time_pts[end]
+                Gtk.@sigatom begin
+                    GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
+                    GAccessor.range(slider_ts2, time_current, time_current + zoom_level)
+                    GAccessor.value(slider_ts1, time_current)
+                    GAccessor.value(slider_ts2, time_current)
+                end
+                draw(can)
+            else
+                Gtk.@sigatom begin
+                    GAccessor.range(slider_ts1, obj.time_pts[end])
+                    GAccessor.range(slider_ts2, obj.time_pts[end])
+                    GAccessor.value(slider_ts1, time_current)
+                    GAccessor.value(slider_ts2, time_current)
+                end
+                draw(can)
+            end
         elseif k == 44 # ,
             if GAccessor.value(slider_time) > obj.time_pts[1] + 1
                 time_current = GAccessor.value(slider_time) - 1
@@ -492,17 +598,17 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                     _info("Deleted segment: $time1:$time2")
                     Gtk.@sigatom begin
                         GAccessor.range(slider_time, obj.time_pts[1], obj.time_pts[end])
-                        time_current > obj.time_pts[end] && (time_current = obj.time_pts[end] - 10)
+                        if obj.time_pts[end] % zoom_level == 0
+                            time_current >= (obj.time_pts[end] - zoom_level) && (time_current = obj.time_pts[end] - zoom_level)
+                        else
+                            time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom_level) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom_level))
+                        end
                         time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                         GAccessor.value(slider_time, time_current)
                         GAccessor.value(slider_ts1, time_current)
                         GAccessor.value(slider_ts2, time_current)
-                        ctx = getgc(can)
-                        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj, ch=ch, seg=(time_current, time_current+10), mono=mono))
-                        img = read_from_png(io)
-                        set_source_surface(ctx, img, 0, 0)
-                        paint(ctx)
                     end
+                    draw(can)
                 end
             else
                 info_dialog("Time segment start must be < time segment end.")
@@ -510,28 +616,42 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         end
     end
 
-    g[1:9, 1] = can         # spans all columns
+    g[1:15, 1] = can
     g[1, 2] = label_time
-    g[2:9, 2] = slider_time # spans all columns
+    g[2:15, 2] = slider_time
     g[1, 3] = label_ts1
-    g[2:9, 3] = slider_ts1  # spans all columns
+    g[2:15, 3] = slider_ts1
     g[1, 4] = label_ts2
-    g[2:9, 4] = slider_ts2  # spans all columns
-    g[1, 5] = bt_start      # Cartesian coordinates, g[x,y]
-    g[2, 5] = bt_prev10
-    g[3, 5] = bt_prev
-    g[4, 5] = bt_next
-    g[5, 5] = bt_next10
-    g[6, 5] = bt_end
-    g[7, 5] = bt_delete
-    g[8, 5] = bt_help
-    g[9, 5] = bt_close
-    set_gtk_property!(g, :column_homogeneous, true)
-    set_gtk_property!(g, :column_spacing, 10)  # introduce a 5-pixel gap between columns
+    g[2:15, 4] = slider_ts2
+    g[1, 5] = separator1
+    g[2, 5] = bt_start
+    g[3, 5] = bt_prev10
+    g[4, 5] = bt_prev
+    g[5, 5] = bt_next
+    g[6, 5] = bt_next10
+    g[7, 5] = bt_end
+    g[8, 5] = separator2
+    g[9, 5] = bt_zoomout
+    g[10, 5] = bt_zoomin
+    g[11, 5] = separator3
+    g[12, 5] = bt_delete
+    g[13, 5] = separator4
+    g[14, 5] = bt_help
+    g[15, 5] = bt_close
+    set_gtk_property!(g, :column_homogeneous, false)
+    set_gtk_property!(g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
     set_gtk_property!(win, :border_width, 20)
+    set_gtk_property!(win, :resizable, false)
+    set_gtk_property!(slider_time, :round_digits, 1)
+    set_gtk_property!(slider_ts1, :round_digits, 1)
+    set_gtk_property!(slider_ts2, :round_digits, 1)
+    set_gtk_property!(slider_time, :digits, 1)
+    set_gtk_property!(slider_ts1, :digits, 1)
+    set_gtk_property!(slider_ts2, :digits, 1)
     push!(win, g)
 
     showall(win)
-    # show(can)
+
+    return nothing
 
 end
