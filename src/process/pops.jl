@@ -17,8 +17,8 @@ Detect and repair electrode pop (rapid amplitude change). Signal is recovered wi
 Named tuple containing:
 - `s_new::Vector{Float64}`
 - `pop_location::Int64`: sample number in the signal
-- `left_segment::UnitRange{Int64}`: range before the pop that starts when signal crosses 0
-- `right_segment::UnitRange{Int64}`: range after the pop that ends when signal crosses 0
+- `left_segment::Int64`: length of segment before the pop that starts when signal crosses 0
+- `right_segment::Int64`: length of segment after the pop that ends when signal crosses 0
 """
 function pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
 
@@ -130,10 +130,10 @@ Detect and repair electrode pop (rapid amplitude change). Signal is recovered wi
 # Returns
 
 Named tuple containing:
-- `obj_new::NeuroAnalyzer.NEURO`
-- `pop_location::Vector{Vector{Int64}}`: location of pops: channel, epoch and sample number in the signal
-- `left_segment::UnitRange{Int64}`: range before the pop that starts when signal crosses 0
-- `right_segment::UnitRange{Int64}`: range after the pop that ends when signal crosses 0
+- `obj_new::NeuroAnalyzer.NEURO`: returned if `repair = true`
+- `pop_loc::Vector{Vector{Int64}}`: location of pops: channel, epoch and sample number in the signal
+- `l_seg::Vector{Int64}`: length of segment before the pop that starts when signal crosses 0
+- `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
 
@@ -197,9 +197,9 @@ Detect and repair electrode pop (rapid amplitude change). Signal is recovered wi
 # Returns
 
 Named tuple containing:
-- `pop_location::Vector{Vector{Int64}}`: location of pops: channel, epoch and sample number in the signal
-- `left_segment::UnitRange{Int64}`: range before the pop that starts when signal crosses 0
-- `right_segment::UnitRange{Int64}`: range after the pop that ends when signal crosses 0
+- `pop_loc::Vector{Vector{Int64}}`: location of pops: channel, epoch and sample number in the signal
+- `l_seg::Vector{Int64}`: length of segment before the pop that starts when signal crosses 0
+- `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
 function pops!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
 
