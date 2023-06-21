@@ -107,9 +107,9 @@ function pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
     end
 
     if repair
-        return (s_new=s_new, pop_location=pop_location, left_seg=left_seg, right_seg=right_seg)
+        return (s_new=s_new, pop_location=pop_location, left_seg=left_seg[1], right_seg=right_seg[end])
     else
-        return (pop_location=pop_location, left_seg=left_seg, right_seg=right_seg)
+        return (pop_location=pop_location, left_seg=left_seg[1], right_seg=right_seg[end])
     end
 
 end
@@ -137,37 +137,35 @@ Named tuple containing:
 """
 function pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
 
-    NeuroAnalyzer._check_channels(obj, ch)
+    _check_channels(obj, ch)
+    epoch_n(obj) > 1 && throw(ArgumentError("pop() should be applied to continuous (non-epoched) signal."))
 
     obj_new = deepcopy(obj)
 
     if length(ch) == 1
-        s = @views reshape(obj_new.data[ch, :, :], 1, :, size(obj_new.data[ch, :, :], 2))
+        s = @views reshape(obj_new.data[ch, :, 1], 1, :, size(obj_new.data[ch, :, 1], 2))
     else
         s = @views obj_new.data[ch, :, :]
     end
 
     pop_loc = Vector{Vector{Int64}}()
-    l_seg = Vector{UnitRange{Int64}}()
-    r_seg = Vector{UnitRange{Int64}}()
+    l_seg = Vector{Int64}()
+    r_seg = Vector{Int64}()
 
     window *= sr(obj)
     window > signal_len(obj) && throw(ArgumentError("window must be ≤ $(signal_len(obj) / sr(obj))."))
     ch_n = size(s, 1)
-    ep_n = size(s, 3)
 
-    @inbounds @simd for ep_idx in 1:ep_n
-        for ch_idx in 1:ch_n
-            for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
-                p = @views pops(obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), ep_idx], repair=repair, r=r)
-                if p !== nothing
-                    if repair
-                        s[ch_idx, Int64.(window_idx:(window_idx + window - 1)), ep_idx] = p.s_new
-                    end
-                    push!(pop_loc, [ch[ch_idx], ep_idx, window_idx + p.pop_location])
-                    push!(l_seg, p.left_seg)
-                    push!(r_seg, p.right_seg)
+    @inbounds @simd for ch_idx in 1:ch_n
+        for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
+            p = @views pops(obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair=repair, r=r)
+            if p !== nothing
+                if repair
+                    s[ch_idx, Int64.(window_idx:(window_idx + window - 1)), 1] = p.s_new
                 end
+                push!(pop_loc, [ch[ch_idx], window_idx + p.pop_location])
+                push!(l_seg, window_idx + p.left_seg)
+                push!(r_seg, window_idx + p.right_seg)
             end
         end
     end
