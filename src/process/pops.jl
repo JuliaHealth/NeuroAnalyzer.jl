@@ -164,8 +164,8 @@ function pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
                     s[ch_idx, Int64.(window_idx:(window_idx + window - 1)), 1] = p.s_new
                 end
                 push!(pop_loc, [ch[ch_idx], window_idx + p.pop_location])
-                push!(l_seg, window_idx + p.left_seg)
-                push!(r_seg, window_idx + p.right_seg)
+                push!(l_seg, p.pop_location - p.left_seg)
+                push!(r_seg, p.right_seg - p.pop_location)
             end
         end
     end
