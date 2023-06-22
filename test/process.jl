@@ -319,8 +319,8 @@ e = erp(e10)
 npl!(e)
 @test size(e.data) == (19, 2560, 11)
 
-@info "test 43/44: pops()"
-eeg_tmp, pl, ls, rs = pops(eeg)
+@info "test 43/44: remove_pops()"
+eeg_tmp, pl, ls, rs = remove_pops(eeg)
 @test size(eeg_tmp.data) == size(eeg.data)
 
 @info "test 44/44: remove_powerline()"

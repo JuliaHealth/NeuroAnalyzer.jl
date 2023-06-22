@@ -1,8 +1,8 @@
-export pops
-export pops!
+export remove_pops
+export remove_pops!
 
 """
-    pops(s; repair)
+    remove_pops(s; repair)
 
 Detect and repair electrode pop (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≥2 seconds.
 
@@ -20,7 +20,7 @@ Named tuple containing:
 - `left_segment::Int64`: length of segment before the pop that starts when signal crosses 0
 - `right_segment::Int64`: length of segment after the pop that ends when signal crosses 0
 """
-function pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
+function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
 
     length(s) < 2 * r + 1 && throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
 
@@ -115,7 +115,7 @@ function pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
 end
 
 """
-    pops(s; repair)
+    remove_pops(s; repair)
 
 Detect and repair electrode pop (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≈2 seconds.
 
@@ -135,7 +135,7 @@ Named tuple containing:
 - `l_seg::Vector{Int64}`: length of segment before the pop that starts when signal crosses 0
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
-function pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
+function remove_pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
 
     _check_channels(obj, ch)
     epoch_n(obj) > 1 && throw(ArgumentError("pop() should be applied to continuous (non-epoched) signal."))
@@ -158,7 +158,7 @@ function pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     @inbounds @simd for ch_idx in 1:ch_n
         for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
-            p = @views pops(obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair=repair, r=r)
+            p = @views remove_pops(obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair=repair, r=r)
             if p !== nothing
                 if repair
                     s[ch_idx, Int64.(window_idx:(window_idx + window - 1)), 1] = p.s_new
@@ -182,7 +182,7 @@ function pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    pops!(s; repair)
+    remove_pops!(s; repair)
 
 Detect and repair electrode pop (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≈2 seconds.
 
@@ -201,10 +201,10 @@ Named tuple containing:
 - `l_seg::Vector{Int64}`: length of segment before the pop that starts when signal crosses 0
 - `r_seg::Vector{Int64}`: length of segment after the pop that ends when signal crosses 0
 """
-function pops!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
+function remove_pops!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=20)
 
     if repair
-        obj_new, pop_loc, l_seg, r_seg = pops(obj, ch=ch, repair=true, window=window, r=r)
+        obj_new, pop_loc, l_seg, r_seg = remove_pops(obj, ch=ch, repair=true, window=window, r=r)
         obj.data = obj_new.data
         obj.components = obj_new.components
         obj.history = obj_new.history
