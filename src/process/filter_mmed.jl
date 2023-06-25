@@ -9,7 +9,7 @@ Filter using moving median filter (with threshold).
 # Arguments
 
 - `s::AbstractVector`
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + median(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -49,7 +49,7 @@ Filter using moving median filter (with threshold).
 # Arguments
 
 - `s::AbstractArray`
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -83,7 +83,7 @@ Filter using moving median filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + median(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -94,6 +94,8 @@ Filter using moving median filter (with threshold).
 function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     _check_channels(obj, ch)
+
+    _info("Window length: $(2 * k + 1) samples.")
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_mmed(obj.data[ch, :, :], k=k, t=t, window=window)
@@ -113,7 +115,7 @@ Filter using moving median filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + median(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 

@@ -4,12 +4,12 @@ export filter_mavg!
 """
     filter_mavg(s; <keyword arguments>)
 
-Filter using moving average filter (with threshold).
+Filter using moving average (FIR) filter (with threshold).
 
 # Arguments
 
 - `s::AbstractVector`
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -49,7 +49,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `s::AbstractArray`
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -83,7 +83,7 @@ Filter using moving average filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `k::Int64=8`: k-value for (window length = 2 × k + 1)
+- `k::Int64=8`: window length (2 × k + 1)
 - `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -94,6 +94,9 @@ Filter using moving average filter (with threshold).
 function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     _check_channels(obj, ch)
+
+    _info("Window length: $(2 * k + 1) samples.")
+    _info("Approximate cut-off frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=4)) Hz.")
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_mavg(obj.data[ch, :, :], k=k, t=t, window=window)
