@@ -11,8 +11,6 @@ const na_ver = v"0.23.6"
 # initialize preferences
 use_cuda = nothing
 progress_bar = nothing
-plugins_path = nothing
-res_path = nothing
 verbose = nothing
 
 using Artifacts
