@@ -4,7 +4,7 @@ export join!
 """
     join(obj1, obj2)
 
-Join two NeuroAnalyzer objects. Both objects must have the same data type, number of channels, epochs and sampling rate.
+Join two NeuroAnalyzer objects. Each `obj2` epoch are horizontally concatenated (along time) with respective `obj1` epoch. Both objects must have the same data type, number of channels, epochs and sampling rate, but may differ in epoch lengths.
 
 # Arguments
 
@@ -49,7 +49,7 @@ end
 """
     join!(obj1, obj2)
 
-Join two NeuroAnalyzer objects. Both objects must have the same data type, number of channels, epochs and sampling rate.
+Join two NeuroAnalyzer objects. Each `obj2` epoch are horizontally concatenated (along time) with respective `obj1` epoch. Both objects must have the same data type, number of channels, epochs and sampling rate, but may differ in epoch lengths.
 
 # Arguments
 
