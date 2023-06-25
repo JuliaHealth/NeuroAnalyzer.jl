@@ -1,6 +1,7 @@
 function _set_units(ch_type::String)
     u = ""
     lowercase(ch_type) == "eeg" && (u = "μV")
+    lowercase(ch_type) == "ecog" && (u = "μV")
     lowercase(ch_type) == "csd" && (u = "μV/m²")
     lowercase(ch_type) == "mag" && (u = "fT")
     lowercase(ch_type) == "grad" && (u = "fT/cm")
