@@ -9,8 +9,8 @@ Filter using moving average (FIR) filter (with threshold).
 # Arguments
 
 - `s::AbstractVector`
-- `k::Int64=8`: window length (`2 × k + 1`); for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
-- `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
+- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
@@ -20,7 +20,7 @@ Filter using moving average (FIR) filter (with threshold).
 function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     # check k
-    k < 2 || k > length(s) && throw(ArgumentError("k must be in [2, signal length ($(length(s)))]."))
+    k in 2:length(s) || throw(ArgumentError("k must be in [2, signal length ($(length(s)))]."))
 
     # check window
     length(window) != (2 * k + 1) && throw(ArgumentError("window length must be `2 × k + 1` ($(2 * k + 1))."))
@@ -29,7 +29,7 @@ function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractV
 
     @inbounds for idx in (1 + k):(length(s) - k)
         if t > 0
-            if s[idx] > t * std(s) + mean(s)
+            if s[idx] < mean(s) - t * std(s)) || s[idx] > (mean(s) + t * std(s))
                 s_filtered[idx] = @views mean(s[(idx - k):(idx + k)] .* window)
             end
         else
@@ -49,8 +49,8 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `s::AbstractArray`
-- `k::Int64=8`: window length (`2 × k + 1`); for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
-- `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
+- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
@@ -83,8 +83,8 @@ Filter using moving average filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `k::Int64=8`: window length (`2 × k + 1`); for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
-- `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
+- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 # Returns
@@ -116,8 +116,8 @@ Filter using moving average filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `k::Int64=8`: window length (`2 × k + 1`); for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
-- `t::Real=0`: threshold (`t = t * std(s) + mean(s)`)
+- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 """
