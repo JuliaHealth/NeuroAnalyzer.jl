@@ -12,6 +12,8 @@ export replace_channel
 export replace_channel!
 export add_labels
 export add_labels!
+export add_channel
+export add_channel!
 
 """
     signal_channels(obj)
@@ -453,6 +455,70 @@ function add_labels!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
     obj_new = add_labels(obj, clabels=clabels)
     obj.header = obj_new.header
+    obj.history = obj_new.history
+
+    return nothing
+
+end
+
+"""
+    add_channel(obj; data, label, type)
+
+Add channel(s) data to empty `NeuroAnalyzer.NEURO` object.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `data::Array{<:Number, 3}`: channel(s) data
+- `label::Union{String, Vector{String}}=string.(_c(size(data, 1)))`: channel(s) label(s)
+- `type::Union{Symbol, Vector{Symbol}}`: channel(s) type(s)
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::Union{String, Vector{String}}=string.(_c(size(data, 1))), type::Union{Symbol, Vector{Symbol}}, unit::Union{String, Vector{String}}=repeat([""], size(data, 1)))
+
+    length(obj.data) > 0 && throw(ArgumentError("OBJ already contains data."))
+    length(label) == size(data, 1) || throw(ArgumentError("Number of labels and number of data channels must be equal."))
+    length(type) == size(data, 1) || throw(ArgumentError("Number of channel types and number of data channels must be equal."))
+    length(unit) == size(data, 1) || throw(ArgumentError("Number of channel units and number of data channels must be equal."))
+
+    for idx in 1:length(type)
+        type[idx] in channel_types || throw(ArgumentError("Unknown channel type $(type[idx])."))
+    end
+
+    obj_new = deepcopy(obj)
+    obj_new.data = data
+    obj_new.header.recording[:labels] = label
+    obj_new.header.recording[:channel_type] = string.(type)
+    obj_new.header.recording[:units] = unit
+
+    push!(obj_new.history, "add_channel(OBJ, data, label=$label, type=$type, unit=$unit)")
+
+    return obj_new
+
+end
+
+"""
+    add_channel!(obj; data, label, type)
+
+Add channel(s) data to empty `NeuroAnalyzer.NEURO` object.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `data::Array{<:Number, 3}`: channel(s) data
+- `label::Union{String, Vector{String}}=string.(_c(size(data, 1)))`: channel(s) label(s)
+- `type::Union{Symbol, Vector{Symbol}}`: channel(s) type(s)
+"""
+function add_channel!(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::Union{String, Vector{String}}=string.(_c(size(data, 1))), type::Union{Symbol, Vector{Symbol}}, unit::Union{String, Vector{String}}=repeat([""], size(data, 1)))
+
+    obj_new = add_channel(obj, data=data, label=label, type=type, unit=unit)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
     obj.history = obj_new.history
 
     return nothing

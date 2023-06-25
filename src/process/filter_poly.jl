@@ -21,7 +21,7 @@ function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
     order < 1 && throw(ArgumentError("order must be > 1."))
     window < 1 || window > length(s) && throw(ArgumentError("window must be in [1, $(length(s))]."))
 
-    s_filtered = similar(s)
+    s_filtered = deepcopy(s)
 
     # TO DO: smooth spikes between windows
     window_n = length(s) ÷ window

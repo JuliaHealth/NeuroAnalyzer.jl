@@ -1,7 +1,11 @@
 function _get_t(obj::NeuroAnalyzer.NEURO)
     fs = sr(obj)
     time_pts = round.(collect(0:1/fs:size(obj.data, 2) * size(obj.data, 3) / fs)[1:end-1], digits=3)
-    epoch_time = round.((collect(0:1/fs:size(obj.data, 2) / fs) .+ obj.epoch_time[1])[1:end-1], digits=3)
+    if length(obj.epoch_time) > 0
+        epoch_time = round.((collect(0:1/fs:size(obj.data, 2) / fs) .+ obj.epoch_time[1])[1:end-1], digits=3)
+    else
+        epoch_time = round.((collect(0:1/fs:size(obj.data, 2) / fs))[1:end-1], digits=3)
+    end
     return time_pts, epoch_time
 end
 

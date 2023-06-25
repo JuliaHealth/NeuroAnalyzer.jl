@@ -4,7 +4,7 @@ export add_signal!
 """
     add_signal(s1, s2)
 
-Adds noise.
+Add signal.
 
 # Arguments
 

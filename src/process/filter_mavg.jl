@@ -21,12 +21,11 @@ function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractV
 
     # check k
     k < 2 || k > length(s) && throw(ArgumentError("k must be in [2, signal length ($(length(s)))]."))
-    mod(k, 2) != 0 && throw(ArgumentError("k must be even."))
 
     # check window
     length(window) != (2 * k + 1) && throw(ArgumentError("window length must be 2 × k + 1 ($(2 * k + 1))."))
 
-    s_filtered = zeros(length(s))
+    s_filtered = deepcopy(s)
 
     @inbounds for idx in (1 + k):(length(s) - k)
         if t > 0

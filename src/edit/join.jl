@@ -28,7 +28,7 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
     obj_new.data = hcat(obj1.data, obj2.data)
     
     # regenerate time points
-    obj_new.time_pts, obj_new.epoch_time = NeuroAnalyzer._get_t(obj_new)
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # merge markers
     if nrow(obj2.markers) > 0
