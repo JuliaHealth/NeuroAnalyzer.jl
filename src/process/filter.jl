@@ -265,7 +265,7 @@ Apply filtering.
 - `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez` filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:twopass`
     - `:onepass`
@@ -309,7 +309,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:length(ch)
-            obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj_new.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
+            obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
             # update progress bar
             progress_bar == true && next!(pb)
         end
@@ -319,6 +319,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     push!(obj_new.history, "filter(OBJ, ch=$ch, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
 
     return obj_new
+
 end
 
 """
@@ -328,6 +329,7 @@ Apply filtering.
 
 # Arguments
 
+- `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
@@ -345,7 +347,7 @@ Apply filtering.
 - `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez` filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:twopass`
     - `:onepass`
@@ -368,17 +370,17 @@ function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         return p
     end
 
-    obj_new = filter(obj,
-                     ch=ch,
-                     fprototype=fprototype,
-                     ftype=ftype,
-                     cutoff=cutoff,
-                     order=order,
-                     rp=rp,
-                     rs=rs,
-                     bw=bw,
-                     dir=dir,
-                     window=window)
+    obj_new = NeuroAnalyzer.filter(obj,
+                                   ch=ch,
+                                   fprototype=fprototype,
+                                   ftype=ftype,
+                                   cutoff=cutoff,
+                                   order=order,
+                                   rp=rp,
+                                   rs=rs,
+                                   bw=bw,
+                                   dir=dir,
+                                   window=window)
 
     obj.data = obj_new.data
     obj.components = obj_new.components

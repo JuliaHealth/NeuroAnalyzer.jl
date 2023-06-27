@@ -43,8 +43,9 @@ function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false,
     pf = Vector(freq(p))
     pw = pw[1:length(pf)]
 
-    # replace power at 0 Hz
+    # replace extreme powers
     pw[1] = pw[2]
+    pw[end] = pw[end - 1]
 
     pw = pw / ref_pw
 

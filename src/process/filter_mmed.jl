@@ -29,7 +29,7 @@ function filter_mmed(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractV
 
     @inbounds for idx in (1 + k):(length(s) - k)
         if t > 0
-            if s[idx] < mean(s) - t * std(s)) || s[idx] > (mean(s) + t * std(s))
+            if s[idx] < mean(s) - t * std(s) || s[idx] > (mean(s) + t * std(s))
                 s_filtered[idx] = @views median(s[(idx - k):(idx + k)] .* window)
             end
         else

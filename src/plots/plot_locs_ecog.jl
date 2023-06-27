@@ -16,7 +16,10 @@ Draw ECOG grid electrode and channel numbers.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs_nirs(obj::NeuroAnalyzer.NEURO; grid::Bool=false, mono::Bool=false, plot_size::Int64=800)
+function plot_locs_ecog(obj::NeuroAnalyzer.NEURO; grid::Bool=false, mono::Bool=false, plot_size::Int64=800)
+
+    @error "This is a work in progress."
+    return nothing
 
     _check_datatype(obj, :ecog)
 
