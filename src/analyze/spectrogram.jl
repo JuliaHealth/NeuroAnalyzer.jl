@@ -301,7 +301,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     sp = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
+    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
@@ -320,7 +320,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             end
 
             # update progress bar
-            progress_bar == true && next!(p)
+            progress_bar == true && next!(progbar)
         end
     end
 

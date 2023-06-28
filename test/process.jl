@@ -136,12 +136,12 @@ e10_tmp = fconv(e10, kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 18/44: filter_mavg()"
-@test filter_mavg(v1, k=2) == [0.0, 0.0, 3.0, 0.0, 0.0]
+@test filter_mavg(vcat(v1, v1), k=2) == [1, 2, 3, 3, 3, 3, 3, 3, 4, 5]
 e10_tmp = filter_mavg(e10, k=2)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 19/44: filter_mmed()"
-@test filter_mmed(v1, k=2) == [0.0, 0.0, 3.0, 0.0, 0.0]
+@test filter_mmed(vcat(v1, v1), k=2) == [1, 2, 3, 3, 3, 3, 3, 3, 4, 5]
 e10_tmp = filter_mmed(e10, k=2)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
@@ -324,8 +324,8 @@ eeg_tmp, pl, ls, rs = remove_pops(eeg)
 @test size(eeg_tmp.data) == size(eeg.data)
 
 @info "test 44/44: remove_powerline()"
-e10_tmp = remove_powerline(e10)
-@test size(e10_tmp.data) == size(e10.data)
-
+e10_tmp = keep_epoch(e10, ep=1)
+remove_powerline(e10_tmp, pl_frq=50, ch=1)
+@test size(e10_tmp.data) == (24, 2560, 1)
 
 true

@@ -90,7 +90,7 @@ function diss(s::AbstractArray)
     ep_n = size(s, 3)
     
     # initialize progress bar
-    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
+    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     gd = zeros(ch_n, ch_n, ep_n)
     sc = zeros(ch_n, ch_n, ep_n)
@@ -102,7 +102,7 @@ function diss(s::AbstractArray)
             end
 
         # update progress bar
-        progress_bar == true && next!(p)
+        progress_bar == true && next!(progbar)
         end
     end
 

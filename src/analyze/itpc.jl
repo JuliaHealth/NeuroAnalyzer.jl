@@ -134,7 +134,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
     itpcz_s = zeros(frq_n, ep_len)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(frq_n, 1))
+    progress_bar == true && (progbar = Progress(frq_n, dt=1, barlen=20, color=:white))
 
     Threads.@threads for frq_idx in 1:frq_n
         # create Morlet wavelet
@@ -153,7 +153,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
         end
 
         # update progress bar
-        progress_bar == true && next!(p)
+        progress_bar == true && next!(progbar)
     end
 
     return (itpc_s=itpc_s, itpcz_s=itpcz_s, itpc_f=frq_list)

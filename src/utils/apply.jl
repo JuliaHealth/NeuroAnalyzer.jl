@@ -26,7 +26,7 @@ function apply(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     out = zeros(eltype(out_tmp), ch_n, length(out_tmp), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(ch_n * ep_n, 1))
+    progress_bar == true && (progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white))
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             f_tmp = replace(f, "obj" => "$(obj.data[ch[ch_idx], :, ep_idx])")
@@ -37,7 +37,7 @@ function apply(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
                 @error "Formula is incorrect."
             end
             # update progress bar
-            progress_bar == true && next!(p)
+            progress_bar == true && next!(progbar)
         end
     end
     

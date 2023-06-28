@@ -91,7 +91,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         perm_diff = zeros(nperm)
 
         # initialize progress bar
-        progress_bar == true && (p = Progress(nperm, 1))
+        progress_bar == true && (progbar = Progress(nperm, dt=1, barlen=20, color=:white))
 
         @inbounds @simd for idx in 1:nperm
             f_idx = randperm(n1 + n2)
@@ -100,7 +100,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             perm_diff[idx] = mean(g[f_idx .== 0]) - mean(g[f_idx .== 1])
 
             # update progress bar
-            progress_bar == true && next!(p)
+            progress_bar == true && next!(progbar)
         end
         observed_difference = mean(g[g_idx .== 0]) - mean(g[g_idx .== 1])
         observed_difference = round(observed_difference, digits=3)

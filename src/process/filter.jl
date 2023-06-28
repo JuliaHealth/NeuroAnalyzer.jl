@@ -305,7 +305,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     end
 
     # initialize progress bar
-    progress_bar == true && (pb = Progress(ep_n * length(ch), 1))
+    progress_bar == true && (pb = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:length(ch)

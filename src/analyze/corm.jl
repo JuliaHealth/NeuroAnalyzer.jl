@@ -83,7 +83,7 @@ function corm(s::AbstractArray; norm::Bool=false)
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progress_bar == true && (pb = Progress(ep_len * ep_n, 1))
+    progress_bar == true && (pb = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
 
     cm = zeros(ch_n, ch_n, ep_len, ep_n)
 

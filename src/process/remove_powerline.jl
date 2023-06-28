@@ -47,7 +47,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
         bw_values = collect(0.1:q:5.0)
 
         # initialize progress bar
-        progress_bar == true && (pb = Progress(length(ch), 1))
+        progress_bar == true && (pb = Progress(length(ch), dt=1, barlen=20, color=:white))
 
         # Threads.@threads for ch_idx in 1:length(ch)
         @inbounds @simd for ch_idx in 1:length(ch)

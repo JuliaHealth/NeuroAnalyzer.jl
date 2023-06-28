@@ -60,7 +60,7 @@ function cps(s::AbstractArray; fs::Int64)
     ph = zeros(ch_n, ch_n, length(ph), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
+    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
@@ -69,7 +69,7 @@ function cps(s::AbstractArray; fs::Int64)
             end
 
         # update progress bar
-        progress_bar == true && next!(p)
+        progress_bar == true && next!(progbar)
         end
     end
 

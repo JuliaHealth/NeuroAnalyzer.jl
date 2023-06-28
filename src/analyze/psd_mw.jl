@@ -136,14 +136,14 @@ function psd_mw(s::AbstractArray; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
     pw = zeros(ch_n, length(pf), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
+    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw[ch_idx, :, ep_idx], _ = @views psd_mw(s[ch_idx, :, ep_idx], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
             # update progress bar
-            progress_bar == true && next!(p)
+            progress_bar == true && next!(progbar)
         end
     end
 

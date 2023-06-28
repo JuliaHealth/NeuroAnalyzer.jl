@@ -62,14 +62,14 @@ function fconv(s::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64
     s_new = similar(s)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
+    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
-            progress_bar == true && next!(p)
+            progress_bar == true && next!(progbar)
         end
     end
 
