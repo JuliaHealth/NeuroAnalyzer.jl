@@ -35,8 +35,8 @@ function psd(s::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, nt
     pw = power(p)
     pf = Vector(freq(p))
     pw = pw[1:length(pf)]
-    
-    # replace extreme powers
+
+    # replace powers at extreme frequencies
     pw[1] = pw[2]
     pw[end] = pw[end - 1]
     

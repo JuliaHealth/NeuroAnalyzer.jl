@@ -290,6 +290,8 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     ep_n = epoch_n(obj)
     fs = sr(obj)
 
+    (ftype === :hp && ep_n > 1) && _info("HP filter should be applied to a continuous signal.")
+
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)    
@@ -305,13 +307,13 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     end
 
     # initialize progress bar
-    progress_bar == true && (pb = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
+    progress_bar == true && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:length(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
             # update progress bar
-            progress_bar == true && next!(pb)
+            progress_bar == true && next!(progbar)
         end
     end
 

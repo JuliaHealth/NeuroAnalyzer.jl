@@ -35,7 +35,6 @@ Calculate auto-correlation
 
 # Returns
 
-Named tuple containing:
 - `ac::Matrix{Float64}`
 """
 function acor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true)
@@ -65,7 +64,6 @@ Calculate auto-correlation
 
 # Returns
 
-Named tuple containing:
 - `ac::Matrix{Float64}`
 """
 function acor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true)

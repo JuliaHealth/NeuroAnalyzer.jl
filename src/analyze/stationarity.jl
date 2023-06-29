@@ -182,7 +182,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         s = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar
-        progress_bar == true && (pb = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+        progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
         # perform Augmented Dickey–Fuller test
         @inbounds @simd for ep_idx in 1:ep_n
@@ -197,7 +197,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                 s[ch_idx, :, ep_idx] = [a, p]
 
                 # update progress bar
-                progress_bar == true && next!(pb)
+                progress_bar == true && next!(progbar)
             end
         end
 

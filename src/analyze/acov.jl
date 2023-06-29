@@ -13,7 +13,6 @@ Calculate auto-covariance.
 
 # Returns
 
-Named tuple containing:
 - `ac::Matrix{Float64}`
 """
 function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true)
@@ -35,7 +34,6 @@ Calculate auto-covariance.
 
 # Returns
 
-Named tuple containing:
 - `ac::Matrix{Float64}`
 """
 function acov(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true)
@@ -65,7 +63,6 @@ Calculate auto-covariance.
 
 # Returns
 
-Named tuple containing:
 - `ac::Matrix{Float64}`
 """
 function acov(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true)

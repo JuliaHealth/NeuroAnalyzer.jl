@@ -84,7 +84,7 @@ function covm(s::AbstractArray; norm::Bool=false)
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progress_bar == true && (pb = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
+    progress_bar == true && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
 
     cm = zeros(ch_n, ch_n, ep_len, ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
@@ -92,7 +92,7 @@ function covm(s::AbstractArray; norm::Bool=false)
             @views @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
 
             # update progress bar
-            progress_bar == true && next!(pb)
+            progress_bar == true && next!(progbar)
         end
     end
 

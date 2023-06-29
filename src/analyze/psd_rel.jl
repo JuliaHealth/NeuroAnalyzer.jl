@@ -43,7 +43,7 @@ function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false,
     pf = Vector(freq(p))
     pw = pw[1:length(pf)]
 
-    # replace extreme powers
+    # replace powers at extreme frequencies
     pw[1] = pw[2]
     pw[end] = pw[end - 1]
 

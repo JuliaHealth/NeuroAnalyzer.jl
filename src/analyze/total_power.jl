@@ -33,8 +33,9 @@ function total_power(s::AbstractVector; fs::Int64, mt::Bool=false, nt::Int64=8)
     pf = Vector(freq(p))
     pw = pw[1:length(pf)]
 
-    # replace power at 0 Hz
+    # replace powers at extreme frequencies
     pw[1] = pw[2]
+    pw[end] = pw[end - 1]
 
     # dx: frequency resolution
     dx = pf[2] - pf[1]
