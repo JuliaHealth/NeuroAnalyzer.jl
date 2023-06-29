@@ -73,7 +73,7 @@ function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5
 end
 
 """
-    filter_g(obj; channel, pad, f, gw)
+    filter_g(obj; ch, pad, f, gw)
 
 Filter using Gaussian in the frequency domain.
 
