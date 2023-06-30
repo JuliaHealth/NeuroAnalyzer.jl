@@ -71,7 +71,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector
     end
         
     if type === :all
-        ch_idx = collect(1:channel_n(obj))
+        ch_idx = _c(channel_n(obj))
     elseif type isa Symbol
         ch_idx = Vector{Int64}()
         for idx in 1:channel_n(obj)

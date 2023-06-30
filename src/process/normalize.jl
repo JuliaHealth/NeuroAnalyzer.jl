@@ -20,7 +20,8 @@ Normalize.
 # Arguments
 
 - `s::AbstractArray`
-- `n::Real`
+- `m::Real=0.0`
+- `n::Real=1.0`
 - `method::Symbol`:
     - `:zscore`: by z-score
     - `:minmax`: in [-1, +1]
@@ -34,15 +35,16 @@ Normalize.
     - `:gauss`: to Gaussian
     - `:invroot`: in inverse root (1/sqrt(x))
     - `:n`: in [0, n]
+    - `:mn`: in [m, n]
     - `:none`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
+function normalize(s::AbstractArray, m::Real=0.0, n::Real=1.0; method::Symbol)
 
-    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :none], "method")
+    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :mn, :none], "method")
 
     if method === :zscore
         return normalize_zscore(s)
@@ -68,6 +70,8 @@ function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
         return normalize_invroot(s)
     elseif method === :n
         return normalize_n(s, n)
+    elseif method === :mn
+        s = normalize_n(s) .* (n - m) .+ m
     elseif method === :none
         return s
     end
@@ -135,10 +139,9 @@ Normalize in [0, n], default is [0, +1].
 """
 function normalize_n(s::AbstractArray, n::Real=1.0)
 
-    max_x = maximum(s)
-    min_x = minimum(s)
+    smin, smax = extrema(s)
 
-    return n .* (s .- min_x) ./ (max_x - min_x)
+    return @. n * (s - smin) / (smax - smin)
 
 end
 

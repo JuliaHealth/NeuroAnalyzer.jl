@@ -303,6 +303,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     obj_new = deepcopy(obj)
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
+        (ftype in [:bs, :bp] && length(cutoff) != 2) && throw(ArgumentError("For :bp and :bs filters cutoff must contain two frequencies."))
         flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=sr(obj), order=order, rp=rp, rs=rs, bw=bw, window=window)
     end
 
