@@ -34,15 +34,14 @@ Normalize.
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
     - `:invroot`: in inverse root (1/sqrt(x))
-    - `:n`: in [0, n]
-    - `:mn`: in [m, n]
+    - `:n`: in [0, n1], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
     - `:none`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize(s::AbstractArray, m::Real=0.0, n::Real=1.0; method::Symbol)
+function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :mn, :none], "method")
 
@@ -70,8 +69,6 @@ function normalize(s::AbstractArray, m::Real=0.0, n::Real=1.0; method::Symbol)
         return normalize_invroot(s)
     elseif method === :n
         return normalize_n(s, n)
-    elseif method === :mn
-        s = normalize_n(s) .* (n - m) .+ m
     elseif method === :none
         return s
     end
