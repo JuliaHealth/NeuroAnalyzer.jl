@@ -882,7 +882,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -895,11 +895,16 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
 
     if ep != 0
         _check_epochs(obj, ep)
-        seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-        if ep isa Int64
-            seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+        if epoch_n(obj) == 1
+            ep = 0
         else
-            seg = (seg[1], (ep[end] * epoch_len(obj)))
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
+            if ep isa Int64
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+            else
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
+            end
+            ep = 0
         end
     end
 
@@ -931,7 +936,8 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     else
         s = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
     end
-    t = _get_t(seg[1], seg[2], sr(obj))
+    #t = _get_t(seg[1], seg[2], sr(obj))
+    t = obj.time_pts[seg[1]:seg[2]]
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     ep = _s2epoch(obj, seg[1], seg[2])

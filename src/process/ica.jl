@@ -11,7 +11,7 @@ Calculate `n` first Independent Components using FastICA algorithm.
 
 - `s::AbstractMatrix`
 - `n::Int64`: number of ICs
-- `iter::Int64=256`: maximum number of iterations
+- `iter::Int64=100`: maximum number of iterations
 - `f::Symbol=:tanh`: neg-entropy functor:
     - `:tanh`
     - `:gaus`
@@ -22,7 +22,7 @@ Named tuple containing:
 - `ic::Matrix{Float64}`: components IC(1)..IC(n) (W * data), components are sorted by decreasing variance
 - `ic_mw::Matrix{Float64}`: IC(1)..IC(n)
 """
-function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=256, f::Symbol=:tanh)
+function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:tanh)
 
     _check_var(f, [:tanh, :gaus], "f")
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
@@ -32,9 +32,15 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=256, f::Symbol=:
     f === :gaus && (f = MultivariateStats.Gaus())
 
     Random.seed!(1234)
+
     tol = [0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]
     M = nothing
+
+    NeuroAnalyzer._info("The input signal should be cleaned from major artifacts and HP filtered at 1-2 Hz prior to ICA decomposition.")
     NeuroAnalyzer._info("Attempting to calculate $n components.")
+    NeuroAnalyzer._info("Training will end when W change = $(tol[end]) or after $(iter * length(tol)) steps.")
+    NeuroAnalyzer._info("Data will be demeaned and pre-whitened.")
+
     final_tol = nothing
 
     # initialize progress bar
@@ -48,7 +54,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=256, f::Symbol=:
             catch err
             end
             # if typeof(err) != MultivariateStats.ConvergenceException{Float64}
-            if typeof(err) == Nothing
+            if err === nothing
                 # @info "Iteration: $iter_idx convergence error: $(err.lastchange)."
                 final_tol = tol[tol_idx]
                 break
@@ -90,7 +96,7 @@ Perform independent component analysis (ICA) using FastICA algorithm.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `n::Int64=length(ch)`: number of ICs, default is the number of channels
-- `iter::Int64=256`: maximum number of iterations
+- `iter::Int64=100`: maximum number of iterations
 - `f::Symbol=:tanh`: neg-entropy functor:
     - `:tanh`
     - `:gaus`
@@ -102,7 +108,7 @@ Named tuple containing:
 - `ic_mw::Matrix{Float64}`: IC(1)..IC(n)
 - `ic_var::Vector{Float64}`: variance of components
 """
-function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=length(ch), iter::Int64=256, f::Symbol=:tanh)
+function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)
 
     _check_channels(obj, ch)
     epoch_n(obj) > 1 && throw(ArgumentError("ica_decompose() should be applied to a continuous signal."))
