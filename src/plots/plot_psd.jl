@@ -128,10 +128,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     # also, reverse colors if palette is not mono
     if mono == true
         pal = :grays
-        channel_color = Vector{Symbol}()
-        for idx in 1:ch_n
-            push!(channel_color, :black)
-        end
+        channel_color = repeat([:black], ch_n)
     else
         pal = :darktest
         channel_color = ch_n:-1:1
