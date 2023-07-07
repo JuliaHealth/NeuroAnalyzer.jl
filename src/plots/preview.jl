@@ -232,8 +232,9 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     bt_next = GtkButton("→")
     bt_next10 = GtkButton("⇒")
     bt_end = GtkButton("⇥")
-    bt_zoomout = GtkButton("−")
-    bt_zoomin = GtkButton("+")
+    bt_zoomin = GtkButton("▼")
+    label_zoomlevel = GtkLabel("10")
+    bt_zoomout = GtkButton("▲")
     bt_help = GtkButton("🛈")
     bt_delete = GtkButton("DEL")
     bt_close = GtkButton("✖")
@@ -243,6 +244,7 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     separator4 = GtkLabel("")
 
     @guarded draw(can) do widget
+
         time1 = GAccessor.value(slider_time)
         time2 = time1 + zoom_level
         time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
@@ -373,7 +375,8 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         elseif zoom_level == 5
             zoom_level = 1
         end
-        if time_current + zoom_level < obj.time_pts[end]
+        GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
+        if time_current + zoom_level <= obj.time_pts[end]
             Gtk.@sigatom begin
                 GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
                 GAccessor.range(slider_ts2, time_current, time_current + zoom_level)
@@ -399,6 +402,7 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         elseif zoom_level == 5
             zoom_level = 10
         end
+        GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
         if time_current + zoom_level < obj.time_pts[end]
             Gtk.@sigatom begin
                 GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -479,13 +483,14 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
             end
         elseif k == 104 # h
             info_dialog("Keyboard shortcuts:\n\nHOME\tgo to the signal beginning\nEND\t\tgo to the signal end\n,\t\tgo back by 1 second\n.\t\tgo forward by 1 second\n<\t\tgo back by 10 seconds\n>\t\tgo forward by 10 seconds\n\n+\t\tzoom in\n−\t\tzoom out\n\nDEL\t\tdelete current segment\n\nh\t\tthis info\nq\t\texit\n")
-        elseif k == 65451 || k == 43 # +
+        elseif k == 65453 || k == 45 # -
             time_current = GAccessor.value(slider_time)
             if zoom_level == 10
                 zoom_level = 5
             elseif zoom_level == 5
                 zoom_level = 1
             end
+            GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
             if time_current + zoom_level < obj.time_pts[end]
                 Gtk.@sigatom begin
                     GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -503,13 +508,14 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                 end
                 draw(can)
             end
-        elseif k == 65453 || k == 95 # +
+        elseif k == 65451 || k == 43 # +
             time_current = GAccessor.value(slider_time)
             if zoom_level == 1
                 zoom_level = 5
             elseif zoom_level == 5
                 zoom_level = 10
             end
+            GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
             if time_current + zoom_level < obj.time_pts[end]
                 Gtk.@sigatom begin
                     GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -616,13 +622,13 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         end
     end
 
-    g[1:15, 1] = can
+    g[1:16, 1] = can
     g[1, 2] = label_time
-    g[2:15, 2] = slider_time
+    g[2:16, 2] = slider_time
     g[1, 3] = label_ts1
-    g[2:15, 3] = slider_ts1
+    g[2:16, 3] = slider_ts1
     g[1, 4] = label_ts2
-    g[2:15, 4] = slider_ts2
+    g[2:16, 4] = slider_ts2
     g[1, 5] = separator1
     g[2, 5] = bt_start
     g[3, 5] = bt_prev10
@@ -631,13 +637,14 @@ function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     g[6, 5] = bt_next10
     g[7, 5] = bt_end
     g[8, 5] = separator2
-    g[9, 5] = bt_zoomout
-    g[10, 5] = bt_zoomin
-    g[11, 5] = separator3
-    g[12, 5] = bt_delete
-    g[13, 5] = separator4
-    g[14, 5] = bt_help
-    g[15, 5] = bt_close
+    g[9, 5] = bt_zoomin
+    g[10, 5] = label_zoomlevel
+    g[11, 5] = bt_zoomout
+    g[12, 5] = separator3
+    g[13, 5] = bt_delete
+    g[14, 5] = separator4
+    g[15, 5] = bt_help
+    g[16, 5] = bt_close
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
     set_gtk_property!(win, :border_width, 20)
@@ -888,8 +895,9 @@ function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::
     bt_next = GtkButton("→")
     bt_next10 = GtkButton("⇒")
     bt_end = GtkButton("⇥")
-    bt_zoomout = GtkButton("−")
-    bt_zoomin = GtkButton("+")
+    bt_zoomin = GtkButton("▼")
+    label_zoomlevel = GtkLabel("10")
+    bt_zoomout = GtkButton("▲")
     bt_help = GtkButton("🛈")
     bt_delete = GtkButton("DEL")
     bt_close = GtkButton("✖")
@@ -1029,6 +1037,7 @@ function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::
         elseif zoom_level == 5
             zoom_level = 1
         end
+        GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
         if time_current + zoom_level < obj1.time_pts[end]
             Gtk.@sigatom begin
                 GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -1055,6 +1064,7 @@ function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::
         elseif zoom_level == 5
             zoom_level = 10
         end
+        GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
         if time_current + zoom_level < obj1.time_pts[end]
             Gtk.@sigatom begin
                 GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -1136,13 +1146,14 @@ function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::
             end
         elseif k == 104 # h
             info_dialog("Keyboard shortcuts:\n\nHOME\tgo to the signal beginning\nEND\t\tgo to the signal end\n,\t\tgo back by 1 second\n.\t\tgo forward by 1 second\n<\t\tgo back by 10 seconds\n>\t\tgo forward by 10 seconds\n\n+\t\tzoom in\n−\t\tzoom out\n\nDEL\t\tdelete current segment\n\nh\t\tthis info\nq\t\texit\n")
-        elseif k == 65451 || k == 43 # +
+        elseif k == 65453 || k == 45 # -
             time_current = GAccessor.value(slider_time)
             if zoom_level == 10
                 zoom_level = 5
             elseif zoom_level == 5
                 zoom_level = 1
             end
+            GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
             if time_current + zoom_level < obj1.time_pts[end]
                 Gtk.@sigatom begin
                     GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -1160,13 +1171,14 @@ function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::
                 end
                 draw(can)
             end
-        elseif k == 65453 || k == 95 # +
+        elseif k == 65451 || k == 43 # +
             time_current = GAccessor.value(slider_time)
             if zoom_level == 1
                 zoom_level = 5
             elseif zoom_level == 5
                 zoom_level = 10
             end
+            GAccessor.text(label_zoomlevel, lpad(string(zoom_level), 2, '0'))
             if time_current + zoom_level < obj1.time_pts[end]
                 Gtk.@sigatom begin
                     GAccessor.range(slider_ts1, time_current, time_current + zoom_level)
@@ -1289,8 +1301,8 @@ function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::
     g[6, 5] = bt_next10
     g[7, 5] = bt_end
     g[8, 5] = separator2
-    g[9, 5] = bt_zoomout
-    g[10, 5] = bt_zoomin
+    g[9, 5] = bt_zoomin
+    g[10, 5] = bt_zoomout
     g[11, 5] = separator3
     g[12, 5] = bt_delete
     g[13, 5] = separator4

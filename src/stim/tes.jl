@@ -17,7 +17,7 @@ Convert `current`, `pad_area` and stimulation `duration` into `charge`, `current
 Named tuple containing:
 - `charge::Float64`: charge [C]
 - `current_density::Float64`: current density [A/m²]
-- `charge_density::Float64`: delibvered charge density [kC/m²]
+- `charge_density::Float64`: delivered charge density [kC/m²]
 
 # Source
 

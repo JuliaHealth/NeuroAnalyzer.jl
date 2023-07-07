@@ -13,6 +13,10 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
+
+# Source
+
+1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
 function import_set(file_name::String; detect_type::Bool=true)
 
@@ -26,19 +30,36 @@ function import_set(file_name::String; detect_type::Bool=true)
         dataset = dataset["EEG"]
     end
     
-    data = dataset["data"]
-    # data in .FTD file
-    data isa String && throw(ArgumentError("Importing EEGLAB file data from .FTD file is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"))
-
-    # there are no epochs if signal is matrix, not array
+    data_src = dataset["data"]
+    ch_n = Int64(dataset["nbchan"])
     ep_n = 1
+    # data in .FTD file
+    if data_src isa String
+        fid = ""
+        try
+            fid = open(data_src, "r")
+        catch
+            error("File $data_src cannot be loaded.")
+        end
+        samples_per_channel = length(dataset["times"])
+        filesize(data_src) == ch_n * samples_per_channel * 4 || @error "Incorrect file size."
+        data = zeros(ch_n, samples_per_channel)
+        for ch_idx in 1:ch_n
+            buf = UInt8[]
+            readbytes!(fid, buf, samples_per_channel * 4)
+            data[ch_idx, :] = Float64.(reinterpret(Float32, buf))
+        end
+    else
+        data = dataset["data"]
+    end
+    # there are no epochs if signal is matrix, not array
     dataset["trials"] isa Float64 && (ep_n = Int(dataset["trials"]))
     if ndims(data) == 3
         ep_n == size(data, 2)
         _info("$ep_n epochs found.")
     end
     ndims(data) == 2 && (data = data[:, :, :])
-    ch_n = Int64(dataset["nbchan"])
+
     sampling_rate = round(Int64, dataset["srate"])
     gain = ones(ch_n)
     
@@ -170,7 +191,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     if "event" in keys(dataset)
         events = dataset["event"]
-        if size(events) != (0, 0)
+        if length(keys(events)) > 0
             start = Float64.(events["latency"][:]) ./ sampling_rate
             # for idx in 1:length(events["position"][:])
             #     events["position"][idx] isa Matrix{Float64} && (events["position"][idx] = 0.0)
@@ -201,7 +222,7 @@ function import_set(file_name::String; detect_type::Bool=true)
         epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
     end
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(data_src) / 1024^2, digits=2)
 
     data_type = "eeg"
 

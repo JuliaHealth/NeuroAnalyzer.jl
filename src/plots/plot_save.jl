@@ -3,7 +3,7 @@ export plot_save
 """
     plot_save(p; file_name::String)
 
-Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
+Saves plot as file (PNG/PDF). File format is determined using `file_name` extension.
 
 # Arguments
 
@@ -13,7 +13,7 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 function plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
 
     ext = splitext(file_name)[2]
-    _check_var(ext, [".png", ".pdf", ".jpg", ".tiff"], "File format")
+    _check_var(ext, [".png", ".pdf"], "File format")
 
     (isfile(file_name) && verbose == true) && _info("File $file_name will be overwritten.")
     
