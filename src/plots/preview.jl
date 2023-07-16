@@ -122,6 +122,7 @@ function preview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 else
                     GAccessor.value(slider_ep, 1)
                 end
+                draw(can)
             end
         end
     end
@@ -170,6 +171,7 @@ function preview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                     else
                         GAccessor.value(slider_ep, 1)
                     end
+                    draw(can)
                 end
             end
         end
@@ -784,6 +786,7 @@ function preview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 else
                     GAccessor.value(slider_ep, 1)
                 end
+                draw(can)
             end
         end
     end
@@ -833,6 +836,7 @@ function preview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                     else
                         GAccessor.value(slider_ep, 1)
                     end
+                    draw(can)
                 end
             end
         end
