@@ -8,6 +8,8 @@ export reference_m
 export reference_m!
 export reference_plap
 export reference_plap!
+export reference_custom
+export reference_custom!
 
 """
     reference_ch(obj; ch, med)
@@ -543,6 +545,113 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
     obj_new = reference_plap(obj, nn=nn, weights=weights, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+
+    return nothing
+
+end
+
+"""
+    reference_custom(obj; ref_list, ref_name)
+
+Reference using custom montage.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]`: list of channel pairs
+- `ref_name::String="BIP ||"`: name of the montage
+
+# Returns
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Notes
+
+If the reference contains a single channel (e.g. "Fz"), than the channel is copied to the referenced data.
+For each reference pair (e.g. "Fz-Cz"), the referenced channel is equal to the amplitude of channel 1 ("Fz") - amplitude of channel 2 ("Cz").
+
+Examples of montages:
+- bipolar transverse: ["Fp2-Fp1", "F8-Fp2", "F8-F4", "F4-Fz", "Fz-F3", "F3-F7", "Fp1-F7", "T4-C4", "C4-Cz", "Cz-C3", "C3-T3", "T6-P4", "P4-Pz", "Pz-P3", "P3-T5", "O2-O1"], "BIP ="
+- bipolar longitudinal: ["Fz", "Cz", "Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], "BIP ||"
+- bipolar longitudinal: ["Fp-Fz", "Fz-Cz", "Cz-Pz", "Pz-O", "Fp1-F7", "Fp1-F3", "F7-T7", "T7-P7", "P7-O1", "F3-C3", "C3-P3", "P3-O1", "Fp1-F7", "Fp2-F4", "F8-T8", "T8-P8", "P8-O2", "F4-C4", "C4-P4", "P4-O2"], "BIP ||"
+"""
+function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="BIP ||")
+
+    _check_datatype(obj, :eeg)
+
+    chs = signal_channels(obj)
+
+    for ref_idx in 1:length(ref_list)
+        if '-' in ref_list[ref_idx]
+            m = match(r"(.+)-(.+)", ref_list[ref_idx])
+            m[1] in labels(obj)[chs] || throw(ArgumentError("Label $(m[1]) does not match OBJ labels."))
+            m[2] in labels(obj)[chs] || throw(ArgumentError("Label $(m[2]) does not match OBJ labels."))
+        else
+            ref_list[ref_idx] in labels(obj)[chs] || throw(ArgumentError("Label $(ref_list[ref_idx]) does not match OBJ labels."))
+        end
+    end
+
+    ep_n = epoch_n(obj)
+    s = zeros(length(ref_list), epoch_len(obj), ep_n)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        for ref_idx in 1:length(ref_list)
+            if '-' in ref_list[ref_idx]
+                m = match(r"(.+)-(.+)", ref_list[ref_idx])
+                ref1 = get_channel(obj, ch=string(m[1]))
+                ref2 = get_channel(obj, ch=string(m[2]))
+                s[ref_idx, :, ep_idx] = @views obj.data[ref1, :, ep_idx] - obj.data[ref2, :, ep_idx]
+            else
+                s[ref_idx, :, ep_idx] = @views obj.data[get_channel(obj, ch=ref_list[ref_idx]), :, ep_idx]
+            end
+        end
+    end
+
+    obj_new = delete_channel(obj, ch=signal_channels(obj))
+    obj_new.data = vcat(s, obj_new.data)
+    obj_new.header.recording[:labels] = vcat(ref_list, labels(obj_new))
+    obj_new.header.recording[:reference] = ref_name
+    obj_new.header.recording[:channel_type] = vcat(repeat(["eeg"], length(ref_list)), obj_new.header.recording[:channel_type])
+    obj_new.header.recording[:units] = vcat(repeat(["μV"], length(ref_list)), obj_new.header.recording[:units])
+    obj_new.header.recording[:prefiltering] = vcat(repeat([obj.header.recording[:prefiltering][1]], length(ref_list)), obj_new.header.recording[:prefiltering])
+    obj_new.header.recording[:transducers] = vcat(repeat([obj.header.recording[:transducers][1]], length(ref_list)), obj_new.header.recording[:transducers])
+    obj_new.header.recording[:gain] = vcat(repeat([obj.header.recording[:gain][1]], length(ref_list)), obj_new.header.recording[:gain])
+
+    reset_components!(obj_new)
+    push!(obj_new.history, "reference_custom(OBJ, ref_list=$ref_list, ref_name=$ref_name)")
+
+    return obj_new
+
+end
+
+"""
+    reference_custom!(obj; ref_list, ref_name)
+
+Reference using custom montage.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]`: list of channel pairs
+- `ref_name::String="BIP ||"`: name of the montage
+
+# Notes
+
+If the reference contains a single channel (e.g. "Fz"), than the channel is copied to the referenced data.
+For each reference pair (e.g. "Fz-Cz"), the referenced channel is equal to the amplitude of channel 1 ("Fz") - amplitude of channel 2 ("Cz").
+
+Examples of montages:
+- bipolar transverse: ["Fp2-Fp1", "F8-Fp2", "F8-F4", "F4-Fz", "Fz-F3", "F3-F7", "Fp1-F7", "T4-C4", "C4-Cz", "Cz-C3", "C3-T3", "T6-P4", "P4-Pz", "Pz-P3", "P3-T5", "O2-O1"], "BIP ="
+- bipolar longitudinal: ["Fz", "Cz", "Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], "BIP ||"
+- bipolar longitudinal: ["Fp-Fz", "Fz-Cz", "Cz-Pz", "Pz-O", "Fp1-F7", "Fp1-F3", "F7-T7", "T7-P7", "P7-O1", "F3-C3", "C3-P3", "P3-O1", "Fp1-F7", "Fp2-F4", "F8-T8", "T8-P8", "P8-O2", "F4-C4", "C4-P4", "P4-O2"], "BIP ||"
+"""
+function reference_custom!(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="BIP ||")
+
+    obj_new = reference_custom(obj, ref_list=ref_list, ref_name=ref_name)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
