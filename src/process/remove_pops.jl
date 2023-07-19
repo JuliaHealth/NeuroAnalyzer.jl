@@ -4,7 +4,7 @@ export remove_pops!
 """
     remove_pops(s; r, repair)
 
-Detect and repair electrode pop (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≥2 seconds.
+Detect and repair electrode pops (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≥2 seconds.
 
 # Arguments
 
@@ -23,6 +23,9 @@ Named tuple containing:
 function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
 
     length(s) < 2 * r + 1 && throw(ArgumentError("s length must be ≥ $(2 * r + 1)."))
+
+    s_m = mean(s)
+    s .-= s_m
 
     sdiff = diff(s)
     pushfirst!(sdiff, 0)
@@ -54,7 +57,7 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
 
     zero_1 = 1
     zero_2 = length(s)
-    for idx in  (pop_location - 5):-1:2
+    for idx in (pop_location - 5):-1:2
         if sign(s[idx]) != sign(s[idx - 1])
             zero_1 = idx
             break
@@ -67,6 +70,11 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
         end
     end
 
+    if zero_1 == 1
+    end
+    if zero_2 == length(s)
+    end
+
     left_seg = zero_1:(pop_location - 1)
     right_seg = (pop_location + 1):zero_2
 
@@ -75,36 +83,58 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
         s_pop_min = vsearch(minimum(s_pop), s_pop)
         s_pop_max = vsearch(maximum(s_pop), s_pop)
     
+        p_idx = vsearch(s[pop_location], s_pop)
+
         if s_pop_max < s_pop_min
             # /|
             #  |/
-            m1 = mean(s_pop[1:s_pop_max])
-            l1 = length(s_pop[1:s_pop_max])
-            ll1 = linspace(0, 1, l1) .* (s_pop[s_pop_max] * 0.9) .* sign(m1)
-            m2 = mean(s_pop[s_pop_min:end])
-            l2 = length(s_pop[s_pop_min:end])
-            ll2 = linspace(1, 0, l2) .* (s_pop[s_pop_min] * 0.9) .* sign(m2)
-            s_pop[1:s_pop_max] -= ll1
-            s_pop[s_pop_min:end] += ll2
-            s_pop[s_pop_max + 1:s_pop_min - 1] = normalize_minmax(s_pop[s_pop_max + 1:s_pop_min - 1])
-            s_pop[s_pop_max + 1:s_pop_min - 1][s_pop[s_pop_max + 1:s_pop_min - 1] .> 0] .*= abs(maximum(s_pop[1:s_pop_max]))
-            s_pop[s_pop_max + 1:s_pop_min - 1][s_pop[s_pop_max + 1:s_pop_min - 1] .< 0] .*= abs(minimum(s_pop[s_pop_min:end]))
+            
+            t = collect(1:length(s_pop[1:p_idx - 5]))
+            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx - 5])
+            lr = GLM.lm(@formula(s ~ t), df)
+            ll1 = MultivariateStats.predict(lr)
+            s_pop[1:p_idx - 5] -= ll1
+
+            t = collect(1:length(s_pop[p_idx + 5:end]))
+            df = DataFrame(:t=>t, :s=>s_pop[p_idx + 5:end])
+            lr = GLM.lm(@formula(s ~ t), df)
+            ll2 = MultivariateStats.predict(lr)
+            s_pop[p_idx + 5:end] += abs.(ll2)
+
+            # m1 = mean(s_pop[1:s_pop_max])
+            # l1 = length(s_pop[1:s_pop_max])
+            # ll1 = linspace(0, 1, l1) .* (s_pop[s_pop_max] * 0.9) .* sign(m1)
+            # m2 = mean(s_pop[s_pop_min:end])
+            # l2 = length(s_pop[s_pop_min:end])
+            # ll2 = linspace(1, 0, l2) .* (s_pop[s_pop_min] * 0.9) .* sign(m2)
+            # s_pop[1:s_pop_max] -= ll1
+            # s_pop[1:s_pop_max] -= lf
+            # s_pop[s_pop_min:end] += ll2
+    
+            s_pop_min = vsearch(minimum(s_pop), s_pop)
+            s_pop_max = vsearch(maximum(s_pop), s_pop)
+
+            s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
+            s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
+            s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .< 0] .*= abs(minimum(s_pop[p_idx + 5:end]))
             s[zero_1:zero_2] = s_pop
+            s .+= s_m
+
         else
             #  |\
             # \|
-            m1 = mean(s_pop[1:s_pop_min])
-            l1 = length(s_pop[1:s_pop_min])
-            ll1 = linspace(0, 1, l1) .* s_pop[s_pop_min] .* sign(m1)
-            m2 = mean(s_pop[s_pop_max:end])
-            l2 = length(s_pop[s_pop_max:end])
-            ll2 = linspace(1, 0, l2) .* s_pop[s_pop_max] .* sign(m2)
-            s_pop[1:s_pop_min] += ll1
-            s_pop[s_pop_max:end] -= ll2
-            s_pop[s_pop_min:s_pop_max] = normalize_minmax(s_pop[s_pop_min:s_pop_max])
-            s_pop[s_pop_min:s_pop_max][s_pop[s_pop_min:s_pop_max] .> 0] .*= maximum(s[1:s_pop_max])
-            s_pop[s_pop_min:s_pop_max][s_pop[s_pop_min:s_pop_max] .< 0] .*= minimum(s[1:s_pop_min])
-            s[zero_1:zero_2] = s_pop
+            # m1 = mean(s_pop[1:s_pop_min])
+            # l1 = length(s_pop[1:s_pop_min])
+            # ll1 = linspace(0, 1, l1) .* s_pop[s_pop_min] .* sign(m1)
+            # m2 = mean(s_pop[s_pop_max:end])
+            # l2 = length(s_pop[s_pop_max:end])
+            # ll2 = linspace(1, 0, l2) .* s_pop[s_pop_max] .* sign(m2)
+            # s_pop[1:s_pop_min] += ll1
+            # s_pop[s_pop_max:end] -= ll2
+            # s_pop[s_pop_min:s_pop_max] = normalize_minmax(s_pop[s_pop_min:s_pop_max])
+            # s_pop[s_pop_min:s_pop_max][s_pop[s_pop_min:s_pop_max] .> 0] .*= maximum(s[1:s_pop_max])
+            # s_pop[s_pop_min:s_pop_max][s_pop[s_pop_min:s_pop_max] .< 0] .*= minimum(s[1:s_pop_min])
+            # s[zero_1:zero_2] = s_pop
         end
 
     end
@@ -120,7 +150,7 @@ end
 """
     remove_pops(obj; <keyword arguments>)
 
-Detect and repair electrode pop (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected per segment, signal length should be ≈2 seconds.
+Detect and repair electrode pops (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected per segment, signal length should be ≈2 seconds.
 
 # Arguments
 
@@ -186,7 +216,7 @@ end
 """
     remove_pops!(obj; <keyword arguments>)
 
-Detect and repair electrode pop (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≈2 seconds.
+Detect and repair electrode pops (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≈2 seconds.
 
 # Arguments
 
