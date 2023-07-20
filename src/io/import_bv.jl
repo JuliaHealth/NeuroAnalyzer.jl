@@ -322,15 +322,17 @@ function import_bv(file_name::String; detect_type::Bool=true)
     # end
 
     # convert nV/mV to μV
-    for idx in 1:ch_n
+    @inbounds for idx in 1:ch_n
         units[idx] == "" && (units[idx] = "μV")
-        if lowercase(units[idx]) == "nv"
-            data[idx, :, :] .*= 1000
-            units[idx] = "μV"
-        end
-        if lowercase(units[idx]) == "mv"
-            data[idx, :, :] ./= 1000
-            units[idx] = "μV"
+        if ch_type[idx] == "eeg"
+            if lowercase(units[idx]) == "mv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] .*= 1000
+            end
+            if lowercase(units[idx]) == "nv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] ./= 1000
+            end
         end
     end
 

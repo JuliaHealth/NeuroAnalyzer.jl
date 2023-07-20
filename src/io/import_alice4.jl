@@ -176,14 +176,6 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                     signal = zeros(samples_per_datarecord[idx2])
                 else
                     signal = map(ltoh, reinterpret(Int16, signal))
-                    if lowercase(units[idx2]) == "mv"
-                        lowercase(units[idx2]) == "μV"
-                        signal ./= 1000
-                    end
-                    if lowercase(units[idx2]) == "nv"
-                        lowercase(units[idx2]) == "μV"
-                        signal .*= 1000
-                    end
                 end
                 data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
             end
@@ -231,6 +223,21 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         _info("Channels upsampled to $max_sampling_rate Hz.")
         sampling_rate = max_sampling_rate
         close(fid)
+    end
+
+    # convert nV/mV to μV
+    @inbounds for idx in 1:ch_n
+        units[idx] == "" && (units[idx] = "μV")
+        if ch_type[idx] == "eeg"
+            if lowercase(units[idx]) == "mv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] .*= 1000
+            end
+            if lowercase(units[idx]) == "nv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] ./= 1000
+            end
+        end
     end
 
     if length(annotation_channels) == 0

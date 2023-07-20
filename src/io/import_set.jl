@@ -222,8 +222,12 @@ function import_set(file_name::String; detect_type::Bool=true)
         epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
     end
 
-    file_size_mb = round(filesize(data_src) / 1024^2, digits=2)
-
+    if data_src isa String
+        file_size_mb = round(filesize(data_src) / 1024^2, digits=2)
+    else
+        file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    end
+    
     data_type = "eeg"
 
     s = _create_subject(id="",

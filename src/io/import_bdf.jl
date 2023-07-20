@@ -194,20 +194,27 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                         push!(signal, Float64(((b1 | b2 | b3) >> 8)))
                     end
                 end
-                if lowercase(units[idx2]) == "mv"
-                    lowercase(units[idx2]) == "μV"
-                    signal ./= 1000
-                end
-                if lowercase(units[idx2]) == "nv"
-                    lowercase(units[idx2]) == "μV"
-                    signal .*= 1000
-                end
             end
             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
         end
     end
 
     data .*= gain
+
+    # convert nV/mV to μV
+    @inbounds for idx in 1:ch_n
+        units[idx] == "" && (units[idx] = "μV")
+        if ch_type[idx] == "eeg"
+            if lowercase(units[idx]) == "mv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] .*= 1000
+            end
+            if lowercase(units[idx]) == "nv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] ./= 1000
+            end
+        end
+    end
 
     close(fid)
 

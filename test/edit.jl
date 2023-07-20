@@ -92,22 +92,22 @@ keep_epoch!(e10_tmp, ep=1:2)
 bm, be = detect_bad(e10)
 @test bm == Bool[1 1 1 1 1 1 1 1 1 1; 
                  1 1 1 1 1 1 1 1 1 1; 
-                 0 0 0 0 1 1 1 1 1 1; 
-                 0 1 0 0 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 0 0 0 0; 
                  1 1 1 1 1 1 1 1 1 1; 
                  1 1 1 1 1 1 1 1 1 1; 
                  1 1 1 1 1 1 1 1 1 1; 
                  1 1 1 1 1 1 1 1 1 1; 
-                 1 0 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 0 0 0 0 0; 
-                 1 1 1 1 1 1 1 0 1 1; 
-                 0 0 0 1 0 0 1 1 1 1; 
-                 1 1 1 1 0 0 0 1 1 1; 
-                 0 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
+                 1 1 1 1 1 1 1 1 1 1; 
                  1 1 1 1 1 1 1 1 1 1]
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -131,7 +131,7 @@ epoch_ts!(e10_tmp, ts=-2.0)
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
 s = extract_channel(e10, ch=1)
-@test size(s) == (1, 2560, 121)
+@test size(s) == (1, 2560, 120)
 
 @info "test 15/28: extract_epoch()"
 e10_tmp = extract_epoch(e10, ep=1)
@@ -141,11 +141,11 @@ e10_tmp = extract_epoch(e10, ep=1)
 
 @info "test 16/28: extract_data()"
 d = extract_data(e10)
-@test size(d) == (19, 2560, 121)
+@test size(d) == (19, 2560, 120)
 
 @info "test 17/28: extract_time()"
 tpts = extract_time(e10)
-@test length(tpts) == 309760
+@test length(tpts) == 307200
 
 @info "test 18/28: extract_eptime()"
 et = extract_eptime(e10)
@@ -159,9 +159,9 @@ m = rand(10, 100)
 a = rand(10, 100, 10)
 @test size(trim(a, seg=(1, 10))) == (10, 90, 10)
 e10_tmp = trim(e10, seg=(0, 11), remove_epochs=true)
-@test size(e10_tmp) == (24, 2560, 119)
-e10_tmp = trim(e10, seg=(0, 21), remove_epochs=false)
 @test size(e10_tmp) == (24, 2560, 118)
+e10_tmp = trim(e10, seg=(0, 21), remove_epochs=false)
+@test size(e10_tmp) == (24, 2560, 117)
 
 @info "test 20/28: delete_marker()"
 eeg_mrk = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))

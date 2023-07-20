@@ -19,7 +19,7 @@ s = create_study([eeg1, eeg2], [:a, :b])
 @test channel_n(s) == 24
 
 @info "test 4/6: epoch_n()"
-@test epoch_n(s) == 242
+@test epoch_n(s) == 241
 
 @info "test 5/6: epoch_len()"
 @test epoch_len(s) == 1280

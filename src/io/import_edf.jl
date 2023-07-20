@@ -241,6 +241,21 @@ function import_edf(file_name::String; detect_type::Bool=true)
         close(fid)
     end
 
+    # convert nV/mV to μV
+    @inbounds for idx in 1:ch_n
+        units[idx] == "" && (units[idx] = "μV")
+        if ch_type[idx] == "eeg"
+            if lowercase(units[idx]) == "mv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] .*= 1000
+            end
+            if lowercase(units[idx]) == "nv"
+                lowercase(units[idx]) == "μV"
+                data[idx, :] ./= 1000
+            end
+        end
+    end
+
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
@@ -254,16 +269,6 @@ function import_edf(file_name::String; detect_type::Bool=true)
         ch_n -= length(annotation_channels)
     end
 
-    @inbounds for idx in 1:ch_n
-        if lowercase(units[idx]) == "mv"
-            lowercase(units[idx]) == "μV"
-            data[idx, :] ./= 1000
-        end
-        if lowercase(units[idx]) == "nv"
-            lowercase(units[idx]) == "μV"
-            data[idx, :] ./= 1000
-        end
-    end
 
     ch_order = _sort_channels(ch_type)
 

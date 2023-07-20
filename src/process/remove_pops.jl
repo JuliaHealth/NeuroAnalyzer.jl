@@ -88,17 +88,17 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # /|
             #  |/
             
-            t = collect(1:length(s_pop[1:p_idx - 10]))
-            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx - 10])
+            t = collect(1:length(s_pop[1:p_idx]))
+            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
-            s_pop[1:p_idx - 10] -= ll1
+            s_pop[1:p_idx] -= ll1
 
-            t = collect(1:length(s_pop[p_idx + 10:end]))
-            df = DataFrame(:t=>t, :s=>s_pop[p_idx + 10:end])
+            t = collect(1:length(s_pop[p_idx:end]))
+            df = DataFrame(:t=>t, :s=>s_pop[p_idx:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)
-            s_pop[p_idx + 10:end] += abs.(ll2)
+            s_pop[p_idx:end] += abs.(ll2)
 
             # m1 = mean(s_pop[1:s_pop_max])
             # l1 = length(s_pop[1:s_pop_max])
@@ -110,11 +110,15 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # s_pop[1:s_pop_max] -= lf
             # s_pop[s_pop_min:end] += ll2
     
-            s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
-            s_pop_min = vsearch(minimum(s_pop), s_pop)
-            s_pop_max = vsearch(maximum(s_pop), s_pop)
-            s_pop[s_pop_min] = mean([s_pop[s_pop_min - 2], s_pop[s_pop_min + 2]])
-            s_pop[s_pop_max] = mean([s_pop[s_pop_max - 2], s_pop[s_pop_max + 2]])
+            # s_pop = filter_mavg(s_pop, k=12)
+            s_pop = filter_mavg(s_pop, k=4)
+
+            # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
+            # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
+            # s_pop_min = vsearch(minimum(s_pop), s_pop)
+            # s_pop_max = vsearch(maximum(s_pop), s_pop)
+            # s_pop[s_pop_min] = mean([s_pop[s_pop_min - 2], s_pop[s_pop_min + 2]])
+            # s_pop[s_pop_max] = mean([s_pop[s_pop_max - 2], s_pop[s_pop_max + 2]])
 
             # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
             # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
@@ -126,17 +130,17 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             #  |\
             # \|
 
-            t = collect(1:length(s_pop[1:p_idx - 10]))
-            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx - 10])
+            t = collect(1:length(s_pop[1:p_idx]))
+            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
-            s_pop[1:p_idx - 10] += ll1
+            s_pop[1:p_idx] += ll1
 
-            t = collect(1:length(s_pop[p_idx + 10:end]))
-            df = DataFrame(:t=>t, :s=>s_pop[p_idx + 10:end])
+            t = collect(1:length(s_pop[p_idx:end]))
+            df = DataFrame(:t=>t, :s=>s_pop[p_idx:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)
-            s_pop[p_idx + 10:end] -= abs.(ll2)
+            s_pop[p_idx:end] -= abs.(ll2)
 
             # m1 = mean(s_pop[1:s_pop_max])
             # l1 = length(s_pop[1:s_pop_max])
@@ -148,11 +152,15 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # s_pop[1:s_pop_max] -= lf
             # s_pop[s_pop_min:end] += ll2
     
-            s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
-            s_pop_min = vsearch(minimum(s_pop), s_pop)
-            s_pop_max = vsearch(maximum(s_pop), s_pop)
-            s_pop[s_pop_min] = mean([s_pop[s_pop_min - 2], s_pop[s_pop_min + 2]])
-            s_pop[s_pop_max] = mean([s_pop[s_pop_max - 2], s_pop[s_pop_max + 2]])
+            # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
+            # s_pop_min = vsearch(minimum(s_pop), s_pop)
+            # s_pop_max = vsearch(maximum(s_pop), s_pop)
+            # s_pop[s_pop_min] = mean([s_pop[s_pop_min - 2], s_pop[s_pop_min + 2]])
+            # s_pop[s_pop_max] = mean([s_pop[s_pop_max - 2], s_pop[s_pop_max + 2]])
+
+            # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
+            # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=4)
+            s_pop = filter_mavg(s_pop, k=4)
 
             # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
             # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
