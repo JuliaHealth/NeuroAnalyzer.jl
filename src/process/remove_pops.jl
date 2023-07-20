@@ -82,24 +82,23 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
         s_pop = s[zero_1:zero_2]
         s_pop_min = vsearch(minimum(s_pop), s_pop)
         s_pop_max = vsearch(maximum(s_pop), s_pop)
-    
         p_idx = vsearch(s[pop_location], s_pop)
 
         if s_pop_max < s_pop_min
             # /|
             #  |/
             
-            t = collect(1:length(s_pop[1:p_idx - 5]))
-            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx - 5])
+            t = collect(1:length(s_pop[1:p_idx - 10]))
+            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx - 10])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
-            s_pop[1:p_idx - 5] -= ll1
+            s_pop[1:p_idx - 10] -= ll1
 
-            t = collect(1:length(s_pop[p_idx + 5:end]))
-            df = DataFrame(:t=>t, :s=>s_pop[p_idx + 5:end])
+            t = collect(1:length(s_pop[p_idx + 10:end]))
+            df = DataFrame(:t=>t, :s=>s_pop[p_idx + 10:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)
-            s_pop[p_idx + 5:end] += abs.(ll2)
+            s_pop[p_idx + 10:end] += abs.(ll2)
 
             # m1 = mean(s_pop[1:s_pop_max])
             # l1 = length(s_pop[1:s_pop_max])
@@ -111,18 +110,56 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # s_pop[1:s_pop_max] -= lf
             # s_pop[s_pop_min:end] += ll2
     
+            s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             s_pop_min = vsearch(minimum(s_pop), s_pop)
             s_pop_max = vsearch(maximum(s_pop), s_pop)
+            s_pop[s_pop_min] = mean([s_pop[s_pop_min - 2], s_pop[s_pop_min + 2]])
+            s_pop[s_pop_max] = mean([s_pop[s_pop_max - 2], s_pop[s_pop_max + 2]])
 
-            s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
-            s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
-            s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .< 0] .*= abs(minimum(s_pop[p_idx + 5:end]))
+            # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
+            # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
+            # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .< 0] .*= abs(minimum(s_pop[p_idx + 5:end]))
             s[zero_1:zero_2] = s_pop
             s .+= s_m
 
         else
             #  |\
             # \|
+
+            t = collect(1:length(s_pop[1:p_idx - 10]))
+            df = DataFrame(:t=>t, :s=>s_pop[1:p_idx - 10])
+            lr = GLM.lm(@formula(s ~ t), df)
+            ll1 = MultivariateStats.predict(lr)
+            s_pop[1:p_idx - 10] += ll1
+
+            t = collect(1:length(s_pop[p_idx + 10:end]))
+            df = DataFrame(:t=>t, :s=>s_pop[p_idx + 10:end])
+            lr = GLM.lm(@formula(s ~ t), df)
+            ll2 = MultivariateStats.predict(lr)
+            s_pop[p_idx + 10:end] -= abs.(ll2)
+
+            # m1 = mean(s_pop[1:s_pop_max])
+            # l1 = length(s_pop[1:s_pop_max])
+            # ll1 = linspace(0, 1, l1) .* (s_pop[s_pop_max] * 0.9) .* sign(m1)
+            # m2 = mean(s_pop[s_pop_min:end])
+            # l2 = length(s_pop[s_pop_min:end])
+            # ll2 = linspace(1, 0, l2) .* (s_pop[s_pop_min] * 0.9) .* sign(m2)
+            # s_pop[1:s_pop_max] -= ll1
+            # s_pop[1:s_pop_max] -= lf
+            # s_pop[s_pop_min:end] += ll2
+    
+            s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
+            s_pop_min = vsearch(minimum(s_pop), s_pop)
+            s_pop_max = vsearch(maximum(s_pop), s_pop)
+            s_pop[s_pop_min] = mean([s_pop[s_pop_min - 2], s_pop[s_pop_min + 2]])
+            s_pop[s_pop_max] = mean([s_pop[s_pop_max - 2], s_pop[s_pop_max + 2]])
+
+            # s_pop[(p_idx - 5):(p_idx + 5)] = normalize_minmax(s_pop[(p_idx - 5):(p_idx + 5)])
+            # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .> 0] .*= abs(maximum(s_pop[1:p_idx - 5]))
+            # s_pop[(p_idx - 5):(p_idx + 5)][s_pop[(p_idx - 5):(p_idx + 5)] .< 0] .*= abs(minimum(s_pop[p_idx + 5:end]))
+            s[zero_1:zero_2] = s_pop
+            s .+= s_m
+
             # m1 = mean(s_pop[1:s_pop_min])
             # l1 = length(s_pop[1:s_pop_min])
             # ll1 = linspace(0, 1, l1) .* s_pop[s_pop_min] .* sign(m1)
