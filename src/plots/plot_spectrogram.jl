@@ -118,7 +118,8 @@ Plots spectrogram.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ep::Int64`: epoch to display
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `ep::Int64=0`: epoch to display
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:standard`: method of calculating spectrogram:
@@ -140,18 +141,52 @@ Plots spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
-    _check_epochs(obj, ep)
     _check_channels(obj, ch)
 
-    clabels = labels(obj)[ch]
-    length(ch) == 1 && (clabels = [clabels])
+    seg[1] == seg[2] && throw(ArgumentError("Signal is too short for analysis."))
+
+    if obj.time_pts[end] < 10 && seg == (0, 10)
+        seg = (0, obj.time_pts[end])
+    else
+        NeuroAnalyzer._check_segment(obj, seg)
+    end
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+
+    if ep != 0
+        _check_epochs(obj, ep)
+        if epoch_n(obj) == 1
+            ep = 0
+        else
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
+            if ep isa Int64
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+            else
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
+            end
+            ep = 0
+        end
+    end
+
+    # get time vector
+    if seg[2] <= epoch_len(obj)
+        signal = obj.data[ch, seg[1]:seg[2], 1]
+    else
+        signal = epoch(obj, ep_n=1).data[ch, seg[1]:seg[2], 1]
+    end
+    # t = _get_t(seg[1], seg[2], sr(obj))
+    t = obj.time_pts[seg[1]:seg[2]]
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
+    ep = _s2epoch(obj, seg[1], seg[2])
 
     # set units
     units = _set_units(obj, ch[1])
+
+    clabels = labels(obj)[ch]
+    length(ch) == 1 && (clabels = [clabels])
 
     # get frequency range
     fs = sr(obj)
@@ -159,11 +194,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be in [0, $(fs / 2)]."))
 
     # calculate spectrogram
-    signal = obj.data[ch, :, ep]
     length(ch) > 1 && length(signal) / length(ch) < 4 * sr(obj) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."))
-
-    # get time vector
-    _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
 
     if length(ch) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -199,6 +230,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
             st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end
+
+        st .+= t[1]
 
         norm == true && (s_p = pow2db.(s_p))
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
@@ -278,7 +311,8 @@ Plots spectrogram of embedded or external component.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `c::Union{Symbol, AbstractArray}`: component to plot
-- `ep::Int64`: epoch to display
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `ep::Int64=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:standard`: method of calculating spectrogram:
@@ -301,11 +335,33 @@ Plots spectrogram of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
-    _check_epochs(obj, ep)
+    seg[1] == seg[2] && throw(ArgumentError("Signal is too short for analysis."))
+
+    if obj.time_pts[end] < 10 && seg == (0, 10)
+        seg = (0, obj.time_pts[end])
+    else
+        NeuroAnalyzer._check_segment(obj, seg)
+    end
+    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+
+    if ep != 0
+        _check_epochs(obj, ep)
+        if epoch_n(obj) == 1
+            ep = 0
+        else
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
+            if ep isa Int64
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+            else
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
+            end
+            ep = 0
+        end
+    end
 
     # select component c_idxs, default is all c_idxs
     c isa Symbol && (c = _get_component(obj, c))
@@ -314,17 +370,24 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
     clabels = _gen_clabels(c)[c_idx]
     length(c_idx) == 1 && (clabels = [clabels])
 
+    # get time vector
+    if seg[2] <= epoch_len(obj)
+        signal = c[c_idx, seg[1]:seg[2], 1]
+    else
+        signal = reshape(c, size(c, 1), :, 1)[c_idx, seg[1]:seg[2], 1]
+    end
+    # t = _get_t(seg[1], seg[2], sr(obj))
+    t = obj.time_pts[seg[1]:seg[2]]
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
+    ep = _s2epoch(obj, seg[1], seg[2])
+
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be in [0, $(fs / 2)]."))
 
     # calculate spectrogram
-    signal = c[c_idx, :, ep]
     length(c_idx) > 1 && length(signal) / length(c_idx) < 4 * sr(obj) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."))
-
-    # get time vector
-    _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
 
     if length(c_idx) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -360,6 +423,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end
+
+        st .+= t[1]
 
         norm == true && (s_p = pow2db.(s_p))
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])

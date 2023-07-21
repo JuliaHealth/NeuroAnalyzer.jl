@@ -104,6 +104,7 @@ const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecog, :nirs_int, :n
 
 # set package options
 
+Plots.gr_cbar_width[] = 0.01
 FFTW.set_provider!("mkl")
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
