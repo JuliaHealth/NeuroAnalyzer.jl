@@ -1,33 +1,75 @@
-export hrv
+export hrv_detect
+export hrv_analyze
 
-function hrv(obj::NeuroAnalyzer.NEURO)
+"""
+    hrv_detect(obj)
+
+Detect heart rate variability (HRV). Requires ECG channel (which will be automatically detected based on `channel_type` field).
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `nn_seg::Vector{Float64}`: list of NN segments [msec]
+- `r_idx::Vector{Float64}`: index of R peaks
+"""
+function hrv_detect(obj::NeuroAnalyzer.NEURO)
 
     "ecg" in obj.header.recording[:channel_type] || throw(ArgumentError("OBJ does not contain ECG channel."))
     ch = findfirst(obj.header.recording[:channel_type] .== "ecg")
     NeuroAnalyzer._info("ECG channel found: $ch")
     ecg = eeg.data[ch, :, :][:]
-    nn_idx, _ = findpeaks1d(ecg, height=mean(ecg) + 2*std(ecg))
+    r_idx, _ = findpeaks1d(ecg, height=mean(ecg) + 2*std(ecg))
 
     # convert to ms
-    nn_diff = diff(nn_idx) ./ sr(eeg) * 1000
+    nn_seg = diff(r_idx) ./ sr(eeg) * 1000
     
-    NeuroAnalyzer._info("Detected NN intervals: $(length(nn_diff))")
+    NeuroAnalyzer._info("Detected NN segments: $(length(nn_seg))")
 
-    return nn_diff
+    return nn_seg, r_idx
 
 end
 
-mean(rr_diff)
-std(rr_diff)
+"""
+    hrv_analyze(nn_seg)
 
-var(rr_diff)
+Analyze heart rate variability (HRV).
 
-median(rr_diff)
+# Arguments
 
-SDNN, the standard deviation of NN intervals. Often calculated over a 24-hour period. SDANN, the standard deviation of the average NN intervals calculated over short periods, usually 5 minutes. SDANN is therefore a measure of changes in heart rate due to cycles longer than 5 minutes. SDNN reflects all the cyclic components responsible for variability in the period of recording, therefore it represents total variability.
-RMSSD ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent NNs.[39]
-SDSD ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent NNs.[39]
-NN50, the number of pairs of successive NNs that differ by more than 50 ms.
-pNN50, the proportion of NN50 divided by total number of NNs.
-NN20, the number of pairs of successive NNs that differ by more than 20 ms.[40]
-pNN20, the proportion of NN20 divided by total number of NNs.
+- `nn_seg::Vector{Float64}`: list of NN segments [msec]
+
+# Returns
+
+Named tuple containing:
+- `menn::Float64`: the mean of NN intervals
+- `mdnn::Float64`: the median of NN intervals
+- `vnn::Float64`: the variance of NN intervals
+- `sdnn::Float64`: the standard deviation of NN intervals
+- `rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent NNs
+- `sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent NNs
+- `nn50::Float64`: the number of pairs of successive NNs that differ by more than 50 ms
+- `pnn50::Float64`, the proportion of NN50 divided by total number of NNs
+- `nn20::Float64`, the number of pairs of successive NNs that differ by more than 20 ms
+- `pnn20::Float64`, the proportion of NN20 divided by total number of NNs
+"""
+function hrv_analyze(nn_seg::Vector{Float64})
+
+    nn_diff = diff(nn_seg)
+
+    menn = round(mean(nn_seg), digits=3)
+    mdnn =  round(median(nn_seg), digits=3)
+    vnn =  round(var(nn_seg), digits=3)
+    sdnn =  round(std(nn_seg), digits=3)
+    rmssd = round(sqrt(mean(nn_diff .^ 2)), digits=3)
+    sdsd = round(std(nn_diff), digits=3)
+    nn50 = length(findall(abs.(nn_diff) .> 50))
+    pnn50 = round(nn50 / length(nn_seg), digits=3)
+    nn20 = length(findall(abs.(nn_diff) .> 20))
+    pnn20 = round(nn20 / length(nn_seg), digits=3)
+
+    return(menn=menn, mdnn=mdnn, vnn=vnn, sdnn=sdnn, rmssd=rmssd, sdsd=sdsd, nn50=nn50, pnn50=pnn50, nn20=nn20, pnn20=pnn20)
+
+end
