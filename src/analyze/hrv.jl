@@ -19,14 +19,14 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)
 
     "ecg" in obj.header.recording[:channel_type] || throw(ArgumentError("OBJ does not contain ECG channel."))
     ch = findfirst(obj.header.recording[:channel_type] .== "ecg")
-    NeuroAnalyzer._info("ECG channel found: $ch")
+    _info("ECG channel found: $ch")
     ecg = eeg.data[ch, :, :][:]
     r_idx, _ = findpeaks1d(ecg, height=mean(ecg) + 2*std(ecg))
 
     # convert to ms
     nn_seg = diff(r_idx) ./ sr(eeg) * 1000
     
-    NeuroAnalyzer._info("Detected NN segments: $(length(nn_seg))")
+    _info("Detected NN segments: $(length(nn_seg))")
 
     return nn_seg, r_idx
 
@@ -44,10 +44,10 @@ Analyze heart rate variability (HRV).
 # Returns
 
 Named tuple containing:
-- `menn::Float64`: the mean of NN intervals
-- `mdnn::Float64`: the median of NN intervals
-- `vnn::Float64`: the variance of NN intervals
-- `sdnn::Float64`: the standard deviation of NN intervals
+- `menn::Float64`: the mean of NN segments
+- `mdnn::Float64`: the median of NN segments
+- `vnn::Float64`: the variance of NN segments
+- `sdnn::Float64`: the standard deviation of NN segments
 - `rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent NNs
 - `sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent NNs
 - `nn50::Float64`: the number of pairs of successive NNs that differ by more than 50 ms
