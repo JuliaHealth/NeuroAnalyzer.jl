@@ -290,7 +290,7 @@ end
 """
     plot_erp_topo(locs, t, s; <keyword arguments>)
 
-Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+Plot topographical map ERPs.
 
 # Arguments
 
@@ -303,6 +303,7 @@ Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations,
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `yrev::Bool=false`: reverse Y axis
+- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 - `mono::Bool=false`: use color or grey palette
 
 - `kwargs`: optional arguments for plot() function
@@ -311,7 +312,7 @@ Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations,
 
 - `fig::GLMakie.Figure`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, polar::Bool=true, kwargs...)
 
     size(s, 2) == length(t) || throw(ArgumentError("Signal length and time length must be equal."))
     length(ch) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
@@ -330,14 +331,18 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     marker_size = (150, 75)
     
     # get locations
-    loc_x = zeros(nrow(locs))
-    loc_y = zeros(nrow(locs))
-    for idx in 1:nrow(locs)
-        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    if polar == true
+        loc_x = zeros(nrow(locs))
+        loc_y = zeros(nrow(locs))
+        for idx in 1:nrow(locs)
+            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        end
+        loc_x = loc_x[ch]
+        loc_y = loc_y[ch]
+    else
+        loc_x = locs[ch, :loc_x]
+        loc_y = locs[ch, :loc_y]
     end
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = loc_x[ch]
-    loc_y = loc_y[ch]
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
     # get marker centers

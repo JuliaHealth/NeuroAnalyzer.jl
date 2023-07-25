@@ -24,6 +24,12 @@ function locs_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
+#=  
+    locs_new[!, :loc_y] = -locs_new[!, :loc_y]
+    planar == true && locs_cart2pol!(locs_new)
+    spherical == true && locs_cart2sph!(locs_new)
+=#
+
     for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs_new[idx, :loc_theta]
@@ -34,6 +40,7 @@ function locs_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
             q == 4 && (t = 360 - t)
             t = mod(t, 360)
             locs_new[idx, :loc_theta] = t
+            locs_pol2cart!(locs_new)
         end
 
         if spherical == true
@@ -46,9 +53,10 @@ function locs_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
             q == 4 && (t = 360 - t)
             t = mod(t, 360)
             locs_new[idx, :loc_theta_sph] = t
+            locs_sph2cart!(locs_new)
         end            
     end
-    # locs_cart2sph!(locs_new)
+
 
     return locs_new
 
@@ -92,6 +100,12 @@ function locs_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
+#=    
+    locs_new[!, :loc_x] = -locs_new[!, :loc_x]
+    planar == true && locs_cart2pol!(locs_new)
+    spherical == true && locs_cart2sph!(locs_new)
+=#
+
     for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs_new[idx, :loc_theta]
@@ -114,6 +128,7 @@ function locs_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
             q == 4 && (t = 270 - (t - 270))
             t = mod(t, 360)
             locs_new[idx, :loc_theta_sph] = t
+            locs_pol2cart!(locs_new)
         end
     end
 
@@ -157,13 +172,16 @@ function locs_flipz(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    locs_new[!, :loc_z] = -locs_new[!, :loc_z]
+    locs_cart2sph!(locs_new)
+
+#=    for idx in eachindex(locs[!, :labels])
         locs_new[idx, :loc_z] = -locs_new[idx, :loc_z]
         locs_new[idx, :loc_phi_sph] = -locs_new[idx, :loc_phi_sph]
     end
 
     locs_cart2sph!(locs_new)
-
+=#
     return locs_new
 
 end

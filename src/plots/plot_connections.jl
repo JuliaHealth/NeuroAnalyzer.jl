@@ -3,7 +3,7 @@ export plot_connections
 """
     plot_connections(obj; <keyword arguments>)
 
-Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+Plot weights at electrode positions.
 
 # Arguments
 
@@ -19,13 +19,14 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `title::String=""`: plot title
+- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", polar::Bool=true, kwargs...)
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
@@ -37,7 +38,7 @@ function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
     typeof(ch) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
-    p = plot_connections(obj_tmp.locs, connections=connections, ch=ch, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+    p = plot_connections(obj_tmp.locs, connections=connections, ch=ch, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details, polar=polar)
 
     Plots.plot!(p, title=title; kwargs)
 
@@ -48,7 +49,7 @@ end
 """
     plot_connections(obj; <keyword arguments>)
 
-Plot connections between channels. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+Plot connections between channels.
 
 # Arguments
 
@@ -63,13 +64,14 @@ Plot connections between channels. It uses polar :loc_radius and :loc_theta loca
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, kwargs...)
+function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, polar::Bool=true, kwargs...)
 
     size(connections, 1) == length(ch) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
@@ -89,12 +91,16 @@ function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRang
                    margins=-plot_size * Plots.px,
                    titlefontsize=plot_size ÷ 50)
 
-    loc_x = zeros(size(locs, 1))
-    loc_y = zeros(size(locs, 1))
-    for idx in 1:size(locs, 1)
-        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    if polar == true
+        loc_x = zeros(size(locs, 1))
+        loc_y = zeros(size(locs, 1))
+        for idx in 1:size(locs, 1)
+            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        end
+    else
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
     end
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 

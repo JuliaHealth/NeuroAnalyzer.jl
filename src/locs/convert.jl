@@ -3,6 +3,8 @@ export pol2cart
 export sph2cart
 export cart2sph
 export sph2pol
+export locs_pol2cart
+export locs_pol2cart!
 export locs_sph2cart
 export locs_sph2cart!
 export locs_cart2sph
@@ -150,6 +152,52 @@ function sph2pol(radius::Real, theta::Real, phi::Real)
     radius = round(radius * abs(cosd(phi)), digits=3)
 
     return radius, theta
+
+end
+
+"""
+    locs_pol2cart(locs)
+
+Convert polar locations to Cartesian.
+
+# Arguments
+
+- `locs::DataFrame`
+
+# Returns
+
+- `locs_new::DataFrame`
+"""
+function locs_pol2cart(locs::DataFrame)
+
+    locs_new = deepcopy(locs)
+
+    for idx in 1:nrow(locs)
+        r = locs_new[idx, :loc_radius_sph]
+        t = locs_new[idx, :loc_theta_sph]
+        x, y = pol2cart(r, t)
+        locs_new[idx, :loc_x] = x
+        locs_new[idx, :loc_y] = y
+    end
+
+    return locs_new
+
+end
+
+"""
+    locs_pol2cart!(locs)
+
+Convert polar locations to Cartesian.
+
+# Arguments
+
+- `locs::DataFrame`
+"""
+function locs_pol2cart!(locs::DataFrame)
+
+    locs[!, :] = locs_pol2cart(locs)[!, :]
+
+    return nothing
 
 end
 

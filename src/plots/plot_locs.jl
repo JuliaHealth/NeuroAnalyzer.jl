@@ -4,7 +4,7 @@ export plot_locs3d
 """
     plot_locs(locs; <keyword arguments>)
 
-Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locations, which are translated into Cartesian x and y positions.
+Preview channel locations.
 
 # Arguments
 
@@ -18,21 +18,26 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 - `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400, polar::Bool=true)
 
     pal = mono == true ? :grays : :darktest
 
-    loc_x = zeros(size(locs, 1))
-    loc_y = zeros(size(locs, 1))
-    for idx in 1:size(locs, 1)
-        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    if polar == true
+        loc_x = zeros(size(locs, 1))
+        loc_y = zeros(size(locs, 1))
+        for idx in 1:size(locs, 1)
+            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        end
+    else
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
     end
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
@@ -152,7 +157,7 @@ end
 """
     plot_locs3d(locs; <keyword arguments>)
 
-3D interactive preview of channel locations. It uses spherical :loc_radius_sph, :loc_theta_sph and :loc_phi_sph locations.
+3D interactive preview of channel locations. It uses Cartesian :loc_x, :loc_y and :loc_z locations.
 
 # Arguments
 
@@ -176,15 +181,18 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
 
     pal = mono == true ? :grays : :darktest
 
-    loc_x = zeros(nrow(locs))
-    loc_y = zeros(nrow(locs))
-    loc_z = zeros(nrow(locs))
+    # loc_x = zeros(nrow(locs))
+    # loc_y = zeros(nrow(locs))
+    # loc_z = zeros(nrow(locs))
 
-    for idx in 1:nrow(locs)
-        loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
-    end
+    # for idx in 1:nrow(locs)
+    #    loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
+    # end
 
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
+    loc_x = locs[!, :loc_x]
+    loc_y = locs[!, :loc_y]
+    loc_z = locs[!, :loc_z]
+
     x_lim = (-1.1, 1.1)
     y_lim = (-1.1, 1.1)
     z_lim = extrema(loc_z)
@@ -250,13 +258,14 @@ Preview of channel locations.
 - `mono::Bool=false`: use color or grey palette
 - `threed::Bool=false`: 3-dimensional plot
 - `grid::Bool=false`: draw grid, useful for locating positions
+- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, polar::Bool=true, kwargs...)
 
     #_has_locs(obj) == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 
@@ -277,7 +286,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             det_n = length(unique(ch_pairs[:, 2]))
             p = plot_locs_nirs(obj.locs, ch_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono)
         else
-            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono)
+            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono, polar=polar)
         end
     else
         p = plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)

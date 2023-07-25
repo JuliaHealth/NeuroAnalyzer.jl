@@ -112,36 +112,58 @@ locs2 = locs_flipy(locs)
 locs2 = locs_flipz(locs)
 @test locs2[1, :loc_z] == 0.035
 
-@info "test 18/21: locs_rotx()"
-@test locs[1, :loc_radius] == 0.511
-@test locs[1, :loc_theta] == 108.0
-@test locs[1, :loc_theta_sph] == 108.0
-@test locs[1, :loc_phi_sph] == -2.0
-locs2 = locs_rotx(locs, a=20)
-@test locs2[1, :loc_radius] == 0.511
-@test locs2[1, :loc_theta] == 128.0
-@test locs2[1, :loc_theta_sph] == 128.0
-@test locs2[1, :loc_phi_sph] == -2.0
-
-@info "test 19/21: locs_scale()"
+@info "test 18/21: locs_scale()"
 @test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_radius_sph] == 1.0
 locs2 = locs_scale(locs, r=1.2)
 @test locs2[1, :loc_radius] == 0.6132
 @test locs2[1, :loc_radius_sph] == 1.2
 
-@info "test 20/21: locs_maximize()"
+@info "test 19/21: locs_maximize()"
 @test locs[1, :loc_radius] == 0.511
 @test locs[1, :loc_radius_sph] == 1.0
 locs2 = locs_maximize(locs)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_radius_sph] == 1.0
 
-@info "test 21/21: locs_swapxy()"
+@info "test 20/21: locs_swapxy()"
 @test locs[1, :loc_theta] == 108.0
 @test locs2[1, :loc_theta_sph] == 108.0
 locs2 = locs_swapxy(locs)
 @test locs2[1, :loc_theta] == 198.0
 @test locs2[1, :loc_theta_sph] == 198.0
+
+@info "test 21/23: locs_rotx()"
+@test locs[1, :loc_radius] == 0.511
+@test locs[1, :loc_theta] == 108.0
+@test locs[1, :loc_theta_sph] == 108.0
+@test locs[1, :loc_phi_sph] == -2.0
+locs2 = locs_rotx(locs, a=20)
+@test locs2[1, :loc_radius] == 0.956
+@test locs2[1, :loc_theta] == 71.142
+@test locs2[1, :loc_theta_sph] == 71.142
+@test locs2[1, :loc_phi_sph] ≈ 16.98
+
+@info "test 22/23: locs_roty()"
+@test locs[1, :loc_radius] == 0.511
+@test locs[1, :loc_theta] == 108.0
+@test locs[1, :loc_theta_sph] == 108.0
+@test locs[1, :loc_phi_sph] == -2.0
+locs2 = locs_roty(locs, a=20)
+@test locs2[1, :loc_radius] == 0.99
+@test locs2[1, :loc_theta] == 73.667
+@test locs2[1, :loc_theta_sph] == 73.667
+@test locs2[1, :loc_phi_sph] ≈ -7.965
+
+@info "test 23/23: locs_rotz()"
+@test locs[1, :loc_radius] == 0.511
+@test locs[1, :loc_theta] == 108.0
+@test locs[1, :loc_theta_sph] == 108.0
+@test locs[1, :loc_phi_sph] == -2.0
+locs2 = locs_rotz(locs, a=20)
+@test locs2[1, :loc_radius] == 0.999
+@test locs2[1, :loc_theta] == 91.982
+@test locs2[1, :loc_theta_sph] == 91.982
+@test locs2[1, :loc_phi_sph] ≈ -2.006
 
 true

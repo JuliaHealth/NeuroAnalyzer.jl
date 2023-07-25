@@ -565,7 +565,7 @@ end
 """
     plot_psd_topo(locs, sf, sp; <keyword arguments>)
 
-Plot topographical map PSDs. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+Plot topographical map PSDs.
 
 # Arguments
 
@@ -581,13 +581,14 @@ Plot topographical map PSDs. It uses polar :loc_radius and :loc_theta locations,
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, polar::Bool=true, kwargs...)
 
     size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -634,14 +635,18 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
     marker_size = (150, 75)
     
     # get locations
-    loc_x = zeros(size(locs, 1))
-    loc_y = zeros(size(locs, 1))
-    for idx in 1:size(locs, 1)
-        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    if polar == true
+        loc_x = zeros(size(locs, 1))
+        loc_y = zeros(size(locs, 1))
+        for idx in 1:size(locs, 1)
+            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        end
+        loc_x = loc_x[ch]
+        loc_y = loc_y[ch]
+    else
+        loc_x = locs[ch, :loc_x]
+        loc_y = locs[ch, :loc_y]
     end
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = loc_x[ch]
-    loc_y = loc_y[ch]
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
     # get marker centers

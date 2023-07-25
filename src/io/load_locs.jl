@@ -111,7 +111,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 end
 
 """
-    load_locs!(obj; file_name)
+    load_locs!(obj; file_name, maximize)
 
 Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
 
@@ -126,14 +126,14 @@ Accepted formats:
 - MAT
 
 Channel locations:
-- `loc_theta`       planar polar angle
-- `loc_radius`      planar polar radius
-- `loc_x`           spherical Cartesian x
-- `loc_y`           spherical Cartesian y
-- `loc_z`           spherical Cartesian z
-- `loc_radius_sph`  spherical radius
-- `loc_theta_sph`   spherical horizontal angle
-- `loc_phi_sph`     spherical azimuth angle
+- `loc_theta`: planar polar angle
+- `loc_radius`: planar polar radius
+- `loc_x`: spherical Cartesian x
+- `loc_y`: spherical Cartesian y
+- `loc_z`: spherical Cartesian z
+- `loc_radius_sph`: spherical radius
+- `loc_theta_sph`: spherical horizontal angle
+- `loc_phi_sph`: spherical azimuth angle
 
 # Arguments
 
