@@ -108,7 +108,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     cal = Float64.(_extract_struct(channels_struct, 5))
     unit = Int64.(_extract_struct(channels_struct, 19))
     units = Vector{String}()
-    for idx in 1:length(unit)
+    for idx in eachindex(unit)
         unit[idx] == 107 && push!(units, "V")
         unit[idx] == 112 && push!(units, "T")
         unit[idx] == 201 && push!(units, "T/m")
@@ -171,7 +171,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
 
     # which data buffer to choose? 
     data = zeros(ch_n, 0)
-    @inbounds for idx1 in 1:length(data_buffer)
+    @inbounds for idx1 in eachindex(data_buffer)
         data = hcat(data, Float64.(reshape(data_buffer[idx1], ch_n, length(data_buffer[idx1]) ÷ ch_n)))
     end
     data = data .* range .* cal

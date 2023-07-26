@@ -81,12 +81,12 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")
     ref_channels = ["a1", "a2", "m1", "m2", "pg1", "pg2"]
     eog_channel = ["e", "e1", "e2"]
     channel_type = repeat([default], length(clabels))
-    for idx in 1:length(clabels)
+    for idx in eachindex(clabels)
         occursin("ecg", lowercase(clabels[idx])) && (channel_type[idx] = "ecg")
         occursin("ekg", lowercase(clabels[idx])) && (channel_type[idx] = "ecg")
 
         occursin("eog", lowercase(clabels[idx])) && (channel_type[idx] = "eog")
-        for idx2 in 1:length(eog_channel)
+        for idx2 in eachindex(eog_channel)
             occursin(channel_names[idx2], lowercase(clabels[idx])) && (channel_type[idx] = "eog")
         end
 
@@ -100,7 +100,7 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")
 
         # eeg channels should have priority, e.g. C3A1 (C3 referenced to A1 should be of eeg type, not ref)
         in(lowercase(clabels[idx]), channel_names) && (channel_type[idx] = "eeg")
-        for idx2 in 1:length(channel_names)
+        for idx2 in eachindex(channel_names)
             occursin(channel_names[idx2], lowercase(clabels[idx])) && (channel_type[idx] = "eeg")
         end
         lowercase(clabels[idx])[1] == 'c' && (channel_type[idx] = "eeg")

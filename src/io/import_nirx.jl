@@ -162,7 +162,7 @@ function import_nirx(file_name::String)
 
     # parse dark noise ???
     dark_noise = zeros(length(wavelengths), detectors)
-    for wv_idx in 1:length(wavelengths)
+    for wv_idx in eachindex(wavelengths)
         dn = hdr[findfirst(startswith.(lowercase.(hdr), "wavelength$wv_idx=")) + 1]
         dark_noise[wv_idx, :] = parse.(Float64, split.(dn, '\t')[1:end])
     end
@@ -310,7 +310,7 @@ function import_nirx(file_name::String)
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:channel=>1:length(opt_labels), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:channel=>collect(eachindex(opt_labels)), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
 

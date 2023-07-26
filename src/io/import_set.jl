@@ -193,7 +193,7 @@ function import_set(file_name::String; detect_type::Bool=true)
         events = dataset["event"]
         if length(keys(events)) > 0
             start = Float64.(events["latency"][:]) ./ sampling_rate
-            # for idx in 1:length(events["position"][:])
+            # for idx in eachindex(events["position"][:])
             #     events["position"][idx] isa Matrix{Float64} && (events["position"][idx] = 0.0)
             # end
             # pos = Int.(events["position"][:])

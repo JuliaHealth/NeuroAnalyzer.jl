@@ -34,7 +34,7 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
 
     if length(groups) > 1   
         # check residuals normality per groups 
-        for group_idx in 1:length(groups)
+        for group_idx in eachindex(groups)
             m = mean(x[g .== groups[group_idx]])
             res = x[g .== groups[group_idx]] .- m
             adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))

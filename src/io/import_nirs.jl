@@ -105,12 +105,12 @@ function import_nirs(file_name::String)
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
         for idx1 in 1:s_n
             s_start = findall(s[:, idx1] .!= 0.0)
-            for idx2 in 1:length(s_start)
+            for idx2 in eachindex(s_start)
                 push!(markers, ("", s_start[idx2], 0, "stim", 0))
             end
         end
         desc = unique(markers[!, :description])
-        for idx1 in 1:nrow(markers), idx2 in 1:length(desc)
+        for idx1 in 1:nrow(markers), idx2 in eachindex(desc)
             markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
         end
     end
@@ -146,7 +146,7 @@ function import_nirs(file_name::String)
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:channel=>1:length(opt_labels), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:channel=>collect(eachindex(opt_labels)), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
 

@@ -20,7 +20,7 @@ Filter using moving average (FIR) filter (with threshold).
 function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     # check k
-    k in 1:length(s) || throw(ArgumentError("k must be in [1, signal length ($(length(s)))]."))
+    k in eachindex(s) || throw(ArgumentError("k must be in [1, signal length ($(length(s)))]."))
 
     # check window
     length(window) != (2 * k + 1) && throw(ArgumentError("window length must be `2 × k + 1` ($(2 * k + 1))."))

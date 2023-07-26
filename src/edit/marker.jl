@@ -273,7 +273,7 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
 
     ev_id = String[]
     id == "" && (id = labels(obj)[ch] * "_")
-    for idx in 1:length(ev_start)
+    for idx in eachindex(ev_start)
         push!(ev_id, "$id$idx")
     end
 

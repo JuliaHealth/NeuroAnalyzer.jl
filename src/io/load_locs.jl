@@ -90,7 +90,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.locs = DataFrame(:channel=>1:length(f_labels[labels_idx]),
+    obj_new.locs = DataFrame(:channel=>collect(eachindex(f_labels[labels_idx])),
                              :labels=>f_labels[labels_idx],
                              :loc_theta=>loc_theta[labels_idx],
                              :loc_radius=>loc_radius[labels_idx],

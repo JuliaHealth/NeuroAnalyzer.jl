@@ -37,7 +37,7 @@ function _read_fiff_tag(fid::IOStream, fiff_blocks::Matrix{Int64}, tag_id::Int64
         end
     else
         out = Vector{Any}()
-        for idx in 1:length(id)
+        for idx in eachindex(id)
             push!(out, _read_fiff_data(fid, fiff_blocks, id[idx]))
         end
         return out
@@ -153,7 +153,7 @@ function _extract_struct(s, id::Int64)
     id < 1 && throw(ArgumentError("id must be ≥ 1."))
     id > length(s[1]) && throw(ArgumentError("id must be ≤ $(length(s[1]))."))
     out = Vector{typeof(s[1][id])}()
-    for channels_idx in 1:length(s)
+    for channels_idx in eachindex(s)
         push!(out, s[channels_idx][id])
     end
     return out
@@ -161,7 +161,7 @@ end
 
 function _fiff_channel_type(channel_types::Vector{Int32})
     channel_type = Vector{String}()
-    for idx in 1:length(channel_types)
+    for idx in eachindex(channel_types)
         if channel_types[idx] == 1
             push!(channel_type, "meg")
         elseif channel_types[idx] == 2
@@ -239,19 +239,19 @@ function _create_fiff_block(file_name::String)
 
     # create list of tag IDs
     tag_pos = Vector{Int64}()
-    for tag_idx in 1:length(tags)
+    for tag_idx in eachindex(tags)
         push!(tag_pos, tags[tag_idx][1])
     end
     tag_ids = Vector{Int64}()
-    for tag_idx in 1:length(tags)
+    for tag_idx in eachindex(tags)
         push!(tag_ids, tags[tag_idx][2])
     end
     tag_type = Vector{Int64}()
-    for tag_idx in 1:length(tags)
+    for tag_idx in eachindex(tags)
         push!(tag_type, tags[tag_idx][3])
     end
     tag_size = Vector{Int64}()
-    for tag_idx in 1:length(tags)
+    for tag_idx in eachindex(tags)
         push!(tag_size, tags[tag_idx][4])
     end
 
@@ -260,7 +260,7 @@ function _create_fiff_block(file_name::String)
     block_number = ones(Int64, length(tags))
     block_type = Vector{Int64}()
     block_type_current = 999
-    for tag_idx in 1:length(tags)
+    for tag_idx in eachindex(tags)
         if tags[tag_idx][2] == fiff_block_start
             block_level[tag_idx:end] .+= 1
             block_type_current = _get_fiff_block_type(fid, tags, tag_idx)[]

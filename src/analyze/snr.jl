@@ -84,7 +84,7 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)
     end
 
     # calculate SNR for each channel spectrum
-    @inbounds @simd for f_idx in 1:length(f)
+    @inbounds @simd for f_idx in eachindex(f)
         Threads.@threads for ch_idx in 1:ch_n
             if type === :mean
                 sn[ch_idx, f_idx] = @views snr(amp[ch_idx, f_idx, :])

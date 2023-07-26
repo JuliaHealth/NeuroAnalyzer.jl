@@ -48,8 +48,8 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     # initialize progress bar
     progress_bar == true && (progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white))
 
-    @inbounds for tol_idx in 1:length(tol)
-        for iter_idx in 1:iter
+    @inbounds for tol_idx in eachindex(tol)
+        for _ in 1:iter
             err = nothing
             try
                 M = MultivariateStats.fit(ICA, s, n, maxiter=iter, tol=tol[tol_idx], fun=f)
@@ -76,11 +76,8 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     
     _info("Converged at: $final_tol")
     
-    if n == size(s, 1)
-        ic_mw = inv(M.W)'
-    else
-        ic_mw = pinv(M.W)'
-    end
+    # inverse or pseudoinverse the weighting matrix
+    ic_mw = n == size(s, 1) ? inv(M.W)' : pinv(M.W)'
 
     ic = MultivariateStats.predict(M, s)
 
@@ -313,8 +310,8 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
 
     obj_new = deepcopy(obj)
 
-    @inbounds @simd for ica_idx in 1:length(ic_idx)
-        Threads.@threads for ch_idx in 1:length(ch)
+    @inbounds @simd for ica_idx in eachindex(ic_idx)
+        Threads.@threads for ch_idx in eachindex(ch)
             obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=ch[ch_idx], ic_idx=ic_idx[ica_idx], keep=true)
             obj_new.data[ch[ch_idx], :, 1] = @views obj_new.data[ch[ch_idx], :, 1] - obj_tmp.data[ch[ch_idx], :, 1]
         end

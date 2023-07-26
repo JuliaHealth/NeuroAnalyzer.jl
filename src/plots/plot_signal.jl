@@ -33,7 +33,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     ch_n = size(s, 1)
 
     # reverse so 1st channel is on top
-    s = @views reverse(s[:, 1:length(t)], dims = 1)
+    s = @views reverse(s[:, eachindex(t)], dims = 1)
     # also, reverse colors if palette is not mono
     if mono == true
         pal = :grays
@@ -135,7 +135,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     ch_n = size(s, 1)
 
     # reverse so 1st channel is on top
-    s = @views reverse(s[:, 1:length(t)], dims = 1)
+    s = @views reverse(s[:, eachindex(t)], dims = 1)
     bad = reverse(bad)
 
     pal = mono == true ? :grays : :darktest
@@ -416,8 +416,8 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     ch_n = size(s1, 1)
 
     # reverse so 1st channel is on top
-    s1 = @views reverse(s1[:, 1:length(t)], dims = 1)
-    s2 = @views reverse(s2[:, 1:length(t)], dims = 1)
+    s1 = @views reverse(s1[:, eachindex(t)], dims = 1)
+    s2 = @views reverse(s2[:, eachindex(t)], dims = 1)
 
     # get range of the original signal for the scale
     range1 = NeuroAnalyzer._get_range(s1)
@@ -572,9 +572,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     ch_t_uni = nothing
     if length(ch) > 1
         ch_t_uni = unique(ch_t[ch])
-        for cht_idx in 1:length(ch_t_uni)
+        for cht_idx in eachindex(ch_t_uni)
             ch_tmp2 = Vector{Int64}()
-            for ch_idx in 1:length(ch)
+            for ch_idx in eachindex(ch)
                 ch_t[ch[ch_idx]] == ch_t_uni[cht_idx] && push!(ch_tmp2, ch[ch_idx])
             end
             push!(ch_tmp, ch_tmp2)
@@ -591,7 +591,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if type === :normal
         if bad == false
             if length(ch_tmp) > 1
-                for cht_idx in 1:length(ch_t_uni)
+                for cht_idx in eachindex(ch_t_uni)
                     units = _set_units(obj, ch_tmp[cht_idx][1])
                     if ch_t[ch_tmp[cht_idx][1]] == "eeg"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
@@ -879,7 +879,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     # TODO: draw epoch numbers
     if emarkers == true
         if length(p) > 1
-            for p_idx in 1:length(p)
+            for p_idx in eachindex(p)
                 p[p_idx] = Plots.vline!(p[p_idx],
                                         epoch_markers,
                                         linestyle=:dash,
@@ -903,7 +903,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :description]
         if length(p) > 1
-            for p_idx in 1:length(p)
+            for p_idx in eachindex(p)
                 p[p_idx] = Plots.vline!(p[p_idx],
                                         markers_pos,
                                         linestyle=:dash,
@@ -1201,9 +1201,9 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     ch_t_uni = nothing
     if length(ch) > 1
         ch_t_uni = unique(ch_t[ch])
-        for cht_idx in 1:length(ch_t_uni)
+        for cht_idx in eachindex(ch_t_uni)
             ch_tmp2 = Vector{Int64}()
-            for ch_idx in 1:length(ch)
+            for ch_idx in eachindex(ch)
                 ch_t[ch[ch_idx]] == ch_t_uni[cht_idx] && push!(ch_tmp2, ch[ch_idx])
             end
             push!(ch_tmp, ch_tmp2)
@@ -1218,7 +1218,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     p = Plots.Plot[]
 
     if length(ch_tmp) > 1
-        for cht_idx in 1:length(ch_t_uni)
+        for cht_idx in eachindex(ch_t_uni)
             units = _set_units(obj1, ch_tmp[cht_idx][1])
 
             if ch_t[ch_tmp[cht_idx][1]] == "eeg"
@@ -1395,7 +1395,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     # TODO: draw epoch numbers
     if emarkers == true
         if length(p) > 1
-            for p_idx in 1:length(p)
+            for p_idx in eachindex(p)
                 p[p_idx] = Plots.vline!(p[p_idx],
                                         epoch_markers,
                                         linestyle=:dash,

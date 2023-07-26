@@ -34,7 +34,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     chp = obj.header.recording[:channel_pairs][ch, :]
 
     e = zeros(length(wl), 2)
-    for w_idx in 1:length(wl)
+    for w_idx in eachindex(wl)
         e[w_idx, :] = _wl2ext(wl[w_idx])
     end
     e = e ./ 10 # convert from /cm to /mm
@@ -46,7 +46,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     @inbounds @simd for ep_idx in 1:ep_n
         dod = @views obj_new.data[ch, :, ep_idx]
 
-        for idx=1:length(lst)
+        for idx=eachindex(lst)
             
             idx1 = lst[idx]            
             idx2 = findall(wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2])
@@ -54,7 +54,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
             x = obj.locs[:, :loc_x]
             y = obj.locs[:, :loc_y]
 
-            src_pos = hcat(x, y)'[:, 1:length(unique(chp[:, 1]))]
+            src_pos = hcat(x, y)'[:, eachindex(unique(chp[:, 1]))]
             det_pos = hcat(x, y)'[:, 1 + (end - length(unique(chp[:, 2]))):end]
             rho = norm(src_pos[:, chp[idx1, 1]] - det_pos[:, chp[idx1, 2]])
 

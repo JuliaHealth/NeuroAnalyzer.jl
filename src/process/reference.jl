@@ -585,7 +585,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
 
     chs = signal_channels(obj)
 
-    for ref_idx in 1:length(ref_list)
+    for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
             m = match(r"(.+)-(.+)", ref_list[ref_idx])
             m[1] in labels(obj)[chs] || throw(ArgumentError("Label $(m[1]) does not match OBJ labels."))
@@ -599,7 +599,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
     s = zeros(length(ref_list), epoch_len(obj), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
-        for ref_idx in 1:length(ref_list)
+        for ref_idx in eachindex(ref_list)
             if '-' in ref_list[ref_idx]
                 m = match(r"(.+)-(.+)", ref_list[ref_idx])
                 ref1 = get_channel(obj, ch=string(m[1]))

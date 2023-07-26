@@ -48,7 +48,7 @@ function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
     idx = zeros(length(y))
     d = zeros(length(y))
 
-    @inbounds @simd for y_idx in 1:length(y)
+    @inbounds @simd for y_idx in eachindex(y)
         d[y_idx], idx[y_idx] = findmin(abs.(x .- y[y_idx]))
     end
 

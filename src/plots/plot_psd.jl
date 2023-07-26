@@ -124,7 +124,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     frq_lim = tuple_order(frq_lim)
 
     # reverse so 1st channel is on top
-    sp = @views reverse(sp[:, 1:length(sf)], dims = 1)
+    sp = @views reverse(sp[:, eachindex(sf)], dims = 1)
     # also, reverse colors if palette is not mono
     if mono == true
         pal = :grays
@@ -533,7 +533,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
         f1 = vsearch(frq_lim[1], sf)
         f2 = vsearch(frq_lim[2], sf)
         p = Plots.plot(sf[f1:f2],
-                       1:length(clabels),
+                       eachindex(clabels),
                        sp[:, f1:f2],
                        xlabel=xlabel,
                        ylabel=ylabel,

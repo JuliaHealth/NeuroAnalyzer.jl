@@ -295,7 +295,7 @@ function import_snirf(file_name::String; n::Int64=0)
     # currently data type is not used
     if data_type !== nothing
         tmp = String[]
-        for idx in 1:length(data_type)
+        for idx in eachindex(data_type)
             data_type[idx] == 1 && push!(tmp, "Amplitude")
             data_type[idx] == 51 && push!(tmp, "Fluorescence Amplitude")
             data_type[idx] == 101 && push!(tmp, "Raw: Frequency Domain (FD): AC Amplitude")
@@ -326,14 +326,14 @@ function import_snirf(file_name::String; n::Int64=0)
     if src_labels === nothing
         s = sort(unique(source_index))
         src_labels = String[]
-        for idx in 1:length(s)
+        for idx in eachindex(s)
             push!(src_labels, "S" * string(s[idx]))
         end
     end
     if detector_labels === nothing
         d = sort(unique(detector_index))
         detector_labels = String[]
-        for idx in 1:length(d)
+        for idx in eachindex(d)
             push!(detector_labels, "D" * string(d[idx]))
         end
     end
@@ -371,7 +371,7 @@ function import_snirf(file_name::String; n::Int64=0)
         markers = DataFrame(:id=>repeat([""], size(stim_data, 2)), :start=>stim_data[1, :], :length=>stim_data[2, :], :description=>stim_name, :channel=>repeat([0], size(stim_data, 2)))
         # generate unique IDs
         desc = unique(markers[!, :description])
-        for idx1 in 1:nrow(markers), idx2 in 1:length(desc)
+        for idx1 in 1:nrow(markers), idx2 in eachindex(desc)
             markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
         end
     else
@@ -464,7 +464,7 @@ function import_snirf(file_name::String; n::Int64=0)
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:channel=>1:length(opt_labels), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:channel=>collect(eachindex(opt_labels)), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
 

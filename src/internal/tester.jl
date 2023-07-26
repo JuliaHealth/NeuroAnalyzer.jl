@@ -1,7 +1,7 @@
 function _get_lag(n::Int64=10)
     n = LinRange(0.001, 2.0, n)
     lag = zeros(length(n))
-    for idx in 1:length(n)
+    for idx in eachindex(n)
         t = n[idx]
         lag[idx] = t - @elapsed sleep(t)
     end
@@ -11,7 +11,7 @@ end
 
 function _mtime(f::String; n::Int64=10)
     lag = zeros(length(n))
-    for idx in 1:length(n)
+    for idx in eachindex(n)
         t = n[idx]
         lag[idx] = @elapsed eval(Meta.parse(f))
     end

@@ -42,7 +42,7 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, out::B
 
     # convert InlineString to String
     l = ""
-    for idx in 1:length(obj.locs[ch, :labels])
+    for idx in eachindex(obj.locs[ch, :labels])
         l *= obj.locs[ch, :labels][idx]
     end
 

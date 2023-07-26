@@ -86,7 +86,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{Float64}, sp::Array{Fl
     pal = mono == true ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
     
-    ch = collect(1:length(sch)) .- 0.5
+    ch = collect(eachindex(sch)) .- 0.5
     p = Plots.heatmap(sf,
                       ch,
                       sp,

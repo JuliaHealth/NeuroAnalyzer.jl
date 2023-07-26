@@ -88,13 +88,13 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # /|
             #  |/
             
-            t = collect(1:length(s_pop[1:p_idx]))
+            t = collect(eachindex(s_pop[1:p_idx]))
             df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
             s_pop[1:p_idx] -= ll1
 
-            t = collect(1:length(s_pop[p_idx:end]))
+            t = collect(eachindex(s_pop[p_idx:end]))
             df = DataFrame(:t=>t, :s=>s_pop[p_idx:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)
@@ -130,13 +130,13 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             #  |\
             # \|
 
-            t = collect(1:length(s_pop[1:p_idx]))
+            t = collect(eachindex(s_pop[1:p_idx]))
             df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
             ll1 = MultivariateStats.predict(lr)
             s_pop[1:p_idx] += ll1
 
-            t = collect(1:length(s_pop[p_idx:end]))
+            t = collect(eachindex(s_pop[p_idx:end]))
             df = DataFrame(:t=>t, :s=>s_pop[p_idx:end])
             lr = GLM.lm(@formula(s ~ t), df)
             ll2 = MultivariateStats.predict(lr)

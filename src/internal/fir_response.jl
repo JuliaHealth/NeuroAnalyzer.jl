@@ -4,7 +4,7 @@ function _fir_response(f::Vector{<:Real}, w=range(0, stop=π, length=1024))
     h = Array{ComplexF32}(undef, n)
     sw = 0
     for i = 1:n
-        for j = 1:length(f)
+        for j = eachindex(f)
             sw += f[j] * exp(-im * w[i])^-j
         end
         h[i] = sw

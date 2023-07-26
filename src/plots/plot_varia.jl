@@ -217,7 +217,7 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(xlabels), xlabels),
+                   xticks=(eachindex(xlabels), xlabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -268,7 +268,7 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(xlabels), xlabels),
+                   xticks=(eachindex(xlabels), xlabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -323,7 +323,7 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
                    margins=20Plots.px,
                    legend=:topright,
                    label=rlabels[1],
-                   xticks=(1:length(xlabels), xlabels),
+                   xticks=(eachindex(xlabels), xlabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -380,7 +380,7 @@ function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", 
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(glabels), glabels),
+                   xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -431,7 +431,7 @@ function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(glabels), glabels),
+                   xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -478,7 +478,7 @@ function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xla
     p = Plots.plot(size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(glabels), glabels),
+                   xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -541,7 +541,7 @@ function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, x
     p = Plots.plot(size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(glabels), glabels),
+                   xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -949,7 +949,7 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int6
 
     p_topo = Vector{Plots.Plot{Plots.GRBackend}}()
 
-    for idx in 1:length(ic_idx)
+    for idx in eachindex(ic_idx)
         obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[idx], keep=true)
         p_tmp = plot_topo(obj_tmp, title="IC $(ic_idx[idx])", cb=cb, cb_label=cb_label, amethod=amethod, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, seg=seg, kwargs...)
         push!(p_topo, p_tmp)
@@ -1010,7 +1010,7 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matr
 
     p_topo = Vector{Plots.Plot{Plots.GRBackend}}()
 
-    for idx in 1:length(ic_idx)
+    for idx in eachindex(ic_idx)
         obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[idx], keep=true)
         p_tmp = plot_topo(obj_tmp, title="IC $(ic_idx[idx])", cb=cb, cb_label=cb_label, amethod=amethod, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, seg=seg, kwargs...)
         push!(p_topo, p_tmp)

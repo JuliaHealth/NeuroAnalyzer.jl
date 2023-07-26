@@ -60,7 +60,7 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
         file_name = replace(file_name, ".csv" => "_components.txt")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
-        for c_idx in 1:length(keys(obj.components))
+        for c_idx in eachindex(keys(obj.components))
             println(f, "component: $(keys(obj.components)[c_idx])")
             println(f, obj.components[c_idx])
             println(f, "---")
@@ -85,7 +85,7 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
     # HISTORY
     if history && length(obj.history) > 0
         file_name = replace(file_name, ".csv" => "_history.txt")
-        for c_idx in 1:length(history)
+        for c_idx in eachindex(history)
             println(f, obj.history[c_idx])
         end
     end

@@ -65,7 +65,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector
     if type isa Symbol
         _check_var(type, channel_types, "type")
     else
-        for idx in 1:length(type)
+        for idx in eachindex(type)
             _check_var(type[idx], channel_types, "type")
         end
     end
@@ -80,7 +80,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector
     else
         ch_idx = Vector{Int64}()
         for idx1 in 1:channel_n(obj)
-            for idx2 in 1:length(type)
+            for idx2 in eachindex(type)
                 lowercase(obj.header.recording[:channel_type][idx1]) == string(type[idx2]) && (push!(ch_idx, idx1))
             end
         end        
@@ -111,7 +111,7 @@ function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
 
     wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
     ch_idx = Int64[]
-    for idx in 1:length(obj.header.recording[:wavelength_index])
+    for idx in eachindex(obj.header.recording[:wavelength_index])
         obj.header.recording[:wavelength_index][idx] == wl_idx && push!(ch_idx, idx)
     end
 
@@ -484,7 +484,7 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::
     length(type) == size(data, 1) || throw(ArgumentError("Number of channel types and number of data channels must be equal."))
     length(unit) == size(data, 1) || throw(ArgumentError("Number of channel units and number of data channels must be equal."))
 
-    for idx in 1:length(type)
+    for idx in eachindex(type)
         type[idx] in channel_types || throw(ArgumentError("Unknown channel type $(type[idx])."))
     end
 

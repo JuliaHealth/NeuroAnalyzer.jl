@@ -73,9 +73,9 @@ function _a2df(annotations::Vector{String})
             end
         end
         all(isascii.(a_event)) == false && _info("Unicode labels were not converted.")
-        return DataFrame(:id=>string.(collect(1:length(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+        return DataFrame(:id=>string.(collect(eachindex(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
     else
-        for idx in 1:length(mrk)
+        for idx in eachindex(mrk)
             s = split(mrk[idx], "|")
             # drop the first column if it contains annotation number
             s[1][1] == '+' && s[2][1] == '+' && (s = s[2:end])
@@ -90,6 +90,6 @@ function _a2df(annotations::Vector{String})
             end
         end
         all(isascii.(a_event)) == false && _info("Unicode labels were not converted.")
-        return DataFrame(:id=>string.(collect(1:length(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+        return DataFrame(:id=>string.(collect(eachindex(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
     end
 end
