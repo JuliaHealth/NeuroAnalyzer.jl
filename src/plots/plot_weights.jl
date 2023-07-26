@@ -17,13 +17,13 @@ Plot weights at electrode positions.
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
-- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, weights::Vector{<:Real}=[], channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400, polar::Bool=true)
+function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, weights::Vector{<:Real}=[], channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400, cart::Bool=false)
 
     length(weights) > length(ch) && throw(ArgumentError("Number of weights must be ≤ number of channels to plot ($(length(ch)))."))
     length(weights) < 1 && throw(ArgumentError("weights must contain at least one value."))
@@ -46,7 +46,7 @@ function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
                    margins=-plot_size * Plots.px,
                    titlefontsize=plot_size ÷ 50)
 
-    if polar == true
+    if cart == false
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in 1:size(locs, 1)
@@ -111,14 +111,14 @@ Plot weights at electrode positions.
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `title::String=""`: plot title
-- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), weights::Vector{<:Real}, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", polar::Bool=true, kwargs...)
+function plot_weights(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), weights::Vector{<:Real}, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", cart::Bool=false, kwargs...)
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
@@ -128,7 +128,7 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
     _check_channels(obj_tmp, ch, Symbol(obj.header.recording[:data_type]))
     ch isa Int64 && throw(ArgumentError("≥ 2 channels are required."))
-    p = plot_weights(obj_tmp.locs, weights=weights, ch=ch, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details, polar=polar)
+    p = plot_weights(obj_tmp.locs, weights=weights, ch=ch, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details, cart=cart)
 
     Plots.plot!(p, title=title; kwargs)
 

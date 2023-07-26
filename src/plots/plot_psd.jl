@@ -581,14 +581,14 @@ Plot topographical map PSDs.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
-- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, polar::Bool=true, kwargs...)
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
 
     size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -635,7 +635,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
     marker_size = (150, 75)
     
     # get locations
-    if polar == true
+    if cart == false
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in 1:size(locs, 1)

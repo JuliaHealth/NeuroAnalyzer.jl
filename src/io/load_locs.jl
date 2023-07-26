@@ -30,7 +30,7 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: name of the file to load
-- `maximize::Bool=true`: maximize locations after importing
+- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
@@ -41,22 +41,25 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(obj.header.recording[:labels]) > 0 || throw(ArgumentError("OBJ does not contain labels, use add_labels() first."))
 
+    _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
+    _info("Nose direction is set at '+Y'.")
+
     if splitext(file_name)[2] == ".ced"
-        locs = import_locs_ced(file_name)
+        locs = import_locs_ced(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".elc"
-        locs = import_locs_elc(file_name)
+        locs = import_locs_elc(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".locs"
-        locs = import_locs_locs(file_name)
+        locs = import_locs_locs(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = import_locs_tsv(file_name)
+        locs = import_locs_tsv(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = import_locs_sfp(file_name)
+        locs = import_locs_sfp(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".csd"
-        locs = import_locs_csd(file_name)
+        locs = import_locs_csd(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".geo"
-        locs = import_locs_geo(file_name)
+        locs = import_locs_geo(file_name, maximize=maximize)
     elseif splitext(file_name)[2] == ".mat"
-        locs = import_locs_mat(file_name)
+        locs = import_locs_mat(file_name, maximize=maximize)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -100,8 +103,6 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
                              :loc_radius_sph=>loc_radius_sph[labels_idx],
                              :loc_theta_sph=>loc_theta_sph[labels_idx],
                              :loc_phi_sph=>loc_phi_sph[labels_idx])
-
-    maximize == true && locs_maximize!(obj_new.locs)
 
     # add entry to :history field
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")

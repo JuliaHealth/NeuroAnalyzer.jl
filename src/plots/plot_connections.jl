@@ -19,14 +19,14 @@ Plot weights at electrode positions.
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `title::String=""`: plot title
-- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", polar::Bool=true, kwargs...)
+function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", cart::Bool=false, kwargs...)
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
@@ -38,7 +38,7 @@ function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
     typeof(ch) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
-    p = plot_connections(obj_tmp.locs, connections=connections, ch=ch, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details, polar=polar)
+    p = plot_connections(obj_tmp.locs, connections=connections, ch=ch, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details, cart=cart)
 
     Plots.plot!(p, title=title; kwargs)
 
@@ -64,14 +64,14 @@ Plot connections between channels.
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
-- `polar::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, polar::Bool=true, kwargs...)
+function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, cart::Bool=false, kwargs...)
 
     size(connections, 1) == length(ch) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
@@ -91,7 +91,7 @@ function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRang
                    margins=-plot_size * Plots.px,
                    titlefontsize=plot_size ÷ 50)
 
-    if polar == true
+    if cart == false
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in 1:size(locs, 1)

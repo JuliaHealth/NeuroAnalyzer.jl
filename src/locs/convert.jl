@@ -34,14 +34,6 @@ function cart2pol(x::Real, y::Real)
     radius = round(hypot(x, y), digits=3)
     theta = round(atand(y, x), digits=3)
 
-    # q = _angle_quadrant(theta)
-    # q == 2 && (theta += 180)
-    # q == 3 && (theta += 180)
-    # q == 4 && (theta += 360)
-
-    # make theta positive - should not be required
-    # theta < 0 && (theta = 360 - abs(theta))
-
     return radius, theta
 
 end
@@ -63,7 +55,6 @@ Convert polar coordinates to Cartesian.
 """
 function pol2cart(radius::Real, theta::Real)
     
-    # theta = mod(theta, 360)
     x = round(radius * cosd(theta), digits=3)
     y = round(radius * sind(theta), digits=3)
 
@@ -79,8 +70,8 @@ Convert spherical coordinates to Cartesian.
 # Arguments
 
 - `radius::Real`: spherical radius, the distance from the origin to the point
-- `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-- `phi::Real`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
+- `phi::Real`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 
 # Returns
 
@@ -112,8 +103,8 @@ Convert spherical coordinates to Cartesian.
 # Returns
 
 - `radius::Float64`: spherical radius, the distance from the origin to the point
-- `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-- `phi::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
+- `phi::Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
 function cart2sph(x::Real, y::Real, z::Real)
     
@@ -122,10 +113,8 @@ function cart2sph(x::Real, y::Real, z::Real)
     # theta = tan^-1(x, y)
     theta = round(atand(y, x), digits=3)
     # phi = cos^-1(z / sqrt(x^2 + y^2 + z^2))
-    phi = 90 - round(acosd(z / radius), digits=3)
-
-    # make theta positive - should not be required
-    # theta < 0 && (theta = 360 - abs(theta))
+    # phi = round(90 - acosd(z / radius), digits=3)
+    phi = round(acosd(z / radius), digits=3)
     
     return radius, theta, phi
 
@@ -139,8 +128,8 @@ Convert spherical coordinates to polar.
 # Arguments
 
 - `radius::Real`: spherical radius, the distance from the origin to the point
-- `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-- `phi::Real`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
+- `phi::Real`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 
 # Returns
 
