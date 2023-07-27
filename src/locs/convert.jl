@@ -162,8 +162,8 @@ function locs_pol2cart(locs::DataFrame)
     locs_new = deepcopy(locs)
 
     for idx in 1:nrow(locs)
-        r = locs_new[idx, :loc_radius_sph]
-        t = locs_new[idx, :loc_theta_sph]
+        r = locs_new[idx, :loc_radius]
+        t = locs_new[idx, :loc_theta]
         x, y = pol2cart(r, t)
         locs_new[idx, :loc_x] = x
         locs_new[idx, :loc_y] = y
