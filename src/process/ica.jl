@@ -38,7 +38,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     tol = [0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]
     M = nothing
 
-    _info("The input signal should be cleaned from major artifacts and HP filtered at 1-2 Hz prior to ICA decomposition.")
+    _warn("The input signal should be cleaned from major artifacts and HP filtered at 1-2 Hz prior to ICA decomposition.")
     _info("Attempting to calculate $n components.")
     _info("Training will end when W change = $(tol[end]) or after $(iter * length(tol)) steps.")
     _info("Data will be demeaned and pre-whitened.")
@@ -70,7 +70,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     end
 
     if M === nothing
-        _info("The target sources could not be find.")
+        _warn("The target sources could not be find.")
         return nothing
     end
     
@@ -112,7 +112,7 @@ function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
     _check_channels(obj, ch)
     epoch_n(obj) > 1 && throw(ArgumentError("ica_decompose() should be applied to a continuous signal."))
 
-    signal_len(obj) / sr(obj) <= 10 && _info("For ICA decomposition the signal length should be >10 seconds.")
+    signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
     ic, ic_mw = @views ica_decompose(obj.data[ch, :, 1], n=n, iter=iter, f=f)
 

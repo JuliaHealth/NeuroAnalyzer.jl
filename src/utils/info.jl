@@ -392,11 +392,11 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
     band === :gamma_higher && (bf = (80.0, 150.0))
     
     if bf[1] > sr(obj) / 2
-        _info("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(sr(obj) / 2 - 0.2), $(sr(obj) / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(sr(obj) / 2 - 0.2), $(sr(obj) / 2 - 0.1))")
         bf = (sr(obj) / 2 - 0.2, sr(obj) / 2 - 0.1)
     end
     if bf[2] > sr(obj) / 2
-        _info("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(sr(obj) / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(sr(obj) / 2 - 0.1))")
         bf = (bf[1], sr(obj) / 2 - 0.1)
     end
 
@@ -453,11 +453,11 @@ function band_frq(fs::Int64; band::Symbol)
     band === :gamma_higher && (bf = (80.0, 150.0))
     
     if bf[1] > fs / 2
-        _info("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1))")
         bf = (fs / 2 - 0.2, fs / 2 - 0.1)
     end
     if bf[2] > fs / 2
-        _info("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(fs / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(fs / 2 - 0.1))")
         bf = (bf[1], fs / 2 - 0.1)
     end
 

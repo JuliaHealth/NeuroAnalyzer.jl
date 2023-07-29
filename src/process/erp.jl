@@ -17,7 +17,7 @@ Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_typ
 """
 function erp(obj::NeuroAnalyzer.NEURO; bl::Real=0)
 
-    channel_n(obj) > length(signal_channels(obj)) && _info("Non-signal channels will be removed.")
+    channel_n(obj) > length(signal_channels(obj)) && _warn("Non-signal channels will be removed.")
 
     obj_new = keep_channel(obj, ch=signal_channels(obj))
     obj_new.data = cat(mean(obj_new.data, dims=3)[:, :, :], obj_new.data, dims=3)

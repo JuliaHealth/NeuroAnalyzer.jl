@@ -277,7 +277,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            _info("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
+            _warn("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
             s_p, s_f = psd(signal, fs=fs, norm=false, mt=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
@@ -465,7 +465,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            _info("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
+            _warn("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
             s_p, s_f = psd(signal, fs=fs, norm=false, mt=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)

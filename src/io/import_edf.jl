@@ -60,9 +60,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    if data_records_duration == 0
-        _info("This file contains only annotations, use import_edf_annotations().")
-    end
+    data_records_duration == 0 && throw(ArgumentError("This file contains only annotations, use import_edf_annotations()."))
     ch_n  = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)

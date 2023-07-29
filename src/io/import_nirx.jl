@@ -277,10 +277,10 @@ function import_nirx(file_name::String)
     pos3d = hcat(src_pos3d, detector_pos3d)
     if src_pos3d === nothing
         if src_pos2d === nothing
-            _info("The data does not contain 3D nor 2D location information for the optode positions.")
+            _warn("The data does not contain 3D nor 2D location information for the optode positions.")
             x = zeros(length(opt_labels))
         else
-            _info("The data only contains 2D location information for the optode positions.")
+            _warn("The data only contains 2D location information for the optode positions.")
             x = pos2d[1, :]
         end
     else

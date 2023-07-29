@@ -133,7 +133,7 @@ Upsample.
 """
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
-    new_sr / sr(obj) != new_sr ÷ sr(obj) && _info("New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+    new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn("New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
     
     obj_new = deepcopy(obj)
 
@@ -191,9 +191,9 @@ Downsample.
 """
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
-    new_sr < sr(obj) && _info("To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz).")
+    new_sr < sr(obj) && _warn("To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz).")
 
-    new_sr / sr(obj) != new_sr ÷ sr(obj) && _info("New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+    new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn("New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
 
     obj_new = deepcopy(obj)
 

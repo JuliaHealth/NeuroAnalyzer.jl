@@ -20,7 +20,7 @@ function _mtime(f::String; n::Int64=10)
 end
 
 function _delay(n::Real, l::Real)
-    n < 0.003 && _info("Delay will not be accurate.")
+    n < 0.003 && _warn("For n < 0.003 delay will not be accurate.")
     l < 0 && throw(ArgumentError("l must be ≥ 0."))
     if l < n
         n = n - l

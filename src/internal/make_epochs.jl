@@ -43,7 +43,7 @@ end
 function _make_epochs_bymarkers(s::Array{<:Real, 3}; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)
 
     if size(s, 3) > 1
-        _info("Signal has already been epoched, parts of the signal might have been removed.")
+        _warn("Signal has already been epoched, parts of the signal might have been removed.")
         s = reshape(s, ch_n, (size(s, 2) * size(s, 3)), 1)
     end
 

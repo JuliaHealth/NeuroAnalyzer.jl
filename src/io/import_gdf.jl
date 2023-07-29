@@ -46,7 +46,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     file_type_ver = parse(Float64, String(Char.(header[5:8])))
     file_type != "GDF" && throw(ArgumentError("File $file_name is not a GDF file."))
 
-    (file_type_ver == 1.25 || file_type_ver == 2.20) || _info("GDF versions other than 1.25 and 2.20 may not be supported correctly. ")
+    (file_type_ver == 1.25 || file_type_ver == 2.20) || _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly. ")
 
     if file_type_ver < 2.00
 
@@ -228,28 +228,28 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
         physical_minimum = Float64[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 8)
             push!(physical_minimum, reinterpret(Float64, buf)[1])
         end
 
         physical_maximum = Float64[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 8)
             push!(physical_maximum, reinterpret(Float64, buf)[1])
         end
 
         digital_minimum = Float64[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 8)
             push!(digital_minimum, reinterpret(Float64, buf)[1])
         end
 
         digital_maximum = Float64[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 8)
             push!(digital_maximum, reinterpret(Float64, buf)[1])
         end
@@ -257,13 +257,13 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         # obsolete
         prefiltering = String[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 64)
             push!(prefiltering, replace(strip(String(Char.(buf))), '\0'=>""))
         end
 
         time_offset = Float32[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(time_offset, reinterpret(Int32, buf)[1])
         end
@@ -271,7 +271,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
         prefiltering_lp = Float32[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(prefiltering_lp, reinterpret(Float32, buf)[1])
         end
@@ -279,7 +279,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
         prefiltering_hp = Float32[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(prefiltering_hp, reinterpret(Float32, buf)[1])
         end
@@ -287,7 +287,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
         prefiltering_bs = Float32[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(prefiltering_bs, reinterpret(Float32, buf)[1])
         end
@@ -295,14 +295,14 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
         samples_per_datarecord = Int32[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(samples_per_datarecord, reinterpret(Int32, buf)[1])
         end
 
         gdf_type = Int32[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(gdf_type, reinterpret(Int32, buf)[1])
         end
@@ -311,7 +311,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         loc_y = Float32[]
         loc_z = Float32[]
         buf = UInt8[]
-        for idx in 1:ch_n
+        for _ in 1:ch_n
             readbytes!(fid, buf, 4)
             push!(loc_x, reinterpret(Float32, buf)[1])
             readbytes!(fid, buf, 4)
@@ -338,7 +338,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
             imp = round.(imp, digits=3)
         else
             buf = UInt8[]
-            for idx in 1:ch_n
+            for _ in 1:ch_n
                 readbytes!(fid, buf, 1)
                 push!(imp, reinterpret(Int32, buf)[1])
             end

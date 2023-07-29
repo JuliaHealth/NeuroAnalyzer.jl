@@ -290,7 +290,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     ep_n = epoch_n(obj)
     fs = sr(obj)
 
-    (ftype === :hp && ep_n > 1) && _info("HP filter should be applied to a continuous signal.")
+    (ftype === :hp && ep_n > 1) && _warn("HP filter should be applied to a continuous signal.")
 
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")
@@ -366,7 +366,7 @@ For `:poly` filter `order` and `window` have to be set experimentally, recommend
 function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     if preview == true
-        _info("When `preview=true`, signal is not being filtered.")
+        _warn("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)

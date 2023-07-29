@@ -39,15 +39,15 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
     if type !== :perm
         if (pks < alpha && type === :auto) || type === :p
             if paired == true
-                verbose == true && @info "Using one sample T-test."
+                verbose == true && _info("Using one sample T-test.")
                 t = OneSampleTTest(s1, s2)
             else
                 pf = pvalue(VarianceFTest(s1, s2))
                 if pf < alpha
-                    verbose == true && @info "Using equal variance two samples T-test."
+                    verbose == true && _info("Using equal variance two samples T-test.")
                     t = EqualVarianceTTest(s1, s2)
                 else
-                    verbose == true && @info "Using unequal variance two samples T-test."
+                    verbose == true && _info("Using unequal variance two samples T-test.")
                     t = UnequalVarianceTTest(s1, s2)
                 end
             end
@@ -57,18 +57,18 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             tn = "t"
         elseif (pks >= alpha && type === :auto) || type === :np
             if paired == true
-                if exact == false
-                    verbose == true && @info "Using signed rank (Wilcoxon) test."
-                    t = SignedRankTest(s1, s2)
-                else
-                    verbose == true && @info "Using exact signed rank (Wilcoxon) test."
+                if exact == true
+                    verbose == true && _info("Using exact signed rank (Wilcoxon) test.")
                     t = ExactSignedRankTest(s1, s2)
+                else
+                    verbose == true && _info("Using signed rank (Wilcoxon) test.")
+                    t = SignedRankTest(s1, s2)
                 end
                 ts = t.W
                 df = t.n - 1
                 tn = "W"
             else
-                verbose == true && @info "Using Mann-Whitney U test."
+                verbose == true && _info("Using Mann-Whitney U test.")
                 t = MannWhitneyUTest(s1, s2)
                 ts = t.U
                 df = length(s1) + length(s2) - 2
@@ -86,8 +86,8 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         p = randperm(n1 + n2)
         g = g[p]
         g_idx = g_idx[p]
-        verbose == true && @info "Group 1 mean: $(round(mean(s1), digits=3))"
-        verbose == true && @info "Group 2 mean: $(round(mean(s2), digits=3))"
+        verbose == true && _info("Group 1 mean: $(round(mean(s1), digits=3))")
+        verbose == true && _info("Group 2 mean: $(round(mean(s2), digits=3))")
         perm_diff = zeros(nperm)
 
         # initialize progress bar
@@ -112,7 +112,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         return (t=t, ts=(ts, tn), tc=tc, df=df, p=p)
     else
         if pks < alpha
-            verbose == true && @info "H0 has non-normal distribution; p-value for KS-test: $(round(pks, digits=3))"
+            verbose == true && _info("H0 has non-normal distribution; p-value for KS-test: $(round(pks, digits=3))")
             p_one_tailed = sum(perm_diff .> observed_difference) / nperm
         else
             z = (observed_difference - mean(perm_diff)) / std(perm_diff)

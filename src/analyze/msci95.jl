@@ -229,10 +229,9 @@ Named tuple containing:
 - `su::Array{Float64}`: upper 95% CI
 - `sl::Array{Float64}`: lower 95% CI
 """
-function msci95(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:normal)
+function msci95(s1::AbstractArray, s2::AbstractArray)
 
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
-    _check_var(method, [:normal, :boot], "method")
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)

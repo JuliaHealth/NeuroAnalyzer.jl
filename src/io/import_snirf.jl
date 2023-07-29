@@ -165,7 +165,7 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     data_n -= 1
-    data_n > 1 && _info("Multiple data SNIRF files are not supported yet.")
+    data_n > 1 && _warn("Multiple data SNIRF files are not supported yet.")
 
     d_id = "data1"
     
@@ -350,7 +350,7 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     stim_n -= 1
-    stim_n > 1 && _info("Multiple stimulus SNIRF files are not supported yet.")
+    stim_n > 1 && _warn("Multiple stimulus SNIRF files are not supported yet.")
 
     s_id = "stim1"
     stim_data = nothing
@@ -389,7 +389,7 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     aux_n -= 1
-    aux_n > 1 && _info("Multiple aux SNIRF files are not supported yet.")
+    aux_n > 1 && _warn("Multiple aux SNIRF files are not supported yet.")
 
     a_id = "aux$aux_n"
     aux_data = nothing
@@ -428,10 +428,10 @@ function import_snirf(file_name::String; n::Int64=0)
     pos3d = hcat(src_pos3d, detector_pos3d)
     if src_pos3d === nothing
         if src_pos2d === nothing
-            _info("The data does not contain 3D nor 2D location information for the optode positions.")
+            _warn("The data does not contain 3D nor 2D location information for the optode positions.")
             x = zeros(length(opt_labels))
         else
-            _info("The data only contains 2D location information for the optode positions.")
+            _warn("The data only contains 2D location information for the optode positions.")
             x = pos2d[1, :]
         end
     else
