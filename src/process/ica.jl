@@ -39,9 +39,9 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     M = nothing
 
     _warn("The input signal should be cleaned from major artifacts and HP filtered at 1-2 Hz prior to ICA decomposition.")
-    _info("Attempting to calculate $n components.")
-    _info("Training will end when W change = $(tol[end]) or after $(iter * length(tol)) steps.")
-    _info("Data will be demeaned and pre-whitened.")
+    _info("Attempting to calculate $n components")
+    _info("Training will end when W change = $(tol[end]) or after $(iter * length(tol)) steps")
+    _info("Data will be demeaned and pre-whitened")
 
     final_tol = nothing
 

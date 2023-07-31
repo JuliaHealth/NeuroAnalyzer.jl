@@ -34,7 +34,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, f_labels)
 
-    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) not found in the locs object.")
+    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) not found in the LOCS object")
     
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)

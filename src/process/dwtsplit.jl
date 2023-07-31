@@ -24,7 +24,7 @@ function dwtsplit(obj::NeuroAnalyzer.NEURO; ch::Int64, wt::T, type::Symbol, n::I
     n -= 1
     if n == -1
         n = maxtransformlevels(obj.data[1, :, 1])
-        _info("Calculating DWT using maximum level: $n.")
+        _info("Calculating DWT using maximum level: $n")
     end
     n < 2 && throw(ArgumentError("n must be ≥ 2."))
 

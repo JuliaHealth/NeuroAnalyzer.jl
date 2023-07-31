@@ -108,10 +108,10 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
         # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
         eps = _s2epoch(obj, seg[1], seg[2])
         if inverse == false
-            _info("Removing epochs: $eps.")
+            _info("Removing epochs: $eps")
             obj_new = delete_epoch(obj, ep=eps)
         else
-            _info("Keeping epochs: $eps.")
+            _info("Keeping epochs: $eps")
             obj_new = keep_epoch(obj, ep=eps)
         end
     else
@@ -125,7 +125,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
             if epoch_len(obj) <= signal_len(obj_new)
                 epoch!(obj_new, ep_len=epoch_len(obj) / sr(obj))
             else
-                _info("Cannot apply original epoch length, returning single-epoch OBJ.")
+                _warn("Cannot apply original epoch length, returning single-epoch OBJ.")
             end
         end
         

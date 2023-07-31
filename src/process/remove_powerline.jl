@@ -42,7 +42,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 
     if method === :iir
 
-        _info("Removing power line noise at $pl_frq Hz and its peaks.")
+        _info("Removing power line noise at $pl_frq Hz and its peaks")
 
         bw_values = collect(0:q:20.0)[2:end]
 

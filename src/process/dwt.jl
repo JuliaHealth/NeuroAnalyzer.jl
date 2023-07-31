@@ -27,7 +27,7 @@ function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <
 
     if l == 0
         l = maxtransformlevels(s)
-        _info("Calculating DWT using maximum level: $l.")
+        _info("Calculating DWT using maximum level: $l")
     end
 
     if type === :sdwt
@@ -67,7 +67,7 @@ function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0) where {T <:
 
     if l == 0
         l = maxtransformlevels(s[1, :, 1])
-        _info("Calculating DWT using maximum level: $l.")
+        _info("Calculating DWT using maximum level: $l")
     end
 
     ch_n, ep_len, ep_n = size(s)

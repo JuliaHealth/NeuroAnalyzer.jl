@@ -233,7 +233,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
         data .*= gain
 
-        _info("Channels upsampled to $max_sampling_rate Hz.")
+        _info("Channels upsampled to $max_sampling_rate Hz")
         sampling_rate = max_sampling_rate
 
         close(fid)

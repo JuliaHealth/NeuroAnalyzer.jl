@@ -42,7 +42,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     length(obj.header.recording[:labels]) > 0 || throw(ArgumentError("OBJ does not contain labels, use add_labels() first."))
 
     _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
-    _info("Nose direction is set at '+Y'.")
+    _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
         locs = import_locs_ced(file_name, maximize=maximize)
@@ -79,7 +79,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && _info("Labels: $(uppercase.(no_match)) not found in $file_name.")
+    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) not found in $file_name")
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)

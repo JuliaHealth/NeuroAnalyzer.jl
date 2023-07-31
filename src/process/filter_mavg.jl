@@ -99,8 +99,8 @@ function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 
     _check_channels(obj, ch)
 
-    _info("Window length: $(2 * k + 1) samples.")
-    _info("Approximate cut-off frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz.")
+    _info("Window length: $(2 * k + 1) samples")
+    _info("Approximate cut-off frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_mavg(obj.data[ch, :, :], k=k, t=t, window=window)

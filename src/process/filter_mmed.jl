@@ -95,7 +95,7 @@ function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 
     _check_channels(obj, ch)
 
-    _info("Window length: $(2 * k + 1) samples.")
+    _info("Window length: $(2 * k + 1) samples")
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_mmed(obj.data[ch, :, :], k=k, t=t, window=window)

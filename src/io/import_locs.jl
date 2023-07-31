@@ -37,7 +37,7 @@ function import_locs(file_name::String; maximize::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
-    _info("Nose direction is set at '+Y'.")
+    _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
         locs = import_locs_ced(file_name, maximize=maximize)

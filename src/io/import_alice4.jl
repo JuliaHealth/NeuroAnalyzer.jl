@@ -220,7 +220,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
             end
         end
 
-        _info("Channels upsampled to $max_sampling_rate Hz.")
+        _info("Channels upsampled to $max_sampling_rate Hz")
         sampling_rate = max_sampling_rate
         close(fid)
     end

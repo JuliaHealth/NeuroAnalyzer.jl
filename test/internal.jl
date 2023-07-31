@@ -67,12 +67,12 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test NeuroAnalyzer._has_locs(e10) == false
 xn, yn = NeuroAnalyzer._locnorm(x, y)
-@test xn[1] == 0.30930930930930933
-@test yn[1] == 0.9509509509509508
+@test xn[1] == 0.03551775887943953
+@test yn[1] == 1.0
 xn, yn, zn = NeuroAnalyzer._locnorm(x, y, z)
-@test xn[1] == 0.30865432716358177
-@test yn[1] == 0.9499749874937466
-@test zn[1] == -0.035517758879439754
+@test xn[1] == 0.03551775887943953
+@test yn[1] == 1.0
+@test zn[1] == 0.0005002501250623848
 locs[1, :loc_theta] = 108.1239
 locs[1, :loc_theta] = 108.1239
 locs = NeuroAnalyzer._round_locs(locs)
