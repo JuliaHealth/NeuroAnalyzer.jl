@@ -20,7 +20,7 @@ Zeros-padded FFT.
 """
 function fft0(x::AbstractVector, n::Int64=0)
 
-    n < 0 && throw(ArgumentError("n must be ≥ 0."))
+    @assert n >=0 "n must be ≥ 0."
 
     if CUDA.functional() && use_cuda
         # _free_gpumem()
@@ -57,7 +57,7 @@ IFFT of zero-padded vector.
 """
 function ifft0(x::AbstractVector, n::Int64=0)
 
-    n < 0 && throw(ArgumentError("n must be ≥ 0."))
+    @assert n >= 0 "n must be ≥ 0."
 
     if CUDA.functional() && use_cuda
         # _free_gpumem()
@@ -130,7 +130,7 @@ Named tuple containing:
 """
 function dft(signal::AbstractVector; fs::Int64, pad::Int64=0)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
 
     ft = fft0(signal, pad)
 

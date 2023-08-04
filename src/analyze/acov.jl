@@ -102,9 +102,9 @@ Named tuple containing:
 """
 function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), lag::Real=1, demean::Bool=true)
 
-    lag > obj.epoch_time[end] && throw(ArgumentError("lag must be ≤ $(obj.epoch_time[end])."))
+    @assert lag <= obj.epoch_time[end] "lag must be ≤ $(obj.epoch_time[end])."
     _check_channels(obj, ch)
-    lag < 0 && throw(ArgumentError("lag must be ≥ 0."))
+    @assert lag >= 0 "lag must be ≥ 0."
 
     l = vsearch(lag, obj.time_pts)
     ac = @views acov(obj.data[ch, :, :], l=(l - 1), demean=demean)

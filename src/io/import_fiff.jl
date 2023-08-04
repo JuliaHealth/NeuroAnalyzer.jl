@@ -20,7 +20,7 @@ Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. Mar
 """
 function import_fiff(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
 
     fid, fiff_block = _create_fiff_block(file_name)
 
@@ -117,7 +117,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     unit_mul = Int64.(_extract_struct(channels_struct, 20))
     channel_types = _extract_struct(channels_struct, 3)
     1 in channel_types && (data_type = "meg")
-    data_type != "meg" && throw(ArgumentError("Could not identify signal type as MEG."))
+    @assert data_type == "meg" "Could not identify signal type as MEG."
     2 in channel_types && (data_type = "eeg")
     # identify channel types
     channel_type = _fiff_channel_type(channel_types)
@@ -151,7 +151,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     # data
     # buffer containing measurement data
     data_buffer = _read_fiff_tag(fid, fiff_block, fiff_data_buffer)
-    length(data_buffer) == 0 && throw(ArgumentError("Only raw data import is supported now."))
+    @assert length(data_buffer) > 0 "Only raw data import is supported now."
     # data skip in buffers
     data_skip = _read_fiff_tag(fid, fiff_block, fiff_data_skip)
     data_skip !== nothing && _info("data_skip is not supported yet.")

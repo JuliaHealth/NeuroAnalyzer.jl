@@ -17,7 +17,7 @@ Detect heart rate variability (HRV). Requires ECG channel (which will be automat
 """
 function hrv_detect(obj::NeuroAnalyzer.NEURO)
 
-    "ecg" in obj.header.recording[:channel_type] || throw(ArgumentError("OBJ does not contain ECG channel."))
+    @assert "ecg" in obj.header.recording[:channel_type] "OBJ does not contain ECG channel."
     ch = findfirst(obj.header.recording[:channel_type] .== "ecg")
     _info("ECG channel found: $ch")
     ecg = eeg.data[ch, :, :][:]

@@ -28,7 +28,7 @@ Plot PSD (power spectrum density).
 """
 function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    length(sp) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     frq_lim = tuple_order(frq_lim)
@@ -118,7 +118,7 @@ Plot multi-channel PSD (power spectrum density).
 function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ch_n = size(sp, 1)
-    size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     frq_lim = tuple_order(frq_lim)
@@ -240,7 +240,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 """
 function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
 
     frq_lim = tuple_order(frq_lim)
@@ -352,7 +352,7 @@ Butterfly PSD plot.
 """
 function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     frq_lim = tuple_order(frq_lim)
@@ -454,7 +454,7 @@ Plot 3-d waterfall PSD plot.
 function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
 
     _check_var(variant, [:w, :s], "variant")
-    size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     frq_lim = tuple_order(frq_lim)
@@ -590,10 +590,10 @@ Plot topographical map PSDs.
 """
 function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
 
-    size(sp, 2) == length(sf) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
-    length(ch) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+    @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
     frq_lim = tuple_order(frq_lim)
 
@@ -713,7 +713,7 @@ Plot power spectrum density.
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=8`: number of Slepian tapers
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: x-axis limit
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
@@ -729,22 +729,22 @@ Plot power spectrum density.
 
 - `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-    ref !== :abs && method === :mw && throw(ArgumentError("For relative PSD, method must be :welch or :mt."))
+    ref !== :abs && @assert method !== :mw "For relative PSD, method must be :welch or :mt."
 
     _check_channels(obj, ch)
 
-    seg[1] == seg[2] && throw(ArgumentError("Signal is too short for analysis."))
+    @assert seg[1] != seg[2] "Signal is too short for analysis."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
-        NeuroAnalyzer._check_segment(obj, seg)
+        _check_segment(obj, seg)
     end
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
@@ -785,7 +785,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be ≥ 0 and ≤ $(fs / 2)."
 
     # # get time vector
     # _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
@@ -836,9 +836,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         ch_t = obj.header.recording[:channel_type]
         if length(ch) > 1
             ch_t_uni = unique(ch_t[ch])
-            length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
+            @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
         end
-        # ndims(sp) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
         if ndims(sp) == 1
             p = plot_psd(sf,
                          sp,
@@ -866,8 +865,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :butterfly
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
-        ndims(sp) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
         title = replace(title, "channel" => "channels")
         p = plot_psd_butterfly(sf,
                                sp,
@@ -883,8 +882,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :mean
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
-        ndims(sp) < 2 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert ndims(sp) >= 2 "For type=:mean plot the signal must contain ≥ 2 channels."
         title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
         title = replace(title, "channel" => "averaged channels")
         p = plot_psd_avg(sf,
@@ -900,8 +899,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :w3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
-        ndims(sp) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
         zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
@@ -922,8 +921,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
-        ndims(sp) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
         zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
@@ -944,8 +943,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :topo
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
-        _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available."))
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert _has_locs(obj) "Electrode locations not available."
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
         xlabel == "default" && (xlabel = "")
         ylabel == "default" && (ylabel = "")
@@ -993,7 +992,7 @@ Plot power spectrum density of embedded or external component.
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=8`: number of Slepian tapers
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: x-axis limit
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: x-axis limit
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
@@ -1010,15 +1009,15 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-    ref !== :abs && method === :mw && throw(ArgumentError("For relative PSD, method must be :welch or :mt."))
+    ref !== :abs && @assert method !== :mw "For relative PSD, method must be :welch or :mt."
 
-    seg[1] == seg[2] && throw(ArgumentError("Signal is too short for analysis."))
+    @assert seg[1] != seg[2] "Signal is too short for analysis."
     
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -1054,7 +1053,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be ≥ 0 and ≤ $(fs / 2)."
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -1107,7 +1106,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     end
 
     if type === :normal
-        ndims(sp) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 c_idx."))
+        @assert ndims(sp) == 1 "For type=:normal the signal must contain 1 c_idx."
         p = plot_psd(sf,
                      sp,
                      xlabel=xlabel,
@@ -1119,7 +1118,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                      mono=mono;
                      kwargs...)
     elseif type === :butterfly
-        ndims(sp) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 c_idxs."))
+        @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 c_idxs."
         title = replace(title, "component" => "components")
         p = plot_psd_butterfly(sf,
                                sp,
@@ -1133,7 +1132,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                                mono=mono;
                                kwargs...)
     elseif type === :mean
-        ndims(sp) < 2 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 c_idxs."))
+        @assert ndims(sp) >= 2 "For type=:mean plot the signal must contain ≥ 2 c_idxs."
         title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
         title = replace(title, "component" => "averaged components")
         p = plot_psd_avg(sf,
@@ -1147,7 +1146,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                          mono=mono;
                          kwargs...)
     elseif type === :w3d
-        ndims(sp) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
         zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
@@ -1166,7 +1165,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                         variant=:w;
                         kwargs...)
     elseif type === :s3d
-        ndims(sp) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
         zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")

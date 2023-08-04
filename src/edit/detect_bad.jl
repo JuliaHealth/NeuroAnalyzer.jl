@@ -34,8 +34,8 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p], "method")
     end
 
-    p < 0 || p > 1 && throw(ArgumentError("p must in [0.0, 1.0]"))
-    tc < 0 || tc > 1 && throw(ArgumentError("tc must in [0.0, 1.0]"))
+    @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]"
+    @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]"
 
     _check_channels(obj, ch)
     ch_n = length(ch)
@@ -46,7 +46,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     if :flat in method
         _info("Using :flat method")
-        w >= size(obj.data, 2) && throw(ArgumentError("w must be < $(size(obj.data, 2))"))
+        @assert w < size(obj.data, 2) "w must be < $(size(obj.data, 2))"
         @inbounds @simd for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)

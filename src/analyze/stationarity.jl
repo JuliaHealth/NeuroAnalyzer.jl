@@ -40,8 +40,8 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 """
 function stationarity_mean(s::AbstractVector; window::Int64)
 
-    window < 1 && throw(ArgumentError("window must be ≥ 1."))
-    window > length(s) && throw(ArgumentError("window must be ≤ $(length(s))."))
+    @assert window >= 1 "window must be ≥ 1."
+    @assert window <= length(s) "window must be ≤ $(length(s))."
 
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
@@ -68,8 +68,8 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 """
 function stationarity_var(s::AbstractVector; window::Int64)
     
-    window < 1 && throw(ArgumentError("window must be ≥ 1."))
-    window > length(s) && throw(ArgumentError("window must be ≤ $(length(s))."))
+    @assert window >= 1 "window must be ≥ 1."
+    @assert window <= length(s) "window must be ≤ $(length(s))."
 
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
@@ -104,8 +104,8 @@ Calculate stationarity.
 function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), window::Int64=10, method::Symbol=:hilbert)
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
-    window < 1 && throw(ArgumentError("window must be ≥ 1."))
-    window > epoch_len(obj) && throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
+    @assert window >= 1 "window must be ≥ 1."
+    @assert window <= epoch_len(obj) "window must be ≤ $(epoch_len(obj))."
 
     ch_n = length(ch)
     ep_n = epoch_n(obj)
@@ -151,7 +151,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
     if method === :cov
 
-        ch_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
+        @assert ch_n >= 2 "For :cov method, number of channels must be ≥ 2."
         
         # number of time windows per epoch
         window_n = epoch_len(obj)

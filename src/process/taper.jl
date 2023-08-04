@@ -17,7 +17,7 @@ Taper the signal.
 """
 function taper(signal::AbstractVector; t::Union{AbstractVector, Vector{ComplexF64}})
 
-    length(t) == length(signal) || throw(ArgumentError("Taper and signal lengths must be equal."))
+    @assert length(t) == length(signal) "Taper and signal lengths must be equal."
 
     return signal .* t
 

@@ -26,8 +26,8 @@ https://www.biosemi.com/faq/file_format.htm
 """
 function import_bdf(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".bdf" || throw(ArgumentError("This is not a BDF file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] == ".bdf" "This is not BDF file."
 
     file_type = ""
 
@@ -44,7 +44,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     file_type = Int(header[1])
     file_type == 255 && (file_type = "BDF")
-    (file_type != "BDF" && strip(header[3:9]) !== "BIOSEMI") && throw(ArgumentError("File $file_name is not a BDF file."))
+    file_type == "BDF" && @assert strip(header[3:9]) == "BIOSEMI" "File $file_name is not BDF file."
 
     patient = strip(header[10:89])
     recording = strip(header[90:169])
@@ -52,7 +52,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     recording_time = header[178:185]
     data_offset = parse(Int, strip(header[186:192]))
     reserved  = strip(header[193:236])
-    reserved == "BDF+D" && throw(ArgumentError("BDF+D format (interrupted recordings) is not supported yet."))
+    @assert reserved != "BDF+D" "BDF+D format (interrupted recordings) is not supported yet."
     reserved == "BDF+C" && (file_type = "BDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))

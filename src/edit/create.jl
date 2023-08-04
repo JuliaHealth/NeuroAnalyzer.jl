@@ -92,8 +92,8 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 """
 function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)
 
-    length(obj.data) == 0 && throw(ArgumentError("OBJ does not contain data."))
-    length(obj.time_pts) == 0 || throw(ArgumentError("OBJ already has time points."))
+    @assert length(obj.data) > 0 "OBJ does not contain data."
+    @assert length(obj.time_pts) == 0 "OBJ already has time points."
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:sampling_rate] = fs

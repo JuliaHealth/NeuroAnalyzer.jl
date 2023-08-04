@@ -17,7 +17,7 @@ Find peaks.
 """
 function findpeaks(signal::AbstractVector; d::Int64=32)
 
-    d < 1 && throw(ArgumentError("d must be ≥ 1."))
+    @assert d >= 1 "d must be ≥ 1."
     
     return findpeaks1d(signal, distance=d)[1]
     

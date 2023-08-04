@@ -57,7 +57,7 @@ Calculate weighted mean.
 """
 function meanw(x::AbstractVector, w::AbstractVector)
 
-    length(x) == length(w) || throw(ArgumentError("Weights and values vectors must have the same length."))
+    @assert length(x) == length(w) "Weights and values vectors must have the same length."
 
     return length(x) / sum(1 ./ x)
     

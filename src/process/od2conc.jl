@@ -20,9 +20,9 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
 
     _check_channels(obj, ch)
     _check_datatype(obj, :nirs)
-    length(get_channel_bytype(obj, type=:nirs_od)) == 0 && throw(ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."))
+    @assert length(get_channel_bytype(obj, type=:nirs_od)) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     _check_channels(get_channel_bytype(obj, type=:nirs_od), ch)
-    length(ppf) == length(obj.header.recording[:wavelengths]) || throw(ArgumentError("ppf length does not correspond to the number of wavelengths."))
+    @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
 
     obj_new = deepcopy(obj)
 

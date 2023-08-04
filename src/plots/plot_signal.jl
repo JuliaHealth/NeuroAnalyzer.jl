@@ -128,7 +128,7 @@ Plot amplitude of single- or multi-channel `s`.
 """
 function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractVector, AbstractArray}, bad::Vector{Bool}; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, units::String="", kwargs...)
 
-    length(bad) == size(s, 1) || throw(ArgumentError("Length of bad channels vector and number of channels must be equal."))
+    @assert length(bad) == size(s, 1) "Length of bad channels vector and number of channels must be equal."
 
     # convert single-channel signal to single-row matrix
     ndims(s) == 1 && (s = reshape(s, 1, length(s)))
@@ -408,7 +408,7 @@ Plot amplitude of single- or multi-channel `s1` and `s2`.
 """
 function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{AbstractVector, AbstractArray}, s2::Union{AbstractVector, AbstractArray}; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, units::String="", kwargs...)
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     # convert single-channel signal to single-row matrix
     ndims(s1) == 1 && (s1 = reshape(s1, 1, length(s1)))
@@ -733,8 +733,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             end
         else
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Bad channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-            length(ch) > size(bad, 1) && throw(ArgumentError("Number of channels cannot be larger than number of bad channels rows."))
-            ep > size(bad, 2) && throw(ArgumentError("Epoch number cannot be larger than number of bad channels columns."))
+            @assert length(ch) <= size(bad, 1) "Number of channels cannot be larger than number of bad channels rows."
+            @assert ep <= size(bad, 2) "Epoch number cannot be larger than number of bad channels columns."
             p = plot_signal(t,
                             s[ch, :],
                             bad[ch, ep],
@@ -749,8 +749,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
     
     if type === :butterfly
-        length(ch_t_uni) > 1 && throw(ArgumentError("For type=:butterfly plot all channels should be of the same type."))
-        size(s, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
+        @assert length(ch_t_uni) == 1 "For type=:butterfly plot all channels should be of the same type."
+        @assert size(s, 1) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
         units = _set_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -814,8 +814,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
     
     if type === :mean
-        length(ch_t_uni) > 1 && throw(ArgumentError("For type=:mean plot all channels should be of the same type."))
-        size(s, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
+        @assert length(ch_t_uni) == 1 "For type=:mean plot all channels should be of the same type."
+        @assert size(s, 1) >= 2 "For type=:mean plot the signal must contain ≥ 2 channels."
 
         units = _set_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
@@ -1057,7 +1057,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                         mono=mono;
                         kwargs...)
     elseif type === :butterfly
-        size(s, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
+        @assert size(s, 1) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   s,
@@ -1071,7 +1071,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                                   mono=mono;
                                   kwargs...)
     elseif type === :mean
-        size(s, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
+        @assert size(s, 1) >= 2 "For type=:mean plot the signal must contain ≥ 2 channels."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
                             s,
@@ -1143,9 +1143,9 @@ Plot two signals. This function is used to compare two signals, e.g. before and 
 """
 function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj1)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", emarkers::Bool=true, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
-    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
-    size(obj1.data) == size(obj2.data) || throw(ArgumentError("Signals of OBJ1 and OBJ2 must have the same size."))
-    obj1.header.recording[:data_type] == obj2.header.recording[:data_type] || throw(ArgumentError("OBJ1 and OBJ2 must have the same data type."))
+    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
+    @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
+    @assert obj1.header.recording[:data_type] == obj2.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
 
     if signal_len(obj1) < 10 * sr(obj1) && seg == (0, 10)
         seg = (0, obj1.time_pts[end])

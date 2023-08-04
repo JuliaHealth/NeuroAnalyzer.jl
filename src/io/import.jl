@@ -28,7 +28,7 @@ This is a meta-function that triggers appropriate `import_*()` function. File fo
 """
 function import_recording(file_name::String; detect_type::Bool=true, n::Int64=0)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
 
     splitext(file_name)[2] == ".edf" && return import_edf(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".bdf" && return import_bdf(file_name, detect_type=detect_type)

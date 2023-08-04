@@ -22,8 +22,7 @@ Perform discrete wavelet transformation (DWT).
 function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
-    l < 0 && throw(ArgumentError("l must be > 0."))
-    l > maxtransformlevels(s) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
+    @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
 
     if l == 0
         l = maxtransformlevels(s)

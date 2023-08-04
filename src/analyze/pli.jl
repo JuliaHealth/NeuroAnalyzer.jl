@@ -21,7 +21,7 @@ Named tuple containing:
 """
 function pli(s1::AbstractVector, s2::AbstractVector)
 
-    length(s1) == length(s2) || throw(ArgumentError("Both signals must have the same length."))
+    @assert length(s1) == length(s2) "Both signals must have the same length."
 
     _, _, _, s1ph = hspectrum(s1)
     _, _, _, s2ph = hspectrum(s2)
@@ -62,12 +62,12 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
-    length(ch1) == length(ch2) || throw(ArgumentError("ch1 and ch2 must have the same length."))
+    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
     
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    length(ep1) == length(ep2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
     ep_n = length(ep1)
     ch_n = length(ch1)

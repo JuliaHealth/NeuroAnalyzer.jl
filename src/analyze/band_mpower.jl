@@ -20,10 +20,10 @@ Named tuple containing:
 """
 function band_mpower(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
     f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
-    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
+    @assert f[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert f[2] <= fs / 2 "Lower frequency bound must be ≤ $(fs / 2)."
 
     if mt == true
         p = mt_pgram(s, fs=fs)

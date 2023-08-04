@@ -18,7 +18,7 @@ Calculate total power.
 """
 function total_power(s::AbstractVector; fs::Int64, mt::Bool=false, nt::Int64=8)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
 
     # for short signals use multi-tapered periodogram
     length(s) < 4 * fs && (mt = true)

@@ -16,16 +16,16 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 """
 function import_digitrack(file_name::String; detect_type::Bool=true)
  
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
 
     fid = nothing
     try
         fid = open(file_name)
     catch
-        throw(ArgumentError("File $file_name cannot be loaded."))
+        @error "File $file_name cannot be loaded."
     end
     buffer = readline(fid)
-    occursin.("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
+    @assert occursin.("Start time ", buffer) "File $file_name is not Digitrack file."
 
     file_type = "Digitrack"
 

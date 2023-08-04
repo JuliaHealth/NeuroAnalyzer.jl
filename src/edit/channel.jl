@@ -107,7 +107,7 @@ Return NIRS channel number(s) for wavelength `wl`.
 function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
 
     _check_datatype(obj, [:nirs])
-    wl in obj.header.recording[:wavelengths] || throw(ArgumentError("OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."))
+    @assert wl in obj.header.recording[:wavelengths] "OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."
 
     wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
     ch_idx = Int64[]
@@ -151,9 +151,7 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::
                 ch_found = idx
             end
         end
-        if ch_found === nothing
-            throw(ArgumentError("Channel name ($ch) does not match signal labels."))
-        end
+        @assert ch_found !== nothing "Channel name ($ch) does not match signal labels."
     else
         _check_channels(obj, ch)
         types[ch] = type
@@ -214,9 +212,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
                 ch_idx = idx
             end
         end
-        if ch_idx === nothing
-            throw(ArgumentError("Channel name ($ch) does not match signal labels."))
-        end
+        @assert ch_idx !== nothing "Channel name ($ch) does not match signal labels."
         return ch_idx
     else
         # get channel by number
@@ -246,7 +242,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
     # create new dataset
     obj_new = deepcopy(obj)
     clabels = labels(obj_new)
-    name in clabels && throw(ArgumentError("Channel $name already exist."))
+    @assert !(name in clabels) "Channel $name already exist."
 
     if ch isa String
         # get channel by name
@@ -257,9 +253,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
                 ch_found = idx
             end
         end
-        if ch_found === nothing
-            throw(ArgumentError("Channel name ($ch )does not match channel labels."))
-        end
+        @assert ch_found !== nothing "Channel name ($ch )does not match channel labels."
     else
         # get channel by number
         _check_channels(obj, ch)
@@ -312,12 +306,12 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 """
 function edit_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value::Any)
     
-    value === nothing && throw(ArgumentError("value cannot be empty."))
+    @assert value !== nothing "value cannot be empty."
     _check_channels(obj, ch)
     _check_var(field, [:channel_type, :labels], "field")    
 
     obj_new = deepcopy(obj)
-    obj_new.header.recording[field][ch] isa typeof(value) || throw(ArgumentError("field type ($(eltype(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."))
+    @assert obj_new.header.recording[field][ch] isa typeof(value) "field type ($(eltype(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."
     obj_new.header.recording[field][ch] = value
 
     push!(obj_new.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")   
@@ -374,14 +368,14 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s::
                 ch_idx = idx
             end
         end
-        ch_idx === nothing && throw(ArgumentError("Channel name ($ch) does not match OBJ labels."))
+        @assert ch_idx !== nothing "Channel name ($ch) does not match OBJ labels."
     else
         _check_channels(obj, ch)
         ch_idx = ch
     end
 
     obj_new = deepcopy(obj)
-    size(s) == (1, epoch_len(obj_new), epoch_n(obj_new)) || throw(ArgumentError("signal size ($(size(s))) must be the same as channel size ($(size(obj_new.data[ch_idx, :, :]))."))
+    @assert size(s) == (1, epoch_len(obj_new), epoch_n(obj_new)) "signal size ($(size(s))) must be the same as channel size ($(size(obj_new.data[ch_idx, :, :]))."
 
     obj_new.data[ch_idx, :, :] = s
 
@@ -431,7 +425,7 @@ Add channel labels.
 """
 function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
-    length(clabels) == channel_n(obj) || throw(ArgumentError("clabels length must be $(channel_n(obj))."))
+    @assert length(clabels) == channel_n(obj) "clabels length must be $(channel_n(obj))."
     
     obj_new = deepcopy(obj)
     obj_new.header.recording[:labels] = clabels
@@ -479,13 +473,13 @@ Add channel(s) data to empty `NeuroAnalyzer.NEURO` object.
 """
 function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::Union{String, Vector{String}}=string.(_c(size(data, 1))), type::Union{Symbol, Vector{Symbol}}, unit::Union{String, Vector{String}}=repeat([""], size(data, 1)))
 
-    length(obj.data) > 0 && throw(ArgumentError("OBJ already contains data."))
-    length(label) == size(data, 1) || throw(ArgumentError("Number of labels and number of data channels must be equal."))
-    length(type) == size(data, 1) || throw(ArgumentError("Number of channel types and number of data channels must be equal."))
-    length(unit) == size(data, 1) || throw(ArgumentError("Number of channel units and number of data channels must be equal."))
+    @assert length(obj.data) == 0 "OBJ already contains data."
+    @assert length(label) == size(data, 1) "Number of labels and number of data channels must be equal."
+    @assert length(type) == size(data, 1) "Number of channel types and number of data channels must be equal."
+    @assert length(unit) == size(data, 1) "Number of channel units and number of data channels must be equal."
 
     for idx in eachindex(type)
-        type[idx] in channel_types || throw(ArgumentError("Unknown channel type $(type[idx])."))
+        @assert type[idx] in channel_types "Unknown channel type $(type[idx])."
     end
 
     obj_new = deepcopy(obj)

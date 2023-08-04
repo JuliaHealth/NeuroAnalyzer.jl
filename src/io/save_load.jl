@@ -14,7 +14,7 @@ Save `obj` to `file_name` file (HDF5-based).
 """
 function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
-    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
     obj.header.recording[:file_name] = file_name
 
@@ -41,7 +41,7 @@ Load `NeuroAnalyzer.NEURO` from `file_name` file (HDF5-based).
 """
 function load(file_name::String)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
 
     obj = load_object(file_name)
 

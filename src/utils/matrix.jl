@@ -49,7 +49,7 @@ Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims
 """
 function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
 
-    dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
+    @assert dims in [1, 2] "dims must be 1 or 2."
     
     idx = zeros(Int, size(m))
     if dims == 1
@@ -86,7 +86,7 @@ Sorts matrix `m` using sorting index `m_idx`
 """
 function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
-    dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
+    @assert dims in [1, 2] "dims must be 1 or 2."
 
     rev == true && reverse!(m_idx)
 

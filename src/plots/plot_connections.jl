@@ -8,7 +8,7 @@ Plot weights at electrode positions.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `connections::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Real`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
@@ -26,9 +26,9 @@ Plot weights at electrode positions.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", cart::Bool=false, kwargs...)
+function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", cart::Bool=false, kwargs...)
 
-    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 
     # remove non-signal channels
@@ -36,7 +36,6 @@ function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
     keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
 
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
-    typeof(ch) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
     p = plot_connections(obj_tmp.locs, connections=connections, ch=ch, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details, cart=cart)
 
@@ -73,7 +72,7 @@ Plot connections between channels.
 """
 function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, cart::Bool=false, kwargs...)
 
-    size(connections, 1) == length(ch) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
+    @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 
     pal = mono == true ? :grays : :darktest

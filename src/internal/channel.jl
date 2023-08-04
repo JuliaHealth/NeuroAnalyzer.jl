@@ -65,11 +65,9 @@ function _get_ch_idx(clabels::Vector{String}, ch::Union{String, Int64})
                 ch_found = idx
             end
         end
-        if ch_found === nothing
-            throw(ArgumentError("ch name does not match signal labels."))
-        end
+        @assert ch_found !== nothing "ch name does not match signal labels."
     else
-        ch < 1 || ch > length(clabels) && throw(ArgumentError("channel index does not match signal channels."))
+        @assert !(ch < 1 || ch > length(clabels)) "channel index does not match signal channels."
         ch_found = ch
     end
 

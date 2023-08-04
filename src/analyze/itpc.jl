@@ -22,16 +22,16 @@ Named tuple containing:
 """
 function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)
 
-    t < 1 && throw(ArgumentError("t must be ≥ 1."))
-    t > size(s, 2) && throw(ArgumentError("t must be ≤ $(size(s, 2))."))
-    size(s, 1) == 1 || throw(ArgumentError("s must have 1 channel."))
+    @assert t >= 1 "t must be ≥ 1."
+    @assert t <= size(s, 2) "t must be ≤ $(size(s, 2))."
+    @assert size(s, 1) == 1 "s must have 1 channel."
 
     ep_n = size(s, 3)
 
     w === nothing && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    length(w) == ep_n || throw(ArgumentError("Length of w should be equal to number of epochs ($ep_n)."))
+    @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
     
     s_phase = zeros(size(s, 2), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
@@ -72,9 +72,9 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     _check_channels(obj, ch)
     ch_n = length(ch)
     ep_n = epoch_n(obj)
-    t < 1 && throw(ArgumentError("t must be ≥ 1."))
-    t > epoch_len(obj) && throw(ArgumentError("t must be ≤ $(epoch_len(obj))."))
-    ep_n < 2 && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
+    @assert t >= 1 "t must be ≥ 1."
+    @assert t <= epoch_len(obj) "t must be ≤ $(epoch_len(obj))."
+    @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 
     itpc_value = zeros(ch_n)
     itpcz_value = zeros(ch_n)
@@ -98,7 +98,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Int64`
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
@@ -110,13 +110,13 @@ Named tuple containing:
 - `itpcz_s::Array{Float64, 3}`: spectrogram itpcz_value values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
+function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     _check_var(frq, [:log, :lin], "frq")
     frq_lim = tuple_order(frq_lim)
-    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > sr(obj) ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(sr(obj) ÷ 2)."))
-    frq_n < 2 && throw(ArgumentError("frq_n must be ≥ 2."))
+    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert frq_lim[2] <= sr(obj) / 2 "Upper frequency bound must be ≤ $(sr(obj) / 2)."
+    @assert frq_n >= 2 "frq_n must be ≥ 2."
     if frq === :log
         frq_lim[1] == 0 && (frq_lim = (0.01, frq_lim[2]))
         frq_lim = (frq_lim[1], frq_lim[2])
@@ -128,7 +128,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
     _check_channels(obj, ch)
     ep_n = epoch_n(obj)
     ep_len = epoch_len(obj)
-    ep_n < 2 && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
+    @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 
     itpc_s = zeros(frq_n, ep_len)
     itpcz_s = zeros(frq_n, ep_len)

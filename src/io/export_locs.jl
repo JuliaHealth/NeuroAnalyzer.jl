@@ -13,7 +13,7 @@ Export channel locations data, format is based on `file_name` extension (.ced, .
 """
 function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
-    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
     channels = obj.locs[!, :channel]
     clabels = obj.locs[!, :labels]
@@ -36,7 +36,7 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
         df = DataFrame(labels=clabels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
         CSV.write(file_name, df, delim="\t", header=true)
     else
-        throw(ArgumentError("$file_name format must be .ced, .locs or .tsv."))
+        @error "$file_name format must be .ced, .locs or .tsv."
     end
 end
 
@@ -57,7 +57,7 @@ Export channel locations, format is based on `file_name` extension (.ced, .locs,
 """
 function export_locs(locs::DataFrame; file_name::String, overwrite::Bool=false)
 
-    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
     channels = locs[!, :channel]
     clabels = locs[!, :labels]
@@ -80,7 +80,7 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool=false)
         df = DataFrame(labels=clabels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
         CSV.write(file_name, df, delim="\t", header=true)
     else
-        throw(ArgumentError("file_name format must be .ced, .locs or .tsv."))
+        @error "file_name format must be .ced, .locs or .tsv."
     end
     
 end

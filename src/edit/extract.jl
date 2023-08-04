@@ -30,9 +30,7 @@ function extract_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
                 ch_idx = idx
             end
         end
-        if ch_idx === nothing
-            throw(ArgumentError("Channel name ($ch )does not match channel labels."))
-        end
+        @assert ch_idx !== nothing "Channel name ($ch) does not match channel labels."
         return reshape(obj.data[ch_idx, :, :], 1, epoch_len(obj), epoch_n(obj))
     else
         # get channel by number

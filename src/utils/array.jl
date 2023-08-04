@@ -18,7 +18,7 @@ Compare two arrays (e.g. two spectrograms), using L1 (Manhattan) distance.
 """
 function l1(a1::AbstractArray, a2::AbstractArray)
 
-    size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
+    @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
 
     return sum(abs.(a1 .- a2))
 
@@ -40,7 +40,7 @@ Compare two arrays (e.g. two spectrograms), using L2 (Euclidean) distance.
 """
 function l2(a1::AbstractArray, a2::AbstractArray)
 
-    size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
+    @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
     
     # return sqrt(sum((a1 .- a2).^2))
     return euclidean(a1, a2)
@@ -67,10 +67,10 @@ Named tuple containing:
 """
 function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
 
-    size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
-    perm_n <= 0 && throw(ArgumentError("perm_n must be > 0."))
-    p < 0 && throw(ArgumentError("p must be ≥ 0."))
-    p > 1 && throw(ArgumentError("p must be ≤ 1."))
+    @assert size(a1) == size(a2) "Both arrays must have the same size"
+    @assert perm_n > 0 "perm_n must be > 0."
+    @assert p >= 0 "p must be ≥ 0."
+    @assert p <= 1 "p must be ≤ 1."
 
     spec_diff = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
     zval = abs(norminvcdf(p))

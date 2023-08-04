@@ -21,12 +21,8 @@ end
 
 function _delay(n::Real, l::Real)
     n < 0.003 && _warn("For n < 0.003 delay will not be accurate.")
-    l < 0 && throw(ArgumentError("l must be ≥ 0."))
-    if l < n
-        n = n - l
-    else
-        n = l - n
-    end
+    @assert l >= 0 "l must be ≥ 0."
+    n = l < n ? n - l : l - n
     sleep(n)
 end
 

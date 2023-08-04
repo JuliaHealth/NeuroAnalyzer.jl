@@ -17,7 +17,7 @@ Add signal.
 """
 function add_signal(s1::AbstractVector, s2::AbstractVector)
 
-    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
+    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     return s1 .+ s2
 

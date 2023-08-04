@@ -25,8 +25,8 @@ Plot single-channel spectrogram.
 """
 function plot_spectrogram(st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", kwargs...)
 
-    size(sp, 2) == length(st) || throw(ArgumentError("Size of powers $(size(sp, 2)) and time vector $(length(st)) do not match."))
-    size(sp, 1) == length(sf) || throw(ArgumentError("Size of powers $(size(sp, 1)) and frequencies vector $(length(sf)) do not match."))
+    @assert size(sp, 2) == length(st) "Size of powers $(size(sp, 2)) and time vector $(length(st)) do not match."
+    @assert size(sp, 1) == length(sf) "Size of powers $(size(sp, 1)) and frequencies vector $(length(sf)) do not match."
 
     pal = mono == true ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
@@ -80,8 +80,8 @@ Plot multiple-channel spectrogram.
 """
 function plot_spectrogram(sch::Vector{String}, sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", kwargs...)
 
-    size(sp, 1) == length(sch) || throw(ArgumentError("Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."))
-    size(sp, 2) == length(sf) || throw(ArgumentError("Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."))
+    @assert size(sp, 1) == length(sch) "Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."
+    @assert size(sp, 2) == length(sf) "Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."
 
     pal = mono == true ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
@@ -141,18 +141,18 @@ Plots spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
     _check_channels(obj, ch)
 
-    seg[1] == seg[2] && throw(ArgumentError("Signal is too short for analysis."))
+    @assert seg[1] != seg[2] "Signal is too short for analysis."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
-        NeuroAnalyzer._check_segment(obj, seg)
+        _check_segment(obj, seg)
     end
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
@@ -191,10 +191,10 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be in [0, $(fs / 2)]."))
+    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
 
     # calculate spectrogram
-    length(ch) > 1 && length(signal) / length(ch) < 4 * sr(obj) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."))
+    length(ch) > 1 && @assert length(signal) / length(ch) >= 4 * sr(obj) "For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."
 
     if length(ch) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -256,7 +256,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         ch_t = obj.header.recording[:channel_type]
         if length(ch) > 1
             ch_t_uni = unique(ch_t[ch])
-            length(ch_t_uni) > 1 && throw(ArgumentError("For multi-channel PSD plots all channels should be of the same type."))
+            @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
         end
         ylabel == "default" && (ylabel = "Channel")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
@@ -321,7 +321,7 @@ Plots spectrogram of embedded or external component.
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=8`: number of Slepian tapers
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: y-axis limits
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
@@ -335,16 +335,16 @@ Plots spectrogram of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
-    seg[1] == seg[2] && throw(ArgumentError("Signal is too short for analysis."))
+    @assert seg[1] != seg[2] "Signal is too short for analysis."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
-        NeuroAnalyzer._check_segment(obj, seg)
+        _check_segment(obj, seg)
     end
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
@@ -384,10 +384,10 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be in [0, $(fs / 2)]."))
+    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
 
     # calculate spectrogram
-    length(c_idx) > 1 && length(signal) / length(c_idx) < 4 * sr(obj) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."))
+    length(c_idx) > 1 && @assert length(signal) / length(c_idx) >= 4 * sr(obj) "For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."
 
     if length(c_idx) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")

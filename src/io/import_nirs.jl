@@ -19,20 +19,20 @@ https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
 function import_nirs(file_name::String)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".nirs" || throw(ArgumentError("This is not a NIRS file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] == ".nirs" "This is not NIRS file."
 
     nirs = nothing
     try
         nirs = matread(file_name)
     catch
-        throw(ArgumentError("File $file_name cannot be loaded."))
+        @error "File $file_name cannot be loaded."
     end
 
     file_type = "NIRS"
 
-    "d" in keys(nirs) || _info("This is not a NIRS file.")
-    "t" in keys(nirs) || _info("This is not a NIRS file.")
+    "d" in keys(nirs) || _info("This is not NIRS file.")
+    "t" in keys(nirs) || _info("This is not NIRS file.")
 
     # time points
     time_pts = nirs["t"][:]

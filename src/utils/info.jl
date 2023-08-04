@@ -42,7 +42,7 @@ Return number of channels of `type`.
 
 # Returns
 
-- `channel_n::Int64`
+- `ch_n::Int64`
 """
 function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
@@ -55,7 +55,7 @@ function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
             ch_n = size(obj.data, 1)
         end
     else
-        length(obj.header.recording[:channel_type]) == 0 && throw(ArgumentError("OBJ has no defined channel types."))
+        @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
         ch_n = 0
         for idx in 1:channel_n(obj)
             obj.header.recording[:channel_type][idx] == string(type) && (ch_n += 1)
@@ -77,15 +77,12 @@ Return number of epochs.
 
 # Returns
 
-- `epoch_n::Int64`
+- `ep_n::Int64`
 """
 function epoch_n(obj::NeuroAnalyzer.NEURO)
 
-    if ndims(obj.data) < 3
-        throw(ArgumentError("Record data is either a vector or a matrix."))
-    else
-        ep_n = size(obj.data, 3)
-    end
+    @assert ndims(obj.data) == 3 "Record data is either a vector or a matrix."
+    ep_n = size(obj.data, 3)
 
     return ep_n
 
@@ -133,11 +130,8 @@ Return epoch length.
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)
 
-    if ndims(obj.data) < 3
-        throw(ArgumentError("Record data is either a vector or a matrix."))
-    else
-        ep_len = size(obj.data, 2)
-    end
+    @assert ndims(obj.data) == 3 "Record data is either a vector or a matrix."
+    ep_len = size(obj.data, 2)
 
     return ep_len
 
@@ -177,11 +171,8 @@ Return channel labels.
 """
 function labels(obj::NeuroAnalyzer.NEURO)
 
-    if length(obj.header.recording[:labels]) == 0
-        throw(ArgumentError("RECORD has no labels."))
-    else
-        return obj.header.recording[:labels]
-    end
+    @assert length(obj.header.recording[:labels]) > 0 "OBJ has no labels."
+    return obj.header.recording[:labels]
 
 end
 
@@ -320,7 +311,7 @@ Return channels belonging to a `cluster` of channels.
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
 
-    length(labels(obj)) == 0 && throw(ArgumentError("OBJ does not contain channel labels."))
+    @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
     _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
     clabels = lowercase.(labels(obj))

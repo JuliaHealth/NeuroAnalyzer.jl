@@ -23,7 +23,7 @@ Generates a sequence of evenly spaced numbers between `start` and `stop`.
 """
 function linspace(start::Number, stop::Number, n::Int64)
 
-    n < 2 && throw(ArgumentError("n must be ≥ 2."))
+    @assert n >= 2 "n must be ≥ 2."
 
     return collect(range(start, stop, n))
 
@@ -46,7 +46,7 @@ Generates a sequence of log10-spaced numbers between `start` and `stop`.
 """
 function logspace(start::Number, stop::Number, n::Int64)
 
-    n < 2 && throw(ArgumentError("n must be ≥ 2."))
+    @assert n >= 2 "n must be ≥ 2."
 
     return collect(exp10.(range(start, stop, n)))
 

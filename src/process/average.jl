@@ -106,7 +106,7 @@ Return the average signal of all `obj1` and `obj2` channels.
 """
 function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
 
-    size(obj1.data) == size(obj2.data) || throw(ArgumentError("Both signals must have the same size."))
+    @assert size(obj1.data) == size(obj2.data) "Both signals must have the same size."
 
     ch_n = channel_n(obj1)
     ep_n = epoch_n(obj1)

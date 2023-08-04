@@ -57,7 +57,7 @@ Convert cycle length in ms to frequency.
 """
 function t2f(t::Real)
 
-    t <= 0 && throw(ArgumentError("t must be > 0."))
+    @assert t > 0 "t must be > 0."
 
     return round(1000 / t, digits=2)
 
@@ -78,7 +78,7 @@ Convert frequency to cycle length in ms.
 """
 function f2t(f::Real)
 
-    f <= 0 && throw(ArgumentError("f must be > 0."))
+    @assert f > 0 "f must be > 0."
 
     return round(1000 / f, digits=2)
 
@@ -135,7 +135,7 @@ Return vector of frequencies and Nyquist frequency for signal.
 """
 function freqs(s::Vector{Float64}, fs::Int64)
 
-    fs < 0 && throw(ArgumentError("fs must be > 0."))
+    @assert fs >= 1 "fs must be ≥ 1."
 
     # Nyquist frequency
     nf = fs / 2

@@ -3,7 +3,7 @@ export import_nirx
 """
     import_nirx(file_name)
 
-Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnalyzer.NEURO` object.
+Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -19,16 +19,16 @@ https://nirx.net/file-formats
 """
 function import_nirx(file_name::String)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".hdr" || throw(ArgumentError("This is not a .hdr file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] == ".hdr" "This is not NIRX .hdr file."
 
     hdr = nothing
     try
         hdr = readlines(file_name)
     catch
-        throw(ArgumentError("File $file_name cannot be loaded."))
+        @error "File $file_name cannot be loaded."
     end
-    hdr[1] == "[GeneralInfo]" || throw(ArgumentError("File $file_name is not a NIRX .hdr file."))
+    @assert hdr[1] == "[GeneralInfo]" "File $file_name is not NIRX file."
 
     file_type = "NIRX"
 

@@ -19,6 +19,7 @@ Detect outliers.
 - `o::Vector{Bool}`: index of outliers
 """
 function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
+ 
     _check_var(method, [:iqr, :z, :g], "method")
     o = zeros(Bool, length(x))
     
@@ -32,7 +33,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
         o[z .< -3] .= true
         o[z .> 3] .= true
     else
-        length(x) > 6 || throw(ArgumentError("For :g method length(x) must be > 6."))
+        @assert length(x) > 6 "For :g method length(x) must be > 6."
         x_tmp = deepcopy(x)
         for _ in length(x_tmp):-1:6
             _, m_idx = findmax(x_tmp)
@@ -64,7 +65,10 @@ Perform Grubbs test for outlier.
 
 - `x::AbstractVector`
 - `alpha::Float64=0.95`
-- `t::Int64=0`: test type: -1 test whether the minimum value is an outlier; 0 two-sided test; 1 test whether the maximum value is an outlier
+- `t::Int64=0`: test type:
+    - `-1`: test whether the minimum value is an outlier
+    - `0`: two-sided test
+    - `1`: test whether the maximum value is an outlier
 
 # Returns
 
@@ -72,10 +76,10 @@ Perform Grubbs test for outlier.
 """
 function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
 
-    # std(x) == 0 && throw(ArgumentError("Standard deviation of the input vector must not be 0."))
-
     n = length(x)
     df = n - 2
+
+    @assert t in [-1, 0, 1] "t must be -1, 0 or 1."
 
     if t == 0
         two_sided = true
@@ -86,8 +90,6 @@ function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
     elseif t == 1
         two_sided = false
         g = (maximum(x) - mean(x)) / std(x)
-    else
-        throw(ArgumentError("type must be -1, 0 or 1."))
     end
 
     p = two_sided == true ? (1 - alpha) / (2 * n) : (1 - alpha) / n

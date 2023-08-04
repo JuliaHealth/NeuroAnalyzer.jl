@@ -20,11 +20,11 @@ Perform wavelet band-pass filtering.
 """
 function wbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    frq <= 0 && throw(ArgumentError("frq must be > 0."))
-    ncyc <= 0 && throw(ArgumentError("ncyc must be > 0."))
-    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
-    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+    @assert fs >= 1 "fs must be ≥ 1."
+    @assert frq > 0 "frq must be > 0."
+    @assert ncyc > 0 "ncyc must be > 0."
+    @assert pad >= 0 "pad must be ≥ 0."
+    @assert frq <= fs / 2 "frq must be ≤ $(fs / 2)."
 
     pad > 0 && (s = pad0(s, pad))
 

@@ -20,7 +20,7 @@ Named tuple containing:
 """
 function fcoherence(s::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
 
     c = mt_coherence(s, fs=fs)
     f = Vector(c.freq)
@@ -28,8 +28,8 @@ function fcoherence(s::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Rea
 
     if frq_lim !== nothing
         frq_lim = tuple_order(frq_lim)
-        frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-        frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $fs."))
+        @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
+        @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]
@@ -60,8 +60,8 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 """
 function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
+    @assert fs >= 1 "fs must be ≥ 1."
 
     s = vcat(s1, s2)
 
@@ -71,8 +71,8 @@ function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::
 
     if frq_lim !== nothing
         frq_lim = tuple_order(frq_lim)
-        frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-        frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $fs."))
+        @assert frq_lim[1] > 0 "Lower frequency bound must be ≥ 0."
+        @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]
@@ -104,8 +104,8 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 """
 function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert size(s1) == size(s2) "s1 and s2 must have the same length."
+    @assert fs >= 1 "fs must be ≥ 1."
 
     ep_n = size(s1, 3)
     
@@ -148,14 +148,14 @@ function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::U
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
-    length(ch1) == length(ch2) || throw(ArgumentError("ch1 and ch2 lengths must be equal."))
+    @assert length(ch1) == length(ch2) "ch1 and ch2 lengths must be equal."
     
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    length(ep1) == length(ep2) || throw(ArgumentError("ep1 and ep2 lengths must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    @assert length(ep1) == length(ep2) "ep1 and ep2 lengths must be equal."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
+    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
 
     c, msc, f = @views fcoherence(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), fs=sr(obj1), frq_lim=frq_lim)
 

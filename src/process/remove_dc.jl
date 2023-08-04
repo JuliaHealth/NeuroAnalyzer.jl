@@ -17,15 +17,11 @@ Remove mean value (DC offset). If `n` is greater than 0, mean value is calculate
 """
 function remove_dc(s::AbstractVector, n::Int64=0)
     
-    n < 0 && throw(ArgumentError("n must be ≥ 1."))
-    n > length(s) && throw(ArgumentError("n must be ≤ $(length(s))."))
+    @assert n >=0 "n must be ≥ 0."
+    @assert n <= length(s) "n must be ≤ $(length(s))."
 
-    if n == 0
-        s_new = s .- mean(s)
-    else
-        s_new = s .- mean(s[1:n])
-    end
-
+    s_new = n == 0 ? s .- mean(s) : s .- mean(s[1:n])
+    
     return s_new
 
 end

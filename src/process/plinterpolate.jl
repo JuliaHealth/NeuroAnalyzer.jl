@@ -27,11 +27,11 @@ Interpolate channel(s) using planar interpolation.
 function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
 
     for idx in ch
-        idx in get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type])) || throw(ArgumentError("channel must be signal channel(s); cannot interpolate non-signal channels."))
+        @assert idx in get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type])) "channel must be signal channel(s); cannot interpolate non-signal channels."
     end
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
-    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     ch isa Vector{Int64} && sort!(ch, rev=true)
 

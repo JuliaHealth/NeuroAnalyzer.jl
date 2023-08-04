@@ -54,7 +54,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
                 try
                     t_env[ch_idx, :, ep_idx] = model(s_t)
                 catch
-                    @error "CubicSpline error, using Loess."
+                    @warn "CubicSpline error, using Loess."
                     model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
                     t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
                 end
@@ -94,12 +94,12 @@ Named tuple containing:
 function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = tenv(obj, ch=ch, d=d)
@@ -174,12 +174,12 @@ Named tuple containing:
 function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = tenv(obj, ch=ch, d=d)
@@ -336,12 +336,12 @@ Named tuple containing:
 function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_p, s_f = psd(obj, ch=ch, norm=true, mt=mt)
@@ -445,12 +445,12 @@ Named tuple containing:
 function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_p, s_f = psd(obj, ch=ch, norm=true, mt=mt)
@@ -648,12 +648,12 @@ Named tuple containing:
 function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
 
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_p, s_t = senv(obj, ch=ch, d=d, mt=mt, t=t)
@@ -757,12 +757,12 @@ Named tuple containing:
 function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_p, s_t = senv(obj, ch=ch, d=d, mt=mt, t=t)
@@ -886,7 +886,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
                 try
                     h_env[ch_idx, :, ep_idx] = model(s_t)
                 catch
-                    @error "CubicSpline error, using Loess."
+                    @warn "CubicSpline error, using Loess."
                     model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
                     h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
                 end
@@ -925,12 +925,12 @@ Named tuple containing:
 function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = henv(obj, ch=ch, d=d)
@@ -1003,12 +1003,12 @@ Named tuple containing:
 function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        @assert channel_n(obj) >= 1 "Number of channels must be ≥ 2."
     elseif dims == 2
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert epoch_n(obj) >= 1 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
-        epoch_n(obj) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+        @assert channel_n(obj) >= 1 "Number of channels must be ≥ 2."
+        @assert epoch_n(obj) >= 1 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = henv(obj, ch=ch, d=d)
@@ -1110,12 +1110,12 @@ function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Sym
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
-    length(ch1) == length(ch2) || throw(ArgumentError("ch1 and ch2 must have the same length."))
+    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
 
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    length(ep1) == length(ep2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 epochs must have the same length."))
+    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 epochs must have the same length."
 
     ep_n = length(ep1)
     

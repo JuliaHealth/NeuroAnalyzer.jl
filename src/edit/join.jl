@@ -17,10 +17,10 @@ Join two NeuroAnalyzer objects. Each `obj2` epoch are horizontally concatenated 
 """
 function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
 
-    obj1.header.recording[:data_type] == obj1.header.recording[:data_type] || throw(ArgumentError("Both objects must have the same data type."))
-    sr(obj1) == sr(obj2) || throw(ArgumentError("Both objects must have the same sampling rate."))
-    channel_n(obj1) == channel_n(obj2) || throw(ArgumentError("Both objects must have the same number of channels."))
-    epoch_n(obj1) == epoch_n(obj2) || throw(ArgumentError("Both objects must have the same number of epochs."))
+    @assert obj1.header.recording[:data_type] == obj1.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
+    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
+    @assert channel_n(obj1) == channel_n(obj2) "OBJ1 and OBJ2 must have the same number of channels."
+    @assert epoch_n(obj1) == epoch_n(obj2) "OBJ1 and OBJ2 must have the same number of epochs."
 
     obj_new = deepcopy(obj1)
 
@@ -31,12 +31,8 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # merge markers
-    if nrow(obj2.markers) > 0
-        obj_new.markers = vcat(obj1.markers, obj2.markers)
-    end
-    if nrow(obj1.markers) > 0
-        obj_new.markers[(nrow(obj1.markers) + 1):end, :start] .+= (signal_len(obj1) / sr(obj1))
-    end
+    nrow(obj2.markers) > 0 && (obj_new.markers = vcat(obj1.markers, obj2.markers))
+    nrow(obj1.markers) > 0 && (obj_new.markers[(nrow(obj1.markers) + 1):end, :start] .+= (signal_len(obj1) / sr(obj1)))
     
     reset_components!(obj_new)
 

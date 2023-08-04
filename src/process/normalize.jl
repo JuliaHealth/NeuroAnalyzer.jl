@@ -179,7 +179,7 @@ Normalize to Gaussian.
 """
 function normalize_gauss(s::AbstractArray, dims::Int64=1)
 
-    dims in 1:ndims(s) || throw(ArgumentError("dims must be in: 1:$(ndims(s))."))
+    @assert dims in 1:ndims(s) "dims must be in: 1:$(ndims(s))."
 
     l = length(s) + 1
 

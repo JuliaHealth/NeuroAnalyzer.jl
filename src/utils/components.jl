@@ -26,7 +26,7 @@ Return component data type.
 """
 function component_type(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in keys(obj.components) || throw(ArgumentError("Component :$c does not exist. Use list_component() to view existing components."))
+    @assert c in keys(obj.components) "Component :$c does not exist. Use list_component() to view existing components."
 
     return typeof(obj.components[c])
 
@@ -49,8 +49,8 @@ Rename component.
 """
 function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)
 
-    c_old in keys(obj.components) || throw(ArgumentError("Component $c_old does not exist. Use list_component() to view existing components."))
-    c_new in keys(obj.components) && throw(ArgumentError("Component $c_new already exists. Use list_component() to view existing components."))
+    @assert c_old in keys(obj.components) "Component $c_old does not exist. Use list_component() to view existing components."
+    @assert !(c_new in keys(obj.components)) "Component $c_new already exists. Use list_component() to view existing components."
 
     obj_new = deepcopy(obj)
     c = pop!(obj_new.components, c_old)
@@ -101,7 +101,7 @@ Add component.
 function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
 
     obj_new = deepcopy(obj)
-    c in keys(obj.components) && throw(ArgumentError("Component $c already exists. Use different component name or delete_component() to remove it prior the operation."))
+    @assert !(c in keys(obj.components)) "Component $c already exists. Use different component name or delete_component() to remove it prior the operation."
 
     # add component
     push!(obj_new.components, c=>v)
@@ -169,7 +169,7 @@ Extract component values.
 """
 function extract_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in keys(obj.components) || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    @assert c in keys(obj.components) "Component $c does not exist. Use list_component() to view existing components."
     c = obj.components[c]
 
     return c
@@ -192,7 +192,7 @@ Delete component.
 """
 function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in keys(obj.components) || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    @assert c in keys(obj.components) "Component $c does not exist. Use list_component() to view existing components."
     
     # delete component values
     obj_new = deepcopy(obj)

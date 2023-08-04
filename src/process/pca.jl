@@ -22,8 +22,8 @@ Named tuple containing:
 """
 function pca_decompose(s::AbstractArray; n::Int64)
 
-    n < 0 && throw(ArgumentError("n must be ≥ 1."))
-    n > size(s, 1) && throw(ArgumentError("n must be ≤ $(size(s, 1))."))
+    @assert n >= 1 "n must be ≥ 1."
+    @assert n <= size(s, 1) "n must be ≤ $(size(s, 1))."
 
     ep_n = size(s, 3)
 
@@ -133,8 +133,8 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 """
 function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
-    :pc in keys(obj.components) || throw(ArgumentError("OBJ does not contain :pc component. Perform pca_decompose() first."))
-    :pc_model in keys(obj.components) || throw(ArgumentError("OBJ does not contain :pc_model component. Perform pca_decompose() first."))
+    @assert :pc in keys(obj.components) "OBJ does not contain :pc component. Perform pca_decompose() first."
+    @assert :pc_model in keys(obj.components) "OBJ does not contain :pc_model component. Perform pca_decompose() first."
 
     _check_channels(obj, ch)
 

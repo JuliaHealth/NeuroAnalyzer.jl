@@ -17,13 +17,8 @@ Convert time to sample number.
 """
 function t2s(t::T, fs::Int64) where {T<:Real}
     
-    t < 0 && throw(ArgumentError("t must be ≥ 0."))
-    
-    if t == 0
-        return 1
-    else
-        return round(Int64, t * fs)
-    end
+    @assert t >= 0 "t must be ≥ 0."
+    return t == 0 ? 1 : round(Int64, t * fs)
 
 end
 
@@ -43,7 +38,7 @@ Convert sample number to time.
 """
 function s2t(s::Int64, fs::Int64)
 
-    s < 0 && throw(ArgumentError("s must be > 0."))
+    @assert s > 0 "s must be > 0."
     
     return s / fs
 

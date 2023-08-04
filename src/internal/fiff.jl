@@ -45,7 +45,7 @@ function _read_fiff_tag(fid::IOStream, fiff_blocks::Matrix{Int64}, tag_id::Int64
 end
 
 function _read_fiff_data(fid::IOStream, fiff_blocks::Matrix{Int64}, id::Union{Int64, Nothing})
-    id === nothing && throw(ArgumentError("id does not contain valid tag id."))
+    @assert id !== nothing && "id does not contain valid tag id."
     tag = fiff_blocks[id, :]
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
@@ -136,7 +136,7 @@ function _read_fiff_data(fid::IOStream, fiff_blocks::Matrix{Int64}, id::Union{In
         # stream_segment_struct
         reverse(buf)
     else
-        throw(ArgumentError("Unknown tag type $(tag[3])."))
+        @error "Unknown tag type $(tag[3])."
     end
 end
 
@@ -150,8 +150,8 @@ function _find_fiff_tag(fiff_blocks::Matrix{Int64}, id::Int64)
 end
 
 function _extract_struct(s, id::Int64)
-    id < 1 && throw(ArgumentError("id must be ≥ 1."))
-    id > length(s[1]) && throw(ArgumentError("id must be ≤ $(length(s[1]))."))
+    @assert id >= 1 "id must be ≥ 1."
+    @assert id <= length(s[1]) "id must be ≤ $(length(s[1]))."
     out = Vector{typeof(s[1][id])}()
     for channels_idx in eachindex(s)
         push!(out, s[channels_idx][id])
@@ -212,9 +212,9 @@ function _create_fiff_block(file_name::String)
     end
 
     # check file_id tag
-    tag_kind != fiff_file_id && throw(ArgumentError("File $file_name is not a FIFF file."))
-    tag_type != fiff_id_struct && throw(ArgumentError("File $file_name is not a FIFF file."))
-    tag_size != 20 && throw(ArgumentError("File $file_name is not a FIFF file."))
+    @assert tag_kind == fiff_file_id "File $file_name is not a FIFF file."
+    @assert tag_type == fiff_id_struct "File $file_name is not a FIFF file."
+    @assert tag_size == 20 "File $file_name is not a FIFF file."
 
     # read dir_pointer tag
     try
@@ -224,7 +224,7 @@ function _create_fiff_block(file_name::String)
     end
 
     # check dir_pointer tag
-    tag_kind != fiff_dir_pointer && throw(ArgumentError("File $file_name has no dir_pointer tag."))
+    @assert tag_kind == fiff_dir_pointer "File $file_name has no dir_pointer tag."
 
     # read tags
     seek(fid, 0)

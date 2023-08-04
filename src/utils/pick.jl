@@ -23,7 +23,7 @@ Return set of channel indices corresponding with `p` of electrodes
 """
 function pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
 
-    length(labels(obj)) == 0 && throw(ArgumentError("OBJ does not contain channel labels."))
+    @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
     if p isa Vector{Symbol}
         for idx in p

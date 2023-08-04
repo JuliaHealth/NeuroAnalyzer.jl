@@ -20,8 +20,8 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 """
 function import_set(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".set" || throw(ArgumentError("This is not an EEGLAB file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] == ".set" "This is not EEGLAB .set file."
 
     file_type = "SET"
 
@@ -42,7 +42,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             error("File $data_src cannot be loaded.")
         end
         samples_per_channel = length(dataset["times"])
-        filesize(data_src) == ch_n * samples_per_channel * 4 || @error "Incorrect file size."
+        @assert filesize(data_src) == ch_n * samples_per_channel * 4 "Incorrect file size."
         data = zeros(ch_n, samples_per_channel)
         for ch_idx in 1:ch_n
             buf = UInt8[]

@@ -23,9 +23,9 @@ Named tuple containing:
 """
 function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbol=:absdiff)
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _check_var(method, [:absdiff, :diff2int], "method")
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    @assert n >= 1 "n must be ≥ 1."
 
     s1_mean = vec(mean(s1, dims=1))
     s2_mean = vec(mean(s2, dims=1))
@@ -97,7 +97,7 @@ Named tuple containing:
 """
 function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
@@ -173,12 +173,12 @@ function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::U
 
     _check_channels(obj1, channel1)
     _check_channels(obj2, channel2)
-    length(channel1) == length(channel2) || throw(ArgumentError("ch1 and ch2 must have the same length."))
+    @assert length(channel1) == length(channel2) "ch1 and ch2 must have the same length."
     
     _check_epochs(obj1, epoch1)
     _check_epochs(obj2, epoch2)
-    length(epoch1) == length(epoch2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    @assert length(epoch1) == length(epoch2) "ep1 and ep2 must have the same length."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
     st, sts, p = @views mdiff(obj1.data[channel1, :, epoch1], obj2.data[channel2, :, epoch2], n=n, method=method)
 

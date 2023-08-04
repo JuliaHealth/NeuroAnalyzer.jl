@@ -25,18 +25,18 @@ Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a ge
 function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
 
     _check_datatype(obj, [:eeg])
-    _has_locs(obj) == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
+    @assert _has_locs(obj) "Channel locations not available, use load_locs() or add_locs() first."
 
-    m < 2 || m > 10 && throw(ArgumentError("m must be in [2, 10]."))
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    lambda <= 0 && throw(ArgumentError("lambda must be > 0."))
+    @assert !(m < 2 || m > 10) "m must be in [2, 10]."
+    @assert n >= 1 "n must be ≥ 1."
+    @assert lambda > 0 "lambda must be > 0."
 
     chs = signal_channels(obj)
     locs = obj.locs
     ch_n = nrow(locs)
     ep_n = epoch_n(obj)
 
-    length(chs) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+    @assert length(chs) <= nrow(locs) "Some channels do not have locations."
 
     G, H = gh(locs, m=m, n=n)
 
@@ -128,8 +128,8 @@ Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp poten
 """
 function gh(locs::DataFrame; m::Int64=4, n::Int64=8)
 
-    m < 2 || m > 10 && throw(ArgumentError("m must be in [2, 10]."))
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    @assert !(m < 2 || m > 10) "m must be in [2, 10]."
+    @assert n >= 1 "n must be ≥ 1."
 
     ch_n = nrow(locs)
 

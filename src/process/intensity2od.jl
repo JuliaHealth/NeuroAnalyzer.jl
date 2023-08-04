@@ -41,7 +41,7 @@ function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
     _check_channels(obj, ch)
     _check_datatype(obj, [:nirs])
-    length(get_channel_bytype(obj, type=:nirs_int)) == 0 && throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
+    @assert length(get_channel_bytype(obj, type=:nirs_int)) > 0 "OBJ does not contain NIRS intensity channels."
     _check_channels(get_channel_bytype(obj, type=:nirs_int), ch)
 
     obj_new = deepcopy(obj)

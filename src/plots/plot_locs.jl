@@ -176,9 +176,6 @@ end
 """
 function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=true)
 
-    # selected != 0 && length(intersect(ch, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
-    # ch = setdiff(ch, selected)
-
     pal = mono == true ? :grays : :darktest
 
     if cart == false
@@ -268,18 +265,14 @@ Preview of channel locations.
 """
 function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, cart::Bool=true, kwargs...)
 
-    #_has_locs(obj) == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
-
     # select channels, default is all channels
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
     selected != 0 && _check_channels(obj, selected)
 
     if obj.header.recording[:data_type] == "ecog"
         @error "Use plot_locs_ecog() for ECoG data."
-        return nothing
     elseif obj.header.recording[:data_type] == "nirs"
         @error "Use plot_locs_nirs() for NIRS data."
-        return nothing        
     elseif threed == false
         if obj.header.recording[:data_type] == "nirs"
             ch_pairs = obj.header.recording[:channel_pairs]

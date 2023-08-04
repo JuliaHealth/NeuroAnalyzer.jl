@@ -94,11 +94,11 @@ eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-el
 
 @info "test 19/27: save()"
 isfile("test.hdf5") && rm("test.hdf5")
-save(eeg, file_name="test.hdf5")
+NeuroAnalyzer.save(eeg, file_name="test.hdf5")
 @test isfile("test.hdf5") == true
 
 @info "test 20/27: load()"
-new = load("test.hdf5")
+new = NeuroAnalyzer.load("test.hdf5")
 @test new isa NeuroAnalyzer.NEURO
 isfile("test.hdf5") && rm("test.hdf5")
 

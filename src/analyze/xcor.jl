@@ -18,7 +18,7 @@ Calculate cross-correlation (a measure of similarity of two signals as a functio
 """
 function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true)
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     ep_n = size(s1, 2)
 
@@ -52,7 +52,7 @@ Calculate cross-correlation (a measure of similarity of two signals as a functio
 """
 function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true)
 
-    size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
@@ -96,15 +96,15 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     # check channels
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
-    length(ch1) == length(ch2) || throw(ArgumentError("ch1 and ch2 must have the same length."))
+    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
     
     # check epochs
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    length(ep1) == length(ep2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
+    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
+    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    lag > obj1.epoch_time[end] && throw(ArgumentError("lag must be ≤ $(obj1.epoch_time[end])."))
+    @assert lag <= obj1.epoch_time[end] "lag must be ≤ $(obj1.epoch_time[end])."
 
     l = vsearch(lag, obj1.epoch_time)
     xc = @views xcor(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean)

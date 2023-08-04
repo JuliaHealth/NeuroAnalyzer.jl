@@ -44,7 +44,7 @@ Interactive preview of epoched signal.
 """
 function preview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false)
 
-    epoch_n(obj) < 2 && @error "preview_cont() should be used for continuous object."
+    @assert epoch_n(obj) < 2 "preview_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch)
@@ -213,7 +213,7 @@ Interactive preview of continuous signal.
 """
 function preview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false)
 
-    epoch_n(obj) > 1 && @error "preview_ep() should be used for epoched object."
+    @assert epoch_n(obj) > 1 "preview_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
     zoom_level = 10
@@ -707,7 +707,7 @@ Interactive preview of epoched signal.
 """
 function preview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj1)))
 
-    epoch_n(obj1) < 2 && @error "preview_cont() should be used for continuous object."
+    @assert epoch_n(obj1) < 2 "preview_cont() should be used for continuous object."
     _check_channels(obj1, ch1)
 
     p = NeuroAnalyzer.plot(obj1, obj2, ch=ch)
@@ -878,7 +878,7 @@ Interactive preview of continuous signal.
 """
 function preview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj1)))
 
-    epoch_n(obj1) > 1 && @error "preview_ep() should be used for epoched object."
+    @assert epoch_n(obj1) > 1 "preview_ep() should be used for epoched object."
     _check_channels(obj1, ch)
 
     zoom_level = 10

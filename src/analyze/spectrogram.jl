@@ -25,8 +25,8 @@ Named tuple containing:
 """
 function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st::Bool=false)
 
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert !(mt == true && st == true) "Both mt and st must not be true."
+    @assert fs >= 1 "fs must be ≥ 1."
 
     nfft = length(s)
     interval = fs
@@ -70,7 +70,7 @@ Calculate spectrogram using wavelet convolution.
 - `pad::Int64`: pad with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
@@ -83,25 +83,25 @@ Named tuple containing:
 - `sph::Matrix{Float64}`: phases
 - `sf::Vector{Float64}`: frequencies
 """
-function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_var(frq, [:log, :lin], "frq")
 
     pad > 0 && (s = pad0(s, pad))
 
     if ncyc isa Int64
-        ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
+        @assert ncyc >= 1 "ncyc must be ≥ 1."
     else
-        ncyc[1] < 1 && throw(ArgumentError("ncyc[1] must be ≥ 1."))
-        ncyc[2] < 1 && throw(ArgumentError("ncyc[2] must be ≥ 1."))
+        @assert ncyc[1] >= 1 "ncyc[1] must be ≥ 1."
+        @assert ncyc[2] >= 1 "ncyc[2] must be ≥ 1."
     end
 
     # get frequency range
-    fs < 1 && throw(ArgumentError("fs must be > 1."))
+    @assert fs >= 1 "fs must be > 1."
     frq_lim = tuple_order(frq_lim)
-    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
-    frq_n < 2 && throw(ArgumentError("frq_n must be ≥ 2."))
+    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    @assert frq_n >= 2 "frq_n must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if frq === :log
@@ -158,7 +158,7 @@ Calculate spectrogram using Gaussian and Hilbert transform.
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
@@ -170,15 +170,15 @@ Named tuple containing:
 - `sph::Matrix{Float64}`: phases
 - `sf::Vector{Float64}`: frequencies
 """
-function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, gw::Real=5)
+function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, gw::Real=5)
 
     _check_var(frq, [:log, :lin], "frq")
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
-    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
-    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if frq === :log
@@ -213,7 +213,7 @@ Calculate spectrogram using continuous wavelet transformation (CWT).
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
 
 # Returns
 
@@ -221,18 +221,18 @@ Named tuple containing:
 - `sp::Matrix{Float64}`: powers
 - `sf::Vector{Float64}`: frequencies
 """
-function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)) where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2)) where {T <: CWT}
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
-    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
+    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
 
     sp = abs.(ContinuousWavelets.cwt(s, wt)')
     sf = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(s), wt)[1])
     sf[1] = 0
-    sf[1] < frq_lim[1] && throw(ArgumentError("Lower frequency bound must be ≥ $(sf[1])."))
-    sf[end] < frq_lim[2] && throw(ArgumentError("Upper frequency bound must be ≤ $(sf[end])."))
+    @assert frq_lim[1] >= sf[1] "Lower frequency bound must be ≥ $(sf[1])."
+    @assert frq_lim[2] <= sf[end] "Upper frequency bound must be ≤ $(sf[end])."
     sf = sf[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf)]
     sp = sp[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf), :]
 
@@ -259,7 +259,7 @@ Calculate spectrogram.
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to add
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: frequency limits
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
@@ -274,7 +274,7 @@ Named tuple containing:
 - `sf::Vector{Float64}`
 - `st::Vector{Float64}`
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
 
     _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)

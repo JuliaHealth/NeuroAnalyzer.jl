@@ -13,11 +13,11 @@ Export `NeuroAnalyzer.NEURO` object markers to CSV.
 """
 function export_markers(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
-    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
     # MARKERS
     if nrow(obj.markers) > 0
-        (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+        @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
         CSV.write(file_name, obj.markers)
     end
 

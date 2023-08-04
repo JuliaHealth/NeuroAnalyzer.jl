@@ -19,7 +19,7 @@ Show markers.
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)
 
-    _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
+    @assert _has_markers(obj) == true "OBJ has no markers."
     
     println(rpad("n", 5) * 
             rpad("ID", 24) * 
@@ -55,11 +55,11 @@ Delete marker.
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
 
-    _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
+    @assert _has_markers(obj) == true "OBJ has no markers."
 
     obj_new = deepcopy(obj)
     nn = nrow(obj_new.markers)
-    (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
+    @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
     deleteat!(obj_new.markers, n)
     reset_components!(obj_new)
     push!(obj_new.history, "delete_marker(OBJ; n=$n)")
@@ -108,10 +108,10 @@ Add marker.
 """
 function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)
 
-    start < 1 && throw(ArgumentError("start must be > 0."))
-    len < 1 && throw(ArgumentError("len must be > 0."))
-    start >= signal_len(obj) && throw(ArgumentError("start must be < $(signal_len(obj) - 1)."))
-    start + len > signal_len(obj) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj))."))
+    @assert start > 0 "start must be > 0."
+    @assert len > 0 "len must be > 0."
+    @assert start < signal_len(obj) "start must be < $(signal_len(obj) - 1)."
+    @assert start + len <= signal_len(obj) "start + len must be ≤ $(signal_len(obj))."
 
     obj_new = deepcopy(obj)
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>ch))
@@ -168,14 +168,14 @@ Edit marker.
 """
 function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, desc::String, ch::Int64)
 
-    _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
-    start < 1 && throw(ArgumentError("start must be > 0."))
-    len < 1 && throw(ArgumentError("len must be > 0."))
-    start >= signal_len(obj) / sr(obj) && throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
-    start + len > signal_len(obj) / sr(obj) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
+    @assert _has_markers(obj) == true "OBJ has no markers."
+    @assert start > 0 "start must be > 0."
+    @assert len > 0 "len must be > 0."
+    @assert start < signal_len(obj) / sr(obj) "start must be < $(signal_len(obj) / sr(obj))."
+    @assert start + len <= signal_len(obj) / sr(obj) "start + len must be ≤ $(signal_len(obj) / sr(obj))."
 
     nn = size(obj.markers, 1)
-    n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
+    @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>ch)
      reset_components!(obj_new)
@@ -235,11 +235,11 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
-    length(unique(ev_ch)) == 1 && throw(ArgumentError("Channel $ch does not contain events."))
+    @assert length(unique(ev_ch)) > 1 "Channel $ch does not contain events."
 
     # extract events
     ev_v = unique(ev_ch)
-    v in ev_v || throw(ArgumentError("Event channel does not contain value $v."))
+    @assert v in ev_v "Event channel does not contain value $v."
     _info("Event channel contains values: $ev_v")
 
     ev_start = getindex.(findall(ev_ch .== v), 1)

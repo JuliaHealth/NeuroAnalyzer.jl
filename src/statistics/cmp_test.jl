@@ -32,7 +32,7 @@ Named tuple containing for type === `:perm`:
 function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000)
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
-    paired == true && size(s1) != size(s2) && throw(ArgumentError("For paired test both segments must have the same size."))
+    paired == true && size(s1) != size(s2) && @error "For paired test both segments must have the same size."
 
     ks = ApproximateTwoSampleKSTest(s1, s2)
     pks = pvalue(ks)

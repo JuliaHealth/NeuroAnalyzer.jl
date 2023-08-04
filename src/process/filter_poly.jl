@@ -18,8 +18,8 @@ Filter using polynomial filter.
 """
 function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
 
-    order < 1 && throw(ArgumentError("order must be > 1."))
-    window < 1 || window > length(s) && throw(ArgumentError("window must be in [1, $(length(s))]."))
+    @assert order > 1 "order must be > 1."
+    @assert !(window < 1 || window > length(s)) "window must be in [1, $(length(s))]."
 
     s_filtered = deepcopy(s)
 

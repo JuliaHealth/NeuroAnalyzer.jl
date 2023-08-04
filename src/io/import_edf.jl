@@ -28,8 +28,8 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 """
 function import_edf(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".edf" || throw(ArgumentError("This is not an EDF file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] == ".edf" "This is not EDF file."
 
     file_type = ""
 
@@ -46,7 +46,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
-    file_type != "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
+    @assert file_type == "EDF" "File $file_name is not EDF file."
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])
@@ -56,11 +56,11 @@ function import_edf(file_name::String; detect_type::Bool=true)
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
-    reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet."))
+    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet."
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    data_records_duration == 0 && throw(ArgumentError("This file contains only annotations, use import_edf_annotations()."))
+    @assert data_records_duration > 0 "This file contains only annotations, use import_edf_annotations()."
     ch_n  = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)

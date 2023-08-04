@@ -20,9 +20,9 @@ Named tuple containing:
 """
 function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    f <= 0 && throw(ArgumentError("f must be > 0."))
-    gw <= 0 && throw(ArgumentError("gw must be > 0."))
+    @assert fs >= 1 "fs must be ≥ 1."
+    @assert f > 0 "f must be > 0."
+    @assert gw > 0 "gw must be > 0."
 
     # create Gaussian in frequency domain
     gf = linspace(0, fs, length(s))

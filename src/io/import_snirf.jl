@@ -20,14 +20,14 @@ https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """
 function import_snirf(file_name::String; n::Int64=0)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".snirf" || throw(ArgumentError("This is not a SNIRF file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] == ".snirf" "This is not SNIRF file."
 
     nirs = nothing
     try
         nirs = FileIO.load(file_name)
     catch
-        throw(ArgumentError("File $file_name cannot be loaded."))
+        @error "File $file_name cannot be loaded."
     end
 
     file_type = "SNIRF"
@@ -36,13 +36,10 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # check for multi-subject recordings
     n_id = "nirs"
-    n !== 0 && any(occursin.("nirs$n" , keys(nirs))) == false && throw(ArgumentError("No data for subject $n found in the recording."))
+    n != 0 && @assert !any(occursin.("nirs$n" , keys(nirs))) "No data for subject $n found in the recording."
     if any(occursin.("nirs1" , keys(nirs))) == true
-        if n == 0
-            throw(ArgumentError("This is a multi-subject SfNIR file. Subject number must be specified via 'n' parameter."))
-        else
-            n_id = "nirs$n"
-        end
+        @assert n != 0 "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."
+        n_id = "nirs$n"
     end
 
     # read metadata

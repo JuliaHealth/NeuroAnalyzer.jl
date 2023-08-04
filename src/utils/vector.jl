@@ -43,7 +43,7 @@ Return the positions of the `y` vector in the vector `x`.
 """
 function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
 
-    length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
+    @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
 
     idx = zeros(length(y))
     d = zeros(length(y))
@@ -71,8 +71,8 @@ Splits the vector `x` into `n`-long pieces.
 """
 function vsplit(x::AbstractVector, n::Int64=1)
 
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    length(x) % n == 0 || throw(ArgumentError("Length of x must be a multiple of n."))
+    @assert n >= 1 "n must be ≥ 1."
+    @assert length(x) % n == 0 "Length of x must be a multiple of n."
 
     x_m = reshape(x, length(x) ÷ n, n)
     result = [x_m[1, :]]

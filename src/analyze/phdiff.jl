@@ -54,7 +54,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 """
 function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:size(s, 1), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 
-    avg in [:phase, :signal] || throw(ArgumentError("avg must be :phase or :signal."))
+    _check_var(avg, [:phase, :signal], "avg")
 
     _check_channels(s, ch)
 

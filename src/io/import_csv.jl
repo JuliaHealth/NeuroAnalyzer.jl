@@ -22,7 +22,7 @@ If file is gzip-ed, it will be uncompressed automatically while reading.
 """
 function import_csv(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
 
     file_type = "CSV"
 

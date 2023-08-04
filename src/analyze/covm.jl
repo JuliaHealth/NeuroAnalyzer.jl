@@ -47,7 +47,7 @@ Calculate covariance matrix of `s1 * s2'`.
 """
 function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)
 
-    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
+    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # channels-vs-channels
     if CUDA.functional() && use_cuda

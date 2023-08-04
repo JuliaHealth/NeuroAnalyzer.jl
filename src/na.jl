@@ -17,7 +17,7 @@ Show NeuroAnalyzer and imported packages versions.
 """
 function na_info()
 
-    println("    NeuroAnalyzer: $na_ver")
+    println("    NeuroAnalyzer: $NA_VER")
     println("            Julia: $VERSION")
     if CUDA.functional()
         println("             CUDA: $(CUDA.runtime_version()) (use_cuda = $use_cuda)")
@@ -98,7 +98,9 @@ end
 Reload NeuroAnalyzer plugins.
 """
 function na_plugins_reload()
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+
+    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
+
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
@@ -112,6 +114,7 @@ function na_plugins_reload()
         end
     end
     cd(path_tmp)
+
 end
 
 """
@@ -121,7 +124,7 @@ List NeuroAnalyzer plugins.
 """
 function na_plugins_list()
 
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -145,13 +148,13 @@ Remove NeuroAnalyzer `plugin`.
 """
 function na_plugins_remove(plugin::String)
 
-    _info("This will remove the whole $plugin directory, along with its file contents.")
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    _warn("This will remove the whole $plugin directory, along with its file contents.")
+    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
 
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
-    plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
+    @assert plugin in plugins "Plugin $plugin does not exist."
     try
         rm(plugin, recursive=true)
     catch
@@ -173,7 +176,7 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_install(plugin::String)
 
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -198,7 +201,7 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_update(plugin::Union{String, Nothing}=nothing)
 
-    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -215,7 +218,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
             cd(plugins_path)
         end
     else
-        plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
+        @assert plugin in plugins "Plugin $plugin does not exist."
         cd(plugin)
         try
             run(`$(git()) pull`)
@@ -303,10 +306,10 @@ Convert NeuroAnalyzer version to string.
 
 # Returns
 
-- `na_ver::String`
+- `NA_VER::String`
 """
 function na_version()
 
-    return string(Int(na_ver.major)) * "." * string(Int(na_ver.minor)) * "." * string(Int(na_ver.patch))
+    return string(Int(NA_VER.major)) * "." * string(Int(NA_VER.minor)) * "." * string(Int(NA_VER.patch))
 
 end

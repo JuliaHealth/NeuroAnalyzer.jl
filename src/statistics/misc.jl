@@ -162,7 +162,7 @@ Calculate effect size for two proportions `p1` and `p2`.
 """
 function effsize(p1::Float64, p2::Float64)
 
-    p1 + p2 == 1.0 || throw(ArgumentError("Proportions must add to 1.0."))
+    @assert p1 + p2 == 1.0 "Proportions must add to 1.0."
 
     e = 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
 

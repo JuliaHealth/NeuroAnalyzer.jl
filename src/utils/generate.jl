@@ -33,7 +33,7 @@ Return the `n`-point long symmetric window `type`.
 function generate_window(type::Symbol, n::Int64; even::Bool=false)
 
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    @assert n >= 1 "n must be ≥ 1."
 
     even == true && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)
@@ -170,9 +170,9 @@ Generate Morlet wavelet.
 """
 function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
-    t <= 0 && throw(ArgumentError("t must be > 0."))
+    @assert fs >= 1 "fs must be ≥ 1."
+    @assert ncyc >= 1 "ncyc must be ≥ 1."
+    @assert t > 0 "t must be > 0."
 
     t = -t:1/fs:t
     sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
@@ -202,9 +202,9 @@ Generate Gaussian wave.
 """
 function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
-    t <= 0 && throw(ArgumentError("t must be > 0."))
+    @assert fs >= 1 "fs must be ≥ 1."
+    @assert ncyc >= 1 "ncyc must be ≥ 1."
+    @assert t > 0 "t must be > 0."
 
     t = -t:1/fs:t
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)

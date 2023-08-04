@@ -22,7 +22,7 @@ Named tuple containing:
 """
 function cor_test(s1::AbstractVector, s2::AbstractVector)
 
-    length(s1) == length(s2) || throw(ArgumentError("Both vectors must have the same length."))
+    @assert length(s1) == length(s2) "Both vectors must have the same length."
     t = CorrelationTest(s1, s2)
     p = pvalue(t)
     p < eps() && (p = eps())

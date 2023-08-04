@@ -9,7 +9,7 @@ Calculate PSD linear fit and slope.
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `f::Tuple{Real, Real}=(0, fs ÷ 2)`: calculate slope of the total power (default) or frequency range `f[1]` to `f[2]`
+- `f::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `f[1]` to `f[2]`
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -21,11 +21,11 @@ Named tuple containing:
 - `ls::Float64`: slopes of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}=(0, fs ÷ 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd_slope(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 0."))
-    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+    @assert f[1] >= 0 "Lower frequency bound must be be ≥ 0."
+    @assert f[2] <= fs / 2 "Upper frequency bound must be be < $(fs / 2)."
 
     pw, pf = psd(s, fs=fs, norm=norm, mt=mt, nt=nt)
 
@@ -47,7 +47,7 @@ Calculate PSD linear fit and slope.
 
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
-- `f::Tuple{Real, Real}=(0, fs ÷ 2)`: calculate slope of the total power (default) or frequency range `f[1]` to `f[2]`
+- `f::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `f[1]` to `f[2]`
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -59,7 +59,7 @@ Named tuple containing:
 - `s::Vector{Float64}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}=(0, fs ÷ 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd_slope(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -88,7 +88,7 @@ Calculate PSD linear fit and slope.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `f::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
+- `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -100,7 +100,7 @@ Named tuple containing:
 - `ls::Array{Float64, 2}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}=(0, sr(obj) ÷ 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}=(0, sr(obj) / 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     _check_channels(obj, ch)
 

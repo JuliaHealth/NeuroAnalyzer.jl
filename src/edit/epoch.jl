@@ -26,35 +26,32 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
 
     if marker != ""
         # split by markers
-        if _has_markers(obj) == true
-            ep_len === nothing && throw(ArgumentError("ep_len must be specified."))
-            _check_markers(obj, marker)
+        @assert _has_markers(obj) == true "OBJ does not contain markers."
+        @assert ep_len !== nothing "ep_len must be specified."
+        _check_markers(obj, marker)
 
-            # get marker positions
-            any(obj_new.markers[!, :description] .== marker) == false && throw(ArgumentError("OBJ does not contain marker $marker."))
-            mrk_idx = getindex.(findall(obj_new.markers[!, :description] .== marker))
-            mrk_start = obj_new.markers[mrk_idx, :start]
-            mrk_len = obj_new.markers[mrk_idx, :length]
+        # get marker positions
+        @assert any(obj_new.markers[!, :description] .== marker) == true "OBJ does not contain marker $marker."
+        mrk_idx = getindex.(findall(obj_new.markers[!, :description] .== marker))
+        mrk_start = obj_new.markers[mrk_idx, :start]
+        mrk_len = obj_new.markers[mrk_idx, :length]
 
-            # remove markers that would be before signal start
-            for idx in length(mrk_start):-1:1
-                if mrk_start[idx] - offset < obj.time_pts[1]
-                    deleteat!(mrk_start, idx)
-                    deleteat!(mrk_len, idx)
-                end
+        # remove markers that would be before signal start
+        for idx in length(mrk_start):-1:1
+            if mrk_start[idx] - offset < obj.time_pts[1]
+                deleteat!(mrk_start, idx)
+                deleteat!(mrk_len, idx)
             end
-
-            offset + ep_len < maximum(mrk_len) && throw(ArgumentError("offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."))
-
-            # split into epochs
-            epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
-
-        else
-            throw(ArgumentError("OBJ does not contain markers."))
         end
+
+        @assert offset + ep_len >= maximum(mrk_len) "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."
+
+        # split into epochs
+        epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
+
     else
         if ep_len !== nothing
-            ep_len > signal_len(obj) / sr(obj) && throw(ArgumentError("ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)))."))
+            @assert ep_len <= signal_len(obj) / sr(obj) "ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)))."
             ep_len = round(Int64, ep_len * sr(obj))
         end
         # split by ep_len or ep_n

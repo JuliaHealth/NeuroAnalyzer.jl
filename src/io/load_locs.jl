@@ -38,8 +38,8 @@ Channel locations:
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    length(obj.header.recording[:labels]) > 0 || throw(ArgumentError("OBJ does not contain labels, use add_labels() first."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_labels() first."
 
     _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
     _info("Nose direction is set at '+Y'")
@@ -61,7 +61,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     elseif splitext(file_name)[2] == ".mat"
         locs = import_locs_mat(file_name, maximize=maximize)
     else
-        throw(ArgumentError("Unknown file format."))
+        @error "Unknown file format."
     end
 
     f_labels = locs[!, :labels]

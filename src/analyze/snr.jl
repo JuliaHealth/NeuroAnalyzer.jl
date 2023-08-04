@@ -69,7 +69,7 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    ep_n == 1 && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
+    @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 
     f, _ = freqs(t)
     _, amp, _, _ = @views spectrum(s[1, :, 1])

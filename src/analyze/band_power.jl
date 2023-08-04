@@ -19,10 +19,10 @@ Calculate absolute band power between two frequencies.
 """
 function band_power(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false, nt::Int64=8)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
     f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
-    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2).")) 
+    @assert f[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert f[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
 
     # for short signals use multi-tapered periodogram
     length(s) < 4 * fs && (mt = true)

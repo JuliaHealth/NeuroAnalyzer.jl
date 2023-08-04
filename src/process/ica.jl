@@ -27,8 +27,8 @@ Named tuple containing:
 function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:tanh)
 
     _check_var(f, [:tanh, :gaus], "f")
-    n < 0 && throw(ArgumentError("n must be ≥ 1."))
-    n > size(s, 1) && throw(ArgumentError("n must be ≤ $(size(s, 1))."))
+    @assert n >= 1 "n must be ≥ 1."
+    @assert n <= size(s, 1) "n must be ≤ $(size(s, 1))."
 
     f === :tanh && (f = MultivariateStats.Tanh(1.0))
     f === :gaus && (f = MultivariateStats.Gaus())
@@ -110,7 +110,7 @@ Named tuple containing:
 function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)
 
     _check_channels(obj, ch)
-    epoch_n(obj) > 1 && throw(ArgumentError("ica_decompose() should be applied to a continuous signal."))
+    @assert epoch_n(obj) == 1 "ica_decompose() should be applied to a continuous signal."
 
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
@@ -155,15 +155,15 @@ Reconstruct signal using ICA components.
 function ica_reconstruct(; ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
-    size(ic, 1) == size(ic_mw, 2) || throw(ArgumentError("ic and ic_mw dimensions do not match (ic: $(size(ic)), ic_mw: $(size(ic_mw)))."))
+    @assert size(ic, 1) == size(ic_mw, 2) "ic and ic_mw dimensions do not match (ic: $(size(ic)), ic_mw: $(size(ic_mw)))."
 
     if typeof(ic_idx) == Vector{Int64}
         sort!(ic_idx)
         for idx in ic_idx
-            (idx < 1 || idx > size(ic_mw, 2)) && throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
+            @assert !(idx < 1 || idx > size(ic_mw, 2)) "ic_idx must be in [1, $(size(ic_mw, 2))]."
         end
     else
-        (ic_idx < 1 || ic_idx > size(ic_mw, 2)) && throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
+        @assert !(ic_idx < 1 || ic_idx > size(ic_mw, 2)) "ic_idx must be in [1, $(size(ic_mw, 2))]."
     end
 
     if keep == false
@@ -196,8 +196,8 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     _check_channels(obj, ch)
-    :ic in keys(obj.components) || throw(ArgumentError("OBJ does not contain :ic component. Perform ica_decompose() first."))
-    :ic_mw in keys(obj.components) || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica_decompose() first."))
+    @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
+    @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
 
     return ica_reconstruct(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx, keep=keep)
 
@@ -248,7 +248,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::M
 
     _check_channels(obj, ch)
 
-    epoch_n(obj) > 1 && throw(ArgumentError("ica_reconstruct() should be applied to a continuous signal."))
+    @assert epoch_n(obj) == 1 "ica_reconstruct() should be applied to a continuous signal."
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[ch, :, :]
@@ -306,7 +306,7 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
 
     _check_channels(obj, ch)
 
-    epoch_n(obj) > 1 && throw(ArgumentError("ica_remove() should be applied to a continuous signal."))
+    @assert epoch_n(obj) == 1 "ica_remove() should be applied to a continuous signal."
 
     obj_new = deepcopy(obj)
 
@@ -366,8 +366,8 @@ Remove embedded ICA components (`:ic` and `:ic_mw`).
 function ica_remove(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     _check_channels(obj, ch)
-    :ic in keys(obj.components) || throw(ArgumentError("OBJ does not contain :ic component. Perform ica_decompose() first."))
-    :ic_mw in keys(obj.components) || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica_decompose() first."))
+    @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
+    @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
 
     return ica_remove(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx)
 

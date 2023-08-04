@@ -314,8 +314,8 @@ Plot topographical map ERPs.
 """
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
 
-    size(s, 2) == length(t) || throw(ArgumentError("Signal length and time length must be equal."))
-    length(ch) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+    @assert size(s, 2) == length(t) "Signal length and time length must be equal."
+    @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
     pal = mono == true ? :grays : :darktest
     
@@ -435,8 +435,8 @@ Plot EPRs stacked by channels or by epochs.
 """
 function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)
 
-    ndims(s) == 2 || throw(ArgumentError("signal must have 2 dimensions."))
-    length(t) == size(s, 2) || throw(ArgumentError("Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."))
+    @assert ndims(s) == 2 "signal must have 2 dimensions."
+    @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
 
     pal = mono == true ? :grays : :darktest
 
@@ -518,15 +518,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     units = _set_units(obj, ch[1])
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
-    (length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) && throw(ArgumentError("All channels must be of the same type."))
-
-    type in [:normal] && length(ch) > 1 && throw(ArgumentError("For :normal plot type, only one channel must be specified."))
-    # type in [:butterfly, :stack] && length(ch) < 2 && throw(ArgumentError("For :butterfly and :stack plot type ≥ 2 channels must be specified."))
+    @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
 
     # get data
-    # ch=1
-    # ch=1:10
-
     ep_n = epoch_n(obj) - 1
 
     if type in [:normal, :topo]
@@ -547,13 +541,14 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     if tm != 0
         for tm_idx in eachindex(tm)
-            tm[tm_idx] / 1000 < t[1] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
-            tm[tm_idx] / 1000 > t[end] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            @assert tm[tm_idx] / 1000 >= t[1] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
+            @assert tm[tm_idx] / 1000 <= t[end] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
             tm[tm_idx] = vsearch(tm[tm_idx] / 1000, t)
         end
     end
 
     if type === :normal
+        @assert length(ch) == 1 "For :normal plot type, only one channel must be specified."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude channel $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp(t,
                      s,
@@ -591,7 +586,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                          yrev=yrev;
                          kwargs...)
     elseif type === :topo
-        _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available."))
+        @assert _has_locs(obj) "Electrode locations not available."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         peaks = false
         ndims(s) == 1 && (s = reshape(s, 1, length(s)))

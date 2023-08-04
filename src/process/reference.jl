@@ -194,8 +194,8 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_datatype(obj, :eeg)
     _check_var(type, [:l, :i, :c], "type")
-    all(iszero, occursin.("a1", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain A1 channel."))
-    all(iszero, occursin.("a2", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain A2 channel."))
+    @assert !all(iszero, occursin.("a1", lowercase.(labels(obj)))) "OBJ does not contain A1 channel."
+    @assert !all(iszero, occursin.("a2", lowercase.(labels(obj)))) "OBJ does not contain A2 channel."
 
     # keep signal channels
     chs = signal_channels(obj)
@@ -329,8 +329,8 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_datatype(obj, :eeg)
     _check_var(type, [:l, :i, :c], "type")
-    all(iszero, occursin.("m1", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain M1 channel."))
-    all(iszero, occursin.("m2", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain M2 channel."))
+    @assert !all(iszero, occursin.("m1", lowercase.(labels(obj)))) "OBJ does not contain M1 channel."
+    @assert !all(iszero, occursin.("m2", lowercase.(labels(obj)))) "OBJ does not contain M2 channel."
 
     # keep signal channels
     chs = signal_channels(obj)
@@ -461,17 +461,17 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
     _check_datatype(obj, :eeg)
-    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     # keep signal channels
     chs = signal_channels(obj)
     s = obj.data[chs, :, :]
 
-    length(chs) > nrow(obj.locs) && throw(ArgumentError("Some channels do not have locations."))
+    @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
 
     ch_n = size(s, 1)
-    nn < 1 && throw(ArgumentError("nn must be ≥ 1"))
-    nn > ch_n - 1 && throw(ArgumentError("nn must be < $(ch_n - 1)"))
+    @assert nn >= 1 "nn must be ≥ 1"
+    @assert nn < ch_n - 1 "nn must be < $(ch_n - 1)"
     ep_n = size(s, 3)
     
     loc_x = obj.locs[1:ch_n, :loc_x]
@@ -588,10 +588,10 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
             m = match(r"(.+)-(.+)", ref_list[ref_idx])
-            m[1] in labels(obj)[chs] || throw(ArgumentError("Label $(m[1]) does not match OBJ labels."))
-            m[2] in labels(obj)[chs] || throw(ArgumentError("Label $(m[2]) does not match OBJ labels."))
+            @assert m[2] in labels(obj)[chs] "Label $(m[2]) does not match OBJ labels."
+            @assert m[1] in labels(obj)[chs] "Label $(m[1]) does not match OBJ labels."
         else
-            ref_list[ref_idx] in labels(obj)[chs] || throw(ArgumentError("Label $(ref_list[ref_idx]) does not match OBJ labels."))
+            @assert ref_list[ref_idx] in labels(obj)[chs] "Label $(ref_list[ref_idx]) does not match OBJ labels."
         end
     end
 

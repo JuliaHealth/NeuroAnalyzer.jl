@@ -50,8 +50,8 @@ Calculate amplitude at given time.
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
 
     _check_datatype(obj, :erp)
-    t < obj.epoch_time[1] && throw(ArgumentError("t must be ≥ $(obj.epoch_time[1])."))
-    t > obj.epoch_time[end] && throw(ArgumentError("t must be ≤ $(obj.epoch_time[end])."))
+    @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
+    @assert t <= obj.epoch_time[end] "t must be ≤ $(obj.epoch_time[end])."
 
     t_idx = vsearch(t, obj.epoch_time)
 
@@ -86,9 +86,9 @@ Calculate average amplitude at given time segment.
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
     _check_datatype(obj, :erp)
-    t[1] < obj.epoch_time[1] && throw(ArgumentError("t[1] must be ≥ $(obj.epoch_time[1])."))
-    t[2] > obj.epoch_time[end] && throw(ArgumentError("t[2] must be ≤ $(obj.epoch_time[end])."))
-    t[1] > t[2] && throw(ArgumentError("t[1] must be < t[2]."))
+    @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
+    @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
+    @assert t[1] <= t[2] "t[1] must be < t[2]."
     
     t_idx1 = vsearch(t[1], obj.epoch_time)
     t_idx2 = vsearch(t[2], obj.epoch_time)
@@ -124,9 +124,9 @@ Calculate maximum amplitude at given time segment.
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
     _check_datatype(obj, :erp)
-    t[1] < obj.epoch_time[1] && throw(ArgumentError("t[1] must be ≥ $(obj.epoch_time[1])."))
-    t[2] > obj.epoch_time[end] && throw(ArgumentError("t[2] must be ≤ $(obj.epoch_time[end])."))
-    t[1] > t[2] && throw(ArgumentError("t[1] must be < t[2]."))
+    @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
+    @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
+    @assert t[1] <= t[2] "t[1] must be < t[2]."
     
     t_idx1 = vsearch(t[1], obj.epoch_time)
     t_idx2 = vsearch(t[2], obj.epoch_time)
@@ -162,9 +162,9 @@ Calculate minimum amplitude at given time segment.
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
     _check_datatype(obj, :erp)
-    t[1] < obj.epoch_time[1] && throw(ArgumentError("t[1] must be ≥ $(obj.epoch_time[1])."))
-    t[2] > obj.epoch_time[end] && throw(ArgumentError("t[2] must be ≤ $(obj.epoch_time[end])."))
-    t[1] > t[2] && throw(ArgumentError("t[1] must be < t[2]."))
+    @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
+    @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
+    @assert t[1] <= t[2] "t[1] must be < t[2]."
     
     t_idx1 = vsearch(t[1], obj.epoch_time)
     t_idx2 = vsearch(t[2], obj.epoch_time)

@@ -22,17 +22,17 @@ Remove power line noise and its peaks above power line frequency.
 """
 function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
-    epoch_n(obj) > 1 && throw(ArgumentError("remove_powerline() should be applied to a continuous signal."))
+    @assert epoch_n(obj) == 1 "remove_powerline() should be applied to a continuous signal."
 
     _check_channels(obj, ch)    
     _check_var(method, [:iir], "method")
 
     obj_new = deepcopy(obj)
 
-    pl_frq < 0 && throw(ArgumentError("pl_freq must be > 0."))
-    pl_frq > sr(obj) / 2 && throw(ArgumentError("pl_freq must be ≤ $(sr(obj) / 2)."))
-    q < 0.01 && throw(ArgumentError("q must be ≥ 0.01."))
-    q >= 5 && throw(ArgumentError("q must be < 5."))
+    @assert pl_frq >= 0 "pl_freq must be ≥ 0."
+    @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
+    @assert q >= 0.01 "q must be ≥ 0.01."
+    @assert q < 5 "q must be < 5."
 
     # number of peaks
     pl_best_bw = zeros(length(ch))
@@ -59,10 +59,10 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             p_tmp = p[f_pl]
             f_tmp = f[f_pl]
             peaks, _ = findpeaks1d(p_tmp, prominence=pr)
-            length(peaks) == 0 && @error "No power line peak detected, check pl_frq value (perhaps the signal has already been filtered?)."
+            @assert length(peaks) > 0 "No power line peak detected, check pl_frq value (perhaps the signal has already been filtered?)."
             pl_amp = vsearch(maximum(p_tmp[peaks]), p_tmp)
             pl_frq_detected = f_tmp[vsearch(pl_amp, p_tmp)]
-            (pl_frq_detected < ((pl_frq - d):(pl_frq + d))[1] || pl_frq_detected > ((pl_frq - d):(pl_frq + d))[end]) && @error "Power line peak detected at $pl_frq_detected, check pl_frq value."
+            @assert !(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) "Power line peak detected at $pl_frq_detected, check pl_frq value."
             # pl_wdth = peakwidths1d(p_tmp, peaks)[1][vsearch(pl_amp, peaks)]
 
             v = zeros(length(bw_values))

@@ -1,9 +1,11 @@
 function _make_epochs(s::Matrix{<:Real}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
-    (ep_len === nothing && ep_n === nothing) && throw(ArgumentError("Either ep_n or ep_len must be specified."))
-    (ep_len !== nothing && ep_n !== nothing) && throw(ArgumentError("Both ep_n and ep_len cannot be specified."))
-    (ep_len !== nothing && ep_len < 1) && throw(ArgumentError("ep_len must be ≥ 1."))
-    (ep_n !== nothing && ep_n < 1) && throw(ArgumentError("ep_n must be ≥ 1."))
+    ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
+    ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
+    ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
+    ep_n === nothing && @assert ep_len !== nothing "Both ep_n and ep_len cannot be specified."
+    @assert !(ep_len !== nothing && ep_len < 1) "ep_len must be ≥ 1."
+    @assert !(ep_n !== nothing && ep_n < 1) "ep_n must be ≥ 1."
 
     ch_n = size(s, 1)
     if ep_n === nothing
@@ -12,9 +14,9 @@ function _make_epochs(s::Matrix{<:Real}; ep_n::Union{Int64, Nothing}=nothing, ep
         ep_len = size(s, 2) ÷ ep_n
     end
 
-    ep_len > size(s, 2) && throw(ArgumentError("ep_len must be ≤ $(size(s, 2))."))
-    ep_len < 1 && throw(ArgumentError("ep_len must be ≥ 1."))
-    ep_n < 1 && throw(ArgumentError("ep_n must be ≥ 1."))
+    @assert ep_len <= size(s, 2) "ep_len must be ≤ $(size(s, 2))."
+    @assert ep_len >= 1 "ep_len must be ≥ 1."
+    @assert ep_n >= 1 "ep_n must be ≥ 1."
 
     epochs = reshape(s[:, 1:(ep_len * ep_n)], ch_n, ep_len, ep_n)
 
@@ -23,10 +25,12 @@ end
 
 function _make_epochs(s::Array{<:Real, 3}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
-    (ep_len === nothing && ep_n === nothing) && throw(ArgumentError("Either ep_n or ep_len must be specified."))
-    (ep_len !== nothing && ep_n !== nothing) && throw(ArgumentError("Both ep_n and ep_len cannot be specified."))
-    (ep_len !== nothing && ep_len < 1) && throw(ArgumentError("ep_len must be ≥ 1."))
-    (ep_n !== nothing && ep_n < 1) && throw(ArgumentError("ep_n must be ≥ 1."))
+    ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
+    ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
+    ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
+    ep_n === nothing && @assert ep_len !== nothing "Both ep_n and ep_len cannot be specified."
+    @assert !(ep_len !== nothing && ep_len < 1) "ep_len must be ≥ 1."
+    @assert !(ep_n !== nothing && ep_n < 1) "ep_n must be ≥ 1."
 
     ch_n = size(s, 1)
     if ep_n === nothing
@@ -47,9 +51,9 @@ function _make_epochs_bymarkers(s::Array{<:Real, 3}; marker::String, markers::Da
         s = reshape(s, ch_n, (size(s, 2) * size(s, 3)), 1)
     end
 
-    offset < 1 && throw(ArgumentError("offset must be ≥ 1."))
-    ep_len < 1 && throw(ArgumentError("ep_len must be ≥ 1."))
-    (offset + ep_len > size(s, 2)) && throw(ArgumentError("offset + ep_len must be ≤ signal length $(size(s, 2))."))
+    @assert offset >= 1 "offset must be ≥ 1."
+    @assert ep_len >= 1 "ep_len must be ≥ 1."
+    @assert offset + ep_len <= size(s, 2) "offset + ep_len must be ≤ signal length $(size(s, 2))."
 
     mrk_n = length(marker_start)
     ep_start = @. marker_start - offset

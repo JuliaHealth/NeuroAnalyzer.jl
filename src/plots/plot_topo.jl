@@ -164,7 +164,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
 
@@ -186,10 +186,10 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     # remove non-signal channels
     obj_tmp = keep_channel(obj, ch=signal_channels(obj))
 
-    length(ch) < 2 && throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
+    @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     _check_channels(obj_tmp, ch)
 
-    length(ch) > nrow(obj_tmp.locs) && throw(ArgumentError("Some channels do not have locations."))
+    @assert length(ch) <= nrow(obj_tmp.locs) "Some channels do not have locations."
 
     # get time vector
     if seg[2] <= epoch_len(obj_tmp)
@@ -277,7 +277,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
 
@@ -323,8 +323,8 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     clabels = _gen_clabels(c)[c_idx]
     length(c_idx) == 1 && (clabels = [clabels])
 
-    length(c_idx) < 2 && throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
-    length(ch) > nrow(obj_tmp.locs) && throw(ArgumentError("Some channels do not have locations."))
+    @assert length(c_idx) >= 2 "plot_topo() requires ≥ 2 channels."
+    @assert length(ch) <= nrow(obj_tmp.locs) "Some channels do not have locations."
 
     # get time vector
     if seg[2] <= epoch_len(obj_tmp)

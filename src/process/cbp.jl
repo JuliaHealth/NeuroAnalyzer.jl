@@ -18,9 +18,9 @@ Perform convolution band-pass filtering.
 """
 function cbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    frq <= 0 && throw(ArgumentError("frq must be > 0."))
-    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+    @assert fs >= 1 "fs must be ≥ 1."
+    @assert frq > 0 "frq must be > 0."
+    @assert frq <= fs / 2 "frq must be ≤ $(fs / 2)."
 
     pad > 0 && (s = pad0(s, pad))
 

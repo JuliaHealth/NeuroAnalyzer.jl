@@ -18,10 +18,10 @@ Filter using Savitzky-Golay filter.
 """
 function filter_sg(s::AbstractVector; order::Int64=6, window::Int64=11)
 
-    window < 1 || window > length(s) && throw(ArgumentError("window must be in [1, $(length(s))]."))
-    isodd(window) || throw(ArgumentError("window must be an odd number."))
-    order < 1 && throw(ArgumentError("order must be > 1."))
-    order > window && throw(ArgumentError("order must be < $window."))
+    @assert !(window < 1 || window > length(s)) "window must be in [1, $(length(s))]."
+    @assert isodd(window) "window must be an odd number."
+    @assert order > 1 "order must be > 1."
+    @assert order < window "order must be < $window."
 
     s_filtered = savitzky_golay(s, window, order).y
 

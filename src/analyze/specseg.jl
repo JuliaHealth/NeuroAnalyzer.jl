@@ -26,10 +26,10 @@ function spec_seg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64};
     t = tuple_order(t)
     f = tuple_order(f)
 
-    t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
-    t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
-    f[1] < sf[1] && throw(ArgumentError("f[1] must be ≥ $(sf[1])."))
-    f[2] > sf[end] && throw(ArgumentError("f[2] must be ≤ $(sf[end])."))
+    @assert t[1] >= st[1] "t[1] must be ≥ $(st[1])."
+    @assert t[2] <= st[end] "t[2] must be ≤ $(st[end])."
+    @assert f[1] >= sf[1] "f[1] must be ≥ $(sf[1])."
+    @assert f[2] <= sf[end] "f[2] must be ≤ $(sf[end])."
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)
@@ -70,13 +70,13 @@ function spec_seg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; ch:
     t = tuple_order(t)
     f = tuple_order(f)
 
-    ch < 1 && throw(ArgumentError("ch must be ≥ 1."))
-    ch > size(sp, 3) && throw(ArgumentError("ch must be ≤ $(size(sp, 3))."))
+    @assert ch >= 1 "ch must be ≥ 1."
+    @assert ch <= size(sp, 3) "ch must be ≤ $(size(sp, 3))."
 
-    t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
-    t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
-    f[1] < sf[1] && throw(ArgumentError("f[1] must be ≥ $(sf[1])."))
-    f[2] > sf[end] && throw(ArgumentError("f[2] must be ≤ $(sf[end])."))
+    @assert t[1] >= st[1] "t[1] must be ≥ $(st[1])."
+    @assert t[2] <= st[end] "t[2] must be ≤ $(st[end])."
+    @assert f[1] >= sf[1] "f[1] must be ≥ $(sf[1])."
+    @assert f[2] <= sf[end] "f[2] must be ≤ $(sf[end])."
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)

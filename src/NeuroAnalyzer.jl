@@ -2,11 +2,9 @@ __precompile__()
 
 module NeuroAnalyzer
 
-if VERSION < v"1.9.0"
-    @error("This version of NeuroAnalyzer requires Julia 1.9.0 or above.")
-end
+@assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
 
-const na_ver = v"0.23.8"
+const NA_VER = v"0.23.8"
 
 # initialize preferences
 use_cuda = nothing
@@ -115,7 +113,7 @@ include("na.jl")
 
 function __init__()
 
-    @info "NeuroAnalyzer v$na_ver"
+    @info "NeuroAnalyzer v$NA_VER"
 
     # load preferences
     @info "Loading preferences"

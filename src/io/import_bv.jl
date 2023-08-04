@@ -15,17 +15,17 @@ Load BrainVision BVCDF file and return `NeuroAnalyzer.NEURO` object. At least tw
 """
 function import_bv(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] in [".vhdr", ".ahdr"] || throw(ArgumentError("file_name must specify .VHDR/.AHDR file."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
+    @assert splitext(file_name)[2] in [".vhdr", ".ahdr"] "file_name must specify .VHDR/.AHDR file."
 
     vhdr = nothing
     try
         vhdr = readlines(file_name)
     catch
-        throw(ArgumentError("File $file_name cannot be loaded."))
+        @error "File $file_name cannot be loaded."
     end
     vhdr[1][1] == '\ufeff' && (vhdr[1] = vhdr[1][4:end])
-    startswith(lowercase(replace(vhdr[1], " " => "")), "brainvision") == false && throw(ArgumentError("This is not a BrainVision .VHDR file."))
+    @assert startswith(lowercase(replace(vhdr[1], " " => "")), "brainvision") "This is not BrainVision .VHDR file."
 
     file_type = "BrainVision"
 
@@ -206,14 +206,14 @@ function import_bv(file_name::String; detect_type::Bool=true)
         else
             marker_file = marker_file
         end
-        isfile(marker_file) || throw(ArgumentError("File $marker_file cannot be loaded."))
+        @assert isfile(marker_file) "File $marker_file cannot be loaded."
         vmrk = readlines(marker_file)
         vmrk[1][1] == '\ufeff' && (vmrk[1] = vmrk[1][4:end])
         # delete comments
         for idx in length(vmrk):-1:1
             startswith(vmrk[idx], ';') && deleteat!(vmrk, idx)
         end
-        startswith(lowercase(replace(vmrk[1], " " => "")), "brainvision") == false && throw(ArgumentError("This is not a BrainVision .VMRK file."))
+        @assert startswith(lowercase(replace(vmrk[1], " " => "")), "brainvision") "This is not BrainVision .VMRK file."
         markers_idx = 0
         for idx in eachindex(vmrk)
             startswith(lowercase(replace(vmrk[idx], " " => "")), "[markerinfos]") && (markers_idx = idx)
@@ -269,14 +269,14 @@ function import_bv(file_name::String; detect_type::Bool=true)
         eeg_file = eeg_file
     end
 
-    isfile(eeg_file) || throw(ArgumentError("File $eeg_file cannot be loaded."))
+    @assert isfile(eeg_file) "File $eeg_file cannot be loaded."
     if data_format == "binary"
         if binary_format == "int_16"
             bytes = 2
         elseif binary_format == "ieee_float_32"
             bytes = 4
         else
-            @error("Binary formats other than Float32 and Int16 are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+            @error "Binary formats other than Float32 and Int16 are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
         end
 
         fid = ""

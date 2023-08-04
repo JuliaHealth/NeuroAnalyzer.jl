@@ -20,7 +20,7 @@ Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.
 """
 function import_alice4(file_name::String; detect_type::Bool=true)
 
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    @assert isfile(file_name) "File $file_name cannot be loaded."
 
     file_type = ""
 
@@ -37,20 +37,20 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
-    file_type != "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
+    @assert file_type == "EDF" "File $file_name is not EDF file."
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])
-    occursin("Alice 4", recording) == false && throw(ArgumentError("This is not Alice 4 EDF file."))
+    @assert occursin("Alice 4", recording) "This is not Alice 4 EDF file."
     recording_date = header[169:176]
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
-    reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported."))
+    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported."
     reserved == "EDF+C" && (file_type = "EDF+")
     # we get -1 here
     data_records = parse(Int, strip(header[237:244]))
-    data_records == -1 || throw(ArgumentError("This seems to be a regular EDF file, use import_edf()."))
+    @assert data_records == -1 "This seems to be a regular EDF file, use import_edf()."
     # we get 1.0 here
     data_records_duration  = parse(Float64, strip(header[245:252]))
     ch_n  = parse(Int, strip(header[253:256]))

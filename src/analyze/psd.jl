@@ -20,8 +20,8 @@ Named tuple containing:
 """
 function psd(s::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
-    nt < 1 && throw(ArgumentError("nt must be ≥ 1."))
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert nt >= 1 "nt must be ≥ 1."
+    @assert fs >= 1 "fs must be ≥ 1."
 
     # for short signals use multi-tapered periodogram
     length(s) < 4 * fs && (mt = true)

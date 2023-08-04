@@ -15,7 +15,7 @@ Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `ero
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=8`: number of Slepian tapers
 - `pad::Int64=0`: number of zeros to add
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: frequency limits
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
@@ -27,15 +27,15 @@ Named tuple containing:
 - `ero_p::Array{Float64, 3}`: powers
 - `ero_f::Vector{Float64}`: frequencies
 """
-function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_channels(obj, ch)
     _check_var(method, [:standard, :mt, :mw], "method")
 
     frq_lim = tuple_order(frq_lim)
-    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > sr(obj) ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(sr(obj) ÷ 2)."))
-    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
+    @assert frq_lim[2] <= sr(obj) / 2 "Upper frequency bound must be ≤ $(sr(obj) / 2)."
+    @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if method === :standard

@@ -16,7 +16,7 @@ Calculate instantaneous frequency.
 """
 function frqinst(s::AbstractVector; fs::Int64)
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    @assert fs >= 1 "fs must be ≥ 1."
 
     _, _, _, h_ph = hspectrum(s)
     f = 256 * derivative(h_ph) / (2*pi)
@@ -41,7 +41,7 @@ Calculate instantaneous frequency.
 """
 function frqinst(s::AbstractArray; fs::Int64)
 
-    _info("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
+    _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 
     ch_n = size(s, 1)
     ep_len = size(s, 2)

@@ -40,35 +40,34 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
     if fprototype !== :iirnotch
-        ftype === nothing && throw(ArgumentError("ftype must be specified."))
+        @assert ftype !== nothing "ftype must be specified."
         _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     end
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    fprototype !== :iirnotch && order < 1 && throw(ArgumentError("order must be > 1."))
-    order > n && throw(ArgumentError("order must be ≤ signal length ($n)."))
-    ((order < 2 && fprototype !== :iirnotch && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
-    window !== nothing && length(window) > n && throw(ArgumentError("window must be ≤ signal length ($n)."))
-
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez]
-        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
+    @assert fs >= 1 "fs must be ≥ 1."
+    fprototype !== :iirnotch && @assert order > 1 "order must be > 1."
+    @assert order <= n "order must be ≤ signal length ($n)."
+    if !(fprototype in [:iirnotch, :remez, :fir])
+        @assert order >= 2 "order must be ≥ 2."
+        @assert iseven(order) "order must be even."
     end
+    window !== nothing && @assert length(window) <= n "window must be ≤ signal length ($n)."
 
-    if fprototype in [:iirnotch, :remez]
-        bw == -1 && throw(ArgumentError("bw must be specified."))
-    end
+    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez] && @assert cutoff != 0 "cutoff must be specified."
+    
+    fprototype in [:iirnotch, :remez] && @assert bw != -1 "bw must be specified."
 
     if fprototype === :iirnotch
         if ftype !== nothing
             _info("For :iirnotch filter ftype is ignored.")
             ftype = nothing
         end
-        length(cutoff) == 2 && throw(ArgumentError("For :iirnotch filter cutoff must contain only one frequency."))
+        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
     end
 
     if fprototype === :remez
-        bw > cutoff[1] && throw(ArgumentError("For :remez filter bw must be ≤ $(cutoff[1])."))
-        (length(cutoff) == 2 && bw > cutoff[2] - cutoff[1]) && throw(ArgumentError("For :remez filter bw must be ≤ $(cutoff[2] - cutoff[1])."))
+        @assert bw <= cutoff[1] "For :remez filter bw must be ≤ $(cutoff[1])."
+        length(cutoff) == 2 && @assert bw <= cutoff[2] - cutoff[1] "For :remez filter bw must be ≤ $(cutoff[2] - cutoff[1])."
     end
 
     if fprototype === :fir
@@ -146,7 +145,7 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
                 _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             end
         else
-            ftype in [:bp, :bs] && length(window) % 2 == 0 && throw(ArgumentError("For :bp and :bs filters window length must be odd."))
+            ftype in [:bp, :bs] && @assert isodd(length(window)) "For :bp and :bs filters window length must be odd."
         end
     end
 
@@ -167,30 +166,30 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
     end
 
     if ftype === :lp
-        length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
+        @assert length(cutoff) == 1 "For :lp filter one frequency must be given."
         responsetype = Lowpass(cutoff; fs=fs)
     elseif ftype === :hp
-        length(cutoff) != 1 && throw(ArgumentError("For :hp filter one frequency must be given."))
+        @assert length(cutoff) == 1 "For :hp filter one frequency must be given."
         responsetype = Highpass(cutoff; fs=fs)
     elseif ftype === :bp
-        length(cutoff) != 2 && throw(ArgumentError("For :bp filter two frequencies must be given."))
+        @assert length(cutoff) == 2 "For :bp filter two frequencies must be given."
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
     elseif ftype === :bs
-        length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
+        @assert length(cutoff) == 2 "For :bs filter two frequencies must be given."
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
     end
 
     if fprototype === :butterworth
         prototype = Butterworth(order)
     elseif fprototype === :chebyshev1
-        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be ≥ 0 and ≤ $(fs / 2)."))
+        @assert !(rs < 0 || rs > fs / 2) "For :chebyshev1 filter rs must be in [0, ≤ $(fs / 2)]."
         prototype = Chebyshev1(order, rs)
     elseif fprototype === :chebyshev2
-        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be ≥ 0 and ≤ $(fs / 2)."))
+        @assert !(rp < 0 || rp > fs / 2) "For :chebyshev2 filter rp must be in [0, ≤ $(fs / 2)]."
         prototype = Chebyshev2(order, rp)
     elseif fprototype === :elliptic
-        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(fs / 2)."))
-        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(fs / 2)."))
+        @assert !(rs < 0 || rs > fs / 2) "For :elliptic filter rs must be in [0, ≤ $(fs / 2)]."
+        @assert !(rp < 0 || rp > fs / 2) "For :elliptic filter rp must be in [0, ≤ $(fs / 2)]."
         prototype = Elliptic(order, rp, rs)
     elseif fprototype === :fir
         prototype = FIRWindow(window)
@@ -303,7 +302,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     obj_new = deepcopy(obj)
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
-        (ftype in [:bs, :bp] && length(cutoff) != 2) && throw(ArgumentError("For :bp and :bs filters cutoff must contain two frequencies."))
+        ftype in [:bs, :bp] && @assert length(cutoff) == 2 "For :bp and :bs filters cutoff must contain two frequencies."
         flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=sr(obj), order=order, rp=rp, rs=rs, bw=bw, window=window)
     end
 
