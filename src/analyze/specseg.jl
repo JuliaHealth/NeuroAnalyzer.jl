@@ -1,7 +1,7 @@
 export spec_seg
 
 """
-    spec_seg(sp, sf, st; t, f)
+    spec_seg(sp, st, sf; t, f)
 
 Return spectrogram segment.
 
@@ -17,7 +17,7 @@ Return spectrogram segment.
 
 Named tuple containing:
 - `segp::Matrix{Float64}`: powers
-- `segs::Shape{Real, Int64}`: shape for plotting
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
@@ -37,7 +37,7 @@ function spec_seg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64};
     tidx2 = vsearch(t[2], st)
 
     segp = sp[fidx1:fidx2, tidx1:tidx2]
-    segs = Shape([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
+    segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
 
     return (segp=segp, segs=segs, tidx=(tidx1, tidx2), fidx=(fidx1, fidx2))
 
@@ -61,7 +61,7 @@ Return spectrogram segment.
 
 Named tuple containing:
 - `segp::Array{Float64, 3}`: segment of powers
-- `segs::Shape{Real, Int64}`: segment coordinates (shape for plotting)
+- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
@@ -83,7 +83,7 @@ function spec_seg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; ch:
     tidx1 = vsearch(t[1], st)
     tidx2 = vsearch(t[2], st)
     segp = sp[fidx1:fidx2, tidx1:tidx2, ch, :]
-    segs = Shape([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
+    segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
 
     return (segp=segp, segs=segs, tidx=(tidx1, tidx2), fidx=(fidx1, fidx2))
 
