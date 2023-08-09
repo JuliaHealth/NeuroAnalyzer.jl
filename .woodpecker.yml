@@ -1,4 +1,4 @@
-pipeline:
+steps:
   docs:
     image: julia
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
@@ -57,4 +57,4 @@ pipeline:
       - apt-get install -y xvfb
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
 
-branches: [ stable, devel ]
+branche: [ stable, devel ]
