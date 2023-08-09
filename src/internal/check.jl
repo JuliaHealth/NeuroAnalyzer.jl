@@ -72,9 +72,9 @@ end
 function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
     @assert from >= 0 "from must be ≥ 0."
     @assert to >= 0 "to must be ≥ 0."
-    @assert to > from "to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."
+    @assert to >= from "to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."
     @assert from <= signal_len(obj) "from must be ≤ $(signal_len(obj))."
-    @assert to < signal_len(obj) "to must be ≤ $(signal_len(obj))."
+    @assert to <= signal_len(obj) "to must be ≤ $(signal_len(obj))."
     return nothing
 end
 

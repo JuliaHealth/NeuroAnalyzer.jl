@@ -307,7 +307,7 @@ include("plots/plot_weights.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_locs_nirs.jl")
-include("plots/preview.jl")
+include("plots/iedit.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

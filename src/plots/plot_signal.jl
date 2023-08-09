@@ -510,13 +510,14 @@ Plot signal.
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
 - `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
+- `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -658,7 +659,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
                 end
             else
-
                 if ch_t[ch_tmp[1][1]] == "eeg"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
@@ -915,14 +915,42 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 end
             end
         else
-            p = Plots.vline!(markers_pos,
+            p = Plots.vline!(p,
+                             markers_pos,
                              linestyle=:dash,
                              linewidth=0.5,
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(p, annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
+        end
+    end
+
+    # draw segment borders
+    if s_pos[1] != s_pos[2]
+        if length(p) > 1
+            for p_idx in eachindex(p)
+                p[p_idx] = Plots.vline!(p[p_idx],
+                                        [s_pos[1]],
+                                        color=:black,
+                                        lw=1,
+                                        labels="");
+                p[p_idx] = Plots.vline!(p[p_idx],
+                                        [s_pos[2]],
+                                        color=:black,
+                                        lw=1,
+                                        labels="")
+            end
+        else
+            p = Plots.vline!(p,
+                             [s_pos[1]],
+                             color=:black,
+                             labels="")
+            p = Plots.vline!(p,
+                             [s_pos[2]],
+                             color=:black,
+                             labels="")
         end
     end
 
