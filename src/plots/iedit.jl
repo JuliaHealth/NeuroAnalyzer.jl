@@ -910,11 +910,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         showall(d_w)
         signal_connect(d_bt_ok, "clicked") do widget
             value_s = get_gtk_property(d_entry, :text, String)
-            value_currect = true
-            for idx in eachindex(value_s)
-                string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-            end
-            if value_currect
+            if _check_sfloat(value_s)
                 v = parse(Float64, value_s)
                 if v < obj.time_pts[1]
                     warn_dialog("Value must be ≥ $(obj.time_pts[1]).")
@@ -934,11 +930,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             k = event.keyval
             if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     if v < obj.time_pts[1]
                         warn_dialog("Value must be ≥ $(obj.time_pts[1]).")
@@ -980,11 +972,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         showall(d_w)
         signal_connect(d_bt_ok, "clicked") do widget
             value_s = get_gtk_property(d_entry, :text, String)
-            value_currect = true
-            for idx in eachindex(value_s)
-                string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-            end
-            if value_currect
+            if _check_sfloat(value_s)
                 v = parse(Float64, value_s)
                 current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                 if v < current_time
@@ -1005,11 +993,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             k = event.keyval
             if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                     if v < current_time
@@ -1052,11 +1036,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         showall(d_w)
         signal_connect(d_bt_ok, "clicked") do widget
             value_s = get_gtk_property(d_entry, :text, String)
-            value_currect = true
-            for idx in eachindex(value_s)
-                string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-            end
-            if value_currect
+            if _check_sfloat(value_s)
                 v = parse(Float64, value_s)
                 current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                 if v < current_time
@@ -1077,11 +1057,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             k = event.keyval
             if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                     if v < current_time
@@ -1138,11 +1114,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             showall(d_w)
             signal_connect(d_bt_ok, "clicked") do widget
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     if v < obj.time_pts[1]
                         warn_dialog("Value must be ≥ $(obj.time_pts[1]).")
@@ -1162,11 +1134,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 k = event.keyval
                 if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
-                    value_currect = true
-                    for idx in eachindex(value_s)
-                        string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                    end
-                    if value_currect
+                    if _check_sfloat(value_s)
                         v = parse(Float64, value_s)
                         if v < obj.time_pts[1]
                             warn_dialog("Value must be ≥ $(obj.time_pts[1]).")
@@ -1206,11 +1174,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             showall(d_w)
             signal_connect(d_bt_ok, "clicked") do widget
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                     if v < current_time
@@ -1231,11 +1195,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 k = event.keyval
                 if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
-                    value_currect = true
-                    for idx in eachindex(value_s)
-                        string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                    end
-                    if value_currect
+                    if _check_sfloat(value_s)
                         v = parse(Float64, value_s)
                         current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                         if v < current_time
@@ -1276,11 +1236,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             showall(d_w)
             signal_connect(d_bt_ok, "clicked") do widget
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                     if v < current_time
@@ -1301,11 +1257,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 k = event.keyval
                 if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
-                    value_currect = true
-                    for idx in eachindex(value_s)
-                        string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                    end
-                    if value_currect
+                    if _check_sfloat(value_s)
                         v = parse(Float64, value_s)
                         current_time = parse(Float64, get_gtk_property(entry_time, :label, String))
                         if v < current_time
@@ -1608,11 +1560,7 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         showall(d_w)
         signal_connect(d_bt_ok, "clicked") do widget
             value_s = get_gtk_property(d_entry, :text, String)
-            value_currect = true
-            for idx in eachindex(value_s)
-                string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-            end
-            if value_currect
+            if _check_sfloat(value_s)
                 v = parse(Float64, value_s)
                 if v < obj1.time_pts[1]
                     warn_dialog("Value must be ≥ $(obj1.time_pts[1]).")
@@ -1632,11 +1580,7 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             k = event.keyval
             if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     if v < obj1.time_pts[1]
                         warn_dialog("Value must be ≥ $(obj.time_pts[1]).")
@@ -1692,11 +1636,7 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             showall(d_w)
             signal_connect(d_bt_ok, "clicked") do widget
                 value_s = get_gtk_property(d_entry, :text, String)
-                value_currect = true
-                for idx in eachindex(value_s)
-                    string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                end
-                if value_currect
+                if _check_sfloat(value_s)
                     v = parse(Float64, value_s)
                     if v < obj1.time_pts[1]
                         warn_dialog("Value must be ≥ $(obj1.time_pts[1]).")
@@ -1716,11 +1656,7 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 k = event.keyval
                 if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
-                    value_currect = true
-                    for idx in eachindex(value_s)
-                        string(value_s[idx]) in vcat(string.(0:9), ["."]) || (value_currect = false)
-                    end
-                    if value_currect
+                    if _check_sfloat(value_s)
                         v = parse(Float64, value_s)
                         if v < obj1.time_pts[1]
                             warn_dialog("Value must be ≥ $(obj1.time_pts[1]).")

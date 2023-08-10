@@ -631,8 +631,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
     end
 
     # plot parameters
-    plot_size = 1200
-    marker_size = (150, 75)
+    plot_size = 900
+    marker_size = (120, 55)
     
     # get locations
     if cart == false

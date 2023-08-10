@@ -309,6 +309,7 @@ include("plots/plot_dipole3d.jl")
 include("plots/plot_locs_nirs.jl")
 include("plots/iedit.jl")
 include("plots/iplot.jl")
+include("plots/ipsd.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

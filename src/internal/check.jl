@@ -135,16 +135,64 @@ function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{Symbol, Vector{Sy
     end
 end
 
-function _check_s(s::String)
-    if occursin(".", s)
-        return false
-    elseif occursin("::", s)
-        return false
-    elseif length(s) == 0
-        return false
-    elseif length(split(s, ":")) > 2
+function _check_svec(s::String)
+    s = replace(s, " "=>"")
+    for idx in eachindex(s)
+        string(s[idx]) in vcat(string.(0:9), [","]) || return false
+    end
+    if !(occursin(",", s) && length(split(s, ",")) > 1 && length(split(s, ",")[end]) > 0)
         return false
     else
         return true
     end
+end
+
+function _check_srange(s::String)
+    s = replace(s, " "=>"")
+    for idx in eachindex(s)
+        string(s[idx]) in vcat(string.(0:9), [":"]) || return false
+    end
+    if occursin(":", s) && length(split(s, ":")) == 2 && length(s) > 0 && length(split(s, ":")[1]) > 0 && length(split(s, ":")[end]) > 0 && parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
+        return true
+    else
+        return false
+    end
+end
+
+function _check_stuplei(s::String)
+    s = replace(s, " "=>"")
+    for idx in eachindex(s)
+        string(s[idx]) in vcat(string.(0:9), [","], ["("], [")"]) || return false
+    end
+    if occursin("(", s) && occursin(")", s) && length(split(s, ",")) == 2 && length(s) > 0
+        return true
+    else
+        return false
+    end
+end
+
+function _check_stuplef(s::String)
+    s = replace(s, " "=>"")
+    for idx in eachindex(s)
+        string(s[idx]) in vcat(string.(0:9), ["."], [","], ["("], [")"]) || return false
+    end
+    if occursin("(", s) && occursin(")", s) && length(split(s, ",")) == 2 && length(s) > 0
+        return true
+    else
+        return false
+    end
+end
+
+function _check_sfloat(s::String)
+    for idx in eachindex(s)
+        string(s[idx]) in vcat(string.(0:9), ["."]) || return false
+    end
+    return true
+end
+
+function _check_sint(s::String)
+    for idx in eachindex(s)
+        string(s[idx]) in string.(0:9) || return false
+    end
+    return true
 end

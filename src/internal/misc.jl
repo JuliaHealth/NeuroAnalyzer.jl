@@ -38,24 +38,37 @@ end
 
 _tlength(t::Tuple{Real, Real}) = length(t[1]:1:t[2])
 
-function _s2i(x::String)
-    if occursin(":", x)
-        return collect(parse(Int64, split(x, ":")[1]):parse(Int64, split(x, ":")[2]))
-    elseif occursin(", ", x)
-        x = replace(x, "["=>"")
-        x = replace(x, "]"=>"")
-        return parse.(Int64, split(x, ", "))
-    elseif occursin(",", x)
-        x = replace(x, "["=>"")
-        x = replace(x, "]"=>"")
-        return parse.(Int64, split(x, ","))
+function _s2i(s::String)
+    s = replace(s, " "=>"")
+    if occursin(":", s)
+        return collect(parse(Int64, split(s, ":")[1]):parse(Int64, split(s, ":")[2]))
+    elseif occursin(",", s)
+        s = replace(s, "["=>"")
+        s = replace(s, "]"=>"")
+        return parse.(Int64, split(s, ","))
+    elseif _check_sint(s)
+        return parse.(Int64, s)
     end
 end
 
-function _i2s(x::Union{AbstractRange, Vector{Int64}})
-    x = collect(x)
-    x = string(x)
-    x = replace(x, "["=>"")
-    x = replace(x, "]"=>"")
-    return x
+function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})
+    !isa(s, Int64) && (s = collect(s))
+    s = string(s)
+    s = replace(s, "["=>"")
+    s = replace(s, "]"=>"")
+    return s
+end
+
+function _s2tf(s::String)
+    s = replace(s, " "=>"")
+    s = replace(s, "("=>"")
+    s = replace(s, ")"=>"")
+    return (parse(Float64, split(s, ",")[1]), parse(Float64, split(s, ",")[2]))
+end
+
+function _s2ti(s::String)
+    s = replace(s, " "=>"")
+    s = replace(s, "("=>"")
+    s = replace(s, ")"=>"")
+    return (parse(Int64, split(s, ",")[1]), parse(Int64, split(s, ",")[2]))
 end
