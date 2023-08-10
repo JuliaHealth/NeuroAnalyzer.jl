@@ -114,8 +114,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
 
     _check_var(frq, [:log, :lin], "frq")
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= sr(obj) / 2 "Upper frequency bound must be ≤ $(sr(obj) / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     if frq === :log
         frq_lim[1] == 0 && (frq_lim = (0.01, frq_lim[2]))

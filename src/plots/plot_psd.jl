@@ -785,7 +785,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be ≥ 0 and ≤ $(fs / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
 
     # # get time vector
     # _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
@@ -1053,7 +1053,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be ≥ 0 and ≤ $(fs / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be ≥ 0 and ≤ $(fs / 2)."
 
     # get time vector
     if seg[2] <= epoch_len(obj)

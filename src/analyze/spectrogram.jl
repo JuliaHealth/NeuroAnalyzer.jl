@@ -99,8 +99,7 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
     # get frequency range
     @assert fs >= 1 "fs must be > 1."
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
@@ -176,8 +175,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
 
     @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
@@ -225,14 +223,12 @@ function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, fr
 
     @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
 
     sp = abs.(ContinuousWavelets.cwt(s, wt)')
     sf = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(s), wt)[1])
     sf[1] = 0
-    @assert frq_lim[1] >= sf[1] "Lower frequency bound must be ≥ $(sf[1])."
-    @assert frq_lim[2] <= sf[end] "Upper frequency bound must be ≤ $(sf[end])."
+    @assert !(frq_lim[1] < sf[1] || frq_lim[2] < sf[1] || frq_lim[1] > sf[end] || frq_lim[2] > sf[end]) "frq_lim must be in [$(sf[1]), $(sf[end])]."
     sf = sf[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf)]
     sp = sp[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf), :]
 

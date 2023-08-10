@@ -38,9 +38,7 @@ function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{
     _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
 
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= sr(obj) / 2 "Upper frequency bound must be ≤ $(sr(obj) / 2)."
-    @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     ero_s, ero_f, ero_t = spectrogram(obj, ch=ch, pad=pad, frq_lim=frq_lim, frq_n=frq_n, method=method, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt)

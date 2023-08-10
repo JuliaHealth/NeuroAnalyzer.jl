@@ -33,9 +33,7 @@ function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, pad::Int64=0, fr
     _check_var(method, [:standard, :mt, :mw], "method")
 
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= sr(obj) / 2 "Upper frequency bound must be ≤ $(sr(obj) / 2)."
-    @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if method === :standard

@@ -191,7 +191,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
 
     # calculate spectrogram
     length(ch) > 1 && @assert length(signal) / length(ch) >= 4 * sr(obj) "For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."
@@ -285,7 +285,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mw
-            s_p, s_f = mwpsd(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_p, s_f = psd_mw(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
             s_f = linspace(0, frq_lim[2], size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end
@@ -384,7 +384,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
 
     # calculate spectrogram
     length(c_idx) > 1 && @assert length(signal) / length(c_idx) >= 4 * sr(obj) "For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."
@@ -473,7 +473,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mw
-            s_p, s_f = mwpsd(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_p, s_f = psd_mw(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
             s_f = linspace(0, frq_lim[2], size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end

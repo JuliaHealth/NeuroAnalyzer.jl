@@ -310,6 +310,7 @@ include("plots/plot_locs_nirs.jl")
 include("plots/iedit.jl")
 include("plots/iplot.jl")
 include("plots/ipsd.jl")
+include("plots/ispectrogram.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

@@ -28,8 +28,7 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
     frq_lim = tuple_order(frq_lim)
-    @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 

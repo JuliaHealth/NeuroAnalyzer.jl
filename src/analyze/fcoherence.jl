@@ -28,8 +28,7 @@ function fcoherence(s::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Rea
 
     if frq_lim !== nothing
         frq_lim = tuple_order(frq_lim)
-        @assert frq_lim[1] >= 0 "Lower frequency bound must be ≥ 0."
-        @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+        @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]
@@ -71,8 +70,7 @@ function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::
 
     if frq_lim !== nothing
         frq_lim = tuple_order(frq_lim)
-        @assert frq_lim[1] > 0 "Lower frequency bound must be ≥ 0."
-        @assert frq_lim[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+        @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]

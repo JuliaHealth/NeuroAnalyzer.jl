@@ -1,59 +1,59 @@
-export ipsd
-export ipsd_cont
-export ipsd_ep
+export ispectrogram
+export ispectrogram_cont
+export ispectrogram_ep
 
 """
-    ipsd(obj; <keyword arguments>)
+    ispectrogram(obj; <keyword arguments>)
 
 Interactive PSD.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Int64=5)
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Int64=5)
 
     if epoch_n(obj) == 1
-        ipsd_cont(obj, ch=ch, zoom=zoom)
+        ispectrogram_cont(obj, ch=ch, zoom=zoom)
     else
-        ipsd_ep(obj, ch=ch)
+        ispectrogram_ep(obj, ch=ch)
     end
 
 end
 
 """
-    ipsd_cont(obj; <keyword arguments>)
+    ispectrogram_cont(obj; <keyword arguments>)
 
 Interactive PSD of continuous signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Int64=5)
+function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Int64=5)
 
-    @assert epoch_n(obj) == 1 "ipsd_cont() should be used for epoched object."
+    @assert epoch_n(obj) == 1 "ispectrogram_cont() should be used for epoched object."
     _check_channels(obj, ch)
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
-    p = NeuroAnalyzer.plot_psd(obj, ch=ch)
+    p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch)
     g = GtkGrid()
     g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: ipsd_cont()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: ispectrogram_cont()", 1200, (p.attr[:size][2] + 40))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -108,37 +108,13 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
     set_gtk_property!(cb_norm, :active, true)
 
-    combo_method = GtkComboBoxText()
-    psd_methods = ["Welch", "MT", "MW"]
-    for idx in psd_methods
+   combo_method = GtkComboBoxText()
+    spectrogram_methods = ["Standard", "STFT", "MT", "MW"]
+    for idx in spectrogram_methods
         push!(combo_method, idx)
     end
     set_gtk_property!(combo_method, :active, 0)
-    set_gtk_property!(combo_method, :tooltip_text, "PSD method")
-
-    combo_type = GtkComboBoxText()
-    psd_types = ["normal", "butterfly", "mean", "w3d", "s3d", "topo"]
-    for idx in psd_types
-        push!(combo_type, idx)
-    end
-    set_gtk_property!(combo_type, :active, 0)
-    set_gtk_property!(combo_type, :tooltip_text, "PSD type")
-
-    combo_ref = GtkComboBoxText()
-    ref_types = ["absolute", "total power", "delta", "theta", "alpha", "beta", "beta high", "gamma", "gamma 1", "gamma 2", "gamma lower", "gamma higher"]
-    for idx in ref_types
-        push!(combo_ref, idx)
-    end
-    set_gtk_property!(combo_ref, :active, 0)
-    set_gtk_property!(combo_ref, :tooltip_text, "PSD referenced to")
-
-    combo_ax = GtkComboBoxText()
-    ref_types = ["linear-linear", "log10-linear", "linear-log10", "log10-log10"]
-    for idx in ref_types
-        push!(combo_ax, idx)
-    end
-    set_gtk_property!(combo_ax, :active, 0)
-    set_gtk_property!(combo_ax, :tooltip_text, "Axes scaling")
+    set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
 
     entry_nt = GtkEntry()
     set_gtk_property!(entry_nt, :text, "8")
@@ -161,9 +137,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_pdf, :tooltip_text, "Refresh the plot")
 
-    lab_type = GtkLabel("PSD method:")
-    set_gtk_property!(lab_type, :halign, 2)
-    lab_method = GtkLabel("PSD method:")
+    lab_method = GtkLabel("Spectrogram method:")
     set_gtk_property!(lab_method, :halign, 2)
     lab_ch = GtkLabel("Channels:")
     set_gtk_property!(lab_ch, :halign, 2)
@@ -187,41 +161,31 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     set_gtk_property!(lab_frq, :halign, 2)
     lab_nc = GtkLabel("Cycles:")
     set_gtk_property!(lab_nc, :halign, 2)
-    lab_ref = GtkLabel("PSD reference:")
-    set_gtk_property!(lab_ref, :halign, 2)
-    lab_ax = GtkLabel("Axes scaling:")
-    set_gtk_property!(lab_ax, :halign, 2)
-    g_opts[1, 1] = lab_type
-    g_opts[1, 2] = lab_method
-    g_opts[1, 3] = lab_ref
-    g_opts[1, 4] = lab_ax
-    g_opts[1, 5] = lab_ch
-    g_opts[1, 6] = lab_t
-    g_opts[1, 7] = lab_x
-    g_opts[1, 8] = lab_y
-    g_opts[1, 9] = lab_frq
-    g_opts[1, 10] = lab_nc
-    g_opts[1, 11] = lab_nt
-    g_opts[1, 12] = lab_norm
-    g_opts[1, 13] = lab_mono
-    g_opts[1, 14] = lab_png
-    g_opts[1, 15] = lab_pdf
-    g_opts[2, 1] = combo_type
-    g_opts[2, 2] = combo_method
-    g_opts[2, 3] = combo_ref
-    g_opts[2, 4] = combo_ax
-    g_opts[2, 5] = entry_ch
-    g_opts[2, 6] = entry_title
-    g_opts[2, 7] = entry_xlab
-    g_opts[2, 8] = entry_ylab
-    g_opts[2, 9] = entry_frq
-    g_opts[2, 10] = entry_ncyc
-    g_opts[2, 11] = entry_nt
-    g_opts[2, 12] = cb_norm
-    g_opts[2, 13] = cb_mono
-    g_opts[2, 14] = bt_png
-    g_opts[2, 15] = bt_pdf
-    g_opts[1:2, 16] = bt_refresh
+    g_opts[1, 1] = lab_method
+    g_opts[1, 2] = lab_ch
+    g_opts[1, 3] = lab_t
+    g_opts[1, 4] = lab_x
+    g_opts[1, 5] = lab_y
+    g_opts[1, 6] = lab_frq
+    g_opts[1, 7] = lab_nc
+    g_opts[1, 8] = lab_nt
+    g_opts[1, 9] = lab_norm
+    g_opts[1, 10] = lab_mono
+    g_opts[1, 11] = lab_png
+    g_opts[1, 12] = lab_pdf
+    g_opts[2, 1] = combo_method
+    g_opts[2, 2] = entry_ch
+    g_opts[2, 3] = entry_title
+    g_opts[2, 4] = entry_xlab
+    g_opts[2, 5] = entry_ylab
+    g_opts[2, 6] = entry_frq
+    g_opts[2, 7] = entry_ncyc
+    g_opts[2, 8] = entry_nt
+    g_opts[2, 9] = cb_norm
+    g_opts[2, 10] = cb_mono
+    g_opts[2, 11] = bt_png
+    g_opts[2, 12] = bt_pdf
+    g_opts[1:2, 13] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -246,56 +210,29 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         ch = get_gtk_property(entry_ch, :text, String)
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
+            _check_channels(obj, ch)
             title = get_gtk_property(entry_title, :text, String)
             xlab = get_gtk_property(entry_xlab, :text, String)
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
             norm = get_gtk_property(cb_norm, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
-            method == "0" && (method = :welch)
-            method == "1" && (method = :mt)
-            method == "2" && (method = :mw)
-            type = get_gtk_property(combo_type, :active, String)
-            type == "0" && (type = :normal)
-            type == "1" && (type = :butterfly)
-            type == "2" && (type = :mean)
-            type == "3" && (type = :w3d)
-            type == "4" && (type = :s3d)
-            type == "5" && (type = :topo)
-            ref = get_gtk_property(combo_ref, :active, String)
-            ref == "0" && (ref = :abs)
-            ref == "1" && (ref = :total)
-            ref == "2" && (ref = :mw)
-            ref == "3" && (ref = :delta)
-            ref == "4" && (ref = :theta)
-            ref == "5" && (ref = :alpha)
-            ref == "6" && (ref = :beta)
-            ref == "7" && (ref = :beta_high)
-            ref == "8" && (ref = :gamma)
-            ref == "9" && (ref = :gamma_1)
-            ref == "10" && (ref = :gamma_2)
-            ref == "11" && (ref = :gamma_lower)
-            ref == "12" && (ref = :gamma_higher)
-            ax = get_gtk_property(combo_ax, :active, String)
-            ax == "0" && (ax = :linlin)
-            ax == "1" && (ax = :loglin)
-            ax == "2" && (ax = :linlog)
-            ax == "3" && (ax = :loglog)
+            method == "0" && (method = :standard)
+            method == "1" && (method = :stft)
+            method == "2" && (method = :mt)
+            method == "3" && (method = :mw)
             frq = get_gtk_property(entry_frq, :text, String)
             if _check_stuplef(frq)
                 frq = _s2tf(frq)
+                fs = sr(obj)
                 frq = tuple_order(frq)
                 if frq[1] < 0 || frq[2] < 0 || frq[1] > sr(obj) / 2 || frq[2] > sr(obj) / 2
-                    warn_dialog("frq must be in [0, $(sr(obj) / 2)].")
+                    warn_dialog("frq must be in [0, $(fs / 2)].")
                     frq = nothing
                 end
             end
             nt = get_gtk_property(entry_nt, :text, String)
             _check_sint(nt) && (nt = parse(Int64, nt))
-            if nt < 0
-                warn_dialog("nt must be in ≥ 1.")
-                nt = nothing
-            end
             ncyc = get_gtk_property(entry_ncyc, :text, String)
             if _check_stuplei(ncyc)
                 ncyc = _s2ti(ncyc)
@@ -310,83 +247,48 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
                     ncyc = nothing
                 end
             end
-            if (isa(ch, Int64) || isa(ch, Vector{Int64})) && isa(frq, Tuple{Real, Real}) && isa(nt, Int64) && isa(ncyc, Union{Int64, Tuple{Int64, Int64}})
-                if length(ch) < 2 && type === :butterfly
-                    warn_dialog("For plot type=:butterfly plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(ch) < 2 && type === :mean
-                    warn_dialog("For plot type=:mean plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(ch) < 2 && type === :w3d
-                    warn_dialog("For plot type=:w3d plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(ch) < 2 && type === :s3d
-                    warn_dialog("For plot type=:s3d plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :butterfly
-                    warn_dialog("For plot type=:butterfly\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :mean
-                    warn_dialog("For plot type=:mean plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :w3d
-                    warn_dialog("For plot type=:w3d plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :s3d
-                    warn_dialog("For plot type=:s3d plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :topo
-                    warn_dialog("For plot type=:topo plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                else
-                    time1 = parse(Float64, get_gtk_property(entry_time, :label, String))
-                    time2 = time1 + zoom
-                    time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-                    p = NeuroAnalyzer.plot_psd(obj,
-                                               ch=ch,
-                                               seg=(time1, time2),
-                                               mono=mono,
-                                               title=title,
-                                               xlabel=xlab,
-                                               ylabel=ylab,
-                                               norm=norm,
-                                               method=method,
-                                               type=type,
-                                               ax=ax,
-                                               ref=ref,
-                                               frq_lim=frq,
-                                               ncyc=ncyc,
-                                               nt=nt)
-                    img = read_from_png(io)
-                    if typeof(p) == Plots.Plot{Plots.GRBackend}
-                        Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-                        set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-                        set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-                    elseif typeof(p) == Makie.Figure
-                        Gtk.resize!(win, 1000, 900 + 40)
-                        set_gtk_property!(can, :width_request, Int32(900))
-                        set_gtk_property!(can, :height_request, Int32(900))
-                    end
-                    ctx = getgc(can)
-                    show(io, MIME("image/png"), NeuroAnalyzer.plot_psd(obj,
-                                                                       ch=ch,
-                                                                       seg=(time1, time2),
-                                                                       mono=mono,
-                                                                       title=title,
-                                                                       xlabel=xlab,
-                                                                       ylabel=ylab,
-                                                                       norm=norm,
-                                                                       type=type,
-                                                                       method=method,
-                                                                       ax=ax,
-                                                                       ref=ref,
-                                                                       frq_lim=frq,
-                                                                       ncyc=ncyc,
-                                                                       nt=nt))
-                    img = read_from_png(io)
-                    set_source_surface(ctx, img, 0, 0)
-                    paint(ctx)
+            if isa(ch, Union{Int64, Vector{Int64}}) && isa(frq, Tuple{Real, Real}) && isa(nt, Int64) && isa(ncyc, Union{Int64, Tuple{Int64, Int64}})
+                time1 = parse(Float64, get_gtk_property(entry_time, :label, String))
+                time2 = time1 + zoom
+                time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
+                p = NeuroAnalyzer.plot_spectrogram(obj,
+                                                   ch=ch,
+                                                   seg=(time1, time2),
+                                                   mono=mono,
+                                                   title=title,
+                                                   xlabel=xlab,
+                                                   ylabel=ylab,
+                                                   norm=norm,
+                                                   method=method,
+                                                   frq_lim=frq,
+                                                   ncyc=ncyc,
+                                                   nt=nt)
+                img = read_from_png(io)
+                if typeof(p) == Plots.Plot{Plots.GRBackend}
+                    Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                    set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+                    set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
+                elseif typeof(p) == Makie.Figure
+                    Gtk.resize!(win, 1000, 900 + 40)
+                    set_gtk_property!(can, :width_request, Int32(900))
+                    set_gtk_property!(can, :height_request, Int32(900))
                 end
+                ctx = getgc(can)
+                show(io, MIME("image/png"), NeuroAnalyzer.plot_spectrogram(obj,
+                                                                           ch=ch,
+                                                                           seg=(time1, time2),
+                                                                           mono=mono,
+                                                                           title=title,
+                                                                           xlabel=xlab,
+                                                                           ylabel=ylab,
+                                                                           norm=norm,
+                                                                           method=method,
+                                                                           frq_lim=frq,
+                                                                           ncyc=ncyc,
+                                                                           nt=nt))
+                img = read_from_png(io)
+                set_source_surface(ctx, img, 0, 0)
+                paint(ctx)
             end
         end
     end
@@ -701,32 +603,32 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    ipsd_ep(obj; <keyword arguments>)
+    ispectrogram_ep(obj; <keyword arguments>)
 
 Interactive plot of epoched signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Int64=5)
+function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Int64=5)
 
-    @assert epoch_n(obj) > 1 "ipsd_cont() should be used for continuous object."
+    @assert epoch_n(obj) > 1 "ispectrogram_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
-    p = NeuroAnalyzer.plot_psd(obj, ch=ch)
+    p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch)
     g = GtkGrid()
     g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: ipsd_ep()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: ispectrogram_ep()", 1200, (p.attr[:size][2] + 40))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -778,36 +680,12 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     set_gtk_property!(cb_norm, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["Welch", "MT", "MW"]
-    for idx in psd_methods
+    spectrogram_methods = ["Standard", "STFT", "MT", "MW"]
+    for idx in spectrogram_methods
         push!(combo_method, idx)
     end
     set_gtk_property!(combo_method, :active, 0)
-    set_gtk_property!(combo_method, :tooltip_text, "PSD method")
-
-    combo_type = GtkComboBoxText()
-    psd_types = ["normal", "butterfly", "mean", "w3d", "s3d", "topo"]
-    for idx in psd_types
-        push!(combo_type, idx)
-    end
-    set_gtk_property!(combo_type, :active, 0)
-    set_gtk_property!(combo_type, :tooltip_text, "PSD type")
-
-    combo_ref = GtkComboBoxText()
-    ref_types = ["absolute", "total power", "delta", "theta", "alpha", "beta", "beta high", "gamma", "gamma 1", "gamma 2", "gamma lower", "gamma higher"]
-    for idx in ref_types
-        push!(combo_ref, idx)
-    end
-    set_gtk_property!(combo_ref, :active, 0)
-    set_gtk_property!(combo_ref, :tooltip_text, "PSD referenced to")
-
-    combo_ax = GtkComboBoxText()
-    ref_types = ["linear-linear", "log10-linear", "linear-log10", "log10-log10"]
-    for idx in ref_types
-        push!(combo_ax, idx)
-    end
-    set_gtk_property!(combo_ax, :active, 0)
-    set_gtk_property!(combo_ax, :tooltip_text, "Axes scaling")
+    set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
 
     entry_nt = GtkEntry()
     set_gtk_property!(entry_nt, :text, "8")
@@ -830,9 +708,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_pdf, :tooltip_text, "Refresh the plot")
 
-    lab_type = GtkLabel("PSD type:")
-    set_gtk_property!(lab_type, :halign, 2)
-    lab_method = GtkLabel("PSD method:")
+    lab_method = GtkLabel("Spectrogram method:")
     set_gtk_property!(lab_method, :halign, 2)
     lab_ch = GtkLabel("Channels:")
     set_gtk_property!(lab_ch, :halign, 2)
@@ -856,41 +732,31 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     set_gtk_property!(lab_frq, :halign, 2)
     lab_nc = GtkLabel("Cycles:")
     set_gtk_property!(lab_nc, :halign, 2)
-    lab_ref = GtkLabel("PSD reference:")
-    set_gtk_property!(lab_ref, :halign, 2)
-    lab_ax = GtkLabel("Axes scaling:")
-    set_gtk_property!(lab_ax, :halign, 2)
-    g_opts[1, 1] = lab_type
-    g_opts[1, 2] = lab_method
-    g_opts[1, 3] = lab_ref
-    g_opts[1, 4] = lab_ax
-    g_opts[1, 5] = lab_ch
-    g_opts[1, 6] = lab_t
-    g_opts[1, 7] = lab_x
-    g_opts[1, 8] = lab_y
-    g_opts[1, 9] = lab_frq
-    g_opts[1, 10] = lab_nc
-    g_opts[1, 11] = lab_nt
-    g_opts[1, 12] = lab_norm
-    g_opts[1, 13] = lab_mono
-    g_opts[1, 14] = lab_png
-    g_opts[1, 15] = lab_pdf
-    g_opts[2, 1] = combo_type
-    g_opts[2, 2] = combo_method
-    g_opts[2, 3] = combo_ref
-    g_opts[2, 4] = combo_ax
-    g_opts[2, 5] = entry_ch
-    g_opts[2, 6] = entry_title
-    g_opts[2, 7] = entry_xlab
-    g_opts[2, 8] = entry_ylab
-    g_opts[2, 9] = entry_frq
-    g_opts[2, 10] = entry_ncyc
-    g_opts[2, 11] = entry_nt
-    g_opts[2, 12] = cb_norm
-    g_opts[2, 13] = cb_mono
-    g_opts[2, 14] = bt_png
-    g_opts[2, 15] = bt_pdf
-    g_opts[1:2, 16] = bt_refresh
+    g_opts[1, 1] = lab_method
+    g_opts[1, 2] = lab_ch
+    g_opts[1, 3] = lab_t
+    g_opts[1, 4] = lab_x
+    g_opts[1, 5] = lab_y
+    g_opts[1, 6] = lab_frq
+    g_opts[1, 7] = lab_nc
+    g_opts[1, 8] = lab_nt
+    g_opts[1, 9] = lab_norm
+    g_opts[1, 10] = lab_mono
+    g_opts[1, 11] = lab_png
+    g_opts[1, 12] = lab_pdf
+    g_opts[2, 1] = combo_method
+    g_opts[2, 2] = entry_ch
+    g_opts[2, 3] = entry_title
+    g_opts[2, 4] = entry_xlab
+    g_opts[2, 5] = entry_ylab
+    g_opts[2, 6] = entry_frq
+    g_opts[2, 7] = entry_ncyc
+    g_opts[2, 8] = entry_nt
+    g_opts[2, 9] = cb_norm
+    g_opts[2, 10] = cb_mono
+    g_opts[2, 11] = bt_png
+    g_opts[2, 12] = bt_pdf
+    g_opts[1:2, 13] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -919,50 +785,22 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
             mono = get_gtk_property(cb_mono, :active, Bool)
             norm = get_gtk_property(cb_norm, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
-            method == "0" && (method = :welch)
-            method == "1" && (method = :mt)
-            method == "2" && (method = :mw)
-            type = get_gtk_property(combo_type, :active, String)
-            type == "0" && (type = :normal)
-            type == "1" && (type = :butterfly)
-            type == "2" && (type = :mean)
-            type == "3" && (type = :w3d)
-            type == "4" && (type = :s3d)
-            type == "5" && (type = :topo)
-            ref = get_gtk_property(combo_ref, :active, String)
-            ref == "0" && (ref = :abs)
-            ref == "1" && (ref = :total)
-            ref == "2" && (ref = :mw)
-            ref == "3" && (ref = :delta)
-            ref == "4" && (ref = :theta)
-            ref == "5" && (ref = :alpha)
-            ref == "6" && (ref = :beta)
-            ref == "7" && (ref = :beta_high)
-            ref == "8" && (ref = :gamma)
-            ref == "9" && (ref = :gamma_1)
-            ref == "10" && (ref = :gamma_2)
-            ref == "11" && (ref = :gamma_lower)
-            ref == "12" && (ref = :gamma_higher)
-            ax = get_gtk_property(combo_ax, :active, String)
-            ax == "0" && (ax = :linlin)
-            ax == "1" && (ax = :loglin)
-            ax == "2" && (ax = :linlog)
-            ax == "3" && (ax = :loglog)
+            method == "0" && (method = :standard)
+            method == "1" && (method = :stft)
+            method == "2" && (method = :mt)
+            method == "3" && (method = :mw)
             frq = get_gtk_property(entry_frq, :text, String)
             if _check_stuplef(frq)
                 frq = _s2tf(frq)
+                fs = sr(obj)
                 frq = tuple_order(frq)
                 if frq[1] < 0 || frq[2] < 0 || frq[1] > sr(obj) / 2 || frq[2] > sr(obj) / 2
-                    warn_dialog("frq must be in [0, $(sr(obj) / 2)].")
+                    warn_dialog("frq must be in [0, $(fs / 2)].")
                     frq = nothing
                 end
             end
             nt = get_gtk_property(entry_nt, :text, String)
             _check_sint(nt) && (nt = parse(Int64, nt))
-            if nt < 0
-                warn_dialog("nt must be in ≥ 1.")
-                nt = nothing
-            end
             ncyc = get_gtk_property(entry_ncyc, :text, String)
             if _check_stuplei(ncyc)
                 ncyc = _s2ti(ncyc)
@@ -977,81 +815,46 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                     ncyc = nothing
                 end
             end
-            if isa(ch, Union{Int64, Vector{Int64}}) && isa(frq, Tuple{Real, Real}) && isa(nt, Int64) && isa(ncyc, Union{Int64, Tuple{Int64, Int64}})
-                if length(ch) < 2 && type === :butterfly
-                    warn_dialog("For plot type=:butterfly plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(ch) < 2 && type === :mean
-                    warn_dialog("For plot type=:mean plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(ch) < 2 && type === :w3d
-                    warn_dialog("For plot type=:w3d plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(ch) < 2 && type === :s3d
-                    warn_dialog("For plot type=:s3d plot\nthe signal must contain ≥ 2 channels.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :butterfly
-                    warn_dialog("For plot type=:butterfly\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :mean
-                    warn_dialog("For plot type=:mean plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :w3d
-                    warn_dialog("For plot type=:w3d plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :s3d
-                    warn_dialog("For plot type=:s3d plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type === :topo
-                    warn_dialog("For plot type=:topo plot\nall channels should be of the same type.")
-                    set_gtk_property!(combo_type, :active, 0)
-                else
-                    ep = parse(Int64, get_gtk_property(entry_epoch, :label, String))
-                    p = NeuroAnalyzer.plot_psd(obj,
-                                               ch=ch,
-                                               ep=ep,
-                                               mono=mono,
-                                               title=title,
-                                               xlabel=xlab,
-                                               ylabel=ylab,
-                                               norm=norm,
-                                               method=method,
-                                               type=type,
-                                               ax=ax,
-                                               ref=ref,
-                                               frq_lim=frq,
-                                               ncyc=ncyc,
-                                               nt=nt)
-                    img = read_from_png(io)
-                    if typeof(p) == Plots.Plot{Plots.GRBackend}
-                        Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-                        set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-                        set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-                    elseif typeof(p) == Makie.Figure
-                        Gtk.resize!(win, 1000, 900 + 40)
-                        set_gtk_property!(can, :width_request, Int32(900))
-                        set_gtk_property!(can, :height_request, Int32(900))
-                    end
-                    ctx = getgc(can)
-                    show(io, MIME("image/png"), NeuroAnalyzer.plot_psd(obj,
-                                                                       ch=ch,
-                                                                       ep=ep,
-                                                                       mono=mono,
-                                                                       title=title,
-                                                                       xlabel=xlab,
-                                                                       ylabel=ylab,
-                                                                       norm=norm,
-                                                                       type=type,
-                                                                       method=method,
-                                                                       ax=ax,
-                                                                       ref=ref,
-                                                                       frq_lim=frq,
-                                                                       ncyc=ncyc,
-                                                                       nt=nt))
-                    img = read_from_png(io)
-                    set_source_surface(ctx, img, 0, 0)
-                    paint(ctx)
+            if (isa(ch, Int64) || isa(ch, Vector{Int64})) && isa(frq, Tuple{Real, Real}) && isa(nt, Int64) && isa(ncyc, Union{Int64, Tuple{Int64, Int64}})
+                ep = parse(Int64, get_gtk_property(entry_epoch, :label, String))
+                p = NeuroAnalyzer.plot_spectrogram(obj,
+                                                   ch=ch,
+                                                   ep=ep,
+                                                   mono=mono,
+                                                   title=title,
+                                                   xlabel=xlab,
+                                                   ylabel=ylab,
+                                                   norm=norm,
+                                                   method=method,
+                                                   frq_lim=frq,
+                                                   ncyc=ncyc,
+                                                   nt=nt)
+                img = read_from_png(io)
+                if typeof(p) == Plots.Plot{Plots.GRBackend}
+                    Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                    set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+                    set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
+                elseif typeof(p) == Makie.Figure
+                    Gtk.resize!(win, 1000, 900 + 40)
+                    set_gtk_property!(can, :width_request, Int32(900))
+                    set_gtk_property!(can, :height_request, Int32(900))
                 end
+                ctx = getgc(can)
+                show(io, MIME("image/png"), NeuroAnalyzer.plot_spectrogram(obj,
+                                                                           ch=ch,
+                                                                           ep=ep,
+                                                                           mono=mono,
+                                                                           title=title,
+                                                                           xlabel=xlab,
+                                                                           ylabel=ylab,
+                                                                           norm=norm,
+                                                                           method=method,
+                                                                           frq_lim=frq,
+                                                                           ncyc=ncyc,
+                                                                           nt=nt))
+                img = read_from_png(io)
+                set_source_surface(ctx, img, 0, 0)
+                paint(ctx)
             end
         end
     end
