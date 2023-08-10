@@ -134,3 +134,17 @@ function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{Symbol, Vector{Sy
         @assert Symbol(obj.header.recording[:data_type]) in type "This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."
     end
 end
+
+function _check_s(s::String)
+    if occursin(".", s)
+        return false
+    elseif occursin("::", s)
+        return false
+    elseif length(s) == 0
+        return false
+    elseif length(split(s, ":")) > 2
+        return false
+    else
+        return true
+    end
+end

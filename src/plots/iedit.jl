@@ -81,7 +81,8 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 10)
     entry_epoch = GtkButton(string(1))
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("|<")
@@ -98,17 +99,17 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(bt_delete, :tooltip_text, "Delete epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    g[1:12, 1] = can
+    g[1:10, 1] = can
     g[1, 2] = bt_start
-    g[3, 2] = bt_prev
-    g[4, 2] = entry_epoch
-    g[5, 2] = bt_next
-    g[7, 2] = bt_end
+    g[2, 2] = bt_prev
+    g[3, 2] = entry_epoch
+    g[4, 2] = bt_next
+    g[5, 2] = bt_end
+    g[6, 2] = GtkLabel("")
+    g[7, 2] = bt_delete
     g[8, 2] = GtkLabel("")
-    g[9, 2] = bt_delete
-    g[10, 2] = GtkLabel("")
-    g[11, 2] = bt_help
-    g[12, 2] = bt_close
+    g[9, 2] = bt_help
+    g[10, 2] = bt_close
     push!(win, g)
 
     showall(win)
@@ -165,7 +166,8 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         set_gtk_property!(d_w, :resizable, true)
         d_g = GtkGrid()
         set_gtk_property!(d_g, :column_homogeneous, true)
-        set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+        set_gtk_property!(g, :column_spacing, 10)
+        set_gtk_property!(g, :row_spacing, 10)
         d_entry = GtkEntry()
         set_gtk_property!(d_entry, :text, string(value))
         d_bt_ok = GtkButton("Ok")
@@ -198,7 +200,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
         signal_connect(d_w, "key-press-event") do widget, event
             k = event.keyval
-            if k == 65293
+            if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
                 value_currect = true
                 for idx in eachindex(value_s)
@@ -225,6 +227,17 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
     end
 
+    signal_connect(bt_delete, "clicked") do widget
+        ep = parse(Int64, get_gtk_property(entry_epoch, :label, String))
+        if ask_dialog("Delete epoch $ep ?", "No", "Yes")
+            delete_epoch!(obj, ep=ep)
+            _info("Deleted epoch: $ep")
+            ep = ep > 1 ? ep -= 1 : ep = 1
+            set_gtk_property!(entry_epoch, :label, string(ep))
+            draw(can)
+        end
+    end
+
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
     end
@@ -246,7 +259,8 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             set_gtk_property!(d_w, :resizable, true)
             d_g = GtkGrid()
             set_gtk_property!(d_g, :column_homogeneous, true)
-            set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+            set_gtk_property!(g, :column_spacing, 10)
+            set_gtk_property!(g, :row_spacing, 10)
             d_entry = GtkEntry()
             set_gtk_property!(d_entry, :text, string(value))
             d_bt_ok = GtkButton("Ok")
@@ -279,7 +293,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             end
             signal_connect(d_w, "key-press-event") do widget, event
                 k = event.keyval
-                if k == 65293
+                if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
                     value_currect = true
                     for idx in eachindex(value_s)
@@ -332,6 +346,15 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 end
             end
             draw(can)
+        elseif k == 65535 # DEL
+            ep = parse(Int64, get_gtk_property(entry_epoch, :label, String))
+            if ask_dialog("Delete epoch $ep ?", "No", "Yes")
+                delete_epoch!(obj, ep=ep)
+                _info("Deleted epoch: $ep")
+                ep = ep > 1 ? ep -= 1 : ep = 1
+                set_gtk_property!(entry_epoch, :label, string(ep))
+                draw(can)
+            end
         end
     end
 
@@ -357,16 +380,17 @@ Interactive edit of epoched signal.
 function iedit_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj1)))
 
     @assert epoch_n(obj1) > 1 "iedit_cont() should be used for continuous object."
-    _check_channels(obj1, ch1)
+    _check_channels(obj1, ch)
 
-    p = NeuroAnalyzer.plot(obj1, obj2, ch=ch, mono=mono)
+    p = NeuroAnalyzer.plot(obj1, obj2, ch=ch)
     win = GtkWindow("NeuroAnalyzer: iedit_ep()", 1200, (p.attr[:size][2] + 40))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 10)
     entry_epoch = GtkButton(string(1))
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("|<")
@@ -379,21 +403,17 @@ function iedit_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_delete = GtkButton("DEL")
-    set_gtk_property!(bt_delete, :tooltip_text, "Delete epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    g[1:12, 1] = can
+    g[1:8, 1] = can
     g[1, 2] = bt_start
-    g[3, 2] = bt_prev
-    g[4, 2] = entry_epoch
-    g[5, 2] = bt_next
-    g[7, 2] = bt_end
-    g[8, 2] = GtkLabel("")
-    g[9, 2] = bt_delete
-    g[10, 2] = GtkLabel("")
-    g[11, 2] = bt_help
-    g[12, 2] = bt_close
+    g[2, 2] = bt_prev
+    g[3, 2] = entry_epoch
+    g[4, 2] = bt_next
+    g[5, 2] = bt_end
+    g[6, 2] = GtkLabel("")
+    g[7, 2] = bt_help
+    g[8, 2] = bt_close
     push!(win, g)
 
     showall(win)
@@ -450,7 +470,8 @@ function iedit_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
         set_gtk_property!(d_w, :resizable, true)
         d_g = GtkGrid()
         set_gtk_property!(d_g, :column_homogeneous, true)
-        set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+        set_gtk_property!(g, :column_spacing, 10)
+        set_gtk_property!(g, :row_spacing, 10)
         d_entry = GtkEntry()
         set_gtk_property!(d_entry, :text, string(value))
         d_bt_ok = GtkButton("Ok")
@@ -483,7 +504,7 @@ function iedit_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
         end
         signal_connect(d_w, "key-press-event") do widget, event
             k = event.keyval
-            if k == 65293
+            if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
                 value_currect = true
                 for idx in eachindex(value_s)
@@ -531,7 +552,8 @@ function iedit_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
             set_gtk_property!(d_w, :resizable, true)
             d_g = GtkGrid()
             set_gtk_property!(d_g, :column_homogeneous, true)
-            set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+            set_gtk_property!(g, :column_spacing, 10)
+            set_gtk_property!(g, :row_spacing, 10)
             d_entry = GtkEntry()
             set_gtk_property!(d_entry, :text, string(value))
             d_bt_ok = GtkButton("Ok")
@@ -564,7 +586,7 @@ function iedit_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
             end
             signal_connect(d_w, "key-press-event") do widget, event
                 k = event.keyval
-                if k == 65293
+                if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
                     value_currect = true
                     for idx in eachindex(value_s)
@@ -655,7 +677,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 10)
     entry_time = GtkButton(string(obj.time_pts[1]))
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     entry_ts1 = GtkButton(string(obj.time_pts[1]))
@@ -874,7 +897,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         set_gtk_property!(d_w, :resizable, true)
         d_g = GtkGrid()
         set_gtk_property!(d_g, :column_homogeneous, true)
-        set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+        set_gtk_property!(g, :column_spacing, 10)
+        set_gtk_property!(g, :row_spacing, 10)
         d_entry = GtkEntry()
         set_gtk_property!(d_entry, :text, string(value))
         d_bt_ok = GtkButton("Ok")
@@ -908,7 +932,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
         signal_connect(d_w, "key-press-event") do widget, event
             k = event.keyval
-            if k == 65293
+            if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
                 value_currect = true
                 for idx in eachindex(value_s)
@@ -943,7 +967,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         set_gtk_property!(d_w, :resizable, true)
         d_g = GtkGrid()
         set_gtk_property!(d_g, :column_homogeneous, true)
-        set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+        set_gtk_property!(g, :column_spacing, 10)
+        set_gtk_property!(g, :row_spacing, 10)
         d_entry = GtkEntry()
         set_gtk_property!(d_entry, :text, string(value))
         d_bt_ok = GtkButton("Ok")
@@ -978,7 +1003,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
         signal_connect(d_w, "key-press-event") do widget, event
             k = event.keyval
-            if k == 65293
+            if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
                 value_currect = true
                 for idx in eachindex(value_s)
@@ -1014,7 +1039,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         set_gtk_property!(d_w, :resizable, true)
         d_g = GtkGrid()
         set_gtk_property!(d_g, :column_homogeneous, true)
-        set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+        set_gtk_property!(g, :column_spacing, 10)
+        set_gtk_property!(g, :row_spacing, 10)
         d_entry = GtkEntry()
         set_gtk_property!(d_entry, :text, string(value))
         d_bt_ok = GtkButton("Ok")
@@ -1049,7 +1075,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
         signal_connect(d_w, "key-press-event") do widget, event
             k = event.keyval
-            if k == 65293
+            if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
                 value_currect = true
                 for idx in eachindex(value_s)
@@ -1099,7 +1125,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             set_gtk_property!(d_w, :resizable, true)
             d_g = GtkGrid()
             set_gtk_property!(d_g, :column_homogeneous, true)
-            set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+            set_gtk_property!(g, :column_spacing, 10)
+            set_gtk_property!(g, :row_spacing, 10)
             d_entry = GtkEntry()
             set_gtk_property!(d_entry, :text, string(value))
             d_bt_ok = GtkButton("Ok")
@@ -1133,7 +1160,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             end
             signal_connect(d_w, "key-press-event") do widget, event
                 k = event.keyval
-                if k == 65293
+                if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
                     value_currect = true
                     for idx in eachindex(value_s)
@@ -1166,7 +1193,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             set_gtk_property!(d_w, :resizable, true)
             d_g = GtkGrid()
             set_gtk_property!(d_g, :column_homogeneous, true)
-            set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+            set_gtk_property!(g, :column_spacing, 10)
+            set_gtk_property!(g, :row_spacing, 10)
             d_entry = GtkEntry()
             set_gtk_property!(d_entry, :text, string(value))
             d_bt_ok = GtkButton("Ok")
@@ -1201,7 +1229,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             end
             signal_connect(d_w, "key-press-event") do widget, event
                 k = event.keyval
-                if k == 65293
+                if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
                     value_currect = true
                     for idx in eachindex(value_s)
@@ -1235,7 +1263,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             set_gtk_property!(d_w, :resizable, true)
             d_g = GtkGrid()
             set_gtk_property!(d_g, :column_homogeneous, true)
-            set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+            set_gtk_property!(g, :column_spacing, 10)
+            set_gtk_property!(g, :row_spacing, 10)
             d_entry = GtkEntry()
             set_gtk_property!(d_entry, :text, string(value))
             d_bt_ok = GtkButton("Ok")
@@ -1270,7 +1299,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             end
             signal_connect(d_w, "key-press-event") do widget, event
                 k = event.keyval
-                if k == 65293
+                if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
                     value_currect = true
                     for idx in eachindex(value_s)
@@ -1444,7 +1473,8 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 10)
     entry_time = GtkButton(string(obj1.time_pts[1]))
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_start = GtkButton("|<")
@@ -1565,7 +1595,8 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         set_gtk_property!(d_w, :resizable, true)
         d_g = GtkGrid()
         set_gtk_property!(d_g, :column_homogeneous, true)
-        set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+        set_gtk_property!(d_g, :column_spacing, 10)
+        set_gtk_property!(d_g, :row_spacing, 10)
         d_entry = GtkEntry()
         set_gtk_property!(d_entry, :text, string(value))
         d_bt_ok = GtkButton("Ok")
@@ -1599,7 +1630,7 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         end
         signal_connect(d_w, "key-press-event") do widget, event
             k = event.keyval
-            if k == 65293
+            if k == 65293 || k == 65421
                 value_s = get_gtk_property(d_entry, :text, String)
                 value_currect = true
                 for idx in eachindex(value_s)
@@ -1648,7 +1679,8 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             set_gtk_property!(d_w, :resizable, true)
             d_g = GtkGrid()
             set_gtk_property!(d_g, :column_homogeneous, true)
-            set_gtk_property!(d_g, :column_spacing, 10)  # introduce a 10-pixel gap between columns
+            set_gtk_property!(d_g, :column_spacing, 10)
+            set_gtk_property!(d_g, :row_spacing, 10)
             d_entry = GtkEntry()
             set_gtk_property!(d_entry, :text, string(value))
             d_bt_ok = GtkButton("Ok")
@@ -1682,7 +1714,7 @@ function iedit_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             end
             signal_connect(d_w, "key-press-event") do widget, event
                 k = event.keyval
-                if k == 65293
+                if k == 65293 || k == 65421
                     value_s = get_gtk_property(d_entry, :text, String)
                     value_currect = true
                     for idx in eachindex(value_s)

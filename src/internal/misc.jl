@@ -37,3 +37,25 @@ function _copy_lt2ut(m::AbstractArray)
 end
 
 _tlength(t::Tuple{Real, Real}) = length(t[1]:1:t[2])
+
+function _s2i(x::String)
+    if occursin(":", x)
+        return collect(parse(Int64, split(x, ":")[1]):parse(Int64, split(x, ":")[2]))
+    elseif occursin(", ", x)
+        x = replace(x, "["=>"")
+        x = replace(x, "]"=>"")
+        return parse.(Int64, split(x, ", "))
+    elseif occursin(",", x)
+        x = replace(x, "["=>"")
+        x = replace(x, "]"=>"")
+        return parse.(Int64, split(x, ","))
+    end
+end
+
+function _i2s(x::Union{AbstractRange, Vector{Int64}})
+    x = collect(x)
+    x = string(x)
+    x = replace(x, "["=>"")
+    x = replace(x, "]"=>"")
+    return x
+end

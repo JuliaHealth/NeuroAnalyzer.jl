@@ -122,7 +122,12 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._set_units(e10, 1) == "μV"
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
-
+@test NeuroAnalyzer._check_s("[1, 2]") == true
+@test NeuroAnalyzer._check_s("1:2") == true
+@test NeuroAnalyzer._check_s("1:2:3") == false
+@test NeuroAnalyzer._check_s("1.2") == false
+@test NeuroAnalyzer._s2i("1, 2, 3") == [1, 2, 3]
+@test NeuroAnalyzer._i2s([1, 2, 3]) == "1, 2, 3"
 # these function are still in work:
 ## FIFF
 # NeuroAnalyzer._read_fiff_tag(fid::IOStream)

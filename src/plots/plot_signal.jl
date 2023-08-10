@@ -507,7 +507,10 @@ Plot signal.
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
-- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:mean`: mean ± 95%CI
+    - `:butterfly`: butterfly plot
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
 - `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
@@ -526,7 +529,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
+    _check_var(type, [:normal, :butterfly, :mean], "type")
 
     if ep != 0
         _check_epochs(obj, ep)
@@ -749,8 +752,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
     
     if type === :butterfly
-        @assert length(ch_t_uni) == 1 "For type=:butterfly plot all channels should be of the same type."
-        @assert size(s, 1) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
+        @assert length(ch_t_uni) == 1 "For plot type=:butterfly all channels should be of the same type."
+        @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
         units = _set_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -814,8 +817,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
     
     if type === :mean
-        @assert length(ch_t_uni) == 1 "For type=:mean plot all channels should be of the same type."
-        @assert size(s, 1) >= 2 "For type=:mean plot the signal must contain ≥ 2 channels."
+        @assert length(ch_t_uni) == 1 "For plot type=:mean all channels should be of the same type."
+        @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
 
         units = _set_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
@@ -1004,7 +1007,10 @@ Plot embedded or external component.
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
-- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:mean`: mean ± 95%CI
+    - `:butterfly`: butterfly plot
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
 - `kwargs`: optional arguments for plot() function
 
@@ -1021,7 +1027,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     end
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
+    _check_var(type, [:normal, :butterfly, :mean], "type")
 
     if ep != 0
         _check_epochs(obj, ep)
