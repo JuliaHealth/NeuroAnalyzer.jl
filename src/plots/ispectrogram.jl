@@ -5,7 +5,7 @@ export ispectrogram_ep
 """
     ispectrogram(obj; <keyword arguments>)
 
-Interactive PSD.
+Interactive spectrogram of continuous or epoched signal.
 
 # Arguments
 
@@ -30,7 +30,7 @@ end
 """
     ispectrogram_cont(obj; <keyword arguments>)
 
-Interactive PSD of continuous signal.
+Interactive spectrogram of continuous signal.
 
 # Arguments
 
@@ -605,7 +605,7 @@ end
 """
     ispectrogram_ep(obj; <keyword arguments>)
 
-Interactive plot of epoched signal.
+Interactive spectrogram of epoched signal.
 
 # Arguments
 

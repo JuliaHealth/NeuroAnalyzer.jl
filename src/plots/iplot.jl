@@ -5,7 +5,7 @@ export iplot_ep
 """
     iplot(obj; <keyword arguments>)
 
-Interactive edit of continuous or epoched signal.
+Interactive plot of continuous or epoched signal.
 
 # Arguments
 

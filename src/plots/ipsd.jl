@@ -5,7 +5,7 @@ export ipsd_ep
 """
     ipsd(obj; <keyword arguments>)
 
-Interactive PSD.
+Interactive PSD of continuous or epoched signal.
 
 # Arguments
 
@@ -703,7 +703,7 @@ end
 """
     ipsd_ep(obj; <keyword arguments>)
 
-Interactive plot of epoched signal.
+Interactive PSD of epoched signal.
 
 # Arguments
 
