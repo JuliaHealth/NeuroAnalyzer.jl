@@ -9,7 +9,7 @@ Calculate FFT, amplitudes, powers and phases.
 # Arguments
 
 - `s::AbstractVector`
-- `pad::Int64=0`: number of zeros to add
+- `pad::Int64=0`: number of zeros to add at the end of the signal
 - `norm::Bool=false`: normalize do dB
 
 # Returns
@@ -52,7 +52,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Arguments
 
 - `s::AbstractVector`
-- `pad::Int64`: pad the `s` with `pad` zeros
+- `pad::Int64`: number of zeros to add at the end of the signal
 - `norm::Bool=true`: normalize do dB
 
 # Returns
@@ -93,7 +93,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Arguments
 
 - `s::AbstractArray`
-- `pad::Int64`: pad the `s` with `pad` zeros
+- `pad::Int64`: number of zeros to add at the end of the signal
 - `norm::Bool=true`: normalize do dB
 
 # Returns

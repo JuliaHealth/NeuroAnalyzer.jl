@@ -57,4 +57,4 @@ steps:
       - apt-get install -y xvfb
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
 
-branche: [ stable, devel ]
+branch: [ stable, devel ]

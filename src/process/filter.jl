@@ -290,6 +290,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     fs = sr(obj)
 
     (ftype === :hp && ep_n > 1) && _warn("HP filter should be applied to a continuous signal.")
+    _info("Signal should be tapered prior to filtering to reduce edge artifacts")
 
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")

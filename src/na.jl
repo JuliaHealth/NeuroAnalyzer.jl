@@ -131,7 +131,7 @@ function na_plugins_list()
     plugins = readdir(plugins_path)
     println("Available plugins:")
     for idx in 1:length(plugins)
-        println("$idx. $(replace(plugins[idx]))")
+        println("$idx. $(plugins[idx])")
     end
     cd(path_tmp)
 
