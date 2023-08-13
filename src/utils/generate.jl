@@ -6,6 +6,8 @@ export generate_morlet
 export generate_gaussian
 export generate_noise
 export generate_morlet_fwhm
+export generate_square
+export generate_triangle
 
 """
     generate_window(type, n; even)
@@ -278,4 +280,49 @@ function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
     
     return mw
     
+end
+
+"""
+    generate_square(t, a, p, w, offset)
+
+Generates square wave.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `a::Real`: amplitude
+- `p::Real`: duty cycle
+- `w::Real`: width
+- `offset::Real`: amplitude offset
+
+# Returns
+
+- s::Vector{Float64}`
+"""
+function generate_square(t::Union{AbstractVector, AbstractRange}, p::Real, a::Real=1, offset::Real=0, w::Real=1)
+
+    s = @. offset + a * (mod(p + t, 2) > w)
+    return s
+
+end
+
+"""
+    generate_triangle(t, a)
+
+Generates triangle wave.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `a::Real`: amplitude
+
+# Returns
+
+- s::Vector{Float64}`
+"""
+function generate_triangle(t::Union{AbstractVector, AbstractRange}, a::Real=1)
+
+    s = @. a * abs(mod(t, 2) - 1)
+    return s
+
 end

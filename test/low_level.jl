@@ -31,6 +31,8 @@ using ContinuousWavelets
 @test length(rms(ones(10))) == 1
 @test length(generate_sine(2, collect(1:10))) == 10
 @test length(generate_csine(2, collect(1:10))) == 10
+@test length(generate_square(collect(1:10), 0.5)) == 10
+@test length(generate_triangle(collect(1:10))) == 10
 @test length(freqs(rand(10))) == 2
 @test m_sortperm([1 2; 4 6]) == [1 1; 2 2]
 @test m_sort([1 2; 4 6], [2, 1]) == [4 6; 1 2]
