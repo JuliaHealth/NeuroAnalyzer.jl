@@ -354,5 +354,6 @@ include("study/info.jl")
 # stim
 include("stim/tes.jl")
 include("stim/ect.jl")
+include("stim/tes_model.jl")
 
 end # NeuroAnalyzer

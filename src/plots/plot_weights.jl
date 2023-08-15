@@ -72,14 +72,14 @@ function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
     if channel_labels == true
         for idx in eachindex(locs[!, :labels])
             if idx in ch
-                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
         end
     end
 
     for idx in eachindex(locs[!, :labels])
         if idx in ch
-            Plots.plot!(annotation=(loc_x[idx], loc_y[idx], Plots.text(string(weights[idx]), pointsize=font_size)))
+            Plots.plot!(annotations=(loc_x[idx], loc_y[idx], Plots.text(string(weights[idx]), pointsize=font_size)))
         end
     end
 

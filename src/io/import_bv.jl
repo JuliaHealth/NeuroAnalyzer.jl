@@ -81,7 +81,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         end
     end
     soft_filt_file = replace(splitext(file_name)[1], "eeg"=>"channels.tsv")
-    isfile(soft_filt_file) && (soft_filt = CSV.read(soft_filt_file, DataFrame))
+    isfile(soft_filt_file) && (soft_filt = CSV.read(soft_filt_file, stringtype=String, DataFrame))
 
     # JSON
     js_file =""
@@ -248,7 +248,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
             markers[!, :id] == repeat(["mrk"], nrow(markers))
         end
     elseif isfile(replace(splitext(file_name)[1], "eeg"=>"events.tsv"))
-        vmrk = CSV.read(replace(splitext(file_name)[1], "eeg"=>"events.tsv"), DataFrame)
+        vmrk = CSV.read(replace(splitext(file_name)[1], "eeg"=>"events.tsv"), stringtype=String, DataFrame)
         markers = DataFrame(:id=>repeat(["mrk"], nrow(vmrk)), 
                             :start=>(vmrk[!, :sample] ./ sampling_rate), 
                             :length=>round.(vmrk[!, :duration] ./ sampling_rate), 

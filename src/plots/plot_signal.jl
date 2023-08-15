@@ -95,7 +95,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     # draw scale
     if scale == true
         p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
-        p = Plots.plot!(annotation=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -198,7 +198,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     # draw scale
     if scale == true
         p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=5, label="")
-        p = Plots.plot!(annotation=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -294,7 +294,7 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArr
     # draw scale
     if norm == true && scale == true
         p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
-        p = Plots.plot!(annotation=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!(annotations=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -377,7 +377,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
     # draw scale
     if norm == true && scale == true
         p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
-        p = Plots.plot!(annotation=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!(annotations=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -481,7 +481,7 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     # draw scale
     if scale == true
         p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
-        p = Plots.plot!(annotation=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -914,7 +914,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                         linecolor=:black,
                                         label=false)
                 for idx in eachindex(markers_desc)
-                    p[p_idx] = Plots.plot!(p[p_idx], annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                    p[p_idx] = Plots.plot!(p[p_idx], annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
                 end
             end
         else
@@ -925,7 +925,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(p, annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(p, annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
     end
@@ -1141,7 +1141,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                          linecolor=:black,
                          label=false)
         for idx in eachindex(markers_desc)
-            p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+            p = Plots.plot!(annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
         end
     end
 

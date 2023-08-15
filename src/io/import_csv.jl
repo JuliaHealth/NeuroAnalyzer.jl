@@ -26,7 +26,7 @@ function import_csv(file_name::String; detect_type::Bool=true)
 
     file_type = "CSV"
 
-    df = CSV.read(file_name, DataFrame)
+    df = CSV.read(file_name, stringtype=String, DataFrame)
 
     if df[:, 1] isa Vector{Float64}
         # time by channels

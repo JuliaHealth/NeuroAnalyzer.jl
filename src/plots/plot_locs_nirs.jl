@@ -84,7 +84,7 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
     
     if src_labels == true
         for idx in 1:src_n
-            p = Plots.plot!(annotation=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
     else
         if mono == true
@@ -96,7 +96,7 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
     
     if det_labels == true
         for idx in (src_n + 1):(src_n + det_n)
-            p = Plots.plot!(annotation=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
     else
         if mono == true
@@ -108,10 +108,10 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
     
     if opt_labels == true
         for idx in 1:src_n
-            p = Plots.plot!(annotation=(x[idx], y[idx], Plots.text("S" * string(idx), pointsize=font_size)))
+            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text("S" * string(idx), pointsize=font_size)))
         end
         for idx in (src_n + 1):(src_n + det_n)
-            p = Plots.plot!(annotation=(x[idx], y[idx], Plots.text("D" * string(idx), pointsize=font_size)))
+            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text("D" * string(idx), pointsize=font_size)))
         end
     end
 

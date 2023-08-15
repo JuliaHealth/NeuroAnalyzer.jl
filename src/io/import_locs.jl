@@ -82,12 +82,12 @@ function import_locs_ced(file_name::String; maximize::Bool=true)
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".ced" "Not CED file."
 
-    locs = CSV.read(file_name, delim="\t", DataFrame)
+    locs = CSV.read(file_name, delim="\t", stringtype=String, DataFrame)
 
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
 
-    clabels = lstrip.(locs[!, "labels"])
+    clabels = string.(lstrip.(locs[!, "labels"]))
 
     x = zeros(length(clabels))
     y = zeros(length(clabels))
@@ -139,7 +139,7 @@ function import_locs_locs(file_name::String; maximize::Bool=true)
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".locs" "This is not LOCS file."
 
-    locs = CSV.read(file_name, header=false, delim="\t", DataFrame)
+    locs = CSV.read(file_name, header=false, delim="\t", stringtype=String, DataFrame)
 
     DataFrames.rename!(locs, [:number, :theta, :radius, :labels])
     clabels = lstrip.(locs[!, "labels"])
@@ -261,7 +261,7 @@ function import_locs_tsv(file_name::String; maximize::Bool=true)
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".tsv" "This is not TSV file."
 
-    locs = CSV.read(file_name, header=true, delim="\t", ignorerepeated=true, DataFrame)
+    locs = CSV.read(file_name, header=true, delim="\t", ignorerepeated=true, stringtype=String, DataFrame)
 
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
@@ -323,11 +323,11 @@ function import_locs_sfp(file_name::String; maximize::Bool=true)
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".sfp" "This is not SFP file."
     
-    locs = CSV.read(file_name, header=false, DataFrame)
+    locs = CSV.read(file_name, header=false, stringtype=String, DataFrame)
     _info("Checking TAB as delimeter")
-    size(locs, 2) != 4 && (locs = CSV.read(file_name, header=false, delim="/t", ignorerepeated=true, DataFrame))
+    size(locs, 2) != 4 && (locs = CSV.read(file_name, header=false, delim="/t", ignorerepeated=true, stringtype=String, DataFrame))
     _info("Checking SPACE as delimeter")
-    size(locs, 2) != 4 && (locs = CSV.read(file_name, header=false, delim=" ", ignorerepeated=true, DataFrame))
+    size(locs, 2) != 4 && (locs = CSV.read(file_name, header=false, delim=" ", ignorerepeated=true, stringtype=String, DataFrame))
     @assert size(locs, 2) == 4 "File $file_name cannot be opened, check delimeters."
 
     DataFrames.rename!(locs, [:label, :x, :y, :z])
@@ -383,7 +383,7 @@ function import_locs_csd(file_name::String; maximize::Bool=true)
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".csd" "This is not CSD file."
 
-    locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
+    locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, stringtype=String, DataFrame)
 
     DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
     clabels = lstrip.(locs[!, "labels"])

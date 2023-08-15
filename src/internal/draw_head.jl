@@ -52,10 +52,10 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
     p = Plots.plot!(p, head, fill=nothing, label="")
 
     if head_labels == true
-        p = Plots.plot!(annotation=(0, 1.05, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
-        p = Plots.plot!(annotation=(0, -1.05, Plots.text("NAS", pointsize=4, halign=:center, valign=:center)))
-        p = Plots.plot!(annotation=(-1.05, 0, Plots.text("LPA", pointsize=4, halign=:center, valign=:center, rotation=90)))
-        p = Plots.plot!(annotation=(1.05, 0, Plots.text("RPA", pointsize=4, halign=:center, valign=:center, rotation=-90)))
+        p = Plots.plot!(annotations=(0, 1.05, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
+        p = Plots.plot!(annotations=(0, -1.05, Plots.text("NAS", pointsize=4, halign=:center, valign=:center)))
+        p = Plots.plot!(annotations=(-1.05, 0, Plots.text("LPA", pointsize=4, halign=:center, valign=:center, rotation=90)))
+        p = Plots.plot!(annotations=(1.05, 0, Plots.text("RPA", pointsize=4, halign=:center, valign=:center, rotation=-90)))
     end
 
     if topo == true

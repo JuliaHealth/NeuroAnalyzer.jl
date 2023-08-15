@@ -119,7 +119,7 @@ function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRang
     if channel_labels == true
         for idx in eachindex(locs[!, :labels])
             if idx in ch
-                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
         end
     end

@@ -18,13 +18,13 @@ Preview channel locations.
 - `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
-- `cart::Bool=true`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400, cart::Bool=true)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400, cart::Bool=false)
 
     pal = mono == true ? :grays : :darktest
 
@@ -136,14 +136,14 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             end
         end
     end
-
-    if ch_labels == true
+    if ch_labels
         for idx in eachindex(locs[!, :labels])
             if idx in ch
-                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
             if idx in selected
-                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
         end
     end
@@ -168,13 +168,13 @@ end
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
 - `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
-- `cart::Bool=true`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
+- `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=true)
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false)
 
     pal = mono == true ? :grays : :darktest
 
@@ -256,14 +256,14 @@ Preview of channel locations.
 - `mono::Bool=false`: use color or grey palette
 - `threed::Bool=false`: 3-dimensional plot
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `cart::Bool=true`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, cart::Bool=true, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, cart::Bool=false, kwargs...)
 
     # select channels, default is all channels
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))

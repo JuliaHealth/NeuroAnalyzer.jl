@@ -248,7 +248,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
 
@@ -441,7 +441,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
 

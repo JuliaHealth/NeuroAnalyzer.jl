@@ -176,12 +176,12 @@ function import_nirx(file_name::String)
     end
 
     # read raw light intensity channels (V)
-    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", DataFrame, header=false))'[ch_masks, :]
+    nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", header=false, stringtype=String, DataFrame))'[ch_masks, :]
     wavelength_index = repeat([1], ch_n)
     data_type_label = repeat(["nirs_int"], ch_n)
     data_unit = repeat(["V"], ch_n)
     for idx in 2:length(wavelengths)
-        nirs_int = vcat(nirs_int, Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", DataFrame, header=false))'[ch_masks, :])
+        nirs_int = vcat(nirs_int, Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", header=false, stringtype=String, DataFrame))'[ch_masks, :])
         wavelength_index = vcat(wavelength_index, repeat([idx], ch_n))
         ch_pairs = vcat(ch_pairs, ch_pairs)
         data_type_label = vcat(data_type_label, repeat(["nirs_int"], ch_n))
