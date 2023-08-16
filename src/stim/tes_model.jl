@@ -5,7 +5,7 @@ export tes_model
 
 function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, cathode_curr::Real=-2.0)
 
-    locs = import_locs(joinpath(dirname(pathof(NeuroAnalyzer)), "..", "locs", "standard-10-10-cap47.ced"))
+    locs = import_locs(joinpath(NeuroAnalyzer.PATH, "locs", "standard-10-10-cap47.ced"))
 
     labels = locs[!, :labels]
     anode_ch = findfirst(isequal(anode), labels)

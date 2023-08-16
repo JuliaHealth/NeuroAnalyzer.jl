@@ -154,7 +154,7 @@ eeg = import_gdf(joinpath(testfiles_path, "eeg-test-gdf_2.20.gdf"))
 @test channel_n(eeg) == 65
 
 @info "test 28/28: import_montage()"
-ref_list, ref_name = import_montage("../montages/bip_long.txt")
+ref_list, ref_name = import_montage(joinpath(NeuroAnalyzer.PATH, "montages", "bip_long.txt"))
 @test ref_list == ["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"]
 @test ref_name == "BIP ||"
 

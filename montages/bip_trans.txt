@@ -1,0 +1,17 @@
+BIP =
+Fp2-Fp1
+F8-Fp2
+F8-F4
+F4-Fz
+Fz-F3
+F3-F7
+Fp1-F7
+T4-C4
+C4-Cz
+Cz-C3
+C3-T3
+T6-P4
+P4-Pz
+Pz-P3
+P3-T5
+O2-O1

@@ -4,7 +4,14 @@ module NeuroAnalyzer
 
 @assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
 
-const NA_VER = v"0.23.8"
+global const VER = v"0.23.8"
+
+begin
+    tmp = pwd()
+    cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
+    global const PATH = pwd()
+    cd(tmp)
+end
 
 # initialize preferences
 use_cuda = nothing
@@ -113,21 +120,26 @@ include("na.jl")
 
 function __init__()
 
-    @info "NeuroAnalyzer v$NA_VER"
-
-    # load preferences
-    @info "Loading preferences"
     global use_cuda = @load_preference("use_cuda", false)
     global progress_bar = @load_preference("progress_bar", true)
     global verbose = @load_preference("verbose", true)
     na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose)
 
+    _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
+    _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
+    
+    # load preferences)
+    _info("Preferences loaded:")
+    _info(" Use CUDA: $use_cuda")
+    _info(" Progress bar: $progress_bar")
+    _info(" Verbose: $verbose")
+
     # setup resources
-    @info "Preparing resources"
+    _info("Preparing resources")
     global res_path = joinpath(artifact"NeuroAnalyzer_resources", "resources")
 
     # load plugins
-    @info "Loading plugins"
+    _info("Loading plugins")
     global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
     isdir(plugins_path) || mkdir(plugins_path)
     na_plugins_reload()

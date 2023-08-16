@@ -17,25 +17,26 @@ Show NeuroAnalyzer and imported packages versions.
 """
 function na_info()
 
-    println("    NeuroAnalyzer: $NA_VER")
-    println("            Julia: $VERSION")
+    println("     NeuroAnalyzer: $(NeuroAnalyzer.VER)")
+    println("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
+    println("     Julia version: $VERSION")
     if CUDA.functional()
-        println("             CUDA: $(CUDA.runtime_version()) (use_cuda = $use_cuda)")
+        println("              CUDA: $(CUDA.runtime_version()) (use_cuda = $use_cuda)")
     else
-        println("             CUDA: not available (use_cuda = $use_cuda)")
+        println("              CUDA: not available (use_cuda = $use_cuda)")
     end
-    println("     Plugins path: $plugins_path")
-    println("   Resources path: $res_path")
-    println("Show progress bar: $progress_bar")
-    println("          Verbose: $verbose")
-    println("          Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
+    println("      Plugins path: $plugins_path")
+    println("    Resources path: $res_path")
+    println(" Show progress bar: $progress_bar")
+    println("           Verbose: $verbose")
+    println("           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
     Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance, `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         @info "Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly"
     end
     println()
 
-    if isfile("Manifest.toml")
+    if isfile(joinpath(NeuroAnalyzer.PATH, "Manifest.toml"))
         println("Imported packages:")
         required_packages = [
             "Cairo",
@@ -81,14 +82,14 @@ function na_info()
             "TOML",
             "Wavelets",
             "WaveletsExt" ]
-        versions = TOML.parsefile("Manifest.toml")["deps"]
+        versions = TOML.parsefile(joinpath(NeuroAnalyzer.PATH, "Manifest.toml"))["deps"]
         for idx in 1:length(required_packages)
             pkg = lpad(required_packages[idx], 25 - length(idx), " ")
             pkg_ver = versions[required_packages[idx]][1]["version"]
             println("$pkg $pkg_ver")
         end
     else
-        @warn "Manifest.toml file could not be found in $(pwd()), cannot report versions of imported packages."
+        @warn "Manifest.toml file could not be found in $(NeuroAnalyzer.PATH), cannot report versions of imported packages."
     end
 end
 
@@ -109,7 +110,7 @@ function na_plugins_reload()
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
                 include(joinpath(plugins_path, plugins[idx1], "src", plugin[idx2]))
-                _info("Loaded: $(plugin[idx2])")
+                _info(" Loaded: $(plugin[idx2])")
             end
         end
     end
@@ -306,10 +307,10 @@ Convert NeuroAnalyzer version to string.
 
 # Returns
 
-- `NA_VER::String`
+- `VER::String`
 """
 function na_version()
 
-    return string(Int(NA_VER.major)) * "." * string(Int(NA_VER.minor)) * "." * string(Int(NA_VER.patch))
+    return string(Int(NeuroAnalyzer.VER.major)) * "." * string(Int(NeuroAnalyzer.VER.minor)) * "." * string(Int(NeuroAnalyzer.VER.patch))
 
 end
