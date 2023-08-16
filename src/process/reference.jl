@@ -572,7 +572,7 @@ Reference using custom montage. Only signal channels are processed.
 # Notes
 
 If the reference contains a single channel (e.g. "Fz"), than the channel is copied to the referenced data.
-For each reference pair (e.g. "Fz-Cz"), the referenced channel is equal to the amplitude of channel 1 ("Fz") - amplitude of channel 2 ("Cz").
+For each reference pair (e.g. "Fz-Cz"), the referenced channel is equal to the amplitude of channel 2 ("Cz") - amplitude of channel 1 ("Fz").
 
 Examples of montages:
 - bipolar transverse: ["Fp2-Fp1", "F8-Fp2", "F8-F4", "F4-Fz", "Fz-F3", "F3-F7", "Fp1-F7", "T4-C4", "C4-Cz", "Cz-C3", "C3-T3", "T6-P4", "P4-Pz", "Pz-P3", "P3-T5", "O2-O1"], "BIP ="
@@ -588,8 +588,8 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
             m = match(r"(.+)-(.+)", ref_list[ref_idx])
-            @assert m[2] in labels(obj)[chs] "Label $(m[2]) does not match OBJ labels."
             @assert m[1] in labels(obj)[chs] "Label $(m[1]) does not match OBJ labels."
+            @assert m[2] in labels(obj)[chs] "Label $(m[2]) does not match OBJ labels."
         else
             @assert ref_list[ref_idx] in labels(obj)[chs] "Label $(ref_list[ref_idx]) does not match OBJ labels."
         end
@@ -604,7 +604,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
                 m = match(r"(.+)-(.+)", ref_list[ref_idx])
                 ref1 = get_channel(obj, ch=string(m[1]))
                 ref2 = get_channel(obj, ch=string(m[2]))
-                s[ref_idx, :, ep_idx] = @views obj.data[ref1, :, ep_idx] - obj.data[ref2, :, ep_idx]
+                s[ref_idx, :, ep_idx] = @views obj.data[ref2, :, ep_idx] - obj.data[ref1, :, ep_idx]
             else
                 s[ref_idx, :, ep_idx] = @views obj.data[get_channel(obj, ch=ref_list[ref_idx]), :, ep_idx]
             end
@@ -642,7 +642,7 @@ Reference using custom montage. Only signal channels are processed.
 # Notes
 
 If the reference contains a single channel (e.g. "Fz"), than the channel is copied to the referenced data.
-For each reference pair (e.g. "Fz-Cz"), the referenced channel is equal to the amplitude of channel 1 ("Fz") - amplitude of channel 2 ("Cz").
+For each reference pair (e.g. "Fz-Cz"), the referenced channel is equal to the amplitude of channel 2 ("Cz") - amplitude of channel 1 ("Fz").
 
 Examples of montages:
 - bipolar transverse: ["Fp2-Fp1", "F8-Fp2", "F8-F4", "F4-Fz", "Fz-F3", "F3-F7", "Fp1-F7", "T4-C4", "C4-Cz", "Cz-C3", "C3-T3", "T6-P4", "P4-Pz", "Pz-P3", "P3-T5", "O2-O1"], "BIP ="
