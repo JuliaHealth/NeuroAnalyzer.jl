@@ -240,6 +240,7 @@ include("io/import_nirx.jl")
 include("io/import_edf_annotations.jl")
 include("io/export_markers.jl")
 include("io/import_gdf.jl")
+include("io/import_montage.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")

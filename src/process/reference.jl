@@ -557,7 +557,7 @@ end
 """
     reference_custom(obj; ref_list, ref_name)
 
-Reference using custom montage. Only signal channels are processed.
+Reference using custom montage. Only signal channels are processed. Custom montage may be imported using `import_montage()`.
 
 # Arguments
 
@@ -631,7 +631,7 @@ end
 """
     reference_custom!(obj; ref_list, ref_name)
 
-Reference using custom montage. Only signal channels are processed.
+Reference using custom montage. Only signal channels are processed. Custom montage may be imported using `import_montage()`.
 
 # Arguments
 
