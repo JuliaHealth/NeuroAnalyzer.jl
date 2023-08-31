@@ -4,7 +4,7 @@ module NeuroAnalyzer
 
 @assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
 
-global const VER = v"0.23.8"
+global const VER = v"0.23.9"
 
 begin
     tmp = pwd()

@@ -1,7 +1,7 @@
 name = "NeuroAnalyzer"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"]
-version = "0.23.8"
+version = "0.23.9"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
