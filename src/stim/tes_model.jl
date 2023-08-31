@@ -1,8 +1,29 @@
 export tes_model
 
-# initial version, simplified model -- just superficial spread of the electric field
-# next version: model spread of electric field at the cortical surface -- reduce charge for skull resistance
+"""
+    tes_model(; anode, cathode, anode_curr, cathode_curr)
+    
+Create model of TES stimulation.
 
+# Arguments
+
+- `anode::String`: anode location
+- `cathode::String`: cathode location
+- `anode_curr::Real=2.0`: anode current [mA]
+- `cathode_curr::Real=-2.0`: cathode current [mA]
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+
+# Notes
+
+This is a very initial version, simplified model -- just superficial spread of the electric field
+
+# To do
+
+Model spread of electric field at the cortical surface -- reduce charge for skull resistance
+"""
 function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, cathode_curr::Real=-2.0)
 
     _wip()
@@ -57,7 +78,10 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
     obj_tmp.locs = locs
     create_time!(obj_tmp, fs=1)
     obj_tmp.time_pts
-    plot_topo(obj_tmp, seg=(0, 1), title="", nmethod=:none)
+
+    p = plot_topo(obj_tmp, seg=(0, 1), title="", nmethod=:none)
+
+    return p
     
     # Plots.plot(E, xticks=(1:nrow(locs), locs[!, :labels]), xtickfontsize=3)
 
