@@ -20,6 +20,8 @@ Brain volume is within -1.0 to +1.0 (X-, Y- and Z-axis)
 """
 function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
 
+    _wip()
+
     # prepare meshes
     brain_top = Point3f[[-1.2, -1.2, 0.0], [1.2, -1.2, 0.0], [1.2, 1.2, 0.0], [-1.2, 1.2, 0.0]]
     brain_top_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]

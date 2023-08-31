@@ -79,6 +79,7 @@ function na_info()
             "StatsKit",
             "StatsModels",
             "StatsPlots",
+            "TimeZones",
             "TOML",
             "Wavelets",
             "WaveletsExt" ]

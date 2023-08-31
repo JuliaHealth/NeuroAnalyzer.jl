@@ -20,6 +20,8 @@ Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. Mar
 """
 function import_fiff(file_name::String; detect_type::Bool=true)
 
+    _wip()
+
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
     fid, fiff_block = _create_fiff_block(file_name)

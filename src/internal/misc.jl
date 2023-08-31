@@ -4,6 +4,8 @@ _warn(s::String) = verbose == true && @warn s
 
 _deprecated(s1::String, s2::String) = verbose == true && @error "Function $s1() is deprecated, please use $s2() instead."
 
+_wip() = @warn "This function has the WIP (Work In Progress) status and is not ready for production use."
+
 _pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
 
 _pl(x::Real) = x > 1 ? "s" : ""

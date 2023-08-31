@@ -10,11 +10,12 @@ Load recording file and return `NeuroAnalyzer.NEURO` object. Supported formats:
 - BrainVision
 - CSV
 - SET (EEGLAB dataset)
+- NWB (Neurodata Without Borders)
 - FIFF
 - SNIRF
 - NIRS
 
-This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.gdf|.vhdr|.ahdr|.csv|.csv.gz|.set|.fif|.fiff|.snirf|.nirs). Signal data type (e.g. EEG or MEG is auto-detected) and stored in the `obj.header.recording[:data_type]` field.
+This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.gdf|.vhdr|.ahdr|.csv|.csv.gz|.set|.nwb|.fif|.fiff|.snirf|.nirs). Signal data type (e.g. EEG or MEG is auto-detected) and stored in the `obj.header.recording[:data_type]` field.
 
 # Arguments
 
@@ -38,6 +39,7 @@ function import_recording(file_name::String; detect_type::Bool=true, n::Int64=0)
     splitext(file_name)[2] == ".csv" && return import_csv(file_name, detect_type=detect_type)
     (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return import_csv(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".nwb" && return import_nwb(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n=n)

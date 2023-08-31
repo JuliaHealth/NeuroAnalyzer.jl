@@ -267,7 +267,6 @@ function import_edf(file_name::String; detect_type::Bool=true)
         ch_n -= length(annotation_channels)
     end
 
-
     ch_order = _sort_channels(ch_type)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)

@@ -972,7 +972,7 @@ end
 """
     plot_icatopo(obj, ic, ic_mw; <keyword arguments>)
 
-Topographical plot of embedded ICA components.
+Topographical plot of external ICA components.
 
 # Arguments
 

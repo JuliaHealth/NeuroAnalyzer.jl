@@ -19,6 +19,8 @@ Brain volume is within -1.0 to +1.0 (X-, Y- and Z-axis)
 """
 function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)
 
+    _wip()
+
     # load textures
     head_top_texture = FileIO.load(joinpath(res_path, "head_t.png"))
     head_side_texture = FileIO.load(joinpath(res_path, "head_s.png"))
