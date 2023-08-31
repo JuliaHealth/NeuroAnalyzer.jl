@@ -137,6 +137,8 @@ end
 
 function _check_svec(s::String)
     s = replace(s, " "=>"")
+    s = replace(s, "["=>"", count=1)
+    s = replace(s, "]"=>"", count=1)
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","]) || return false
     end

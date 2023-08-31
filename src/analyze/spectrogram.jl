@@ -99,7 +99,7 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
     # get frequency range
     @assert fs >= 1 "fs must be > 1."
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
@@ -175,7 +175,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
 
     @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
     @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
@@ -223,7 +223,7 @@ function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, fr
 
     @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
 
     sp = abs.(ContinuousWavelets.cwt(s, wt)')
     sf = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(s), wt)[1])
