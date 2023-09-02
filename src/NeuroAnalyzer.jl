@@ -17,6 +17,7 @@ end
 use_cuda = nothing
 progress_bar = nothing
 verbose = nothing
+allow_wip = true
 
 using Artifacts
 using Cairo

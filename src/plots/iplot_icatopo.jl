@@ -3,7 +3,7 @@ export iplot_icatopo
 """
     iplot_icatopo(obj; <keyword arguments>)
 
-Interactive topographical plot of embedded ICA components.
+Interactive topographical plot of embedded ("ic" and "ic_mw") ICA components.
 
 # Arguments
 
