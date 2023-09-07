@@ -17,7 +17,7 @@ Plot amplitude of single- or multi-channel `s`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
@@ -117,7 +117,7 @@ Plot amplitude of single- or multi-channel `s`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
@@ -217,7 +217,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `norm::Bool=false`: normalize to -1 .. +1
@@ -316,7 +316,7 @@ Butterfly plot of `s` channels.
 - `title::String=""`: plot title
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `norm::Bool=false`: normalize to -1 .. +1
 - `kwargs`: optional arguments for plot() function
 
@@ -502,7 +502,7 @@ Plot signal.
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `emarkers::Bool`: draw epoch markers if available
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
@@ -1002,7 +1002,7 @@ Plot embedded or external component.
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `emarkers::Bool`: draw epoch markers if available
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
@@ -1175,7 +1175,7 @@ Plot two signals. This function is used to compare two signals, e.g. before and 
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj1)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", emarkers::Bool=true, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
+function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj1)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", emarkers::Bool=true, scale::Bool=true, units::String="", kwargs...)
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."

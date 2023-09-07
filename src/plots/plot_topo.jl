@@ -13,7 +13,7 @@ Plot topographical view.
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -129,7 +129,7 @@ Topographical plot.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `amethod::Symbol=:mean`: averaging method:
@@ -241,7 +241,7 @@ Topographical plot of embedded or external component.
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `amethod::Symbol=:mean`: averaging method:

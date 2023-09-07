@@ -14,7 +14,7 @@ Plot weights at electrode positions.
 - `weights::Vector{<:Real}=[]`: weights vector
 - `channel_labels::Bool=true`: plot channel_labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
 - `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
@@ -104,7 +104,7 @@ Plot weights at electrode positions.
 - `weights::Matrix{<:Real}`: matrix of weights
 - `channel_labels::Bool=false`: plot channel_labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `title::String=""`: plot title

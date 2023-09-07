@@ -61,6 +61,8 @@ p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:mw)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:stft)
+@test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, ref=:delta)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:mean)

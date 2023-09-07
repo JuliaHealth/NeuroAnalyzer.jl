@@ -1,17 +1,21 @@
 export psd_rel
 
 """
-    psd_rel(s; fs, norm, mt, nt, f)
+    psd_rel(s; fs, norm, mt, st, nt, f, wlen, woverlap, w)
 
-Calculate relative power spectrum density.
+Calculate relative power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `mt::Bool=false`: if true, use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -19,7 +23,7 @@ Named tuple containing:
 - `pw::Vector{Float64}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     @assert fs >= 1 "fs must be ≥ 1."
     if f !== nothing
@@ -28,45 +32,32 @@ function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false,
         @assert f[2] <= fs / 2 "Lower frequency bound must be ≤ $(fs / 2)."
     end
 
-    # for short signals use multi-tapered periodogram
-    length(s) < 4 * fs && (mt = true)
+    ref_pw = f === nothing ? total_power(s, fs=fs, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w) : band_power(s, fs=fs, mt=mt, st=st, nt=nt, f=f, wlen=wlen, woverlap=woverlap, w=w)
 
-    ref_pw = f === nothing ? total_power(s, fs=fs, mt=mt) : band_power(s, fs=fs, mt=mt, nt=nt, f=f)
-
-    if mt == true
-        p = mt_pgram(s, fs=fs, nw=(nt÷2+1), ntapers=nt)
-    else
-        p = welch_pgram(s, 4*fs, fs=fs)
-    end
-
-    pw = power(p)
-    pf = Vector(freq(p))
-    pw = pw[1:length(pf)]
-
-    # replace powers at extreme frequencies
-    pw[1] = pw[2]
-    pw[end] = pw[end - 1]
+    pw, pf = psd(s, fs=fs, norm=norm, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     pw = pw / ref_pw
-
-    norm == true && (pw = pow2db.(pw))
 
     return (pw=pw, pf=pf)
 
 end
 
 """
-    psd_rel(s; fs, norm, mt, nt, f)
+    psd_rel(s; fs, norm, mt, st, nt, f, wlen, woverlap, w)
 
-Calculate relative power spectrum density.
+Calculate relative power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 - `s::AbstractMatrix`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `mt::Bool=false`: if true, use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -74,22 +65,16 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_rel(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
-
-    # for short signals use multi-tapered periodogram
-    if size(s, 2) < 4 * fs
-        mt = true
-        _info("Using multi-tapered periodogram.")
-    end
+function psd_rel(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     ch_n = size(s, 1)
 
-    _, pf = psd_rel(s[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+    _, pf = psd_rel(s[1, :, 1], fs=fs, norm=norm, mt=mt, st=st, nt=nt, f=f, wlen=wlen, woverlap=woverlap, w=w)
 
     pw = zeros(ch_n, length(pf))
 
     @inbounds @simd for ch_idx in 1:ch_n
-        pw[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+        pw[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, norm=norm, mt=mt, st=st, nt=nt, f=f, wlen=wlen, woverlap=woverlap, w=w)
     end
     
     return (pw=pw, pf=pf)
@@ -97,17 +82,21 @@ function psd_rel(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false,
 end
 
 """
-    psd_rel(s; fs, norm, mt, nt, f)
+    psd_rel(s; fs, norm, mt, st, nt, f, wlen, woverlap, w)
 
-Calculate relative power spectrum density.
+Calculate relative power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `mt::Bool=false`: if true, use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -115,24 +104,18 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_rel(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
-
-    # for short signals use multi-tapered periodogram
-    if size(s, 2) < 4 * fs
-        mt = true
-        _info("Using multi-tapered periodogram.")
-    end
+function psd_rel(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, pf = psd_rel(s[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+    _, pf = psd_rel(s[1, :, 1], fs=fs, norm=norm, mt=mt, st=st, nt=nt, f=f, wlen=wlen, woverlap=woverlap, w=w)
 
     pw = zeros(ch_n, length(pf), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pw[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+            pw[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, norm=norm, mt=mt, st=st, nt=nt, f=f, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
     
@@ -141,18 +124,22 @@ function psd_rel(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, 
 end
 
 """
-    psd_rel(obj; ch, norm, mt, nt, f)
+    psd_rel(obj; ch, norm, mt, st, nt, f, wlen, woverlap, w)
 
-Calculate relative power spectrum density.
+Calculate relative power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `mt::Bool=false`: if true, use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -160,11 +147,11 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Array{Float64, 3}`: frequencies
 """
-function psd_rel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function psd_rel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     _check_channels(obj, ch)
 
-    pw, pf = @views psd_rel(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, nt=nt, f=f)
+    pw, pf = @views psd_rel(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, st=st, nt=nt, f=f, wlen=wlen, woverlap=woverlap, w=w)
 
     return (pw=pw, pf=pf)
 

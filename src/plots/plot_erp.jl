@@ -16,7 +16,7 @@ Plot ERP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -90,7 +90,7 @@ Butterfly plot of ERP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `avg::Bool=false`: plot average ERP
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
@@ -205,7 +205,7 @@ Plot ERP amplitude mean and ±95% CI.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -304,7 +304,7 @@ Plot topographical map ERPs.
 - `title::String=""`: plot title
 - `yrev::Bool=false`: reverse Y axis
 - `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 
 - `kwargs`: optional arguments for plot() function
 
@@ -426,7 +426,7 @@ Plot EPRs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -495,7 +495,7 @@ Plot ERP.
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="default"`: color bar title, default is Amplitude [units] 
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)

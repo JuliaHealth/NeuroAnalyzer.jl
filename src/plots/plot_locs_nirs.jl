@@ -17,7 +17,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `det_labels::Bool=false`: plot detector labels
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)

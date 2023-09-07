@@ -14,7 +14,7 @@ Preview channel locations.
 - `ch_labels::Bool=true`: plot channel labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
@@ -166,7 +166,7 @@ end
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
 
@@ -253,7 +253,7 @@ Preview of channel locations.
 - `head_labels::Bool=false`: plot head labels
 - `plot_size::Int64=400`: plot dimensions in pixels (plot_size×plot_size)
 - `head_details::Bool=true`: draw nose and ears
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `threed::Bool=false`: 3-dimensional plot
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `cart::Bool=false`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates

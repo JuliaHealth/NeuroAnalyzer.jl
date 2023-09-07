@@ -26,7 +26,7 @@ Plot matrix.
 - `ylabel::String=""`
 - `title::String=""`
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -81,7 +81,7 @@ Plot cross/auto-covariance/correlation.
 - `ylabel::String=""`
 - `title::String=""`
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -131,7 +131,7 @@ Plot histogram.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -198,7 +198,7 @@ Bar plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -249,7 +249,7 @@ Line plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -301,7 +301,7 @@ Line plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -360,7 +360,7 @@ Box plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -411,7 +411,7 @@ Violin plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -462,7 +462,7 @@ Dots plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -520,7 +520,7 @@ Plot paired data.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -589,7 +589,7 @@ Polar plot.
 - `s::Union{AbstractVector, AbstractArray}`
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -679,7 +679,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `title::String="default"`
 - `cb::Bool=true`: draw color bar
 - `cb_title::String="Power [dB]"`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -826,7 +826,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns

@@ -1,16 +1,20 @@
 export psd
 
 """
-    psd(s; fs, norm, mt, nt)
+    psd(s; fs, norm, mt, st, nt, wlen, woverlap, w)
 
-Calculate power spectrum density.
+Calculate power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 - `s::Vector{Float64}`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `mt::Bool=false`: if true, use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -18,23 +22,36 @@ Named tuple containing:
 - `pw::Vector{Float64}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd(s::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
+    @assert !(mt == true && st == true) "Both mt and st must not be true."
     @assert nt >= 1 "nt must be ≥ 1."
     @assert fs >= 1 "fs must be ≥ 1."
+    @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
+    @assert wlen >= 2 "wlen must be ≥ 2."
+    @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
+    @assert woverlap >= 0 "woverlap must be ≥ 0."
 
-    # for short signals use multi-tapered periodogram
-    length(s) < 4 * fs && (mt = true)
+    w = w ? hanning : nothing
 
     if mt == true
-        p = mt_pgram(s, fs=fs, nw=(nt÷2+1), ntapers=nt)
+        p = mt_pgram(s, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
+    elseif st == true
+        p = abs.(stft(s, wlen, woverlap, fs=fs, window=w))
     else
-        p = welch_pgram(s, 4*fs, fs=fs)
+        p = welch_pgram(s, wlen, woverlap, fs=fs, window=w)
     end
 
-    pw = power(p)
-    pf = Vector(freq(p))
-    pw = pw[1:length(pf)]
+    if st != true
+        pw = power(p)
+        pf = Vector(freq(p))
+        pw = pw[1:length(pf)]
+    else
+        # average STFT segments
+        pw = vec(mean(p, dims=2))
+        # create frequencies vector
+        pf = linspace(0, fs / 2, length(pw))
+    end
 
     # replace powers at extreme frequencies
     pw[1] = pw[2]
@@ -47,17 +64,21 @@ function psd(s::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, nt
 end
 
 """
-    psd(s; fs, norm, mt, nt)
+    psd(s; fs, norm, mt, st, nt, wlen, woverlap, w)
 
-Calculate power spectrum density.
+Calculate power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 
 - `s::AbstractMatrix`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `mt::Bool=false`: if true, use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -65,21 +86,15 @@ Named tuple containing:
 - `pw::Array{Float64, 2}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
-
-    # for short signals use multi-tapered periodogram
-    if size(s, 2) < 4 * fs
-        mt = true
-        _info("Using multi-tapered periodogram.")
-    end
+function psd(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     ch_n = size(s, 1)
-    _, pf = psd(s[1, :], fs=fs, norm=norm, mt=mt, nt=nt)
+    _, pf = psd(s[1, :], fs=fs, norm=norm, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     pw = zeros(ch_n, length(pf))
 
     @inbounds @simd for ch_idx in 1:ch_n
-        pw[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, norm=norm, mt=mt, nt=nt)
+        pw[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, norm=norm, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     end
     
     return (pw=pw, pf=pf)
@@ -87,16 +102,20 @@ function psd(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, nt:
 end
 
 """
-    psd(s; fs, norm, mt, nt)
+    psd(s; fs, norm, mt, st, nt, wlen, woverlap, w)
 
-Calculate power spectrum density.
+Calculate power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -104,24 +123,18 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
-
-    # for short signals use multi-tapered periodogram
-    if size(s, 2) < 4 * fs
-        mt = true
-        _info("Using multi-tapered periodogram.")
-    end
+function psd(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, pf = psd(s[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
+    _, pf = psd(s[1, :, 1], fs=fs, norm=norm, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     pw = zeros(ch_n, length(pf), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pw[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt)
+            pw[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, norm=norm, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
     
@@ -130,9 +143,9 @@ function psd(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, nt::
 end
 
 """
-    psd(obj; ch, norm, mt)
+    psd(obj; ch, norm, mt, st, nt, wlen, woverlap, w)
 
-Calculate power spectrum density.
+Calculate power spectrum density. Default method is Welch periodogram.
 
 # Arguments
 
@@ -140,7 +153,11 @@ Calculate power spectrum density.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `st::Bool=false`: if true, use short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -148,14 +165,14 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     _check_channels(obj, ch)
 
     if length(ch) == 1
-        pw, pf = psd(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 2)), fs=sr(obj), norm=norm, mt=mt, nt=nt)
+        pw, pf = psd(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 3)), fs=sr(obj), norm=norm, mt=mt,st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     else
-        pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, nt=nt)
+        pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     end
 
     return (pw=pw, pf=pf)

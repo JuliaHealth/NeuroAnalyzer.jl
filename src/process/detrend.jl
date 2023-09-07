@@ -9,7 +9,7 @@ Perform piecewise detrending.
 # Arguments
 
 - `s::AbstractVector`
-- `type::Symbol=:ls`:
+- `type::Symbol=:linear`:
     - `:loess`: fit loess approximation and subtract it from `s`
     - `:poly`: polynomial of `order` is subtracted from `s`
     - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
@@ -106,6 +106,7 @@ function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::
     end
 
     return s_new
+
 end
 
 """
