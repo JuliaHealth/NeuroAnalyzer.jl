@@ -384,24 +384,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
                     set_gtk_property!(can, :height_request, Int32(900))
                 end
                 ctx = getgc(can)
-                show(io, MIME("image/png"), NeuroAnalyzer.plot_psd(obj,
-                                                                   ch=ch,
-                                                                   seg=(time1, time2),
-                                                                   mono=mono,
-                                                                   title=title,
-                                                                   xlabel=xlab,
-                                                                   ylabel=ylab,
-                                                                   norm=norm,
-                                                                   type=type,
-                                                                   method=method,
-                                                                   ax=ax,
-                                                                   ref=ref,
-                                                                   frq_lim=frq,
-                                                                   ncyc=ncyc,
-                                                                   nt=nt,
-                                                                   wlen=wlen,
-                                                                   woverlap=woverlap,
-                                                                   w=hw))
+                show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -961,24 +944,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                     set_gtk_property!(can, :height_request, Int32(900))
                 end
                 ctx = getgc(can)
-                show(io, MIME("image/png"), NeuroAnalyzer.plot_psd(obj,
-                                                                   ch=ch,
-                                                                   ep=ep,
-                                                                   mono=mono,
-                                                                   title=title,
-                                                                   xlabel=xlab,
-                                                                   ylabel=ylab,
-                                                                   norm=norm,
-                                                                   type=type,
-                                                                   method=method,
-                                                                   ax=ax,
-                                                                   ref=ref,
-                                                                   frq_lim=frq,
-                                                                   ncyc=ncyc,
-                                                                   nt=nt,
-                                                                   wlen=wlen,
-                                                                   woverlap=woverlap,
-                                                                   w=hw))
+                show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)

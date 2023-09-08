@@ -54,8 +54,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     end
 
     # prepare plot
-    ch_n <= 2 && (plot_size = (1200, 400))
-    ch_n > 2 && (plot_size = (1200, 800))
+    ch_n in 1:2 && (plot_size = (1200, 400))
+    ch_n in 3:15 && (plot_size = (1200, 800))
+    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -67,6 +68,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    top_margin=0Plots.px,
                    bottom_margin=15Plots.px,
                    right_margin=10Plots.px,
+                   left_margin=10Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -151,8 +153,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     end
 
     # prepare plot
-    ch_n <= 2 && (plot_size = (1200, 400))
-    ch_n > 2 && (plot_size = (1200, 800))
+    ch_n in 1:2 && (plot_size = (1200, 400))
+    ch_n in 3:15 && (plot_size = (1200, 800))
+    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -433,8 +436,9 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     end
 
     # prepare plot
-    ch_n <= 2 && (plot_size = (1200, 400))
-    ch_n > 2 && (plot_size = (1200, 800))
+    ch_n in 1:2 && (plot_size = (1200, 400))
+    ch_n in 3:15 && (plot_size = (1200, 800))
+    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=NeuroAnalyzer._xlims(t),

@@ -1,58 +1,58 @@
-export iedit
-export iedit_ep
-export iedit_cont
+export iview
+export iview_ep
+export iview_cont
 
 """
-    iedit(obj, ch, mono, zoom)
+    iview(obj, ch, mono, zoom)
 
-Interactive edit of continuous or epoched signal.
+Interactive view of continuous or epoched signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
-- `mono::Bool=true`: Use color or gray palette
+- `mono::Bool=false`: Use color or gray palette
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=true, zoom::Int64=5)
+function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false, zoom::Int64=5)
 
     if epoch_n(obj) == 1
-        iedit_cont(obj, ch=ch, mono=mono, zoom=zoom)
+        iview_cont(obj, ch=ch, mono=mono, zoom=zoom)
     else
-        iedit_ep(obj, ch=ch, mono=mono)
+        iview_ep(obj, ch=ch, mono=mono)
     end
 
 end
 
 """
-    iedit_cont(obj, ch, mono, zoom)
+    iview_cont(obj, ch, mono, zoom)
 
-Interactive edit of continuous signal.
+Interactive view of continuous signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
-- `mono::Bool=true`: Use color or gray palette
+- `mono::Bool=false`: Use color or gray palette
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=true, zoom::Int64=5)
+function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false, zoom::Int64=5)
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert epoch_n(obj) == 1 "iedit_ep() should be used for epoched object."
+    @assert epoch_n(obj) == 1 "iview_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
-    win = GtkWindow("NeuroAnalyzer: iedit_cont()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iview_cont()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -70,12 +70,6 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]") 
-    entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
-    set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
-    set_gtk_property!(entry_ts1, :digits, 3)
-    entry_ts2 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
-    set_gtk_property!(entry_ts2, :digits, 3)
-    set_gtk_property!(entry_ts2, :tooltip_text, "Segment end [s]")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
     bt_prev5 = GtkButton("↞")
@@ -90,11 +84,9 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_delete = GtkButton("DEL")
-    set_gtk_property!(bt_delete, :tooltip_text, "Delete segment")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    g[1:16, 1] = win_view
+    g[1:10, 1] = win_view
     g[1, 2] = bt_start
     g[2, 2] = bt_prev5
     g[3, 2] = bt_prev
@@ -103,14 +95,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     g[6, 2] = bt_next5
     g[7, 2] = bt_end
     g[8, 2] = GtkLabel("")
-    g[9, 2] = entry_ts1
-    g[10, 2] = GtkLabel("|")
-    g[11, 2] = entry_ts2
-    g[12, 2] = GtkLabel("")
-    g[13, 2] = bt_delete
-    g[14, 2] = GtkLabel("")
-    g[15, 2] = bt_help
-    g[16, 2] = bt_close
+    g[9, 2] = bt_help
+    g[10, 2] = bt_close
     push!(win, g)
 
     showall(win)
@@ -119,13 +105,10 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         time1 = get_gtk_property(entry_time, :value, Float64)
         time2 = time1 + zoom
         time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-        ts1 = get_gtk_property(entry_ts1, :value, Float64)
-        ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
         show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
                                                        ch=ch,
                                                        seg=(time1, time2),
-                                                       s_pos=(ts1, ts2),
                                                        mono=mono,
                                                        title=""))
         img = read_from_png(io)
@@ -134,54 +117,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
 
     signal_connect(entry_time, "value-changed") do widget
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts1, :value, time_current)
-            set_gtk_property!(entry_ts2, :value, time_current)
-        end
         draw(can)
-    end
-    signal_connect(entry_ts1, "value-changed") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts1, :value, obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)])
-        end
-        draw(can)
-    end
-    signal_connect(entry_ts2, "value-changed") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts2, :value, obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)])
-        end
-        draw(can)
-    end
-
-    can.mouse.button1press = @guarded (widget, event) -> begin
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        x_pos = event.x
-        x_pos < 52 && (x_pos = 52)
-        x_pos > 1182 && (x_pos = 1182)
-        if time_current + zoom < obj.time_pts[end]
-            ts1 = time_current + round((x_pos - 52) / (1130 / zoom), digits=3)
-        else
-            ts1 = time_current + round((x_pos - 52) / (1130 / (obj.time_pts[end] - time_current)), digits=3)
-        end
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts1, :value, round(ts1, digits=3))
-        end
-    end
-
-    can.mouse.button3press = @guarded (widget, event) -> begin
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        x_pos = event.x
-        x_pos < 52 && (x_pos = 52)
-        x_pos > 1182 && (x_pos = 1182)
-        if time_current + zoom < obj.time_pts[end]
-            ts2 = time_current + ((x_pos - 52) / (1130 / zoom))
-        else
-            ts2 = time_current + ((x_pos - 52) / (1130 / (obj.time_pts[end] - time_current)))
-        end
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts2, :value, round(ts2, digits=3))
-        end
     end
 
     signal_connect(bt_prev, "clicked") do widget
@@ -241,45 +177,12 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
     end
 
-    @guarded signal_connect(bt_delete, "clicked") do widget
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-        time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
-        if time1 > time2
-            warn_dialog("Cannot delete!\nSegment start is larger than segment end.")
-        elseif time1 == time2
-            warn_dialog("Cannot delete!\nSegment start must be different from segment end.")
-        elseif ask_dialog("Delete segment $time1:$time2 ?", "No", "Yes")
-            trim!(obj, seg=(time1, time2), remove_epochs=false)
-            _info("Deleted segment: $time1:$time2")
-            if time1 == time_current && time2 > obj.time_pts[end]
-                time_current = obj.time_pts[end] - zoom
-                time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-            else
-                if obj.time_pts[end] % zoom == 0
-                    time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
-                else
-                    time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
-                end
-                time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-            end
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-                set_gtk_property!(entry_ts1, :value, time_current)
-                set_gtk_property!(entry_ts2, :value, time_current)
-                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                GAccessor.range(entry_ts1, obj.time_pts[1], obj.time_pts[end])
-                GAccessor.range(entry_ts2, obj.time_pts[1], obj.time_pts[end])
-            end
-        end
-    end
-
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nDEL\tdelete current segment\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nh\tthis info\nq\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -287,20 +190,16 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         if k == 113 # q
             Gtk.destroy(win)
         elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nDEL\tdelete current segment\n\nh\tthis info\nq\texit\n")
+            info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nh\tthis info\nq\texit\n")
         elseif k == 97 # a
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj.time_pts[1])
-                set_gtk_property!(entry_ts1, :value, obj.time_pts[1])
-                set_gtk_property!(entry_ts1, :value, obj.time_pts[1])
             end
             draw(can)
         elseif k == 115 # s
             time_current = obj.time_pts[end] - zoom
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, time_current)
-                set_gtk_property!(entry_ts1, :value, time_current)
-                set_gtk_property!(entry_ts2, :value, time_current)
             end
             draw(can)
         elseif k == 122 # z
@@ -309,8 +208,6 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 time_current -= 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
                 end
             end
             draw(can)
@@ -320,8 +217,6 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 time_current = time_current - zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
                 end
             end
             draw(can)
@@ -331,15 +226,11 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 time_current += 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
                 end
             else
                 time_current = obj.time_pts[end] - zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
                 end
             end
         elseif k == 118 # v
@@ -348,46 +239,11 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 time_current += zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
                 end
             else
                 time_current = obj.time_pts[end] - zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                end
-            end
-        elseif k == 100 # d
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-            time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
-            if time1 > time2
-                warn_dialog("Cannot delete!\nSegment start is larger than segment end.")
-            elseif time1 == time2
-                warn_dialog("Cannot delete!\nSegment start must be different from segment end.")
-            elseif ask_dialog("Delete segment $time1:$time2 ?", "No", "Yes")
-                trim!(obj, seg=(time1, time2), remove_epochs=false)
-                _info("Deleted segment: $time1:$time2")
-                if time1 == time_current && time2 > obj.time_pts[end]
-                    time_current = obj.time_pts[end] - zoom
-                    time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                else
-                    if obj.time_pts[end] % zoom == 0
-                        time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
-                    else
-                        time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
-                    end
-                    time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                end
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                    GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                    GAccessor.range(entry_ts1, obj.time_pts[1], obj.time_pts[end])
-                    GAccessor.range(entry_ts2, obj.time_pts[1], obj.time_pts[end])
                 end
             end
         end
@@ -398,27 +254,27 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    iedit_ep(obj, ch, mono)
+    iview_ep(obj, ch, mono)
 
-Interactive edit of epoched signal.
+Interactive view of epoched signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
-- `mono::Bool=true`: Use color or gray palette
+- `mono::Bool=false`: Use color or gray palette
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=true)
+function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=false)
 
-    @assert epoch_n(obj) > 1 "iedit_cont() should be used for continuous object."
+    @assert epoch_n(obj) > 1 "iview_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=1, mono=mono, title="")
-    win = GtkWindow("NeuroAnalyzer: iedit_ep()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iview_ep()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -530,7 +386,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nd\tdelete current epoch\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nHOME\tgo to first epoch\nEND\t\tgo to last epoch\n,\t\tprevious epoch\n.\t\tnext epoch\n\nDEL\t\tdelete current epoch\n\nh\t\tthis info\nq\t\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -538,7 +394,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         if k == 113 # q
             Gtk.destroy(win)
         elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nd\tdelete current epoch\n\nh\tthis info\nq\texit\n")
+            info_dialog("Keyboard shortcuts:\n\nHOME\tgo to first epoch\nEND\t\tgo to last epoch\n,\t\tprevious epoch\n.\t\tnext epoch\n\nDEL\t\tdelete current epoch\n\nh\t\tthis info\nq\t\texit\n")
         elseif k == 97 # a
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, 1)

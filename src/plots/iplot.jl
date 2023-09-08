@@ -51,15 +51,19 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     ch_init = ch
 
     p = NeuroAnalyzer.plot(obj, ch=ch)
-    g = GtkGrid()
-    g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, (p.attr[:size][2] + 40))
+
+    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, 800)
     win_view = GtkScrolledWindow()
+    set_gtk_property!(win_view, :min_content_width, 1200)
+    set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    push!(win_view, can)
+    g = GtkGrid()
+    g_opts = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g_opts, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 10)
@@ -111,7 +115,7 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     set_gtk_property!(cb_scale, :active, true)
 
     cb_markers = GtkCheckButton()
-    set_gtk_property!(cb_markers, :tooltip_text, "Draw markers")
+    set_gtk_property!(cb_markers, :tooltip_text, "Draw event markers")
     set_gtk_property!(cb_markers, :active, true)
 
     cb_norm = GtkCheckButton()
@@ -182,7 +186,7 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     push!(vbox, g_opts)
 
     g[1, 1] = vbox
-    g[2:11, 1] = can
+    g[2:11, 1] = win_view
     g[1, 2] = GtkLabel("")
     g[2, 2] = bt_start
     g[3, 2] = bt_prev5
@@ -250,21 +254,17 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                                        ylabel=ylab,
                                        norm=norm,
                                        markers=markers)
-                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                if p.attr[:size][2] + 40 < 800
+                    Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                    set_gtk_property!(win_view, :min_content_height, p.attr[:size][2])
+                else
+                    Gtk.resize!(win, 1200, 800)
+                    set_gtk_property!(win_view, :min_content_height, 800)
+                end
                 set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
                 set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
                 ctx = getgc(can)
-                show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                               ch=ch,
-                                                               type=type,
-                                                               seg=(time1, time2),
-                                                               scale=scale,
-                                                               mono=mono,
-                                                               title=title,
-                                                               xlabel=xlab,
-                                                               ylabel=ylab,
-                                                               norm=norm,
-                                                               markers=markers))
+                show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -479,14 +479,19 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=1)
-    g = GtkGrid()
-    g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, (p.attr[:size][2] + 40))
+
+    win = GtkWindow("NeuroAnalyzer: iplot_ep()", 1200, 800)
+    win_view = GtkScrolledWindow()
+    set_gtk_property!(win_view, :min_content_width, 1200)
+    set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    push!(win_view, can)
+    g = GtkGrid()
+    g_opts = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g_opts, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 10)
@@ -532,7 +537,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(cb_scale, :active, true)
 
     cb_markers = GtkCheckButton()
-    set_gtk_property!(cb_markers, :tooltip_text, "Draw markers")
+    set_gtk_property!(cb_markers, :tooltip_text, "Draw event markers")
     set_gtk_property!(cb_markers, :active, true)
 
     cb_norm = GtkCheckButton()
@@ -603,7 +608,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     push!(vbox, g_opts)
 
     g[1, 1] = vbox
-    g[2:9, 1] = can
+    g[2:9, 1] = win_view
     g[1, 2] = GtkLabel("")
     g[2, 2] = bt_start
     g[3, 2] = bt_prev
@@ -667,21 +672,17 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                                        ylabel=ylab,
                                        norm=norm,
                                        markers=markers)
-                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                if p.attr[:size][2] + 40 < 800
+                    Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                    set_gtk_property!(win_view, :min_content_height, p.attr[:size][2])
+                else
+                    Gtk.resize!(win, 1200, 800)
+                    set_gtk_property!(win_view, :min_content_height, 800)
+                end
                 set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
                 set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
                 ctx = getgc(can)
-                show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                               ep=ep,
-                                                               ch=ch,
-                                                               type=type,
-                                                               scale=scale,
-                                                               mono=mono,
-                                                               title=title,
-                                                               xlabel=xlab,
-                                                               ylabel=ylab,
-                                                               norm=norm,
-                                                               markers=markers))
+                show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -872,14 +873,18 @@ function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     ch_init = ch
 
     p = NeuroAnalyzer.plot(obj1, obj2, ch=ch)
-    g = GtkGrid()
-    g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, 800)
+    win_view = GtkScrolledWindow()
+    set_gtk_property!(win_view, :min_content_width, 1200)
+    set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    push!(win_view, can)
+    g = GtkGrid()
+    g_opts = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g_opts, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 10)
@@ -971,7 +976,7 @@ function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     push!(vbox, g_opts)
 
     g[1, 1] = vbox
-    g[2:11, 1] = can
+    g[2:11, 1] = win_view
     g[1, 2] = GtkLabel("")
     g[2, 2] = bt_start
     g[3, 2] = bt_prev5
@@ -1028,18 +1033,15 @@ function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                                    title=title,
                                    xlabel=xlab,
                                    ylabel=ylab)
-            Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-            set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-            set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
+            if p.attr[:size][2] + 40 < 800
+                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                set_gtk_property!(win_view, :min_content_height, p.attr[:size][2])
+            else
+                Gtk.resize!(win, 1200, 800)
+                set_gtk_property!(win_view, :min_content_height, 800)
+            end
             ctx = getgc(can)
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1,
-                                                           obj2,
-                                                           ch=ch,
-                                                           seg=(time1, time2),
-                                                           scale=scale,
-                                                           title=title,
-                                                           xlabel=xlab,
-                                                           ylabel=ylab))
+            show(io, MIME("image/png"), p)
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)

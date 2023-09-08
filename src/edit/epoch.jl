@@ -59,10 +59,9 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
 
         # delete markers outside epochs
         for marker_idx in nrow(obj_new.markers):-1:1
-            obj_new.markers[marker_idx, :start] in 1:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
+            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
         end
     end
-
     # update signal
     obj_new.data = epochs
 

@@ -155,10 +155,11 @@ function import_edf(file_name::String; detect_type::Bool=true)
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
-    if length(unique(samples_per_datarecord)) == 1
+    # ignore annotations channels
+    if length(unique(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])) == 1
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
     else
-        sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
+        sampling_rate = round.(Int64, samples_per_datarecord[setdiff(1:ch_n, annotation_channels)] / data_records_duration)
     end
 
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
@@ -210,7 +211,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         data_size = filesize(file_name) - data_offset
         signal = UInt8[]
         readbytes!(fid, signal, data_size, all=true)
-        data_records = length(signal) ÷ 2 ÷ sum(sampling_rate)        
+        data_records = length(signal) ÷ 2 ÷ sum(sampling_rate)
         data = zeros(ch_n, data_records * max_sampling_rate)
         data_segment = max_samples_per_datarecord
         annotations = String[]

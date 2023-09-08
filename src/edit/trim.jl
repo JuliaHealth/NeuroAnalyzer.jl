@@ -129,8 +129,8 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
             end
         end
         
-        obj_new.markers = _delete_markers(obj_new.markers, seg)
-        obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]))
+        obj_new.markers = _delete_markers(obj_new.markers, seg, sr(obj))
+        obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]), sr(obj))
 
     end
 

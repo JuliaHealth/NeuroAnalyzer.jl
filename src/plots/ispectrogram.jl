@@ -307,21 +307,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
                     set_gtk_property!(can, :height_request, Int32(900))
                 end
                 ctx = getgc(can)
-                show(io, MIME("image/png"), NeuroAnalyzer.plot_spectrogram(obj,
-                                                                           ch=ch,
-                                                                           seg=(time1, time2),
-                                                                           mono=mono,
-                                                                           title=title,
-                                                                           xlabel=xlab,
-                                                                           ylabel=ylab,
-                                                                           norm=norm,
-                                                                           method=method,
-                                                                           frq_lim=frq,
-                                                                           ncyc=ncyc,
-                                                                           nt=nt,
-                                                                           wlen=wlen,
-                                                                           woverlap=woverlap,
-                                                                           w=hw))
+                show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -798,21 +784,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                     set_gtk_property!(can, :height_request, Int32(900))
                 end
                 ctx = getgc(can)
-                show(io, MIME("image/png"), NeuroAnalyzer.plot_spectrogram(obj,
-                                                                           ch=ch,
-                                                                           ep=ep,
-                                                                           mono=mono,
-                                                                           title=title,
-                                                                           xlabel=xlab,
-                                                                           ylabel=ylab,
-                                                                           norm=norm,
-                                                                           method=method,
-                                                                           frq_lim=frq,
-                                                                           ncyc=ncyc,
-                                                                           nt=nt,
-                                                                           wlen=wlen,
-                                                                           woverlap=woverlap,
-                                                                           w=hw))
+                show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
