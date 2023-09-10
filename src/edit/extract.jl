@@ -31,11 +31,11 @@ function extract_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
             end
         end
         @assert ch_idx !== nothing "Channel name ($ch) does not match channel labels."
-        return reshape(obj.data[ch_idx, :, :], 1, epoch_len(obj), epoch_n(obj))
+        return reshape(obj.data[ch_idx, :, :], 1, epoch_len(obj), nepochs(obj))
     else
         # get channel by number
         _check_channels(obj, ch)
-        return reshape(obj.data[ch, :, :], 1, epoch_len(obj), epoch_n(obj))
+        return reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
     end
 
 end
@@ -60,7 +60,7 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)
 
     obj_new = deepcopy(obj)
 
-    obj_new.data = reshape(obj.data[:, :, ep], channel_n(obj), epoch_len(obj), 1)
+    obj_new.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)
     obj_new.time_pts = obj.epoch_time
     obj_new.epoch_time = obj.epoch_time
 
@@ -103,7 +103,7 @@ Extract data.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:epoch_n(obj)`: index of epochs, default is all epochs
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj)`: index of epochs, default is all epochs
 - `time::Bool=false`: return time vector
 - `etime::Bool=false`: return epoch time vector
 
@@ -113,7 +113,7 @@ Extract data.
 - `time::Vector{Float64}`
 - `etime::Vector{Float64}`
 """
-function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:epoch_n(obj), time::Bool=false, etime::Bool=false)
+function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)
 
     _check_channels(obj, ch)
     _check_epochs(obj, ep)

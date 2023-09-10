@@ -35,10 +35,10 @@ rename_channel!(e10_tmp, ch=1, name="Fp1")
 @test get_channel(e10_tmp, ch=1) == "Fp1"
 
 @info "test 4/28: replace_channel()"
-e10_tmp = replace_channel(e10, ch=1, s=ones(1, epoch_len(e10), epoch_n(e10)));
-@test e10_tmp.data[1, :, :] == ones(epoch_len(e10), epoch_n(e10))
-replace_channel!(e10_tmp, ch=1, s=zeros(1, epoch_len(e10), epoch_n(e10)));
-@test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), epoch_n(e10))
+e10_tmp = replace_channel(e10, ch=1, s=ones(1, epoch_len(e10), nepochs(e10)));
+@test e10_tmp.data[1, :, :] == ones(epoch_len(e10), nepochs(e10))
+replace_channel!(e10_tmp, ch=1, s=zeros(1, epoch_len(e10), nepochs(e10)));
+@test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), nepochs(e10))
 
 @info "test 5/28: add_labels()"
 l = string.(1:24)
@@ -49,42 +49,42 @@ add_labels!(e10_tmp, clabels=l)
 
 @info "test 6/28: add_labels()"
 e10_tmp = delete_channel(e10, ch=1)
-@test channel_n(e10_tmp) == 23
+@test nchannels(e10_tmp) == 23
 delete_channel!(e10_tmp, ch=1)
-@test channel_n(e10_tmp) == 22
+@test nchannels(e10_tmp) == 22
 
 @info "test 7/28: keep_channel()"
 e10_tmp = keep_channel(e10, ch=10:24)
-@test channel_n(e10_tmp) == 15
+@test nchannels(e10_tmp) == 15
 keep_channel!(e10_tmp, ch=5:15)
-@test channel_n(e10_tmp) == 11
+@test nchannels(e10_tmp) == 11
 
 @info "test 8/28: keep_channel_type()"
 e10_tmp = keep_channel_type(e10, type=:eog)
-@test channel_n(e10_tmp) == 2
+@test nchannels(e10_tmp) == 2
 e10_tmp = deepcopy(e10)
 keep_channel_type!(e10_tmp, type=:eog)
-@test channel_n(e10_tmp) == 2
+@test nchannels(e10_tmp) == 2
 
 @info "test 9/28: delete_epoch()"
 e10_tmp = delete_epoch(e10, ep=1)
-@test epoch_n(e10_tmp) == 9
+@test nepochs(e10_tmp) == 9
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 23040 # 25600 - 2560
 e10_tmp = deepcopy(e10)
 delete_epoch!(e10_tmp, ep=1)
-@test epoch_n(e10_tmp) == 9
+@test nepochs(e10_tmp) == 9
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 23040 # 25600 - 2560
 
 @info "test 10/28: keep_epoch()"
 e10_tmp = keep_epoch(e10, ep=1:2)
-@test epoch_n(e10_tmp) == 2
+@test nepochs(e10_tmp) == 2
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 e10_tmp = deepcopy(e10)
 keep_epoch!(e10_tmp, ep=1:2)
-@test epoch_n(e10_tmp) == 2
+@test nepochs(e10_tmp) == 2
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
@@ -116,7 +116,7 @@ eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
 @test epoch_len(e10) == 10*sr(eeg)
 e10 = epoch(eeg, ep_n=10)
-@test epoch_n(e10) == 10
+@test nepochs(e10) == 10
 
 @info "test 13/28: epoch_time()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))

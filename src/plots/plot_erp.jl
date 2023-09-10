@@ -521,7 +521,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
 
     # get data
-    ep_n = epoch_n(obj) - 1
+    ep_n = nepochs(obj) - 1
 
     if type in [:normal, :topo]
         s = obj.data[ch, :, 1]

@@ -14,7 +14,7 @@ function _shift_markers(m::DataFrame, pos::Int64, offset::Int64, fs::Int64)
 end
 
 function _get_epoch_markers(obj::NeuroAnalyzer.NEURO)
-    return round.(s2t.(collect(1:epoch_len(obj):epoch_len(obj) * epoch_n(obj)), sr(obj)), digits=2)
+    return round.(s2t.(collect(1:epoch_len(obj):epoch_len(obj) * nepochs(obj)), sr(obj)), digits=2)
 end
 
 function _has_markers(channel_types::Vector{String})

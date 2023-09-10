@@ -1,6 +1,6 @@
 export obj_n
-export channel_n
-export epoch_n
+export nchannels
+export nepochs
 export epoch_len
 export sr
 
@@ -24,7 +24,7 @@ function obj_n(study::NeuroAnalyzer.STUDY)
 end
 
 """
-    channel_n(study)
+    nchannels(study)
 
 Return number of channels per NeuroAnalyzer NEURO object in the study.
 
@@ -36,14 +36,14 @@ Return number of channels per NeuroAnalyzer NEURO object in the study.
 
 - `n::Int64`
 """
-function channel_n(study::NeuroAnalyzer.STUDY)
+function nchannels(study::NeuroAnalyzer.STUDY)
 
-    return channel_n(study.objects[1])
+    return nchannels(study.objects[1])
 
 end
 
 """
-    epoch_n(study)
+    nepochs(study)
 
 Return number of epochs per NeuroAnalyzer NEURO object in the study.
 
@@ -55,9 +55,9 @@ Return number of epochs per NeuroAnalyzer NEURO object in the study.
 
 - `n::Int64`
 """
-function epoch_n(study::NeuroAnalyzer.STUDY)
+function nepochs(study::NeuroAnalyzer.STUDY)
 
-    return epoch_n(study.objects[1])
+    return nepochs(study.objects[1])
 
 end
 

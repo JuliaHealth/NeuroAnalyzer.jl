@@ -29,7 +29,7 @@ function dwtsplit(obj::NeuroAnalyzer.NEURO; ch::Int64, wt::T, type::Symbol, n::I
     @assert n >= 2 "n must be ≥ 2."
 
     _check_channels(obj, ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     dt = zeros((n + 1), epoch_len(obj), ep_n)
     Threads.@threads for ep_idx in 1:ep_n

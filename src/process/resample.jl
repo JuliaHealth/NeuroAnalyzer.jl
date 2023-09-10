@@ -129,7 +129,7 @@ Upsample.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 

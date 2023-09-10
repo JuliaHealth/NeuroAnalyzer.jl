@@ -15,66 +15,66 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
-@info "test 1/65: apply()"
+@info "test 1/66: apply()"
 @test size(apply(e10, f="mean(obj, dims=1)")) == (19, 1, 10)
 
-@info "test 2/65: l1()"
+@info "test 2/66: l1()"
 @test l1(a1, a2) == 12
 
-@info "test 3/65: l2()"
+@info "test 3/66: l2()"
 @test l2(a1, a2) == 3.4641016151377544
 
-@info "test 4/65: perm_cmp()"
+@info "test 4/66: perm_cmp()"
 z, b = perm_cmp(a1, a2)
 @test round.(z) == -2.0 .* ones(2, 3)
 @test b == Bool[0 0 0; 0 0 0]
 
-@info "test 5/65: add_component()"
+@info "test 5/66: add_component()"
 x = collect(1:10)
 e10_tmp = add_component(e10, c=:x, v=x)
 @test e10_tmp.components[:x] == x
 
-@info "test 6/65: component_type()"
+@info "test 6/66: component_type()"
 @test component_type(e10_tmp, c=:x) == Vector{Int64}
 
-@info "test 7/65: extract_component()"
+@info "test 7/66: extract_component()"
 @test extract_component(e10_tmp, c=:x) == x
 
-@info "test 8/65: delete_component()"
+@info "test 8/66: delete_component()"
 e10_tmp2 = deepcopy(e10_tmp)
 delete_component!(e10_tmp2, c=:x)
 @test e10_tmp2.components == Dict()
 
-@info "test 9/65: rename_component()"
+@info "test 9/66: rename_component()"
 rename_component!(e10_tmp, c_old=:x, c_new=:y)
 @test e10_tmp.components[:y] == 1:10
 
-@info "test 10/65: reset_components()"
+@info "test 10/66: reset_components()"
 reset_components!(e10_tmp)
 @test e10_tmp.components == Dict()
 
-@info "test 11/65: vsearch()"
+@info "test 11/66: vsearch()"
 @test vsearch(2.1, [1, 2, 3, 4]) == 2
 @test vsearch([2.1, 2.9], [1, 2, 3, 4]) == [2.0, 3.0]
 
-@info "test 12/65: trim()"
+@info "test 12/66: trim()"
 @test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
 
-@info "test 13/65: fft0()"
+@info "test 13/66: fft0()"
 x = fft0(v1, 1024)
 @test length(x) == 1029
 
-@info "test 14/65: ifft0()"
+@info "test 14/66: ifft0()"
 @test ifft0(x, 1024) == v1
 
-@info "test 15/65: fft0()"
+@info "test 15/66: fft0()"
 x = fft2(v1)
 @test length(x) == 8
 
-@info "test 16/65: nextpow()"
+@info "test 16/66: nextpow()"
 @test nextpow2(5) == 8
 
-@info "test 17/65: dft()"
+@info "test 17/66: dft()"
 ft, f = dft(rand(100), fs=10)
 @test length(ft) == 100
 @test length(f) == 100
@@ -82,24 +82,24 @@ ft, f = dft(e10)
 @test size(ft) == (19, 2560, 10)
 @test length(f) == 2560
 
-@info "test 18/65: findpeaks()"
+@info "test 18/66: findpeaks()"
 x = rand(100)
 x[10] *= 1000
 @test 10 in findpeaks(x)
 
-@info "test 19/65: hz2rads()"
+@info "test 19/66: hz2rads()"
 @test hz2rads(1) == 2pi
 
-@info "test 20/65: rads2hz()"
+@info "test 20/66: rads2hz()"
 @test rads2hz(2pi) == 1
 
-@info "test 21/65: t2f()"
+@info "test 21/66: t2f()"
 @test t2f(1000) == 1.0
 
-@info "test 22/65: f2t()"
+@info "test 22/66: f2t()"
 @test f2t(1.0) == 1000.0
 
-@info "test 23/65: freqs()"
+@info "test 23/66: freqs()"
 f, nf = freqs(0:1/10:10)
 @test length(f) == 50
 @test nf == 5
@@ -110,7 +110,7 @@ f, nf = freqs(e10)
 @test length(f) == 1280
 @test nf == 128
 
-@info "test 24/65: generate_window()"
+@info "test 24/66: generate_window()"
 s = generate_window(:hann, 100)
 @test length(s) == 100
 s = generate_window(:bh, 100)
@@ -128,142 +128,145 @@ s = generate_window(:triangle, 100)
 s = generate_window(:exp, 100)
 @test length(s) == 100
 
-@info "test 25/65: generate_sine()"
+@info "test 25/66: generate_sine()"
 s = generate_sine(10, 1:100)
 @test length(s) == 100
 
-@info "test 26/65: generate_csine()"
+@info "test 26/66: generate_csine()"
 s = generate_csine(10, 1:100)
 @test length(s) == 100
 
-@info "test 27/65: generate_sinc()"
+@info "test 27/66: generate_sinc()"
 s = generate_sinc()
 @test length(s) == 401
 
-@info "test 28/65: generate_morlet()"
+@info "test 28/66: generate_morlet()"
 s = generate_morlet(100, 10)
 @test length(s) == 201
 
-@info "test 29/65: generate_gaussian()"
+@info "test 29/66: generate_gaussian()"
 s = generate_gaussian(100, 10)
 @test length(s) == 201
 
-@info "test 30/65: generate_noise()"
+@info "test 30/66: generate_noise()"
 s = generate_noise(100)
 @test length(s) == 100
 
-@info "test 31/65: generate_morlet_fwhm()"
+@info "test 31/66: generate_morlet_fwhm()"
 s = generate_morlet_fwhm(100, 10)
 @test length(s) == 201
 
-@info "test 32/65: sr()"
+@info "test 32/66: sr()"
 @test sr(e10) == 256
 
-@info "test 33/65: channel_n()"
-@test channel_n(e10) == 24
+@info "test 33/66: nchannels()"
+@test nchannels(e10) == 24
 
-@info "test 34/65: epoch_n()"
-@test epoch_n(e10) == 10
+@info "test 34/66: nepochs()"
+@test nepochs(e10) == 10
 
-@info "test 35/65: signal_len()"
+@info "test 35/66: signal_len()"
 @test signal_len(e10) == 25600
 
-@info "test 36/65: epoch_len()"
+@info "test 36/66: epoch_len()"
 @test epoch_len(e10) == 2560
 
-@info "test 37/65: signal_channels()"
+@info "test 37/66: signal_channels()"
 @test signal_channels(e10) == 1:19
 
-@info "test 38/65: get_channel_bytype()"
+@info "test 38/66: get_channel_bytype()"
 @test get_channel_bytype(e10, type=:eeg) == 1:19
 
-@info "test 39/65: history()"
+@info "test 39/66: history()"
 @test history(e10) isa Vector{String}
 
-@info "test 40/65: labels()"
+@info "test 40/66: labels()"
 @test length(labels(e10)) == 24
 
-@info "test 41/65: channel_cluster()"
+@info "test 41/66: channel_cluster()"
 @test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
 
-@info "test 42/65: band_frq()"
+@info "test 42/66: band_frq()"
 @test band_frq(256, band=:alpha) == (8.0, 13.0)
 @test band_frq(e10, band=:alpha) == (8.0, 13.0)
 
-@info "test 43/65: m_pad0()"
+@info "test 43/66: m_pad0()"
 @test m_pad0(m1) == [1 2 3; 4 5 6; 0 0 0]
 
-@info "test 44/65: m_sortperm()"
+@info "test 44/66: m_sortperm()"
 @test m_sortperm(m1) == [1 1 1; 2 2 2]
 
-@info "test 45/65: m_sort()"
+@info "test 45/66: m_sort()"
 @test m_sort(m1, [2, 1]) == [4 5 6; 1 2 3]
 
-@info "test 46/65: m_norm()"
+@info "test 46/66: m_norm()"
 @test m_norm(m1) == [0.5 1.0 1.5; 2.0 2.5 3.0]
 
-@info "test 47/65: linspace()"
+@info "test 47/66: linspace()"
 @test linspace(1 , 10, 10) == 1:10
 
-@info "test 48/65: logspace()"
+@info "test 48/66: logspace()"
 @test logspace(1, 2, 2) == [10.0, 100.0]
 
-@info "test 49/65: cmax()"
+@info "test 49/66: cmax()"
 @test cmax([1+2im, 10+10im]) == 10+10im
 
-@info "test 50/65: cmin()"
+@info "test 50/66: cmin()"
 @test cmin([1+2im, 10+10im]) == 1+2im
 
-@info "test 51/65: tuple_order()"
+@info "test 51/66: tuple_order()"
 @test tuple_order((2, 1)) == (1, 2)
 
-@info "test 52/65: cums()"
+@info "test 52/66: cums()"
 @test cums(a1) == [1.0 2.0 3.0; 1.0 2.0 3.0;;; 1.0 2.0 3.0; 1.0 2.0 3.0]
 
-@info "test 53/65: f_nearest()"
+@info "test 53/66: f_nearest()"
 m = [(1.0, 2.0) (3.0, 4.0); (5.0, 6.0) (7.0, 8.0)]
 @test f_nearest(m, (3.2, 3.9)) == (1, 2)
 
-@info "test 54/65: view_note()"
+@info "test 54/66: view_note()"
 @test view_note(e10) == ""
 
-@info "test 55/65: add_note()"
+@info "test 55/66: add_note()"
 add_note!(e10, note="test")
 @test view_note(e10) == "test"
 
-@info "test 56/65: delete_note()"
+@info "test 56/66: delete_note()"
 delete_note!(e10)
 @test view_note(e10) == ""
 
-@info "test 57/65: pad0()"
+@info "test 57/66: pad0()"
 @test pad0(v1, 5) == [1, 2, 3, 4, 5, 0, 0, 0, 0, 0]
 @test pad0(m1, 5) == [1 2 3 0 0 0 0 0; 4 5 6 0 0 0 0 0]
 
-@info "test 58/65: pad2()"
+@info "test 58/66: pad2()"
 @test pad2(v1) == [1, 2, 3, 4, 5, 0, 0, 0]
 @test pad2(m1) == [1 2 3 0; 4 5 6 0]
 
-@info "test 59/65: phases()"
+@info "test 59/66: phases()"
 @test length(phases(e10.data[1, :, 1])) == 2560
 
-@info "test 60/65: pick()"
+@info "test 60/66: pick()"
 @test NeuroAnalyzer.pick(e10, p=[:l, :f]) == [1, 3, 11]
 
-@info "test 61/65: t2s()"
+@info "test 61/66: t2s()"
 @test t2s(1.0, 256) == 256
 @test t2s(e10, t=1.0) == 257
 
-@info "test 62/65: s2t()"
+@info "test 62/66: s2t()"
 @test s2t(2560, 256) == 10.0
 @test s2t(e10, s=256) == 1.0
 
-@info "test 63/65: get_channel_bywl()"
+@info "test 63/66: get_channel_bywl()"
 @test get_channel_bywl(n, wl=760) == 1:36
 
-@info "test 64/65: size()"
+@info "test 64/66: size()"
 @test size(e10) == (24, 2560, 10)
 
-@info "test 65/65: to_df()"
+@info "test 65/66: to_df()"
 @test to_df(eeg) isa DataFrame
+
+@info "test 66/66: types()"
+@test length(types(e10)) == 24
 
 true

@@ -19,9 +19,9 @@ Remove epoch(s).
 """
 function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    @assert epoch_n(obj) > 1 "You cannot delete the last epoch."
+    @assert nepochs(obj) > 1 "You cannot delete the last epoch."
     typeof(ep) <: AbstractRange && (ep = collect(ep))
-    @assert length(ep) < epoch_n(obj) "Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs."
+    @assert length(ep) < nepochs(obj) "Number of epochs to delete ($(length(ep))) must be smaller than number of all epochs."
     length(ep) > 1 && (ep = sort!(ep, rev=true))
     _check_epochs(obj, ep)
 
@@ -33,8 +33,8 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, 
     # remove markers within deleted epochs and shift markers after the deleted epoch
     for ep_idx in ep
         t1, t2 = _epoch2s(obj, ep_idx)
-        obj_new.markers = _delete_markers(obj_new.markers, (t1, t2))
-        obj_new.markers = _shift_markers(obj_new.markers, t1, length(t1:t2))
+        obj_new.markers = _delete_markers(obj_new.markers, (t1, t2), sr(obj))
+        obj_new.markers = _shift_markers(obj_new.markers, t1, length(t1:t2), sr(obj))
     end
 
     # update time
@@ -86,12 +86,12 @@ Keep epoch(s).
 """
 function keep_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    @assert epoch_n(obj) > 1 "OBJ contains only one epoch."
+    @assert nepochs(obj) > 1 "OBJ contains only one epoch."
     typeof(ep) <: AbstractRange && (ep = collect(ep))
     length(ep) > 1 && (ep = sort!(ep, rev=true))
     _check_epochs(obj, ep)
 
-    ep_list = collect(1:epoch_n(obj))
+    ep_list = collect(1:nepochs(obj))
     ep_to_remove = setdiff(ep_list, ep)
 
     length(ep_to_remove) > 1 && (ep_to_remove = sort!(ep_to_remove, rev=true))

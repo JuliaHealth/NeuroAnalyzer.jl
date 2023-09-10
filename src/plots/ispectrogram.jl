@@ -19,7 +19,7 @@ Interactive spectrogram of continuous or epoched signal.
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Int64=5)
 
-    if epoch_n(obj) == 1
+    if nepochs(obj) == 1
         ispectrogram_cont(obj, ch=ch, zoom=zoom)
     else
         ispectrogram_ep(obj, ch=ch)
@@ -46,7 +46,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert epoch_n(obj) == 1 "ispectrogram_ep() should be used for epoched object."
+    @assert nepochs(obj) == 1 "ispectrogram_ep() should be used for epoched object."
     _check_channels(obj, ch)
     ch_init = ch
 
@@ -113,13 +113,25 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
     set_gtk_property!(cb_hw, :active, true)
 
+    cb_frq = GtkCheckButton()
+    set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
+    set_gtk_property!(cb_frq, :active, true)
+
     combo_method = GtkComboBoxText()
-    psd_methods = ["standard periodogram", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
-    for idx in psd_methods
+    spectrogram_methods = ["standard periodogram", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "continuous wavelet transformation"]
+    for idx in spectrogram_methods
         push!(combo_method, idx)
     end
     set_gtk_property!(combo_method, :active, 0)
     set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
+
+    combo_wt = GtkComboBoxText()
+    spectrogram_wts = ["Morlet(2π), β=2","Morlet(π), β=2"]
+    for idx in spectrogram_wts
+        push!(combo_wt, idx)
+    end
+    set_gtk_property!(combo_wt, :active, 0)
+    set_gtk_property!(combo_wt, :tooltip_text, "Continuous wavelet type")
 
     entry_nt = GtkSpinButton(1, 128, 1)
     set_gtk_property!(entry_nt, :value, 8)
@@ -144,6 +156,14 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     entry_woverlap = GtkSpinButton(0, zoom * sr(obj), 1)
     set_gtk_property!(entry_woverlap, :value, round(Int64, sr(obj) * 0.97))
     set_gtk_property!(entry_woverlap, :tooltip_text, "Window overlap (samples)")
+
+    entry_gw = GtkSpinButton(1, 128, 1)
+    set_gtk_property!(entry_gw, :value, 6)
+    set_gtk_property!(entry_gw, :tooltip_text, "Gaussian width in Hz")
+
+    entry_frq = GtkSpinButton(1, 2048, 1)
+    set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
+    set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")
 
     combo_save = GtkComboBoxText()
     file_types = ["PNG", "PDF"]
@@ -184,6 +204,14 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(lab_nc, :halign, 2)
     lab_hw = GtkLabel("Hanning:")
     set_gtk_property!(lab_hw, :halign, 2)
+    lab_gw = GtkLabel("Gaussian width:")
+    set_gtk_property!(lab_gw, :halign, 2)
+    lab_wt = GtkLabel("Continuous wavelet:")
+    set_gtk_property!(lab_wt, :halign, 2)
+    lab_frq = GtkLabel("Linear frequencies:")
+    set_gtk_property!(lab_frq, :halign, 2)
+    lab_frqn = GtkLabel("Frequencies:")
+    set_gtk_property!(lab_frqn, :halign, 2)
     g_opts[1, 1] = lab_method
     g_opts[1, 2] = lab_ch
     g_opts[1, 3] = lab_t
@@ -195,10 +223,14 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     g_opts[1, 9] = lab_nt
     g_opts[1, 10] = lab_wlen
     g_opts[1, 11] = lab_woverlap
-    g_opts[1, 12] = lab_norm
-    g_opts[1, 13] = lab_mono
-    g_opts[1, 14] = lab_hw
-    g_opts[1, 15] = bt_save
+    g_opts[1, 12] = lab_gw
+    g_opts[1, 13] = lab_frqn
+    g_opts[1, 14] = lab_wt
+    g_opts[1, 15] = lab_norm
+    g_opts[1, 16] = lab_hw
+    g_opts[1, 17] = lab_frq
+    g_opts[1, 18] = lab_mono
+    g_opts[1, 19] = bt_save
     g_opts[2, 1] = combo_method
     g_opts[2, 2] = entry_ch
     g_opts[2, 3] = entry_title
@@ -210,11 +242,15 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     g_opts[2, 9] = entry_nt
     g_opts[2, 10] = entry_wlen
     g_opts[2, 11] = entry_woverlap
-    g_opts[2, 12] = cb_norm
-    g_opts[2, 13] = cb_mono
-    g_opts[2, 14] = cb_hw
-    g_opts[2, 15] = combo_save
-    g_opts[1:2, 16] = bt_refresh
+    g_opts[2, 12] = entry_gw
+    g_opts[2, 13] = entry_frq
+    g_opts[2, 14] = combo_wt
+    g_opts[2, 15] = cb_norm
+    g_opts[2, 16] = cb_hw
+    g_opts[2, 17] = cb_frq
+    g_opts[2, 18] = cb_mono
+    g_opts[2, 19] = combo_save
+    g_opts[1:2, 20] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -258,18 +294,27 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
             norm = get_gtk_property(cb_norm, :active, Bool)
+            frq = get_gtk_property(cb_norm, :active, Bool)
+            frq = frq ? :lin : :log
             hw = get_gtk_property(cb_hw, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :standard)
             method == "1" && (method = :stft)
             method == "2" && (method = :mt)
             method == "3" && (method = :mw)
+            method == "4" && (method = :gh)
+            method == "5" && (method = :cwt)
+            wt = get_gtk_property(combo_wt, :active, String)
+            wt == "0" && (wt = wavelet(Morlet(2π), β=2))
+            wt == "1" && (wt = wavelet(Morlet(π), β=2))
             frq1 = get_gtk_property(entry_frq1, :value, Float64)
             frq2 = get_gtk_property(entry_frq2, :value, Float64)
             nt = get_gtk_property(entry_nt, :value, Int64)
             ncyc = get_gtk_property(entry_ncyc, :value, Int64)
             wlen = get_gtk_property(entry_wlen, :value, Int64)
             woverlap = get_gtk_property(entry_woverlap, :value, Int64)
+            gw = get_gtk_property(entry_gw, :value, Int64)
+            frq_n = get_gtk_property(entry_frq, :value, Int64)
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif frq1 > frq2
@@ -277,7 +322,6 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             elseif woverlap >= wlen
                 warn_dialog("Window overlap must be < window length.")
             else
-                frq = (frq1, frq2)
                 time1 = get_gtk_property(entry_time, :value, Float64)
                 time2 = time1 + zoom
                 time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
@@ -290,12 +334,16 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
                                                    ylabel=ylab,
                                                    norm=norm,
                                                    method=method,
-                                                   frq_lim=frq,
+                                                   frq_lim=(frq1, frq2),
                                                    ncyc=ncyc,
                                                    nt=nt,
                                                    wlen=wlen,
                                                    woverlap=woverlap,
-                                                   w=hw)
+                                                   w=hw,
+                                                   wt=wt,
+                                                   gw=gw,
+                                                   frq=frq,
+                                                   frq_n=frq_n)
                 img = read_from_png(io)
                 if typeof(p) == Plots.Plot{Plots.GRBackend}
                     Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
@@ -324,6 +372,9 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     signal_connect(combo_method, "changed") do widget
         draw(can)
     end
+    signal_connect(combo_wt, "changed") do widget
+        draw(can)
+    end
     signal_connect(entry_frq1, "value-changed") do widget
         draw(can)
     end
@@ -336,10 +387,16 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     signal_connect(entry_nt, "value-changed") do widget
         draw(can)
     end
+    signal_connect(entry_gw, "value-changed") do widget
+        draw(can)
+    end
     signal_connect(entry_wlen, "value-changed") do widget
         draw(can)
     end
     signal_connect(entry_woverlap, "value-changed") do widget
+        draw(can)
+    end
+    signal_connect(entry_frq, "value-changed") do widget
         draw(can)
     end
     signal_connect(cb_norm, "clicked") do widget
@@ -349,6 +406,9 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
         draw(can)
     end
     signal_connect(cb_hw, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(cb_frq, "clicked") do widget
         draw(can)
     end
 
@@ -530,7 +590,7 @@ Interactive spectrogram of epoched signal.
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1)
 
-    @assert epoch_n(obj) > 1 "ispectrogram_cont() should be used for continuous object."
+    @assert nepochs(obj) > 1 "ispectrogram_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch, ep=1)
@@ -548,7 +608,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(g, :row_spacing, 10)
     set_gtk_property!(g_opts, :row_spacing, 10)
     set_gtk_property!(g_opts, :column_spacing, 10)
-    entry_epoch = GtkSpinButton(1, epoch_n(obj), 1)
+    entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
@@ -595,12 +655,20 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(cb_hw, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["standard periodogram", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
-    for idx in psd_methods
+    spectrogram_methods = ["standard periodogram", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "continuous wavelet transformation"]
+    for idx in spectrogram_methods
         push!(combo_method, idx)
     end
     set_gtk_property!(combo_method, :active, 0)
     set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
+
+    combo_wt = GtkComboBoxText()
+    spectrogram_wts = ["Morlet(2π), β=2","Morlet(π), β=2"]
+    for idx in spectrogram_wts
+        push!(combo_wt, idx)
+    end
+    set_gtk_property!(combo_wt, :active, 0)
+    set_gtk_property!(combo_wt, :tooltip_text, "Continuous wavelet type")
 
     entry_nt = GtkSpinButton(1, 128, 1)
     set_gtk_property!(entry_nt, :value, 8)
@@ -625,6 +693,10 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     entry_woverlap = GtkSpinButton(0, zoom * sr(obj), 1)
     set_gtk_property!(entry_woverlap, :value, round(Int64, sr(obj) * 0.97))
     set_gtk_property!(entry_woverlap, :tooltip_text, "Window overlap (samples)")
+
+    entry_gw = GtkSpinButton(1, 128, 1)
+    set_gtk_property!(entry_gw, :value, 6)
+    set_gtk_property!(entry_gw, :tooltip_text, "Gaussian width in Hz")
 
     combo_save = GtkComboBoxText()
     file_types = ["PNG", "PDF"]
@@ -665,6 +737,10 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(lab_nc, :halign, 2)
     lab_hw = GtkLabel("Hanning:")
     set_gtk_property!(lab_hw, :halign, 2)
+    lab_gw = GtkLabel("Gaussian width:")
+    set_gtk_property!(lab_gw, :halign, 2)
+    lab_wt = GtkLabel("Continuous wavelet:")
+    set_gtk_property!(lab_wt, :halign, 2)
     g_opts[1, 1] = lab_method
     g_opts[1, 2] = lab_ch
     g_opts[1, 3] = lab_t
@@ -676,10 +752,12 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     g_opts[1, 9] = lab_nt
     g_opts[1, 10] = lab_wlen
     g_opts[1, 11] = lab_woverlap
-    g_opts[1, 12] = lab_norm
-    g_opts[1, 13] = lab_mono
-    g_opts[1, 14] = lab_hw
-    g_opts[1, 15] = bt_save
+    g_opts[1, 12] = lab_gw
+    g_opts[1, 13] = lab_wt
+    g_opts[1, 14] = lab_norm
+    g_opts[1, 15] = lab_mono
+    g_opts[1, 16] = lab_hw
+    g_opts[1, 17] = bt_save
     g_opts[2, 1] = combo_method
     g_opts[2, 2] = entry_ch
     g_opts[2, 3] = entry_title
@@ -691,11 +769,13 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     g_opts[2, 9] = entry_nt
     g_opts[2, 10] = entry_wlen
     g_opts[2, 11] = entry_woverlap
-    g_opts[2, 12] = cb_norm
-    g_opts[2, 13] = cb_mono
-    g_opts[2, 14] = cb_hw
-    g_opts[2, 15] = combo_save
-    g_opts[1:2, 16] = bt_refresh
+    g_opts[2, 12] = entry_gw
+    g_opts[2, 13] = combo_wt
+    g_opts[2, 14] = cb_norm
+    g_opts[2, 15] = cb_mono
+    g_opts[2, 16] = cb_hw
+    g_opts[2, 17] = combo_save
+    g_opts[1:2, 18] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -743,12 +823,18 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             method == "1" && (method = :stft)
             method == "2" && (method = :mt)
             method == "3" && (method = :mw)
+            method == "4" && (method = :gh)
+            method == "5" && (method = :cwt)
+            wt = get_gtk_property(combo_wt, :active, String)
+            wt == "0" && (wt = wavelet(Morlet(2π), β=2))
+            wt == "1" && (wt = wavelet(Morlet(π), β=2))
             frq1 = get_gtk_property(entry_frq1, :value, Float64)
             frq2 = get_gtk_property(entry_frq2, :value, Float64)
             nt = get_gtk_property(entry_nt, :value, Int64)
             ncyc = get_gtk_property(entry_ncyc, :value, Int64)
             wlen = get_gtk_property(entry_wlen, :value, Int64)
             woverlap = get_gtk_property(entry_woverlap, :value, Int64)
+            gw = get_gtk_property(entry_gw, :value, Int64)
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif frq1 > frq2
@@ -772,7 +858,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                                                    nt=nt,
                                                    wlen=wlen,
                                                    woverlap=woverlap,
-                                                   w=hw)
+                                                   w=hw,
+                                                   gw=gw,
+                                                   wt=wt)
                 img = read_from_png(io)
                 if typeof(p) == Plots.Plot{Plots.GRBackend}
                     Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
@@ -795,10 +883,13 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     signal_connect(bt_refresh, "clicked") do widget
         draw(can)
     end
-    signal_connect(entry_epoch, "value-changed") do widget
+    signal_connect(entry_time, "value-changed") do widget
         draw(can)
     end
     signal_connect(combo_method, "changed") do widget
+        draw(can)
+    end
+    signal_connect(combo_wt, "changed") do widget
         draw(can)
     end
     signal_connect(entry_frq1, "value-changed") do widget
@@ -811,6 +902,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
         draw(can)
     end
     signal_connect(entry_nt, "value-changed") do widget
+        draw(can)
+    end
+    signal_connect(entry_gw, "value-changed") do widget
         draw(can)
     end
     signal_connect(entry_wlen, "value-changed") do widget
@@ -868,7 +962,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     signal_connect(bt_next, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep < epoch_n(obj)
+        if ep < nepochs(obj)
             ep += 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -884,7 +978,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     signal_connect(bt_end, "clicked") do widget
         Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, epoch_n(obj))
+            set_gtk_property!(entry_epoch, :value, nepochs(obj))
         end
     end
 
@@ -908,7 +1002,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             end
         elseif k == 115 # s
             Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, epoch_n(obj))
+                set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         elseif k == 122 # z
             ep = get_gtk_property(entry_epoch, :value, Int64)
@@ -920,7 +1014,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             end
         elseif k == 120 # x
             ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < epoch_n(obj)
+            if ep < nepochs(obj)
                 ep += 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, ep)

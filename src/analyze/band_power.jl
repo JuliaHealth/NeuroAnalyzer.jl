@@ -1,7 +1,7 @@
 export band_power
 
 """
-    band_power(s; fs, f, mt, st, nt, wlen, woverlap, w)
+    band_power(s; fs, f, method, nt, wlen, woverlap, w)
 
 Calculate absolute band power between two frequencies.
 
@@ -10,8 +10,11 @@ Calculate absolute band power between two frequencies.
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
-- `mt::Bool=false`: if true, use multi-tapered periodogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -21,14 +24,14 @@ Calculate absolute band power between two frequencies.
 
 - `bp::Float64`: band power
 """
-function band_power(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false, st::Bool=true, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function band_power(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     @assert fs >= 1 "fs must be ≥ 1."
     f = tuple_order(f)
     @assert f[1] >= 0 "Lower frequency bound must be ≥ 0."
     @assert f[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
 
-    pw, pf = psd(s, fs=fs, norm=false, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    pw, pf = psd(s, fs=fs, norm=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     f1_idx = vsearch(f[1], pf)
     f2_idx = vsearch(f[2], pf)
@@ -45,7 +48,7 @@ function band_power(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool
 end
 
 """
-    band_power(s; fs, f, mt, st, nt, wlen, woverlap, w)
+    band_power(s; fs, f, method, nt, wlen, woverlap, w)
 
 Calculate absolute band power between two frequencies.
 
@@ -54,8 +57,11 @@ Calculate absolute band power between two frequencies.
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
-- `mt::Bool=false`: if true, use multi-tapered periodogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -65,7 +71,7 @@ Calculate absolute band power between two frequencies.
 
 - `bp::Matrix{Float64}`: band power
 """
-function band_power(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function band_power(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -73,7 +79,7 @@ function band_power(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            bp[ch_idx, ep_idx] = @views band_power(s[ch_idx, :, ep_idx], fs=fs, f=f, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            bp[ch_idx, ep_idx] = @views band_power(s[ch_idx, :, ep_idx], fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
 
@@ -82,7 +88,7 @@ function band_power(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=
 end
 
 """
-    band_power(obj; ch, f, mt, st, nt, wlen, woverlap, w)
+    band_power(obj; ch, f, method, nt, wlen, woverlap, w)
 
 Calculate absolute band power between two frequencies.
 
@@ -91,8 +97,11 @@ Calculate absolute band power between two frequencies.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
-- `mt::Bool=false`: if true, use multi-tapered periodogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -102,11 +111,11 @@ Calculate absolute band power between two frequencies.
 
 - `bp::Matrix{Float64}`: band power
 """
-function band_power(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function band_power(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     _check_channels(obj, ch)
 
-    bp = @views band_power(obj.data[ch, :, :], fs=sr(obj), f=f, mt=mt, st=st, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    bp = @views band_power(obj.data[ch, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     return bp
 

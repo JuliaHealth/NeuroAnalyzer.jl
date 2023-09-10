@@ -7,7 +7,7 @@ end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
-        @assert !(idx < 1 || idx > channel_n(obj)) "ch must be in [1, $(channel_n(obj))]."
+        @assert !(idx < 1 || idx > nchannels(obj)) "ch must be in [1, $(nchannels(obj))]."
     end
     return nothing
 end
@@ -16,7 +16,7 @@ function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64
     channels = get_channel_bytype(obj, type=type)
     for idx in ch
         @assert idx in channels "ch $idx does not match type: $(uppercase(string(type))) data channels."
-        @assert !(idx < 1 || idx > channel_n(obj)) "ch must be in [1, $(channel_n(obj))]."
+        @assert !(idx < 1 || idx > nchannels(obj)) "ch must be in [1, $(nchannels(obj))]."
     end
     return nothing
 end
@@ -24,13 +24,13 @@ end
 function _check_channels(channels::Union{Int64, Vector{Int64}, <:AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
         @assert idx in channels "ch must be in $channels."
-        @assert !(idx < 1 || idx > sort(channels)[end]) "ch must be in [1, $(channel_n(obj))]."
+        @assert !(idx < 1 || idx > sort(channels)[end]) "ch must be in [1, $(nchannels(obj))]."
     end
 end
 
 function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in epoch
-        @assert !(idx < 1 || idx > epoch_n(obj)) "epoch must be in [1, $(epoch_n(obj))]."
+        @assert !(idx < 1 || idx > nepochs(obj)) "epoch must be in [1, $(nepochs(obj))]."
     end
     return nothing
 end

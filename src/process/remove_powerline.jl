@@ -9,7 +9,7 @@ Remove power line noise and its peaks above power line frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `pl_frq::Real=50`: power line frequency
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB
@@ -20,9 +20,9 @@ Remove power line noise and its peaks above power line frequency.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
+function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
-    @assert epoch_n(obj) == 1 "remove_powerline() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "remove_powerline() should be applied to a continuous signal."
 
     _check_channels(obj, ch)    
     _check_var(method, [:iir], "method")
@@ -163,14 +163,14 @@ Remove power line noise and harmonics.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `pl_frq::Real=50`: power line frequency
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB
 - `d::Real=5.0`: minimum distance between peaks in Hz
 - `q::Real=0.1`: optimization step size
 """
-function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
+function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
     obj_new = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data

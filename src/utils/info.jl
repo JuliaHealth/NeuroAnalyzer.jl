@@ -1,10 +1,11 @@
 export sr
-export channel_n
-export epoch_n
+export nchannels
+export nepochs
 export signal_len
 export epoch_len
 export history
 export labels
+export types
 export info
 export channel_cluster
 export band_frq
@@ -31,7 +32,7 @@ function sr(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    channel_n(obj; type)
+    nchannels(obj; type)
 
 Return number of channels of `type`.
 
@@ -44,7 +45,7 @@ Return number of channels of `type`.
 
 - `ch_n::Int64`
 """
-function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
+function nchannels(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
     _check_var(type, channel_types, "type")
 
@@ -57,7 +58,7 @@ function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
     else
         @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
         ch_n = 0
-        for idx in 1:channel_n(obj)
+        for idx in 1:nchannels(obj)
             obj.header.recording[:channel_type][idx] == string(type) && (ch_n += 1)
         end
     end
@@ -67,7 +68,7 @@ function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 end
 
 """
-    epoch_n(obj)
+    nepochs(obj)
 
 Return number of epochs.
 
@@ -79,7 +80,7 @@ Return number of epochs.
 
 - `ep_n::Int64`
 """
-function epoch_n(obj::NeuroAnalyzer.NEURO)
+function nepochs(obj::NeuroAnalyzer.NEURO)
 
     @assert ndims(obj.data) == 3 "Record data is either a vector or a matrix."
     ep_n = size(obj.data, 3)
@@ -177,6 +178,26 @@ function labels(obj::NeuroAnalyzer.NEURO)
 end
 
 """
+    types(obj)
+
+Return channel types.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `types::Vector{String}`
+"""
+function types(obj::NeuroAnalyzer.NEURO)
+
+    @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel types."
+    return obj.header.recording[:channel_type]
+
+end
+
+"""
     info(obj)
 
 Show info.
@@ -204,8 +225,8 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
     println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
-    println("     Number of channels: $(channel_n(obj))")
-    println("       Number of epochs: $(epoch_n(obj))")
+    println("     Number of channels: $(nchannels(obj))")
+    println("       Number of epochs: $(nepochs(obj))")
     println(" Epoch length [samples]: $(epoch_len(obj))")
     println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
     if obj.header.recording[:data_type] == "eeg"
@@ -465,7 +486,7 @@ Return basic descriptive statistics of `obj.data`.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function describe(obj::NeuroAnalyzer.NEURO)
-    println("< " * uppercase(obj.header.recording[:data_type]) * ", $(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)) ($(signal_len(obj) / sr(obj)) s) >")
+    println("< " * uppercase(obj.header.recording[:data_type]) * ", $(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) ($(signal_len(obj) / sr(obj)) s) >")
     println(rpad("ch", 4) * 
             rpad("label", 16) * 
             rpad("type", 12) * 
@@ -478,7 +499,7 @@ function describe(obj::NeuroAnalyzer.NEURO)
             rpad("median", 10) * 
             rpad("Q3", 10) * 
             rpad("max", 10))
-    for idx in 1:channel_n(obj)
+    for idx in 1:nchannels(obj)
         println(rpad(string(idx), 4) * 
                 rpad(labels(obj)[idx], 16) * 
                 rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) * 

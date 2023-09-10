@@ -71,15 +71,15 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector
     end
         
     if type === :all
-        ch_idx = _c(channel_n(obj))
+        ch_idx = _c(nchannels(obj))
     elseif type isa Symbol
         ch_idx = Vector{Int64}()
-        for idx in 1:channel_n(obj)
+        for idx in 1:nchannels(obj)
             lowercase(obj.header.recording[:channel_type][idx]) == string(type) && (push!(ch_idx, idx))
         end
     else
         ch_idx = Vector{Int64}()
-        for idx1 in 1:channel_n(obj)
+        for idx1 in 1:nchannels(obj)
             for idx2 in eachindex(type)
                 lowercase(obj.header.recording[:channel_type][idx1]) == string(type[idx2]) && (push!(ch_idx, idx1))
             end
@@ -375,7 +375,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s::
     end
 
     obj_new = deepcopy(obj)
-    @assert size(s) == (1, epoch_len(obj_new), epoch_n(obj_new)) "signal size ($(size(s))) must be the same as channel size ($(size(obj_new.data[ch_idx, :, :]))."
+    @assert size(s) == (1, epoch_len(obj_new), nepochs(obj_new)) "signal size ($(size(s))) must be the same as channel size ($(size(obj_new.data[ch_idx, :, :]))."
 
     obj_new.data[ch_idx, :, :] = s
 
@@ -425,7 +425,7 @@ Add channel labels.
 """
 function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
-    @assert length(clabels) == channel_n(obj) "clabels length must be $(channel_n(obj))."
+    @assert length(clabels) == nchannels(obj) "clabels length must be $(nchannels(obj))."
     
     obj_new = deepcopy(obj)
     obj_new.header.recording[:labels] = clabels

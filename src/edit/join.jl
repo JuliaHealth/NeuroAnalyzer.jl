@@ -19,8 +19,8 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
 
     @assert obj1.header.recording[:data_type] == obj1.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-    @assert channel_n(obj1) == channel_n(obj2) "OBJ1 and OBJ2 must have the same number of channels."
-    @assert epoch_n(obj1) == epoch_n(obj2) "OBJ1 and OBJ2 must have the same number of epochs."
+    @assert nchannels(obj1) == nchannels(obj2) "OBJ1 and OBJ2 must have the same number of channels."
+    @assert nepochs(obj1) == nepochs(obj2) "OBJ1 and OBJ2 must have the same number of epochs."
 
     obj_new = deepcopy(obj1)
 

@@ -34,7 +34,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     s_t = obj.epoch_time
 
     t_env = zeros(ch_n, epoch_len(obj), ep_n)
@@ -94,12 +94,12 @@ Named tuple containing:
 function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = tenv(obj, ch=ch, d=d)
@@ -174,12 +174,12 @@ Named tuple containing:
 function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = tenv(obj, ch=ch, d=d)
@@ -254,7 +254,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    penv(obj; ch, d)
+    penv(obj; ch, d, method, nt, wlen, woverlap, w)
 
 Calculate power (in dB) envelope.
 
@@ -263,8 +263,15 @@ Calculate power (in dB) envelope.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -272,21 +279,21 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=8, mt::Bool=false, nt::Int64=8)
+function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=8, method::Symbol=:welch, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
     
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     fs = sr(obj)
 
-    psd_tmp, frq = psd(obj.data[1, :, 1], fs=fs, mt=mt, nt=nt)
+    psd_tmp, frq = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     p_env = zeros(ch_n, length(psd_tmp), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            psd_pow, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, mt=mt, norm=true, nt=nt)
+            psd_pow, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             # find peaks
             p_idx = findpeaks(psd_pow, d=d)
             # add first time-point
@@ -313,7 +320,7 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    penv_mean(obj; ch, dims, d)
+    penv_mean(obj; ch, dims, d, method, nt, wlen, woverlap, w)
 
 Calculate power (in dB) envelope: mean and 95% CI.
 
@@ -323,7 +330,15 @@ Calculate power (in dB) envelope: mean and 95% CI.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
+- `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -333,18 +348,18 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
-    
+function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, method::Symbol=:welch, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_f = psd(obj, ch=ch, norm=true, mt=mt)
+    s_p, s_f = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     ch_n = size(s_p, 1)
     ep_n = size(s_p, 3)
@@ -422,7 +437,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    penv_median(obj; ch, dims, d)
+    penv_median(obj; ch, dims, d, method, nt, wlen, woverlap, w)
 
 Calculate power (in dB) envelope: median and 95% CI.
 
@@ -432,7 +447,15 @@ Calculate power (in dB) envelope: median and 95% CI.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
+- `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
 
 # Returns
 
@@ -442,18 +465,18 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
-    
+function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, method::Symbol=:welch, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_f = psd(obj, ch=ch, norm=true, mt=mt)
+    s_p, s_f = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     ch_n = size(s_p, 1)
     ep_n = size(s_p, 3)
@@ -541,8 +564,11 @@ Calculate spectral envelope.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window for Welch and STFT
@@ -553,17 +579,17 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, t::Union{Real, Nothing}=nothing, mt::Bool=false, st::Bool=false, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:welch, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
     
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     fs = sr(obj)
 
     s_tmp = @view obj.data[1, :, 1]
 
-    _, _, sp_t = NeuroAnalyzer.spectrogram(s_tmp, fs=fs, mt=mt, st=st, wlen=wlen, woverlap=woverlap, w=w)
+    _, _, sp_t = NeuroAnalyzer.spectrogram(s_tmp, fs=fs, method=method, wlen=wlen, woverlap=woverlap, w=w)
     sp_t .+= obj.epoch_time[1]
 
     s_env = zeros(ch_n, length(sp_t), ep_n)
@@ -571,7 +597,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
-            s_p, s_frq, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, mt=mt, st=st, wlen=wlen, woverlap=woverlap, w=w)
+            s_p, s_frq, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, wlen=wlen, woverlap=woverlap, w=w)
 
             # maximize all powers above threshold (t)
             if t !== nothing
@@ -622,8 +648,11 @@ Calculate spectral envelope: mean and 95% CI.
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window for Welch and STFT
@@ -636,18 +665,18 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, mt::Bool=false, st::Bool=false, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:welch, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, t=t, mt=mt, st=st, wlen=wlen, woverlap=woverlap, w=w)
+    s_p, s_t = senv(obj, ch=ch, d=d, t=t, method=method, wlen=wlen, woverlap=woverlap, w=w)
 
     ch_n = size(s_p, 1)
     ep_n = size(s_p, 3)
@@ -735,8 +764,11 @@ Calculate spectral envelope: median and 95% CI.
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast-Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window for Welch and STFT
@@ -749,18 +781,18 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, mt::Bool=false, st::Bool=false, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:welch, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, t=t, mt=mt, st=st, wlen=wlen, woverlap=woverlap, w=w)
+    s_p, s_t = senv(obj, ch=ch, d=d, t=t, method=method, wlen=wlen, woverlap=woverlap, w=w)
 
     ch_n = size(s_p, 1)
     ep_n = size(s_p, 3)
@@ -920,12 +952,12 @@ Named tuple containing:
 function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = henv(obj, ch=ch, d=d)
@@ -998,12 +1030,12 @@ Named tuple containing:
 function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 1 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 1 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 1 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 1 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = henv(obj, ch=ch, d=d)
@@ -1090,8 +1122,8 @@ Calculate envelope correlation.
     - `:hamp`: Hilbert spectrum amplitude
 - `ch1::Int64`
 - `ch2::Int64`
-- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
@@ -1099,7 +1131,7 @@ Named tuple containing:
 - `ec::Vector{Float64}`: power correlation value
 - `p::Vector{Float64}`: p-value
 """
-function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:amp, ch1::Int64, ch2::Int64, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2)))
+function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:amp, ch1::Int64, ch2::Int64, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
 
     _check_var(type, [:amp, :pow, :spec, :hamp], "type")
 

@@ -19,7 +19,7 @@ function npl(obj::NeuroAnalyzer.NEURO)
     @assert obj.header.recording[:data_type] == "erp" "OBJ must be ERP."
 
     obj_new = deepcopy(obj)
-    for ep_idx = 2:epoch_n(obj_new)
+    for ep_idx = 2:nepochs(obj_new)
         obj_new.data[:, :, ep_idx] = @views obj_new.data[:, :, ep_idx] - obj_new.data[:, :, 1]
     end
     reset_components!(obj_new)

@@ -71,7 +71,7 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     @assert t >= 1 "t must be ≥ 1."
     @assert t <= epoch_len(obj) "t must be ≤ $(epoch_len(obj))."
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
@@ -125,7 +125,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
     end
 
     _check_channels(obj, ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 

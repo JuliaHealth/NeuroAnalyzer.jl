@@ -166,7 +166,7 @@ function dft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     fs = sr(obj)
     ft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)

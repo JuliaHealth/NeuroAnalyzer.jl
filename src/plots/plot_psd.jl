@@ -754,7 +754,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
 
     if ep != 0
         _check_epochs(obj, ep)
-        if epoch_n(obj) == 1
+        if nepochs(obj) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
@@ -1045,7 +1045,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
 
     if ep != 0
         _check_epochs(obj, ep)
-        if epoch_n(obj) == 1
+        if nepochs(obj) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])

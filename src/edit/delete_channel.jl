@@ -22,7 +22,7 @@ Delete channel(s).
 function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     typeof(ch) <: AbstractRange && (ch = collect(ch))
-    ch_n = channel_n(obj)
+    ch_n = nchannels(obj)
     length(ch) > 1 && (ch = sort!(ch, rev=true))
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
 
@@ -101,7 +101,7 @@ function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     typeof(ch) <: AbstractRange && (ch = collect(ch))
     _check_channels(obj, ch)
 
-    ch_n = channel_n(obj)
+    ch_n = nchannels(obj)
     chs_to_remove = setdiff(collect(1:ch_n), ch)
     @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
 
@@ -152,7 +152,7 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
     _check_var(type, channel_types, "type")
 
     chs_idx = Vector{Int64}()
-    for idx in 1:channel_n(obj, type=:all)
+    for idx in 1:nchannels(obj, type=:all)
         obj.header.recording[:channel_type][idx] == string(type) && push!(chs_idx, idx)
     end
 

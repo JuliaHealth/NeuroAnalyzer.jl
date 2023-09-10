@@ -31,19 +31,19 @@ ad = NeuroAnalyzer.ampdiff(e10)
 
 @info "test 3/52: band_power()"
 @test size(NeuroAnalyzer.band_power(e10, f=(10, 20))) == (19, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), mt=true)) == (19, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), st=true)) == (19, 10)
+@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:mt)) == (19, 10)
+@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:stft)) == (19, 10)
 
 @info "test 4/52: band_mpower()"
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), mt=false)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20))
 @test size(mbp) == (19, 10)
 @test size(maxf) == (19, 10)
 @test size(maxbp) == (19, 10)
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), mt=true)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:mt)
 @test size(mbp) == (19, 10)
 @test size(maxf) == (19, 10)
 @test size(maxbp) == (19, 10)
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), st=true)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:stft)
 @test size(mbp) == (19, 10)
 @test size(maxf) == (19, 10)
 @test size(maxbp) == (19, 10)
@@ -367,17 +367,17 @@ p, f = psd(rand(10, 100), fs=10, wlen=10, woverlap=0)
 @test size(p) == (10, 6)
 p, f = psd(rand(10, 100, 10), fs=10, wlen=10, woverlap=0)
 @test size(p) == (10, 6, 10)
-p, f = psd(rand(100), fs=10, mt=true)
+p, f = psd(rand(100), fs=10, method=:mt)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
-p, f = psd(rand(10, 100), fs=10, mt=true)
+p, f = psd(rand(10, 100), fs=10, method=:mt)
 @test size(p) == (10, 51)
-p, f = psd(rand(10, 100, 10), fs=10, mt=true)
+p, f = psd(rand(10, 100, 10), fs=10, method=:mt)
 @test size(p) == (10, 51, 10)
 p, f = NeuroAnalyzer.psd(e10)
 @test size(p) == (19, 129, 10)
 @test f == 0.0:1.0:128.0
-p, f = NeuroAnalyzer.psd(e10, mt=true)
+p, f = NeuroAnalyzer.psd(e10, method=:mt)
 @test size(p) == (19, 1281, 10)
 @test round.(f, digits=3) == 0.0:0.1:128.0
 
@@ -401,22 +401,22 @@ p, f = psd_rel(rand(10, 100), fs=10, f=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 6)
 p, f = psd_rel(rand(10, 100, 10), fs=10, f=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 6, 10)
-p, f = psd_rel(rand(100), fs=10, mt=true, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(100), fs=10, method=:mt, f=(0, 1), wlen=10, woverlap=0)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
-p, f = psd_rel(rand(10, 100), fs=10, mt=true, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100), fs=10, method=:mt, f=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 51)
-p, f = psd_rel(rand(10, 100, 10), fs=10, mt=true, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, f=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 51, 10)
 p, f = NeuroAnalyzer.psd_rel(e10, f=(0, 1))
 @test size(p) == (19, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = NeuroAnalyzer.psd_rel(e10, mt=true, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, method=:mt, f=(0, 1))
 @test size(p) == (19, 1281, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = NeuroAnalyzer.psd_rel(e10, st=true, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, method=:stft, f=(0, 1))
 @test size(p) == (19, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
@@ -436,12 +436,12 @@ lf, ls, pf = psd_slope(e10)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
-lf, ls, pf = psd_slope(e10, st=true)
+lf, ls, pf = psd_slope(e10, method=:stft)
 @test size(lf) == (19, 129, 10)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
-lf, ls, pf = psd_slope(e10, mt=true)
+lf, ls, pf = psd_slope(e10, method=:mt)
 @test size(lf) == (19, 1281, 10)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0
@@ -587,9 +587,9 @@ t = NeuroAnalyzer.tkeo(e10)
 @info "test 45/52: total_power()"
 tp = NeuroAnalyzer.total_power(e10)
 @test size(tp) == (19, 10)
-tp = NeuroAnalyzer.total_power(e10, mt=true)
+tp = NeuroAnalyzer.total_power(e10, method=:mt)
 @test size(tp) == (19, 10)
-tp = NeuroAnalyzer.total_power(e10, st=true)
+tp = NeuroAnalyzer.total_power(e10, method=:stft)
 @test size(tp) == (19, 10)
 
 @info "test 46/52: var_test()"

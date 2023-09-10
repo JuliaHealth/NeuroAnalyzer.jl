@@ -39,7 +39,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)    
+    ep_n = nepochs(obj)    
 
     bm = zeros(Bool, ch_n, ep_n)
     be = Vector{Int64}()

@@ -2,24 +2,24 @@ export taper
 export taper!
 
 """
-    taper(signal; taper)
+    taper(s; taper)
 
 Taper the signal.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `t::Union{AbstractVector, Vector{ComplexF64}}`
 
 # Returns
 
-- `t::Vector{Union{Float64, ComplexF64}}`
+- `s_new::Vector{Union{Float64, ComplexF64}}`
 """
-function taper(signal::AbstractVector; t::Union{AbstractVector, Vector{ComplexF64}})
+function taper(s::AbstractVector; t::Union{AbstractVector, Vector{ComplexF64}})
 
-    @assert length(t) == length(signal) "Taper and signal lengths must be equal."
+    @assert length(t) == length(s) "Taper and signal lengths must be equal."
 
-    return signal .* t
+    return s .* t
 
 end
 
@@ -35,7 +35,7 @@ Taper the signal.
 
 # Returns
 
-- `s::Array{Float64, 3`
+- `s_new::Array{Float64, 3`
 """
 function taper(s::AbstractArray; t::Union{Vector{<:Real}, Vector{ComplexF64}})
 
@@ -62,14 +62,14 @@ Taper the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `t::Union{Vector{Real, Vector{ComplexF64}}`
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function taper(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), t::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), t::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     _check_channels(obj, ch)
 
@@ -90,10 +90,10 @@ Taper the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `t::Union{Vector{<:Real}, Vector{ComplexF64}}`
 """
-function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     obj_new = taper(obj, ch=ch, t=t)
     obj.data = obj_new.data

@@ -22,7 +22,7 @@ Interpolate channel(s) using planar interpolation.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
 

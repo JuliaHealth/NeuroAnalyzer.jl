@@ -10,16 +10,16 @@ Interactive plot of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iplot(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), zoom::Int64=5)
+function iplot(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), zoom::Int64=5)
 
-    if epoch_n(obj) == 1
+    if nepochs(obj) == 1
         iplot_cont(obj, ch=ch, zoom=zoom)
     else
         iplot_ep(obj, ch=ch)
@@ -35,18 +35,18 @@ Interactive plot of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), zoom::Int64=5)
+function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), zoom::Int64=5)
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert epoch_n(obj) == 1 "iplot_ep() should be used for epoched object."
+    @assert nepochs(obj) == 1 "iplot_ep() should be used for epoched object."
     _check_channels(obj, ch)
     ch_init = ch
 
@@ -467,15 +467,15 @@ Interactive plot of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)))
+function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)))
 
-    @assert epoch_n(obj) > 1 "iplot_cont() should be used for continuous object."
+    @assert nepochs(obj) > 1 "iplot_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=1)
@@ -498,7 +498,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(g, :row_spacing, 10)
     set_gtk_property!(g_opts, :row_spacing, 10)
     set_gtk_property!(g_opts, :column_spacing, 10)
-    entry_epoch = GtkSpinButton(1, epoch_n(obj), 1)
+    entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
@@ -754,7 +754,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     signal_connect(bt_next, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep < epoch_n(obj)
+        if ep < nepochs(obj)
             ep += 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -770,7 +770,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     signal_connect(bt_end, "clicked") do widget
         Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, epoch_n(obj))
+            set_gtk_property!(entry_epoch, :value, nepochs(obj))
         end
     end
 
@@ -794,7 +794,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             end
         elseif k == 115 # a
             Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, epoch_n(obj))
+                set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         elseif k == 122 # z
             ep = get_gtk_property(entry_epoch, :value, Int64)
@@ -806,7 +806,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             end
         elseif k == 120 # x
             ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < epoch_n(obj)
+            if ep < nepochs(obj)
                 ep += 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, ep)
@@ -828,16 +828,16 @@ Interactive plot of two continuous or epoched signals.
 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj1)), zoom::Int64=5)
+function iplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj1)), zoom::Int64=5)
 
-    if epoch_n(obj1) == 1 && epoch_n(obj2) == 1
+    if nepochs(obj1) == 1 && nepochs(obj2) == 1
         iplot_cont(obj1, obj2, ch=ch, zoom=zoom)
     else
         iplot_ep(obj1, obj2, ch=ch)
@@ -854,20 +854,20 @@ Interactive plot of two continuous signals.
 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj1)), zoom::Int64=5)
+function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj1)), zoom::Int64=5)
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj1) / sr(obj1) "zoom must be ≤ $(signal_len(obj1) / sr(obj1))."
     @assert zoom <= signal_len(obj2) / sr(obj2) "zoom must be ≤ $(signal_len(obj2) / sr(obj2))."
-    @assert epoch_n(obj1) == 1 "iplot_ep() should be used for epoched object."
-    @assert epoch_n(obj2) == 1 "iplot_ep() should be used for epoched object."
+    @assert nepochs(obj1) == 1 "iplot_ep() should be used for epoched object."
+    @assert nepochs(obj2) == 1 "iplot_ep() should be used for epoched object."
     _check_channels(obj1, ch)
     _check_channels(obj2, ch)
     ch_init = ch
@@ -1232,16 +1232,16 @@ Interactive plot of two epoched signal.
 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj1)))
+function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj1)))
 
-    @assert epoch_n(obj1) > 1 "iplot_cont() should be used for continuous object."
-    @assert epoch_n(obj2) > 1 "iplot_cont() should be used for continuous object."
+    @assert nepochs(obj1) > 1 "iplot_cont() should be used for continuous object."
+    @assert nepochs(obj2) > 1 "iplot_cont() should be used for continuous object."
     _check_channels(obj1, ch)
     _check_channels(obj2, ch)
 
@@ -1260,7 +1260,7 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     set_gtk_property!(g, :row_spacing, 10)
     set_gtk_property!(g_opts, :row_spacing, 10)
     set_gtk_property!(g_opts, :column_spacing, 10)
-    entry_epoch = GtkSpinButton(1, epoch_n(obj1), 1)
+    entry_epoch = GtkSpinButton(1, nepochs(obj1), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
@@ -1456,7 +1456,7 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
 
     signal_connect(bt_next, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep < epoch_n(obj1)
+        if ep < nepochs(obj1)
             ep += 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -1472,7 +1472,7 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
 
     signal_connect(bt_end, "clicked") do widget
         Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, epoch_n(obj1))
+            set_gtk_property!(entry_epoch, :value, nepochs(obj1))
         end
     end
 
@@ -1496,7 +1496,7 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
             end
         elseif k == 115 # a
             Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, epoch_n(obj1))
+                set_gtk_property!(entry_epoch, :value, nepochs(obj1))
             end
         elseif k == 122 # z
             ep = get_gtk_property(entry_epoch, :value, Int64)
@@ -1508,7 +1508,7 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
             end
         elseif k == 120 # x
             ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < epoch_n(obj1)
+            if ep < nepochs(obj1)
                 ep += 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, ep)

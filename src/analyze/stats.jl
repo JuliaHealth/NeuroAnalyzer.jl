@@ -26,7 +26,7 @@ Named tuple containing:
 """
 function epoch_stats(obj::NeuroAnalyzer.NEURO)
 
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     e_mean = zeros(ep_n)
     e_median = zeros(ep_n)
@@ -81,8 +81,8 @@ Named tuple containing:
 """
 function channel_stats(obj::NeuroAnalyzer.NEURO)
 
-    ch_n = channel_n(obj)
-    ep_n = epoch_n(obj)
+    ch_n = nchannels(obj)
+    ep_n = nepochs(obj)
     
     c_mean = zeros(ch_n, ep_n)
     c_median = zeros(ch_n, ep_n)

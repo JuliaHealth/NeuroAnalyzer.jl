@@ -10,7 +10,7 @@ Interactive edit of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
@@ -18,9 +18,9 @@ Interactive edit of continuous or epoched signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=true, zoom::Int64=5)
+function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Int64=5)
 
-    if epoch_n(obj) == 1
+    if nepochs(obj) == 1
         iedit_cont(obj, ch=ch, mono=mono, zoom=zoom)
     else
         iedit_ep(obj, ch=ch, mono=mono)
@@ -36,7 +36,7 @@ Interactive edit of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Int64=5`: how many seconds are displayed in one segment
 
@@ -44,11 +44,11 @@ Interactive edit of continuous signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=true, zoom::Int64=5)
+function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Int64=5)
 
     @assert zoom >= 1 "zoom must be ≥ 1."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert epoch_n(obj) == 1 "iedit_ep() should be used for epoched object."
+    @assert nepochs(obj) == 1 "iedit_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
@@ -405,16 +405,16 @@ Interactive edit of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(channel_n(obj)), mono::Bool=true)
+function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true)
 
-    @assert epoch_n(obj) > 1 "iedit_cont() should be used for continuous object."
+    @assert nepochs(obj) > 1 "iedit_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=1, mono=mono, title="")
@@ -432,7 +432,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 10)
     set_gtk_property!(g, :row_spacing, 10)
-    entry_epoch = GtkSpinButton(1, epoch_n(obj), 1)
+    entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
@@ -492,7 +492,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     signal_connect(bt_next, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep < epoch_n(obj)
+        if ep < nepochs(obj)
             ep += 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -508,7 +508,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     signal_connect(bt_end, "clicked") do widget
         Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, epoch_n(obj))
+            set_gtk_property!(entry_epoch, :value, nepochs(obj))
         end
     end
 
@@ -520,7 +520,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             ep = ep > 1 ? ep -= 1 : ep = 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
-                GAccessor.range(entry_epoch, 1, epoch_n(obj))
+                GAccessor.range(entry_epoch, 1, nepochs(obj))
             end
         end
     end
@@ -545,7 +545,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             end
         elseif k == 115 # a
             Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, epoch_n(obj))
+                set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         elseif k == 122 # z
             ep = get_gtk_property(entry_epoch, :value, Int64)
@@ -557,7 +557,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             end
         elseif k == 120 # x
             ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < epoch_n(obj)
+            if ep < nepochs(obj)
                 ep += 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, ep)
@@ -571,7 +571,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 ep = ep > 1 ? ep -= 1 : ep = 1
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, ep)
-                    GAccessor.range(entry_epoch, 1, epoch_n(obj))
+                    GAccessor.range(entry_epoch, 1, nepochs(obj))
                 end
             end
         end

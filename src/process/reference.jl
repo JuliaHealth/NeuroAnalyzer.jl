@@ -24,7 +24,7 @@ Reference to selected channel(s). Only signal channels are processed.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_ch(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
@@ -104,7 +104,7 @@ Reference to common average reference. Only signal channels are processed.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
 
@@ -188,7 +188,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
@@ -323,7 +323,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
@@ -456,7 +456,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
@@ -567,7 +567,7 @@ Reference using custom montage. Only signal channels are processed. Custom monta
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 
 # Notes
 
@@ -595,7 +595,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
         end
     end
 
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     s = zeros(length(ref_list), epoch_len(obj), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n

@@ -145,7 +145,7 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
 end
 
 """
-    ghspectrogram(s; fs, norm, frq_lim, frq_n, frq, fs)
+    ghspectrogram(s; fs, norm, frq_lim, frq_n, frq, gw)
 
 Calculate spectrogram using Gaussian and Hilbert transform.
 
@@ -216,7 +216,7 @@ Named tuple containing:
 - `sp::Matrix{Float64}`: powers
 - `sf::Vector{Float64}`: frequencies
 """
-function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2)) where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2), fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2)) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
     frq_lim = tuple_order(frq_lim)
@@ -236,7 +236,7 @@ function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, fr
 end
 
 """
-    spectrogram(obj; ch, pad, frq_lim, frq_n, method, norm, frq, gw, ncyc, wt, wlen, woverlap, w)
+    spectrogram(obj; ch, pad, frq_lim, frq_n, method, norm, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectrogram.
 
@@ -277,7 +277,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     fs = sr(obj)
 
     if method === :standard
