@@ -13,13 +13,13 @@ Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `ero
     - `:welch`: Welch periodogram
     - `:stft`: short time Fourier transform
     - `:mt`: multi-tapered periodogram
+    - `:fft`: Fast Fourier transform
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window for Welch and STFT
-- `pad::Int64=0`: number of zeros to add
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
@@ -31,24 +31,16 @@ Named tuple containing:
 - `ero_p::Array{Float64, 3}`: powers
 - `ero_f::Vector{Float64}`: frequencies
 """
-function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:welch, norm::Bool=true, frq::Symbol=:log, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:welch, norm::Bool=true, frq::Symbol=:log, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_channels(obj, ch)
-    _check_var(method, [:welch, :stft, :mt, :mw], "method")
+    _check_var(method, [:welch, :stft, :fft, :mt, :mw], "method")
 
     frq_lim = tuple_order(frq_lim)
     @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
-    if method === :welch
-        ero_p, ero_f = psd(obj, ch=ch, norm=norm, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-    elseif method === :stft
-        ero_p, ero_f = psd(obj, ch=ch, norm=norm, st=true, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-    elseif method === :mt
-        ero_p, ero_f = psd(obj, ch=ch, norm=norm, mt=true, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-    else
-        ero_p, ero_f = psd_mw(obj, ch=ch, pad=pad, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
-    end
+    ero_p, ero_f = psd(obj, ch=ch, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     ero_p = ero_p[1, :, :]
 

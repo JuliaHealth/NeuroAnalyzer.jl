@@ -149,6 +149,18 @@ em, eu, el, t = NeuroAnalyzer.senv_median(e10, dims=1)
 e, t = NeuroAnalyzer.penv(e10)
 @test size(e) == (19, 129, 10)
 @test length(t) == 129
+e, t = NeuroAnalyzer.penv(e10, method=:fft)
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
+e, t = NeuroAnalyzer.penv(e10, method=:stft)
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
+e, t = NeuroAnalyzer.penv(e10, method=:mt)
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
+e, t = NeuroAnalyzer.penv(e10, method=:mw)
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
 em, eu, el, t = NeuroAnalyzer.penv_mean(e10, dims=1)
 @test size(em) == (129, 10)
 @test size(eu) == (129, 10)
@@ -377,6 +389,12 @@ p, f = psd(rand(10, 100, 10), fs=10, method=:mt)
 p, f = NeuroAnalyzer.psd(e10)
 @test size(p) == (19, 129, 10)
 @test f == 0.0:1.0:128.0
+p, f = NeuroAnalyzer.psd(e10, method=:fft)
+@test size(p) == (19, 1281, 10)
+@test round.(f, digits=3) == 0.0:0.1:128.0
+p, f = NeuroAnalyzer.psd(e10, method=:stft)
+@test size(p) == (19, 1281, 10)
+@test round.(f, digits=3) == 0.0:0.1:128.0
 p, f = NeuroAnalyzer.psd(e10, method=:mt)
 @test size(p) == (19, 1281, 10)
 @test round.(f, digits=3) == 0.0:0.1:128.0
@@ -416,7 +434,15 @@ p, f = NeuroAnalyzer.psd_rel(e10, method=:mt, f=(0, 1))
 @test size(p) == (19, 1281, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
+p, f = NeuroAnalyzer.psd_rel(e10, method=:fft, f=(0, 1))
+@test size(p) == (19, 1281, 10)
+@test f[1] == 0.0
+@test f[end] == 128.0
 p, f = NeuroAnalyzer.psd_rel(e10, method=:stft, f=(0, 1))
+@test size(p) == (19, 129, 10)
+@test f[1] == 0.0
+@test f[end] == 128.0
+p, f = NeuroAnalyzer.psd_rel(e10, method=:mw, f=(0, 1))
 @test size(p) == (19, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
@@ -441,7 +467,17 @@ lf, ls, pf = psd_slope(e10, method=:stft)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
+lf, ls, pf = psd_slope(e10, method=:fft)
+@test size(lf) == (19, 129, 10)
+@test size(ls) == (19, 10)
+@test pf[1] == 0.0
+@test pf[end] == 128.0
 lf, ls, pf = psd_slope(e10, method=:mt)
+@test size(lf) == (19, 1281, 10)
+@test size(ls) == (19, 10)
+@test pf[1] == 0.0
+@test pf[end] == 128.0
+lf, ls, pf = psd_slope(e10, method=:mw)
 @test size(lf) == (19, 1281, 10)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0

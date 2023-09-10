@@ -113,7 +113,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     set_gtk_property!(cb_hw, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["Welch periodogram", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
+    psd_methods = ["Welch periodogram", "Fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
     for idx in psd_methods
         push!(combo_method, idx)
     end
@@ -296,9 +296,10 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             hw = get_gtk_property(cb_hw, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :welch)
-            method == "1" && (method = :stft)
-            method == "2" && (method = :mt)
-            method == "3" && (method = :mw)
+            method == "1" && (method = :tft)
+            method == "2" && (method = :stft)
+            method == "3" && (method = :mt)
+            method == "4" && (method = :mw)
             type = get_gtk_property(combo_type, :active, String)
             type == "0" && (type = :normal)
             type == "1" && (type = :butterfly)

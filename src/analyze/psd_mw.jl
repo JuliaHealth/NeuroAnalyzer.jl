@@ -11,7 +11,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `frq_n::Int64=length(frq_lim[1]:frq_lim[2])`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
@@ -78,7 +78,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `frq_n::Int64=10`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
@@ -115,7 +115,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `frq_n::Int64=10`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
@@ -161,7 +161,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all s channels
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
