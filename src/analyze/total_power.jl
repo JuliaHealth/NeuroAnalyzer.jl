@@ -11,7 +11,7 @@ Calculate total power.
 - `fs::Int64`: sampling rate
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -51,7 +51,7 @@ Calculate total power.
 - `fs::Int64`: sampling rate
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -96,7 +96,7 @@ Calculate total power.
 - `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(record)`: index of channels, default is all signal channels
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution

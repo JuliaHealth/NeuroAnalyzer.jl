@@ -12,7 +12,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -40,7 +40,7 @@ function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, f::Union{Tuple{
         @assert f[2] <= fs / 2 "Lower frequency bound must be ≤ $(fs / 2)."
     end
 
-    ref_pw = f === nothing ? total_power(s, fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w) : band_power(s, fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    ref_pw = f === nothing ? total_power(s, fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w) : band_power(s, fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     pw, pf = psd(s, fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
@@ -62,7 +62,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -109,7 +109,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -160,7 +160,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution

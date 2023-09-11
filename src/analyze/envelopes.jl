@@ -265,7 +265,7 @@ Calculate power (in dB) envelope.
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -337,7 +337,7 @@ Calculate power (in dB) envelope: mean and 95% CI.
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -459,7 +459,7 @@ Calculate power (in dB) envelope: median and 95% CI.
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -581,7 +581,7 @@ Calculate spectral envelope.
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
@@ -665,7 +665,7 @@ Calculate spectral envelope: mean and 95% CI.
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
@@ -781,7 +781,7 @@ Calculate spectral envelope: median and 95% CI.
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second

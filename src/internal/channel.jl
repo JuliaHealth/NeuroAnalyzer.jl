@@ -1,3 +1,13 @@
+function _v2r(ch::Vector{Int64})
+    if sort(ch) == sort(ch)[1]:sort(ch)[end]
+        return sort(ch)[1]:sort(ch)[end]
+    else
+        return ch
+    end
+end
+_v2r(ch::AbstractRange) = return ch
+_v2r(ch::Int64) = return ch
+
 function _set_units(ch_type::String)
     u = ""
     lowercase(ch_type) == "eeg" && (u = "μV")

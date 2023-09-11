@@ -12,7 +12,7 @@ Calculate mean and maximum band power and its frequency.
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -62,7 +62,7 @@ Calculate absolute band power between two frequencies.
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -112,7 +112,7 @@ Calculate mean and maximum band power and its frequency.
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
 - `nt::Int64=8`: number of Slepian tapers

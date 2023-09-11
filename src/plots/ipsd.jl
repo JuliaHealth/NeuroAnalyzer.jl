@@ -113,7 +113,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     set_gtk_property!(cb_hw, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["Welch periodogram", "Fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
+    psd_methods = ["Welch periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
     for idx in psd_methods
         push!(combo_method, idx)
     end
@@ -137,8 +137,8 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     set_gtk_property!(combo_ref, :tooltip_text, "Powers referenced to")
 
     combo_ax = GtkComboBoxText()
-    ref_types = ["linear-linear", "log10-linear", "linear-log10", "log10-log10"]
-    for idx in ref_types
+    ax_types = ["linear-linear", "log10-linear", "linear-log10", "log10-log10"]
+    for idx in ax_types
         push!(combo_ax, idx)
     end
     set_gtk_property!(combo_ax, :active, 0)
@@ -179,6 +179,14 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
+    cb_frq = GtkCheckButton()
+    set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
+    set_gtk_property!(cb_frq, :active, true)
+    
+    entry_frq = GtkSpinButton(1, 2048, 1)
+    set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
+    set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")
+
     lab_type = GtkLabel("PSD method:")
     set_gtk_property!(lab_type, :halign, 2)
     lab_method = GtkLabel("PSD method:")
@@ -213,6 +221,10 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     set_gtk_property!(lab_ax, :halign, 2)
     lab_hw = GtkLabel("Hanning:")
     set_gtk_property!(lab_hw, :halign, 2)
+    lab_frq = GtkLabel("Linear frequencies:")
+    set_gtk_property!(lab_frq, :halign, 2)
+    lab_frqn = GtkLabel("Frequencies:")
+    set_gtk_property!(lab_frqn, :halign, 2)
     g_opts[1, 1] = lab_type
     g_opts[1, 2] = lab_method
     g_opts[1, 3] = lab_ref
@@ -227,10 +239,12 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     g_opts[1, 12] = lab_nt
     g_opts[1, 13] = lab_wlen
     g_opts[1, 14] = lab_woverlap
-    g_opts[1, 15] = lab_norm
-    g_opts[1, 16] = lab_mono
-    g_opts[1, 17] = lab_hw
-    g_opts[1, 18] = bt_save
+    g_opts[1, 15] = lab_frqn
+    g_opts[1, 16] = lab_norm
+    g_opts[1, 17] = lab_mono
+    g_opts[1, 18] = lab_hw
+    g_opts[1, 19] = lab_frq
+    g_opts[1, 20] = bt_save
     g_opts[2, 1] = combo_type
     g_opts[2, 2] = combo_method
     g_opts[2, 3] = combo_ref
@@ -245,11 +259,13 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     g_opts[2, 12] = entry_nt
     g_opts[2, 13] = entry_wlen
     g_opts[2, 14] = entry_woverlap
-    g_opts[2, 15] = cb_norm
-    g_opts[2, 16] = cb_mono
-    g_opts[2, 17] = cb_hw
-    g_opts[2, 18] = combo_save
-    g_opts[1:2, 19] = bt_refresh
+    g_opts[2, 15] = entry_frq
+    g_opts[2, 16] = cb_norm
+    g_opts[2, 17] = cb_mono
+    g_opts[2, 18] = cb_hw
+    g_opts[2, 19] = cb_frq
+    g_opts[2, 20] = combo_save
+    g_opts[1:2, 21] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -294,9 +310,10 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             mono = get_gtk_property(cb_mono, :active, Bool)
             norm = get_gtk_property(cb_norm, :active, Bool)
             hw = get_gtk_property(cb_hw, :active, Bool)
+            f = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :welch)
-            method == "1" && (method = :tft)
+            method == "1" && (method = :fft)
             method == "2" && (method = :stft)
             method == "3" && (method = :mt)
             method == "4" && (method = :mw)
@@ -331,14 +348,13 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             ncyc = get_gtk_property(entry_ncyc, :value, Int64)
             wlen = get_gtk_property(entry_wlen, :value, Int64)
             woverlap = get_gtk_property(entry_woverlap, :value, Int64)
+            frq_n = get_gtk_property(entry_frq, :value, Int64)
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif frq1 > frq2
                 warn_dialog("Start frequency must be < end frequency.")
             elseif woverlap >= wlen
                 warn_dialog("Window overlap must be < window length.")
-            elseif ref !== :abs && method === :mw
-                warn_dialog("For relative plot, method must be Welch, STFT or multi-taper.")
             elseif length(ch) < 2 && type === :butterfly
                 warn_dialog("For butterfly plot, the signal must contain ≥ 2 channels.")
             elseif length(ch) < 2 && type === :mean
@@ -369,6 +385,8 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
                                            ax=ax,
                                            ref=ref,
                                            frq_lim=frq,
+                                           frq=f,
+                                           frq_n=frq_n,
                                            ncyc=ncyc,
                                            nt=nt,
                                            wlen=wlen,
@@ -429,6 +447,9 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     signal_connect(entry_woverlap, "value-changed") do widget
         draw(can)
     end
+    signal_connect(entry_frq, "value-changed") do widget
+        draw(can)
+    end
     signal_connect(cb_norm, "clicked") do widget
         draw(can)
     end
@@ -436,6 +457,9 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         draw(can)
     end
     signal_connect(cb_hw, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(cb_frq, "clicked") do widget
         draw(can)
     end
 
@@ -678,7 +702,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     set_gtk_property!(cb_norm, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["Welch periodogram", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
+    psd_methods = ["Welch periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
     for idx in psd_methods
         push!(combo_method, idx)
     end
@@ -725,13 +749,21 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     set_gtk_property!(entry_frq2, :value, sr(obj) / 2)
     set_gtk_property!(entry_frq2, :tooltip_text, "End frequency")
 
-    entry_wlen = GtkSpinButton(2, zoom * sr(obj) + 1, 1)
+    entry_wlen = GtkSpinButton(2, epoch_len(obj) * sr(obj) + 1, 1)
     set_gtk_property!(entry_wlen, :value, sr(obj))
     set_gtk_property!(entry_wlen, :tooltip_text, "Window length (samples)")
 
-    entry_woverlap = GtkSpinButton(0, zoom * sr(obj), 1)
+    entry_woverlap = GtkSpinButton(0, epoch_len(obj) * sr(obj), 1)
     set_gtk_property!(entry_woverlap, :value, round(Int64, sr(obj) * 0.97))
     set_gtk_property!(entry_woverlap, :tooltip_text, "Window overlap (samples)")
+
+    cb_frq = GtkCheckButton()
+    set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
+    set_gtk_property!(cb_frq, :active, true)
+    
+    entry_frq = GtkSpinButton(1, 2048, 1)
+    set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
+    set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")
 
     combo_save = GtkComboBoxText()
     file_types = ["PNG", "PDF"]
@@ -778,6 +810,10 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     set_gtk_property!(lab_ax, :halign, 2)
     lab_hw = GtkLabel("Hanning:")
     set_gtk_property!(lab_hw, :halign, 2)
+    lab_frq = GtkLabel("Linear frequencies:")
+    set_gtk_property!(lab_frq, :halign, 2)
+    lab_frqn = GtkLabel("Frequencies:")
+    set_gtk_property!(lab_frqn, :halign, 2)
     g_opts[1, 1] = lab_type
     g_opts[1, 2] = lab_method
     g_opts[1, 3] = lab_ref
@@ -792,10 +828,12 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     g_opts[1, 12] = lab_nt
     g_opts[1, 13] = lab_wlen
     g_opts[1, 14] = lab_woverlap
-    g_opts[1, 15] = lab_norm
-    g_opts[1, 16] = lab_mono
-    g_opts[1, 17] = lab_hw
-    g_opts[1, 18] = bt_save
+    g_opts[1, 15] = lab_frqn
+    g_opts[1, 16] = lab_norm
+    g_opts[1, 17] = lab_mono
+    g_opts[1, 18] = lab_hw
+    g_opts[1, 19] = lab_frq
+    g_opts[1, 20] = bt_save
     g_opts[2, 1] = combo_type
     g_opts[2, 2] = combo_method
     g_opts[2, 3] = combo_ref
@@ -810,11 +848,13 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     g_opts[2, 12] = entry_nt
     g_opts[2, 13] = entry_wlen
     g_opts[2, 14] = entry_woverlap
-    g_opts[2, 15] = cb_norm
-    g_opts[2, 16] = cb_mono
-    g_opts[2, 17] = cb_hw
-    g_opts[2, 18] = combo_save
-    g_opts[1:2, 19] = bt_refresh
+    g_opts[2, 15] = entry_frq
+    g_opts[2, 16] = cb_norm
+    g_opts[2, 17] = cb_mono
+    g_opts[2, 18] = cb_hw
+    g_opts[2, 19] = cb_frq
+    g_opts[2, 20] = combo_save
+    g_opts[1:2, 21] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -846,7 +886,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif intersect(ch, get_channel_bytype(obj)) != ch
+            elseif length(ch) > 1 && intersect(ch, get_channel_bytype(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -857,11 +897,13 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
             mono = get_gtk_property(cb_mono, :active, Bool)
             norm = get_gtk_property(cb_norm, :active, Bool)
             hw = get_gtk_property(cb_hw, :active, Bool)
+            f = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :welch)
-            method == "1" && (method = :stft)
-            method == "2" && (method = :mt)
-            method == "3" && (method = :mw)
+            method == "1" && (method = :fft)
+            method == "2" && (method = :stft)
+            method == "3" && (method = :mt)
+            method == "4" && (method = :mw)
             type = get_gtk_property(combo_type, :active, String)
             type == "0" && (type = :normal)
             type == "1" && (type = :butterfly)
@@ -893,6 +935,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
             ncyc = get_gtk_property(entry_ncyc, :value, Int64)
             wlen = get_gtk_property(entry_wlen, :value, Int64)
             woverlap = get_gtk_property(entry_woverlap, :value, Int64)
+            frq_n = get_gtk_property(entry_frq, :value, Int64)
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif frq1 > frq2
@@ -929,6 +972,8 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                                            ax=ax,
                                            ref=ref,
                                            frq_lim=frq,
+                                           frq=f,
+                                           frq_n=frq_n,
                                            ncyc=ncyc,
                                            nt=nt,
                                            wlen=wlen,
@@ -989,6 +1034,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     signal_connect(entry_woverlap, "value-changed") do widget
         draw(can)
     end
+    signal_connect(entry_frq, "value-changed") do widget
+        draw(can)
+    end
     signal_connect(cb_norm, "clicked") do widget
         draw(can)
     end
@@ -996,6 +1044,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         draw(can)
     end
     signal_connect(cb_hw, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(cb_frq, "clicked") do widget
         draw(can)
     end
 

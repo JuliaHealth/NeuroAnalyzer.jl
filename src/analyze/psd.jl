@@ -11,7 +11,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -87,7 +87,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -132,7 +132,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
@@ -182,7 +182,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch periodogram
-    - `:fft`: fast-Fourier transform
+    - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
