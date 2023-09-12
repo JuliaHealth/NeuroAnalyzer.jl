@@ -69,8 +69,8 @@ function psd(s::AbstractVector; fs::Int64, norm::Bool=false, method::Symbol=:wel
     end
 
     # replace powers at extreme frequencies
-    pw[1] = pw[2]
-    pw[end] = pw[end - 1]
+    # pw[1] = pw[2]
+    # pw[end] = pw[end - 1]
     
     norm == true && (pw = pow2db.(pw))
 

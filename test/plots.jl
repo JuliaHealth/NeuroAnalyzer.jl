@@ -63,6 +63,8 @@ p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:stft)
 @test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:fft)
+@test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, ref=:delta)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:mean)
@@ -72,7 +74,7 @@ p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:butterfly)
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:w3d)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:topo)
-@test p isa Makie.Figure
+@test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 7/25: plot_save()"
 p = NeuroAnalyzer.plot(e10)
@@ -96,6 +98,10 @@ p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:stft)
 p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:mw)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:gh)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1:10)
 @test p isa Plots.Plot{Plots.GRBackend}

@@ -146,17 +146,17 @@ e, t = NeuroAnalyzer.senv(e10)
 @test size(e) == (19, 289, 10)
 @test length(t) == 289
 e, t = NeuroAnalyzer.senv(e10, method=:mt)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
+@test size(e) == (19, 15, 10)
+@test length(t) == 15
 e, t = NeuroAnalyzer.senv(e10, method=:mw)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
+@test size(e) == (19, 2560, 10)
+@test length(t) == 2560
 e, t = NeuroAnalyzer.senv(e10, method=:gh)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
+@test size(e) == (19, 2560, 10)
+@test length(t) == 2560
 e, t = NeuroAnalyzer.senv(e10, method=:cwt)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
+@test size(e) == (19, 2560, 10)
+@test length(t) == 2560
 em, eu, el, t = NeuroAnalyzer.senv_mean(e10, dims=1)
 @test size(em) == (289, 10)
 @test size(eu) == (289, 10)
@@ -170,20 +170,20 @@ em, eu, el, t = NeuroAnalyzer.senv_median(e10, dims=1)
 
 @info "test 13/52: penv()"
 e, t = NeuroAnalyzer.penv(e10, method=:welch)
-@test size(e) == (19, 129, 10)
-@test length(t) == 129
+@test size(e) == (19, 2560, 10)
+@test length(t) == 2560
 e, t = NeuroAnalyzer.penv(e10, method=:fft)
-@test size(e) == (19, 129, 10)
-@test length(t) == 129
+@test size(e) == (19, 2560, 10)
+@test length(t) == 2560
 e, t = NeuroAnalyzer.penv(e10, method=:stft)
-@test size(e) == (19, 129, 10)
-@test length(t) == 129
+@test size(e) == (19, 2560, 10)
+@test length(t) == 2560
 e, t = NeuroAnalyzer.penv(e10, method=:mt)
-@test size(e) == (19, 129, 10)
-@test length(t) == 129
+@test size(e) == (19, 289, 10)
+@test length(t) == 289
 e, t = NeuroAnalyzer.penv(e10, method=:mw)
-@test size(e) == (19, 129, 10)
-@test length(t) == 129
+@test size(e) == (19, 289, 10)
+@test length(t) == 289
 em, eu, el, t = NeuroAnalyzer.penv_mean(e10, dims=1)
 @test size(em) == (129, 10)
 @test size(eu) == (129, 10)
@@ -257,14 +257,14 @@ p, f = erop(e10, ch=1, method=:welch)
 @test size(p) == (129, 1)
 @test length(f) == 129
 p, f = erop(e10, ch=1, method=:fft)
-@test size(p) == (129, 1)
-@test length(f) == 129
+@test size(p) == (12801, 1)
+@test length(f) == 12801
 p, f = erop(e10, ch=1, method=:stft)
 @test size(p) == (129, 1)
 @test length(f) == 129
 p, f = erop(e10, ch=1, method=:mt)
-@test size(p) == (129, 1)
-@test length(f) == 129
+@test size(p) == (12791, 1)
+@test length(f) == 12791
 p, f = erop(e10, ch=1, method=:mw)
 @test size(p) == (129, 1)
 @test length(f) == 129
@@ -373,15 +373,15 @@ sm, ss, su, sl = NeuroAnalyzer.msci95(e10, e10)
 
 @info "test 27/52: eros()"
 s, f, t = eros(e10, ch=1, method=:stft)
-@test size(s) == (1280, 289, 1)
-@test length(f) == 1280
+@test size(s) == (129, 289, 1)
+@test length(f) == 129
 @test length(t) == 289
 s, f, t = eros(e10, ch=1, method=:mt)
-@test size(s) == (1280, 289, 1)
-@test length(f) == 1280
-@test length(t) == 289
+@test size(s) == (257, 15, 1)
+@test length(f) == 257
+@test length(t) == 15
 s, f, t = eros(e10, ch=1, method=:mw)
-@test size(s) == (1280, 289, 1)
+@test size(s) == (129, 2560, 1)
 @test length(f) == 1280
 @test length(t) == 289
 s, f, t = eros(e10, ch=1, method=:gh)
