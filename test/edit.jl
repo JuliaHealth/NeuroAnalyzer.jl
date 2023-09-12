@@ -186,7 +186,7 @@ eeg_mrk.data[28, idx, :] .= 1.0
 idx = getindex.(findall(eeg_mrk.data[28, :, :] .!= 1.0), 1)
 eeg_mrk.data[28, idx, :] .= 0.0
 channel2marker!(eeg_mrk, ch=28, id="mrk")
-@test nrow(eeg_mrk.markers) == 227
+@test nrow(eeg_mrk.markers) == 1094
 
 @info "test 24/28: epoch()"
 eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", offset=0.2, ep_len=1.2)

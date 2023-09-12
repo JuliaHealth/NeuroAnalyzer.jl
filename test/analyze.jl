@@ -151,9 +151,6 @@ e, t = NeuroAnalyzer.senv(e10, method=:mt)
 e, t = NeuroAnalyzer.senv(e10, method=:mw)
 @test size(e) == (19, 289, 10)
 @test length(t) == 289
-e, t = NeuroAnalyzer.senv(e10, method=:mw)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
 e, t = NeuroAnalyzer.senv(e10, method=:gh)
 @test size(e) == (19, 289, 10)
 @test length(t) == 289

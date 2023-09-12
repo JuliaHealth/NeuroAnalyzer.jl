@@ -1,12 +1,12 @@
-function _v2r(ch::Vector{Int64})
-    if sort(ch) == sort(ch)[1]:sort(ch)[end]
-        return sort(ch)[1]:sort(ch)[end]
+function _v2r(v::Vector{Int64})
+    if sort(v) == sort(v)[1]:sort(v)[end]
+        return sort(v)[1]:sort(v)[end]
     else
-        return ch
+        return v
     end
 end
-_v2r(ch::AbstractRange) = return ch
-_v2r(ch::Int64) = return ch
+_v2r(v::AbstractRange) = return v
+_v2r(v::Int64) = return v
 
 function _set_units(ch_type::String)
     u = ""
