@@ -11,13 +11,13 @@ Interactive spectrogram of continuous or epoched signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
-- `zoom::Int64=5`: how many seconds are displayed in one segment
+- `zoom::Real=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Int64=5)
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
 
     if nepochs(obj) == 1
         ispectrogram_cont(obj, ch=ch, zoom=zoom)
@@ -36,15 +36,15 @@ Interactive spectrogram of continuous signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
-- `zoom::Int64=5`: how many seconds are displayed in one segment
+- `zoom::Real=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Int64=5)
+function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
 
-    @assert zoom >= 1 "zoom must be ≥ 1."
+    @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "ispectrogram_ep() should be used for epoched object."
     _check_channels(obj, ch)

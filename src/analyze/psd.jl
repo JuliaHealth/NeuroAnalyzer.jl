@@ -248,10 +248,9 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
     frq_lim = tuple_order(frq_lim)
     @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
     @assert frq_n >= 2 "frq_n must be ≥ 2."
-    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if frq === :log
-        frq_lim = (frq_lim[1], frq_lim[2])
+        frq_lim = frq_lim[1] == 0 ? (0.1, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         pf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
         pf = linspace(frq_lim[1], frq_lim[2], frq_n)

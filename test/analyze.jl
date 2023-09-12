@@ -170,20 +170,20 @@ em, eu, el, t = NeuroAnalyzer.senv_median(e10, dims=1)
 
 @info "test 13/52: penv()"
 e, t = NeuroAnalyzer.penv(e10, method=:welch)
-@test size(e) == (19, 2560, 10)
-@test length(t) == 2560
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
 e, t = NeuroAnalyzer.penv(e10, method=:fft)
-@test size(e) == (19, 2560, 10)
-@test length(t) == 2560
+@test size(e) == (19, 1281, 10)
+@test length(t) == 1281
 e, t = NeuroAnalyzer.penv(e10, method=:stft)
-@test size(e) == (19, 2560, 10)
-@test length(t) == 2560
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
 e, t = NeuroAnalyzer.penv(e10, method=:mt)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
+@test size(e) == (19, 1281, 10)
+@test length(t) == 1281
 e, t = NeuroAnalyzer.penv(e10, method=:mw)
-@test size(e) == (19, 289, 10)
-@test length(t) == 289
+@test size(e) == (19, 129, 10)
+@test length(t) == 129
 em, eu, el, t = NeuroAnalyzer.penv_mean(e10, dims=1)
 @test size(em) == (129, 10)
 @test size(eu) == (129, 10)
@@ -382,16 +382,16 @@ s, f, t = eros(e10, ch=1, method=:mt)
 @test length(t) == 15
 s, f, t = eros(e10, ch=1, method=:mw)
 @test size(s) == (129, 2560, 1)
-@test length(f) == 1280
-@test length(t) == 289
+@test length(f) == 129
+@test length(t) == 2560
 s, f, t = eros(e10, ch=1, method=:gh)
-@test size(s) == (1280, 289, 1)
-@test length(f) == 1280
-@test length(t) == 289
+@test size(s) == (129, 2560, 1)
+@test length(f) == 129
+@test length(t) == 2560
 s, f, t = eros(e10, ch=1, method=:cwt)
-@test size(s) == (1280, 289, 1)
-@test length(f) == 1280
-@test length(t) == 289
+@test size(s) == (13, 2560, 1)
+@test length(f) == 13
+@test length(t) == 2560
 
 @info "test 28/52: phdiff()"
 @test NeuroAnalyzer.phdiff(a1, avg=:phase, h=true) == zeros(2, 3, 2)
@@ -437,8 +437,8 @@ p, f = NeuroAnalyzer.psd(e10, method=:fft)
 @test size(p) == (19, 1281, 10)
 @test round.(f, digits=3) == 0.0:0.1:128.0
 p, f = NeuroAnalyzer.psd(e10, method=:stft)
-@test size(p) == (19, 1281, 10)
-@test round.(f, digits=3) == 0.0:0.1:128.0
+@test size(p) == (19, 129, 10)
+@test round.(f, digits=3) == 0.0:1.0:128.0
 p, f = NeuroAnalyzer.psd(e10, method=:mt)
 @test size(p) == (19, 1281, 10)
 @test round.(f, digits=3) == 0.0:0.1:128.0
@@ -512,7 +512,7 @@ lf, ls, pf = psd_slope(e10, method=:stft)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
 lf, ls, pf = psd_slope(e10, method=:fft)
-@test size(lf) == (19, 129, 10)
+@test size(lf) == (19, 1281, 10)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
@@ -522,7 +522,7 @@ lf, ls, pf = psd_slope(e10, method=:mt)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
 lf, ls, pf = psd_slope(e10, method=:mw)
-@test size(lf) == (19, 1281, 10)
+@test size(lf) == (19, 129, 10)
 @test size(ls) == (19, 10)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
@@ -550,8 +550,8 @@ sn, f = NeuroAnalyzer.snr(e10, type=:mean)
 
 @info "test 37/52: spectrogram()"
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:stft)
-@test size(sp) == (1281, 289, 19, 10)
-@test length(sf) == 1281
+@test size(sp) == (129, 289, 19, 10)
+@test length(sf) == 129
 @test length(st) == 289
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:mt)
 @test size(sp) == (257, 15, 19, 10)
@@ -566,17 +566,32 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:gh)
 @test length(sf) == 129
 @test length(st) == 2560
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:cwt)
-@test size(sp) == (129, 2560, 19, 10)
-@test length(sf) == 129
+@test size(sp) == (13, 2560, 19, 10)
+@test length(sf) == 13
 @test length(st) == 2560
 
 @info "test 38/52: spec_seg()"
-sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:standard)
+sp, sf, st = NeuroAnalyzer.spectrogram(e10)
 sp, sst, t, f = spec_seg(sp[:, :, 1, :], sf, st, ch=1, t=(0, 1), f=(0, 10))
 @test size(sp) == (289, 11, 1)
 @test t == (1, 11)
 @test f == (1, 289)
-sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:standard)
+sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:mt)
+sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
+@test size(sp) == (289, 11, 10)
+@test t == (1, 11)
+@test f == (1, 289)
+sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:mw)
+sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
+@test size(sp) == (289, 11, 10)
+@test t == (1, 11)
+@test f == (1, 289)
+sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:gh)
+sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
+@test size(sp) == (289, 11, 10)
+@test t == (1, 11)
+@test f == (1, 289)
+sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:cwt)
 sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
 @test size(sp) == (289, 11, 10)
 @test t == (1, 11)
@@ -663,9 +678,15 @@ t = NeuroAnalyzer.tkeo(e10)
 @info "test 45/52: total_power()"
 tp = NeuroAnalyzer.total_power(e10)
 @test size(tp) == (19, 10)
-tp = NeuroAnalyzer.total_power(e10, method=:mt)
+tp = NeuroAnalyzer.total_power(e10, method=:welch)
+@test size(tp) == (19, 10)
+tp = NeuroAnalyzer.total_power(e10, method=:fft)
 @test size(tp) == (19, 10)
 tp = NeuroAnalyzer.total_power(e10, method=:stft)
+@test size(tp) == (19, 10)
+tp = NeuroAnalyzer.total_power(e10, method=:mt)
+@test size(tp) == (19, 10)
+tp = NeuroAnalyzer.total_power(e10, method=:mw)
 @test size(tp) == (19, 10)
 
 @info "test 46/52: var_test()"

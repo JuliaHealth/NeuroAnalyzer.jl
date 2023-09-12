@@ -12,13 +12,13 @@ Interactive edit of continuous or epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
-- `zoom::Int64=5`: how many seconds are displayed in one segment
+- `zoom::Real=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Int64=5)
+function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5)
 
     if nepochs(obj) == 1
         iedit_cont(obj, ch=ch, mono=mono, zoom=zoom)
@@ -38,15 +38,15 @@ Interactive edit of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
-- `zoom::Int64=5`: how many seconds are displayed in one segment
+- `zoom::Real=5`: how many seconds are displayed in one segment
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Int64=5)
+function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5)
 
-    @assert zoom >= 1 "zoom must be ≥ 1."
+    @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iedit_ep() should be used for epoched object."
     _check_channels(obj, ch)
