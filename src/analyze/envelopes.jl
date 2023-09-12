@@ -569,7 +569,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    senv(obj; ch, d, t, mt, st, wlen, woverlap, w)
+    senv(obj; ch, d, t, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectral envelope.
 
@@ -579,14 +579,24 @@ Calculate spectral envelope.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
-    - `:fft`: fast Fourier transform
+- `method::Symbol=:stft`: method of calculating spectrogram:
+    - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `norm::Bool=true`: normalize powers to dB
+- `nt::Int64=8`: number of Slepian tapers
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window for STFT
 
 # Returns
 
@@ -594,7 +604,7 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:welch, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), pad::Int64=0, method::Symbol=:stft, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
     
     _check_channels(obj, ch)
 
@@ -602,9 +612,18 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     ep_n = nepochs(obj)
     fs = sr(obj)
 
-    s_tmp = @view obj.data[1, :, 1]
-
-    _, _, sp_t = NeuroAnalyzer.spectrogram(s_tmp, fs=fs, method=method, wlen=wlen, woverlap=woverlap, w=w)
+    if method === :stft
+        p_tmp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+    elseif method === :mt
+        p_tmp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    elseif method === :mw
+    _, p_tmp, _, _ = @views NeuroAnalyzer.wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    elseif method === :gh
+        p_tmp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+    elseif method === :cwt
+        p_tmp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
+    end
+    sp_t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
     sp_t .+= obj.epoch_time[1]
 
     s_env = zeros(ch_n, length(sp_t), ep_n)
@@ -612,7 +631,17 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
-            s_p, s_frq, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, wlen=wlen, woverlap=woverlap, w=w)
+            if method === :stft
+                s_p, s_frq, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            elseif method === :mt
+                s_p, s_frq, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            elseif method === :mw
+            _, s_p, _, s_frq = @views NeuroAnalyzer.wspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            elseif method === :gh
+                s_p, _, s_frq = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+            elseif method === :cwt
+                s_p, s_frq = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
+            end
 
             # maximize all powers above threshold (t)
             if t !== nothing
@@ -652,7 +681,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    senv_mean(obj; ch, dims, d, t, mt, st, wlen, woverlap, w)
+    senv_mean(obj; ch, dims, d, t, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectral envelope: mean and 95% CI.
 
@@ -663,14 +692,24 @@ Calculate spectral envelope: mean and 95% CI.
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
-    - `:fft`: fast Fourier transform
+- `method::Symbol=:stft`: method of calculating spectrogram:
+    - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `norm::Bool=true`: normalize powers to dB
+- `nt::Int64=8`: number of Slepian tapers
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window for STFT
 
 # Returns
 
@@ -680,7 +719,7 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:welch, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, pad::Int64=0, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
@@ -691,7 +730,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, t=t, method=method, wlen=wlen, woverlap=woverlap, w=w)
+    s_p, s_t = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
     ch_n = size(s_p, 1)
     ep_n = size(s_p, 3)
@@ -754,7 +793,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     else
         # mean over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, dims=1, d=d, mt=mt)
+        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, dims=1, d=d, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
         s_env_m = mean(s_env_m, dims=2)
         s_env_u = mean(s_env_u, dims=2)
         s_env_l = mean(s_env_l, dims=2)
@@ -768,7 +807,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    senv_median(obj; ch, dims, d, t, mt, st, wlen, woverlap, w)
+    senv_median(obj; ch, dims, d, t, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectral envelope: median and 95% CI.
 
@@ -779,14 +818,24 @@ Calculate spectral envelope: median and 95% CI.
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
-    - `:fft`: fast Fourier transform
+- `method::Symbol=:stft`: method of calculating spectrogram:
+    - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `norm::Bool=true`: normalize powers to dB
+- `nt::Int64=8`: number of Slepian tapers
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window for STFT
 
 # Returns
 
@@ -796,8 +845,8 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, method::Symbol=:welch, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
-    
+function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, pad::Int64=0, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
+
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -807,7 +856,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, t=t, method=method, wlen=wlen, woverlap=woverlap, w=w)
+    s_p, s_t = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, nt=nt, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
     ch_n = size(s_p, 1)
     ep_n = size(s_p, 3)
@@ -871,7 +920,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     else
         # median over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, dims=1, d=d, mt=mt)
+        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, dims=1, d=d, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
         s_env_m = median(s_env_m, dims=2)
         s_env_u = median(s_env_u, dims=2)
         s_env_l = median(s_env_l, dims=2)
@@ -1122,23 +1171,14 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    env_cor(obj1, obj2; type, ch1, ch2, ep1, ep2)
+    env_cor(env1, env2)
 
 Calculate envelope correlation.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
-- `type::Symbol=:amp`: envelope type:
-    - `:amp`: amplitude
-    - `:pow`: power
-    - `:spec`: spectrogram
-    - `:hamp`: Hilbert spectrum amplitude
-- `ch1::Int64`
-- `ch2::Int64`
-- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `env1::Array{Float64, 3}`
+- `env2::Array{Float64, 3}`
 
 # Returns
 
@@ -1146,45 +1186,17 @@ Named tuple containing:
 - `ec::Vector{Float64}`: power correlation value
 - `p::Vector{Float64}`: p-value
 """
-function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:amp, ch1::Int64, ch2::Int64, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})
 
-    _check_var(type, [:amp, :pow, :spec, :hamp], "type")
+    @assert size(env1) == size(env2) "Both envelopes must have the same size."
 
-    _check_channels(obj1, ch1)
-    _check_channels(obj2, ch2)
-    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
-    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 epochs must have the same length."
-
-    ep_n = length(ep1)
-    
+    ep_n = size(env1, 3)
     ec = zeros(ep_n)
     p = zeros(ep_n)
 
-    # calculate envelopes
-    if type === :amp
-        s1, _ = tenv(obj1)
-        s2, _ = tenv(obj2)
-    elseif type === :pow
-        s1, _ = penv(obj1)
-        s2, _ = penv(obj2)
-    elseif type === :spec
-        s1, _ = senv(obj1)
-        s2, _ = senv(obj2)
-    elseif type === :hamp
-        s1, _ = henv(obj1)
-        s2, _ = henv(obj2)
-    end
-
-    s1 = @views s1[ch1, :, ep1]
-    s2 = @views s2[ch2, :, ep2]
-    
     # compare envelopes per epochs
-    Threads.@threads for ep_idx in 1:ep_n
-        ctest = @views CorrelationTest(vec(s1[:, :, ep_idx]), vec(s2[:, :, ep_idx]))
+    for ep_idx in 1:ep_n
+        ctest = @views CorrelationTest(vec(env1[:, :, ep_idx]), vec(env2[:, :, ep_idx]))
         @inbounds ec[ep_idx] = ctest.r
         @inbounds p[ep_idx] = pvalue(ctest)
     end

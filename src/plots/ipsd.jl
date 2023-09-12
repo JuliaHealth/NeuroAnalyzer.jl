@@ -393,15 +393,9 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
                                            woverlap=woverlap,
                                            w=hw)
                 img = read_from_png(io)
-                if typeof(p) == Plots.Plot{Plots.GRBackend}
-                    Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-                    set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-                    set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-                elseif typeof(p) == Makie.Figure
-                    Gtk.resize!(win, 1000, 900 + 40)
-                    set_gtk_property!(can, :width_request, Int32(900))
-                    set_gtk_property!(can, :height_request, Int32(900))
-                end
+                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+                set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
                 ctx = getgc(can)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)
@@ -980,15 +974,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                                            woverlap=woverlap,
                                            w=hw)
                 img = read_from_png(io)
-                if typeof(p) == Plots.Plot{Plots.GRBackend}
-                    Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-                    set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-                    set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-                elseif typeof(p) == Makie.Figure
-                    Gtk.resize!(win, 1000, 900 + 40)
-                    set_gtk_property!(can, :width_request, Int32(900))
-                    set_gtk_property!(can, :height_request, Int32(900))
-                end
+                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+                set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+                set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
                 ctx = getgc(can)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)

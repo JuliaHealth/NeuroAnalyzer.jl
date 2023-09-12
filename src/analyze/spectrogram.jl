@@ -6,15 +6,16 @@ export cwtspectrogram
 """
     spectrogram(s; fs, norm, mt, st, wlen, woverlap, w)
 
-Calculate spectrogram.
+Calculate spectrogram. Default method is short time Fourier transform.
 
 # Arguments
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
-- `mt::Bool=false`: if true, use multi-tapered spectrogram
-- `st::Bool=false`: if true, use short time Fourier transform
+- `method::Symbol=:stft`: method used to calculate PSD:
+    - `:stft`: short time Fourier transform
+    - `:mt`: multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=fs`: window length, default is 4 seconds
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -27,9 +28,9 @@ Named tuple containing:
 - `sf::Vector{Float64}`: frequencies
 - `st::Vector{Float64}`: time
 """
-function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st::Bool=false, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symbol=:stft, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
-    @assert !(mt == true && st == true) "Both mt and st must not be true."
+    _check_var(method, [:stft, :mt], "method")
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
     @assert wlen >= 1 "wlen must be ≥ 1."
@@ -38,24 +39,15 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=fal
 
     w = w ? hanning : nothing
 
-    if mt == true
+    if method === :stft
+        sp = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
+    elseif method === :mt
         sp = DSP.mt_spectrogram(s, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
-    elseif st == true
-        sp = abs.(stft(s, wlen, woverlap, fs=fs, nfft=nextfastfft(length(s)), window=w))
-        norm == true && (sp = pow2db.(sp))
-        t = 0:1/fs:(length(s) / fs)
-        st = linspace(t[1], t[end], size(sp, 2))
-        sf = linspace(0, fs/2, size(sp, 1))
-        return (sp=sp, sf=sf, st=st)
-    else
-        sp = DSP.spectrogram(s, wlen, woverlap, fs=fs, nfft=nextfastfft(length(s)), window=w)
     end
 
     sp = sp.power
     norm == true && (sp = pow2db.(sp))
 
-    #st = collect(spec.time)
-    #sf = Vector(spec.freq)
     t = 0:1/fs:(length(s) / fs)
     st = linspace(t[1], t[end], size(sp, 2))
     sf = linspace(0, fs/2, size(sp, 1))
@@ -236,22 +228,21 @@ function cwtspectrogram(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2), fs:
 end
 
 """
-    spectrogram(obj; ch, pad, frq_lim, frq_n, method, norm, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
+    spectrogram(obj; ch, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
-Calculate spectrogram.
+Calculate spectrogram. Default method is short time Fourier transform.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `method::Symbol=:standard`: method of calculating spectrogram:
-    - `:standard`: standard
+- `pad::Int64=0`: number of zeros to add
+- `method::Symbol=:stft`: method of calculating spectrogram:
     - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
-- `pad::Int64=0`: number of zeros to add
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
@@ -262,7 +253,7 @@ Calculate spectrogram.
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window for STFT
 
 # Returns
 
@@ -271,21 +262,19 @@ Named tuple containing:
 - `sf::Vector{Float64}`
 - `st::Vector{Float64}`
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
-    _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
+    _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)
 
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
 
-    if method === :standard
-        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=false, st=false, wlen=wlen, woverlap=woverlap, w=w)
+    if method === :stft
+        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mt
-        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=true, st=false, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-    elseif method === :stft
-        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=false, st=true, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
     _, p_tmp, _, sf = @views NeuroAnalyzer.wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     elseif method === :gh
@@ -302,12 +291,10 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            if method === :standard
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=false, wlen=wlen, woverlap=woverlap, w=w)
+            if method === :stft
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mt
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=true, st=false, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            elseif method === :stft
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=true, wlen=wlen, woverlap=woverlap, w=w)
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mw
                 _, sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.wspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
             elseif method === :gh
