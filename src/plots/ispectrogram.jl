@@ -127,7 +127,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
 
     entry_wt = GtkEntry()
     set_gtk_property!(entry_wt, :text, "Morlet(2π), β=1")
-    set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet")
+    set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     entry_nt = GtkSpinButton(1, 128, 1)
     set_gtk_property!(entry_nt, :value, 8)
@@ -653,7 +653,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     entry_wt = GtkEntry()
     set_gtk_property!(entry_wt, :text, "Morlet(2π), β=1")
-    set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet")
+    set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     entry_nt = GtkSpinButton(1, 128, 1)
     set_gtk_property!(entry_nt, :value, 8)
