@@ -842,7 +842,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
     pal = mono == true ? :grays : :darktest
 
     if size(p, 2) == 1
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "Averaged power-spectra of epochs")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "Averaged power-spectra of epochs")
         p = Plots.plot(f,
                        p[:, 1],
                        title=tt,
@@ -860,7 +860,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                        label=false;
                        kwargs...)
     else
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "ERP power-spectrum")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "ERP power-spectrum")
         p1 = Plots.plot(f,
                         p[:, 1],
                         title=tt,
@@ -878,7 +878,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                         label=false;
                         kwargs...)
 
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "Averaged power-spectra of epochs")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "Averaged power-spectra of epochs")
         p2 = Plots.plot(f,
                         p[:, 2],
                         title=tt,

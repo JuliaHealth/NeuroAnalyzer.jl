@@ -292,35 +292,35 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     ep_n = nepochs(obj)
     fs = sr(obj)
 
-    psd_tmp, frq = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw, pf = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    p_env = zeros(ch_n, length(psd_tmp), ep_n)
+    p_env = zeros(ch_n, length(pw), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            psd_pow, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
             # find peaks
-            p_idx = findpeaks(psd_pow, d=d)
+            p_idx = findpeaks(pw, d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(psd_pow))
+            push!(p_idx, length(pw))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(frq[p_idx], psd_pow[p_idx])
+                model = CubicSpline(pf[p_idx], pw[p_idx])
                 try
-                    p_env[ch_idx, :, ep_idx] = model(frq)
+                    p_env[ch_idx, :, ep_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             else
-                p_env[ch_idx, :, ep_idx] = psd_pow
+                p_env[ch_idx, :, ep_idx] = pw
             end
             p_env[ch_idx, 1, ep_idx] = p_env[ch_idx, 2, ep_idx]
         end
     end
     
-    return (p_env=p_env, p_env_frq=frq)
+    return (p_env=p_env, p_env_frq=pf)
 
 end
 
@@ -369,20 +369,20 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_f = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw, pf = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(pw, 1)
+    ep_n = size(pw, 3)
 
     if dims == 1
         # mean over channels
 
-        p_env_m = zeros(length(s_f), ep_n)
-        p_env_u = zeros(length(s_f), ep_n)
-        p_env_l = zeros(length(s_f), ep_n)
+        p_env_m = zeros(length(pf), ep_n)
+        p_env_u = zeros(length(pf), ep_n)
+        p_env_l = zeros(length(pf), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            p_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
+            p_env_m[:, ep_idx] = mean(pw[:, :, ep_idx], dims=1)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -391,9 +391,9 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             push!(p_idx, length(p_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ep_idx] = model(s_f)
+                    p_env_m[:, ep_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -405,12 +405,12 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     elseif dims == 2
         # mean over epochs
 
-        p_env_m = zeros(length(s_f), ch_n)
-        p_env_u = zeros(length(s_f), ch_n)
-        p_env_l = zeros(length(s_f), ch_n)
+        p_env_m = zeros(length(pf), ch_n)
+        p_env_u = zeros(length(pf), ch_n)
+        p_env_l = zeros(length(pf), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            p_env_m[:, ch_idx] = mean(s_p[ch_idx, :, :], dims=2)
+            p_env_m[:, ch_idx] = mean(pw[ch_idx, :, :], dims=2)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -419,9 +419,9 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             push!(p_idx, length(p_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ch_idx] = model(s_f)
+                    p_env_m[:, ch_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -442,7 +442,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
     
-    return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=s_f)
+    return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
 
 end
 
@@ -491,20 +491,20 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_f = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw, pf = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(pw, 1)
+    ep_n = size(pw, 3)
 
     if dims == 1
         # median over channels
 
-        p_env_m = zeros(length(s_f), ep_n)
-        p_env_u = zeros(length(s_f), ep_n)
-        p_env_l = zeros(length(s_f), ep_n)
+        p_env_m = zeros(length(pf), ep_n)
+        p_env_u = zeros(length(pf), ep_n)
+        p_env_l = zeros(length(pf), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            p_env_m[:, ep_idx] = median(s_p[:, :, ep_idx], dims=1)
+            p_env_m[:, ep_idx] = median(pw[:, :, ep_idx], dims=1)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -513,9 +513,9 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(p_idx, length(p_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ep_idx] = model(s_f)
+                    p_env_m[:, ep_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -527,12 +527,12 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif dims == 2
         # median over epochs
 
-        p_env_m = zeros(length(s_f), ch_n)
-        p_env_u = zeros(length(s_f), ch_n)
-        p_env_l = zeros(length(s_f), ch_n)
+        p_env_m = zeros(length(pf), ch_n)
+        p_env_u = zeros(length(pf), ch_n)
+        p_env_l = zeros(length(pf), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            p_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
+            p_env_m[:, ch_idx] = median(pw[ch_idx, :, :], dims=2)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -541,9 +541,9 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(p_idx, length(p_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ch_idx] = model(s_f)
+                    p_env_m[:, ch_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -613,59 +613,59 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     fs = sr(obj)
 
     if method === :stft
-        p_tmp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mt
-        p_tmp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
-    _, p_tmp, _, _ = @views NeuroAnalyzer.wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    _, sp, _, _ = @views NeuroAnalyzer.wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     elseif method === :gh
-        p_tmp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+        sp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
     elseif method === :cwt
-        p_tmp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
+        sp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
     end
-    sp_t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
-    sp_t .+= obj.epoch_time[1]
+    st = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
+    st .+= obj.epoch_time[1]
 
-    s_env = zeros(ch_n, length(sp_t), ep_n)
+    s_env = zeros(ch_n, length(st), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if method === :stft
-                s_p, s_frq, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mt
-                s_p, s_frq, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mw
-            _, s_p, _, s_frq = @views NeuroAnalyzer.wspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            _, sp, _, sf = @views NeuroAnalyzer.wspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
             elseif method === :gh
-                s_p, _, s_frq = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+                sp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
             elseif method === :cwt
-                s_p, s_frq = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
+                sp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
             end
 
             # maximize all powers above threshold (t)
             if t !== nothing
-                s_p[s_p .> t] .= 0
-                reverse!(s_p)
-                reverse!(s_frq)
+                sp[sp .> t] .= 0
+                reverse!(sp)
+                reverse!(sf)
             end
             
-            f_idx = zeros(length(sp_t))
-            m = maximum(s_p, dims=1)
+            f_idx = zeros(length(st))
+            m = maximum(sp, dims=1)
             for idx2 in eachindex(m)
-                f_idx[idx2] = s_frq[vsearch(m[idx2], s_p[:, idx2])]
+                f_idx[idx2] = sf[vsearch(m[idx2], sp[:, idx2])]
             end
             # find peaks
             p_idx = findpeaks(f_idx, d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(sp_t))
+            push!(p_idx, length(st))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
+                model = CubicSpline(st[p_idx], f_idx[p_idx])
                 try
-                    s_env[ch_idx, :, ep_idx] = model(sp_t)
+                    s_env[ch_idx, :, ep_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -676,7 +676,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
         end
     end
     
-    return (s_env=s_env, senv_t=sp_t)
+    return (s_env=s_env, senv_t=st)
 
 end
 
@@ -730,20 +730,20 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+    sp, st = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(sp, 1)
+    ep_n = size(sp, 3)
 
     if dims == 1
         # mean over channels
 
-        s_env_m = zeros(length(s_t), ep_n)
-        s_env_u = zeros(length(s_t), ep_n)
-        s_env_l = zeros(length(s_t), ep_n)
+        s_env_m = zeros(length(st), ep_n)
+        s_env_u = zeros(length(st), ep_n)
+        s_env_l = zeros(length(st), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            s_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
+            s_env_m[:, ep_idx] = mean(sp[:, :, ep_idx], dims=1)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -751,9 +751,9 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             # interpolate peaks using cubic spline or loess
             push!(s_idx, length(s_env_m[:, ep_idx]))
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ep_idx] = model(s_t)
+                    s_env_m[:, ep_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -765,12 +765,12 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     elseif dims == 2
         # mean over epochs
 
-        s_env_m = zeros(length(s_t), ch_n)
-        s_env_u = zeros(length(s_t), ch_n)
-        s_env_l = zeros(length(s_t), ch_n)
+        s_env_m = zeros(length(st), ch_n)
+        s_env_u = zeros(length(st), ch_n)
+        s_env_l = zeros(length(st), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            s_env_m[:, ch_idx] = mean(s_p[ch_idx, :, :], dims=2)
+            s_env_m[:, ch_idx] = mean(sp[ch_idx, :, :], dims=2)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -779,9 +779,9 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             push!(s_idx, length(s_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ch_idx] = model(s_t)
+                    s_env_m[:, ch_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -802,7 +802,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
     
-    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)
+    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
 
 end
 
@@ -856,20 +856,20 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, nt=nt, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+    sp, st = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, nt=nt, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(sp, 1)
+    ep_n = size(sp, 3)
 
     if dims == 1
         # median over channels
 
-        s_env_m = zeros(length(s_t), ep_n)
-        s_env_u = zeros(length(s_t), ep_n)
-        s_env_l = zeros(length(s_t), ep_n)
+        s_env_m = zeros(length(st), ep_n)
+        s_env_u = zeros(length(st), ep_n)
+        s_env_l = zeros(length(st), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            s_env_m[:, ep_idx] = median(s_p[:, :, ep_idx], dims=1)
+            s_env_m[:, ep_idx] = median(sp[:, :, ep_idx], dims=1)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -878,9 +878,9 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(s_idx, length(s_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ep_idx] = model(s_t)
+                    s_env_m[:, ep_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -892,12 +892,12 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif dims == 2
         # median over epochs
 
-        s_env_m = zeros(length(s_t), ch_n)
-        s_env_u = zeros(length(s_t), ch_n)
-        s_env_l = zeros(length(s_t), ch_n)
+        s_env_m = zeros(length(st), ch_n)
+        s_env_u = zeros(length(st), ch_n)
+        s_env_l = zeros(length(st), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            s_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
+            s_env_m[:, ch_idx] = median(sp[ch_idx, :, :], dims=2)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -906,9 +906,9 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(s_idx, length(s_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ch_idx] = model(s_t)
+                    s_env_m[:, ch_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -929,7 +929,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
     
-    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)
+    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
 
 end
 

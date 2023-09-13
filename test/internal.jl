@@ -140,6 +140,10 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._i2s([1, 2, 3]) == "1, 2, 3"
 @test NeuroAnalyzer._s2tf("(1,2)") == (1.0, 2.0)
 @test NeuroAnalyzer._s2ti("(1, 2)") == (1, 2)
+@test NeuroAnalyzer._v2r([1, 2, 3]) == 1:3
+@test NeuroAnalyzer._v2r(1:3) == 1:3
+@test NeuroAnalyzer._v2r(1) == 1
+
 # these function are still in work:
 ## FIFF
 # NeuroAnalyzer._read_fiff_tag(fid::IOStream)

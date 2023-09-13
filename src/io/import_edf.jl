@@ -183,7 +183,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                 readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
                 if idx2 in annotation_channels
                     push!(annotations, String(Char.(signal)))
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = zeros(samples_per_datarecord[idx2])
+                    data[idx2, ((idx1 - 1) * samples_per_datarecord[1] + 1):(idx1 * samples_per_datarecord[1]), 1] = zeros(samples_per_datarecord[1])
                 else
                     data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = reinterpret(Int16, signal)
                 end
