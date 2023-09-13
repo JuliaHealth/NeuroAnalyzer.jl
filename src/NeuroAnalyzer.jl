@@ -110,7 +110,9 @@ end
 # set package options
 
 Plots.gr_cbar_width[] = 0.01
-FFTW.set_provider!("mkl")
+if !occursin(lowercase(Sys.cpu_info()[1].model), "arm") && !occursin(lowercase(Sys.cpu_info()[1].model), "apple m")
+    FFTW.set_provider!("mkl")
+end
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
