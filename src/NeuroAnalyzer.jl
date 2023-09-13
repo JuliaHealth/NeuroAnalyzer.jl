@@ -4,8 +4,12 @@ module NeuroAnalyzer
 
 @assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
 
-global const VER = v"0.23.9"
+# set constants
 
+const io = PipeBuffer() # required for interactive preview
+const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
+const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
+global const VER = v"0.23.9"
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
@@ -14,10 +18,13 @@ begin
 end
 
 # initialize preferences
+
 use_cuda = nothing
 progress_bar = nothing
 verbose = nothing
 allow_wip = true
+
+# add dependencies
 
 using Artifacts
 using Cairo
@@ -70,9 +77,6 @@ using TOML
 using Wavelets
 using WaveletsExt
 
-# required for interactive preview
-const io = PipeBuffer()
-
 # define structures
 
 mutable struct HEADER
@@ -102,12 +106,6 @@ mutable struct DIPOLE
     pos::Tuple{Real, Real, Real}
     mag::Tuple{Real, Real, Real}
 end
-
-# set constants
-
-const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
-
-const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
 
 # set package options
 
