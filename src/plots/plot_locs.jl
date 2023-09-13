@@ -1,5 +1,6 @@
 export plot_locs
 export plot_locs3d
+export iplot_locs3d
 
 """
     plot_locs(locs; <keyword arguments>)
@@ -157,7 +158,7 @@ end
 """
     plot_locs3d(locs; <keyword arguments>)
 
-3D interactive preview of channel locations. It uses Cartesian :loc_x, :loc_y and :loc_z locations.
+3D preview of channel locations.
 
 # Arguments
 
@@ -169,12 +170,13 @@ end
 - `mono::Bool=false`: Use color or gray palette
 - `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
+- `camera::Tuple{Real, Real}=(22.5, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 
 # Returns
 
-- `fig::GLMakie.Figure`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false)
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(22.5, 45))
 
     pal = mono == true ? :grays : :darktest
 
@@ -191,6 +193,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
         loc_z = locs[!, :loc_z]
     end
 
+#=
     x_lim = (-1.1, 1.1)
     y_lim = (-1.1, 1.1)
     z_lim = extrema(loc_z)
@@ -233,6 +236,77 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
 
     return fig
 
+=#
+
+    x_lim = (-1.1, 1.1)
+    y_lim = (-1.1, 1.1)
+    z_lim = (-1.1, 1.1)
+
+    marker_size = plot_size ÷ 200
+    font_size = plot_size ÷ 75
+
+    p = Plots.scatter3d(grid=true,
+                        palette=pal,
+                        size=(plot_size, plot_size),
+                        #aspect_ratios=(1, 1, 0.5),
+                        aspect_ratio=:none,
+                        right_margin=-30 * Plots.px,
+                        bottom_margin=-20 * Plots.px,
+                        top_margin=-30 * Plots.px,
+                        left_margin=-50 * Plots.px,
+                        legend=false,
+                        camera=camera,
+                        xticks=([-1, 0, 1]),
+                        yticks=([-1, 0, 1]),
+                        zticks=([-1, 0, 1]),
+                        xlabel="X",
+                        ylabel="Y",
+                        zlabel="Z",
+                        xlim=x_lim,
+                        ylim=y_lim,
+                        zlim=z_lim)
+
+    p = Plots.scatter3d!(loc_x[ch], loc_y[ch], loc_z[ch], ms=marker_size, mc=:gray)
+
+    if selected != 0
+        if length(selected) > 1
+            if mono == true
+                p = Plots.scatter3d!(loc_x[selected], loc_y[selected], loc_z[selected], ms=marker_size, mc=:gray)
+            else
+                p = Plots.scatter3d!(loc_x[selected], loc_y[selected], loc_z[selected], ms=marker_size, mc=:red)
+            end
+        else
+            if mono == true
+                p = Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]), ms=marker_size, mc=:gray)
+            else
+                p = Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]), ms=marker_size, mc=:red)
+            end
+        end
+    end
+
+    if ch_labels == true
+        for idx in eachindex(locs[!, :labels])
+            if idx in ch
+                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :labels][idx], font_size))
+            end
+            if idx in selected
+                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :labels][idx], font_size))
+            end
+        end
+    end
+
+    if head_labels == true
+        Plots.annotate!(0, 1.2, 0, Plots.text("Nz", font_size))
+        Plots.annotate!(0, -1.2, 0, Plots.text("In", font_size))
+        Plots.annotate!(-1.2, 0, 0, Plots.text("LPA", font_size))
+        Plots.annotate!(1.2, 0, 0, Plots.text("RPA", font_size))
+        Plots.annotate!(0, 0, 1.2, Plots.text("top", font_size))
+    end
+    
+    Plots.plot!(p)
+
+    return p
+
 end
 
 """
@@ -251,19 +325,20 @@ Preview of channel locations.
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `plot_size::Int64=400`: plot dimensions in pixels (plot_size×plot_size)
+- `threed::Bool=false`: 3-dimensional plot
+- `plot_size::Int64=threed ? 800 : 400`: plot dimensions in pixels (plot_size×plot_size)
 - `head_details::Bool=true`: draw nose and ears
 - `mono::Bool=false`: Use color or gray palette
-- `threed::Bool=false`: 3-dimensional plot
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `cart::Bool=false`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `interactive::Bool=true`: if true, use interactive 3-dimensional plot
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, cart::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, plot_size::Int64=threed ? 800 : 400, head_details::Bool=true, mono::Bool=false, grid::Bool=false, cart::Bool=false, interactive::Bool=true, kwargs...)
 
     # select channels, default is all channels
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
@@ -283,9 +358,76 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono, cart=cart)
         end
     else
-        p = plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+        if interactive
+            iplot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+            return
+        else
+            p = plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+        end
     end
 
     return p
     
+end
+
+"""
+    iplot_locs3d(locs; <keyword arguments>)
+
+3D interactive preview of channel locations.
+
+# Arguments
+
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
+- `ch_labels::Bool=true`: plot channel labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: Use color or gray palette
+- `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
+- `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
+- `camera::Tuple{Real, Real}=(22.5, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+"""
+function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(22.5, 45))
+
+    p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart, camera=camera)
+    win = GtkWindow("NeuroAnalyzer: plot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 60)
+    set_gtk_property!(win, :border_width, 20)
+    set_gtk_property!(win, :resizable, false)
+    set_gtk_property!(win, :has_resize_grip, false)
+    set_gtk_property!(win, :window_position, 3)
+    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    g = GtkGrid()
+    set_gtk_property!(g, :column_homogeneous, false)
+    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 10)
+    slider1 = GtkScale(false, 0:360)
+    slider2 = GtkScale(false, 0:360)
+    set_gtk_property!(slider1, :tooltip_text, "Rotate in X-Y plane")
+    set_gtk_property!(slider2, :tooltip_text, "Rotate in X-Z plane")
+    GAccessor.value(slider1, 45)
+    GAccessor.value(slider2, 45)
+    g[1, 1] = can
+    g[1, 2] = slider1
+    g[1, 3] = slider2
+    push!(win, g)
+    showall(win)
+
+    @guarded draw(can) do widget
+        p = NeuroAnalyzer.plot_locs3d(locs, camera=(GAccessor.value(slider1), GAccessor.value(slider2)), ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart);
+        img = read_from_png(io)
+        ctx = getgc(can)
+        show(io, MIME("image/png"), p)
+        img = read_from_png(io)
+        set_source_surface(ctx, img, 0, 0)
+        paint(ctx)
+    end
+
+    signal_connect(slider1, "value-changed") do widget
+        draw(can)
+    end
+
+    signal_connect(slider2, "value-changed") do widget
+        draw(can)
+    end
+
 end
