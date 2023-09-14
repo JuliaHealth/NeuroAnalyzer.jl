@@ -449,7 +449,7 @@ Plot 3-d waterfall PSD plot.
 
 # Returns
 
-- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
 
@@ -586,7 +586,7 @@ Plot topographical map PSDs.
 
 # Returns
 
-- `fig::GLMakie.Figure`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
 
@@ -742,7 +742,7 @@ Plot power spectrum density.
 
 # Returns
 
-- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 

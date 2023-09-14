@@ -57,7 +57,6 @@ function na_info()
             "GeometryBasics",
             "Git",
             "GLM",
-            "GLMakie",
             "Gtk",
             "HypothesisTests",
             "InformationMeasures",

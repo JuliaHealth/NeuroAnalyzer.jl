@@ -1,6 +1,5 @@
 using NeuroAnalyzer
 using Plots
-using GLMakie
 using Test
  
 @info "Initializing"
@@ -164,7 +163,7 @@ p = NeuroAnalyzer.plot_dipole2d(d)
 @info "test 21/25: plot_dipole3d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 1), (1, 1, 1))
 p = NeuroAnalyzer.plot_dipole3d(d)
-@test p isa Makie.Figure
+@test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 22/25: plot_eros()"
 s, f, t = eros(e10, ch=1)

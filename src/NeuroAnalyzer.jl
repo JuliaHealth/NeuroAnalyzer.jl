@@ -46,7 +46,6 @@ using FourierTools
 using GeometryBasics
 using Git
 using GLM
-using GLMakie
 using Gtk
 using HypothesisTests
 using InformationMeasures

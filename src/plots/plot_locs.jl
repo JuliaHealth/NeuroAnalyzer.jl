@@ -193,51 +193,6 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
         loc_z = locs[!, :loc_z]
     end
 
-#=
-    x_lim = (-1.1, 1.1)
-    y_lim = (-1.1, 1.1)
-    z_lim = extrema(loc_z)
-
-    marker_size = plot_size ÷ 40
-    font_size = plot_size ÷ 40
-
-    fig = Figure(; resolution=(plot_size, plot_size))
-    ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
-    # hidedecorations!(ax, grid=true, ticks=true)
-
-    GLMakie.scatter!(ax, loc_x[ch], loc_y[ch], loc_z[ch], markersize=marker_size, color=:gray)
-    if selected != 0
-        if mono == true
-            GLMakie.scatter!(ax, loc_x[selected], loc_y[selected], loc_z[selected], markersize=marker_size, color=:gray)
-        else
-            GLMakie.scatter!(ax, loc_x[selected], loc_y[selected], loc_z[selected], markersize=marker_size, color=:red)
-        end
-    end
-
-    if ch_labels == true
-        for idx in eachindex(locs[!, :labels])
-            if idx in ch
-                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), fontsize=font_size)
-            end
-            if idx in selected
-                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), fontsize=font_size)
-            end
-        end
-    end
-
-    if head_labels == true
-        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), fontsize = font_size)
-        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), fontsize = font_size)
-        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), fontsize = font_size)
-        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), fontsize = font_size)
-        GLMakie.text!(ax, "top", position=(0, 0, 1.025), fontsize = font_size)
-    end
-    fig
-
-    return fig
-
-=#
-
     x_lim = (-1.1, 1.1)
     y_lim = (-1.1, 1.1)
     z_lim = (-1.1, 1.1)
