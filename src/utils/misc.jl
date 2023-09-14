@@ -1,7 +1,7 @@
 export linspace
 export logspace
 export cmax
-export cmi
+export cmin
 export tuple_order
 export cums
 export f_nearest
