@@ -36,10 +36,6 @@ function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(o
     _check_channels(obj, ch)
     _check_var(method, [:welch, :stft, :fft, :mt, :mw], "method")
 
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
-    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
-
     ero_p, ero_f = psd(obj, ch=ch, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     ero_p = ero_p[1, :, :]

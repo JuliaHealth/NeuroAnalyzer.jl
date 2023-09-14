@@ -30,8 +30,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-
-    frq_lim = tuple_order(frq_lim)
+    _check_tuple(frq_lim, "frq_lim")
 
     pal = mono == true ? :grays : :darktest
 
@@ -41,8 +40,8 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
         yscale = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -54,8 +53,8 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
         yscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -120,8 +119,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-
-    frq_lim = tuple_order(frq_lim)
+    _check_tuple(frq_lim, "frq_lim")
 
     # reverse so 1st channel is on top
     sp = @views reverse(sp[:, eachindex(sf)], dims = 1)
@@ -153,8 +151,8 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
         yscale = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -168,8 +166,8 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     elseif ax === :loglog
         _warn("For multi-channel PSD plots, y-axis log-scale is ignored.")
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -242,8 +240,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=tru
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
-
-    frq_lim = tuple_order(frq_lim)
+    _check_tuple(frq_lim, "frq_lim")
 
     pal = mono == true ? :grays : :darktest
 
@@ -256,8 +253,8 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=tru
         yscale = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -269,8 +266,8 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=tru
         yscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -354,8 +351,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels:
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-
-    frq_lim = tuple_order(frq_lim)
+    _check_tuple(frq_lim, "frq_lim")
 
     pal = mono == true ? :grays : :darktest
     
@@ -368,8 +364,8 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels:
         yscale=:identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -381,8 +377,8 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels:
         yscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -456,8 +452,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-
-    frq_lim = tuple_order(frq_lim)
+    _check_tuple(frq_lim, "frq_lim")
 
     ch_n = size(sp, 1)
 
@@ -472,8 +467,8 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
         zscale=:identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -485,8 +480,8 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
         zscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -592,10 +587,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
-
+    _check_tuple(frq_lim, "frq_lim")
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
-
-    frq_lim = tuple_order(frq_lim)
 
     pal = mono == true ? :grays : :darktest
     
@@ -608,8 +601,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
         yscale=:identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -621,8 +614,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
         yscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
+            frq_lim = (0.01, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.01 Hz")
         end
         sf[1] == 0 && (sf[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -798,8 +791,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
 
     # get frequency range
     fs = sr(obj)
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
     # # get time vector
     # _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
@@ -1097,8 +1089,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
 
     # get frequency range
     fs = sr(obj)
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be ≥ 0 and ≤ $(fs / 2)."
+    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     # get time vector
     if seg[2] <= epoch_len(obj)

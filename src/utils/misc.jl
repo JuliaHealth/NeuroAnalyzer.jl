@@ -1,7 +1,7 @@
 export linspace
 export logspace
 export cmax
-export cmin
+export cmi
 export tuple_order
 export cums
 export f_nearest
@@ -108,9 +108,8 @@ function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
 
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
-
     return t
-
+    
 end
 
 """

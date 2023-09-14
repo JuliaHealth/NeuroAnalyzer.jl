@@ -95,13 +95,12 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
 
     # get frequency range
     @assert fs >= 1 "fs must be > 1."
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
+    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
     @assert frq_n >= 2 "frq_n must be ≥ 2."
-    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if frq === :log
         # frq_lim = (frq_lim[1], frq_lim[2])
+        frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
         sf = linspace(frq_lim[1], frq_lim[2], frq_n)
@@ -163,13 +162,11 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
     _check_var(frq, [:log, :lin], "frq")
 
     @assert fs >= 1 "fs must be ≥ 1."
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
+    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
     @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
-    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
 
     if frq === :log
-        frq_lim = (frq_lim[1], frq_lim[2])
+        frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
         sf = linspace(frq_lim[1], frq_lim[2], frq_n)
@@ -197,7 +194,7 @@ Calculate spectrogram using continuous wavelet transformation (CWT).
 # Arguments
 
 - `s::AbstractVector`
-- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
@@ -211,10 +208,10 @@ Named tuple containing:
 function cwtspectrogram(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2), fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2)) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
-    frq_lim = tuple_order(frq_lim)
+    @assert frq_lim == tuple_order(frq_lim) "frq_lim must contain two values in ascending order."
     @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
 
-    sp = abs.(ContinuousWavelets.cwt(s, wt)')
+    sp = (abs.(ContinuousWavelets.cwt(s, wt)')).^2
     sf = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(s), wt)[1])
     sf[1] = 0
     @assert !(frq_lim[1] < sf[1] || frq_lim[2] < sf[1] || frq_lim[1] > sf[end] || frq_lim[2] > sf[end]) "frq_lim must be in [$(sf[1]), $(sf[end])]."
@@ -250,7 +247,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window for STFT
@@ -307,6 +304,9 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             progress_bar == true && next!(progbar)
         end
     end
+
+    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
+    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
 
     sf = round.(sf, digits=2)
     st = round.(st, digits=2)

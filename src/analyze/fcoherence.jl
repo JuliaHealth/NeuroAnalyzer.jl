@@ -27,8 +27,7 @@ function fcoherence(s::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Rea
     c = c.coherence
 
     if frq_lim !== nothing
-        frq_lim = tuple_order(frq_lim)
-        @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+        _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]
@@ -69,8 +68,7 @@ function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::
     c = c.coherence
 
     if frq_lim !== nothing
-        frq_lim = tuple_order(frq_lim)
-        @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+        _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]
@@ -103,7 +101,6 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same length."
-    @assert fs >= 1 "fs must be ≥ 1."
 
     ep_n = size(s1, 3)
     

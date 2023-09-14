@@ -40,6 +40,7 @@ function psd(s::AbstractVector; fs::Int64, norm::Bool=false, method::Symbol=:wel
     @assert wlen >= 2 "wlen must be ≥ 2."
     @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
+    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     w = w ? DSP.hanning : nothing
 
@@ -244,13 +245,12 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
 
     _check_var(frq, [:log, :lin], "frq")
     @assert fs >= 1 "fs must be ≥ 1."
-    @assert pad >= 0 "pad must be ≥ 0."
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
     @assert frq_n >= 2 "frq_n must be ≥ 2."
+    @assert pad >= 0 "pad must be ≥ 0."
+    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     if frq === :log
-        frq_lim = frq_lim[1] == 0 ? (0.1, frq_lim[2]) : (frq_lim[1], frq_lim[2])
+        frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         pf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
         pf = linspace(frq_lim[1], frq_lim[2], frq_n)

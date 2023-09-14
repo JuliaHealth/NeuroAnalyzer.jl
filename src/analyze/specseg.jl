@@ -23,13 +23,8 @@ Named tuple containing:
 """
 function spec_seg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
 
-    t = tuple_order(t)
-    f = tuple_order(f)
-
-    @assert t[1] >= st[1] "t[1] must be ≥ $(st[1])."
-    @assert t[2] <= st[end] "t[2] must be ≤ $(st[end])."
-    @assert f[1] >= sf[1] "f[1] must be ≥ $(sf[1])."
-    @assert f[2] <= sf[end] "f[2] must be ≤ $(sf[end])."
+    _check_tuple(t, "t", (st[1], st[end]))
+    _check_tuple(f, "f", (sf[1], sf[end]))
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)
@@ -67,16 +62,9 @@ Named tuple containing:
 """
 function spec_seg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
 
-    t = tuple_order(t)
-    f = tuple_order(f)
-
-    @assert ch >= 1 "ch must be ≥ 1."
-    @assert ch <= size(sp, 3) "ch must be ≤ $(size(sp, 3))."
-
-    @assert t[1] >= st[1] "t[1] must be ≥ $(st[1])."
-    @assert t[2] <= st[end] "t[2] must be ≤ $(st[end])."
-    @assert f[1] >= sf[1] "f[1] must be ≥ $(sf[1])."
-    @assert f[2] <= sf[end] "f[2] must be ≤ $(sf[end])."
+    _check_tuple(t, "t", (st[1], st[end]))
+    _check_tuple(f, "f", (sf[1], sf[end]))
+    @assert ch in 1:size(sp, 3) "ch must be in [1, $(size(sp, 3))]."
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)

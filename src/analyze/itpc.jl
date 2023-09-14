@@ -113,11 +113,10 @@ Named tuple containing:
 function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     _check_var(frq, [:log, :lin], "frq")
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     if frq === :log
-        frq_lim[1] == 0 && (frq_lim = (0.01, frq_lim[2]))
+        frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         frq_lim = (frq_lim[1], frq_lim[2])
         frq_list = logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n)
     else

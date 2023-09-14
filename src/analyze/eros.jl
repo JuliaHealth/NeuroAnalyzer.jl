@@ -40,11 +40,7 @@ function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{
     _check_channels(obj, ch)
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
-    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
-
-    ero_s, ero_f, ero_t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, pad=pad, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+    ero_s, ero_f, ero_t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
     ero_s = ero_s[:, :, 1, :]
 

@@ -50,7 +50,7 @@ p = NeuroAnalyzer.plot_locs(e10)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_locs(e10, selected=1:4)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_locs(e10, threed=true)
+p = NeuroAnalyzer.plot_locs(e10, threed=true, interactive=false)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 6/25: plot_psd()"

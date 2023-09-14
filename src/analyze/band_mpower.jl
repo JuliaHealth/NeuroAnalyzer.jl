@@ -35,9 +35,7 @@ Named tuple containing:
 function band_mpower(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     @assert fs >= 1 "fs must be ≥ 1."
-    f = tuple_order(f)
-    @assert f[1] >= 0 "Lower frequency bound must be ≥ 0."
-    @assert f[2] <= fs / 2 "Upper frequency bound must be ≤ $(fs / 2)."
+    _check_tuple(f, "f", (0, fs / 2))
 
     pw, pf = psd(s, fs=fs, norm=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 

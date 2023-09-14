@@ -446,7 +446,7 @@ p, f = NeuroAnalyzer.psd(e10, method=:mt)
 @info "test 31/52: psd_mw()"
 p, f = psd_mw(rand(100), fs=10, norm=false)
 @test length(p) == 6
-@test f == [0.1, 1.08, 2.06, 3.04, 4.02, 5.0]
+@test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
 p, f = psd_mw(rand(10, 100), fs=10, norm=false)
 @test size(p) == (10, 6)
 p, f = psd_mw(rand(10, 100, 10), fs=10, norm=false)
