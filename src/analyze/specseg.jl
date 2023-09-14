@@ -8,8 +8,8 @@ Return spectrogram segment.
 # Arguments
 
 - `sp::Matrix{Float64}`: spectrogram powers
-- `st::Vector{Float64}`: spectrogram time
 - `sf::Vector{Float64}`: spectrogram frequencies
+- `st::Vector{Float64}`: spectrogram time
 - `t::Tuple{Real, Real}`: time bounds
 - `f::Tuple{Real, Real}`: frequency bounds
 
@@ -21,7 +21,7 @@ Named tuple containing:
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
+function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
 
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
@@ -46,8 +46,8 @@ Return spectrogram segment.
 # Arguments
 
 - `sp::AbstractArray`: spectrogram powers
-- `st::AbstractVector`: spectrogram time
 - `sf::AbstractVector`: spectrogram frequencies
+- `st::AbstractVector`: spectrogram time
 - `ch::Int64`: channel
 - `t::Tuple{Real, Real}`: time bounds
 - `f::Tuple{Real, Real}`: frequency bounds
@@ -60,7 +60,7 @@ Named tuple containing:
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
+function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
 
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))

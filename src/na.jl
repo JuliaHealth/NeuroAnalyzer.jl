@@ -59,6 +59,7 @@ function na_info()
             "GLM",
             "Gtk",
             "HypothesisTests",
+            "ImageIO",
             "InformationMeasures",
             "Interpolations",
             "Jacobi",
