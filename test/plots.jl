@@ -40,7 +40,7 @@ p = NeuroAnalyzer.plot_erp(e10_erp, ch=1:10, type=:stack)
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=1:10, type=:topo)
-@test p isa GLMakie.Figure
+@test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 4/25: plot_filter_response()"
 p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
@@ -52,7 +52,7 @@ p = NeuroAnalyzer.plot_locs(e10)
 p = NeuroAnalyzer.plot_locs(e10, selected=1:4)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_locs(e10, threed=true)
-@test p isa Makie.Figure
+@test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 6/25: plot_psd()"
 p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1)

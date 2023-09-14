@@ -141,7 +141,7 @@ function __init__()
     # load plugins
     _info("Loading plugins:")
     global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-    isdir(plugins_path) || mkdir(plugins_path)
+    isdir(plugins_path) || mkpath(plugins_path)
     na_plugins_reload()
 
 end

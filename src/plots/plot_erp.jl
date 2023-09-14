@@ -305,12 +305,11 @@ Plot topographical map ERPs.
 - `yrev::Bool=false`: reverse Y axis
 - `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 - `mono::Bool=false`: Use color or gray palette
-
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
-- `fig::GLMakie.Figure`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
 
@@ -327,7 +326,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     ylim = _tuple_max(ylim)
 
     # plot parameters
-    plot_size = 1200
+    plot_size = 1000
     marker_size = (150, 75)
     
     # get locations
@@ -348,14 +347,15 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
+    # origin is in the left top corner, convert positions
+    loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
+    loc_y = round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
-    fig = Figure(; resolution=(plot_size, plot_size))
-    fig_axis = Axis(fig[1, 1])
-    fig_axis.aspect = AxisAspect(1)
-    fig_axis.title = title
-    GLMakie.xlims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
-    GLMakie.ylims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
-    hidedecorations!(fig_axis, grid=true, ticks=true)
+    c = CairoRGBSurface(plot_size, plot_size)
+    cr = CairoContext(c)
+    Cairo.set_source_rgb(cr, 256, 256, 256)
+    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size)
+    Cairo.fill(cr)
 
     for idx in 1:size(s, 1)
         p = Plots.plot(xlabel=xlabel,
@@ -400,14 +400,24 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
                          linecolor=:black,
                          label=false)
 
-        marker_img = tempname() * ".png"
-        savefig(p, marker_img)
-        marker = FileIO.load(marker_img)
-        GLMakie.scatter!(fig_axis, (loc_x[idx], loc_y[idx]), marker=marker, markersize=marker_size)
-        rm(marker_img)
+        show(io, MIME("image/png"), p)
+        img = read_from_png(io)
+        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx])
+        Cairo.paint(cr)
     end
 
-    return fig
+    img_png = tempname() * ".png"
+    Cairo.write_to_png(c, img_png)
+    img = FileIO.load(img_png)
+    p = nothing
+    p = Plots.plot(img,
+                   size=(plot_size + 100, plot_size + 100),
+                   title=title,
+                   titlefontsize=12,
+                   border=:none)
+    rm(img_png)
+
+    return p
 
 end
 
@@ -672,11 +682,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
     end
 
-    if type !== :topo
-        Plots.plot(p)
-    else
-        GLMakie.show(p)
-    end
+    Plots.plot(p)
 
     return p
 
