@@ -170,13 +170,13 @@ end
 - `mono::Bool=false`: Use color or gray palette
 - `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
-- `camera::Tuple{Real, Real}=(22.5, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(22.5, 45))
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     pal = mono == true ? :grays : :darktest
 
@@ -250,11 +250,11 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
     end
 
     if head_labels == true
-        Plots.annotate!(0, 1.2, 0, Plots.text("Nz", font_size))
-        Plots.annotate!(0, -1.2, 0, Plots.text("In", font_size))
-        Plots.annotate!(-1.2, 0, 0, Plots.text("LPA", font_size))
-        Plots.annotate!(1.2, 0, 0, Plots.text("RPA", font_size))
-        Plots.annotate!(0, 0, 1.2, Plots.text("top", font_size))
+        Plots.annotate!(0, 1.5, 0, Plots.text("Nz", font_size))
+        Plots.annotate!(0, -1.5, 0, Plots.text("In", font_size))
+        Plots.annotate!(-1.5, 0, 0, Plots.text("LPA", font_size))
+        Plots.annotate!(1.5, 0, 0, Plots.text("RPA", font_size))
+        Plots.annotate!(0, 0, 1.5, Plots.text("top", font_size))
     end
     
     Plots.plot!(p)
@@ -339,35 +339,26 @@ end
 - `mono::Bool=false`: Use color or gray palette
 - `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
-- `camera::Tuple{Real, Real}=(22.5, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 """
-function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(22.5, 45))
+function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart, camera=camera)
-    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 60)
-    set_gtk_property!(win, :border_width, 20)
+    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    set_gtk_property!(win, :border_width, 0)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
-    g = GtkGrid()
-    set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)
-    set_gtk_property!(g, :row_spacing, 10)
-    slider1 = GtkScale(false, 0:360)
-    slider2 = GtkScale(false, 0:360)
-    set_gtk_property!(slider1, :tooltip_text, "Rotate in X-Y plane")
-    set_gtk_property!(slider2, :tooltip_text, "Rotate in X-Z plane")
-    GAccessor.value(slider1, 45)
-    GAccessor.value(slider2, 45)
-    g[1, 1] = can
-    g[1, 2] = slider1
-    g[1, 3] = slider2
-    push!(win, g)
+    push!(win, can)
     showall(win)
 
+    camera_pos = camera
+    x_pos_last = 0
+    y_pos_last = 0
+
     @guarded draw(can) do widget
-        p = NeuroAnalyzer.plot_locs3d(locs, camera=(GAccessor.value(slider1), GAccessor.value(slider2)), ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart);
+        p = NeuroAnalyzer.plot_locs3d(locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart);
         img = read_from_png(io)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)
@@ -376,11 +367,20 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
         paint(ctx)
     end
 
-    signal_connect(slider1, "value-changed") do widget
+    can.mouse.button1motion = @guarded (widget, event) -> begin
+        x_pos = round(Int64, event.x)
+        y_pos = round(Int64, event.y)
+        x_pos > x_pos_last && (camera_pos = (camera_pos[1] + 5, camera_pos[2]))
+        x_pos < x_pos_last && (camera_pos = (camera_pos[1] - 5, camera_pos[2]))
+        y_pos > y_pos_last && (camera_pos = (camera_pos[1], camera_pos[2] + 5))
+        y_pos < y_pos_last && (camera_pos = (camera_pos[1], camera_pos[2] - 5))
+        x_pos_last = x_pos
+        y_pos_last = y_pos
         draw(can)
     end
 
-    signal_connect(slider2, "value-changed") do widget
+    can.mouse.button3press = @guarded (widget, event) -> begin
+        camera_pos = camera
         draw(can)
     end
 
@@ -404,39 +404,30 @@ end
 - `mono::Bool=false`: Use color or gray palette
 - `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
-- `camera::Tuple{Real, Real}=(22.5, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 """
-function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(22.5, 45))
+function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     # select channels, default is all channels
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
     selected != 0 && _check_channels(obj, selected)
 
     p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart, camera=camera)
-    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 60)
-    set_gtk_property!(win, :border_width, 20)
+    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    set_gtk_property!(win, :border_width, 0)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
-    g = GtkGrid()
-    set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)
-    set_gtk_property!(g, :row_spacing, 10)
-    slider1 = GtkScale(false, 0:360)
-    slider2 = GtkScale(false, 0:360)
-    set_gtk_property!(slider1, :tooltip_text, "Rotate in X-Y plane")
-    set_gtk_property!(slider2, :tooltip_text, "Rotate in X-Z plane")
-    GAccessor.value(slider1, camera[1])
-    GAccessor.value(slider2, camera[2])
-    g[1, 1] = can
-    g[1, 2] = slider1
-    g[1, 3] = slider2
-    push!(win, g)
+    push!(win, can)
     showall(win)
 
+    camera_pos = camera
+    x_pos_last = 0
+    y_pos_last = 0
+
     @guarded draw(can) do widget
-        p = NeuroAnalyzer.plot_locs3d(obj.locs, camera=(GAccessor.value(slider1), GAccessor.value(slider2)), ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart)
+        p = NeuroAnalyzer.plot_locs3d(obj.locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart);
         img = read_from_png(io)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)
@@ -445,14 +436,22 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         paint(ctx)
     end
 
-    signal_connect(slider1, "value-changed") do widget
+    can.mouse.button1motion = @guarded (widget, event) -> begin
+        x_pos = round(Int64, event.x)
+        y_pos = round(Int64, event.y)
+        x_pos > x_pos_last && (camera_pos = (camera_pos[1] + 5, camera_pos[2]))
+        x_pos < x_pos_last && (camera_pos = (camera_pos[1] - 5, camera_pos[2]))
+        y_pos > y_pos_last && (camera_pos = (camera_pos[1], camera_pos[2] + 5))
+        y_pos < y_pos_last && (camera_pos = (camera_pos[1], camera_pos[2] - 5))
+        x_pos_last = x_pos
+        y_pos_last = y_pos
         draw(can)
     end
 
-    signal_connect(slider2, "value-changed") do widget
+    can.mouse.button3press = @guarded (widget, event) -> begin
+        camera_pos = camera
         draw(can)
     end
 
     return nothing
-
 end
