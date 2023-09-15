@@ -29,6 +29,9 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 
     obj_new = deepcopy(obj)
 
+    verbose_tmp = NeuroAnalyzer.verbose
+    NeuroAnalyzer.verbose = false
+
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
     @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
     @assert q >= 0.01 "q must be ≥ 0.01."
@@ -54,23 +57,22 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             # detect power line peak
             p, f = psd(obj_new, ch=ch[ch_idx], norm=true)
             p = p[:]
-            p[end] = p[end - 1]
-            f_pl = vsearch(pl_frq - 5 * d, f):vsearch(pl_frq + 5 * d, f)
+            f_pl = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
             p_tmp = p[f_pl]
             f_tmp = f[f_pl]
             peaks, _ = findpeaks1d(p_tmp, prominence=pr)
             @assert length(peaks) > 0 "No power line peak detected, check pl_frq value (perhaps the signal has already been filtered?)."
             pl_amp = vsearch(maximum(p_tmp[peaks]), p_tmp)
             pl_frq_detected = f_tmp[vsearch(pl_amp, p_tmp)]
-            @assert !(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) "Power line peak detected at $pl_frq_detected, check pl_frq value."
+            @assert !(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) "Channel $(ch[ch_idx]): power line peak detected at $pl_frq_detected, check pl_frq value."
             # pl_wdth = peakwidths1d(p_tmp, peaks)[1][vsearch(pl_amp, peaks)]
 
             v = zeros(length(bw_values))
             Threads.@threads for bw_idx in eachindex(bw_values)
                 obj_tmp = NeuroAnalyzer.filter(obj_new, ch=ch[ch_idx], fprototype=:iirnotch, cutoff=pl_frq, bw=bw_values[bw_idx])
                 p, f = psd(obj_tmp, ch=ch[ch_idx], norm=true)
-                f1 = vsearch(pl_frq - 5 * d, f)
-                f2 = vsearch(pl_frq + 5 * d, f)
+                f1 = vsearch(pl_frq - d, f)
+                f2 = vsearch(pl_frq + d, f)
                 seg = p[f1:f2]
                 v[bw_idx] = var(seg)
             end
@@ -81,7 +83,6 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             # detect peaks
             p, f = psd(obj_new, ch=ch[ch_idx], norm=true)
             p = p[:]
-            p[end] = p[end - 1]
             f_pl = vsearch(2 * pl_frq - 2 * d, f)
             p_tmp = p[f_pl:end]
             f_tmp = f[f_pl:end]
@@ -143,6 +144,8 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             df = hcat(df, df1)
             df = hcat(df, df2)
         end
+
+        NeuroAnalyzer.verbose = verbose_tmp
 
         verbose && println(df)
 

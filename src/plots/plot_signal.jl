@@ -526,7 +526,7 @@ Plot signal.
 """
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
-    if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
+    if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
         _check_segment(obj, seg)
