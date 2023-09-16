@@ -53,7 +53,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch)
     g = GtkGrid()
     g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: ispectrogram_cont()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: plot_spectrogram()", 1200, (p.attr[:size][2] + 40))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -126,7 +126,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
 
     entry_wt = GtkEntry()
-    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=1")
+    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=32, Q=128")
     set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     entry_nt = GtkSpinButton(1, 128, 1)
@@ -134,7 +134,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(entry_nt, :tooltip_text, "Number of Slepian tapers")
 
     entry_ncyc = GtkSpinButton(1, 256, 1)
-    set_gtk_property!(entry_ncyc, :value, 6)
+    set_gtk_property!(entry_ncyc, :value, 32)
     set_gtk_property!(entry_ncyc, :tooltip_text, "Number of Morlet wavelet cycles")
 
     entry_frq1 = GtkSpinButton(0.0, (sr(obj) / 2) - 0.5, 0.5)
@@ -585,7 +585,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch, ep=1)
     g = GtkGrid()
     g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: ispectrogram_ep()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: plot_spectrogram()", 1200, (p.attr[:size][2] + 40))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -652,7 +652,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
 
     entry_wt = GtkEntry()
-    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=1")
+    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=32, Q=128")
     set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     entry_nt = GtkSpinButton(1, 128, 1)
@@ -660,7 +660,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(entry_nt, :tooltip_text, "Number of Slepian tapers")
 
     entry_ncyc = GtkSpinButton(1, 256, 1)
-    set_gtk_property!(entry_ncyc, :value, 6)
+    set_gtk_property!(entry_ncyc, :value, 32)
     set_gtk_property!(entry_ncyc, :tooltip_text, "Number of Morlet wavelet cycles")
 
     entry_frq1 = GtkSpinButton(0.0, (sr(obj) / 2) - 0.5, 0.5)

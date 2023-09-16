@@ -44,18 +44,18 @@ e10_tmp = ch_zero(e10)
 
 @info "test 5/51: cw_trans()"
 s = rand(100)
-ct = cw_trans(s, wt=wavelet(Morlet(2π), β=2))
+ct = cw_trans(s, wt=wavelet(Morlet(2π), β=32, Q=128))
 @test size(ct) == (12, 100)
-ct = cw_trans(e10, wt=wavelet(Morlet(2π), β=2));
+ct = cw_trans(e10, wt=wavelet(Morlet(2π), β=32, Q=128));
 @test size(ct) == (19, 30, 2560, 10)
 
 @info "test 6/51: icw_trans()"
-ct = cw_trans(s, wt=wavelet(Morlet(2π), β=2))
-s_new = icw_trans(ct, wt=wavelet(Morlet(2π), β=2), type=:nd)
+ct = cw_trans(s, wt=wavelet(Morlet(2π), β=32, Q=128))
+s_new = icw_trans(ct, wt=wavelet(Morlet(2π), β=32, Q=128), type=:nd)
 @test length(s_new) == 100
-s_new = icw_trans(ct, wt=wavelet(Morlet(2π), β=2), type=:pd)
+s_new = icw_trans(ct, wt=wavelet(Morlet(2π), β=32, Q=128), type=:pd)
 @test length(s_new) == 100
-s_new = icw_trans(ct, wt=wavelet(Morlet(2π), β=2), type=:df)
+s_new = icw_trans(ct, wt=wavelet(Morlet(2π), β=32, Q=128), type=:df)
 @test length(s_new) == 100
 
 @info "test 7/51: denoise_fft()"
