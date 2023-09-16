@@ -801,7 +801,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd(signal, fs=fs, norm=norm, method=:welch, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft)
+            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft, w=w)
             title == "default" && (title = "Absolute PSD (fast Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
             sp, sf = psd(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
@@ -810,7 +810,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd(signal, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc)
+            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
@@ -818,7 +818,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd_rel(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft)
+            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
             sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
@@ -827,7 +827,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc)
+            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
@@ -835,7 +835,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd_rel(signal, fs=fs, norm=norm, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, f=f)
+            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, f=f, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
             sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, f=f, wlen=wlen, woverlap=woverlap, w=w)
@@ -844,7 +844,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc)
+            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
@@ -1107,7 +1107,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft)
+            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft, w=w)
             title == "default" && (title = "Absolute PSD (fast Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
             sp, sf = psd(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
@@ -1116,7 +1116,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd(signal, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc)
+            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
@@ -1133,7 +1133,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc)
+            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
@@ -1150,7 +1150,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc)
+            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end

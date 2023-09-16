@@ -106,7 +106,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int
 
     if frq === :log
         frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
-        sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+        sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=3)
     else
         sf = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
@@ -178,7 +178,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
 
     if frq === :log
         frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
-        sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+        sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=3)
     else
         sf = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
@@ -187,9 +187,9 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
     sph = zeros(length(sf), length(s))
 
     @inbounds @simd for frq_idx in eachindex(sf)
-        s = filter_g(s .* w, fs=fs, f=sf[frq_idx], gw=gw)
-        sp[frq_idx, :] = (abs.(hilbert(s))).^2
-        sph[frq_idx, :] = angle.(hilbert(s))
+        s_tmp = filter_g(s .* w, fs=fs, f=sf[frq_idx], gw=gw)
+        sp[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
+        sph[frq_idx, :] = angle.(hilbert(s_tmp))
     end
 
     norm == true && (sp = pow2db.(sp))

@@ -28,13 +28,13 @@ function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=
     gf = linspace(0, fs, length(s))
     gs = (gw * (2 * pi - 1)) / (4 * pi)     # normalized width
     gf .-= f                                # shifted frequencies
-    # g = @. exp(-0.5 * (gf / gs)^2)        # Gaussian
     g = @. exp((-gf^2 ) / 2 * gs^2)         # Gaussian
+    # g = @. exp(-0.5 * (gf / gs)^2)        # Gaussian
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_filtered = 2 .* ifft0(fft0(s, pad) .* g, pad)
-    
+    s_filtered = 2 .* abs.(ifft0((fft0(s, pad) .* g ./ length(s)), pad) .* length(s))
+
     return s_filtered
 
 end
@@ -67,7 +67,7 @@ function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5
             s_filtered[ch_idx, :, ep_idx] = @views filter_g(s[ch_idx, :, ep_idx], fs=fs, pad=pad, f=f, gw=gw)
         end
     end
-
+    @show s_filtered[1:32]
     return s_filtered
 
 end

@@ -443,15 +443,15 @@ p, f = NeuroAnalyzer.psd(e10, method=:mt)
 @test size(p) == (19, 1281, 10)
 @test round.(f, digits=3) == 0.0:0.1:128.0
 
-@info "test 31/52: psd_mw()"
-p, f = psd_mw(rand(100), fs=10, norm=false)
+@info "test 31/52: mwpsd()"
+p, f = mwpsd(rand(100), fs=10, norm=false)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-p, f = psd_mw(rand(10, 100), fs=10, norm=false)
+p, f = mwpsd(rand(10, 100), fs=10, norm=false)
 @test size(p) == (10, 6)
-p, f = psd_mw(rand(10, 100, 10), fs=10, norm=false)
+p, f = mwpsd(rand(10, 100, 10), fs=10, norm=false)
 @test size(p) == (10, 6, 10)
-p, f = NeuroAnalyzer.psd_mw(e10, frq_lim=(0, 4))
+p, f = NeuroAnalyzer.mwpsd(e10, frq_lim=(0, 4))
 @test size(p) == (19, 5, 10)
 @test length(f) == 5
 

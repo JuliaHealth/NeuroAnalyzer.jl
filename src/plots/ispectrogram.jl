@@ -314,7 +314,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif wt === nothing
-                warn_dialog("Incorrect CWT formula.")
+                warn_dialog("Incorrect wavelet formula.")
             elseif frq1 > frq2
                 warn_dialog("Start frequency must be < end frequency.")
             elseif woverlap >= wlen
@@ -838,7 +838,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif wt === nothing
-                warn_dialog("Incorrect CWT formula.")
+                warn_dialog("Incorrect wavelet formula.")
             elseif frq1 > frq2
                 warn_dialog("Start frequency must be < end frequency.")
             elseif woverlap >= wlen

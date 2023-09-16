@@ -1,5 +1,5 @@
 export psd
-export psd_mw
+export mwpsd
 
 """
     psd(s; fs, norm, method, nt, wlen, woverlap, w, frq_lim, frq_n, frq, fs, ncyc)
@@ -42,31 +42,33 @@ function psd(s::AbstractVector; fs::Int64, norm::Bool=false, method::Symbol=:wel
     @assert woverlap >= 0 "woverlap must be ≥ 0."
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
-    w = w ? DSP.hanning : nothing
-
     if method === :mt
-        p = mt_pgram(s, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
+        w = w ? hanning(length(s)) : ones(length(s))
+        p = mt_pgram(s .* w, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
         pw = power(p)
         pf = Vector(freq(p))
         pw = pw[1:length(pf)]
     elseif method === :stft
+        w = w ? DSP.hanning : nothing
         p = abs.(DSP.stft(s, wlen, woverlap, fs=fs, window=w))
         # average STFT segments along time
         pw = vec(mean(p, dims=2))
         # create frequencies vector
         pf = linspace(0, fs / 2, length(pw))
     elseif method === :welch
+        w = w ? DSP.hanning : nothing
         p = DSP.welch_pgram(s, wlen, woverlap, fs=fs, window=w)
         pw = power(p)
         pf = Vector(freq(p))
         pw = pw[1:length(pf)]
     elseif method === :fft
+        w = w ? DSP.hanning : nothing
         p = DSP.periodogram(s, fs=fs, window=w)
         pw = power(p)
         pf = Vector(freq(p))
         pw = pw[1:length(pf)]
     elseif method === :mw
-        pw, pf = psd_mw(s, norm=false, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+        pw, pf = mwpsd(s, norm=false, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     end
 
     # replace powers at extreme frequencies
@@ -220,7 +222,7 @@ function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 end
 
 """
-    psd_mw(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+    mwpsd(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
 Calculate power spectrum using Morlet wavelet convolution.
 
@@ -234,6 +236,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `frq_n::Int64=length(frq_lim[1]:frq_lim[2])`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -241,7 +244,7 @@ Named tuple containing:
 - `pw::Matrix{Float64}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function mwpsd(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, w::Bool=true)
 
     _check_var(frq, [:log, :lin], "frq")
     @assert fs >= 1 "fs must be ≥ 1."
@@ -249,9 +252,11 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
     @assert pad >= 0 "pad must be ≥ 0."
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
+    w = w ? hanning(length(s)) : ones(length(s))
+
     if frq === :log
         frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
-        pf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+        pf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=3)
     else
         pf = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
@@ -272,7 +277,8 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
     pad > 0 && (s = pad0(s, pad))
     @inbounds @simd for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, pf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
-        w_conv = fconv(s, kernel=kernel, norm=true)
+        # w_conv = fconv(s .* w, kernel=kernel, norm=true)
+        w_conv = tconv(s .* w, kernel=kernel)
         pw[frq_idx] = mean(@. abs(w_conv)^2)
     end
 
@@ -285,7 +291,7 @@ function psd_mw(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq
 end
 
 """
-    psd_mw(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+    mwpsd(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
 Calculate power spectrum using Morlet wavelet convolution.
 
@@ -299,6 +305,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `frq_n::Int64=10`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -306,15 +313,15 @@ Named tuple containing:
 - `pw::Array{Float64, 2}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_mw(s::AbstractMatrix; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function mwpsd(s::AbstractMatrix; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, w::Bool=true)
 
     ch_n = size(s, 1)
 
-    _, pf = psd_mw(s[1, :], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    _, pf = mwpsd(s[1, :], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     pw = zeros(ch_n, length(pf))
 
     @inbounds @simd for ch_idx in 1:ch_n
-        pw[ch_idx, :], _ = @views psd_mw(s[ch_idx, :], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+        pw[ch_idx, :], _ = @views mwpsd(s[ch_idx, :], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     end
 
     return (pw=pw, pf=pf)
@@ -322,7 +329,7 @@ function psd_mw(s::AbstractMatrix; pad::Int64=0, norm::Bool=true, fs::Int64, frq
 end
 
 """
-    psd_mw(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+    mwpsd(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
 Calculate power spectrum using Morlet wavelet convolution.
 
@@ -336,6 +343,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `frq_n::Int64=10`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -343,12 +351,12 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_mw(s::AbstractArray; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function mwpsd(s::AbstractArray; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, w::Bool=true)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, pf = psd_mw(s[1, :, 1], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    _, pf = mwpsd(s[1, :, 1], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     pw = zeros(ch_n, length(pf), ep_n)
 
     # initialize progress bar
@@ -356,7 +364,7 @@ function psd_mw(s::AbstractArray; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pw[ch_idx, :, ep_idx], _ = @views psd_mw(s[ch_idx, :, ep_idx], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            pw[ch_idx, :, ep_idx], _ = @views mwpsd(s[ch_idx, :, ep_idx], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
 
             # update progress bar
             progress_bar == true && next!(progbar)
@@ -368,7 +376,7 @@ function psd_mw(s::AbstractArray; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
 end
 
 """
-    psd_mw(obj; ch, pad, norm, frq_lim, frq_n, frq, ncyc)
+    mwpsd(obj; ch, pad, norm, frq_lim, frq_n, frq, ncyc)
 
 Calculate power spectrum using Morlet wavelet convolution.
 
@@ -382,6 +390,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -389,14 +398,14 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd_mw(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function mwpsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, w::Bool=true)
 
     _check_channels(obj, ch)
 
     if length(ch) == 1
-        pw, pf = @views psd_mw(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 2)), pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+        pw, pf = @views mwpsd(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 2)), pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     else
-        pw, pf = @views psd_mw(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+        pw, pf = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     end
 
     return (pw=pw, pf=pf)
