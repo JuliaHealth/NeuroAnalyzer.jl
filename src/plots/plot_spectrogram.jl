@@ -43,6 +43,9 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Fl
                       size=(1200, 800),
                       margins=20Plots.px,
                       seriescolor=pal,
+                      background_color=:black,
+                      background_color_outside=:white,
+                      foreground_color=:black,
                       colorbar_title=cb_title,
                       titlefontsize=8,
                       xlabelfontsize=8,
@@ -98,6 +101,9 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{Float64}, sp::Array{Fl
                       size=(1200, 800),
                       margins=20Plots.px,
                       seriescolor=pal,
+                      background_color=:black,
+                      background_color_outside=:white,
+                      foreground_color=:black,
                       colorbar_title=cb_title,
                       titlefontsize=8,
                       xlabelfontsize=8,
@@ -131,7 +137,7 @@ Plots spectrogram.
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -221,15 +227,15 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             sp = sp[f1:f2, :]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :mw
-            _, sp, _, sf = NeuroAnalyzer.wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, norm=false)
+            _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, norm=false, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, frq=frq, frq_n=frq_n, gw=gw)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, frq=frq, frq_n=frq_n, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(Gaussian and Hilbert transform)")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, wt=wt)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, wt=wt, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(continuous wavelet transformation)")
         end
@@ -324,7 +330,7 @@ Plots spectrogram of embedded or external component.
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
@@ -416,15 +422,15 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             sp = sp[f1:f2, :]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :mw
-            _, sp, _, sf = NeuroAnalyzer.wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, norm=false)
+            _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, norm=false, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, frq=frq, frq_n=frq_n, gw=gw)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, frq=frq, frq_n=frq_n, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(Gaussian and Hilbert transform)")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, wt=wt)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, wt=wt, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(continuous wavelet transformation)")
         end
@@ -469,15 +475,15 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             sp = sp[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :mw
-            sp, sf = psd_mw(signal, fs=fs, frq_lim=frq_lim, ncyc=ncyc, norm=false, frq=frq, frq_n=frq_n)
+            sp, sf = psd_mw(signal, fs=fs, frq_lim=frq_lim, ncyc=ncyc, norm=false, frq=frq, frq_n=frq_n, w=w)
             sf = linspace(0, frq_lim[2], size(sp, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, gw=gw, frq=frq, frq_n=frq_n)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, gw=gw, frq=frq, frq_n=frq_n, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(Gaussian and Hilbert transform)")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, wt=wt)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, wt=wt, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title = replace(title, "method" => "(continuous wavelet transformation)")
         end

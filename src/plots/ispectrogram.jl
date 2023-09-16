@@ -290,7 +290,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
             norm = get_gtk_property(cb_norm, :active, Bool)
-            frq = get_gtk_property(cb_norm, :active, Bool) ? :lin : :log
+            frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             hw = get_gtk_property(cb_hw, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :stft)

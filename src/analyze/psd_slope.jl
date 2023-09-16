@@ -20,7 +20,7 @@ Calculate PSD linear fit and slope. Default method is Welch periodogram.
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `frq_n::Int64=length(frq_lim[1]:frq_lim[2])`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
@@ -68,7 +68,7 @@ Calculate PSD linear fit and slope. Default method is Welch periodogram.
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `frq_n::Int64=length(frq_lim[1]:frq_lim[2])`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
@@ -121,7 +121,7 @@ Calculate PSD linear fit and slope. Default method is Welch periodogram.
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `frq_n::Int64=length(frq_lim[1]:frq_lim[2])`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies

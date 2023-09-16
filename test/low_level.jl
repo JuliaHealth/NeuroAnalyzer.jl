@@ -116,7 +116,7 @@ s, _ = fftdenoise(rand(10))
 
 @test length(ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 3
 @test tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
-@test length(wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
+@test length(mwspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
 @test length(psd_mw(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
 @test length(perm_cmp(ones(10,10,10), zeros(10,10,10))) == 2
 @test length(fcoherence(ones(2, 10), fs=1)) == 3

@@ -1,5 +1,5 @@
 export spectrogram
-export wspectrogram
+export mwspectrogram
 export ghspectrogram
 export cwtspectrogram
 
@@ -19,7 +19,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `nt::Int64=8`: number of Slepian tapers
 - `wlen::Int64=fs`: window length, default is 4 seconds
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for Welch and STFT
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -37,16 +37,19 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
     @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
 
-    w = w ? hanning : nothing
 
     if method === :stft
+        w = w ? hanning : nothing
         sp = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
     elseif method === :mt
-        sp = DSP.mt_spectrogram(s, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
+        w = w ? hanning(length(s)) : ones(length(s))
+        sp = DSP.mt_spectrogram(s .* w, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
     end
 
     sp = sp.power
     norm == true && (sp = pow2db.(sp))
+    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
+    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
 
     t = 0:1/fs:(length(s) / fs)
     st = linspace(t[1], t[end], size(sp, 2))
@@ -57,7 +60,7 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
 end
 
 """
-    wspectrogram(s; pad, norm, fs, frq_lim, frq_n, frq, ncyc)
+    mwspectrogram(s; pad, norm, fs, frq_lim, frq_n, frq, ncyc)
 
 Calculate spectrogram using wavelet convolution.
 
@@ -71,6 +74,7 @@ Calculate spectrogram using wavelet convolution.
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -80,11 +84,13 @@ Named tuple containing:
 - `sph::Matrix{Float64}`: phases
 - `sf::Vector{Float64}`: frequencies
 """
-function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, w::Bool=true)
 
     _check_var(frq, [:log, :lin], "frq")
 
     pad > 0 && (s = pad0(s, pad))
+
+    w = w ? hanning(length(s)) : ones(length(s))
 
     if ncyc isa Int64
         @assert ncyc >= 1 "ncyc must be ≥ 1."
@@ -99,7 +105,6 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
     @assert frq_n >= 2 "frq_n must be ≥ 2."
 
     if frq === :log
-        # frq_lim = (frq_lim[1], frq_lim[2])
         frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
@@ -123,13 +128,16 @@ function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int6
 
     @inbounds @simd for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, sf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
-        cs[frq_idx, :] = fconv(s, kernel=kernel, norm=false)
+        # cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=false)
+        cs[frq_idx, :] = tconv(s .* w, kernel=kernel)
         # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(cs), imag.(cs), 2)
         sp[frq_idx, :] = @views @. abs(cs[frq_idx, :])^2
         sph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
     end
 
     norm == true && (sp = pow2db.(sp))
+    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
+    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
 
     return (cs=cs, sp=sp, sph=sph, sf=sf)
     
@@ -149,6 +157,7 @@ Calculate spectrogram using Gaussian and Hilbert transform.
 - `frq_n::Int64_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -157,13 +166,15 @@ Named tuple containing:
 - `sph::Matrix{Float64}`: phases
 - `sf::Vector{Float64}`: frequencies
 """
-function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, gw::Real=5)
+function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, gw::Real=5, w::Bool=true)
 
     _check_var(frq, [:log, :lin], "frq")
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
     @assert frq_n >= 2 "frq_n frequency bound must be ≥ 2."
+
+    w = w ? hanning(length(s)) : ones(length(s))
 
     if frq === :log
         frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
@@ -176,11 +187,14 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
     sph = zeros(length(sf), length(s))
 
     @inbounds @simd for frq_idx in eachindex(sf)
-        s = filter_g(s, fs=fs, f=sf[frq_idx], gw=gw)
-        sp[frq_idx, :] = abs.(hilbert(s)).^2
+        s = filter_g(s .* w, fs=fs, f=sf[frq_idx], gw=gw)
+        sp[frq_idx, :] = (abs.(hilbert(s))).^2
         sph[frq_idx, :] = angle.(hilbert(s))
     end
+
     norm == true && (sp = pow2db.(sp))
+    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
+    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
 
     return (sp=sp, sph=sph, sf=sf)
 
@@ -198,6 +212,7 @@ Calculate spectrogram using continuous wavelet transformation (CWT).
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -205,13 +220,15 @@ Named tuple containing:
 - `sp::Matrix{Float64}`: powers
 - `sf::Vector{Float64}`: frequencies
 """
-function cwtspectrogram(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2), fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2)) where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2), fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2), w::Bool=true) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert frq_lim == tuple_order(frq_lim) "frq_lim must contain two values in ascending order."
     @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2) "frq_lim must be in [0, $(fs / 2)]."
 
-    sp = (abs.(ContinuousWavelets.cwt(s, wt)')).^2
+    w = w ? hanning(length(s)) : ones(length(s))
+
+    sp = (abs.(ContinuousWavelets.cwt(s .* w, wt)')).^2
     sf = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(s), wt)[1])
     sf[1] = 0
     @assert !(frq_lim[1] < sf[1] || frq_lim[2] < sf[1] || frq_lim[1] > sf[end] || frq_lim[2] > sf[end]) "frq_lim must be in [$(sf[1]), $(sf[end])]."
@@ -219,6 +236,8 @@ function cwtspectrogram(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2), fs:
     sp = sp[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf), :]
 
     norm == true && (sp = pow2db.(sp))
+    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
+    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
 
     return (sp=sp, sf=sf)
 
@@ -250,7 +269,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window for STFT
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -273,11 +292,11 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif method === :mt
         p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
-    _, p_tmp, _, sf = @views NeuroAnalyzer.wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    _, p_tmp, _, sf = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     elseif method === :gh
-        p_tmp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+        p_tmp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, w=w)
     elseif method === :cwt
-        p_tmp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
+        p_tmp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, w=w)
     end
 
     st = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
@@ -293,20 +312,17 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             elseif method === :mt
                 sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mw
-                _, sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.wspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+                _, sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
             elseif method === :gh
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, w=w)
             elseif method === :cwt
-                sp[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
+                sp[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, w=w)
             end
 
             # update progress bar
             progress_bar == true && next!(progbar)
         end
     end
-
-    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
-    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
 
     sf = round.(sf, digits=2)
     st = round.(st, digits=2)
