@@ -171,14 +171,18 @@ Remove power line noise and harmonics.
 - `pr::Real=2.0`: prominence of noise peaks in dB
 - `d::Real=5.0`: minimum distance between peaks in Hz
 - `q::Real=0.1`: optimization step size
+
+# Returns
+
+- `df::DataFrame`: list of peaks detected
 """
 function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
-    obj_new = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
+    obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data
     obj.components = obj_new.components
     obj.history = obj_new.history
 
-    return nothing
+    return df
 
 end
