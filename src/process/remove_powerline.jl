@@ -19,6 +19,7 @@ Remove power line noise and its peaks above power line frequency.
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
+- `df::DataFrame`: list of peaks detected
 """
 function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
@@ -147,12 +148,10 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 
         NeuroAnalyzer.verbose = verbose_tmp
 
-        verbose && println(df)
-
         reset_components!(obj_new)
         push!(obj_new.history, "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)")
 
-        return obj_new
+        return obj_new, df
 
     end
 
