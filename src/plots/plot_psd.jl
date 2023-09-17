@@ -14,7 +14,7 @@ Plot PSD (power spectrum density).
 - `sf::Vector{Float64}`: frequencies
 - `sp::Vector{Float64}`: powers
 - `norm::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -35,31 +35,35 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
     pal = mono == true ? :grays : :darktest
 
     if ax === :linlin
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = :identity
+        xt = collect(_ticks(frq_lim))
+        xsc = :identity
+        ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = :identity
+        xsc = :log10
+        ysc = :identity
     elseif ax === :linlog
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = norm == false ? :log10 : :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = norm == false ? :log10 : :identity
+        xsc = :log10
+        ysc = norm == false ? :log10 : :identity
     end
 
     # prepare plot
@@ -82,9 +86,9 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
     # plot powers
     p = Plots.plot!(sf,
                     sp,
-                    xticks=xticks,
-                    xscale=xscale,
-                    yscale=yscale;
+                    xticks=xt,
+                    xscale=xsc,
+                    yscale=ysc;
                     kwargs...)
 
     return p
@@ -102,7 +106,7 @@ Plot multi-channel PSD (power spectrum density).
 - `sp::Matrix{Float64}`: powers
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `norm::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -146,33 +150,37 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     end
 
     if ax === :linlin
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = :identity
+        xsc = :log10
+        ysc = :identity
     elseif ax === :linlog
         _warn("For multi-channel PSD plots, y-axis log-scale is ignored.")
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = :identity
     elseif ax === :loglog
         _warn("For multi-channel PSD plots, y-axis log-scale is ignored.")
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = :identity
+        xsc = :log10
+        ysc = :identity
     end
 
     # prepare plot
@@ -204,8 +212,8 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
                                sp[idx, :],
                                linewidth=1,
                                label="",
-                               xticks=xticks,
-                               xscale=xscale,
+                               xticks=xt,
+                               xscale=xsc,
                                color=channel_color[idx])
     end
 
@@ -248,31 +256,35 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=tru
     s_m, _, s_u, s_l = msci95(sp)
 
     if ax === :linlin
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = :identity
+        xsc = :log10
+        ysc = :identity
     elseif ax === :linlog
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = norm == false ? :log10 : :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = norm == false ? :log10 : :identity
+        xsc = :log10
+        ysc = norm == false ? :log10 : :identity
     end
 
     # prepare plot
@@ -280,9 +292,9 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=tru
                    ylabel=ylabel,
                    legend=false,
                    xlims=frq_lim,
-                   xticks=xticks,
-                   xscale=xscale,
-                   yscale=yscale,
+                   xticks=xt,
+                   xscale=xsc,
+                   yscale=ysc,
                    title=title,
                    palette=pal,
                    t=:line,
@@ -359,31 +371,35 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels:
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
     if ax === :linlin
-        xticks=_ticks(frq_lim)
-        xscale=:identity
-        yscale=:identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = :identity
+        xsc = :log10
+        ysc = :identity
     elseif ax === :linlog
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = norm == false ? :log10 : :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = norm == false ? :log10 : :identity
+        xsc = :log10
+        ysc = norm == false ? :log10 : :identity
     end
 
     # prepare plot
@@ -391,9 +407,9 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels:
                    ylabel=ylabel,
                    legend=false,
                    xlims=frq_lim,
-                   xticks=xticks,
-                   xscale=xscale,
-                   yscale=yscale;
+                   xticks=xt,
+                   xscale=xsc,
+                   yscale=ysc;
                    title=title,
                    palette=pal,
                    t=:line,
@@ -462,30 +478,34 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
     clabels == [""] && (clabels = repeat([""], ch_n))
 
     if ax === :linlin
-        xticks=_ticks(frq_lim)
-        xscale=:identity
-        zscale=:identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        zsc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
+        xsc = :log10
         zscale = :identity
     elseif ax === :linlog
-        xticks = _ticks(frq_lim)
-        xscale = :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
         zscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
+        xsc = :log10
         zscale = norm == false ? :log10 : :identity
     end
 
@@ -499,8 +519,8 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
                        zlabel=zlabel,
                        legend=false,
                        xlims=frq_lim,
-                       xticks=xticks,
-                       xscale=xscale,
+                       xticks=xt,
+                       xscale=xsc,
                        zscale=zscale;
                        title=title,
                        palette=pal,
@@ -535,8 +555,8 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
                        zlabel=zlabel,
                        legend=false,
                        xlims=frq_lim,
-                       xticks=xticks,
-                       xscale=xscale,
+                       xticks=xt,
+                       xscale=xsc,
                        zscale=zscale;
                        title=title,
                        palette=pal,
@@ -596,31 +616,35 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
     if ax === :linlin
-        xticks=NeuroAnalyzer._ticks(frq_lim)
-        xscale=:identity
-        yscale=:identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = :identity
+        xsc = :log10
+        ysc = :identity
     elseif ax === :linlog
-        xticks = _ticks(frq_lim)
-        xscale = :identity
-        yscale = norm == false ? :log10 : :identity
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.01, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.01 Hz")
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
-        sf[1] == 0 && (sf[1] = 0.1)
-        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
-        xscale = :log10
-        yscale = norm == false ? :log10 : :identity
+        xsc = :log10
+        ysc = norm == false ? :log10 : :identity
     end
 
     # plot parameters
@@ -666,8 +690,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
                        xlims=frq_lim,
                        xticks=false,
                        yticks=false,
-                       xscale=xscale,
-                       yscale=yscale,
+                       xscale=xsc,
+                       yscale=ysc,
                        title=clabels[idx],
                        palette=pal,
                        size=marker_size,
@@ -745,6 +769,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     _check_channels(obj, ch)
+    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
 
@@ -798,53 +823,53 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
 
     if ref === :abs
         if method === :welch
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:welch, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:welch, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:fft, w=w)
             title == "default" && (title = "Absolute PSD (fast Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (short-time Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:fft, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, f=f, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:fft, f=f, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:stft, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mt, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
@@ -994,11 +1019,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                           kwargs...)
     end
 
-    if p isa Plots.Plot{Plots.GRBackend}
-        Plots.plot(p)
-    else
-        p
-    end
+    Plots.plot(p)
 
     return p
 
@@ -1104,53 +1125,53 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
 
     if ref === :abs
         if method === :welch
-            sp, sf = psd(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:fft, w=w)
             title == "default" && (title = "Absolute PSD (fast Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (short-time Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:fft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:fft, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:stft, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, f=f, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mt, f=f, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_lim=frq_lim, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, frq_lim=frq_lim, fs=fs, norm=norm, method=:mw, f=f, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
