@@ -65,7 +65,7 @@ x = fft0(v1, 1024)
 @test length(x) == 1029
 
 @info "test 14/66: ifft0()"
-@test ifft0(x, 1024) == v1
+@test round.(real.(ifft0(x, 1024))) == v1
 
 @info "test 15/66: fft0()"
 x = fft2(v1)

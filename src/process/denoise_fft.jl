@@ -29,7 +29,7 @@ function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)
     f_idx = s_pow .> t
     s_fft[f_idx] .= Complex(0, 0)
 
-    return (s=ifft0(s_fft, pad), f_idx=f_idx)
+    return (s=abs.(ifft0(s_fft, pad)), f_idx=f_idx)
 
 end
 

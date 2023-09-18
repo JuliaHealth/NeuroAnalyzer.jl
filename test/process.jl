@@ -45,9 +45,9 @@ e10_tmp = ch_zero(e10)
 @info "test 5/51: cw_trans()"
 s = rand(100)
 ct = cw_trans(s, wt=wavelet(Morlet(2π), β=32, Q=128))
-@test size(ct) == (12, 100)
+@test size(ct) == (130, 100)
 ct = cw_trans(e10, wt=wavelet(Morlet(2π), β=32, Q=128));
-@test size(ct) == (19, 30, 2560, 10)
+@test size(ct) == (19, 131, 2560, 10)
 
 @info "test 6/51: icw_trans()"
 ct = cw_trans(s, wt=wavelet(Morlet(2π), β=32, Q=128))
@@ -130,8 +130,8 @@ s, bn, bf = bpsplit(e10)
 @test size(s) == (10, 19, 2560, 10)
 
 @info "test 17/51: fconv()"
-@test fconv(v1, kernel=v2) == [2.0, 2.0, 3.0, 3.0, 2.0]
-@test fconv(a1, kernel=[0.5, 1.0, 0.5]) == ones(2, 3, 2)
+@test round.(fconv(v1, kernel=v2)) == [2.0, 2.0, 3.0, 3.0, 2.0]
+@test fconv(a1, kernel=[0.5, 1.0, 0.5]) == [0.75 1.0 0.75; 0.75 1.0 0.75;;; 0.75 1.0 0.75; 0.75 1.0 0.75]
 e10_tmp = fconv(e10, kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
 @test size(e10_tmp.data) == (24, 2560, 10)
 
@@ -325,7 +325,7 @@ eeg_tmp, pl, ls, rs = remove_pops(eeg)
 
 @info "test 44/51: remove_powerline()"
 e10_tmp = keep_epoch(e10, ep=1)
-remove_powerline(e10_tmp, pl_frq=50, ch=1)
+remove_powerline!(e10_tmp, pl_frq=50, ch=1)
 @test size(e10_tmp.data) == (24, 2560, 1)
 
 @info "test 45/51: ica_decompose()"

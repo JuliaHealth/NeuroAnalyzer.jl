@@ -40,7 +40,7 @@ function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
                    markerstrokewidth=0,
                    border=:none,
                    aspect_ratio=1,
-                   margins=-plot_size * Plots.px,
+                   margins=-plot_size*Plots.px,
                    titlefontsize=plot_size ÷ 50)
 
     if cart == false

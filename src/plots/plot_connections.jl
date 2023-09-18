@@ -87,7 +87,7 @@ function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRang
                    markerstrokewidth=0,
                    border=:none,
                    aspect_ratio=1,
-                   margins=-plot_size * Plots.px,
+                   margins=-plot_size*Plots.px,
                    titlefontsize=plot_size ÷ 50)
 
     if cart == false

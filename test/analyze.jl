@@ -310,7 +310,7 @@ iv, izv, ia, ip = NeuroAnalyzer.itpc(e10, ch=1, t=256)
 iv, izv, f = NeuroAnalyzer.itpc_spec(e10, ch=1, frq_lim=(0, 4), frq_n=5)
 @test size(iv) == (5, 2560)
 @test size(izv) == (5, 2560)
-@test f ≈ [0.01, 0.044721359549995794, 0.20000000000000004, 0.8944271909999159, 4.0]
+@test f == [0.01, 0.045, 0.2, 0.894, 4.0]
 
 @info "test 24/52: mdiff()"
 st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:absdiff)
@@ -389,8 +389,8 @@ s, f, t = eros(e10, ch=1, method=:gh)
 @test length(f) == 129
 @test length(t) == 2560
 s, f, t = eros(e10, ch=1, method=:cwt)
-@test size(s) == (13, 2560, 1)
-@test length(f) == 13
+@test size(s) == (131, 2560, 1)
+@test length(f) == 131
 @test length(t) == 2560
 
 @info "test 28/52: phdiff()"
@@ -451,9 +451,9 @@ p, f = mwpsd(rand(10, 100), fs=10, norm=false)
 @test size(p) == (10, 6)
 p, f = mwpsd(rand(10, 100, 10), fs=10, norm=false)
 @test size(p) == (10, 6, 10)
-p, f = NeuroAnalyzer.mwpsd(e10, frq_lim=(0, 4))
-@test size(p) == (19, 5, 10)
-@test length(f) == 5
+p, f = NeuroAnalyzer.mwpsd(e10)
+@test size(p) == (19, 129, 10)
+@test length(f) == 129
 
 @info "test 32/52: psd_rel()"
 p, f = psd_rel(rand(100), fs=10, f=(0, 1), wlen=10, woverlap=0)
@@ -566,8 +566,8 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:gh)
 @test length(sf) == 129
 @test length(st) == 2560
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:cwt)
-@test size(sp) == (13, 2560, 19, 10)
-@test length(sf) == 13
+@test size(sp) == (131, 2560, 19, 10)
+@test length(sf) == 131
 @test length(st) == 2560
 
 @info "test 38/52: spec_seg()"
