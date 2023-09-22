@@ -22,7 +22,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 """
 function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
             push!(p, Plots.plot(border=:none, title=""))

@@ -26,7 +26,7 @@ Plot ERP.
 """
 function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get limits
     ylim = (floor(minimum(s) * 1.1, digits=0), ceil(maximum(s) * 1.1, digits=0))
@@ -101,7 +101,7 @@ Butterfly plot of ERP.
 """
 function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     ch_n = size(s, 1)
 
@@ -215,7 +215,7 @@ Plot ERP amplitude mean and ±95% CI.
 """
 function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
     s_m, _, s_u, s_l = msci95(s)
@@ -316,7 +316,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     @assert size(s, 2) == length(t) "Signal length and time length must be equal."
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(s, 1)))
@@ -448,7 +448,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if clabels == [""]
         yticks = round.(Int64, range(1, size(s, 1), length=10))

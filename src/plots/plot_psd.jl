@@ -32,7 +32,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
     _check_tuple(frq_lim, "frq_lim")
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if ax === :linlin
         xt = collect(_ticks(frq_lim))
@@ -250,7 +250,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=tru
     _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
     _check_tuple(frq_lim, "frq_lim")
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
     s_m, _, s_u, s_l = msci95(sp)
@@ -365,7 +365,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels:
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
     _check_tuple(frq_lim, "frq_lim")
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
@@ -472,7 +472,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
 
     ch_n = size(sp, 1)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     
     # channel labels
     clabels == [""] && (clabels = repeat([""], ch_n))
@@ -610,7 +610,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
     _check_tuple(frq_lim, "frq_lim")
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))

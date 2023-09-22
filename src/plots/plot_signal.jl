@@ -140,7 +140,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     s = @views reverse(s[:, eachindex(t)], dims = 1)
     bad = reverse(bad)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)
@@ -232,7 +232,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 """
 function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)
@@ -329,7 +329,7 @@ Butterfly plot of `s` channels.
 """
 function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)

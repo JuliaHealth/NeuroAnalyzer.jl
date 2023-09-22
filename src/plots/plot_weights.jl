@@ -28,7 +28,7 @@ function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
     @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
     @assert length(weights) >= 1 "weights must contain at least one value."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     marker_size = plot_size ÷ 100
     font_size = plot_size ÷ 100

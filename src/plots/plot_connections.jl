@@ -75,7 +75,7 @@ function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRang
     @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     marker_size = plot_size ÷ 100
     font_size = plot_size ÷ 100

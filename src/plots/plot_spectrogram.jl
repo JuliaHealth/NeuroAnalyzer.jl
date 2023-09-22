@@ -28,7 +28,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
     @assert size(sp, 2) == length(st) "Size of powers $(size(sp, 2)) and time vector $(length(st)) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers $(size(sp, 1)) and frequencies vector $(length(sf)) do not match."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
 
     p = Plots.heatmap(st,
@@ -86,7 +86,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
     @assert size(sp, 1) == length(sch) "Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
     
     ch = collect(eachindex(sch)) .- 0.5

@@ -17,8 +17,7 @@ Preview channel locations.
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `plot_size::Int64=400`: plot dimensions in pixels (size × size)
-- `large::Bool=true`: draw large (size of electrodes area 500×500 px, more details) or small (size of electrodes area 200×200 px, less details) plot
+- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
 - `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
@@ -33,7 +32,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
 
     NeuroAnalyzer._check_var(plane, [:xy, :yz, :xz], "plane")
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if plane === :xy
         if large
@@ -110,7 +109,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         marker_size = 4
         font_size = 4
         ch_labels = false
-        loc_x = @. origin[1] - (loc_x * 100)
+        loc_x = @. origin[1] + (loc_x * 100)
         loc_y = @. origin[2] - (loc_y * 100)
     end
 
@@ -241,7 +240,6 @@ end
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 
@@ -249,9 +247,9 @@ end
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if cart == false
         loc_x = zeros(nrow(locs))
@@ -270,6 +268,8 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
     y_lim = (-1.1, 1.1)
     z_lim = (-1.1, 1.1)
 
+
+    plot_size = 640
     marker_size = plot_size ÷ 200
     font_size = plot_size ÷ 75
 
@@ -353,11 +353,14 @@ Preview of channel locations.
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
 - `threed::Bool=false`: 3-dimensional plot
-- `plot_size::Int64=threed ? 800 : 400`: plot dimensions in pixels (plot_size×plot_size)
-- `head_details::Bool=true`: draw nose and ears
 - `mono::Bool=false`: Use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
+- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
 - `cart::Bool=false`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `plane::Symbol=:xy`: which plane to plot:
+    - `:xy`: horizontal (top)
+    - `:xz`: coronary (front)
+    - `:yz`: sagittal (side)
 - `interactive::Bool=true`: if true, use interactive 3-dimensional plot
 - `kwargs`: optional arguments for plot() function
 
@@ -365,7 +368,7 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, plot_size::Int64=threed ? 800 : 400, head_details::Bool=true, mono::Bool=false, grid::Bool=false, cart::Bool=false, interactive::Bool=true, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, kwargs...)
 
     # select channels, default is all channels
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
@@ -380,16 +383,16 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             ch_pairs = obj.header.recording[:channel_pairs]
             src_n = length(unique(ch_pairs[:, 1]))
             det_n = length(unique(ch_pairs[:, 2]))
-            p = plot_locs_nirs(obj.locs, ch_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono)
+            p = plot_locs_nirs(obj.locs, ch_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, grid=grid, mono=mono)
         else
-            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, head_details=head_details, plot_size=plot_size, grid=grid, mono=mono, cart=cart)
+            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane)
         end
     else
         if interactive
-            iplot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+            iplot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
             return
         else
-            p = plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+            p = plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
         end
     end
 
@@ -410,13 +413,12 @@ end
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 """
-function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
-    p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart, camera=camera)
+    p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
     win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     set_gtk_property!(win, :border_width, 0)
@@ -431,7 +433,7 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
     y_pos_last = 0
 
     @guarded draw(can) do widget
-        p = NeuroAnalyzer.plot_locs3d(locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart);
+        p = NeuroAnalyzer.plot_locs3d(locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart);
         img = read_from_png(io)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)
@@ -475,17 +477,16 @@ end
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 - `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
 """
-function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     # select channels, default is all channels
     _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
     selected != 0 && _check_channels(obj, selected)
 
-    p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart, camera=camera)
+    p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
     win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     set_gtk_property!(win, :border_width, 0)
@@ -500,7 +501,7 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     y_pos_last = 0
 
     @guarded draw(can) do widget
-        p = NeuroAnalyzer.plot_locs3d(obj.locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, plot_size=plot_size, cart=cart);
+        p = NeuroAnalyzer.plot_locs3d(obj.locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart);
         img = read_from_png(io)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)

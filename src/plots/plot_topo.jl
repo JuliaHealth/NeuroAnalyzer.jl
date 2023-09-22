@@ -36,7 +36,7 @@ Plot topographical view.
 """
 function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, cart::Bool=false, kwargs...)
     
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     if cart == false
