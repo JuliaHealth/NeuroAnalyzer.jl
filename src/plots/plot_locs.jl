@@ -37,9 +37,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
 
     if plane === :xy
         if large
-            img = FileIO.load("/home/eb/Documents/Code/head_t_large.png")
+            img = FileIO.load(joinpath(res_path, "head_t_large.png"))
         else
-            img = FileIO.load("/home/eb/Documents/Code/head_t_small.png")
+            img = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
         if cart == false
             loc_x = zeros(size(locs, 1))
@@ -53,9 +53,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     elseif plane === :xz
         if large
-            img = FileIO.load("/home/eb/Documents/Code/head_f_large.png")
+            img = FileIO.load(joinpath(res_path, "head_f_large.png"))
         else
-            img = FileIO.load("/home/eb/Documents/Code/head_f_small.png")
+            img = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
         if cart == false
             loc_x = zeros(size(locs, 1))
@@ -69,9 +69,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     elseif plane === :yz
         if large
-            img = FileIO.load("/home/eb/Documents/Code/head_s_large.png")
+            img = FileIO.load(joinpath(res_path, "head_s_large.png"))
         else
-            img = FileIO.load("/home/eb/Documents/Code/head_s_small.png")
+            img = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
         if cart == false
             loc_x = zeros(size(locs, 1))
