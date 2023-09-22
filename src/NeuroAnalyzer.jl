@@ -6,10 +6,14 @@ module NeuroAnalyzer
 
 # set constants
 
+global const VER = v"0.23.9"
 const io = PipeBuffer() # required for interactive preview
 const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
 const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
-global const VER = v"0.23.9"
+const fiducial_points = (nasion = (0.0, 1.05, 0.0),
+                         inion  = (0.0, -1.05, 0.0),
+                         lra    = (-1.05, 0.0, -0.05),
+                         rla    = (1.05, 0.0, -0.1))
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))

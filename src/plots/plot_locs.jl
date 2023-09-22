@@ -14,121 +14,172 @@ Preview channel locations.
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head::Bool=true`: draw head
-- `head_labels::Bool=true`: plot head labels
+- `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+- `large::Bool=true`: draw large (size of electrodes area 500×500 px, more details) or small (size of electrodes area 200×200 px, less details) plot
 - `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `plane::Symbol=:xy`: which plane to plot:
+    - `:xy`: horizontal (top)
+    - `:xz`: coronary (front)
+    - `:yz`: sagittal (side)
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400, cart::Bool=false)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy)
+
+    NeuroAnalyzer._check_var(plane, [:xy, :yz, :xz], "plane")
 
     pal = mono == true ? :grays : :darktest
 
-    if cart == false
-        loc_x = zeros(size(locs, 1))
-        loc_y = zeros(size(locs, 1))
-        for idx in 1:size(locs, 1)
-            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    if plane === :xy
+        if large
+            img = FileIO.load("/home/eb/Documents/Code/head_t_large.png")
+        else
+            img = FileIO.load("/home/eb/Documents/Code/head_t_small.png")
         end
-    else
-        loc_x = locs[!, :loc_x]
-        loc_y = locs[!, :loc_y]
+        if cart == false
+            loc_x = zeros(size(locs, 1))
+            loc_y = zeros(size(locs, 1))
+            for idx in 1:size(locs, 1)
+                loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+            end
+        else
+            loc_x = locs[!, :loc_x]
+            loc_y = locs[!, :loc_y]
+        end
+    elseif plane === :xz
+        if large
+            img = FileIO.load("/home/eb/Documents/Code/head_f_large.png")
+        else
+            img = FileIO.load("/home/eb/Documents/Code/head_f_small.png")
+        end
+        if cart == false
+            loc_x = zeros(size(locs, 1))
+            loc_y = zeros(size(locs, 1))
+            for idx in 1:size(locs, 1)
+                loc_x[idx], _, loc_y[idx] = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
+            end
+        else
+            loc_x = locs[!, :loc_x]
+            loc_y = locs[!, :loc_z]
+        end
+    elseif plane === :yz
+        if large
+            img = FileIO.load("/home/eb/Documents/Code/head_s_large.png")
+        else
+            img = FileIO.load("/home/eb/Documents/Code/head_s_small.png")
+        end
+        if cart == false
+            loc_x = zeros(size(locs, 1))
+            loc_y = zeros(size(locs, 1))
+            for idx in 1:size(locs, 1)
+                _, loc_x[idx], loc_y[idx] = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
+            end
+        else
+            loc_x = locs[!, :loc_y]
+            loc_y = locs[!, :loc_z]
+        end
     end
-    loc_x = _s2v(loc_x)
-    loc_y = _s2v(loc_y)
 
-    if plot_size > 300
-        marker_size = plot_size ÷ 75
-        font_size = plot_size ÷ 75
+    loc_x = NeuroAnalyzer._s2v(loc_x)
+    loc_y = NeuroAnalyzer._s2v(loc_y)
+
+    if head
+        xt = (linspace(0, size(img, 1), 25), string.(-1.2:0.1:1.2))
+        yt = (linspace(0, size(img, 2), 25), string.(-1.2:0.1:1.2))
+        xl = (0, size(img, 1))
+        yl = (0, size(img, 2))
     else
-        marker_size = plot_size ÷ 50
-        font_size = plot_size ÷ 50
+        xt = (-1.2:0.1:1.2)
+        yt = (-1.2:0.1:1.2)
+        xl = (-1.2, 1.2)
+        yl = (-1.2, 1.2)
+    end
+
+    origin = size(img) ./ 2
+    if large
+        marker_size = 10
+        font_size = 6
+        loc_x = @. origin[1] + (loc_x * 250)
+        loc_y = @. origin[2] - (loc_y * 250)
+    else
+        marker_size = 4
+        font_size = 4
         ch_labels = false
+        loc_x = @. origin[1] - (loc_x * 100)
+        loc_y = @. origin[2] - (loc_y * 100)
     end
 
-    length(ch) > 64 && (font_size = plot_size ÷ 100)
+    ma = 1.0
+    ch_labels == true && (ma = 0.5)
 
     if grid == false
         p = Plots.plot(grid=false,
                        framestyle=:none,
-                       palette=pal,
-                       size=(plot_size, plot_size),
                        border=:none,
+                       palette=pal,
                        aspect_ratio=1,
+                       size=size(img),
                        right_margin=-30*Plots.px,
-                       bottom_margin=-20*Plots.px,
+                       bottom_margin=-40*Plots.px,
                        top_margin=-30*Plots.px,
-                       left_margin=-50*Plots.px,
-                       xlim=(-1.22, 1.23),
-                       ylim=(-1.1, 1.2))
+                       left_margin=-40*Plots.px,
+                       ticks_fontsize=font_size,
+                       xticks=xt,
+                       yticks=yt,
+                       xlims=xl,
+                       ylims=yl)
     else
         p = Plots.plot(grid=true,
                        palette=pal,
-                       size=(plot_size, plot_size),
                        aspect_ratio=1,
-                       right_margin=-30*Plots.px,
-                       bottom_margin=-50*Plots.px,
-                       top_margin=-50*Plots.px,
-                       left_margin=-5*Plots.px,
-                       xticks=-1:0.1:1,
-                       yticks=-1:0.1:1,
-                       xtickfontsize=4,
-                       ytickfontsize=4;
-                       xlim=(-1.22, 1.23),
-                       ylim=(-1.1, 1.2))
+                       size=size(img),
+                       right_margin=0*Plots.px,
+                       bottom_margin=0*Plots.px,
+                       top_margin=0*Plots.px,
+                       left_margin=0*Plots.px,
+                       xtickfontsize=font_size,
+                       ytickfontsize=font_size,
+                       xticks=xt,
+                       yticks=yt,
+                       xlims=xl,
+                       ylims=yl)
     end
 
-    if head == true
-        hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
-        p = Plots.plot!(hd)
-    end
+    head && (p = Plots.plot!(img))
+
+    ch = setdiff(ch, selected)
 
     for idx in eachindex(locs[!, :labels])
         if idx in ch
-            if selected != 0
-                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
-                                color=:lightgrey,
-                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                grid=true,
-                                label="",
-                                markershape=:circle,
-                                markersize=marker_size,
-                                markerstrokewidth=0,
-                                markerstrokealpha=0)
-            else
-                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
-                                color=:lightgrey,
-                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                grid=true,
-                                label="",
-                                markershape=:circle,
-                                markersize=marker_size,
-                                markerstrokewidth=0,
-                                markerstrokealpha=0)
-            end
+            p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                            color=:lightgrey,
+                            markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                            label="",
+                            markershape=:circle,
+                            markersize=marker_size,
+                            markerstrokewidth=0,
+                            markerstrokealpha=0)
         end
         if idx in selected
             if mono != true
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                                 color=idx,
                                 markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                grid=true,
                                 label="",
                                 markershape=:circle,
                                 markersize=marker_size,
+                                markeralpha=ma,
                                 markerstrokewidth=0,
                                 markerstrokealpha=0)
             else
-                #p = Plots.plot!((loc_x[idx], loc_y[idx]),
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                                 color=:lightgrey,
                                 markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                grid=true,
                                 label="",
                                 markershape=:circle,
                                 markersize=marker_size,
@@ -140,16 +191,38 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
     if ch_labels
         for idx in eachindex(locs[!, :labels])
             if idx in ch
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
             if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
         end
     end
+    if head_labels
+        fid_names = ["NAS", "IN", "LPA", "RPA"]
+        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+            if plane === :xy
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
+            elseif plane === :xz
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+            elseif plane === :yz
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+            end
+            if large
+                fid_loc_x = @. origin[1] + (fid_loc_x * 250)
+                fid_loc_y = @. origin[2] - (fid_loc_y * 250)
+            else
+                fid_loc_x = @. origin[1] - (fid_loc_x * 100)
+                fid_loc_y = @. origin[2] - (fid_loc_y * 100)
+            end
+            p = Plots.plot!(annotations=(fid_loc_x, fid_loc_y, Plots.text(fid_names[idx], pointsize=font_size + 2)))
+        end
+    end
 
-    Plots.plot(p)
+    Plots.plot!(p)
 
     return p
 
