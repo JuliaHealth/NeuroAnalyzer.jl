@@ -347,6 +347,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
                         first_name="",
                         middle_name="",
                         last_name=string(patient),
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)

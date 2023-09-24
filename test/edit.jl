@@ -17,12 +17,12 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a0 = zeros(2, 3, 2)
 
-@info "test 1/28: channel_type()"
-@test e10.header.recording[:channel_type][1] == "eeg"
-e10_tmp = channel_type(e10, ch=1, type="???")
-@test e10_tmp.header.recording[:channel_type][1] == "???"
-channel_type!(e10_tmp, ch=1, type="eeg")
-@test e10_tmp.header.recording[:channel_type][1] == "eeg"
+@info "test 1/28: get_channel_type() / set_channel_type()"
+@test get_channel_type(e10, ch=1) == "eeg"
+e10_tmp = set_channel_type(e10, ch=1, type="???")
+@test get_channel_type(e10_tmp, ch=1) == "???"
+set_channel_type!(e10_tmp, ch=1, type="eeg")
+@test get_channel_type(e10_tmp, ch=1) == "eeg"
 
 @info "test 2/28: get_channel()"
 @test get_channel(e10, ch=1) == "Fp1"

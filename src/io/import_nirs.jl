@@ -156,6 +156,7 @@ function import_nirs(file_name::String)
                         first_name="",
                         middle_name="",
                         last_name="",
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)

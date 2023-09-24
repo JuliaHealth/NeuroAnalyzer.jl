@@ -196,6 +196,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
                         first_name="",
                         middle_name="",
                         last_name="",
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)

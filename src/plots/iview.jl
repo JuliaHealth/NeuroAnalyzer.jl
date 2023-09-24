@@ -12,10 +12,6 @@ Interactive view of continuous or epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), zoom::Real=5)
 
@@ -24,6 +20,8 @@ function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     else
         iview_ep(obj, ch=ch)
     end
+
+    return nothing
 
 end
 
@@ -37,10 +35,6 @@ Interactive view of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), zoom::Real=5)
 
@@ -325,10 +319,6 @@ Interactive view of epoched signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)))
 

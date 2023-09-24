@@ -471,6 +471,7 @@ function import_snirf(file_name::String; n::Int64=0)
                         first_name="",
                         middle_name="",
                         last_name="",
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)

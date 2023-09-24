@@ -12,10 +12,6 @@ Interactive spectrogram of continuous or epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
 
@@ -24,6 +20,8 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     else
         ispectrogram_ep(obj, ch=ch)
     end
+
+    return nothing
 
 end
 
@@ -37,10 +35,6 @@ Interactive spectrogram of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
 
@@ -572,10 +566,6 @@ Interactive spectrogram of epoched signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is all signal channels
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1)
 

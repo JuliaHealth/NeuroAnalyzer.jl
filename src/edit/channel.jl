@@ -1,8 +1,9 @@
 export signal_channels
 export get_channel_bytype
 export get_channel_bywl
-export channel_type
-export channel_type!
+export get_channel_type
+export set_channel_type
+export set_channel_type!
 export get_channel
 export rename_channel
 export rename_channel!
@@ -120,9 +121,45 @@ function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
 end
 
 """
-    channel_type(obj; ch, type)
+    get_channel_type(obj; ch, type)
 
-Change channel type.
+Get channel type.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, String}`
+
+# Returns
+
+- `obj::NeuroAnalyzer.NEURO`
+"""
+function get_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
+
+    # create new dataset
+    types = obj.header.recording[:channel_type]
+    
+    if ch isa String
+        ch_found = nothing
+        for idx in eachindex(clabels)
+            if ch == clabels[idx]
+                types[idx] = type
+                ch_found = idx
+            end
+        end
+        @assert ch_found !== nothing "Channel name ($ch) does not match signal labels."
+    else
+        _check_channels(obj, ch)
+    end
+
+    return obj.header.recording[:channel_type][ch]
+
+end
+
+"""
+    set_channel_type(obj; ch, type)
+
+Set channel type.
 
 # Arguments
 
@@ -134,9 +171,11 @@ Change channel type.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::String)
+function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::String)
 
     type = lowercase(type)
+    NeuroAnalyzer._check_var(type, string.(NeuroAnalyzer.channel_types), "type")
+
     clabels = labels(obj)
 
     # create new dataset
@@ -159,16 +198,16 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::
     obj_new.header.recording[:channel_type] = types
     
     # add entry to :history field
-    push!(obj_new.history, "channel_type(OBJ, ch=$ch, type=$type)")
+    push!(obj_new.history, "set_channel_type(OBJ, ch=$ch, type=$type)")
 
     return obj_new
 
 end
 
 """
-    channel_type!(obj; ch, new_name)
+    set_channel_type!(obj; ch, new_name)
 
-Change channel type.
+Set channel type.
 
 # Arguments
 
@@ -176,9 +215,9 @@ Change channel type.
 - `ch::Union{Int64, String}`
 - `type::String`
 """
-function channel_type!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::String)
+function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::String)
 
-    obj_new = channel_type(obj, ch=ch, type=type)
+    obj_new = set_channel_type(obj, ch=ch, type=type)
     obj.header = obj_new.header
     obj.history = obj_new.history
 

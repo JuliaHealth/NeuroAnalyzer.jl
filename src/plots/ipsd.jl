@@ -12,10 +12,6 @@ Interactive PSD of continuous or epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Real=5)
 
@@ -24,6 +20,8 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     else
         ipsd_ep(obj, ch=ch)
     end
+
+    return nothing
 
 end
 
@@ -37,10 +35,6 @@ Interactive PSD of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Real=5)
 
@@ -628,10 +622,6 @@ Interactive PSD of epoched signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 

@@ -13,10 +13,6 @@ Interactive edit of continuous or epoched signal.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5)
 
@@ -25,6 +21,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     else
         iedit_ep(obj, ch=ch, mono=mono)
     end
+
+    return nothing
 
 end
 
@@ -39,10 +37,6 @@ Interactive edit of continuous signal.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Real=5`: how many seconds are displayed in one segment
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5)
 
@@ -407,10 +401,6 @@ Interactive edit of epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
 """
 function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true)
 
