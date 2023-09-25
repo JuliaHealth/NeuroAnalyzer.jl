@@ -23,7 +23,7 @@ Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_typ
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`:
+- `obj::NeuroAnalyzer.NEURO`
 
 # Returns
  
@@ -41,6 +41,36 @@ function signal_channels(obj::NeuroAnalyzer.NEURO)
         chs = union(get_channel_bytype(obj, type=[:eeg, :meg, :mag, :grad, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
     else
         chs = get_channel_bytype(obj, type=dt)
+    end
+
+    return chs
+
+end
+
+"""
+    signal_channels(dt)
+
+Return all signal (e.g. EEG or MEG) channels for a given data type. For MEG data type, 'meg', `grad` and `mag` channels are returned.
+
+# Arguments
+
+- `dt::String`: data type of an recording object
+- `ct::Vector{String}`: list of channel types
+
+# Returns
+ 
+- `chs::Vector{Int64}`
+"""
+function signal_channels(dt::Symbol, ct::Vector{String})
+
+    if dt === :meg
+        chs = union(get_channel_bytype(ct, type=[:meg, :mag, :grad]))
+    elseif dt === :nirs
+        chs = union(get_channel_bytype(ct, type=[:nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
+    elseif dt === :erp
+        chs = union(get_channel_bytype(ct, type=[:eeg, :meg, :mag, :grad, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux]))
+    else
+        chs = get_channel_bytype(ct, type=dt)
     end
 
     return chs
@@ -86,6 +116,52 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector
             end
         end        
     end
+
+    return ch_idx
+
+end
+
+"""
+    get_channel_bytype(ct; type)
+
+Return channel number(s) for channel of `type` type.
+
+# Arguments
+
+- `ct::Vector{String}`: list of channel types
+- `type::Union{Symbol, Vector{Symbol}}=:all`: channel type
+
+# Returns
+
+- `ch_idx::Vector{Int64}`
+"""
+function get_channel_bytype(ct::Vector{String}; type::Union{Symbol, Vector{Symbol}}=:all)
+
+    if type isa Symbol
+        _check_var(type, channel_types, "type")
+    else
+        for idx in eachindex(type)
+            _check_var(type[idx], channel_types, "type")
+        end
+    end
+        
+    if type === :all
+        ch_idx = _c(length(ct))
+    elseif type isa Symbol
+        ch_idx = Vector{Int64}()
+        for idx in 1:length(ct)
+            lowercase(ct[idx]) == string(type) && (push!(ch_idx, idx))
+        end
+    else
+        ch_idx = Vector{Int64}()
+        for idx1 in 1:length(ct)
+            for idx2 in eachindex(type)
+                lowercase(ct[idx]) == string(type[idx2]) && (push!(ch_idx, idx1))
+            end
+        end        
+    end
+
+    length(ch_idx) == 1 && (ch_idx = ch_idx[1])
 
     return ch_idx
 

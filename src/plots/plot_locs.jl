@@ -135,9 +135,10 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                        ylims=yl)
     else
         p = Plots.plot(grid=true,
+                       framestyle=:grid,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(img),
+                       size=size(img) .+ 40,
                        right_margin=0*Plots.px,
                        bottom_margin=0*Plots.px,
                        top_margin=0*Plots.px,
@@ -158,7 +159,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         if idx in ch
             p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                             color=:lightgrey,
-                            markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                            markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                             label="",
                             markershape=:circle,
                             markersize=marker_size,
@@ -169,7 +170,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             if mono != true
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                                 color=idx,
-                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                                 label="",
                                 markershape=:circle,
                                 markersize=marker_size,
@@ -179,7 +180,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             else
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                                 color=:lightgrey,
-                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                                 label="",
                                 markershape=:circle,
                                 markersize=marker_size,
@@ -271,8 +272,10 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
 
 
     plot_size = 640
-    marker_size = plot_size ÷ 200
-    font_size = plot_size ÷ 75
+    marker_size = 6
+    font_size = 6
+
+    ch = setdiff(ch, selected)
 
     p = Plots.scatter3d(grid=true,
                         palette=pal,
@@ -294,20 +297,38 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
                         ylim=y_lim,
                         zlim=z_lim)
 
-    p = Plots.scatter3d!(loc_x[ch], loc_y[ch], loc_z[ch], ms=marker_size, mc=:gray)
+    p = Plots.scatter3d!((loc_x[ch],
+                          loc_y[ch],
+                          loc_z[ch]),
+                         markercolor=:gray,
+                         markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                         markershape=:circle,
+                         markersize=marker_size,
+                         markerstrokewidth=0,
+                         markerstrokealpha=0)
 
     if selected != 0
-        if length(selected) > 1
-            if mono == true
-                p = Plots.scatter3d!(loc_x[selected], loc_y[selected], loc_z[selected], ms=marker_size, mc=:gray)
-            else
-                p = Plots.scatter3d!(loc_x[selected], loc_y[selected], loc_z[selected], ms=marker_size, mc=:red)
-            end
+        if mono == true
+            p = Plots.scatter3d!((loc_x[selected],
+                                  loc_y[selected],
+                                  loc_z[selected]),
+                                 markercolor=:gray,
+                                 markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                 markershape=:circle,
+                                 markersize=marker_size,
+                                 markerstrokewidth=0,
+                                 markerstrokealpha=0)
         else
-            if mono == true
-                p = Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]), ms=marker_size, mc=:gray)
-            else
-                p = Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]), ms=marker_size, mc=:red)
+            for idx in selected
+                p = Plots.scatter3d!((loc_x[idx],
+                                      loc_y[idx],
+                                      loc_z[idx]),
+                                     markercolor=idx,
+                                     markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                     markershape=:circle,
+                                     markersize=marker_size,
+                                     markerstrokewidth=0,
+                                     markerstrokealpha=0)
             end
         end
     end
@@ -324,10 +345,13 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
     end
 
     if head_labels == true
-        Plots.annotate!(0, 1.5, 0, Plots.text("Nz", font_size))
-        Plots.annotate!(0, -1.5, 0, Plots.text("In", font_size))
-        Plots.annotate!(-1.5, 0, 0, Plots.text("LPA", font_size))
-        Plots.annotate!(1.5, 0, 0, Plots.text("RPA", font_size))
+        fid_names = ["NAS", "IN", "LPA", "RPA"]
+        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+            Plots.annotate!(NeuroAnalyzer.fiducial_points[idx][1],
+                            NeuroAnalyzer.fiducial_points[idx][2],
+                            NeuroAnalyzer.fiducial_points[idx][3],
+                            Plots.text(fid_names[idx], font_size))
+        end
     end
     
     Plots.plot!(p)
