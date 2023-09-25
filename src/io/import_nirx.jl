@@ -320,6 +320,7 @@ function import_nirx(file_name::String)
                         first_name=string(subject[1]),
                         middle_name="",
                         last_name=string(subject[2]),
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)

@@ -509,30 +509,36 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
         zsc = norm == false ? :log10 : :identity
     end
 
+    @show "A"
+
     # prepare plot
     if variant === :w
-        p = Plots.plot(sf,
-                       ones(length(sf)),
-                       sp[1, :],
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       zlabel=zlabel,
-                       legend=false,
-                       xlims=frq_lim,
-                       xticks=xt,
-                       xscale=xsc,
-                       zscale=zsc;
-                       title=title,
-                       palette=pal,
-                       st=:line,
-                       lc=:black,
-                       size=(1200, 800),
-                       margins=20Plots.px,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6)
+        p = Plots.plot3d(sf,
+                         ones(length(sf)),
+                         sp[1, :],
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         legend=false,
+                         xlims=frq_lim,
+                         xticks=xt,
+                         xscale=xsc,
+                         zscale=zsc;
+                         title=title,
+                         palette=pal,
+                         st=:line,
+                         lc=:black,
+                         size=(900, 900),
+                         margins=-50Plots.px,
+                         # xguidefontrotation=22.5,
+                         # yguidefontrotation=45,
+                         titlefontsize=8,
+                         xlabelfontsize=8,
+                         ylabelfontsize=8,
+                         zlabelfontsize=8,
+                         xtickfontsize=6,
+                         ytickfontsize=6,
+                         ztickfontsize=6)
 
         # plot powers
         for idx in 2:ch_n
@@ -547,28 +553,32 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
     else
         f1 = vsearch(frq_lim[1], sf)
         f2 = vsearch(frq_lim[2], sf)
-        p = Plots.plot(sf[f1:f2],
-                       eachindex(clabels),
-                       sp[:, f1:f2],
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       zlabel=zlabel,
-                       legend=false,
-                       xlims=frq_lim,
-                       xticks=xt,
-                       xscale=xsc,
-                       zscale=zsc;
-                       title=title,
-                       palette=pal,
-                       st=:surface,
-                       lc=:black,
-                       size=(1200, 800),
-                       margins=20Plots.px,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6)
+        p = Plots.plot3d(sf[f1:f2],
+                         eachindex(clabels),
+                         sp[:, f1:f2],
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         legend=false,
+                         xlims=frq_lim,
+                         xticks=xt,
+                         xscale=xsc,
+                         zscale=zsc;
+                         title=title,
+                         palette=pal,
+                         st=:surface,
+                         lc=:black,
+                         size=(900, 900),
+                         margins=-50Plots.px,
+                         # xguidefontrotation=22.5,
+                         # yguidefontrotation=45,
+                         titlefontsize=8,
+                         xlabelfontsize=8,
+                         ylabelfontsize=8,
+                         zlabelfontsize=8,
+                         xtickfontsize=6,
+                         ytickfontsize=6,
+                         ztickfontsize=6)
     end
 
     p = Plots.plot!(yticks=(1:ch_n, clabels))

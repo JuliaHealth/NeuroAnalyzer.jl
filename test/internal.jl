@@ -31,7 +31,7 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._get_ch_idx(["aa", "bb"], "aa") == 1
 @test NeuroAnalyzer._get_ch_idx(["aa", "bb"], 1) == 1
 @test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
-s = NeuroAnalyzer._create_subject(id="a", first_name="a", middle_name="a", last_name="a", handedness="a", weight=0, height=0)
+s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0])
 @test r isa Dict{Symbol, Any}

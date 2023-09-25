@@ -31,6 +31,7 @@ function create(; data_type::String)
                         middle_name="",
                         last_name="",
                         handedness="",
+                        head_circumference=-1,
                         weight=-1,
                         height=-1)
     r = _create_recording_eeg(data_type=data_type,
