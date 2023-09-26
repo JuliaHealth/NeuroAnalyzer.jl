@@ -49,7 +49,7 @@ function import_csv(file_name::String; detect_type::Bool=true)
     else
         ch_type = repeat(["eeg"], ch_n)
     end
-    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     ch_order = _sort_channels(ch_type)
 
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])

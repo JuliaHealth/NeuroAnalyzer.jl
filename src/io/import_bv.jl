@@ -148,7 +148,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
             ch_type = repeat(["eeg"], ch_n)
         end
     end
-    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     channel_order = _sort_channels(ch_type)
 
     # read locs

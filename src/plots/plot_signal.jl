@@ -561,7 +561,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     clabels = labels(obj)
 
     # set units
-    units = _set_units(obj, ch[1])
+    units = _ch_units(obj, ch[1])
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -600,7 +600,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         if bad == false
             if length(ch_tmp) > 1
                 for cht_idx in eachindex(ch_t_uni)
-                    units = _set_units(obj, ch_tmp[cht_idx][1])
+                    units = _ch_units(obj, ch_tmp[cht_idx][1])
                     if ch_t[ch_tmp[cht_idx][1]] == "eeg"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
                     end
@@ -758,7 +758,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if type === :butterfly
         @assert length(ch_t_uni) == 1 "For plot type=:butterfly all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
-        units = _set_units(obj, ch[1])
+        units = _ch_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
@@ -824,7 +824,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         @assert length(ch_t_uni) == 1 "For plot type=:mean all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
 
-        units = _set_units(obj, ch[1])
+        units = _ch_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
@@ -1218,7 +1218,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     clabels = labels(obj1)
 
     # set units
-    units = _set_units(obj1, ch[1])
+    units = _ch_units(obj1, ch[1])
 
     # get time vector
     if seg[2] <= epoch_len(obj1)
@@ -1257,7 +1257,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     if length(ch_tmp) > 1
         for cht_idx in eachindex(ch_t_uni)
-            units = _set_units(obj1, ch_tmp[cht_idx][1])
+            units = _ch_units(obj1, ch_tmp[cht_idx][1])
 
             if ch_t[ch_tmp[cht_idx][1]] == "eeg"
                 xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")

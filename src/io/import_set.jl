@@ -77,14 +77,14 @@ function import_set(file_name::String; detect_type::Bool=true)
     clabels = _clean_labels(clabels)
     if detect_type == true
         ch_type = _set_channel_types(clabels, "eeg")
-        units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+        units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     else
         if length(dataset["chanlocs"]) > 0 && string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
             ch_type = repeat(["eeg"], ch_n)
             units = repeat(["μV"], ch_n)
         else
             length(dataset["chanlocs"]) > 0 && (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
-            units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+            units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
         end
     end
     channel_order = _sort_channels(ch_type)

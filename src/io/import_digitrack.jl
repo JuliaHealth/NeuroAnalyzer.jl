@@ -68,7 +68,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     else
         ch_type = repeat(["eeg"], ch_n)
     end
-    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     channel_order = _sort_channels(ch_type)
 
     buffer = readlines(fid)

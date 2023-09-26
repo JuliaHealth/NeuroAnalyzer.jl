@@ -141,7 +141,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
         ch_type = repeat(["eeg"], ch_n)
         ch_type[clabels .== "Status"] .= "mrk"
     end
-    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "BDF"
         # in BDF files the last channel is always the Status channel

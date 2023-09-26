@@ -195,7 +195,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     ep = _s2epoch(obj, seg[1], seg[2])
 
     # set units
-    units = _set_units(obj, ch[1])
+    units = _ch_units(obj, ch[1])
 
     clabels = labels(obj)[ch]
     length(ch) == 1 && (clabels = [clabels])

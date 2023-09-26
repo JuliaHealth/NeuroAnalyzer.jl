@@ -137,7 +137,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     else
         ch_type = repeat(["eeg"], ch_n)
     end
-    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "EDF"
         annotation_channels = Int64[]

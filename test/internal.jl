@@ -66,6 +66,9 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test NeuroAnalyzer._has_locs(e10) == false
+@test typeof(NeuroAnalyzer._initialize_locs(e10)) == DataFrame
+NeuroAnalyzer._initialize_locs!(e10)
+@test NeuroAnalyzer._has_locs(e10) == true
 xn, yn = NeuroAnalyzer._locnorm(x, y)
 @test xn[1] == 0.03551775887943953
 @test yn[1] == 1.0
@@ -119,7 +122,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._s2epoch(e10, 256, 512) == 1
 @test NeuroAnalyzer._s2epoch(e10, 3256, 3512) == 2
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
-@test NeuroAnalyzer._set_units(e10, 1) == "μV"
+@test NeuroAnalyzer._ch_units(e10, 1) == "μV"
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 @test NeuroAnalyzer._check_svec("[1, 2]") == true

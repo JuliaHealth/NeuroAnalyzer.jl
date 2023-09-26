@@ -166,6 +166,8 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                             markerstrokewidth=0,
                             markerstrokealpha=0)
         end
+    end
+    for idx in eachindex(locs[!, :labels])
         if idx in selected
             if mono != true
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
@@ -266,10 +268,9 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
         loc_z = locs[!, :loc_z]
     end
 
-    x_lim = (-1.1, 1.1)
-    y_lim = (-1.1, 1.1)
-    z_lim = (-1.1, 1.1)
-
+    x_lim = (-1.5, 1.5)
+    y_lim = (-1.5, 1.5)
+    z_lim = (-1.5, 1.5)
 
     plot_size = 640
     marker_size = 6
@@ -297,9 +298,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
                         ylim=y_lim,
                         zlim=z_lim)
 
-    p = Plots.scatter3d!((loc_x[ch],
-                          loc_y[ch],
-                          loc_z[ch]),
+    p = Plots.scatter3d!((loc_x, loc_y, loc_z),
                          markercolor=:gray,
                          markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                          markershape=:circle,
@@ -309,9 +308,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
 
     if selected != 0
         if mono == true
-            p = Plots.scatter3d!((loc_x[selected],
-                                  loc_y[selected],
-                                  loc_z[selected]),
+            p = Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]),
                                  markercolor=:gray,
                                  markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                                  markershape=:circle,
@@ -320,9 +317,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
                                  markerstrokealpha=0)
         else
             for idx in selected
-                p = Plots.scatter3d!((loc_x[idx],
-                                      loc_y[idx],
-                                      loc_z[idx]),
+                p = Plots.scatter3d!((loc_x[idx], loc_y[idx], loc_z[idx]),
                                      markercolor=idx,
                                      markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                                      markershape=:circle,

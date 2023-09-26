@@ -1,3 +1,14 @@
+function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
+    locs_ch = signal_channels(obj)
+    obj.locs = DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_theta=>zeros(length(locs_ch)), :loc_radius=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    return nothing
+end
+
+function _initialize_locs(obj::NeuroAnalyzer.NEURO)
+    locs_ch = signal_channels(obj)
+    return DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_theta=>zeros(length(locs_ch)), :loc_radius=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+end
+
 function _has_locs(obj::NeuroAnalyzer.NEURO)
     return nrow(obj.locs) > 0 ? true : false
 end

@@ -55,7 +55,7 @@ end
 """
     locs_maximize(locs; planar, spherical)
 
-Maximize channel locations to the unit sphere.
+Maximize channel locations to fit the unit sphere.
 
 # Arguments
 
@@ -94,7 +94,7 @@ end
 """
     locs_maximize!(locs; planar, spherical)
 
-Maximize channel locations to the unit sphere.
+Maximize channel locations to fit the unit sphere.
 
 # Arguments
 
