@@ -93,6 +93,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     already_scaled2 = false
     already_scaled3 = false
     already_scaled4 = false
+    refresh = true
 
     win = GtkWindow("NeuroAnalyzer: iedit_ch()", 1000, 900)
     set_gtk_property!(win, :border_width, 20)
@@ -119,6 +120,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     set_gtk_property!(lab_chn, :halign, 2)
     entry_ch = GtkSpinButton(1, nchannels(obj), 1)
     set_gtk_property!(entry_ch, :value, current_channel)
+    set_gtk_property!(entry_ch, :climb_rate, 0.1)
     set_gtk_property!(entry_ch, :tooltip_text, "Channel number")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the first channel")
@@ -146,7 +148,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     entry_label = GtkEntry()
     set_gtk_property!(entry_label, :text, ch_labels[current_channel])
 
-    bt_delete = GtkButton("Delete")
+    bt_delete = GtkButton("Delete channel")
     nchannels(obj) == 0 && set_gtk_property!(bt_delete, :sensitive, false)
 
     lab_loc_x = GtkLabel("Cartesian X:")
@@ -198,9 +200,8 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         push!(combo_ax_rot, idx)
     end
     set_gtk_property!(combo_ax_rot, :active, 0)
-    lab_ax_rot_degree = GtkLabel("Degrees:")
-    set_gtk_property!(lab_ax_rot_degree, :halign, 2)
     entry_ax_rot_degree = GtkSpinButton(-360, 360, 1)
+    set_gtk_property!(entry_ax_rot_degree, :tooltip_text, "Rotation angle in degrees\nPositive angle rotates anti-clockwise")
     set_gtk_property!(entry_ax_rot_degree, :value, 0)
     bt_scale = GtkButton("Scale")
     entry_scale = GtkSpinButton(0.1, 10.00, 0.1)
@@ -236,54 +237,53 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     cb_hdlab = GtkCheckButton("")
     set_gtk_property!(cb_hdlab, :active, false)
 
-    g_opts[1:4, 1] = GtkLabel("Channel number")
+    g_opts[1:3, 1] = GtkLabel("Channel number")
     g_opts[1, 2] = bt_start
     g_opts[2, 2] = entry_ch
     g_opts[3, 2] = bt_end
-    g_opts[4, 2] = bt_delete
-    g_opts[1:4, 3] = GtkLabel("Channel properties")
-    g_opts[1, 4] = lab_chlabel
-    g_opts[2, 4] = entry_label
-    g_opts[1, 5] = lab_chtype
-    g_opts[2, 5] = combo_chtype
-    g_opts[1, 6] = lab_chunits
-    g_opts[2, 6] = combo_chunits
-    g_opts[1:4, 7] = GtkLabel("Edit coordinates")
-    g_opts[1, 8] = lab_loc_theta
-    g_opts[2, 8] = entry_loc_theta
-    g_opts[1, 9] = lab_loc_radius
-    g_opts[2, 9] = entry_loc_radius
-    g_opts[1, 10] = lab_loc_x
-    g_opts[2, 10] = entry_loc_x
-    g_opts[1, 11] = lab_loc_y
-    g_opts[2, 11] = entry_loc_y
-    g_opts[1, 12] = lab_loc_z
-    g_opts[2, 12] = entry_loc_z
-    g_opts[1, 13] = lab_loc_theta_sph
-    g_opts[2, 13] = entry_loc_theta_sph
-    g_opts[1, 14] = lab_loc_phi_sph
-    g_opts[2, 14] = entry_loc_phi_sph
-    g_opts[1, 15] = lab_loc_radius_sph
-    g_opts[2, 15] = entry_loc_radius_sph
-    g_opts[1:4, 16] = GtkLabel("Edit locs")
-    g_opts[1, 17] = bt_ax_rot
-    g_opts[2, 17] = combo_ax_rot
-    g_opts[3, 17] = lab_ax_rot_degree
-    g_opts[4, 17] = entry_ax_rot_degree
-    g_opts[1, 18] = bt_scale
-    g_opts[2, 18] = entry_scale
-    g_opts[4, 18] = bt_normalize
-    g_opts[1, 19] = bt_transform
-    g_opts[2:3, 19] = combo_transform
-    g_opts[1:3, 20] = GtkLabel("Locs operations")
-    g_opts[1, 21] = bt_generate
-    g_opts[2, 21] = bt_load
-    g_opts[3, 21] = bt_save
-    g_opts[4, 21] = bt_close
-    g_opts[1, 22] = lab_hdlab
-    g_opts[2, 22] = cb_hdlab
-    g_opts[3, 22] = lab_cart
-    g_opts[4, 22] = cb_cart
+    g_opts[2, 3] = bt_delete
+    g_opts[1:3, 4] = GtkLabel("Channel properties")
+    g_opts[1, 5] = lab_chlabel
+    g_opts[2, 5] = entry_label
+    g_opts[1, 6] = lab_chtype
+    g_opts[2, 6] = combo_chtype
+    g_opts[1, 7] = lab_chunits
+    g_opts[2, 7] = combo_chunits
+    g_opts[1:3, 8] = GtkLabel("Edit coordinates")
+    g_opts[1, 9] = lab_loc_theta
+    g_opts[2, 9] = entry_loc_theta
+    g_opts[1, 10] = lab_loc_radius
+    g_opts[2, 10] = entry_loc_radius
+    g_opts[1, 11] = lab_loc_x
+    g_opts[2, 11] = entry_loc_x
+    g_opts[1, 12] = lab_loc_y
+    g_opts[2, 12] = entry_loc_y
+    g_opts[1, 13] = lab_loc_z
+    g_opts[2, 13] = entry_loc_z
+    g_opts[1, 14] = lab_loc_theta_sph
+    g_opts[2, 14] = entry_loc_theta_sph
+    g_opts[1, 15] = lab_loc_phi_sph
+    g_opts[2, 15] = entry_loc_phi_sph
+    g_opts[1, 16] = lab_loc_radius_sph
+    g_opts[2, 16] = entry_loc_radius_sph
+    g_opts[1:3, 17] = GtkLabel("Edit locs")
+    g_opts[1, 18] = bt_ax_rot
+    g_opts[2, 18] = combo_ax_rot
+    g_opts[3, 18] = entry_ax_rot_degree
+    g_opts[1, 19] = bt_scale
+    g_opts[2, 19] = entry_scale
+    g_opts[3, 19] = bt_normalize
+    g_opts[1, 20] = bt_transform
+    g_opts[2, 20] = combo_transform
+    g_opts[1:3, 21] = GtkLabel("Locs operations")
+    g_opts[1, 22] = bt_generate
+    g_opts[2, 22] = bt_load
+    g_opts[3, 22] = bt_save
+    g_opts[1, 23] = lab_hdlab
+    g_opts[2, 23] = cb_hdlab
+    g_opts[1, 24] = lab_cart
+    g_opts[2, 24] = cb_cart
+    g_opts[2, 25] = bt_close
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -300,99 +300,107 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     _refresh_locs()
 
     @guarded draw(can1) do widget
-        cart = get_gtk_property(cb_cart, :active, Bool)
-        hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-        if current_channel in ch_signal
-            selected = current_channel
-        else
-            selected = 0
+        if refresh
+            cart = get_gtk_property(cb_cart, :active, Bool)
+            hdlab = get_gtk_property(cb_hdlab, :active, Bool)
+            if current_channel in ch_signal
+                selected = current_channel
+            else
+                selected = 0
+            end
+            p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
+            img = read_from_png(io)
+            ctx = getgc(can1)
+            if already_scaled1 == false
+                Cairo.scale(ctx, 0.70, 0.70)
+                already_scaled1 = true
+            end
+            rectangle(ctx, 0, 0, 1200, 1200)
+            set_source_rgb(ctx, 1, 1, 1)
+            fill(ctx)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
-        p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
-        img = read_from_png(io)
-        ctx = getgc(can1)
-        if already_scaled1 == false
-            Cairo.scale(ctx, 0.70, 0.70)
-            already_scaled1 = true
-        end
-        rectangle(ctx, 0, 0, 1200, 1200)
-        set_source_rgb(ctx, 1, 1, 1)
-        fill(ctx)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
     end
 
     @guarded draw(can2) do widget
-        cart = get_gtk_property(cb_cart, :active, Bool)
-        hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-        if current_channel in ch_signal
-            selected = current_channel
-        else
-            selected = 0
+        if refresh
+            cart = get_gtk_property(cb_cart, :active, Bool)
+            hdlab = get_gtk_property(cb_hdlab, :active, Bool)
+            if current_channel in ch_signal
+                selected = current_channel
+            else
+                selected = 0
+            end
+            p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
+            img = read_from_png(io)
+            ctx = getgc(can2)
+            if already_scaled2 == false
+                Cairo.scale(ctx, 0.70, 0.70)
+                already_scaled2 = true
+            end
+            rectangle(ctx, 0, 0, 1200, 1200)
+            set_source_rgb(ctx, 1, 1, 1)
+            fill(ctx)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
-        p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
-        img = read_from_png(io)
-        ctx = getgc(can2)
-        if already_scaled2 == false
-            Cairo.scale(ctx, 0.70, 0.70)
-            already_scaled2 = true
-        end
-        rectangle(ctx, 0, 0, 1200, 1200)
-        set_source_rgb(ctx, 1, 1, 1)
-        fill(ctx)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
     end
 
     @guarded draw(can3) do widget
-        cart = get_gtk_property(cb_cart, :active, Bool)
-        hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-        if current_channel in ch_signal
-            selected = current_channel
-        else
-            selected = 0
+        if refresh
+            cart = get_gtk_property(cb_cart, :active, Bool)
+            hdlab = get_gtk_property(cb_hdlab, :active, Bool)
+            if current_channel in ch_signal
+                selected = current_channel
+            else
+                selected = 0
+            end
+            p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
+            img = read_from_png(io)
+            ctx = getgc(can3)
+            if already_scaled3 == false
+                Cairo.scale(ctx, 0.70, 0.70)
+                already_scaled3 = true
+            end
+            rectangle(ctx, 0, 0, 1200, 1200)
+            set_source_rgb(ctx, 1, 1, 1)
+            fill(ctx)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
-        p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
-        img = read_from_png(io)
-        ctx = getgc(can3)
-        if already_scaled3 == false
-            Cairo.scale(ctx, 0.70, 0.70)
-            already_scaled3 = true
-        end
-        rectangle(ctx, 0, 0, 1200, 1200)
-        set_source_rgb(ctx, 1, 1, 1)
-        fill(ctx)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
     end
 
     @guarded draw(can4) do widget
-        cart = get_gtk_property(cb_cart, :active, Bool)
-        hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-        if current_channel in ch_signal
-            selected = current_channel
-        else
-            selected = 0
+        if refresh
+            cart = get_gtk_property(cb_cart, :active, Bool)
+            hdlab = get_gtk_property(cb_hdlab, :active, Bool)
+            if current_channel in ch_signal
+                selected = current_channel
+            else
+                selected = 0
+            end
+            p = NeuroAnalyzer.plot_locs3d(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart);
+            img = read_from_png(io)
+            ctx = getgc(can4)
+            if already_scaled4 == false
+                Cairo.scale(ctx, 0.70, 0.70)
+                already_scaled4 = true
+            end
+            rectangle(ctx, 0, 0, 1200, 1200)
+            set_source_rgb(ctx, 1, 1, 1)
+            fill(ctx)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
-        p = NeuroAnalyzer.plot_locs3d(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart);
-        img = read_from_png(io)
-        ctx = getgc(can4)
-        if already_scaled4 == false
-            Cairo.scale(ctx, 0.70, 0.70)
-            already_scaled4 = true
-        end
-        rectangle(ctx, 0, 0, 1200, 1200)
-        set_source_rgb(ctx, 1, 1, 1)
-        fill(ctx)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
     end
 
     signal_connect(bt_start, "clicked") do widget
@@ -416,7 +424,9 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             set_gtk_property!(combo_chtype, :active, findfirst(isequal(Symbol(ch_types[current_channel])), NeuroAnalyzer.channel_types) - 2)
             set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         end
+        refresh = false
         _refresh_locs()
+        refresh = true
         _refresh_plots()
     end
 
@@ -424,15 +434,22 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         if ask_dialog("Delete channel $current_channel ?", "No", "Yes")
             delete_channel!(obj, ch=current_channel)
             current_channel > nchannels(obj) && (current_channel = nchannels(obj))
+            locs = obj.locs
+            locs_ch = locs[!, :channel]
             ch_types = obj.header.recording[:channel_type]
             ch_units = obj.header.recording[:units]
             ch_labels = obj.header.recording[:labels]
             Gtk.@sigatom begin
                 set_gtk_property!(entry_ch, :value, current_channel)
+                set_gtk_property!(entry_label, :text, ch_labels[current_channel])
+                set_gtk_property!(combo_chtype, :active, findfirst(isequal(Symbol(ch_types[current_channel])), NeuroAnalyzer.channel_types) - 2)
+                set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
             end
+            refresh = false
+            _refresh_locs()
+            refresh = true
+            _refresh_plots()
         end
-        _refresh_locs()
-        _refresh_plots()
     end 
 
     signal_connect(entry_label, "changed") do widget
@@ -445,7 +462,10 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         Gtk.@sigatom begin
             set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         end
+        refresh = false
         _refresh_locs()
+        refresh = true
+        _refresh_plots()
     end
 
     signal_connect(combo_chunits, "changed") do widget
@@ -461,27 +481,42 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(entry_loc_radius, "value-changed") do widget
-        locs[current_channel, :loc_radius] = get_gtk_property(entry_loc_radius, :value, Float64)
+        current_channel in locs_ch && (locs[current_channel, :loc_radius] = get_gtk_property(entry_loc_radius, :value, Float64))
         _refresh_plots()
     end
 
     signal_connect(entry_loc_theta, "value-changed") do widget
-        locs[current_channel, :loc_theta] = get_gtk_property(entry_loc_theta, :value, Float64)
+        current_channel in locs_ch && (locs[current_channel, :loc_theta] = get_gtk_property(entry_loc_theta, :value, Float64))
         _refresh_plots()
     end
 
     signal_connect(entry_loc_x, "value-changed") do widget
-        locs[current_channel, :loc_x] = get_gtk_property(entry_loc_x, :value, Float64)
+        current_channel in locs_ch && (locs[current_channel, :loc_x] = get_gtk_property(entry_loc_x, :value, Float64))
         _refresh_plots()
     end
 
     signal_connect(entry_loc_y, "value-changed") do widget
-        locs[current_channel, :loc_y] = get_gtk_property(entry_loc_y, :value, Float64)
+        current_channel in locs_ch && (locs[current_channel, :loc_y] = get_gtk_property(entry_loc_y, :value, Float64))
         _refresh_plots()
     end
 
     signal_connect(entry_loc_z, "value-changed") do widget
-        locs[current_channel, :loc_z] = get_gtk_property(entry_loc_z, :value, Float64)
+        current_channel in locs_ch && (locs[current_channel, :loc_z] = get_gtk_property(entry_loc_z, :value, Float64))
+        _refresh_plots()
+    end
+
+    signal_connect(entry_loc_radius_sph, "value-changed") do widget
+        current_channel in locs_ch && (locs[current_channel, :loc_radius_sph] = get_gtk_property(entry_loc_radius_sph, :value, Float64))
+        _refresh_plots()
+    end
+
+    signal_connect(entry_loc_theta_sph, "value-changed") do widget
+        current_channel in locs_ch && (locs[current_channel, :loc_theta_sph] = get_gtk_property(entry_loc_theta_sph, :value, Float64))
+        _refresh_plots()
+    end
+
+    signal_connect(entry_loc_phi_sph, "value-changed") do widget
+        current_channel in locs_ch && (locs[current_channel, :loc_phi_sph] = get_gtk_property(entry_loc_phi_sph, :value, Float64))
         _refresh_plots()
     end
 
@@ -494,25 +529,59 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         elseif ax == 2
             locs_rotz!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64))
         end
+        refresh = false
         _refresh_locs()
+        refresh = true
         _refresh_plots()
     end
 
     signal_connect(bt_scale, "clicked") do widget
         locs_scale!(locs, r=get_gtk_property(entry_scale, :value, Float64))
+        refresh = false
         _refresh_locs()
+        refresh = true
         _refresh_plots()
     end
 
     signal_connect(bt_normalize, "clicked") do widget
         locs_maximize!(locs)
+        refresh = false
         _refresh_locs()
+        refresh = true
         _refresh_plots()
     end
 
     ## TO DO: GENERATE
-    ## TO DO: LOAD
-    ## TO DO: SAVE
+
+    signal_connect(bt_load, "clicked") do widget
+        file_name = open_dialog("Pick locations file", GtkNullContainer(), (GtkFileFilter("*.ced, *.elc, *.locs, *.tsv, *.sfp, *.csd, *.geo, *.mat", name="All supported formats"), "*.ced, *.elc, *.locs, *.tsv, *.sfp, *.csd, *.geo, *.mat"))
+        if file_name != ""
+            if splitext(file_name)[2] in [".ced", ".elc", ".locs", ".tsv", ".sfp", ".csd", ".geo", ".mat"]
+                if _has_locs(obj) && ask_dialog("Replace channel locations ?", "No", "Yes")
+                    load_locs!(obj, file_name=file_name)
+                    locs = obj.locs
+                    locs_ch = locs[!, :channel]
+                    refresh = false
+                    _refresh_locs()
+                    refresh = true
+                    _refresh_plots()
+                end
+            else
+                warn_dialog("Incorrect file name!")
+            end
+        end
+    end
+
+    signal_connect(bt_save, "clicked") do widget
+        file_name = save_dialog("Pick locations file", GtkNullContainer(), (GtkFileFilter("*.ced, *.locs, *.tsv", name="All supported formats"), "*.ced, *.locs, *.tsv"))
+        if file_name != ""
+            if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
+                export_locs(obj, file_name=file_name, overwrite=true)
+            else
+                warn_dialog("Incorrect file name!")
+            end
+        end
+    end
 
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
