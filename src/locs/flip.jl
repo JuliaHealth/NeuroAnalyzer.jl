@@ -93,12 +93,6 @@ function locs_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-#=    
-    locs_new[!, :loc_x] = -locs_new[!, :loc_x]
-    planar == true && locs_cart2pol!(locs_new)
-    spherical == true && locs_cart2sph!(locs_new)
-=#
-
     for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs[idx, :loc_theta]

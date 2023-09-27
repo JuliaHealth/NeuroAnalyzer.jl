@@ -8,7 +8,7 @@ Plot weights at electrode positions.
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `weights::Vector{<:Real}=[]`: weights vector
@@ -17,7 +17,7 @@ Plot weights at electrode positions.
 - `mono::Bool=false`: Use color or gray palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 
 # Returns
 
@@ -108,7 +108,7 @@ Plot weights at electrode positions.
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `title::String=""`: plot title
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns

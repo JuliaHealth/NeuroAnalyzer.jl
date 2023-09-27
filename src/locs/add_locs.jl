@@ -11,9 +11,9 @@ Electrode locations:
 - `labels`          channel label
 - `loc_theta`       planar polar angle
 - `loc_radius`      planar polar radius
-- `loc_x`           spherical Cartesian x
-- `loc_y`           spherical Cartesian y
-- `loc_z`           spherical Cartesian z
+- `loc_x`           Cartesian x
+- `loc_y`           Cartesian y
+- `loc_z`           Cartesian z
 - `loc_radius_sph`  spherical radius
 - `loc_theta_sph`   spherical horizontal angle
 - `loc_phi_sph`     spherical azimuth angle
@@ -67,9 +67,9 @@ Electrode locations:
 - `labels`          channel label
 - `loc_theta`       planar polar angle
 - `loc_radius`      planar polar radius
-- `loc_x`           spherical Cartesian x
-- `loc_y`           spherical Cartesian y
-- `loc_z`           spherical Cartesian z
+- `loc_x`           Cartesian x
+- `loc_y`           Cartesian y
+- `loc_z`           Cartesian z
 - `loc_radius_sph`  spherical radius
 - `loc_theta_sph`   spherical horizontal angle
 - `loc_phi_sph`     spherical azimuth angle

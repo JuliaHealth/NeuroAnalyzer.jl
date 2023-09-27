@@ -8,7 +8,7 @@ export locs_rotx!
 """
     locs_rotz(locs; a, planar, spherical)
 
-Rotate channel locations around the z axis.
+Rotate channel locations around the Z axis.
 
 # Arguments
 
@@ -25,13 +25,20 @@ function locs_rotz(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:nrow(locs)
+#=    for idx in 1:nrow(locs)
         locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) - locs[idx, :loc_y] * sind(a)
         locs_new[idx, :loc_y] = locs[idx, :loc_x] * sind(a) + locs[idx, :loc_y] * cosd(a)
+    end=#
+
+    for idx in 1:nrow(locs)
+        spherical == true && (locs_new[idx, :loc_theta] += a)
+        planar == true && (locs_new[idx, :loc_theta_sph] += a)
     end
 
-    planar == true && locs_cart2pol!(locs_new)
-    spherical == true && locs_cart2sph!(locs_new)
+    locs_sph2cart!(locs_new)
+
+    # planar == true && locs_cart2pol!(locs_new)
+    # spherical == true && locs_cart2sph!(locs_new)
 
     return locs_new
 
@@ -60,7 +67,7 @@ end
 """
     locs_roty(locs; a, planar, spherical)
 
-Rotate channel locations in the xz-plane.
+Rotate channel locations around the Y axis (in the XZ-plane).
 
 # Arguments
 
@@ -92,7 +99,7 @@ end
 """
     locs_roty!(locs)
 
-Rotate channel locations in the xz-plane.
+Rotate channel locations around the Y axis (in the XZ-plane).
 
 # Arguments
 
@@ -112,7 +119,7 @@ end
 """
     locs_rotx(locs; a, planar, spherical)
 
-Rotate channel locations in the yz-plane.
+Rotate channel locations around the X axis (in the YZ-plane).
 
 # Arguments
 
@@ -144,7 +151,7 @@ end
 """
     locs_rotx!(locs)
 
-Rotate channel locations in the yz-plane.
+Rotate channel locations around the X axis (in the YZ-plane).
 
 # Arguments
 

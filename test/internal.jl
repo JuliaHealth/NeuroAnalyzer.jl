@@ -70,16 +70,16 @@ x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 NeuroAnalyzer._initialize_locs!(e10)
 @test NeuroAnalyzer._has_locs(e10) == true
 @test typeof(NeuroAnalyzer._initialize_locs()) == DataFrame
-xn, yn = NeuroAnalyzer._locnorm(x, y)
+xn, yn = NeuroAnalyzer._locs_norm(x, y)
 @test xn[1] == 0.03551775887943953
 @test yn[1] == 1.0
-xn, yn, zn = NeuroAnalyzer._locnorm(x, y, z)
+xn, yn, zn = NeuroAnalyzer._locs_norm(x, y, z)
 @test xn[1] == 0.03551775887943953
 @test yn[1] == 1.0
 @test zn[1] == 0.0005002501250623848
 locs[1, :loc_theta] = 108.1239
 locs[1, :loc_theta] = 108.1239
-locs = NeuroAnalyzer._round_locs(locs)
+locs = NeuroAnalyzer._locs_round(locs)
 @test locs[1, :loc_theta] == 108.124
 @test NeuroAnalyzer._angle_quadrant(45) == 1
 @test NeuroAnalyzer._angle_quadrant(90) == 1

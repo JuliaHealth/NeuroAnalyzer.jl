@@ -69,16 +69,16 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     ref_labels = labels(obj)[ref_idx]
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
-            occursin("1", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 192.0, 1.08, -0.92, -0.23, -0.55, 192.0, -29.0, 1.08])
-            occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], -12.0, 1.08, 0.92, -0.23, -0.55, -12.0, -29.0, 1.08])
+            occursin("1", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.08, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
+            occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.08, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
         end
     end
     eog_idx = get_channel_bytype(obj, type=:eog)
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
-            occursin("1", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 145.0, 1.0, -0.8, 0.53, -0.37, 145.0, -22.0, 1.0])
-            occursin("2", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 35.0, 1.0, 0.8, 0.53, -0.37, 35.0, -22.0, 1.0])
+            occursin("1", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 145.0, 1.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
+            occursin("2", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 35.0, 1.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
         end
     end
 
@@ -113,14 +113,16 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     obj_new = deepcopy(obj)
     obj_new.locs = DataFrame(:channel=>collect(eachindex(f_labels[labels_idx])),
                              :labels=>f_labels[labels_idx],
-                             :loc_theta=>loc_theta[labels_idx],
                              :loc_radius=>loc_radius[labels_idx],
+                             :loc_theta=>loc_theta[labels_idx],
                              :loc_x=>loc_x[labels_idx],
                              :loc_y=>loc_y[labels_idx],
                              :loc_z=>loc_z[labels_idx],
                              :loc_radius_sph=>loc_radius_sph[labels_idx],
                              :loc_theta_sph=>loc_theta_sph[labels_idx],
                              :loc_phi_sph=>loc_phi_sph[labels_idx])
+
+    _locs_norm!(obj_new.locs)
 
     # add entry to :history field
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")

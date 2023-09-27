@@ -452,18 +452,18 @@ function import_snirf(file_name::String; n::Int64=0)
     # x, y = y, x
     # normalize to a unit-sphere
     if z != zeros(length(opt_labels))
-        x, y, z = _locnorm(x, y, z)
+        x, y, z = _locs_norm(x, y, z)
     else
-        x, y = _locnorm(x, y)
+        x, y = _locs_norm(x, y)
     end
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:channel=>collect(eachindex(opt_labels)), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-    locs = locs_cart2sph(locs)
-    locs = locs_cart2pol(locs)
+    locs = DataFrame(:channel=>collect(eachindex(opt_labels)), :labels=>opt_labels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     

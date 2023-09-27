@@ -62,8 +62,8 @@ function create(; data_type::String)
 
     locs = DataFrame(:channel=>Int64,
                      :labels=>String[],
-                     :loc_theta=>Float64[],
                      :loc_radius=>Float64[],
+                     :loc_theta=>Float64[],
                      :loc_x=>Float64[],
                      :loc_y=>Float64[],
                      :loc_z=>Float64[],

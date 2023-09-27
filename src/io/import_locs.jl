@@ -107,14 +107,14 @@ function import_locs_ced(file_name::String; maximize::Bool=true)
     "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
     "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_swapxy!(locs)
     locs_flipx!(locs, planar=true, spherical=false)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -156,9 +156,7 @@ function import_locs_locs(file_name::String; maximize::Bool=true)
     theta = Float64.(locs[!, "theta"])
     radius = Float64.(locs[!, "radius"])
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_swapxy!(locs)
     locs_flipx!(locs, planar=true, spherical=false)
@@ -166,6 +164,8 @@ function import_locs_locs(file_name::String; maximize::Bool=true)
     locs[!, :loc_phi_sph] = zeros(nrow(locs))
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -229,14 +229,14 @@ function import_locs_elc(file_name::String; maximize::Bool=true)
     y = normalize_minmax(y)
     z = normalize_minmax(z)
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -291,14 +291,14 @@ function import_locs_tsv(file_name::String; maximize::Bool=true)
     "phi" in colnames && (phi_sph = locs[!, "phi"])
     "phi_sph" in colnames && (phi_sph = locs[!, "phi_sph"])
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -340,7 +340,7 @@ function import_locs_sfp(file_name::String; maximize::Bool=true)
 
     # x, y, z positions must be within -1..+1
     t = x[1]
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
     t -= x[1]
     # sometimes positions are shifted along x-axis, remove the shift
     x .+= abs(t)
@@ -351,14 +351,14 @@ function import_locs_sfp(file_name::String; maximize::Bool=true)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -401,11 +401,11 @@ function import_locs_csd(file_name::String; maximize::Bool=true)
         radius[idx], theta[idx] = sph2pol(radius_sph[idx], theta_sph[idx], phi_sph[idx])
     end
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -456,12 +456,12 @@ function import_locs_geo(file_name::String; maximize::Bool=true)
         x[idx], y[idx], z[idx], = parse.(Float64, split(tmp, ", "))
     end
 
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
 
     # center x at 0
     x_adj = x[findfirst(isequal("Cz"), clabels)]
     x .-= x_adj
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
 
     radius = zeros(length(clabels))
     theta = zeros(length(clabels))
@@ -469,14 +469,14 @@ function import_locs_geo(file_name::String; maximize::Bool=true)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
 
@@ -509,7 +509,7 @@ function import_locs_mat(file_name::String; maximize::Bool=true)
     clabels = string.(vec(dataset["Cnames"]))
 
     # x, y, z positions must be within -1..+1
-    x, y = _locnorm(x, y)
+    x, y = _locs_norm(x, y)
 
     z = zeros(ch_n)
     radius = zeros(length(clabels))
@@ -518,13 +518,14 @@ function import_locs_mat(file_name::String; maximize::Bool=true)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    locs = _round_locs(locs)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
     maximize == true && locs_maximize!(locs)
+
+    _locs_round!(locs)
 
     return locs
     

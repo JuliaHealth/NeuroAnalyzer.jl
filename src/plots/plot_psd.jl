@@ -594,7 +594,7 @@ Plot topographical map PSDs.
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
@@ -606,7 +606,7 @@ Plot topographical map PSDs.
 - `title::String=""`: plot title
 - `mono::Bool=false`: Use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns

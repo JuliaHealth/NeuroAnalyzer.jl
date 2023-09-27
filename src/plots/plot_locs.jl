@@ -9,7 +9,7 @@ Preview channel locations.
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
@@ -18,7 +18,7 @@ Preview channel locations.
 - `mono::Bool=false`: Use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
@@ -41,10 +41,11 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             img = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
         if cart == false
-            loc_x = zeros(size(locs, 1))
-            loc_y = zeros(size(locs, 1))
-            for idx in 1:size(locs, 1)
+            loc_x = zeros(nrow(locs))
+            loc_y = zeros(nrow(locs))
+            for idx in 1:nrow(locs)
                 loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+                # loc_x[idx], loc_y[idx], _ = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
             end
         else
             loc_x = locs[!, :loc_x]
@@ -57,9 +58,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             img = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
         if cart == false
-            loc_x = zeros(size(locs, 1))
-            loc_y = zeros(size(locs, 1))
-            for idx in 1:size(locs, 1)
+            loc_x = zeros(nrow(locs))
+            loc_y = zeros(nrow(locs))
+            for idx in 1:nrow(locs)
                 loc_x[idx], _, loc_y[idx] = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
             end
         else
@@ -73,9 +74,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             img = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
         if cart == false
-            loc_x = zeros(size(locs, 1))
-            loc_y = zeros(size(locs, 1))
-            for idx in 1:size(locs, 1)
+            loc_x = zeros(nrow(locs))
+            loc_y = zeros(nrow(locs))
+            for idx in 1:nrow(locs)
                 _, loc_x[idx], loc_y[idx] = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
             end
         else
@@ -238,14 +239,14 @@ end
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 
 # Returns
 
@@ -375,7 +376,7 @@ Preview of channel locations.
 - `mono::Bool=false`: Use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
-- `cart::Bool=false`: if true, use polar coordinates, otherwise use Cartesian spherical x and y coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
@@ -390,7 +391,7 @@ Preview of channel locations.
 function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, kwargs...)
 
     # select channels, default is all channels
-    _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
+    _check_channels(ch, signal_channels(obj))
     selected != 0 && _check_channels(obj, selected)
 
     if obj.header.recording[:data_type] == "ecog"
@@ -426,14 +427,14 @@ end
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 """
 function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
@@ -510,8 +511,8 @@ end
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian x, y and z coordinates, otherwise use spherical radius, theta and phi coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (X-Y plane angle, X-Z plane angle)
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 """
 function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 

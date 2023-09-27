@@ -1,8 +1,8 @@
 function _initialize_locs()
     return DataFrame(:channel=>Int64,
                      :labels=>String[],
-                     :loc_theta=>Float64[],
                      :loc_radius=>Float64[],
+                     :loc_theta=>Float64[],
                      :loc_x=>Float64[],
                      :loc_y=>Float64[],
                      :loc_z=>Float64[],
@@ -13,27 +13,59 @@ end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
     locs_ch = signal_channels(obj)
-    obj.locs = DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_theta=>zeros(length(locs_ch)), :loc_radius=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    obj.locs = DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
     return nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)
     locs_ch = signal_channels(obj)
-    return DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_theta=>zeros(length(locs_ch)), :loc_radius=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    return DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+end
+
+function _locs_round(locs::DataFrame)
+    locs_new = deepcopy(locs)
+    locs_new[!, :loc_radius] = round.(locs[!, :loc_radius], digits=2)
+    locs_new[!, :loc_theta] = round.(locs[!, :loc_theta], digits=2)
+    locs_new[!, :loc_x] = round.(locs[!, :loc_x], digits=2)
+    locs_new[!, :loc_y] = round.(locs[!, :loc_y], digits=2)
+    locs_new[!, :loc_z] = round.(locs[!, :loc_z], digits=2)
+    locs_new[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits=2)
+    locs_new[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits=2)
+    locs_new[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=2)
+    return locs_new
+end
+
+function _locs_round!(locs::DataFrame)
+    locs[!, :loc_radius] = round.(locs[!, :loc_radius], digits=2)
+    locs[!, :loc_theta] = round.(locs[!, :loc_theta], digits=2)
+    locs[!, :loc_x] = round.(locs[!, :loc_x], digits=2)
+    locs[!, :loc_y] = round.(locs[!, :loc_y], digits=2)
+    locs[!, :loc_z] = round.(locs[!, :loc_z], digits=2)
+    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits=2)
+    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits=2)
+    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=2)
+end
+
+function _locs_round(obj::NeuroAnalyzer.NEURO)
+    return _locs_round(obj.locs)
+end
+
+function _locs_round!(obj::NeuroAnalyzer.NEURO)
+    obj.locs = _locs_round(obj.locs)
 end
 
 function _has_locs(obj::NeuroAnalyzer.NEURO)
     return nrow(obj.locs) > 0 ? true : false
 end
 
-function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
+function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
     xy = normalize_minmax(hcat(x, y))
     x = xy[:, 1]
     y = xy[:, 2]
     return x, y
 end
 
-function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}, z::Union{AbstractVector, Real})
+function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}, z::Union{AbstractVector, Real})
     xyz = normalize_minmax(hcat(x, y, z))
     x = xyz[:, 1]
     y = xyz[:, 2]
@@ -41,16 +73,36 @@ function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}
     return x, y, z
 end
 
-function _round_locs(locs::DataFrame)
-    locs[!, :loc_x] = round.(locs[!, :loc_x], digits=3)
-    locs[!, :loc_y] = round.(locs[!, :loc_y], digits=3)
-    locs[!, :loc_z] = round.(locs[!, :loc_z], digits=3)
-    locs[!, :loc_radius] = round.(locs[!, :loc_radius], digits=3)
-    locs[!, :loc_theta] = round.(locs[!, :loc_theta], digits=3)
-    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits=3)
-    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits=3)
-    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=3)
-    return locs
+function _locs_norm(locs::DataFrame)
+    locs_new = deepcopy(locs)
+    x, y, z = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
+    xyz = normalize_minmax(hcat(x, y, z))
+    x = xyz[:, 1]
+    y = xyz[:, 2]
+    z = xyz[:, 3]
+    locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = x, y, 
+    return locs_new
+end
+
+function _locs_norm!(locs::DataFrame)
+    x, y, z = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
+    xyz = normalize_minmax(hcat(x, y, z))
+    x = xyz[:, 1]
+    y = xyz[:, 2]
+    z = xyz[:, 3]
+    locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z] = x, y, z
+    return nothing
+end
+
+function _locs_norm(obj::NeuroAnalyzer.NEURO)
+    obj_new = deepcopy(obj)
+    _locs_norm!(obj_new.locs)
+    return obj_new
+end
+
+function _locs_norm!(obj::NeuroAnalyzer.NEURO)
+    _locs_norm!(obj.locs)
+    return nothing
 end
 
 function _angle_quadrant(a::Real)

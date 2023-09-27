@@ -193,6 +193,15 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     set_gtk_property!(entry_loc_radius, :tooltip_text, "Polar radius (:loc_radius)")
     set_gtk_property!(entry_loc_radius, :digits, 2)
 
+    bt_swapxy = GtkButton("Swap XY")
+    set_gtk_property!(bt_swapxy, :tooltip_text, "Swap X and Y axes")
+    bt_flipx = GtkButton("Flip X")
+    set_gtk_property!(bt_flipx, :tooltip_text, "Flip along X axis")
+    bt_flipy = GtkButton("Flip Y")
+    set_gtk_property!(bt_flipy, :tooltip_text, "Flip along Y axis")
+    bt_flipz = GtkButton("Flip Z")
+    set_gtk_property!(bt_flipz, :tooltip_text, "Flip along Z axis")
+
     bt_ax_rot = GtkButton("Rotate around axis")
     combo_ax_rot = GtkComboBoxText()
     axes = ["X", "Y", "Z"]
@@ -200,7 +209,8 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         push!(combo_ax_rot, idx)
     end
     set_gtk_property!(combo_ax_rot, :active, 0)
-    entry_ax_rot_degree = GtkSpinButton(-360, 360, 1)
+    entry_ax_rot_degree = GtkSpinButton(-360, 360, 1.0)
+    set_gtk_property!(entry_ax_rot_degree, :digits, 1)
     set_gtk_property!(entry_ax_rot_degree, :tooltip_text, "Rotation angle in degrees\nPositive angle rotates anti-clockwise")
     set_gtk_property!(entry_ax_rot_degree, :value, 0)
     bt_scale = GtkButton("Scale")
@@ -250,40 +260,44 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     g_opts[1, 7] = lab_chunits
     g_opts[2, 7] = combo_chunits
     g_opts[1:3, 8] = GtkLabel("Edit coordinates")
-    g_opts[1, 9] = lab_loc_theta
-    g_opts[2, 9] = entry_loc_theta
-    g_opts[1, 10] = lab_loc_radius
-    g_opts[2, 10] = entry_loc_radius
+    g_opts[1, 9] = lab_loc_radius
+    g_opts[2, 9] = entry_loc_radius
+    g_opts[1, 10] = lab_loc_theta
+    g_opts[2, 10] = entry_loc_theta
     g_opts[1, 11] = lab_loc_x
     g_opts[2, 11] = entry_loc_x
     g_opts[1, 12] = lab_loc_y
     g_opts[2, 12] = entry_loc_y
     g_opts[1, 13] = lab_loc_z
     g_opts[2, 13] = entry_loc_z
-    g_opts[1, 14] = lab_loc_theta_sph
-    g_opts[2, 14] = entry_loc_theta_sph
-    g_opts[1, 15] = lab_loc_phi_sph
-    g_opts[2, 15] = entry_loc_phi_sph
-    g_opts[1, 16] = lab_loc_radius_sph
-    g_opts[2, 16] = entry_loc_radius_sph
+    g_opts[1, 14] = lab_loc_radius_sph
+    g_opts[2, 14] = entry_loc_radius_sph
+    g_opts[1, 15] = lab_loc_theta_sph
+    g_opts[2, 15] = entry_loc_theta_sph
+    g_opts[1, 16] = lab_loc_phi_sph
+    g_opts[2, 16] = entry_loc_phi_sph
     g_opts[1:3, 17] = GtkLabel("Edit locs")
-    g_opts[1, 18] = bt_ax_rot
-    g_opts[2, 18] = combo_ax_rot
-    g_opts[3, 18] = entry_ax_rot_degree
-    g_opts[1, 19] = bt_scale
-    g_opts[2, 19] = entry_scale
-    g_opts[3, 19] = bt_normalize
-    g_opts[1, 20] = bt_transform
-    g_opts[2, 20] = combo_transform
-    g_opts[1:3, 21] = GtkLabel("Locs operations")
-    g_opts[1, 22] = bt_generate
-    g_opts[2, 22] = bt_load
-    g_opts[3, 22] = bt_save
-    g_opts[1, 23] = lab_hdlab
-    g_opts[2, 23] = cb_hdlab
-    g_opts[1, 24] = lab_cart
-    g_opts[2, 24] = cb_cart
-    g_opts[2, 25] = bt_close
+    g_opts[1, 18] = bt_flipx
+    g_opts[2, 18] = bt_flipy
+    g_opts[3, 18] = bt_flipz
+    g_opts[1, 19] = bt_ax_rot
+    g_opts[2, 19] = combo_ax_rot
+    g_opts[3, 19] = entry_ax_rot_degree
+    g_opts[1, 20] = bt_scale
+    g_opts[2, 20] = entry_scale
+    g_opts[3, 20] = bt_normalize
+    g_opts[1, 21] = bt_transform
+    g_opts[2, 21] = combo_transform
+    g_opts[3, 21] = bt_swapxy
+    g_opts[1:3, 22] = GtkLabel("Locs operations")
+    g_opts[1, 23] = bt_generate
+    g_opts[2, 23] = bt_load
+    g_opts[3, 23] = bt_save
+    g_opts[1, 24] = lab_hdlab
+    g_opts[2, 24] = cb_hdlab
+    g_opts[1, 25] = lab_cart
+    g_opts[2, 25] = cb_cart
+    g_opts[2, 26] = bt_close
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -520,6 +534,30 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         _refresh_plots()
     end
 
+    signal_connect(bt_flipx, "clicked") do widget
+        locs_flipx!(locs)
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
+    end
+
+    signal_connect(bt_flipy, "clicked") do widget
+        locs_flipy!(locs)
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
+    end
+
+    signal_connect(bt_flipz, "clicked") do widget
+        locs_flipz!(locs)
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
+    end
+
     signal_connect(bt_ax_rot, "clicked") do widget
         ax = get_gtk_property(combo_ax_rot, :active, Int64)
         if ax == 0
@@ -545,6 +583,28 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     signal_connect(bt_normalize, "clicked") do widget
         locs_maximize!(locs)
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
+    end
+
+    signal_connect(bt_transform, "clicked") do widget
+        transform_type = get_gtk_property(combo_transform, :active, Int64)
+        transform_type == 0 && locs_cart2pol!(locs)
+        transform_type == 1 && locs_cart2sph!(locs)
+        transform_type == 2 && locs_pol2cart!(locs)
+        transform_type == 3 && locs_pol2sph!(locs)
+        transform_type == 4 && locs_sph2cart!(locs)
+        transform_type == 5 && locs_sph2pol!(locs)
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
+    end
+
+    signal_connect(bt_swapxy, "clicked") do widget
+        locs_swapxy!(locs)
         refresh = false
         _refresh_locs()
         refresh = true

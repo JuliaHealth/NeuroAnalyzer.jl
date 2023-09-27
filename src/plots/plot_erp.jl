@@ -294,7 +294,7 @@ Plot topographical map ERPs.
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `t::Vector{Float64}`: time vector
 - `s::Array{Float64, 2}`: ERPs
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
@@ -303,7 +303,7 @@ Plot topographical map ERPs.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `yrev::Bool=false`: reverse Y axis
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 

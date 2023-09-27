@@ -9,7 +9,7 @@ Plot topographical view.
 
 - `s::Vector{<:Real}`: values to plot (one value per channel)
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
@@ -27,7 +27,7 @@ Plot topographical view.
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
 - `head_labels::Bool=false`: plot head labels
 - `head_details::Bool=true`: draw nose and ears
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -148,7 +148,7 @@ Topographical plot.
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
 - `head_labels::Bool=false`: plot head labels
 - `head_details::Bool=true`: draw nose and ears
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -260,7 +260,7 @@ Topographical plot of embedded or external component.
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
 - `head_labels::Bool=false`: plot head labels
 - `head_details::Bool=true`: draw nose and ears
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns
