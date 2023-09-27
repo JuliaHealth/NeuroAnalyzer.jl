@@ -371,8 +371,8 @@ NeuroAnalyzer.locs_rotx(locs::DataFrame; a::Real, planar::Bool=true, spherical::
 NeuroAnalyzer.locs_rotx!(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
 NeuroAnalyzer.locs_scale(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool=true)
 NeuroAnalyzer.locs_scale!(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool=true)
-NeuroAnalyzer.locs_maximize(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
-NeuroAnalyzer.locs_maximize!(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+NeuroAnalyzer.locs_normalize(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+NeuroAnalyzer.locs_normalize!(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
 NeuroAnalyzer.locs_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 NeuroAnalyzer.locs_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 ```

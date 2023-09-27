@@ -172,7 +172,7 @@ function import_set(file_name::String; detect_type::Bool=true)
         nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found.")
         if nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
-            locs_maximize!(locs)
+            locs_normalize!(locs)
         end
     else
         locs = DataFrame(:channel=>Int64,

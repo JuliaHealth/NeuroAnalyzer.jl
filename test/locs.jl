@@ -119,10 +119,10 @@ locs2 = locs_scale(locs, r=1.2)
 @test locs2[1, :loc_radius] == 1.2
 @test locs2[1, :loc_radius_sph] == 1.2
 
-@info "test 19/21: locs_maximize()"
+@info "test 19/21: locs_normalize()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_radius_sph] == 1.0
-locs2 = locs_maximize(locs)
+locs2 = locs_normalize(locs)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_radius_sph] == 1.0
 

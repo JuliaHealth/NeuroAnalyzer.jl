@@ -26,13 +26,13 @@ This is a meta-function that triggers appropriate `import_locs_*()` function. Fi
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs(file_name::String; maximize::Bool=true)
+function import_locs(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -71,13 +71,13 @@ Load channel locations from CED file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_ced(file_name::String; maximize::Bool=true)
+function import_locs_ced(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".ced" "Not CED file."
@@ -110,11 +110,11 @@ function import_locs_ced(file_name::String; maximize::Bool=true)
     locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_swapxy!(locs)
-    locs_flipx!(locs, planar=true, spherical=false)
+    locs_flipx!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
-    _locs_round!(locs)
+    _locs_round(locs)
 
     return locs
 
@@ -128,13 +128,13 @@ Load channel locations from LOCS file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_locs(file_name::String; maximize::Bool=true)
+function import_locs_locs(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".locs" "This is not LOCS file."
@@ -163,7 +163,7 @@ function import_locs_locs(file_name::String; maximize::Bool=true)
 
     locs[!, :loc_phi_sph] = zeros(nrow(locs))
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 
@@ -179,13 +179,13 @@ Load channel locations from ELC file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_elc(file_name::String; maximize::Bool=true)
+function import_locs_elc(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".elc" "This is not ELC file."
@@ -234,7 +234,7 @@ function import_locs_elc(file_name::String; maximize::Bool=true)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 
@@ -250,13 +250,13 @@ Load channel locations from TSV file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_tsv(file_name::String; maximize::Bool=true)
+function import_locs_tsv(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".tsv" "This is not TSV file."
@@ -296,7 +296,7 @@ function import_locs_tsv(file_name::String; maximize::Bool=true)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 
@@ -312,13 +312,13 @@ Load channel locations from SFP file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_sfp(file_name::String; maximize::Bool=true)
+function import_locs_sfp(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".sfp" "This is not SFP file."
@@ -356,7 +356,7 @@ function import_locs_sfp(file_name::String; maximize::Bool=true)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 
@@ -372,13 +372,13 @@ Load channel locations from CSD file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_csd(file_name::String; maximize::Bool=true)
+function import_locs_csd(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".csd" "This is not CSD file."
@@ -403,7 +403,7 @@ function import_locs_csd(file_name::String; maximize::Bool=true)
 
     locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 
@@ -419,13 +419,13 @@ Load channel locations from GEO file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_geo(file_name::String; maximize::Bool=true)
+function import_locs_geo(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".geo" "This is not GEO file."
@@ -474,7 +474,7 @@ function import_locs_geo(file_name::String; maximize::Bool=true)
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 
@@ -490,13 +490,13 @@ Load channel locations from MAT file.
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `maximize::Bool=false`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_mat(file_name::String; maximize::Bool=true)
+function import_locs_mat(file_name::String; maximize::Bool=false)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".mat" "This is not MAT file."
@@ -523,7 +523,7 @@ function import_locs_mat(file_name::String; maximize::Bool=true)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    maximize == true && locs_normalize!(locs)
 
     _locs_round!(locs)
 

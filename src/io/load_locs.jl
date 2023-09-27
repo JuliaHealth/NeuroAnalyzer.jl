@@ -69,16 +69,16 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     ref_labels = labels(obj)[ref_idx]
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
-            occursin("1", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.08, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
-            occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.08, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
+            occursin("1", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
+            occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
         end
     end
     eog_idx = get_channel_bytype(obj, type=:eog)
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
-            occursin("1", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 145.0, 1.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
-            occursin("2", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 35.0, 1.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
+            occursin("1", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 1.0, 145.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
+            occursin("2", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 1.0, 35.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
         end
     end
 

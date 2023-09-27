@@ -34,8 +34,8 @@ Convert Cartesian coordinates to polar.
 """
 function cart2pol(x::Real, y::Real)
 
-    radius = round(hypot(x, y), digits=2)
-    theta = round(atand(y, x), digits=2)
+    radius = hypot(x, y)
+    theta = atand(y, x)
 
     return radius, theta
 
@@ -68,7 +68,7 @@ function cart2sph(x::Real, y::Real, z::Real)
     # phi = round(acosd(z / radius), digits=2)
     phi = 90 - acosd(z / radius)
     
-    return round(radius, digits=2), round(theta, digits=2), round(phi, digits=2)
+    return radius, theta, phi
 
 end
 
@@ -89,8 +89,8 @@ Convert polar coordinates to Cartesian.
 """
 function pol2cart(radius::Real, theta::Real)
     
-    x = round(radius * cosd(theta), digits=2)
-    y = round(radius * sind(theta), digits=2)
+    x = radius * cosd(theta)
+    y = radius * sind(theta)
 
     return x, y
 
@@ -137,9 +137,9 @@ Convert spherical coordinates to Cartesian.
 """
 function sph2cart(radius::Real, theta::Real, phi::Real)
     
-    x = round(radius * sind(90 - phi) * cosd(theta), digits=2)
-    y = round(radius * sind(90 - phi) * sind(theta), digits=2)
-    z = round(radius * cosd(90 - phi), digits=2)
+    x = radius * sind(90 - phi) * cosd(theta)
+    y = radius * sind(90 - phi) * sind(theta)
+    z = radius * cosd(90 - phi)
 
     return x, y, z
 
@@ -163,7 +163,7 @@ Convert spherical coordinates to polar.
 """
 function sph2pol(radius::Real, theta::Real, phi::Real)
 
-    radius = round(radius * abs(cosd(phi)), digits=2)
+    radius = radius * abs(cosd(phi))
 
     return radius, theta
 

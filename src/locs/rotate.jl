@@ -6,7 +6,7 @@ export locs_rotx
 export locs_rotx!
 
 """
-    locs_rotz(locs; a, planar, spherical)
+    locs_rotz(locs; a, planar, cart, spherical)
 
 Rotate channel locations around the Z axis.
 
@@ -15,30 +15,48 @@ Rotate channel locations around the Z axis.
 - `locs::DataFrame`
 - `a::Real`: angle of rotation (in degrees)
 - `planar::Bool=true`: modify planar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
 - `locs_new::DataFrame`
 """
-function locs_rotz(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
+function locs_rotz(locs::DataFrame; a::Real, planar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
-
-#=    for idx in 1:nrow(locs)
-        locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) - locs[idx, :loc_y] * sind(a)
-        locs_new[idx, :loc_y] = locs[idx, :loc_x] * sind(a) + locs[idx, :loc_y] * cosd(a)
-    end=#
-
-    for idx in 1:nrow(locs)
-        spherical == true && (locs_new[idx, :loc_theta] += a)
-        planar == true && (locs_new[idx, :loc_theta_sph] += a)
+    
+    if cart
+        for idx in 1:nrow(locs)
+            locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) - locs[idx, :loc_y] * sind(a)
+            locs_new[idx, :loc_y] = locs[idx, :loc_x] * sind(a) + locs[idx, :loc_y] * cosd(a)
+        end
     end
 
-    locs_sph2cart!(locs_new)
+    if spherical
+        locs_tmp = deepcopy(locs)
+        locs_sph2cart!(locs_tmp)
+        for idx in 1:nrow(locs)
+            locs_tmp[idx, :loc_x] = locs_tmp[idx, :loc_x] * cosd(a) - locs_tmp[idx, :loc_y] * sind(a)
+            locs_tmp[idx, :loc_y] = locs_tmp[idx, :loc_x] * sind(a) + locs_tmp[idx, :loc_y] * cosd(a)
+        end
+        locs_cart2sph!(locs_tmp)
+        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
+        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
+        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+    end
 
-    # planar == true && locs_cart2pol!(locs_new)
-    # spherical == true && locs_cart2sph!(locs_new)
+    if planar
+        locs_tmp = deepcopy(locs)
+        locs_pol2cart!(locs_tmp)
+        for idx in 1:nrow(locs)
+            locs_tmp[idx, :loc_x] = locs_tmp[idx, :loc_x] * cosd(a) - locs_tmp[idx, :loc_y] * sind(a)
+            locs_tmp[idx, :loc_y] = locs_tmp[idx, :loc_x] * sind(a) + locs_tmp[idx, :loc_y] * cosd(a)
+        end
+        locs_cart2pol!(locs_tmp)
+        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
+        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
+    end
 
     return locs_new
 
@@ -54,18 +72,19 @@ Rotate channel locations in the xy-plane.
 - `locs::DataFrame`
 - `a::Int64`: scaling factor
 - `planar::Bool=true`: modify planar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_rotz!(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
+function locs_rotz!(locs::DataFrame; a::Real, planar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
-    locs[!, :] = locs_rotz(locs, a=a, planar=planar, spherical=spherical)[!, :]
+    locs[!, :] = locs_rotz(locs, a=a, planar=planar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
     
 end
 
 """
-    locs_roty(locs; a, planar, spherical)
+    locs_roty(locs; a, planar, cart, spherical)
 
 Rotate channel locations around the Y axis (in the XZ-plane).
 
@@ -74,23 +93,48 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 - `locs::DataFrame`
 - `a::Real`: angle of rotation (in degrees)
 - `planar::Bool=true`: modify planar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
 - `locs_new::DataFrame`
 """
-function locs_roty(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
+function locs_roty(locs::DataFrame; a::Real, planar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:nrow(locs)
-        locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
-        locs_new[idx, :loc_z] = -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
+    if cart
+        for idx in 1:nrow(locs)
+            locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
+            locs_new[idx, :loc_z] = -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
+        end
     end
 
-    planar == true && locs_cart2pol!(locs_new)
-    spherical == true && locs_cart2sph!(locs_new)
+    if spherical
+        locs_tmp = deepcopy(locs)
+        locs_sph2cart!(locs_tmp)
+        for idx in 1:nrow(locs)
+            locs_tmp[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
+            locs_tmp[idx, :loc_z] = -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
+        end
+        locs_cart2sph!(locs_tmp)
+        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
+        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
+        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+    end
+
+    if planar
+        locs_tmp = deepcopy(locs)
+        locs_pol2cart!(locs_tmp)
+        for idx in 1:nrow(locs)
+            locs_tmp[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
+            locs_tmp[idx, :loc_z] = -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
+        end
+        locs_cart2pol!(locs_tmp)
+        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
+        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
+    end
 
     return locs_new
 
@@ -106,18 +150,19 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 - `locs::DataFrame`
 - `a::Int64`: scaling factor
 - `planar::Bool=true`: modify planar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_roty!(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
+function locs_roty!(locs::DataFrame; a::Real, planar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
-    locs[!, :] = locs_roty(locs, a=a, planar=planar, spherical=spherical)[!, :]
+    locs[!, :] = locs_roty(locs, a=a, planar=planar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
     
 end
 
 """
-    locs_rotx(locs; a, planar, spherical)
+    locs_rotx(locs; a, planar, cart, spherical)
 
 Rotate channel locations around the X axis (in the YZ-plane).
 
@@ -126,23 +171,48 @@ Rotate channel locations around the X axis (in the YZ-plane).
 - `locs::DataFrame`
 - `a::Real`: angle of rotation (in degrees)
 - `planar::Bool=true`: modify planar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
 - `locs_new::DataFrame`
 """
-function locs_rotx(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
+function locs_rotx(locs::DataFrame; a::Real, planar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:nrow(locs)
-        locs_new[idx, :loc_y] = locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
-        locs_new[idx, :loc_z] = locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
+    if cart
+        for idx in 1:nrow(locs)
+            locs_new[idx, :loc_y] = locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
+            locs_new[idx, :loc_z] = locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
+        end
     end
 
-    planar == true && locs_cart2pol!(locs_new)
-    spherical == true && locs_cart2sph!(locs_new)
+    if spherical
+        locs_tmp = deepcopy(locs)
+        locs_sph2cart!(locs_tmp)
+        for idx in 1:nrow(locs)
+            locs_tmp[idx, :loc_y] = locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
+            locs_tmp[idx, :loc_z] = locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
+        end
+        locs_cart2sph!(locs_tmp)
+        locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
+        locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
+        locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
+    end
+
+    if planar
+        locs_tmp = deepcopy(locs)
+        locs_pol2cart!(locs_tmp)
+        for idx in 1:nrow(locs)
+            locs_tmp[idx, :loc_y] = locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
+            locs_tmp[idx, :loc_z] = locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
+        end
+        locs_cart2pol!(locs_tmp)
+        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
+        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
+    end
 
     return locs_new
 
@@ -158,11 +228,12 @@ Rotate channel locations around the X axis (in the YZ-plane).
 - `locs::DataFrame`
 - `a::Int64`: scaling factor
 - `planar::Bool=true`: modify planar coordinates
+- `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_rotx!(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
+function locs_rotx!(locs::DataFrame; a::Real, planar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
-    locs[!, :] = locs_rotx(locs, a=a, planar=planar, spherical=spherical)[!, :]
+    locs[!, :] = locs_rotx(locs, a=a, planar=planar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
     

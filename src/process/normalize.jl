@@ -93,7 +93,11 @@ function normalize_zscore(s::AbstractArray)
     m = mean(s)
     sd = std(s)
 
-    return @. (s - m) / sd
+    if sd != 0
+        return @. (s - m) / sd
+    else
+        return @. (s - m) / sd
+    end
 
 end
 
@@ -112,11 +116,14 @@ Normalize in [-1, +1].
 """
 function normalize_minmax(s::AbstractArray)
 
-    mi = minimum(s)
-    mx = maximum(s)
-    mxi = mx - mi
-
-    return @. (2 * (s - mi) / mxi) - 1
+    if length(unique(s)) == 1
+        return ones(length(s))
+    else
+        mi = minimum(s)
+        mx = maximum(s)
+        mxi = mx - mi
+        return @. (2 * (s - mi) / mxi) - 1
+    end
 
 end
 
@@ -136,9 +143,12 @@ Normalize in [0, n], default is [0, +1].
 """
 function normalize_n(s::AbstractArray, n::Real=1.0)
 
-    smin, smax = extrema(s)
-
-    return @. n * (s - smin) / (smax - smin)
+    if length(unique(s)) == 1
+        return ones(length(s)) .* n
+    else
+        smin, smax = extrema(s)
+        return @. n * (s - smin) / (smax - smin)
+    end
 
 end
 
@@ -307,7 +317,11 @@ function normalize_perc(s::AbstractArray)
     m2 = maximum(s)
     m = m2 - m1
 
-    return (s .- m1) ./ m
+    if m != 0
+        return (s .- m1) ./ m
+    else
+        return (s .- m1)
+    end
 
 end
 
