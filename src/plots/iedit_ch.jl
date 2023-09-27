@@ -11,6 +11,8 @@ Interactive edit signal channels properties and locations.
 """
 function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
+    obj_new = deepcopy(obj)
+
     function _refresh_plots()
         Gtk.@sigatom begin
             draw(can1)
@@ -73,20 +75,20 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         return nothing
     end
 
-    if _has_locs(obj)
-        locs = obj.locs
+    if _has_locs(obj_new)
+        locs = obj_new.locs
         locs_ch = locs[!, :channel]
     else
-        _initialize_locs!(obj)
-        locs = obj.locs
+        _initialize_locs!(obj_new)
+        locs = obj_new.locs
         locs_ch = locs[!, :channel]
     end
 
     current_channel = 1
-    ch_types = obj.header.recording[:channel_type]
-    ch_units = obj.header.recording[:units]
-    ch_labels = obj.header.recording[:labels]
-    ch_signal = signal_channels(obj)
+    ch_types = obj_new.header.recording[:channel_type]
+    ch_units = obj_new.header.recording[:units]
+    ch_labels = obj_new.header.recording[:labels]
+    ch_signal = signal_channels(obj_new)
 
     # Gtk canvas / Cairo context should be scaled only once
     already_scaled1 = false
@@ -118,7 +120,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     lab_chn = GtkLabel("Channel number:")
     set_gtk_property!(lab_chn, :halign, 2)
-    entry_ch = GtkSpinButton(1, nchannels(obj), 1)
+    entry_ch = GtkSpinButton(1, nchannels(obj_new), 1)
     set_gtk_property!(entry_ch, :value, current_channel)
     set_gtk_property!(entry_ch, :climb_rate, 0.1)
     set_gtk_property!(entry_ch, :tooltip_text, "Channel number")
@@ -127,68 +129,68 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the last channel")
 
-    lab_chtype = GtkLabel("Channel type:")
-    set_gtk_property!(lab_chtype, :halign, 2)
+    lab_chtype = GtkLabel("Channel type")
+    #set_gtk_property!(lab_chtype, :halign, 2)
     combo_chtype = GtkComboBoxText()
     for idx in string.(NeuroAnalyzer.channel_types[2:end])
         push!(combo_chtype, idx)
     end
     set_gtk_property!(combo_chtype, :active, findfirst(isequal(Symbol(ch_types[current_channel])), NeuroAnalyzer.channel_types) - 2)
 
-    lab_chunits = GtkLabel("Channel units:")
-    set_gtk_property!(lab_chunits, :halign, 2)
+    lab_chunits = GtkLabel("Channel units")
+    #set_gtk_property!(lab_chunits, :halign, 2)
     combo_chunits = GtkComboBoxText()
     for idx in NeuroAnalyzer.channel_units
         push!(combo_chunits, idx)
     end
     set_gtk_property!(combo_chunits, :active, findfirst(isequal(NeuroAnalyzer._ch_units(ch_types[current_channel])), NeuroAnalyzer.channel_units) - 1)
 
-    lab_chlabel = GtkLabel("Channel label:")
-    set_gtk_property!(lab_chlabel, :halign, 2)
+    lab_chlabel = GtkLabel("Channel label")
+    #set_gtk_property!(lab_chlabel, :halign, 2)
     entry_label = GtkEntry()
     set_gtk_property!(entry_label, :text, ch_labels[current_channel])
 
     bt_delete = GtkButton("Delete channel")
-    nchannels(obj) == 0 && set_gtk_property!(bt_delete, :sensitive, false)
+    nchannels(obj_new) == 0 && set_gtk_property!(bt_delete, :sensitive, false)
 
-    lab_loc_x = GtkLabel("Cartesian X:")
-    set_gtk_property!(lab_loc_x, :halign, 2)
+    lab_loc_x = GtkLabel("Cartesian X")
+    #set_gtk_property!(lab_loc_x, :halign, 2)
     entry_loc_x = GtkSpinButton(-1.5, 1.5, 0.01)
     set_gtk_property!(entry_loc_x, :tooltip_text, "Cartesian X coordinate (:loc_x)")
     set_gtk_property!(entry_loc_x, :digits, 2)
-    lab_loc_y = GtkLabel("Cartesian Y:")
-    set_gtk_property!(lab_loc_y, :halign, 2)
+    lab_loc_y = GtkLabel("Cartesian Y")
+    #set_gtk_property!(lab_loc_y, :halign, 2)
     entry_loc_y = GtkSpinButton(-1.5, 1.5, 0.01)
     set_gtk_property!(entry_loc_y, :tooltip_text, "Cartesian Y coordinate (:loc_y)")
     set_gtk_property!(entry_loc_y, :digits, 2)
-    lab_loc_z = GtkLabel("Cartesian Z:")
-    set_gtk_property!(lab_loc_z, :halign, 2)
+    lab_loc_z = GtkLabel("Cartesian Z")
+    #set_gtk_property!(lab_loc_z, :halign, 2)
     entry_loc_z = GtkSpinButton(-1.5, 1.5, 0.01)
     set_gtk_property!(entry_loc_z, :tooltip_text, "Cartesian Z coordinate (:loc_z)")
     set_gtk_property!(entry_loc_z, :digits, 2)
-    lab_loc_theta_sph = GtkLabel("Spherical theta:")
-    set_gtk_property!(lab_loc_theta_sph, :halign, 2)
+    lab_loc_theta_sph = GtkLabel("Spherical theta")
+    #set_gtk_property!(lab_loc_theta_sph, :halign, 2)
     entry_loc_theta_sph = GtkSpinButton(-360.0, 360.0, 0.05)
     set_gtk_property!(entry_loc_theta_sph, :tooltip_text, "Spherical horizontal angle (:loc_theta_sph)")
     set_gtk_property!(entry_loc_theta_sph, :digits, 2)
-    lab_loc_phi_sph = GtkLabel("Spherical phi:")
-    set_gtk_property!(lab_loc_phi_sph, :halign, 2)
+    lab_loc_phi_sph = GtkLabel("Spherical phi")
+    #set_gtk_property!(lab_loc_phi_sph, :halign, 2)
     entry_loc_phi_sph = GtkSpinButton(-360.0, 360.0, 0.05)
     set_gtk_property!(entry_loc_phi_sph, :tooltip_text, "Spherical azimuth angle (:loc_phi_sph)")
     set_gtk_property!(entry_loc_phi_sph, :digits, 2)
-    lab_loc_radius_sph = GtkLabel("Spherical radius:")
-    set_gtk_property!(lab_loc_radius_sph, :halign, 2)
+    lab_loc_radius_sph = GtkLabel("Spherical radius")
+    #set_gtk_property!(lab_loc_radius_sph, :halign, 2)
     entry_loc_radius_sph = GtkSpinButton(-1.5, 1.5, 0.01)
     set_gtk_property!(entry_loc_radius_sph, :tooltip_text, "Spherical radius (:loc_radius_sph)")
     set_gtk_property!(entry_loc_radius_sph, :digits, 2)
 
-    lab_loc_theta = GtkLabel("Polar theta:")
-    set_gtk_property!(lab_loc_theta, :halign, 2)
+    lab_loc_theta = GtkLabel("Polar theta")
+    #set_gtk_property!(lab_loc_theta, :halign, 2)
     entry_loc_theta = GtkSpinButton(-360.0, 360.0, 0.05)
     set_gtk_property!(entry_loc_theta, :tooltip_text, "Polar theta angle (:loc_theta)")
     set_gtk_property!(entry_loc_theta, :digits, 2)
-    lab_loc_radius = GtkLabel("Polar radius:")
-    set_gtk_property!(lab_loc_radius, :halign, 2)
+    lab_loc_radius = GtkLabel("Polar radius")
+    #set_gtk_property!(lab_loc_radius, :halign, 2)
     entry_loc_radius = GtkSpinButton(-1.5, 1.5, 0.01)
     set_gtk_property!(entry_loc_radius, :tooltip_text, "Polar radius (:loc_radius)")
     set_gtk_property!(entry_loc_radius, :digits, 2)
@@ -220,13 +222,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     bt_normalize = GtkButton("Normalize")
     set_gtk_property!(bt_normalize, :tooltip_text, "Maximize channel locations to fit the unit sphere")
     bt_transform = GtkButton("Transform")
+    set_gtk_property!(bt_transform, :tooltip_text, "Transform coordinates from one set to another")
     combo_transform = GtkComboBoxText()
     transformations = ["Cartesian → Polar", "Cartesian → Spherical", "Polar → Cartesian", "Polar → Spherical", "Spherical → Cartesian", "Spherical → Polar"]
     for idx in transformations
         push!(combo_transform, idx)
     end
     set_gtk_property!(combo_transform, :active, 0)
-    set_gtk_property!(combo_transform, :tooltip_text, "Transform coordinates from one set to another")
 
     bt_load = GtkButton("Load")
     set_gtk_property!(bt_load, :tooltip_text, "Load location coordinates")
@@ -234,8 +236,10 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     set_gtk_property!(bt_save, :tooltip_text, "Save location coordinates")
     bt_generate = GtkButton("Generate")
     set_gtk_property!(bt_generate, :tooltip_text, "Generate location coordinates using 10-5 system")
-    bt_close = GtkButton("Exit")
-    set_gtk_property!(bt_close, :tooltip_text, "Close this window")
+    bt_apply = GtkButton("Apply")
+    set_gtk_property!(bt_apply, :tooltip_text, "Apply changes and close this window")
+    bt_cancel = GtkButton("Cancel")
+    set_gtk_property!(bt_cancel, :tooltip_text, "Close this window and abandon changes")
 
     lab_cart = GtkLabel("Plot using Cartesian coordinates:")
     set_gtk_property!(lab_cart, :halign, 2)
@@ -254,50 +258,51 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     g_opts[2, 3] = bt_delete
     g_opts[1:3, 4] = GtkLabel("Channel properties")
     g_opts[1, 5] = lab_chlabel
-    g_opts[2, 5] = entry_label
-    g_opts[1, 6] = lab_chtype
+    g_opts[1, 6] = entry_label
+    g_opts[2, 5] = lab_chtype
     g_opts[2, 6] = combo_chtype
-    g_opts[1, 7] = lab_chunits
-    g_opts[2, 7] = combo_chunits
-    g_opts[1:3, 8] = GtkLabel("Edit coordinates")
-    g_opts[1, 9] = lab_loc_radius
-    g_opts[2, 9] = entry_loc_radius
-    g_opts[1, 10] = lab_loc_theta
-    g_opts[2, 10] = entry_loc_theta
-    g_opts[1, 11] = lab_loc_x
-    g_opts[2, 11] = entry_loc_x
-    g_opts[1, 12] = lab_loc_y
-    g_opts[2, 12] = entry_loc_y
-    g_opts[1, 13] = lab_loc_z
-    g_opts[2, 13] = entry_loc_z
-    g_opts[1, 14] = lab_loc_radius_sph
-    g_opts[2, 14] = entry_loc_radius_sph
-    g_opts[1, 15] = lab_loc_theta_sph
-    g_opts[2, 15] = entry_loc_theta_sph
-    g_opts[1, 16] = lab_loc_phi_sph
-    g_opts[2, 16] = entry_loc_phi_sph
-    g_opts[1:3, 17] = GtkLabel("Edit locs")
-    g_opts[1, 18] = bt_flipx
-    g_opts[2, 18] = bt_flipy
-    g_opts[3, 18] = bt_flipz
-    g_opts[1, 19] = bt_ax_rot
-    g_opts[2, 19] = combo_ax_rot
-    g_opts[3, 19] = entry_ax_rot_degree
-    g_opts[1, 20] = bt_scale
-    g_opts[2, 20] = entry_scale
-    g_opts[3, 20] = bt_normalize
-    g_opts[1, 21] = bt_transform
-    g_opts[2, 21] = combo_transform
-    g_opts[3, 21] = bt_swapxy
-    g_opts[1:3, 22] = GtkLabel("Locs operations")
-    g_opts[1, 23] = bt_generate
-    g_opts[2, 23] = bt_load
-    g_opts[3, 23] = bt_save
-    g_opts[1, 24] = lab_hdlab
-    g_opts[2, 24] = cb_hdlab
-    g_opts[1, 25] = lab_cart
-    g_opts[2, 25] = cb_cart
-    g_opts[2, 26] = bt_close
+    g_opts[3, 5] = lab_chunits
+    g_opts[3, 6] = combo_chunits
+    g_opts[1:3, 7] = GtkLabel("Channel coordinates")
+    g_opts[1, 8] = lab_loc_radius
+    g_opts[1, 9] = entry_loc_radius
+    g_opts[2, 8] = lab_loc_theta
+    g_opts[2, 9] = entry_loc_theta
+    g_opts[1, 10] = lab_loc_x
+    g_opts[1, 11] = entry_loc_x
+    g_opts[2, 10] = lab_loc_y
+    g_opts[2, 11] = entry_loc_y
+    g_opts[3, 10] = lab_loc_z
+    g_opts[3, 11] = entry_loc_z
+    g_opts[1, 12] = lab_loc_radius_sph
+    g_opts[1, 13] = entry_loc_radius_sph
+    g_opts[2, 12] = lab_loc_theta_sph
+    g_opts[2, 13] = entry_loc_theta_sph
+    g_opts[3, 12] = lab_loc_phi_sph
+    g_opts[3, 13] = entry_loc_phi_sph
+    g_opts[1:3, 14] = GtkLabel("Edit locs")
+    g_opts[1, 15] = bt_flipx
+    g_opts[2, 15] = bt_flipy
+    g_opts[3, 15] = bt_flipz
+    g_opts[1, 16] = bt_ax_rot
+    g_opts[2, 16] = combo_ax_rot
+    g_opts[3, 16] = entry_ax_rot_degree
+    g_opts[1, 17] = bt_scale
+    g_opts[2, 17] = entry_scale
+    g_opts[3, 17] = bt_normalize
+    g_opts[1, 18] = bt_transform
+    g_opts[2, 18] = combo_transform
+    g_opts[3, 18] = bt_swapxy
+    g_opts[1:3, 19] = GtkLabel("Locs operations")
+    g_opts[1, 20] = bt_generate
+    g_opts[2, 20] = bt_load
+    g_opts[3, 20] = bt_save
+    g_opts[1, 21] = lab_hdlab
+    g_opts[2, 21] = cb_hdlab
+    g_opts[1, 22] = lab_cart
+    g_opts[2, 22] = cb_cart
+    g_opts[1, 23] = bt_apply
+    g_opts[2, 23] = bt_cancel
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -425,7 +430,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_end, "clicked") do widget
-        current_channel = nchannels(obj)
+        current_channel = nchannels(obj_new)
         Gtk.@sigatom begin
             set_gtk_property!(entry_ch, :value, current_channel)
         end
@@ -446,13 +451,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     signal_connect(bt_delete, "clicked") do widget
         if ask_dialog("Delete channel $current_channel ?", "No", "Yes")
-            delete_channel!(obj, ch=current_channel)
-            current_channel > nchannels(obj) && (current_channel = nchannels(obj))
-            locs = obj.locs
+            delete_channel!(obj_new, ch=current_channel)
+            current_channel > nchannels(obj_new) && (current_channel = nchannels(obj_new))
+            locs = obj_new.locs
             locs_ch = locs[!, :channel]
-            ch_types = obj.header.recording[:channel_type]
-            ch_units = obj.header.recording[:units]
-            ch_labels = obj.header.recording[:labels]
+            ch_types = obj_new.header.recording[:channel_type]
+            ch_units = obj_new.header.recording[:units]
+            ch_labels = obj_new.header.recording[:labels]
             Gtk.@sigatom begin
                 set_gtk_property!(entry_ch, :value, current_channel)
                 set_gtk_property!(entry_label, :text, ch_labels[current_channel])
@@ -472,7 +477,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     signal_connect(combo_chtype, "changed") do widget
         ch_types[current_channel] = string(NeuroAnalyzer.channel_types[get_gtk_property(combo_chtype, :active, Int64) + 2])
-        ch_signal = signal_channels(obj)
+        ch_signal = signal_channels(obj_new)
         Gtk.@sigatom begin
             set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         end
@@ -617,9 +622,9 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         file_name = open_dialog("Pick locations file", GtkNullContainer(), (GtkFileFilter("*.ced, *.elc, *.locs, *.tsv, *.sfp, *.csd, *.geo, *.mat", name="All supported formats"), "*.ced, *.elc, *.locs, *.tsv, *.sfp, *.csd, *.geo, *.mat"))
         if file_name != ""
             if splitext(file_name)[2] in [".ced", ".elc", ".locs", ".tsv", ".sfp", ".csd", ".geo", ".mat"]
-                if _has_locs(obj) && ask_dialog("Replace channel locations ?", "No", "Yes")
-                    load_locs!(obj, file_name=file_name)
-                    locs = obj.locs
+                if _has_locs(obj_new) && ask_dialog("Replace channel locations ?", "No", "Yes")
+                    load_locs!(obj_new, file_name=file_name)
+                    locs = obj_new.locs
                     locs_ch = locs[!, :channel]
                     refresh = false
                     _refresh_locs()
@@ -636,14 +641,27 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         file_name = save_dialog("Pick locations file", GtkNullContainer(), (GtkFileFilter("*.ced, *.locs, *.tsv", name="All supported formats"), "*.ced, *.locs, *.tsv"))
         if file_name != ""
             if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
-                export_locs(obj, file_name=file_name, overwrite=true)
+                export_locs(obj_new, file_name=file_name, overwrite=true)
             else
                 warn_dialog("Incorrect file name!")
             end
         end
     end
 
-    signal_connect(bt_close, "clicked") do widget
+    signal_connect(bt_apply, "clicked") do widget
+        if ask_dialog("This operation will apply all changes made to channels and locs.\nPlease confirm.", "No", "Yes")
+            obj.header = obj_new.header
+            obj.data = obj_new.data
+            obj.locs = obj_new.locs
+            obj.components = obj_new.components
+            obj.history = obj_new.history
+            obj.markers = obj_new.markers
+            Gtk.destroy(win)
+            return nothing
+        end
+    end
+
+    signal_connect(bt_cancel, "clicked") do widget
         Gtk.destroy(win)
         return nothing
     end
