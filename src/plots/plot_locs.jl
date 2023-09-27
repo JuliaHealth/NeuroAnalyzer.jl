@@ -158,7 +158,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
 
     for idx in eachindex(locs[!, :labels])
         if idx in ch
-            p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+        p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                             color=:lightgrey,
                             markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                             label="",
