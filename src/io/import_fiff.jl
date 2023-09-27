@@ -235,16 +235,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
 
     markers = DataFrame()
 
-    locs = DataFrame(:channel=>Int64,
-                     :labels=>String[],
-                     :loc_theta=>Float64[],
-                     :loc_radius=>Float64[],
-                     :loc_x=>Float64[],
-                     :loc_y=>Float64[],
-                     :loc_z=>Float64[],
-                     :loc_radius_sph=>Float64[],
-                     :loc_theta_sph=>Float64[],
-                     :loc_phi_sph=>Float64[])
+    locs = _initialize_locs()
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
 

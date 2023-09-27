@@ -64,6 +64,24 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
         @error "Unknown file format."
     end
 
+    # add locations of reference channels
+    ref_idx = get_channel_bytype(obj, type=:ref)
+    ref_labels = labels(obj)[ref_idx]
+    if length(ref_labels) > 0
+        for idx in eachindex(ref_labels)
+            occursin("1", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 192.0, 1.08, -0.92, -0.23, -0.55, 192.0, -29.0, 1.08])
+            occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], -12.0, 1.08, 0.92, -0.23, -0.55, -12.0, -29.0, 1.08])
+        end
+    end
+    eog_idx = get_channel_bytype(obj, type=:eog)
+    eog_labels = labels(obj)[eog_idx]
+    if length(eog_labels) > 0
+        for idx in eachindex(eog_labels)
+            occursin("1", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 145.0, 1.0, -0.8, 0.53, -0.37, 145.0, -22.0, 1.0])
+            occursin("2", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 35.0, 1.0, 0.8, 0.53, -0.37, 35.0, -22.0, 1.0])
+        end
+    end
+
     f_labels = locs[!, :labels]
 
     loc_theta = float.(locs[!, :loc_theta])

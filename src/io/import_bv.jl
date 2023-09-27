@@ -160,16 +160,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
     loc_radius_sph = zeros(ch_n)
     loc_theta_sph = zeros(ch_n)
     loc_phi_sph = zeros(ch_n)
-    locs = DataFrame(:channel=>Int64,
-                     :labels=>String[],
-                     :loc_theta=>Float64[],
-                     :loc_radius=>Float64[],
-                     :loc_x=>Float64[],
-                     :loc_y=>Float64[],
-                     :loc_z=>Float64[],
-                     :loc_radius_sph=>Float64[],
-                     :loc_theta_sph=>Float64[],
-                     :loc_phi_sph=>Float64[])
+    locs = _initialize_locs()
     if locs_idx != 0
         for idx in 1:ch_n
             if occursin('=', vhdr[locs_idx + idx])

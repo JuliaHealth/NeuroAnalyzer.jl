@@ -89,12 +89,12 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
 
     if head
         xt = (linspace(0, size(img, 1), 25), string.(-1.2:0.1:1.2))
-        yt = (linspace(0, size(img, 2), 25), string.(-1.2:0.1:1.2))
+        yt = (linspace(0, size(img, 2), 25), string.(1.2:-0.1:-1.2))
         xl = (0, size(img, 1))
         yl = (0, size(img, 2))
     else
         xt = (-1.2:0.1:1.2)
-        yt = (-1.2:0.1:1.2)
+        yt = (1.2:-0.1:-1.2)
         xl = (-1.2, 1.2)
         yl = (-1.2, 1.2)
     end

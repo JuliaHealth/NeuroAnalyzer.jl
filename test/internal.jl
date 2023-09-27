@@ -69,6 +69,7 @@ x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test typeof(NeuroAnalyzer._initialize_locs(e10)) == DataFrame
 NeuroAnalyzer._initialize_locs!(e10)
 @test NeuroAnalyzer._has_locs(e10) == true
+@test typeof(NeuroAnalyzer._initialize_locs()) == DataFrame
 xn, yn = NeuroAnalyzer._locnorm(x, y)
 @test xn[1] == 0.03551775887943953
 @test yn[1] == 1.0

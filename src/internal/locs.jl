@@ -1,3 +1,16 @@
+function _initialize_locs()
+    return DataFrame(:channel=>Int64,
+                     :labels=>String[],
+                     :loc_theta=>Float64[],
+                     :loc_radius=>Float64[],
+                     :loc_x=>Float64[],
+                     :loc_y=>Float64[],
+                     :loc_z=>Float64[],
+                     :loc_radius_sph=>Float64[],
+                     :loc_theta_sph=>Float64[],
+                     :loc_phi_sph=>Float64[])
+end
+
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
     locs_ch = signal_channels(obj)
     obj.locs = DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_theta=>zeros(length(locs_ch)), :loc_radius=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
