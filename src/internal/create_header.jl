@@ -1,11 +1,11 @@
-function _create_subject(;id::String, first_name::String, middle_name::String, last_name::String, head_circumference::Real, handedness::String, weight::Real, height::Real)
+function _create_subject(;id::String, first_name::String, middle_name::String, last_name::String, handedness::String, head_circumference::Real, weight::Real, height::Real)
 
     return Dict(:id=>id,
                 :first_name=>first_name,
                 :middle_name=>middle_name,
                 :last_name=>last_name,
-                :head_circumference=>head_circumference,
                 :handedness=>handedness,
+                :head_circumference=>head_circumference,
                 :weight=>weight,
                 :height=>height)
 end

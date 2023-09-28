@@ -227,7 +227,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     bt_transform = GtkButton("Transform")
     set_gtk_property!(bt_transform, :tooltip_text, "Transform coordinates from one set to another")
     combo_transform = GtkComboBoxText()
-    transformations = ["Cartesian → Polar", "Cartesian → Spherical", "Polar → Cartesian", "Polar → Spherical", "Spherical → Cartesian", "Spherical → Polar"]
+    transformations = ["Cartesian → polar", "Cartesian → spherical", "polar → Cartesian", "polar → spherical", "spherical → Cartesian", "spherical → polar"]
     for idx in transformations
         push!(combo_transform, idx)
     end
