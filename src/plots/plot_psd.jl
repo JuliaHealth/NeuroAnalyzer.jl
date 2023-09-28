@@ -509,8 +509,6 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector
         zsc = norm == false ? :log10 : :identity
     end
 
-    @show "A"
-
     # prepare plot
     if variant === :w
         p = Plots.plot3d(sf,

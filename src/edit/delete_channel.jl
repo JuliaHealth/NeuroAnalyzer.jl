@@ -55,7 +55,6 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
 
     # remove channel locations
     for loc_idx in length(ch):-1:1
-        @show ch[loc_idx]
         ch[loc_idx] in obj_new.locs[!, :channel] && deleteat!(obj_new.locs, loc_idx)
     end
 
