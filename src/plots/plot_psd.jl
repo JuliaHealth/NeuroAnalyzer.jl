@@ -679,7 +679,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
     # origin is in the left top corner, convert positions
     loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
-    loc_y = round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
+    loc_y = (plot_size - marker_size[2]) .- round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
     c = CairoRGBSurface(plot_size, plot_size)
     cr = CairoContext(c)
