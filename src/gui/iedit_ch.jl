@@ -262,6 +262,19 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     cb_hdlab = GtkCheckButton("")
     set_gtk_property!(cb_hdlab, :active, false)
 
+    cb_planar = GtkCheckButton("")
+    set_gtk_property!(cb_planar, :halign, 3)
+    set_gtk_property!(cb_planar, :active, true)
+    set_gtk_property!(cb_planar, :tooltip_text, "Apply operations to planar coordinates")
+    cb_cartesian = GtkCheckButton("")
+    set_gtk_property!(cb_cartesian, :halign, 3)
+    set_gtk_property!(cb_cartesian, :active, true)
+    set_gtk_property!(cb_cartesian, :tooltip_text, "Apply operations to Cartesian coordinates")
+    cb_spherical = GtkCheckButton("")
+    set_gtk_property!(cb_spherical, :halign, 3)
+    set_gtk_property!(cb_spherical, :active, true)
+    set_gtk_property!(cb_spherical, :tooltip_text, "Apply operations to spherical coordinates")
+
     g_opts[1:3, 1] = GtkLabel("Channel number")
     g_opts[1, 2] = bt_start
     g_opts[2, 2] = entry_ch
@@ -292,30 +305,34 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     g_opts[3, 12] = lab_loc_phi_sph
     g_opts[3, 13] = entry_loc_phi_sph
     g_opts[1:3, 14] = GtkLabel("Edit locs")
-    g_opts[1, 15] = bt_flip
-    g_opts[2, 15] = combo_flip
-    g_opts[3, 15] = bt_swapxy
-    g_opts[1, 16] = bt_ax_rot
-    g_opts[2, 16] = combo_ax_rot
-    g_opts[3, 16] = entry_ax_rot_degree
-    g_opts[1, 17] = bt_scale
-    g_opts[2, 17] = entry_scale
-    g_opts[3, 17] = bt_normalize
-    g_opts[1, 18] = bt_transform
-    g_opts[2, 18] = combo_transform
-    g_opts[3, 18] = combo_projections
-    g_opts[1:3, 19] = GtkLabel("Locs operations")
-    g_opts[1, 20] = bt_generate
-    g_opts[2, 20] = bt_load
-    g_opts[3, 20] = bt_save
-    g_opts[1, 21] = lab_hdlab
-    g_opts[2, 21] = cb_hdlab
-    g_opts[1, 22] = lab_cart
-    g_opts[2, 22] = cb_cart
-    g_opts[1, 23] = GtkLabel("")
-    g_opts[2, 23] = GtkLabel("")
-    g_opts[1, 24] = bt_apply
-    g_opts[2, 24] = bt_cancel
+    g_opts[1, 15] = GtkLabel("Apply to planar")
+    g_opts[1, 16] = cb_planar
+    g_opts[2, 15] = GtkLabel("Apply to Cartesian")
+    g_opts[2, 16] = cb_cartesian
+    g_opts[3, 15] = GtkLabel("Apply to spherical")
+    g_opts[3, 16] = cb_spherical
+    g_opts[1, 17] = bt_flip
+    g_opts[2, 17] = combo_flip
+    g_opts[3, 17] = bt_swapxy
+    g_opts[1, 18] = bt_ax_rot
+    g_opts[2, 18] = combo_ax_rot
+    g_opts[3, 18] = entry_ax_rot_degree
+    g_opts[1, 19] = bt_scale
+    g_opts[2, 19] = entry_scale
+    g_opts[3, 19] = bt_normalize
+    g_opts[1, 20] = bt_transform
+    g_opts[2, 20] = combo_transform
+    g_opts[3, 20] = combo_projections
+    g_opts[1:3, 21] = GtkLabel("Locs operations")
+    g_opts[1, 22] = bt_generate
+    g_opts[2, 22] = bt_load
+    g_opts[3, 22] = bt_save
+    g_opts[1, 23] = lab_hdlab
+    g_opts[2, 23] = cb_hdlab
+    g_opts[1, 24] = lab_cart
+    g_opts[2, 24] = cb_cart
+    g_opts[2, 25] = bt_apply
+    g_opts[3, 25] = bt_cancel
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
