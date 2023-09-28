@@ -45,7 +45,6 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
                 loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
-                # loc_x[idx], loc_y[idx], _ = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
             end
         else
             loc_x = locs[!, :loc_x]
@@ -85,8 +84,8 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     end
 
-    loc_x = NeuroAnalyzer._s2v(loc_x)
-    loc_y = NeuroAnalyzer._s2v(loc_y)
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
 
     if head
         xt = (linspace(0, size(img, 1), 25), string.(-1.2:0.1:1.2))
@@ -104,15 +103,15 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
     if large
         marker_size = 10
         font_size = 6
-        loc_x = @. origin[1] + (loc_x * 250)
-        loc_y = @. origin[2] - (loc_y * 250)
+        loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+        loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
     else
         marker_size = 4
         font_size = 4
         ch_labels = false
         grid = false
-        loc_x = @. origin[1] + (loc_x * 100)
-        loc_y = @. origin[2] - (loc_y * 100)
+        loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+        loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
     end
 
     ma = 1.0
@@ -390,8 +389,12 @@ Preview of channel locations.
 """
 function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, kwargs...)
 
+    # remove reference and EOG channels
+    ch = vec(collect(ch))
+    setdiff!(ch, get_channel_bytype(obj, type=:ref))
+    setdiff!(ch, get_channel_bytype(obj, type=:eog))
     # select channels, default is all channels
-    _check_channels(ch, signal_channels(obj))
+    _check_channels(signal_channels(obj), ch)
     selected != 0 && _check_channels(obj, selected)
 
     if obj.header.recording[:data_type] == "ecog"

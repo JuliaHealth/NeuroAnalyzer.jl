@@ -55,7 +55,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
 
     # remove channel locations
     for loc_idx in length(ch):-1:1
-        loc_idx in obj_new.locs[!, :channel] && deleteat!(obj_new.locs, loc_idx)
+        ch[loc_idx] in obj_new.locs[!, :channel] && deleteat!(obj_new.locs, loc_idx)
     end
 
     reset_components!(obj_new)
@@ -108,7 +108,7 @@ function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     _check_channels(obj, ch)
 
     ch_n = nchannels(obj)
-    chs_to_remove = setdiff(collect(1:ch_n), ch)
+    chs_to_remove = setdiff(_c(ch_n), ch)
     @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
 
     obj_new = delete_channel(obj, ch=chs_to_remove)
