@@ -9,8 +9,8 @@ Add electrode positions from `locs`.
 Electrode locations:
 - `channel`         channel number
 - `labels`          channel label
-- `loc_theta`       planar polar angle
-- `loc_radius`      planar polar radius
+- `loc_theta`       polar angle
+- `loc_radius`      polar radius
 - `loc_x`           Cartesian x
 - `loc_y`           Cartesian y
 - `loc_z`           Cartesian z
@@ -65,8 +65,8 @@ Load electrode positions from `locs` and return `NeuroAnalyzer.NEURO` object wit
 Electrode locations:
 - `channel`         channel number
 - `labels`          channel label
-- `loc_theta`       planar polar angle
-- `loc_radius`      planar polar radius
+- `loc_theta`       polar angle
+- `loc_radius`      polar radius
 - `loc_x`           Cartesian x
 - `loc_y`           Cartesian y
 - `loc_z`           Cartesian z

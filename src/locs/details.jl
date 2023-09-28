@@ -16,8 +16,8 @@ Return locations of OBJ ch electrode.
 Named tuple containing:
 - `ch::Int64`: channel number
 - `label::String`: location label
-- `theta::Float64`: polar planar theta coordinate
-- `radius::Float64`: polar planar radius coordinate
+- `theta::Float64`: polar angle
+- `radius::Float64`: polar radius
 - `x::Float64`: Cartesian X spherical coordinate
 - `y::Float64`: Cartesian Y spherical coordinate
 - `z::Float64`: Cartesian Z spherical coordinate
@@ -49,8 +49,8 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, out::B
     if out == true
         println("Channel: $ch")
         println("  Label: $l")
-        println("  theta: $theta_pl (planar)")
-        println(" radius: $radius_pl (planar)")
+        println("  theta: $theta_pl (polar)")
+        println(" radius: $radius_pl (polar)")
         println("      X: $x (spherical)")
         println("      Y: $y (spherical)")
         println("      Z: $z (spherical)")

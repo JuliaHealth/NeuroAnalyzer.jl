@@ -223,7 +223,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     set_gtk_property!(entry_scale, :tooltip_text, "Scaling factor")
     set_gtk_property!(entry_scale, :value, 1.0)
     bt_normalize = GtkButton("Normalize")
-    set_gtk_property!(bt_normalize, :tooltip_text, "Maximize channel locations to fit the unit sphere")
+    set_gtk_property!(bt_normalize, :tooltip_text, "Normalize channel locations to fit the unit sphere")
     bt_transform = GtkButton("Transform")
     set_gtk_property!(bt_transform, :tooltip_text, "Transform coordinates from one set to another")
     combo_transform = GtkComboBoxText()
@@ -232,14 +232,6 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         push!(combo_transform, idx)
     end
     set_gtk_property!(combo_transform, :active, 0)
-
-    combo_projections = GtkComboBoxText()
-    projections = ["planar", "Cartesian", "spherical"]
-    for idx in projections
-        push!(combo_projections, idx)
-    end
-    set_gtk_property!(combo_projections, :active, 0)
-    set_gtk_property!(combo_projections, :tooltip_text, "Projection at which transformations are applied")
 
     bt_load = GtkButton("Load")
     set_gtk_property!(bt_load, :tooltip_text, "Load location coordinates")
@@ -254,18 +246,18 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     lab_cart = GtkLabel("Plot using Cartesian coordinates:")
     set_gtk_property!(lab_cart, :halign, 2)
-    cb_cart = GtkCheckButton("")
-    set_gtk_property!(cb_cart, :active, false)
+    cb_plot_cart = GtkCheckButton("")
+    set_gtk_property!(cb_plot_cart, :active, false)
 
     lab_hdlab = GtkLabel("Plot head labels:")
     set_gtk_property!(lab_hdlab, :halign, 2)
     cb_hdlab = GtkCheckButton("")
     set_gtk_property!(cb_hdlab, :active, false)
 
-    cb_planar = GtkCheckButton("")
-    set_gtk_property!(cb_planar, :halign, 3)
-    set_gtk_property!(cb_planar, :active, true)
-    set_gtk_property!(cb_planar, :tooltip_text, "Apply operations to planar coordinates")
+    cb_polar = GtkCheckButton("")
+    set_gtk_property!(cb_polar, :halign, 3)
+    set_gtk_property!(cb_polar, :active, true)
+    set_gtk_property!(cb_polar, :tooltip_text, "Apply operations to polar coordinates")
     cb_cartesian = GtkCheckButton("")
     set_gtk_property!(cb_cartesian, :halign, 3)
     set_gtk_property!(cb_cartesian, :active, true)
@@ -305,8 +297,8 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     g_opts[3, 12] = lab_loc_phi_sph
     g_opts[3, 13] = entry_loc_phi_sph
     g_opts[1:3, 14] = GtkLabel("Edit locs")
-    g_opts[1, 15] = GtkLabel("Apply to planar")
-    g_opts[1, 16] = cb_planar
+    g_opts[1, 15] = GtkLabel("Apply to polar")
+    g_opts[1, 16] = cb_polar
     g_opts[2, 15] = GtkLabel("Apply to Cartesian")
     g_opts[2, 16] = cb_cartesian
     g_opts[3, 15] = GtkLabel("Apply to spherical")
@@ -322,7 +314,6 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     g_opts[3, 19] = bt_normalize
     g_opts[1, 20] = bt_transform
     g_opts[2, 20] = combo_transform
-    g_opts[3, 20] = combo_projections
     g_opts[1:3, 21] = GtkLabel("Locs operations")
     g_opts[1, 22] = bt_generate
     g_opts[2, 22] = bt_load
@@ -330,9 +321,9 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     g_opts[1, 23] = lab_hdlab
     g_opts[2, 23] = cb_hdlab
     g_opts[1, 24] = lab_cart
-    g_opts[2, 24] = cb_cart
-    g_opts[2, 25] = bt_apply
-    g_opts[3, 25] = bt_cancel
+    g_opts[2, 24] = cb_plot_cart
+    g_opts[1, 25] = bt_apply
+    g_opts[2, 25] = bt_cancel
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -350,7 +341,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     @guarded draw(can1) do widget
         if refresh
-            cart = get_gtk_property(cb_cart, :active, Bool)
+            cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
             if current_channel in ch_signal
                 selected = current_channel
@@ -376,7 +367,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     @guarded draw(can2) do widget
         if refresh
-            cart = get_gtk_property(cb_cart, :active, Bool)
+            cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
             if current_channel in ch_signal
                 selected = current_channel
@@ -402,7 +393,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     @guarded draw(can3) do widget
         if refresh
-            cart = get_gtk_property(cb_cart, :active, Bool)
+            cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
             if current_channel in ch_signal
                 selected = current_channel
@@ -428,7 +419,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     @guarded draw(can4) do widget
         if refresh
-            cart = get_gtk_property(cb_cart, :active, Bool)
+            cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
             if current_channel in ch_signal
                 selected = current_channel
@@ -521,7 +512,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         ch_units[current_channel] = NeuroAnalyzer.channel_units[get_gtk_property(combo_chunits, :active, Int64) + 1]
     end
 
-    signal_connect(cb_cart, "clicked") do widget
+    signal_connect(cb_plot_cart, "clicked") do widget
         _refresh_plots()
     end
 
@@ -570,20 +561,9 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_flip, "clicked") do widget
-        projection = get_gtk_property(combo_projections, :active, Int64)
-        if projection == 0
-            get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs, planar=true, cart=false, spherical=false)
-            get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs, planar=true, cart=false, spherical=false)
-            get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs, planar=true, cart=false, spherical=false)
-        elseif projection == 1
-            get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs, planar=false, cart=true, spherical=false)
-            get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs, planar=false, cart=true, spherical=false)
-            get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs, planar=false, cart=true, spherical=false)
-        elseif projection == 2
-            get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs, planar=false, cart=false, spherical=true)
-            get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs, planar=false, cart=false, spherical=true)
-            get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs, planar=false, cart=false, spherical=true)
-        end
+        get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         refresh = false
         _refresh_locs()
         refresh = true
@@ -592,31 +572,12 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
     signal_connect(bt_ax_rot, "clicked") do widget
         ax = get_gtk_property(combo_ax_rot, :active, Int64)
-        projection = get_gtk_property(combo_projections, :active, Int64)
         if ax == 0
-            if projection == 0
-                locs_rotx!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=true, cart=false, spherical=false)
-            elseif projection == 1
-                locs_rotx!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=false, cart=true, spherical=false)
-            elseif projection == 2
-                locs_rotx!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=false, cart=false, spherical=true)
-            end
+            locs_rotx!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         elseif ax == 1
-            if projection == 0
-                locs_roty!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=true, cart=false, spherical=false)
-            elseif projection == 1
-                locs_roty!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=false, cart=true, spherical=false)
-            elseif projection == 2
-                locs_roty!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=false, cart=false, spherical=true)
-            end
+            locs_roty!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         elseif ax == 2
-            if projection == 0
-                locs_rotz!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=true, cart=false, spherical=false)
-            elseif projection == 1
-                locs_rotz!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=false, cart=true, spherical=false)
-            elseif projection == 2
-                locs_rotz!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), planar=false, cart=false, spherical=true)
-            end
+            locs_rotz!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         end
         refresh = false
         _refresh_locs()
@@ -625,14 +586,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_scale, "clicked") do widget
-        projection = get_gtk_property(combo_projections, :active, Int64)
-        if projection == 0
-            locs_scale!(locs, r=get_gtk_property(entry_scale, :value, Float64), planar=true, cart=false, spherical=false)
-        elseif projection == 1
-            locs_scale!(locs, r=get_gtk_property(entry_scale, :value, Float64), planar=false, cart=true, spherical=false)
-        elseif projection == 2
-            locs_scale!(locs, r=get_gtk_property(entry_scale, :value, Float64), planar=false, cart=false, spherical=true)
-        end
+        locs_scale!(locs, r=get_gtk_property(entry_scale, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         refresh = false
         _refresh_locs()
         refresh = true
@@ -640,14 +594,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_normalize, "clicked") do widget
-        projection = get_gtk_property(combo_projections, :active, Int64)
-        if projection == 0
-            locs_normalize!(locs, planar=true, cart=false, spherical=false)
-        elseif projection == 1
-            locs_normalize!(locs, planar=false, cart=true, spherical=false)
-        elseif projection == 2
-            locs_normalize!(locs, planar=false, cart=false, spherical=true)
-        end
+        locs_normalize!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         refresh = false
         _refresh_locs()
         refresh = true
@@ -669,7 +616,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_swapxy, "clicked") do widget
-        locs_swapxy!(locs)
+        locs_swapxy!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         refresh = false
         _refresh_locs()
         refresh = true

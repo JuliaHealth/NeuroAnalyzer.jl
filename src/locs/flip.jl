@@ -6,14 +6,14 @@ export locs_flipz
 export locs_flipz!
 
 """
-    locs_flipy(locs; planar, cart, spherical)
+    locs_flipy(locs; polar, cart, spherical)
 
 Flip channel locations along y axis.
 
 # Arguments
 
 - `locs::DataFrame`
-- `planar::Bool=true`: modify planar coordinates
+- `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
@@ -21,7 +21,7 @@ Flip channel locations along y axis.
 
 - `locs_new::DataFrame`
 """
-function locs_flipy(locs::DataFrame; planar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_flipy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
@@ -39,17 +39,8 @@ function locs_flipy(locs::DataFrame; planar::Bool=true, cart::Bool=true, spheric
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    if planar
-        locs_tmp = deepcopy(locs)
-        locs_pol2cart!(locs_tmp)
-        locs_tmp[!, :loc_y] = -locs_tmp[!, :loc_y]
-        locs_cart2pol!(locs_tmp)
-        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
-        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
-    end
-
-#=    for idx in eachindex(locs[!, :labels])
-        if planar == true
+    if polar
+        for idx in eachindex(locs[!, :labels])
             t = locs[idx, :loc_theta]
             q = _angle_quadrant(t)
             q == 1 && (t = 360 - t)
@@ -58,56 +49,42 @@ function locs_flipy(locs::DataFrame; planar::Bool=true, cart::Bool=true, spheric
             q == 4 && (t = 360 - t)
             t = mod(t, 360)
             locs_new[idx, :loc_theta] = t
-            locs_new[idx, :loc_y] = -locs[idx, :loc_y]
         end
-
-        if spherical == true
-            t = locs_new[idx, :loc_theta_sph]
-            q = _angle_quadrant(t)
-            q == 1 && (t = 360 - t)
-            q == 2 && (t = 180 + (180 - t))
-            q == 3 && (t = 180 - (t - 180))
-            q == 4 && (t = 360 - t)
-            t = mod(t, 360)
-            locs_new[idx, :loc_theta_sph] = t
-            locs_new[idx, :loc_y] = -locs[idx, :loc_y]
-        end            
     end
-=#
 
     return locs_new
 
 end
 
 """
-    locs_flipy!(locs; planar, cart, spherical)
+    locs_flipy!(locs; polar, cart, spherical)
 
 Flip channel locations along y axis.
 
 # Arguments
 
 - `locs::DataFrame`
-- `planar::Bool=true`: modify planar coordinates
+- `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_flipy!(locs::DataFrame; planar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_flipy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
-    locs[!, :] = locs_flipy(locs, planar=planar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_flipy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
     
 end
 
 """
-    locs_flipx(locs; planar, cart, spherical)
+    locs_flipx(locs; polar, cart, spherical)
 
 Flip channel locations along x axis.
 
 # Arguments
 
 - `locs::DataFrame`
-- `planar::Bool=true`: modify planar coordinates
+- `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
@@ -115,13 +92,11 @@ Flip channel locations along x axis.
 
 - `locs_new::DataFrame`
 """
-function locs_flipx(locs::DataFrame; planar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_flipx(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-    if cart
-        locs_new[!, :loc_x] = -locs[!, :loc_x]
-    end
+    cart && (locs_new[!, :loc_x] = -locs[!, :loc_x])
 
     if spherical
         locs_tmp = deepcopy(locs)
@@ -133,74 +108,51 @@ function locs_flipx(locs::DataFrame; planar::Bool=true, cart::Bool=true, spheric
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    if planar
-        locs_tmp = deepcopy(locs)
-        locs_pol2cart!(locs_tmp)
-        locs_tmp[!, :loc_x] = -locs_tmp[!, :loc_x]
-        locs_cart2pol!(locs_tmp)
-        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
-        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
-    end
-
-
-#=    for idx in eachindex(locs[!, :labels])
-        if planar == true
+    if polar
+        for idx in 1:nrow(locs)
             t = locs[idx, :loc_theta]
-            q = _angle_quadrant(t)
+            q = NeuroAnalyzer._angle_quadrant(t)
             q == 1 && (t = 90 + (90 - t))
             q == 2 && (t = 90 - (t - 90))
             q == 3 && (t = 270 + (270 - t))
             q == 4 && (t = 270 - (t - 270))
-            t = mod(t, 360)
-            locs_new[idx, :loc_theta] = t
-        end
-
-        if spherical == true
-            locs_new[idx, :loc_x] = -locs[idx, :loc_x]
-            t = locs[idx, :loc_theta_sph]
-            q = _angle_quadrant(t)
-            q == 1 && (t = 90 + (90 - t))
-            q == 2 && (t = 90 - (t - 90))
-            q == 3 && (t = 270 + (270 - t))
-            q == 4 && (t = 270 - (t - 270))
-            t = mod(t, 360)
-            locs_new[idx, :loc_theta_sph] = t
+            locs_new[idx, :loc_theta] = t % 360
         end
     end
-=#
+
     return locs_new
 
 end
 
 """
-    locs_flipx!(locs; planar, cart, spherical)
+    locs_flipx!(locs; polar, cart, spherical)
 
 Flip channel locations along x axis.
 
 # Arguments
 
 - `locs::DataFrame`
-- `planar::Bool=true`: modify planar coordinates
+- `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_flipx!(locs::DataFrame; planar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_flipx!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
-    locs[!, :] = locs_flipx(locs, planar=planar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_flipx(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
 
 end
 
 """
-    locs_flipz(locs; planar, cart, spherical)
+    locs_flipz(locs; polar, cart, spherical)
 
 Flip channel locations along z axis.
 
 # Arguments
 
 - `locs::DataFrame`
-- `planar::Bool=true`: modify planar coordinates
+- `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 
@@ -208,7 +160,7 @@ Flip channel locations along z axis.
 
 - `locs_new::DataFrame`
 """
-function locs_flipz(locs::DataFrame)
+function locs_flipz(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
@@ -226,37 +178,27 @@ function locs_flipz(locs::DataFrame)
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    if planar
-        locs_tmp = deepcopy(locs)
-        locs_pol2cart!(locs_tmp)
-        locs_tmp[!, :loc_z] = -locs_tmp[!, :loc_z]
-        locs_cart2pol!(locs_tmp)
-        locs_new[!, :loc_radius] = locs_tmp[!, :loc_radius]
-        locs_new[!, :loc_theta] = locs_tmp[!, :loc_theta]
-    end
+    polar && _warn("This is lossy conversion for polar coordinates and will be ignored.")
 
-#=    locs_new[!, :loc_z] = -locs[!, :loc_z]
-    locs_new[!, :loc_phi_sph] = -locs[!, :loc_phi_sph]
-=#
     return locs_new
 
 end
 
 """
-    locs_flipz!(locs; planar, cart, spherical)
+    locs_flipz!(locs; polar, cart, spherical)
 
 Flip channel locations along z axis.
 
 # Arguments
 
 - `locs::DataFrame`
-- `planar::Bool=true`: modify planar coordinates
+- `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_flipz!(locs::DataFrame)
+function locs_flipz!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
-    locs[!, :] = locs_flipz(locs)[!, :]
+    locs[!, :] = locs_flipz(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
 

@@ -17,8 +17,8 @@ Accepted formats:
 - MAT
 
 Channel locations:
-- `loc_theta`: planar polar angle
-- `loc_radius`: planar polar radius
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
 - `loc_x`: spherical Cartesian x
 - `loc_y`: spherical Cartesian y
 - `loc_z`: spherical Cartesian z
@@ -30,13 +30,13 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: name of the file to load
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
+- `normalize::Bool=true`: normalize locations to a unit circle after importing
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
+function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=true)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_labels() first."
@@ -45,21 +45,21 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
-        locs = import_locs_ced(file_name, maximize=maximize)
+        locs = import_locs_ced(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".elc"
-        locs = import_locs_elc(file_name, maximize=maximize)
+        locs = import_locs_elc(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".locs"
-        locs = import_locs_locs(file_name, maximize=maximize)
+        locs = import_locs_locs(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = import_locs_tsv(file_name, maximize=maximize)
+        locs = import_locs_tsv(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = import_locs_sfp(file_name, maximize=maximize)
+        locs = import_locs_sfp(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".csd"
-        locs = import_locs_csd(file_name, maximize=maximize)
+        locs = import_locs_csd(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".geo"
-        locs = import_locs_geo(file_name, maximize=maximize)
+        locs = import_locs_geo(file_name, normalize=normalize)
     elseif splitext(file_name)[2] == ".mat"
-        locs = import_locs_mat(file_name, maximize=maximize)
+        locs = import_locs_mat(file_name, normalize=normalize)
     else
         @error "Unknown file format."
     end
@@ -122,7 +122,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
                              :loc_theta_sph=>loc_theta_sph[labels_idx],
                              :loc_phi_sph=>loc_phi_sph[labels_idx])
 
-    _locs_norm!(obj_new.locs)
+    _locs_round!(obj_new.locs)
 
     # add entry to :history field
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
@@ -132,7 +132,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 end
 
 """
-    load_locs!(obj; file_name, maximize)
+    load_locs!(obj; file_name, normalize)
 
 Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
 
@@ -147,8 +147,8 @@ Accepted formats:
 - MAT
 
 Channel locations:
-- `loc_theta`: planar polar angle
-- `loc_radius`: planar polar radius
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
 - `loc_x`: spherical Cartesian x
 - `loc_y`: spherical Cartesian y
 - `loc_z`: spherical Cartesian z
@@ -160,11 +160,11 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations after importing
+- `normalize::Bool=true`: normalize locations after importing
 """
-function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
+function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=true)
 
-    obj_tmp = load_locs(obj, file_name=file_name, maximize=maximize)
+    obj_tmp = load_locs(obj, file_name=file_name, normalize=normalize)
     obj.locs = obj_tmp.locs
 
     return nothing
