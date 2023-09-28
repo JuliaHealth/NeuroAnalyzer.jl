@@ -30,13 +30,12 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: name of the file to load
-- `normalize::Bool=true`: normalize locations to a unit circle after importing
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=true)
+function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_labels() first."
@@ -45,21 +44,21 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
-        locs = import_locs_ced(file_name, normalize=normalize)
+        locs = import_locs_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        locs = import_locs_elc(file_name, normalize=normalize)
+        locs = import_locs_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        locs = import_locs_locs(file_name, normalize=normalize)
+        locs = import_locs_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = import_locs_tsv(file_name, normalize=normalize)
+        locs = import_locs_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = import_locs_sfp(file_name, normalize=normalize)
+        locs = import_locs_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        locs = import_locs_csd(file_name, normalize=normalize)
+        locs = import_locs_csd(file_name)
     elseif splitext(file_name)[2] == ".geo"
-        locs = import_locs_geo(file_name, normalize=normalize)
+        locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
-        locs = import_locs_mat(file_name, normalize=normalize)
+        locs = import_locs_mat(file_name)
     else
         @error "Unknown file format."
     end
@@ -73,6 +72,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=
             occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
         end
     end
+    
+    # add locations of EOG channels
     eog_idx = get_channel_bytype(obj, type=:eog)
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
@@ -124,7 +125,6 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=
 
     _locs_round!(obj_new.locs)
 
-    # add entry to :history field
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
 
     return obj_new
@@ -160,11 +160,10 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
-- `normalize::Bool=true`: normalize locations after importing
 """
-function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String, normalize::Bool=true)
+function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)
 
-    obj_tmp = load_locs(obj, file_name=file_name, normalize=normalize)
+    obj_tmp = load_locs(obj, file_name=file_name)
     obj.locs = obj_tmp.locs
 
     return nothing

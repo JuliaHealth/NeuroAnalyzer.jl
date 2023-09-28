@@ -16,7 +16,7 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "test 1/66: apply()"
-@test size(apply(e10, f="mean(obj, dims=1)")) == (19, 1, 10)
+@test size(apply(e10, f="mean(obj, dims=1)")) == (23, 1, 10)
 
 @info "test 2/66: l1()"
 @test l1(a1, a2) == 12
@@ -79,7 +79,7 @@ ft, f = dft(rand(100), fs=10)
 @test length(ft) == 100
 @test length(f) == 100
 ft, f = dft(e10)
-@test size(ft) == (19, 2560, 10)
+@test size(ft) == (23, 2560, 10)
 @test length(f) == 2560
 
 @info "test 18/66: findpeaks()"
@@ -173,10 +173,10 @@ s = generate_morlet_fwhm(100, 10)
 
 @info "test 37/66: signal_channels()"
 @test signal_channels(:eeg, ["eeg", "eeg", "ecg", "mrk"]) == [1, 2]
-@test signal_channels(e10) == 1:19
+@test signal_channels(e10) == 1:23
 
 @info "test 38/66: get_channel_bytype()"
-@test get_channel_bytype(["eeg", "ecg", "mrk"], type=:eeg) == [1]
+@test get_channel_bytype(["eeg", "ecg", "mrk"], type=:eeg) == 1
 @test get_channel_bytype(e10, type=:eeg) == 1:19
 
 @info "test 39/66: history()"

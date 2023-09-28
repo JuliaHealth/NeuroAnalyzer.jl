@@ -11,6 +11,9 @@ Interactive edit signal channels properties and locations.
 """
 function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
+    # TO DO: select channel by clicking its location
+    # TO DO: generate locations
+
     obj_new = deepcopy(obj)
 
     function _refresh_plots()
@@ -63,10 +66,6 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             end
         end
     end
-
-    # TO DO: select channel by clicking its location
-
-    _wip()
 
     if nchannels(obj) < 1
         _warn("OBJ must contain ≥ 1 channel.")
@@ -216,7 +215,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     set_gtk_property!(combo_ax_rot, :active, 0)
     entry_ax_rot_degree = GtkSpinButton(-360, 360, 1.0)
     set_gtk_property!(entry_ax_rot_degree, :digits, 1)
-    set_gtk_property!(entry_ax_rot_degree, :tooltip_text, "Rotation angle in degrees\nPositive angle rotates anti-clockwise")
+    set_gtk_property!(entry_ax_rot_degree, :tooltip_text, "Rotation angle in degrees\nPositive angle rotates anti-clockwise for X and Z axes and clockwise for Y axis")
     set_gtk_property!(entry_ax_rot_degree, :value, 0)
     bt_scale = GtkButton("Scale")
     entry_scale = GtkSpinButton(0.1, 10.00, 0.1)
@@ -561,9 +560,15 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_flip, "clicked") do widget
-        get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        # do not modify :ref and :eog channels
+        obj_tmp = deepcopy(obj_new)
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+        locs_tmp = obj_tmp.locs
+        get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        locs[locs_tmp[!, :channel], :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -571,14 +576,20 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_ax_rot, "clicked") do widget
+        # do not modify :ref and :eog channels
+        obj_tmp = deepcopy(obj_new)
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+        locs_tmp = obj_tmp.locs
         ax = get_gtk_property(combo_ax_rot, :active, Int64)
         if ax == 0
-            locs_rotx!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+            locs_rotx!(locs_tmp, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         elseif ax == 1
-            locs_roty!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+            locs_roty!(locs_tmp, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         elseif ax == 2
-            locs_rotz!(locs, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+            locs_rotz!(locs_tmp, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         end
+        locs[locs_tmp[!, :channel], :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -586,7 +597,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_scale, "clicked") do widget
-        locs_scale!(locs, r=get_gtk_property(entry_scale, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        # do not modify :ref and :eog channels
+        obj_tmp = deepcopy(obj_new)
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+        locs_tmp = obj_tmp.locs
+        locs_scale!(locs_tmp, r=get_gtk_property(entry_scale, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        locs[locs_tmp[!, :channel], :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -594,7 +611,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_normalize, "clicked") do widget
-        locs_normalize!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        # do not modify :ref and :eog channels
+        obj_tmp = deepcopy(obj_new)
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+        locs_tmp = obj_tmp.locs
+        locs_normalize!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        locs[locs_tmp[!, :channel], :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -616,7 +639,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     signal_connect(bt_swapxy, "clicked") do widget
-        locs_swapxy!(locs, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        # do not modify :ref and :eog channels
+        obj_tmp = deepcopy(obj_new)
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+        locs_tmp = obj_tmp.locs
+        locs_swapxy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
+        locs[locs_tmp[!, :channel], :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -624,6 +653,9 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     end
 
     ## TO DO: GENERATE
+    signal_connect(bt_generate, "clicked") do widget
+        info_dialog("This feature has not been implemented yet.")
+    end
 
     signal_connect(bt_load, "clicked") do widget
         file_name = open_dialog("Pick locations file", GtkNullContainer(), (GtkFileFilter("*.ced, *.elc, *.locs, *.tsv, *.sfp, *.csd, *.geo, *.mat", name="All supported formats"), "*.ced, *.elc, *.locs, *.tsv, *.sfp, *.csd, *.geo, *.mat"))

@@ -47,7 +47,7 @@ s = rand(100)
 ct = cw_trans(s, wt=wavelet(Morlet(2π), β=32, Q=128))
 @test size(ct) == (130, 100)
 ct = cw_trans(e10, wt=wavelet(Morlet(2π), β=32, Q=128));
-@test size(ct) == (19, 131, 2560, 10)
+@test size(ct) == (23, 131, 2560, 10)
 
 @info "test 6/51: icw_trans()"
 ct = cw_trans(s, wt=wavelet(Morlet(2π), β=32, Q=128))
@@ -104,9 +104,9 @@ dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:acdwt)
 @test size(dt) == (3, 100)
 dt = dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt)
-@test size(dt) == (19, 10, 2560, 10)
+@test size(dt) == (23, 10, 2560, 10)
 dt = dw_trans(e10, wt=wavelet(WT.haar), type=:acdwt)
-@test size(dt) == (19, 10, 2560, 10)
+@test size(dt) == (23, 10, 2560, 10)
 
 @info "test 13/51: idw_trans()"
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
@@ -121,13 +121,13 @@ s = dwtsplit(e10, ch=1, wt = wavelet(WT.haar), type=:sdwt)
 
 @info "test 15/51: erp()"
 e = erp(e10)
-@test size(e.data) == (19, 2560, 11)
+@test size(e.data) == (23, 2560, 11)
 
 @info "test 16/51: bpsplit()"
 s, bn, bf = bpsplit(e10)
 @test length(bn) == 10
 @test length(bf) == 10
-@test size(s) == (10, 19, 2560, 10)
+@test size(s) == (10, 23, 2560, 10)
 
 @info "test 17/51: fconv()"
 @test round.(fconv(v1, kernel=v2)) == [2.0, 2.0, 3.0, 3.0, 2.0]

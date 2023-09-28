@@ -65,22 +65,22 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test NeuroAnalyzer._channel2channel_name(1:10) == "1:10"
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
-@test NeuroAnalyzer._has_locs(e10) == false
+@test NeuroAnalyzer._has_locs(e10) == true
 @test typeof(NeuroAnalyzer._initialize_locs(e10)) == DataFrame
 NeuroAnalyzer._initialize_locs!(e10)
 @test NeuroAnalyzer._has_locs(e10) == true
 @test typeof(NeuroAnalyzer._initialize_locs()) == DataFrame
 xn, yn = NeuroAnalyzer._locs_norm(x, y)
-@test xn[1] == 0.03551775887943953
-@test yn[1] == 1.0
+@test xn[1] ≈ -0.31
+@test yn[1] == 0.95
 xn, yn, zn = NeuroAnalyzer._locs_norm(x, y, z)
-@test xn[1] == 0.03551775887943953
-@test yn[1] == 1.0
-@test zn[1] == 0.0005002501250623848
-locs[1, :loc_theta] = 108.1239
-locs[1, :loc_theta] = 108.1239
+@test xn[1] ≈ -0.31
+@test yn[1] == 0.95
+@test zn[1] ≈ -0.03
+locs[1, :loc_theta] = 108.12
+locs[1, :loc_theta] = 108.12
 locs = NeuroAnalyzer._locs_round(locs)
-@test locs[1, :loc_theta] == 108.124
+@test locs[1, :loc_theta] == 108.12
 @test NeuroAnalyzer._angle_quadrant(45) == 1
 @test NeuroAnalyzer._angle_quadrant(90) == 1
 @test NeuroAnalyzer._angle_quadrant(90+45) == 2

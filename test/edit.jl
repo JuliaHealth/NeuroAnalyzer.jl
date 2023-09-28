@@ -19,8 +19,8 @@ a0 = zeros(2, 3, 2)
 
 @info "test 1/28: get_channel_type() / set_channel_type()"
 @test get_channel_type(e10, ch=1) == "eeg"
-e10_tmp = set_channel_type(e10, ch=1, type="???")
-@test get_channel_type(e10_tmp, ch=1) == "???"
+e10_tmp = set_channel_type(e10, ch=1, type="mrk")
+@test get_channel_type(e10_tmp, ch=1) == "mrk"
 set_channel_type!(e10_tmp, ch=1, type="eeg")
 @test get_channel_type(e10_tmp, ch=1) == "eeg"
 
@@ -90,25 +90,7 @@ keep_epoch!(e10_tmp, ep=1:2)
 
 @info "test 11/28: detect_bad()"
 bm, be = detect_bad(e10)
-@test bm == Bool[1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1]
+@test sum(bm) == 230
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "test 12/28: epoch()"
@@ -141,7 +123,7 @@ e10_tmp = extract_epoch(e10, ep=1)
 
 @info "test 16/28: extract_data()"
 d = extract_data(e10)
-@test size(d) == (19, 2560, 120)
+@test size(d) == (23, 2560, 120)
 
 @info "test 17/28: extract_time()"
 tpts = extract_time(e10)

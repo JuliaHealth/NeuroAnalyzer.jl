@@ -13,7 +13,7 @@ Rotate channel locations around the Z axis.
 # Arguments
 
 - `locs::DataFrame`
-- `a::Real`: angle of rotation (in degrees)
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -60,7 +60,7 @@ Rotate channel locations in the xy-plane.
 # Arguments
 
 - `locs::DataFrame`
-- `a::Int64`: scaling factor
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -81,7 +81,7 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 # Arguments
 
 - `locs::DataFrame`
-- `a::Real`: angle of rotation (in degrees)
+- `a::Real`: angle of rotation (in degrees); positive angle rotates clockwise
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -128,7 +128,7 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 # Arguments
 
 - `locs::DataFrame`
-- `a::Int64`: scaling factor
+- `a::Real`: angle of rotation (in degrees); positive angle rotates clockwise
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -149,7 +149,7 @@ Rotate channel locations around the X axis (in the YZ-plane).
 # Arguments
 
 - `locs::DataFrame`
-- `a::Real`: angle of rotation (in degrees)
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
@@ -196,7 +196,7 @@ Rotate channel locations around the X axis (in the YZ-plane).
 # Arguments
 
 - `locs::DataFrame`
-- `a::Int64`: scaling factor
+- `a::Real`: angle of rotation (in degrees); positive angle rotates anti-clockwise
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates

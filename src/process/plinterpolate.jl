@@ -37,13 +37,18 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+
     _check_channels(obj, ch)
     _check_epochs(obj, ep)
 
-    locs_x1 = obj.locs[!, :loc_x]
-    locs_y1 = obj.locs[!, :loc_y]
+    locs_x1 = obj_tmp.locs[!, :loc_x]
+    locs_y1 = obj_tmp.locs[!, :loc_y]
     
     obj_tmp = delete_channel(obj, ch=ch)
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
     chs = get_channel_bytype(obj_tmp, type=Symbol(obj.header.recording[:data_type]))

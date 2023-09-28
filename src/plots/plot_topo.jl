@@ -39,9 +39,11 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     if large
-        img = FileIO.load(joinpath(res_path, "head_t_outline_large.png"))
+        head_shape = FileIO.load(joinpath(res_path, "head_t_outline_large.png"))
+        head_mask = FileIO.load(joinpath(res_path, "mask_large.png"))
     else
-        img = FileIO.load(joinpath(res_path, "head_t_small.png"))
+        head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
+        head_mask = FileIO.load(joinpath(res_path, "mask_small.png"))
     end
 
     if cart == false
@@ -61,18 +63,18 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
     s_interpolated, interpolated_x, interpolated_y = NeuroAnalyzer._interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
 
     if head
-        xt = (linspace(0, size(img, 1), 25), string.(-1.2:0.1:1.2))
-        yt = (linspace(0, size(img, 2), 25), string.(1.2:-0.1:-1.2))
-        interpolated_x = round.(linspace(0, size(img, 1), length(interpolated_x)), digits=2)
-        interpolated_y = round.(linspace(0, size(img, 2), length(interpolated_y)), digits=2)
-        xl = (0, size(img, 1))
-        yl = (0, size(img, 2))
+        xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))
+        yt = (linspace(0, size(head_shape, 2), 25), string.(1.2:-0.1:-1.2))
+        interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
+        interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
+        xl = (0, size(head_shape, 1))
+        yl = (0, size(head_shape, 2))
     else
         xl = (-1.2, 1.2)
         yl = (-1.2, 1.2)
     end
 
-    origin = size(img) ./ 2
+    origin = size(head_shape) ./ 2
     if large
         marker_size = 6
         font_size = 10
@@ -93,7 +95,7 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
                        border=:none,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(img) .+ 100,
+                       size=size(head_shape) .+ 100,
                        right_margin=0*Plots.px,
                        bottom_margin=-100*Plots.px,
                        top_margin=-100*Plots.px,
@@ -112,7 +114,7 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
                        border=:none,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(img) .+ 33,
+                       size=size(head_shape) .+ 33,
                        right_margin=-100*Plots.px,
                        bottom_margin=-100*Plots.px,
                        top_margin=-100*Plots.px,
@@ -150,20 +152,6 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
                         linewidth=0.2)
     end
 
-    # draw head
-    if head
-        p = Plots.plot!(img)
-        if large == true
-            pts = Plots.partialcircle(0, 2π, 100, div(xl[2], 1.6))
-            x, y = Plots.unzip(pts)
-            p = Plots.plot!(p, Shape(x .+ div(xl[2], 2), y .+ div(xl[2], 2)), label="", fill=nothing, lw=110, lc=:white)
-        else
-            pts = Plots.partialcircle(0, 2π, 100, div(xl[2], 1.6))
-            x, y = Plots.unzip(pts)
-            p = Plots.plot!(p, Shape(x .+ div(xl[2], 2), y .+ div(xl[2], 2)), label="", fill=nothing, lw=50, lc=:white)
-        end
-    end
-
     # draw electrodes
     if plot_electrodes
         p = Plots.scatter!((loc_x, loc_y),
@@ -174,6 +162,19 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
                             markersize=marker_size,
                             markerstrokewidth=0,
                             markerstrokealpha=0)
+    end
+
+
+    # draw head
+    if head
+        if large == true
+            head_mask = head_mask[158:end, 147:end]
+        else
+            head_mask = head_mask[80:end, 82:end]
+        end
+        p = Plots.plot!(head_shape)
+        p = Plots.plot!(head_mask)
+        p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
     end
 
     Plots.plot!(p)
@@ -248,6 +249,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     # remove non-signal channels
     obj_tmp = keep_channel(obj, ch=signal_channels(obj))
+
 
     # remove reference and EOG channels
     ch = vec(collect(ch))
