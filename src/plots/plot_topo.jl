@@ -97,7 +97,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                        border=:none,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(head_shape) .+ 100,
+                       size=size(head_shape) .+ 102,
                        right_margin=0*Plots.px,
                        bottom_margin=-100*Plots.px,
                        top_margin=-100*Plots.px,
@@ -116,7 +116,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                        border=:none,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(head_shape) .+ 33,
+                       size=size(head_shape) .+ 35,
                        right_margin=-100*Plots.px,
                        bottom_margin=-100*Plots.px,
                        top_margin=-100*Plots.px,
@@ -171,15 +171,18 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     if head
         if large == true
             head_mask = head_mask[158:end, 147:end]
+            p = Plots.plot!(head_shape)
+            p = Plots.plot!(head_mask)
+            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
         else
             head_mask = head_mask[80:end, 82:end]
+            p = Plots.plot!(head_shape)
+            p = Plots.plot!(head_mask)
+            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=1, fill=nothing, legend=false)
         end
-        p = Plots.plot!(head_shape)
-        p = Plots.plot!(head_mask)
-        p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
     end
 
-    Plots.plot!(p)
+    Plots.plot!(p, bg_color=:white)
 
     return p
 
