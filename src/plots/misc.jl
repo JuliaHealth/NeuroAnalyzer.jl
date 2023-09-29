@@ -81,7 +81,6 @@ function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBacken
     img = read_from_png(io)
     Cairo.set_source_surface(cr, img, (2 * p1_size[1]) - p2_size[1], 0)
     Cairo.paint(cr)
-    # Cairo.restore(cr)
     Cairo.write_to_png(c, file_name)
 
     return nothing
