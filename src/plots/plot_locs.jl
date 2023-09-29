@@ -37,9 +37,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
 
     if plane === :xy
         if large
-            img = FileIO.load(joinpath(res_path, "head_t_large.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_t_large.png"))
         else
-            img = FileIO.load(joinpath(res_path, "head_t_small.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
         if cart == false
             loc_x = zeros(nrow(locs))
@@ -53,9 +53,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     elseif plane === :xz
         if large
-            img = FileIO.load(joinpath(res_path, "head_f_large.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_f_large.png"))
         else
-            img = FileIO.load(joinpath(res_path, "head_f_small.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
         if cart == false
             loc_x = zeros(nrow(locs))
@@ -69,9 +69,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     elseif plane === :yz
         if large
-            img = FileIO.load(joinpath(res_path, "head_s_large.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_s_large.png"))
         else
-            img = FileIO.load(joinpath(res_path, "head_s_small.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
         if cart == false
             loc_x = zeros(nrow(locs))
@@ -89,10 +89,10 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
     loc_y = _s2v(loc_y)
 
     if head
-        xt = (linspace(0, size(img, 1), 25), string.(-1.2:0.1:1.2))
-        yt = (linspace(0, size(img, 2), 25), string.(1.2:-0.1:-1.2))
-        xl = (0, size(img, 1))
-        yl = (0, size(img, 2))
+        xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))
+        yt = (linspace(0, size(head_shape, 2), 25), string.(1.2:-0.1:-1.2))
+        xl = (0, size(head_shape, 1))
+        yl = (0, size(head_shape, 2))
     else
         xt = (-1.2:0.1:1.2)
         yt = (1.2:-0.1:-1.2)
@@ -100,7 +100,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         yl = (-1.2, 1.2)
     end
 
-    origin = size(img) ./ 2
+    origin = size(head_shape) ./ 2
     if large
         marker_size = 10
         font_size = 6
@@ -118,31 +118,12 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
     ma = 1.0
     ch_labels == true && (ma = 0.75)
 
-    if grid == false
-        p = Plots.plot(grid=false,
-                       framestyle=:none,
-                       border=:none,
-                       palette=pal,
-                       aspect_ratio=1,
-                       size=size(img),
-                       right_margin=-30*Plots.px,
-                       bottom_margin=-40*Plots.px,
-                       top_margin=-30*Plots.px,
-                       left_margin=-40*Plots.px,
-                       ticks_fontsize=font_size,
-                       xticks=xt,
-                       yticks=yt,
-                       xlims=xl,
-                       ylims=yl,
-                       background_color=transparent ? :transparent : :white,
-                       foreground_color=:black,
-                       dpi=96)
-    else
+    if grid
         p = Plots.plot(grid=true,
                        framestyle=:grid,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(img) .+ 35,
+                       size=size(head_shape) .+ 35,
                        right_margin=0*Plots.px,
                        bottom_margin=0*Plots.px,
                        top_margin=0*Plots.px,
@@ -154,11 +135,56 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                        xlims=xl,
                        ylims=yl,
                        background_color=transparent ? :transparent : :white,
-                       foreground_color=:black,
-                       dpi=96)
+                       foreground_color=:black)
+    else        
+        if large
+            p = Plots.plot(grid=false,
+                           framestyle=:none,
+                           border=:none,
+                           palette=pal,
+                           aspect_ratio=1,
+                           size=size(head_shape),
+                           right_margin=-100*Plots.px,
+                           bottom_margin=-100*Plots.px,
+                           top_margin=-100*Plots.px,
+                           left_margin=-100*Plots.px,
+                           # size=size(head_shape),
+                           # right_margin=-30*Plots.px,
+                           # bottom_margin=-40*Plots.px,
+                           # top_margin=-30*Plots.px,
+                           # left_margin=-40*Plots.px,
+                           ticks_fontsize=font_size,
+                           xticks=xt,
+                           yticks=yt,
+                           xlims=xl,
+                           ylims=yl,
+                           background_color=transparent ? :transparent : :white,
+                           foreground_color=:black)
+        else
+            p = Plots.plot(grid=false,
+                           framestyle=:none,
+                           border=:none,
+                           palette=pal,
+                           aspect_ratio=1,
+                           size=size(head_shape) .+ 1,
+                           right_margin=-10*Plots.px,
+                           bottom_margin=-30*Plots.px,
+                           top_margin=-10*Plots.px,
+                           left_margin=-30*Plots.px,
+                           # size=size(head_shape),
+                           # right_margin=-30*Plots.px,
+                           # bottom_margin=-40*Plots.px,
+                           # top_margin=-30*Plots.px,
+                           # left_margin=-40*Plots.px,
+                           xticks=xt,
+                           yticks=yt,
+                           xlims=xl,
+                           ylims=yl,                           background_color=transparent ? :transparent : :white,
+                           foreground_color=:black)
+        end
     end
 
-    head && (p = Plots.plot!(img))
+    head && (p = Plots.plot!(head_shape))
 
     ch = setdiff(ch, selected)
 
