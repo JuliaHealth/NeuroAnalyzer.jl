@@ -27,7 +27,7 @@ Preview channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false)
 
     NeuroAnalyzer._check_var(plane, [:xy, :yz, :xz], "plane")
 
@@ -107,7 +107,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
     else
-        marker_size = 4
+        marker_size = 6
         font_size = 4
         ch_labels = false
         grid = false
@@ -133,13 +133,16 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                        xticks=xt,
                        yticks=yt,
                        xlims=xl,
-                       ylims=yl)
+                       ylims=yl,
+                       background_color=transparent ? :transparent : :white,
+                       foreground_color=:black,
+                       dpi=96)
     else
         p = Plots.plot(grid=true,
                        framestyle=:grid,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(img) .+ 40,
+                       size=size(img) .+ 35,
                        right_margin=0*Plots.px,
                        bottom_margin=0*Plots.px,
                        top_margin=0*Plots.px,
@@ -149,7 +152,10 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                        xticks=xt,
                        yticks=yt,
                        xlims=xl,
-                       ylims=yl)
+                       ylims=yl,
+                       background_color=transparent ? :transparent : :white,
+                       foreground_color=:black,
+                       dpi=96)
     end
 
     head && (p = Plots.plot!(img))
@@ -350,7 +356,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
         end
     end
     
-    Plots.plot!(p)
+    p = Plots.plot!(p)
 
     return p
 
@@ -388,7 +394,7 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, kwargs...)
 
     # remove reference and EOG channels
     ch = vec(collect(ch))
@@ -409,7 +415,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             det_n = length(unique(ch_pairs[:, 2]))
             p = plot_locs_nirs(obj.locs, ch_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, grid=grid, mono=mono)
         else
-            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane)
+            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane, transparent=transparent)
         end
     else
         if interactive

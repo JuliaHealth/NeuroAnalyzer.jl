@@ -7,6 +7,7 @@ module NeuroAnalyzer
 # set constants
 
 global const VER = v"0.23.9"
+const allow_wip = true # should be set to false for the stable branch
 const io = PipeBuffer() # required for interactive preview
 const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
 const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
@@ -27,7 +28,6 @@ end
 use_cuda = nothing
 progress_bar = nothing
 verbose = nothing
-allow_wip = true # should be set to false for the stable branch
 
 # add dependencies
 

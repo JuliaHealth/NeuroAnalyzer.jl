@@ -182,7 +182,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         end
     end
 
-    Plots.plot!(p, bg_color=:white)
+    p = Plots.plot!(p)
 
     return p
 
