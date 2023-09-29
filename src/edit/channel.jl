@@ -100,10 +100,10 @@ Return channel number(s) for channel of `type` type.
 function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector{Symbol}}=:all)
 
     if type isa Symbol
-        _check_var(type, channel_types, "type")
+        _check_var(type, NeuroAnalyzer.channel_types, "type")
     else
-        for idx in eachindex(type)
-            _check_var(type[idx], channel_types, "type")
+        for idx in type
+            _check_var(idx, NeuroAnalyzer.channel_types, "type")
         end
     end
         
@@ -112,13 +112,13 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{Symbol, Vector
     elseif type isa Symbol
         ch_idx = Vector{Int64}()
         for idx in 1:nchannels(obj)
-            lowercase(obj.header.recording[:channel_type][idx]) == string(type) && (push!(ch_idx, idx))
+            lowercase(obj.header.recording[:channel_type][idx]) == string(type) && push!(ch_idx, idx)
         end
     else
         ch_idx = Vector{Int64}()
         for idx1 in 1:nchannels(obj)
-            for idx2 in eachindex(type)
-                lowercase(obj.header.recording[:channel_type][idx1]) == string(type[idx2]) && (push!(ch_idx, idx1))
+            for idx2 in type
+                lowercase(obj.header.recording[:channel_type][idx1]) == string(idx2) && push!(ch_idx, idx1)
             end
         end        
     end

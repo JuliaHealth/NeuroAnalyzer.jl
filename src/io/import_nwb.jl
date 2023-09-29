@@ -226,8 +226,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
 
     history = String[]
 
-    locs = DataFrame(:channel=>Int64,
-                     :labels=>String[],
+    locs = DataFrame(:labels=>String[],
                      :loc_theta=>Float64[],
                      :loc_radius=>Float64[],
                      :loc_x=>Float64[],

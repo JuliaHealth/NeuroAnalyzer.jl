@@ -30,10 +30,16 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
 
     obj_new = deepcopy(obj)
 
+    # remove channel locations
+    if length(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch])) == 1
+        deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch]))
+    else
+        deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch])))
+    end
+
     # update headers
     for idx in ch
         loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))
-        loc !== nothing && deleteat!(obj_new.locs, loc)
         deleteat!(obj_new.header.recording[:labels], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
         deleteat!(obj_new.header.recording[:units], idx)
@@ -47,17 +53,20 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
             deleteat!(obj_new.header.recording[:gradiometers], idx)
             deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
             deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
+        elseif obj_new.header.recording[:data_type] === "nirs"
+            deleteat!(obj_new.header.recording[:wavelengths], idx)
+            deleteat!(obj_new.header.recording[:wavelength_index], idx)
+            # TO DO: remove channel pairs containing removed channel
+            _warn("TO DO: remove channel pairs containing removed channel")
+            deleteat!(obj_new.header.recording[:channel_pairs], idx)
+            _warn("TO DO: remove optode_labels if contains removed channel")
+            # TO DO: remove optode_labels if contains removed channel
+            deleteat!(obj_new.header.recording[:optode_labels], idx)
         end
     end
 
     # remove channel
-    obj_new.data = obj_new.data[setdiff(1:end, (ch)), :, :]
-
-    # remove channel locations
-    for loc_idx in length(ch):-1:1
-        @show ch[loc_idx]
-        ch[loc_idx] in obj_new.locs[!, :channel] && deleteat!(obj_new.locs, loc_idx)
-    end
+    obj_new.data = obj_new.data[setdiff(_c(ch_n), ch), :, :]
 
     reset_components!(obj_new)
     push!(obj_new.history, "delete_channel(OBJ, ch=$ch)")

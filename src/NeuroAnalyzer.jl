@@ -27,7 +27,7 @@ end
 use_cuda = nothing
 progress_bar = nothing
 verbose = nothing
-allow_wip = true
+allow_wip = true # should be set to false for the stable branch
 
 # add dependencies
 

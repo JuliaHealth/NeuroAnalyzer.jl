@@ -152,7 +152,7 @@ p = NeuroAnalyzer.plot_polar(stats')
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 19/25: plot_weights()"
-p = NeuroAnalyzer.plot_weights(e10, weights=rand(19), channel=1:19)
+p = NeuroAnalyzer.plot_weights(e10, weights=rand(19), ch=1:19)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 20/25: plot_dipole2d()"

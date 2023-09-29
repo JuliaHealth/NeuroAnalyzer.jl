@@ -1,6 +1,17 @@
+function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}})
+    if typeof(l) == String
+        return findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))[1]
+    else
+        l_idx = Vector{Int64}()
+        for idx in l
+            lowercase(idx) in lowercase.(locs[!, :labels]) && push!(l_idx, findall(occursin.(lowercase(idx), lowercase.(locs[!, :labels])))[1])
+        end
+        return l_idx
+    end
+end
+
 function _initialize_locs()
-    return DataFrame(:channel=>Int64,
-                     :labels=>String[],
+    return DataFrame(:labels=>String[],
                      :loc_radius=>Float64[],
                      :loc_theta=>Float64[],
                      :loc_x=>Float64[],
@@ -13,13 +24,13 @@ end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
     locs_ch = signal_channels(obj)
-    obj.locs = DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    obj.locs = DataFrame(:labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
     return nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)
     locs_ch = signal_channels(obj)
-    return DataFrame(:channel=>signal_channels(obj), :labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    return DataFrame(:labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
 end
 
 function _locs_round(locs::DataFrame)

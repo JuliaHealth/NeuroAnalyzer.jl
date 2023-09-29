@@ -147,7 +147,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._v2r([1, 2, 3]) == 1:3
 @test NeuroAnalyzer._v2r(1:3) == 1:3
 @test NeuroAnalyzer._v2r(1) == 1
-
+@test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
 # these function are still in work:
 ## FIFF
 # NeuroAnalyzer._read_fiff_tag(fid::IOStream)

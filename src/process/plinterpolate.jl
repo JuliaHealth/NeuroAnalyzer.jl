@@ -34,21 +34,18 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     ch isa Vector{Int64} && sort!(ch, rev=true)
+    _check_channels(obj, ch)
+    _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)
     delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
     delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
 
-    _check_channels(obj, ch)
-    _check_epochs(obj, ep)
-
     locs_x1 = obj_tmp.locs[!, :loc_x]
     locs_y1 = obj_tmp.locs[!, :loc_y]
     
-    obj_tmp = delete_channel(obj, ch=ch)
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+    delete_channel!(obj_tmp, ch=ch)
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
     chs = get_channel_bytype(obj_tmp, type=Symbol(obj.header.recording[:data_type]))
@@ -63,7 +60,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector
 
     @inbounds @simd for ep_idx in eachindex(ep)
         Threads.@threads for length_idx in 1:ep_len
-            s_tmp, x, y = @views _interpolate2d(obj_tmp.data[chs, length_idx, ep[ep_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
+            s_tmp, x, y = @views NeuroAnalyzer._interpolate2d(obj_tmp.data[chs, length_idx, ep[ep_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for ch_idx in eachindex(ch)
                 x_idx = vsearch(locs_x1[ch[ch_idx]], x)
                 y_idx = vsearch(locs_y1[ch[ch_idx]], y)

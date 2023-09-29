@@ -33,6 +33,8 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
 
     pal = mono ? :grays : :darktest
 
+    locs = locs[ch, :]
+
     if plane === :xy
         if large
             img = FileIO.load(joinpath(res_path, "head_t_large.png"))

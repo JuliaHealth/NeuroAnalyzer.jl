@@ -74,20 +74,20 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         return nothing
     end
 
-    if _has_locs(obj_new)
-        locs = obj_new.locs
-        locs_ch = locs[!, :channel]
-    else
-        _initialize_locs!(obj_new)
-        locs = obj_new.locs
-        locs_ch = locs[!, :channel]
-    end
-
     current_channel = 1
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:units]
     ch_labels = obj_new.header.recording[:labels]
     ch_signal = signal_channels(obj_new)
+
+    if _has_locs(obj_new)
+        locs = obj_new.locs
+        locs_ch = _find_bylabel(obj_new.locs, ch_labels[ch_signal])
+    else
+        _initialize_locs!(obj_new)
+        locs = obj_new.locs
+        locs_ch = _find_bylabel(obj_new.locs, ch_labels[ch_signal])
+    end
 
     # Gtk canvas / Cairo context should be scaled only once
     already_scaled1 = false
@@ -473,11 +473,11 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         if ask_dialog("Delete channel $current_channel ?", "No", "Yes")
             delete_channel!(obj_new, ch=current_channel)
             current_channel > nchannels(obj_new) && (current_channel = nchannels(obj_new))
-            locs = obj_new.locs
-            locs_ch = locs[!, :channel]
             ch_types = obj_new.header.recording[:channel_type]
             ch_units = obj_new.header.recording[:units]
             ch_labels = obj_new.header.recording[:labels]
+            locs = obj_new.locs
+            locs_ch = _find_bylabel(obj_new.locs, ch_labels[ch_signal])
             Gtk.@sigatom begin
                 set_gtk_property!(entry_ch, :value, current_channel)
                 set_gtk_property!(entry_label, :text, ch_labels[current_channel])
@@ -562,13 +562,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     signal_connect(bt_flip, "clicked") do widget
         # do not modify :ref and :eog channels
         obj_tmp = deepcopy(obj_new)
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
         delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
         locs_tmp = obj_tmp.locs
         get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[locs_tmp[!, :channel], :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -589,7 +589,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         elseif ax == 2
             locs_rotz!(locs_tmp, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         end
-        locs[locs_tmp[!, :channel], :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -603,7 +603,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
         locs_tmp = obj_tmp.locs
         locs_scale!(locs_tmp, r=get_gtk_property(entry_scale, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[locs_tmp[!, :channel], :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -617,7 +617,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
         locs_tmp = obj_tmp.locs
         locs_normalize!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[locs_tmp[!, :channel], :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -645,7 +645,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
         locs_tmp = obj_tmp.locs
         locs_swapxy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[locs_tmp[!, :channel], :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -664,7 +664,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
                 if _has_locs(obj_new) && ask_dialog("Replace channel locations ?", "No", "Yes")
                     load_locs!(obj_new, file_name=file_name)
                     locs = obj_new.locs
-                    locs_ch = locs[!, :channel]
+                    locs_ch = _find_bylabel(locs, ch_labels[ch_signal])
                     refresh = false
                     _refresh_locs()
                     refresh = true

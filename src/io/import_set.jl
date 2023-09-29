@@ -156,8 +156,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             chanlocs["sph_theta"][:][idx] isa Float64 && (theta_sph[idx] = chanlocs["sph_theta"][:][idx])
         end
         radius_sph == zeros(ch_n) && (radius_sph = radius)
-        locs = DataFrame(:channel=>_c(ch_n),
-                         :labels=>clabels,
+        locs = DataFrame(:labels=>clabels,
                          :loc_theta=>theta,
                          :loc_radius=>radius,
                          :loc_x=>x,
@@ -175,8 +174,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             locs_normalize!(locs)
         end
     else
-        locs = DataFrame(:channel=>Int64,
-                         :labels=>String[],
+        locs = DataFrame(:labels=>String[],
                          :loc_theta=>Float64[],
                          :loc_radius=>Float64[],
                          :loc_x=>Float64[],

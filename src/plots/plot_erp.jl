@@ -326,8 +326,8 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     ylim = _tuple_max(ylim)
 
     # plot parameters
-    plot_size = 1000
-    marker_size = (150, 75)
+    plot_size = 800
+    marker_size = (120, 80)
     
     # get locations
     if cart == false
@@ -349,14 +349,13 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
     # origin is in the left top corner, convert positions
     loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
-    loc_y = round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
+    loc_y = (plot_size - marker_size[2]) .- round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
     c = CairoRGBSurface(plot_size, plot_size)
     cr = CairoContext(c)
     Cairo.set_source_rgb(cr, 256, 256, 256)
     Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size)
     Cairo.fill(cr)
-
     for idx in 1:size(s, 1)
         p = Plots.plot(xlabel=xlabel,
                        ylabel=ylabel,

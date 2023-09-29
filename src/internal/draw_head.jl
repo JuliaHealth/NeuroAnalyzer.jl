@@ -1,4 +1,5 @@
 function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head_details::Bool=true, topo::Bool=false, kwargs...)
+    _deprecated("_draw_head")
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
     # - `loc_x::Vector{<:Real}`: vector of x electrode position

@@ -8,8 +8,8 @@ Plot topographical view.
 # Arguments
 
 - `s::Vector{<:Real}`: values to plot (one value per channel)
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
@@ -33,10 +33,12 @@ Plot topographical view.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
     
     pal = mono ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+
+    locs = locs[ch, :]
 
     if large
         head_shape = FileIO.load(joinpath(res_path, "head_t_outline_large.png"))
@@ -249,7 +251,6 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     # remove non-signal channels
     obj_tmp = keep_channel(obj, ch=signal_channels(obj))
-
 
     # remove reference and EOG channels
     ch = vec(collect(ch))

@@ -17,6 +17,7 @@ Accepted formats:
 - MAT
 
 Channel locations:
+
 - `loc_theta`: polar angle
 - `loc_radius`: polar radius
 - `loc_x`: spherical Cartesian x
@@ -68,8 +69,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     ref_labels = labels(obj)[ref_idx]
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
-            occursin("1", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
-            occursin("2", ref_labels[idx]) && push!(locs, [ref_idx[idx], ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
+            occursin("1", ref_labels[idx]) && push!(locs, [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
+            occursin("2", ref_labels[idx]) && push!(locs, [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
         end
     end
     
@@ -78,8 +79,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
-            occursin("1", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 1.0, 145.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
-            occursin("2", eog_labels[idx]) && push!(locs, [eog_idx[idx], eog_labels[idx], 1.0, 35.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
+            occursin("1", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 145.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
+            occursin("2", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 35.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
         end
     end
 
@@ -112,8 +113,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.locs = DataFrame(:channel=>collect(eachindex(f_labels[labels_idx])),
-                             :labels=>f_labels[labels_idx],
+    obj_new.locs = DataFrame(:labels=>f_labels[labels_idx],
                              :loc_radius=>loc_radius[labels_idx],
                              :loc_theta=>loc_theta[labels_idx],
                              :loc_x=>loc_x[labels_idx],
@@ -147,6 +147,7 @@ Accepted formats:
 - MAT
 
 Channel locations:
+
 - `loc_theta`: polar angle
 - `loc_radius`: polar radius
 - `loc_x`: spherical Cartesian x

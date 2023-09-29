@@ -240,7 +240,7 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 e10_tmp = normalize(e10, method=:zscore)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 27/51: lrinterpolate_channel()"
+@info "test 27/51: plinterpolate_channel()"
 e10_tmp = deepcopy(e10)
 e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
 e10_int = plinterpolate_channel(e10_tmp, ch=1, ep=1)
@@ -279,8 +279,8 @@ e10_tmp = reference_plap(e10)
 
 @info "test 35/51: csd()"
 g, h = gh(e10.locs)
-@test size(g) == (19, 19)
-@test size(h) == (19, 19)
+@test size(g) == (23, 23)
+@test size(h) == (23, 23)
 e10_tmp = csd(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
@@ -299,7 +299,7 @@ e10_tmp = taper(e10, t=e10.data[1, :, 1])
 @test tconv(v1, kernel=[0.2, 0.1, 0.2]) == [0.49999999999999983, 1.0000000000000002, 1.5000000000000002, 2.0, 1.2999999999999998]
 @test tconv(a1, kernel=[0.2, 0.1, 0.2]) == [0.30000000000000004 0.5 0.30000000000000004; 0.30000000000000004 0.5 0.30000000000000004;;; 0.30000000000000004 0.5 0.30000000000000004; 0.30000000000000004 0.5 0.30000000000000004]
 s = tconv(e10, kernel=[0.2, 0.1, 0.2])
-@test size(s) == (19, 2560, 10)
+@test size(s) == (23, 2560, 10)
 
 @info "test 39/51: wbp()"
 @test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560
@@ -317,7 +317,7 @@ n_tmp2 = od2conc(n_tmp)
 @info "test 42/51: npl()"
 e = erp(e10)
 npl!(e)
-@test size(e.data) == (19, 2560, 11)
+@test size(e.data) == (23, 2560, 11)
 
 @info "test 43/51: remove_pops()"
 eeg_tmp, pl, ls, rs = remove_pops(eeg)
@@ -334,7 +334,7 @@ ic, ic_mw = ica_decompose(rand(10, 1000), n=5)
 @test size(ic_mw) == (10, 5)
 ic, ic_mw, ic_var = ica_decompose(eeg, n=5, iter=10)
 @test size(ic) == (5, 308480)
-@test size(ic_mw) == (19, 5)
+@test size(ic_mw) == (23, 5)
 @test length(ic_var) == 5
 
 @info "test 46/51: pca_decompose()"
@@ -345,7 +345,7 @@ pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2), n=2)
 pc, pcv, pcm, _ = pca_decompose(e10, n=4)
 @test size(pc) == (2, 2560, 10)
 @test size(pcv) == (2, 10)
-@test length(pcm) == 19
+@test length(pcm) == 23
 
 @info "test 47/51: pca_reconstruct()"
 pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2), n=2)
@@ -361,7 +361,7 @@ e10_rec = pca_reconstruct(e10_tmp, pc, pc_model);
 
 @info "test 48/51: reference_custom()"
 e10_tmp = reference_custom(e10)
-@test size(e10_tmp.data) == (23, 2560, 10)
+@test size(e10_tmp.data) == (19, 2560, 10)
 
 @info "test 49/51: ica_reconstruct()"
 ic, ic_mw = ica_decompose(rand(10, 1000), n=5)
