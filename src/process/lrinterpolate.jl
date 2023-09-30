@@ -14,7 +14,7 @@ Interpolate channel using linear regression.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
@@ -22,7 +22,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
     @assert ch in channels "channel must be signal channel; cannot interpolate non-signal channels."
 
     bad_signal = obj.data[:, :, ep]
-    good_eps = setdiff(1:epoch_n(obj), ep)
+    good_eps = setdiff(1:nepochs(obj), ep)
     good_chs = setdiff(channels, ch)
     good_signal = _make_epochs(obj.data[:, :, good_eps], ep_n=1)
 
@@ -71,7 +71,7 @@ Interpolate channel using linear regression.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 

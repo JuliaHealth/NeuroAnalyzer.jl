@@ -8,12 +8,12 @@ Plot topographical view.
 # Arguments
 
 - `s::Vector{<:Real}`: values to plot (one value per channel)
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -22,31 +22,38 @@ Plot topographical view.
     - `:nn`: NearestNeighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
-- `head_labels::Bool=false`: plot head labels
-- `head_details::Bool=true`: draw nose and ears
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
+- `head::Bool=true`: draw head
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
     
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
+    locs = locs[ch, :]
+
+    if large
+        head_shape = FileIO.load(joinpath(res_path, "head_t_outline_large.png"))
+        head_mask = FileIO.load(joinpath(res_path, "mask_large.png"))
+    else
+        head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
+        head_mask = FileIO.load(joinpath(res_path, "mask_small.png"))
+    end
+
     if cart == false
-        loc_x = zeros(size(locs, 1))
-        loc_y = zeros(size(locs, 1))
-        for idx in 1:size(locs, 1)
+        loc_x = zeros(length(ch))
+        loc_y = zeros(length(ch))
+        for idx in eachindex(ch)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
-        loc_x = loc_x[ch]
-        loc_y = loc_y[ch]
     else
         loc_x = locs[ch, :loc_x]
         loc_y = locs[ch, :loc_y]
@@ -55,24 +62,74 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
+    s_interpolated, interpolated_x, interpolated_y = NeuroAnalyzer._interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
 
-    p = Plots.plot(grid=true,
-                   framestyle=:none,
-                   palette=pal,
-                   size=(plot_size, plot_size),
-                   border=:none,
-                   aspect_ratio=1,
-                   left_margin=-20 * Plots.px,
-                   top_margin=-20 * Plots.px,
-                   bottom_margin=-20 * Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=6,
-                   ylabelfontsize=6,
-                   xtickfontsize=4,
-                   ytickfontsize=4,
-                   title=title;
-                   kwargs...)
+    if head
+        xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))
+        yt = (linspace(0, size(head_shape, 2), 25), string.(1.2:-0.1:-1.2))
+        interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
+        interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
+        xl = (0, size(head_shape, 1))
+        yl = (0, size(head_shape, 2))
+    else
+        xl = (-1.2, 1.2)
+        yl = (-1.2, 1.2)
+    end
+
+    origin = size(head_shape) ./ 2
+    if large
+        marker_size = 6
+        font_size = 10
+        loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+        loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+    else
+        title=""
+        cb_label=""
+        marker_size = 3
+        font_size = 3
+        loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+        loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+    end
+
+    if large
+        p = Plots.plot(grid=false,
+                       framestyle=:none,
+                       border=:none,
+                       palette=pal,
+                       aspect_ratio=1,
+                       size=size(head_shape) .+ 102,
+                       right_margin=0*Plots.px,
+                       bottom_margin=-100*Plots.px,
+                       top_margin=-100*Plots.px,
+                       left_margin=-30*Plots.px,
+                       titlefontsize=font_size,
+                       colorbar=cb,
+                       colorbar_title=cb_label,
+                       colorbar_tickfontsize=2,
+                       xlims=xl,
+                       ylims=yl,
+                       title=title;
+                       kwargs...)
+    else
+        p = Plots.plot(grid=false,
+                       framestyle=:none,
+                       border=:none,
+                       palette=pal,
+                       aspect_ratio=1,
+                       size=size(head_shape) .+ 35,
+                       right_margin=-100*Plots.px,
+                       bottom_margin=-100*Plots.px,
+                       top_margin=-100*Plots.px,
+                       left_margin=-30*Plots.px,
+                       titlefontsize=font_size,
+                       colorbar=cb,
+                       colorbar_title=cb_label,
+                       colorbar_ticks=false,
+                       xlims=xl,
+                       ylims=yl,
+                       title=title;
+                       kwargs...)
+    end
 
     p = Plots.plot!(interpolated_x,
                     interpolated_y,
@@ -80,10 +137,9 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
                     fill=:darktest,
                     seriestype=:heatmap,
                     seriescolor=pal,
-                    colorbar=cb,
-                    colorbar_title=cb_label,
                     levels=10,
                     linewidth=0)
+
     if plot_contours
         p = Plots.plot!(interpolated_x,
                         interpolated_y,
@@ -97,21 +153,36 @@ function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abstract
                         linecolor=:black,
                         linewidth=0.2)
     end
+
+    # draw electrodes
     if plot_electrodes
-        p = Plots.plot!((loc_x, loc_y),
-                        color=:black,
-                        seriestype=:scatter,
-                        grid=true,
-                        label="",
-                        markersize=2,
-                        markeralpha=0.5,
-                        markerstrokewidth=0,
-                        markerstrokealpha=0)
+        p = Plots.scatter!((loc_x, loc_y),
+                            color=:black,
+                            markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                            label="",
+                            markershape=:circle,
+                            markersize=marker_size,
+                            markerstrokewidth=0,
+                            markerstrokealpha=0)
     end
 
+
     # draw head
-    hd = _draw_head(p, head_labels=head_labels, head_details=head_details, topo=true)
-    p = Plots.plot!(hd)
+    if head
+        if large == true
+            head_mask = head_mask[158:end, 147:end]
+            p = Plots.plot!(head_shape)
+            p = Plots.plot!(head_mask)
+            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
+        else
+            head_mask = head_mask[80:end, 82:end]
+            p = Plots.plot!(head_shape)
+            p = Plots.plot!(head_mask)
+            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=1, fill=nothing, legend=false)
+        end
+    end
+
+    p = Plots.plot!(p)
 
     return p
 
@@ -129,7 +200,7 @@ Topographical plot.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `amethod::Symbol=:mean`: averaging method:
@@ -143,19 +214,18 @@ Topographical plot.
     - `:nn`: NearestNeighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
-- `head_labels::Bool=false`: plot head labels
-- `head_details::Bool=true`: draw nose and ears
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
+- `head::Bool=true`: draw head
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Vector{Int64}, AbstractRange}=signal_channels(obj), seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Vector{Int64}, AbstractRange}=signal_channels(obj), seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -170,7 +240,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
 
     if ep != 0
         _check_epochs(obj, ep)
-        if epoch_n(obj) == 1
+        if nepochs(obj) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
@@ -182,9 +252,15 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
             ep = 0
         end
     end
-
     # remove non-signal channels
     obj_tmp = keep_channel(obj, ch=signal_channels(obj))
+
+    # remove reference and EOG channels
+    ch = vec(collect(ch))
+    setdiff!(ch, get_channel_bytype(obj_tmp, type=:ref))
+    setdiff!(ch, get_channel_bytype(obj_tmp, type=:eog))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
 
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     _check_channels(obj_tmp, ch)
@@ -220,7 +296,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=ch, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, cart=cart, kwargs=kwargs)
+    p = plot_topo(s, ch=ch, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
 
     Plots.plot(p)
 
@@ -241,7 +317,7 @@ Topographical plot of embedded or external component.
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `amethod::Symbol=:mean`: averaging method:
@@ -258,16 +334,16 @@ Topographical plot of embedded or external component.
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
-- `head_labels::Bool=false`: plot head labels
-- `head_details::Bool=true`: draw nose and ears
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
+- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
+- `head::Bool=true`: draw head
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -299,7 +375,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     if ep != 0
         _check_epochs(obj, ep)
-        if epoch_n(obj) == 1
+        if nepochs(obj) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
@@ -366,7 +442,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=c_idx, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, cart=cart, kwargs=kwargs)
+    p = plot_topo(s, ch=c_idx, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
 
     Plots.plot(p)
 

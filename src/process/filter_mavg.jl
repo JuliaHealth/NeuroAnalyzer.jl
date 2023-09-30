@@ -20,14 +20,14 @@ Filter using moving average (FIR) filter (with threshold).
 function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     # check k
-    @assert k in eachindex(s) "k must be in [1, signal length ($(length(s)))]."
+    @assert k in 1:length(s) "k must be in [1, signal length ($(length(s)))]."
 
     # check window
     @assert length(window) == (2 * k + 1) "window length must be `2 × k + 1` ($(2 * k + 1))."
 
     s_filtered = deepcopy(s)
 
-    @inbounds for idx in (1 + k):(length(s) - k)
+    @inbounds @simd for idx in (1 + k):(length(s) - k)
         if t > 0
             if s[idx] < mean(s) - t * std(s) || s[idx] > (mean(s) + t * std(s))
                 s_filtered[idx] = @views mean(s[(idx - k):(idx + k)] .* window)
@@ -103,7 +103,7 @@ function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     _info("Approximate cut-off frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
 
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = filter_mavg(obj.data[ch, :, :], k=k, t=t, window=window)
+    obj_new.data[ch, :, :] = @views filter_mavg(obj.data[ch, :, :], k=k, t=t, window=window)
     reset_components!(obj_new)
     push!(obj_new.history, "filter_mavg(OBJ, ch=$ch, k=$k, t=$t, window=$window")
 

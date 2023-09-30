@@ -129,7 +129,7 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
@@ -184,7 +184,7 @@ Reconstruct signal using external PCA components (`pc` and `pca`).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 

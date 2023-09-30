@@ -155,8 +155,8 @@ Calculates mean difference and 95% confidence interval for two channels.
 - `obj2:NeuroAnalyzer.NEURO`
 - `channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
 - `channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
-- `epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 - `n::Int64`: number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
     - `:absdiff`: maximum difference
@@ -169,7 +169,7 @@ Named tuple containing:
 - `sts::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2)), n::Int64=3, method::Symbol=:absdiff)
+function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)), n::Int64=3, method::Symbol=:absdiff)
 
     _check_channels(obj1, channel1)
     _check_channels(obj2, channel2)

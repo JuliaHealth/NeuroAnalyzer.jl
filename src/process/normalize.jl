@@ -93,7 +93,11 @@ function normalize_zscore(s::AbstractArray)
     m = mean(s)
     sd = std(s)
 
-    return @. (s - m) / sd
+    if sd != 0
+        return @. (s - m) / sd
+    else
+        return @. (s - m) / sd
+    end
 
 end
 
@@ -112,11 +116,14 @@ Normalize in [-1, +1].
 """
 function normalize_minmax(s::AbstractArray)
 
-    mi = minimum(s)
-    mx = maximum(s)
-    mxi = mx - mi
-
-    return @. (2 * (s - mi) / mxi) - 1
+    if length(unique(s)) == 1
+        return ones(length(s))
+    else
+        mi = minimum(s)
+        mx = maximum(s)
+        mxi = mx - mi
+        return @. (2 * (s - mi) / mxi) - 1
+    end
 
 end
 
@@ -136,9 +143,12 @@ Normalize in [0, n], default is [0, +1].
 """
 function normalize_n(s::AbstractArray, n::Real=1.0)
 
-    smin, smax = extrema(s)
-
-    return @. n * (s - smin) / (smax - smin)
+    if length(unique(s)) == 1
+        return ones(length(s)) .* n
+    else
+        smin, smax = extrema(s)
+        return @. n * (s - smin) / (smax - smin)
+    end
 
 end
 
@@ -307,7 +317,11 @@ function normalize_perc(s::AbstractArray)
     m2 = maximum(s)
     m = m2 - m1
 
-    return (s .- m1) ./ m
+    if m != 0
+        return (s .- m1) ./ m
+    else
+        return (s .- m1)
+    end
 
 end
 
@@ -339,18 +353,18 @@ Normalize channel(s)
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
+function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Symbol)
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
@@ -373,10 +387,10 @@ Normalize channel(s)
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
+function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Symbol)
 
     obj_new = normalize(obj, ch=ch, method=method)
     obj.data = obj_new.data

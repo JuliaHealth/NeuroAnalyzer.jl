@@ -9,12 +9,12 @@ Perform piecewise detrending.
 # Arguments
 
 - `s::AbstractVector`
-- `type::Symbol=:ls`:
-    - `:loess`: fit and subtract loess approximation
-    - `:poly`: polynomial of `order` is subtracted
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted
-    - `:linear`: linear trend is subtracted from `s`
+- `type::Symbol=:linear`:
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
@@ -58,7 +58,12 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
         factor = Rinv * transpose(A)
         s_new = s .- A * (factor * s)
     elseif type === :linear
-        trend = linspace(s[1], s[end], length(s))
+        t = collect(1:1:length(s))        
+        p = Polynomials.fit(t, s, 1)
+        trend = zeros(length(s))
+        for idx in eachindex(s)
+            trend[idx] = p(t[idx])
+        end
         s_new = s .- trend
     end
 
@@ -75,11 +80,11 @@ Perform piecewise detrending.
 
 - `s::AbstractArray`
 - `type::Symbol=:linear`: detrending method
-    - `:loess`: fit and subtract loess approximation
-    - `:poly`: polynomial of `order` is subtracted
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted
-    - `:linear`: linear trend is subtracted from `s`
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
@@ -101,6 +106,7 @@ function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::
     end
 
     return s_new
+
 end
 
 """
@@ -111,22 +117,22 @@ Perform piecewise detrending.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `type::Symbol=:linear`: detrending method
-    - `:loess`: fit and subtract loess approximation
-    - `:poly`: polynomial of `order` is subtracted
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted
-    - `:linear`: linear trend is subtracted from `s`
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :], type=type, offset=offset, order=order, f=f)
@@ -145,18 +151,18 @@ Perform piecewise detrending.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `type::Symbol=:linear`: detrending method
-    - `:loess`: fit and subtract loess approximation
-    - `:poly`: polynomial of `order` is subtracted
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted
-    - `:linear`: linear trend is subtracted from `s`
+    - `:loess`: fit loess approximation and subtract it from `s`
+    - `:poly`: polynomial of `order` is subtracted from `s`
+    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
+    - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 """
-function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     obj_new = detrend(obj, ch=ch, type=type, offset=offset, order=order, f=f)
     obj.data = obj_new.data

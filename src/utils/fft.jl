@@ -53,7 +53,7 @@ IFFT of zero-padded vector.
 
 # Returns
 
-- `ifft0::Vector{Float64}`: real part of the signal trimmed to original length
+- `ifft0::Vector{ComplexF64}`: reconstructed signal trimmed to original length
 """
 function ifft0(x::AbstractVector, n::Int64=0)
 
@@ -66,7 +66,7 @@ function ifft0(x::AbstractVector, n::Int64=0)
         x = ifft(x)
     end
 
-    return round.(real.(x[1:(length(x) - n)]))
+    return x[1:(length(x) - n)]
 
 end
 
@@ -166,7 +166,7 @@ function dft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     fs = sr(obj)
     ft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)

@@ -7,13 +7,13 @@ export add_locs!
 Add electrode positions from `locs`. 
 
 Electrode locations:
-- `channel`         channel number
+
 - `labels`          channel label
-- `loc_theta`       planar polar angle
-- `loc_radius`      planar polar radius
-- `loc_x`           spherical Cartesian x
-- `loc_y`           spherical Cartesian y
-- `loc_z`           spherical Cartesian z
+- `loc_theta`       polar angle
+- `loc_radius`      polar radius
+- `loc_x`           Cartesian x
+- `loc_y`           Cartesian y
+- `loc_z`           Cartesian z
 - `loc_radius_sph`  spherical radius
 - `loc_theta_sph`   spherical horizontal angle
 - `loc_phi_sph`     spherical azimuth angle
@@ -60,19 +60,19 @@ end
 """
     add_locs!(obj; locs)
 
-Load electrode positions from `locs` and return `NeuroAnalyzer.NEURO` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `locs` and return `NeuroAnalyzer.NEURO` object attached with channel locations data.
 
 Electrode locations:
-- `channel`         channel number
-- `labels`          channel label
-- `loc_theta`       planar polar angle
-- `loc_radius`      planar polar radius
-- `loc_x`           spherical Cartesian x
-- `loc_y`           spherical Cartesian y
-- `loc_z`           spherical Cartesian z
-- `loc_radius_sph`  spherical radius
-- `loc_theta_sph`   spherical horizontal angle
-- `loc_phi_sph`     spherical azimuth angle
+
+- `labels`: channel label
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
+- `loc_x`: Cartesian X
+- `loc_y`: Cartesian Y
+- `loc_z`: Cartesian Z
+- `loc_radius_sph`: spherical radius
+- `loc_theta_sph`: spherical horizontal angle
+- `loc_phi_sph`: spherical azimuth angle
 
 # Arguments
 

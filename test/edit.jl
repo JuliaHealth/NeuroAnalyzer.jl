@@ -17,12 +17,12 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a0 = zeros(2, 3, 2)
 
-@info "test 1/28: channel_type()"
-@test e10.header.recording[:channel_type][1] == "eeg"
-e10_tmp = channel_type(e10, ch=1, type="???")
-@test e10_tmp.header.recording[:channel_type][1] == "???"
-channel_type!(e10_tmp, ch=1, type="eeg")
-@test e10_tmp.header.recording[:channel_type][1] == "eeg"
+@info "test 1/28: get_channel_type() / set_channel_type()"
+@test get_channel_type(e10, ch=1) == "eeg"
+e10_tmp = set_channel_type(e10, ch=1, type="mrk")
+@test get_channel_type(e10_tmp, ch=1) == "mrk"
+set_channel_type!(e10_tmp, ch=1, type="eeg")
+@test get_channel_type(e10_tmp, ch=1) == "eeg"
 
 @info "test 2/28: get_channel()"
 @test get_channel(e10, ch=1) == "Fp1"
@@ -35,10 +35,10 @@ rename_channel!(e10_tmp, ch=1, name="Fp1")
 @test get_channel(e10_tmp, ch=1) == "Fp1"
 
 @info "test 4/28: replace_channel()"
-e10_tmp = replace_channel(e10, ch=1, s=ones(1, epoch_len(e10), epoch_n(e10)));
-@test e10_tmp.data[1, :, :] == ones(epoch_len(e10), epoch_n(e10))
-replace_channel!(e10_tmp, ch=1, s=zeros(1, epoch_len(e10), epoch_n(e10)));
-@test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), epoch_n(e10))
+e10_tmp = replace_channel(e10, ch=1, s=ones(1, epoch_len(e10), nepochs(e10)));
+@test e10_tmp.data[1, :, :] == ones(epoch_len(e10), nepochs(e10))
+replace_channel!(e10_tmp, ch=1, s=zeros(1, epoch_len(e10), nepochs(e10)));
+@test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), nepochs(e10))
 
 @info "test 5/28: add_labels()"
 l = string.(1:24)
@@ -49,66 +49,48 @@ add_labels!(e10_tmp, clabels=l)
 
 @info "test 6/28: add_labels()"
 e10_tmp = delete_channel(e10, ch=1)
-@test channel_n(e10_tmp) == 23
+@test nchannels(e10_tmp) == 23
 delete_channel!(e10_tmp, ch=1)
-@test channel_n(e10_tmp) == 22
+@test nchannels(e10_tmp) == 22
 
 @info "test 7/28: keep_channel()"
 e10_tmp = keep_channel(e10, ch=10:24)
-@test channel_n(e10_tmp) == 15
+@test nchannels(e10_tmp) == 15
 keep_channel!(e10_tmp, ch=5:15)
-@test channel_n(e10_tmp) == 11
+@test nchannels(e10_tmp) == 11
 
 @info "test 8/28: keep_channel_type()"
 e10_tmp = keep_channel_type(e10, type=:eog)
-@test channel_n(e10_tmp) == 2
+@test nchannels(e10_tmp) == 2
 e10_tmp = deepcopy(e10)
 keep_channel_type!(e10_tmp, type=:eog)
-@test channel_n(e10_tmp) == 2
+@test nchannels(e10_tmp) == 2
 
 @info "test 9/28: delete_epoch()"
 e10_tmp = delete_epoch(e10, ep=1)
-@test epoch_n(e10_tmp) == 9
+@test nepochs(e10_tmp) == 9
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 23040 # 25600 - 2560
 e10_tmp = deepcopy(e10)
 delete_epoch!(e10_tmp, ep=1)
-@test epoch_n(e10_tmp) == 9
+@test nepochs(e10_tmp) == 9
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 23040 # 25600 - 2560
 
 @info "test 10/28: keep_epoch()"
 e10_tmp = keep_epoch(e10, ep=1:2)
-@test epoch_n(e10_tmp) == 2
+@test nepochs(e10_tmp) == 2
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 e10_tmp = deepcopy(e10)
 keep_epoch!(e10_tmp, ep=1:2)
-@test epoch_n(e10_tmp) == 2
+@test nepochs(e10_tmp) == 2
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
 @info "test 11/28: detect_bad()"
 bm, be = detect_bad(e10)
-@test bm == Bool[1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1; 
-                 1 1 1 1 1 1 1 1 1 1]
+@test sum(bm) == 230
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "test 12/28: epoch()"
@@ -116,7 +98,7 @@ eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
 @test epoch_len(e10) == 10*sr(eeg)
 e10 = epoch(eeg, ep_n=10)
-@test epoch_n(e10) == 10
+@test nepochs(e10) == 10
 
 @info "test 13/28: epoch_time()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -141,7 +123,7 @@ e10_tmp = extract_epoch(e10, ep=1)
 
 @info "test 16/28: extract_data()"
 d = extract_data(e10)
-@test size(d) == (19, 2560, 120)
+@test size(d) == (23, 2560, 120)
 
 @info "test 17/28: extract_time()"
 tpts = extract_time(e10)
@@ -186,11 +168,11 @@ eeg_mrk.data[28, idx, :] .= 1.0
 idx = getindex.(findall(eeg_mrk.data[28, :, :] .!= 1.0), 1)
 eeg_mrk.data[28, idx, :] .= 0.0
 channel2marker!(eeg_mrk, ch=28, id="mrk")
-@test nrow(eeg_mrk.markers) == 227
+@test nrow(eeg_mrk.markers) == 1094
 
 @info "test 24/28: epoch()"
 eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", offset=0.2, ep_len=1.2)
-@test size(eeg_mrk2) == (29, 240, 182)
+@test size(eeg_mrk2) == (29, 240, 1049)
 
 @info "test 25/28: join()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
@@ -200,10 +182,10 @@ e10_tmp = NeuroAnalyzer.join(e10, e10)
 @test size(e10_tmp) == (29, 4000, 10)
 
 @info "test 26/28: create()"
-@test typeof(create(data_type="eeg")) == NeuroAnalyzer.NEURO
-@test typeof(create(data_type="ecog")) == NeuroAnalyzer.NEURO
-@test typeof(create(data_type="meg")) == NeuroAnalyzer.NEURO
-@test typeof(create(data_type="nirs")) == NeuroAnalyzer.NEURO
+@test create(data_type="eeg") isa NeuroAnalyzer.NEURO
+@test create(data_type="ecog") isa NeuroAnalyzer.NEURO
+@test create(data_type="meg") isa NeuroAnalyzer.NEURO
+@test create(data_type="nirs") isa NeuroAnalyzer.NEURO
 
 @info "test 27/28: add_channel()"
 e = create(data_type="ecog")

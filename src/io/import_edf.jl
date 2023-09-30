@@ -145,7 +145,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     else
         ch_type = repeat(["eeg"], ch_n)
     end
-    units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "EDF"
         annotation_channels = Int64[]
@@ -155,10 +155,11 @@ function import_edf(file_name::String; detect_type::Bool=true)
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
-    if length(unique(samples_per_datarecord)) == 1
+    # ignore annotations channels
+    if length(unique(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])) == 1
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
     else
-        sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
+        sampling_rate = round.(Int64, samples_per_datarecord[setdiff(1:ch_n, annotation_channels)] / data_records_duration)
     end
 
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
@@ -182,7 +183,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                 readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
                 if idx2 in annotation_channels
                     push!(annotations, String(Char.(signal)))
-                    data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = zeros(samples_per_datarecord[idx2])
+                    data[idx2, ((idx1 - 1) * samples_per_datarecord[1] + 1):(idx1 * samples_per_datarecord[1]), 1] = zeros(samples_per_datarecord[1])
                 else
                     data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = reinterpret(Int16, signal)
                 end
@@ -210,7 +211,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         data_size = filesize(file_name) - data_offset
         signal = UInt8[]
         readbytes!(fid, signal, data_size, all=true)
-        data_records = length(signal) ÷ 2 ÷ sum(sampling_rate)        
+        data_records = length(signal) ÷ 2 ÷ sum(sampling_rate)
         data = zeros(ch_n, data_records * max_sampling_rate)
         data_segment = max_samples_per_datarecord
         annotations = String[]
@@ -280,6 +281,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                         first_name="",
                         middle_name="",
                         last_name=string(patient),
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)
@@ -309,20 +311,12 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     history = String[]
 
-    locs = DataFrame(:channel=>Int64,
-                     :labels=>String[],
-                     :loc_theta=>Float64[],
-                     :loc_radius=>Float64[],
-                     :loc_x=>Float64[],
-                     :loc_y=>Float64[],
-                     :loc_z=>Float64[],
-                     :loc_radius_sph=>Float64[],
-                     :loc_theta_sph=>Float64[],
-                     :loc_phi_sph=>Float64[])
+    locs = _initialize_locs()
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
-
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(obj.time_pts[end]) s)")
+    _initialize_locs!(obj)
+    
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 
     return obj
     

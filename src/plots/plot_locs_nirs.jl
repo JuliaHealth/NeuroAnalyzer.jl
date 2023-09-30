@@ -7,7 +7,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch_pairs::Matrix{Int64}`: pairs of source and detector
 - `src_n::Int64`: number of sources
 - `det_n::Int64`: number of detectors
@@ -17,7 +17,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `det_labels::Bool=false`: plot detector labels
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
@@ -116,8 +116,7 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
     end
 
     if head == true
-        hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
-        p = Plots.plot!(hd)
+        _warning("TO DO: add head outline")
     end
 
     p = Plots.plot!()

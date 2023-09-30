@@ -26,7 +26,7 @@ Plot matrix.
 - `ylabel::String=""`
 - `title::String=""`
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -43,7 +43,7 @@ function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vect
     n = size(m, 1)
     r = maximum(length.(xlabels)) > 10 ? 45 : 0
     mar = maximum(length.(xlabels)) > 10 ? 40 : 0
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     p = Plots.heatmap(m,
                       title=title,
@@ -55,8 +55,8 @@ function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vect
                       seriescolor=pal,
                       colorbar_title=cb_title,
                       size=(1200, 800),
-                      left_margin=mar * Plots.px,
-                      bottom_margin=mar * Plots.px,
+                      left_margin=mar*Plots.px,
+                      bottom_margin=mar*Plots.px,
                       titlefontsize=8,
                       xlabelfontsize=8,
                       ylabelfontsize=8,
@@ -81,7 +81,7 @@ Plot cross/auto-covariance/correlation.
 - `ylabel::String=""`
 - `title::String=""`
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -90,7 +90,7 @@ Plot cross/auto-covariance/correlation.
 """
 function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     r = length(lags) > 10 ? 90 : 0
     p = Plots.plot(lags,
                    m,
@@ -105,7 +105,7 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
                    lw=0.5,
                    grid=false,
                    legend=false,
-                   bottom_margin=10 * Plots.px,
+                   bottom_margin=10*Plots.px,
                    titlefontsize=5,
                    xlabelfontsize=5,
                    ylabelfontsize=5,
@@ -131,7 +131,7 @@ Plot histogram.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -144,7 +144,7 @@ function plot_histogram(s::AbstractVector; type::Symbol=:hist, bins::Union{Int64
 
     type === :kd && (type = :density)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if mean(s) < median(s)
         xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), ceil(maximum(s), digits=1)]
@@ -198,7 +198,7 @@ Bar plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -209,7 +209,7 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
 
     @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels length ($(length(xlabels)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     color = mono == true ? :lightgrey : :lightblue
 
     p = Plots.plot(s,
@@ -249,7 +249,7 @@ Line plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -260,7 +260,7 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
 
     @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels ($(length(xlabels)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     color = mono == true ? :lightgrey : :auto
 
     p = Plots.plot(s,
@@ -301,7 +301,7 @@ Line plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -314,7 +314,7 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
     @assert size(s, 1) == length(rlabels) "Number of signal columns ($(size(s, 1))) must be equal to labels length ($(length(rlabels)))."
     @assert size(s, 2) == length(xlabels) "Number of signal columns ($(size(s, 2))) must be equal to x-ticks length ($(length(xlabels)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     color = mono == true ? :lightgrey : :auto
 
     p = Plots.plot(s[1, :],
@@ -360,7 +360,7 @@ Box plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -372,7 +372,7 @@ function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", 
     @assert ndims(s) == 2 "signal must have 2-dimensions."
     @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     color = mono == true ? :lightgrey : :auto
 
     p = Plots.plot(s',
@@ -411,7 +411,7 @@ Violin plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -423,7 +423,7 @@ function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="
     @assert ndims(s) == 2 "signal must have 2-dimensions."
     @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     color = mono == true ? :lightgrey : :auto
 
     p = Plots.plot(s',
@@ -462,7 +462,7 @@ Dots plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -473,7 +473,7 @@ function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xla
 
     @assert size(signal, 1) == length(glabels) "Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     p = Plots.plot(size=(1200, 500),
                    margins=20Plots.px,
@@ -520,7 +520,7 @@ Plot paired data.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -536,7 +536,7 @@ function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, x
     end
     @assert length(unique(ll)) == 1 "Each group must have the same number of values."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     p = Plots.plot(size=(1200, 500),
                    margins=20Plots.px,
@@ -589,7 +589,7 @@ Polar plot.
 - `s::Union{AbstractVector, AbstractArray}`
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -601,7 +601,7 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
     ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if ndims(s) == 1
         p = Plots.plot([0, s[1]], [0, 1],
@@ -679,7 +679,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `title::String="default"`
 - `cb::Bool=true`: draw color bar
 - `cb_title::String="Power [dB]"`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -693,7 +693,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
     @assert ndims(s) == 3 "s must have 3 dimensions."
     @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # set time markers
     if tm != 0
@@ -717,8 +717,8 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
                           seriescolor=pal,
                           colorbar_title=cb_title,
                           size=(1200, 800),
-                          left_margin=20 * Plots.px,
-                          bottom_margin=20 * Plots.px,
+                          left_margin=20*Plots.px,
+                          bottom_margin=20*Plots.px,
                           titlefontsize=8,
                           xlabelfontsize=8,
                           ylabelfontsize=8,
@@ -746,8 +746,8 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
                            seriescolor=pal,
                            colorbar_title=cb_title,
                            size=(1200, 800),
-                           left_margin=20 * Plots.px,
-                           bottom_margin=20 * Plots.px,
+                           left_margin=20*Plots.px,
+                           bottom_margin=20*Plots.px,
                            titlefontsize=8,
                            xlabelfontsize=8,
                            ylabelfontsize=8,
@@ -781,8 +781,8 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
                            seriescolor=pal,
                            colorbar_title=cb_title,
                            size=(1200, 800),
-                           left_margin=20 * Plots.px,
-                           bottom_margin=20 * Plots.px,
+                           left_margin=20*Plots.px,
+                           bottom_margin=20*Plots.px,
                            titlefontsize=8,
                            xlabelfontsize=8,
                            ylabelfontsize=8,
@@ -826,7 +826,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -839,10 +839,10 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
     @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if size(p, 2) == 1
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "Averaged power-spectra of epochs")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "Averaged power-spectra of epochs")
         p = Plots.plot(f,
                        p[:, 1],
                        title=tt,
@@ -850,8 +850,8 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                        ylabel=yl,
                        seriescolor=pal,
                        size=(1200, 800),
-                       left_margin=20 * Plots.px,
-                       bottom_margin=20 * Plots.px,
+                       left_margin=20*Plots.px,
+                       bottom_margin=20*Plots.px,
                        titlefontsize=8,
                        xlabelfontsize=8,
                        ylabelfontsize=8,
@@ -860,7 +860,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                        label=false;
                        kwargs...)
     else
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "ERP power-spectrum")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "ERP power-spectrum")
         p1 = Plots.plot(f,
                         p[:, 1],
                         title=tt,
@@ -868,8 +868,8 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                         ylabel=yl,
                         seriescolor=pal,
                         size=(1200, 800),
-                        left_margin=20 * Plots.px,
-                        bottom_margin=20 * Plots.px,
+                        left_margin=20*Plots.px,
+                        bottom_margin=20*Plots.px,
                         titlefontsize=8,
                         xlabelfontsize=8,
                         ylabelfontsize=8,
@@ -878,7 +878,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                         label=false;
                         kwargs...)
 
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power", "Averaged power-spectra of epochs")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "Averaged power-spectra of epochs")
         p2 = Plots.plot(f,
                         p[:, 2],
                         title=tt,
@@ -886,8 +886,8 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                         ylabel=yl,
                         seriescolor=pal,
                         size=(1200, 800),
-                        left_margin=20 * Plots.px,
-                        bottom_margin=20 * Plots.px,
+                        left_margin=20*Plots.px,
+                        bottom_margin=20*Plots.px,
                         titlefontsize=8,
                         xlabelfontsize=8,
                         ylabelfontsize=8,

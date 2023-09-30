@@ -1,7 +1,7 @@
 @info "Generate HTML documentation"
 
 using Pkg
-Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
+Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
 Pkg.activate("..")
 Pkg.instantiate()
 
@@ -11,8 +11,6 @@ using Documenter
 using DocumenterMarkdown
 @info "Loading package: Plots"
 using Plots
-@info "Loading package: GLMakie"
-using GLMakie
 @info "Loading package: DataFrames"
 using DataFrames
 @info "Loading package: Wavelets"

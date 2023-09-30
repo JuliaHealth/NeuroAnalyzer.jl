@@ -20,7 +20,7 @@ function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, Abstr
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
@@ -55,8 +55,8 @@ Calculate variance F-test.
 - `obj2::NeuroAnalyzer.NEURO`
 - `ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
 - `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
@@ -64,7 +64,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)))
+function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)

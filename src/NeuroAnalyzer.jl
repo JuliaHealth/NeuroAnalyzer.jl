@@ -4,8 +4,18 @@ module NeuroAnalyzer
 
 @assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
 
-global const VER = v"0.23.9"
+# set constants
 
+global const VER = v"0.23.10"
+const allow_wip = false # should be set to false for the stable branch
+const io = PipeBuffer() # required for interactive preview
+const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
+const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
+const channel_units = ["μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", ""]
+const fiducial_points = (nasion = (0.0, 0.95, -0.2),
+                         inion  = (0.0, -0.96, -0.2),
+                         lra    = (-0.98, 0.0, -0.2),
+                         rla    = (0.98, 0.0, -0.2))
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
@@ -14,9 +24,12 @@ begin
 end
 
 # initialize preferences
+
 use_cuda = nothing
 progress_bar = nothing
 verbose = nothing
+
+# add dependencies
 
 using Artifacts
 using Cairo
@@ -38,7 +51,6 @@ using FourierTools
 using GeometryBasics
 using Git
 using GLM
-using GLMakie
 using Gtk
 using HypothesisTests
 using InformationMeasures
@@ -69,9 +81,6 @@ using TOML
 using Wavelets
 using WaveletsExt
 
-# required for interactive preview
-const io = PipeBuffer()
-
 # define structures
 
 mutable struct HEADER
@@ -101,12 +110,6 @@ mutable struct DIPOLE
     pos::Tuple{Real, Real, Real}
     mag::Tuple{Real, Real, Real}
 end
-
-# set constants
-
-const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
-
-const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
 
 # set package options
 
@@ -146,7 +149,7 @@ function __init__()
     # load plugins
     _info("Loading plugins:")
     global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-    isdir(plugins_path) || mkdir(plugins_path)
+    isdir(plugins_path) || mkpath(plugins_path)
     na_plugins_reload()
 
 end
@@ -205,7 +208,6 @@ include("analyze/mi.jl")
 include("analyze/msci95.jl")
 include("analyze/pli.jl")
 include("analyze/psd.jl")
-include("analyze/psd_mw.jl")
 include("analyze/psd_rel.jl")
 include("analyze/psd_slope.jl")
 include("analyze/rms.jl")
@@ -296,6 +298,7 @@ include("process/intensity2od.jl")
 include("process/invert.jl")
 include("process/lrinterpolate.jl")
 include("process/normalize.jl")
+include("process/normpower.jl")
 include("process/npl.jl")
 include("process/od2conc.jl")
 include("process/pca.jl")
@@ -326,11 +329,16 @@ include("plots/plot_weights.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_locs_nirs.jl")
-include("plots/iedit.jl")
-include("plots/iplot.jl")
-include("plots/ipsd.jl")
-include("plots/ispectrogram.jl")
-include("plots/iplot_icatopo.jl")
+# gui
+include("gui/iview.jl")
+include("gui/iedit.jl")
+include("gui/iedit_ch.jl")
+include("gui/iplot.jl")
+include("gui/iplot_locs3d.jl")
+include("gui/ipsd.jl")
+include("gui/ispectrogram.jl")
+include("gui/iplot_icatopo.jl")
+include("gui/iview_plot.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

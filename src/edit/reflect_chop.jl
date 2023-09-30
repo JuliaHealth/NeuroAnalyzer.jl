@@ -23,8 +23,8 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     n > epoch_len(obj) && (n = epoch_len(obj))
 
     obj_new = deepcopy(obj)
-    ch_n = channel_n(obj)
-    ep_n = epoch_n(obj)
+    ch_n = nchannels(obj)
+    ep_n = nepochs(obj)
     s = zeros(ch_n, epoch_len(obj) + 2 * n, ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
@@ -87,8 +87,8 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     n > epoch_len(obj) && (n = epoch_len(obj))
 
     obj_new = deepcopy(obj)
-    ch_n = channel_n(obj)
-    ep_n = epoch_n(obj)
+    ch_n = nchannels(obj)
+    ep_n = nepochs(obj)
     s = zeros(ch_n, epoch_len(obj) - 2 * n, ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n

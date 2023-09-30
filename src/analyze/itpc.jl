@@ -71,7 +71,7 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     @assert t >= 1 "t must be ≥ 1."
     @assert t <= epoch_len(obj) "t must be ≤ $(epoch_len(obj))."
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
@@ -113,19 +113,18 @@ Named tuple containing:
 function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     _check_var(frq, [:log, :lin], "frq")
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
+    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     if frq === :log
-        frq_lim[1] == 0 && (frq_lim = (0.01, frq_lim[2]))
+        frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         frq_lim = (frq_lim[1], frq_lim[2])
-        frq_list = logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n)
+        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=3)
     else
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
     _check_channels(obj, ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 

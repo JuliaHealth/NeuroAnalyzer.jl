@@ -104,7 +104,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     
     if remove_epochs == true
-        @assert epoch_n(obj) > 1 "OBJ has only one epoch, cannot use remove_epochs=true."
+        @assert nepochs(obj) > 1 "OBJ has only one epoch, cannot use remove_epochs=true."
         # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
         eps = _s2epoch(obj, seg[1], seg[2])
         if inverse == false
@@ -116,12 +116,12 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
         end
     else
         obj_new = deepcopy(obj)
-        epoch_n(obj) > 1 && (epoch!(obj_new, ep_n=1))
+        nepochs(obj) > 1 && (epoch!(obj_new, ep_n=1))
 
         obj_new.data = trim(obj_new.data, seg=seg, inverse=inverse)
         obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
-        if epoch_n(obj) > 1
+        if nepochs(obj) > 1
             if epoch_len(obj) <= signal_len(obj_new)
                 epoch!(obj_new, ep_len=epoch_len(obj) / sr(obj))
             else
@@ -129,8 +129,8 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
             end
         end
         
-        obj_new.markers = _delete_markers(obj_new.markers, seg)
-        obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]))
+        obj_new.markers = _delete_markers(obj_new.markers, seg, sr(obj))
+        obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]), sr(obj))
 
     end
 

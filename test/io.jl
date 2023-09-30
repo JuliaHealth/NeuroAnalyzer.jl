@@ -6,55 +6,55 @@ using DataFrames
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdf.bdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BDF"
-@test channel_n(eeg) == 17
+@test nchannels(eeg) == 17
 
 @info "test 2/28: import_bdf()"
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdfplus.bdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BDF+"
-@test channel_n(eeg) == 11
+@test nchannels(eeg) == 11
 
 @info "test 3/28: import_edf()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "EDF"
-@test channel_n(eeg) == 24
+@test nchannels(eeg) == 24
 
 @info "test 4/28: import_edf()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "EDF+"
-@test channel_n(eeg) == 29
+@test nchannels(eeg) == 29
 
 @info "test 5/28: import_digitrack()"
 eeg = import_digitrack(joinpath(testfiles_path, "eeg-test-digitrack.txt"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "Digitrack"
-@test channel_n(eeg) == 24
+@test nchannels(eeg) == 24
 
 @info "test 6/28: import_bv()"
 eeg = import_bv(joinpath(testfiles_path, "eeg-test-bv.vhdr"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "BrainVision"
-@test channel_n(eeg) == 2
+@test nchannels(eeg) == 2
 
 @info "test 7/28: import_csv()"
 eeg = import_csv(joinpath(testfiles_path, "eeg-test_txch.csv.gz"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "CSV"
-@test channel_n(eeg) == 24
+@test nchannels(eeg) == 24
 
 @info "test 8/28: import_csv()"
 eeg = import_csv(joinpath(testfiles_path, "eeg-test_chxt.csv.gz"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "CSV"
-@test channel_n(eeg) == 24
+@test nchannels(eeg) == 24
 
 @info "test 9/28: import_set()"
 eeg = import_set(joinpath(testfiles_path, "eeg-test-eeglab.set"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "SET"
-@test channel_n(eeg) == 24
+@test nchannels(eeg) == 24
 
 @info "test 10/28: import_locs_ced()"
 l = import_locs_ced(joinpath(testfiles_path, "locs.ced"))
@@ -147,11 +147,11 @@ isfile("markers.csv") && rm("markers.csv")
 eeg = import_gdf(joinpath(testfiles_path, "eeg-test-gdf_1.25.gdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "GDF"
-@test channel_n(eeg) == 16
+@test nchannels(eeg) == 16
 eeg = import_gdf(joinpath(testfiles_path, "eeg-test-gdf_2.20.gdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:file_type] == "GDF"
-@test channel_n(eeg) == 65
+@test nchannels(eeg) == 65
 
 @info "test 28/28: import_montage()"
 ref_list, ref_name = import_montage(joinpath(NeuroAnalyzer.PATH, "montages", "bip_long.txt"))

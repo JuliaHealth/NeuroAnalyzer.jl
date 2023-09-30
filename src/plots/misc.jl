@@ -1,5 +1,6 @@
 export plot_compose
 export plot_empty
+export add_locs
 
 """
     plot_compose(p; <keyword arguments>)
@@ -13,7 +14,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
 - `layout::Union(Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}`: layout
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for `p` vector plots
 
 # Returns
@@ -22,17 +23,14 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 """
 function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
-            push!(p, Plots.plot(border=:none, title=""))
+            push!(p, plot_empty())
         end
     end
 
-    pc = Plots.plot(grid=false,
-                    framestyle=:none,
-                    border=:none,
-                    margins=0Plots.px)
+    pc = plot_empty()
     pc = Plots.plot!(p..., layout=layout, palette=pal; kwargs...)
     Plots.plot(pc)
 
@@ -51,6 +49,58 @@ Return an empty plot, useful for filling matrices of plots.
 """
 function plot_empty()
 
-    return Plots.plot(grid=false, border=:none, title="")
+    return Plots.plot(grid=false,
+                      framestyle=:none,
+                      border=:none,
+                      margins=0Plots.px)
     
+end
+
+"""
+    add_locs(p1, p2, view, file_name)
+
+Add locations to a plot. Locations are placed in the top right corner. If `file_name` is provided, the plot is saved as PNG file.
+
+# Arguments
+
+- `p1::Plots.Plot{Plots.GRBackend}`: signal plot
+- `p2::Plots.Plot{Plots.GRBackend}`: locations plot
+- `view::Bool=true`: view the output image
+- `file_name::String=""`: output image file name
+
+# Returns
+
+- `c::Cairo.CairoSurfaceBase{UInt32}`
+"""
+function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")
+
+    if file_name != ""
+        ext = lowercase(splitext(file_name)[2])
+        @assert ext == ".png" "File name extension must be .png"
+
+        (isfile(file_name) && verbose == true) && _warn("File $file_name will be overwritten.")
+    end
+
+    p1_size = p1.attr[:size]
+    p2_size = p2.attr[:size]
+    c = CairoRGBSurface(p1_size[1], p1_size[2])
+    cr = CairoContext(c)
+    show(io, MIME("image/png"), p1)
+    img = read_from_png(io)
+    Cairo.set_source_surface(cr, img, 0, 0)
+    Cairo.paint(cr)
+    Cairo.scale(cr, 0.5, 0.5)
+    show(io, MIME("image/png"), p2)
+    img = read_from_png(io)
+    Cairo.set_source_surface(cr, img, (2 * p1_size[1]) - p2_size[1], 0)
+    Cairo.paint(cr)
+
+    if file_name != ""
+        Cairo.write_to_png(c, file_name)
+    else
+        view && iview_plot(c)
+    end
+
+    return c
+
 end

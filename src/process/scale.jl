@@ -9,14 +9,14 @@ Multiply channel(s) by `factor`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `factor::Real`: signal is multiplied by `factor`
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function scale(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), factor::Real)
+function scale(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), factor::Real)
 
     _check_channels(obj, ch)
     
@@ -37,10 +37,10 @@ Multiply channel(s) by `factor`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `factor::Real`: signal is multiplied by `factor`
 """
-function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), factor::Real)
+function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), factor::Real)
 
     obj_new = scale(obj, ch=ch, factor=factor)
     obj.data = obj_new.data

@@ -14,7 +14,7 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
 
-Note: this toolbox is under active development and is subject to change.
+Note: this toolbox is under active development and is subject to change without prior notice.
 
 ## Documentation
 

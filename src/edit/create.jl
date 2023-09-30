@@ -31,6 +31,7 @@ function create(; data_type::String)
                         middle_name="",
                         last_name="",
                         handedness="",
+                        head_circumference=-1,
                         weight=-1,
                         height=-1)
     r = _create_recording_eeg(data_type=data_type,
@@ -59,10 +60,9 @@ function create(; data_type::String)
 
     history = String[]
 
-    locs = DataFrame(:channel=>Int64,
-                     :labels=>String[],
-                     :loc_theta=>Float64[],
+    locs = DataFrame(:labels=>String[],
                      :loc_radius=>Float64[],
+                     :loc_theta=>Float64[],
                      :loc_x=>Float64[],
                      :loc_y=>Float64[],
                      :loc_z=>Float64[],

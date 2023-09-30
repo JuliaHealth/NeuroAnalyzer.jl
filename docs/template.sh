@@ -50,6 +50,12 @@ echo "\`\`\`@docs"
 cat ../src/plots/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
+echo "## GUI"
+echo ""
+echo "\`\`\`@docs"
+cat ../src/gui/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
+echo "\`\`\`"
+echo ""
 echo "## Statistics"
 echo ""
 echo "\`\`\`@docs"

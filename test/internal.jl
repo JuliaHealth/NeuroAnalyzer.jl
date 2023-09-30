@@ -1,6 +1,7 @@
 using NeuroAnalyzer
 using Test
 using DataFrames
+using Cairo
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -31,7 +32,7 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._get_ch_idx(["aa", "bb"], "aa") == 1
 @test NeuroAnalyzer._get_ch_idx(["aa", "bb"], 1) == 1
 @test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
-s = NeuroAnalyzer._create_subject(id="a", first_name="a", middle_name="a", last_name="a", handedness="a", weight=0, height=0)
+s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0])
 @test r isa Dict{Symbol, Any}
@@ -65,18 +66,22 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test NeuroAnalyzer._channel2channel_name(1:10) == "1:10"
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
-@test NeuroAnalyzer._has_locs(e10) == false
-xn, yn = NeuroAnalyzer._locnorm(x, y)
-@test xn[1] == 0.03551775887943953
-@test yn[1] == 1.0
-xn, yn, zn = NeuroAnalyzer._locnorm(x, y, z)
-@test xn[1] == 0.03551775887943953
-@test yn[1] == 1.0
-@test zn[1] == 0.0005002501250623848
-locs[1, :loc_theta] = 108.1239
-locs[1, :loc_theta] = 108.1239
-locs = NeuroAnalyzer._round_locs(locs)
-@test locs[1, :loc_theta] == 108.124
+@test NeuroAnalyzer._has_locs(e10) == true
+@test NeuroAnalyzer._initialize_locs(e10) isa DataFrame
+NeuroAnalyzer._initialize_locs!(e10)
+@test NeuroAnalyzer._has_locs(e10) == true
+@test NeuroAnalyzer._initialize_locs() isa DataFrame
+xn, yn = NeuroAnalyzer._locs_norm(x, y)
+@test xn[1] ≈ -0.31
+@test yn[1] == 0.95
+xn, yn, zn = NeuroAnalyzer._locs_norm(x, y, z)
+@test xn[1] ≈ -0.31
+@test yn[1] == 0.95
+@test zn[1] ≈ -0.03
+locs[1, :loc_theta] = 108.12
+locs[1, :loc_theta] = 108.12
+locs = NeuroAnalyzer._locs_round(locs)
+@test locs[1, :loc_theta] == 108.12
 @test NeuroAnalyzer._angle_quadrant(45) == 1
 @test NeuroAnalyzer._angle_quadrant(90) == 1
 @test NeuroAnalyzer._angle_quadrant(90+45) == 2
@@ -119,7 +124,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._s2epoch(e10, 256, 512) == 1
 @test NeuroAnalyzer._s2epoch(e10, 3256, 3512) == 2
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
-@test NeuroAnalyzer._set_units(e10, 1) == "μV"
+@test NeuroAnalyzer._ch_units(e10, 1) == "μV"
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 @test NeuroAnalyzer._check_svec("[1, 2]") == true
@@ -140,6 +145,19 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._i2s([1, 2, 3]) == "1, 2, 3"
 @test NeuroAnalyzer._s2tf("(1,2)") == (1.0, 2.0)
 @test NeuroAnalyzer._s2ti("(1, 2)") == (1, 2)
+@test NeuroAnalyzer._v2r([1, 2, 3]) == 1:3
+@test NeuroAnalyzer._v2r(1:3) == 1:3
+@test NeuroAnalyzer._v2r(1) == 1
+@test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
+@test NeuroAnalyzer._p2c(NeuroAnalyzer.plot(eeg)) isa Cairo.CairoSurfaceBase{UInt32}
+@test NeuroAnalyzer._xlims(1:10) == (1.0, 10.0)
+@test NeuroAnalyzer._ticks(1:10) == 1.0:0.9:10.0
+@test NeuroAnalyzer._ticks((1, 10)) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+@test NeuroAnalyzer._erpticks(1:10) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0] 
+@test NeuroAnalyzer._erpticks((1, 10)) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0] 
+@test NeuroAnalyzer._set_defaults("a", "b", "c", "d", "e", "f") == ("a", "b", "c")
+@test NeuroAnalyzer._set_defaults("default", "default", "default", "d", "e", "f") == ("d", "e", "f")
+
 # these function are still in work:
 ## FIFF
 # NeuroAnalyzer._read_fiff_tag(fid::IOStream)

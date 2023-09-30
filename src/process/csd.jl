@@ -34,7 +34,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     chs = signal_channels(obj)
     locs = obj.locs
     ch_n = nrow(locs)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     @assert length(chs) <= nrow(locs) "Some channels do not have locations."
 
@@ -145,7 +145,7 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)
     x = locs[!, :loc_x]
     y = locs[!, :loc_y]
     z = locs[!, :loc_z]
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
 
     # compute all cosine distances
     Threads.@threads for i = 1:ch_n

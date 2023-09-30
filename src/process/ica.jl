@@ -110,7 +110,7 @@ Named tuple containing:
 function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)
 
     _check_channels(obj, ch)
-    @assert epoch_n(obj) == 1 "ica_decompose() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_decompose() should be applied to a continuous signal."
 
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
@@ -191,7 +191,7 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
@@ -242,13 +242,13 @@ Reconstruct signals using external ICA components.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     _check_channels(obj, ch)
 
-    @assert epoch_n(obj) == 1 "ica_reconstruct() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_reconstruct() should be applied to a continuous signal."
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[ch, :, :]
@@ -300,13 +300,13 @@ Remove external ICA components from the signal.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     _check_channels(obj, ch)
 
-    @assert epoch_n(obj) == 1 "ica_remove() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_remove() should be applied to a continuous signal."
 
     obj_new = deepcopy(obj)
 
@@ -361,7 +361,7 @@ Remove embedded ICA components (`:ic` and `:ic_mw`).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function ica_remove(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 

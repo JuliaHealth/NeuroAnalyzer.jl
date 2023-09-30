@@ -19,7 +19,7 @@ function apply(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
 
     f_tmp = replace(f, "obj" => "$(obj.data[1, :, 1])")
     out_tmp = eval(Meta.parse(f_tmp))

@@ -30,8 +30,8 @@ function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
     sa[2:end] .*= 2                         # double positive frequencies
 
     # replace amplitudes at extreme frequencies
-    sa[1] = sa[2]
-    sa[end] = sa[end - 1]
+    # sa[1] = sa[2]
+    # sa[end] = sa[end - 1]
 
     # power
     sp = sa.^2
@@ -71,8 +71,8 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=true)
     sa = @. abs(hc)
 
     # replace amplitudes at extreme frequencies
-    sa[1] = sa[2]
-    sa[end] = sa[end - 1]
+    # sa[1] = sa[2]
+    # sa[end] = sa[end - 1]
 
     # powers
     sp = sa.^2

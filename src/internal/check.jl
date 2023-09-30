@@ -1,3 +1,12 @@
+function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)
+    @assert t == tuple_order(t) "$name must contain two values in ascending order."
+    @assert t[1] < t[2] "$name must contain two different values in ascending order."
+    if range !== nothing 
+        @assert !(t[1] < range[1] || t[2] < range[1] || t[1] > range[2] || t[2] > range[2]) "$name must be in [$(range[1]), $(range[2])]."
+    end
+    return nothing
+end
+
 function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
         @assert !(idx < 1 || idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]."
@@ -7,7 +16,7 @@ end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
-        @assert !(idx < 1 || idx > channel_n(obj)) "ch must be in [1, $(channel_n(obj))]."
+        @assert !(idx < 1 || idx > nchannels(obj)) "ch must be in [1, $(nchannels(obj))]."
     end
     return nothing
 end
@@ -16,7 +25,7 @@ function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64
     channels = get_channel_bytype(obj, type=type)
     for idx in ch
         @assert idx in channels "ch $idx does not match type: $(uppercase(string(type))) data channels."
-        @assert !(idx < 1 || idx > channel_n(obj)) "ch must be in [1, $(channel_n(obj))]."
+        @assert !(idx < 1 || idx > nchannels(obj)) "ch must be in [1, $(nchannels(obj))]."
     end
     return nothing
 end
@@ -24,13 +33,13 @@ end
 function _check_channels(channels::Union{Int64, Vector{Int64}, <:AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
         @assert idx in channels "ch must be in $channels."
-        @assert !(idx < 1 || idx > sort(channels)[end]) "ch must be in [1, $(channel_n(obj))]."
+        @assert !(idx < 1 || idx > sort(channels)[end]) "ch must be in [1, $(nchannels(obj))]."
     end
 end
 
 function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in epoch
-        @assert !(idx < 1 || idx > epoch_n(obj)) "epoch must be in [1, $(epoch_n(obj))]."
+        @assert !(idx < 1 || idx > nepochs(obj)) "epoch must be in [1, $(nepochs(obj))]."
     end
     return nothing
 end

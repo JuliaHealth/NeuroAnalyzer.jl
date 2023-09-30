@@ -34,7 +34,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     s_t = obj.epoch_time
 
     t_env = zeros(ch_n, epoch_len(obj), ep_n)
@@ -94,12 +94,12 @@ Named tuple containing:
 function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = tenv(obj, ch=ch, d=d)
@@ -174,12 +174,12 @@ Named tuple containing:
 function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = tenv(obj, ch=ch, d=d)
@@ -254,7 +254,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    penv(obj; ch, d)
+    penv(obj; ch, d, method, nt, wlen, woverlap, w, frq_n, frq, ncyc)
 
 Calculate power (in dB) envelope.
 
@@ -263,8 +263,19 @@ Calculate power (in dB) envelope.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
 - `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
+- `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
 
@@ -272,48 +283,48 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=8, mt::Bool=false, nt::Int64=8)
+function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=8, method::Symbol=:welch, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
     
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     fs = sr(obj)
 
-    psd_tmp, frq = psd(obj.data[1, :, 1], fs=fs, mt=mt, nt=nt)
+    pw, pf = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    p_env = zeros(ch_n, length(psd_tmp), ep_n)
+    p_env = zeros(ch_n, length(pw), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            psd_pow, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, mt=mt, norm=true, nt=nt)
+            pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
             # find peaks
-            p_idx = findpeaks(psd_pow, d=d)
+            p_idx = findpeaks(pw, d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(psd_pow))
+            push!(p_idx, length(pw))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(frq[p_idx], psd_pow[p_idx])
+                model = CubicSpline(pf[p_idx], pw[p_idx])
                 try
-                    p_env[ch_idx, :, ep_idx] = model(frq)
+                    p_env[ch_idx, :, ep_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             else
-                p_env[ch_idx, :, ep_idx] = psd_pow
+                p_env[ch_idx, :, ep_idx] = pw
             end
             p_env[ch_idx, 1, ep_idx] = p_env[ch_idx, 2, ep_idx]
         end
     end
     
-    return (p_env=p_env, p_env_frq=frq)
+    return (p_env=p_env, p_env_frq=pf)
 
 end
 
 """
-    penv_mean(obj; ch, dims, d)
+    penv_mean(obj; ch, dims, d, method, nt, wlen, woverlap, w, frq_n, frq, ncyc)
 
 Calculate power (in dB) envelope: mean and 95% CI.
 
@@ -323,7 +334,19 @@ Calculate power (in dB) envelope: mean and 95% CI.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+- `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
+- `frq_n::Int64=frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
 
@@ -333,31 +356,31 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
-    
+function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, method::Symbol=:welch, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_f = psd(obj, ch=ch, norm=true, mt=mt)
+    pw, pf = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(pw, 1)
+    ep_n = size(pw, 3)
 
     if dims == 1
         # mean over channels
 
-        p_env_m = zeros(length(s_f), ep_n)
-        p_env_u = zeros(length(s_f), ep_n)
-        p_env_l = zeros(length(s_f), ep_n)
+        p_env_m = zeros(length(pf), ep_n)
+        p_env_u = zeros(length(pf), ep_n)
+        p_env_l = zeros(length(pf), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            p_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
+            p_env_m[:, ep_idx] = mean(pw[:, :, ep_idx], dims=1)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -366,9 +389,9 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             push!(p_idx, length(p_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ep_idx] = model(s_f)
+                    p_env_m[:, ep_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -380,12 +403,12 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     elseif dims == 2
         # mean over epochs
 
-        p_env_m = zeros(length(s_f), ch_n)
-        p_env_u = zeros(length(s_f), ch_n)
-        p_env_l = zeros(length(s_f), ch_n)
+        p_env_m = zeros(length(pf), ch_n)
+        p_env_u = zeros(length(pf), ch_n)
+        p_env_l = zeros(length(pf), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            p_env_m[:, ch_idx] = mean(s_p[ch_idx, :, :], dims=2)
+            p_env_m[:, ch_idx] = mean(pw[ch_idx, :, :], dims=2)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -394,9 +417,9 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             push!(p_idx, length(p_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ch_idx] = model(s_f)
+                    p_env_m[:, ch_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -417,12 +440,12 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
     
-    return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=s_f)
+    return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
 
 end
 
 """
-    penv_median(obj; ch, dims, d)
+    penv_median(obj; ch, dims, d, method, nt, wlen, woverlap, w, frq_n, frq, ncyc)
 
 Calculate power (in dB) envelope: median and 95% CI.
 
@@ -432,7 +455,19 @@ Calculate power (in dB) envelope: median and 95% CI.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method used to calculate PSD:
+    - `:welch`: Welch periodogram
+    - `:fft`: fast Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+- `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
+- `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
 
@@ -442,31 +477,31 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
-    
+function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, method::Symbol=:welch, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_f = psd(obj, ch=ch, norm=true, mt=mt)
+    pw, pf = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(pw, 1)
+    ep_n = size(pw, 3)
 
     if dims == 1
         # median over channels
 
-        p_env_m = zeros(length(s_f), ep_n)
-        p_env_u = zeros(length(s_f), ep_n)
-        p_env_l = zeros(length(s_f), ep_n)
+        p_env_m = zeros(length(pf), ep_n)
+        p_env_u = zeros(length(pf), ep_n)
+        p_env_l = zeros(length(pf), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            p_env_m[:, ep_idx] = median(s_p[:, :, ep_idx], dims=1)
+            p_env_m[:, ep_idx] = median(pw[:, :, ep_idx], dims=1)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -475,9 +510,9 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(p_idx, length(p_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ep_idx] = model(s_f)
+                    p_env_m[:, ep_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -489,12 +524,12 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif dims == 2
         # median over epochs
 
-        p_env_m = zeros(length(s_f), ch_n)
-        p_env_u = zeros(length(s_f), ch_n)
-        p_env_l = zeros(length(s_f), ch_n)
+        p_env_m = zeros(length(pf), ch_n)
+        p_env_u = zeros(length(pf), ch_n)
+        p_env_l = zeros(length(pf), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            p_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
+            p_env_m[:, ch_idx] = median(pw[ch_idx, :, :], dims=2)
             # find peaks
             p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -503,9 +538,9 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(p_idx, length(p_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
+                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, ch_idx] = model(s_f)
+                    p_env_m[:, ch_idx] = model(pf)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -526,12 +561,12 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
     
-    return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=s_f)
+    return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
 
 end
 
 """
-    senv(obj; ch, d, mt, t)
+    senv(obj; ch, d, t, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectral envelope.
 
@@ -540,8 +575,25 @@ Calculate spectral envelope.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
+- `method::Symbol=:stft`: method of calculating spectrogram:
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `norm::Bool=true`: normalize powers to dB
+- `nt::Int64=8`: number of Slepian tapers
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -549,66 +601,68 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), pad::Int64=0, method::Symbol=:stft, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
     
     _check_channels(obj, ch)
 
     ch_n = length(ch)
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     fs = sr(obj)
 
-    s_tmp = @view obj.data[1, :, 1]
-
-    interval = fs
-    overlap = round(Int64, fs * 0.75)
-
-    # for short signals always use multi-taper
-    length(s_tmp) < 4 * fs && (mt = true)
-    if mt == true
-        spec_tmp = mt_spectrogram(s_tmp, fs=fs)
-    else
-        spec_tmp = DSP.spectrogram(s_tmp, interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
+    if method === :stft
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+    elseif method === :mt
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    elseif method === :mw
+    _, sp, _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    elseif method === :gh
+        sp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+    elseif method === :cwt
+        sp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
     end
+    st = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
+    st .+= obj.epoch_time[1]
 
-    sp_t = collect(spec_tmp.time)
-    sp_t .+= obj.epoch_time[1]
-
-    s_env = zeros(ch_n, length(sp_t), ep_n)
+    s_env = zeros(ch_n, length(st), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
-            if mt == true
-                spec = @views mt_spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs)
-            else
-                spec = @views DSP.spectrogram(obj.data[ch[ch_idx], :, ep_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
+            if method === :stft
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            elseif method === :mt
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            elseif method === :mw
+            _, sp, _, sf = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            elseif method === :gh
+                sp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
+            elseif method === :cwt
+                sp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
             end
-            s_frq = Vector(spec.freq)
-            s_p = pow2db.(spec.power)
 
             # maximize all powers above threshold (t)
             if t !== nothing
-                s_p[s_p .> t] .= 0
-                reverse!(s_p)
-                reverse!(s_frq)
+                sp[sp .> t] .= 0
+                reverse!(sp)
+                reverse!(sf)
             end
             
-            f_idx = zeros(length(spec.time))
-            m = maximum(s_p, dims=1)
+            f_idx = zeros(length(st))
+            m = maximum(sp, dims=1)
             for idx2 in eachindex(m)
-                f_idx[idx2] = s_frq[vsearch(m[idx2], s_p[:, idx2])]
+                f_idx[idx2] = sf[vsearch(m[idx2], sp[:, idx2])]
             end
             # find peaks
             p_idx = findpeaks(f_idx, d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(spec.time))
+            push!(p_idx, length(st))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
-                model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
+                model = CubicSpline(st[p_idx], f_idx[p_idx])
                 try
-                    s_env[ch_idx, :, ep_idx] = model(sp_t)
+                    s_env[ch_idx, :, ep_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -619,12 +673,12 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
         end
     end
     
-    return (s_env=s_env, senv_t=sp_t)
+    return (s_env=s_env, senv_t=st)
 
 end
 
 """
-    senv_mean(obj; ch, dims, d, mt, t)
+    senv_mean(obj; ch, dims, d, t, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectral envelope: mean and 95% CI.
 
@@ -634,8 +688,25 @@ Calculate spectral envelope: mean and 95% CI.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
+- `method::Symbol=:stft`: method of calculating spectrogram:
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `norm::Bool=true`: normalize powers to dB
+- `nt::Int64=8`: number of Slepian tapers
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -645,31 +716,31 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, pad::Int64=0, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, mt=mt, t=t)
+    sp, st = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(sp, 1)
+    ep_n = size(sp, 3)
 
     if dims == 1
         # mean over channels
 
-        s_env_m = zeros(length(s_t), ep_n)
-        s_env_u = zeros(length(s_t), ep_n)
-        s_env_l = zeros(length(s_t), ep_n)
+        s_env_m = zeros(length(st), ep_n)
+        s_env_u = zeros(length(st), ep_n)
+        s_env_l = zeros(length(st), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            s_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
+            s_env_m[:, ep_idx] = mean(sp[:, :, ep_idx], dims=1)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -677,9 +748,9 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             # interpolate peaks using cubic spline or loess
             push!(s_idx, length(s_env_m[:, ep_idx]))
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ep_idx] = model(s_t)
+                    s_env_m[:, ep_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -691,12 +762,12 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     elseif dims == 2
         # mean over epochs
 
-        s_env_m = zeros(length(s_t), ch_n)
-        s_env_u = zeros(length(s_t), ch_n)
-        s_env_l = zeros(length(s_t), ch_n)
+        s_env_m = zeros(length(st), ch_n)
+        s_env_u = zeros(length(st), ch_n)
+        s_env_l = zeros(length(st), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            s_env_m[:, ch_idx] = mean(s_p[ch_idx, :, :], dims=2)
+            s_env_m[:, ch_idx] = mean(sp[ch_idx, :, :], dims=2)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -705,9 +776,9 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             push!(s_idx, length(s_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ch_idx] = model(s_t)
+                    s_env_m[:, ch_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -719,7 +790,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     else
         # mean over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, dims=1, d=d, mt=mt)
+        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, dims=1, d=d, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
         s_env_m = mean(s_env_m, dims=2)
         s_env_u = mean(s_env_u, dims=2)
         s_env_l = mean(s_env_l, dims=2)
@@ -728,12 +799,12 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
     
-    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)
+    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
 
 end
 
 """
-    senv_median(obj; ch, dims, d, mt)
+    senv_median(obj; ch, dims, d, t, pad, method, frq_lim, frq_n, norm, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
 
 Calculate spectral envelope: median and 95% CI.
 
@@ -743,8 +814,25 @@ Calculate spectral envelope: median and 95% CI.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
-- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
+- `method::Symbol=:stft`: method of calculating spectrogram:
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `norm::Bool=true`: normalize powers to dB
+- `nt::Int64=8`: number of Slepian tapers
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
 
 # Returns
 
@@ -754,31 +842,31 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
-    
+function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, pad::Int64=0, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
+
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    s_p, s_t = senv(obj, ch=ch, d=d, mt=mt, t=t)
+    sp, st = senv(obj, ch=ch, d=d, t=t, pad=pad, method=method, nt=nt, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
-    ch_n = size(s_p, 1)
-    ep_n = size(s_p, 3)
+    ch_n = size(sp, 1)
+    ep_n = size(sp, 3)
 
     if dims == 1
         # median over channels
 
-        s_env_m = zeros(length(s_t), ep_n)
-        s_env_u = zeros(length(s_t), ep_n)
-        s_env_l = zeros(length(s_t), ep_n)
+        s_env_m = zeros(length(st), ep_n)
+        s_env_u = zeros(length(st), ep_n)
+        s_env_l = zeros(length(st), ep_n)
 
         @inbounds @simd for ep_idx in 1:ep_n
-            s_env_m[:, ep_idx] = median(s_p[:, :, ep_idx], dims=1)
+            s_env_m[:, ep_idx] = median(sp[:, :, ep_idx], dims=1)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ep_idx], d=d)
             # add first time-point
@@ -787,9 +875,9 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(s_idx, length(s_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ep_idx] = model(s_t)
+                    s_env_m[:, ep_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -801,12 +889,12 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif dims == 2
         # median over epochs
 
-        s_env_m = zeros(length(s_t), ch_n)
-        s_env_u = zeros(length(s_t), ch_n)
-        s_env_l = zeros(length(s_t), ch_n)
+        s_env_m = zeros(length(st), ch_n)
+        s_env_u = zeros(length(st), ch_n)
+        s_env_l = zeros(length(st), ch_n)
 
         @inbounds @simd for ch_idx in 1:ch_n
-            s_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
+            s_env_m[:, ch_idx] = median(sp[ch_idx, :, :], dims=2)
             # find peaks
             s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
@@ -815,9 +903,9 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             push!(s_idx, length(s_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
-                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                model = CubicSpline(st[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, ch_idx] = model(s_t)
+                    s_env_m[:, ch_idx] = model(st)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
@@ -829,7 +917,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     else
         # median over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, dims=1, d=d, mt=mt)
+        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, dims=1, d=d, pad=pad, method=method, frq_lim=frq_lim, frq_n=frq_n, norm=norm, nt=nt, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
         s_env_m = median(s_env_m, dims=2)
         s_env_u = median(s_env_u, dims=2)
         s_env_l = median(s_env_l, dims=2)
@@ -838,7 +926,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
     
-    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)
+    return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
 
 end
 
@@ -925,12 +1013,12 @@ Named tuple containing:
 function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 2 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 2 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = henv(obj, ch=ch, d=d)
@@ -1003,12 +1091,12 @@ Named tuple containing:
 function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
-        @assert channel_n(obj) >= 1 "Number of channels must be ≥ 2."
+        @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
     elseif dims == 2
-        @assert epoch_n(obj) >= 1 "Number of epochs must be ≥ 2."
+        @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
     elseif dims == 3
-        @assert channel_n(obj) >= 1 "Number of channels must be ≥ 2."
-        @assert epoch_n(obj) >= 1 "Number of epochs must be ≥ 2."
+        @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
+        @assert nepochs(obj) >= 1 "Number of epochs must be ≥ 2."
     end
 
     s_a, s_t = henv(obj, ch=ch, d=d)
@@ -1080,23 +1168,14 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    env_cor(obj1, obj2; type, ch1, ch2, ep1, ep2)
+    env_cor(env1, env2)
 
 Calculate envelope correlation.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
-- `type::Symbol=:amp`: envelope type:
-    - `:amp`: amplitude
-    - `:pow`: power
-    - `:spec`: spectrogram
-    - `:hamp`: Hilbert spectrum amplitude
-- `ch1::Int64`
-- `ch2::Int64`
-- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `env1::Array{Float64, 3}`
+- `env2::Array{Float64, 3}`
 
 # Returns
 
@@ -1104,45 +1183,17 @@ Named tuple containing:
 - `ec::Vector{Float64}`: power correlation value
 - `p::Vector{Float64}`: p-value
 """
-function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:amp, ch1::Int64, ch2::Int64, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2)))
+function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})
 
-    _check_var(type, [:amp, :pow, :spec, :hamp], "type")
+    @assert size(env1) == size(env2) "Both envelopes must have the same size."
 
-    _check_channels(obj1, ch1)
-    _check_channels(obj2, ch2)
-    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
-    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
-    @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 epochs must have the same length."
-
-    ep_n = length(ep1)
-    
+    ep_n = size(env1, 3)
     ec = zeros(ep_n)
     p = zeros(ep_n)
 
-    # calculate envelopes
-    if type === :amp
-        s1, _ = tenv(obj1)
-        s2, _ = tenv(obj2)
-    elseif type === :pow
-        s1, _ = penv(obj1)
-        s2, _ = penv(obj2)
-    elseif type === :spec
-        s1, _ = senv(obj1)
-        s2, _ = senv(obj2)
-    elseif type === :hamp
-        s1, _ = henv(obj1)
-        s2, _ = henv(obj2)
-    end
-
-    s1 = @views s1[ch1, :, ep1]
-    s2 = @views s2[ch2, :, ep2]
-    
     # compare envelopes per epochs
-    Threads.@threads for ep_idx in 1:ep_n
-        ctest = @views CorrelationTest(vec(s1[:, :, ep_idx]), vec(s2[:, :, ep_idx]))
+    for ep_idx in 1:ep_n
+        ctest = @views CorrelationTest(vec(env1[:, :, ep_idx]), vec(env2[:, :, ep_idx]))
         @inbounds ec[ep_idx] = ctest.r
         @inbounds p[ep_idx] = pvalue(ctest)
     end

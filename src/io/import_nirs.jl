@@ -137,18 +137,18 @@ function import_nirs(file_name::String)
     # x, y = y, x
     # normalize to a unit-sphere
     if z != zeros(length(opt_labels))
-        x, y, z = _locnorm(x, y, z)
+        x, y, z = _locs_norm(x, y, z)
     else
-        x, y = _locnorm(x, y)
+        x, y = _locs_norm(x, y)
     end
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:channel=>collect(eachindex(opt_labels)), :labels=>opt_labels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-    locs = locs_cart2sph(locs)
-    locs = locs_cart2pol(locs)
+    locs = DataFrame(:labels=>opt_labels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     
@@ -156,6 +156,7 @@ function import_nirs(file_name::String)
                         first_name="",
                         middle_name="",
                         last_name="",
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)
@@ -187,7 +188,7 @@ function import_nirs(file_name::String)
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
 
     return obj
 

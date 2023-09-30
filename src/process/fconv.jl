@@ -25,7 +25,7 @@ function fconv(s::AbstractVector; kernel::Union{Vector{<:Real}, Vector{ComplexF6
     s_fft = fft0(s, pad + n_k - 1)
     kernel_fft = fft0(kernel, pad + n_s - 1)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = ifft0(s_fft .* kernel_fft, pad)
+    s_conv = abs.(ifft0(s_fft .* kernel_fft, pad))
 
     # remove in- and out- edges
     if mod(n_k, 2) == 0 
@@ -115,7 +115,7 @@ Perform convolution in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 - `pad::Int64=0`: number of zeros to add signal for FFT

@@ -1,4 +1,14 @@
-function _set_units(ch_type::String)
+function _v2r(v::Vector{Int64})
+    if sort(v) == sort(v)[1]:sort(v)[end]
+        return sort(v)[1]:sort(v)[end]
+    else
+        return v
+    end
+end
+_v2r(v::AbstractRange) = return v
+_v2r(v::Int64) = return v
+
+function _ch_units(ch_type::String)
     u = ""
     lowercase(ch_type) == "eeg" && (u = "μV")
     lowercase(ch_type) == "ecog" && (u = "μV")
@@ -20,8 +30,8 @@ function _set_units(ch_type::String)
     return u
 end
 
-function _set_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
-    return _set_units(obj.header.recording[:channel_type][ch])
+function _ch_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
+    return _ch_units(obj.header.recording[:channel_type][ch])
 end
 
 function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})

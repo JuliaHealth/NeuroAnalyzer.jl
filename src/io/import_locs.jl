@@ -9,7 +9,7 @@ export import_locs_geo
 export import_locs_mat
 
 """
-    import_locs(file_name; maximize)
+    import_locs(file_name)
 
 Load channel locations. Supported formats:
 - CED
@@ -26,13 +26,12 @@ This is a meta-function that triggers appropriate `import_locs_*()` function. Fi
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs(file_name::String; maximize::Bool=true)
+function import_locs(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -40,44 +39,45 @@ function import_locs(file_name::String; maximize::Bool=true)
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
-        locs = import_locs_ced(file_name, maximize=maximize)
+        locs = import_locs_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        locs = import_locs_elc(file_name, maximize=maximize)
+        locs = import_locs_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        locs = import_locs_locs(file_name, maximize=maximize)
+        locs = import_locs_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = import_locs_tsv(file_name, maximize=maximize)
+        locs = import_locs_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = import_locs_sfp(file_name, maximize=maximize)
+        locs = import_locs_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        locs = import_locs_csd(file_name, maximize=maximize)
+        locs = import_locs_csd(file_name)
     elseif splitext(file_name)[2] == ".geo"
-        locs = import_locs_geo(file_name, maximize=maximize)
+        locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
-        locs = import_locs_mat(file_name, maximize=maximize)
+        locs = import_locs_mat(file_name)
     else
         @error "Unknown file format."
     end
 
+    _locs_round!(locs)
+    
     return locs
 
 end
 
 """
-    import_locs_ced(file_name; maximize)
+    import_locs_ced(file_name)
 
 Load channel locations from CED file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_ced(file_name::String; maximize::Bool=true)
+function import_locs_ced(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".ced" "Not CED file."
@@ -107,34 +107,32 @@ function import_locs_ced(file_name::String; maximize::Bool=true)
     "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
     "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    locs = _round_locs(locs)
+    locs_swapxy!(locs, polar=true, cart=true, spherical=true)
+    locs_flipx!(locs, polar=true, cart=false, spherical=false)
 
-    locs_swapxy!(locs)
-    locs_flipx!(locs, planar=true, spherical=false)
-
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_locs(file_name; maximize)
+    import_locs_locs(file_name)
 
 Load channel locations from LOCS file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_locs(file_name::String; maximize::Bool=true)
+function import_locs_locs(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".locs" "This is not LOCS file."
@@ -156,36 +154,34 @@ function import_locs_locs(file_name::String; maximize::Bool=true)
     theta = Float64.(locs[!, "theta"])
     radius = Float64.(locs[!, "radius"])
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    locs = _round_locs(locs)
-
-    locs_swapxy!(locs)
-    locs_flipx!(locs, planar=true, spherical=false)
+    locs_swapxy!(locs, polar=true, cart=false, spherical=false)
+    locs_flipx!(locs, polar=true, cart=false, spherical=false)
 
     locs[!, :loc_phi_sph] = zeros(nrow(locs))
 
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_elc(file_name; maximize)
+    import_locs_elc(file_name)
 
 Load channel locations from ELC file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_elc(file_name::String; maximize::Bool=true)
+function import_locs_elc(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".elc" "This is not ELC file."
@@ -229,34 +225,32 @@ function import_locs_elc(file_name::String; maximize::Bool=true)
     y = normalize_minmax(y)
     z = normalize_minmax(z)
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_tsv(file_name; maximize)
+    import_locs_tsv(file_name)
 
 Load channel locations from TSV file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_tsv(file_name::String; maximize::Bool=true)
+function import_locs_tsv(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".tsv" "This is not TSV file."
@@ -291,34 +285,32 @@ function import_locs_tsv(file_name::String; maximize::Bool=true)
     "phi" in colnames && (phi_sph = locs[!, "phi"])
     "phi_sph" in colnames && (phi_sph = locs[!, "phi_sph"])
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_sfp(file_name; maximize)
+    import_locs_sfp(file_name)
 
 Load channel locations from SFP file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_sfp(file_name::String; maximize::Bool=true)
+function import_locs_sfp(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".sfp" "This is not SFP file."
@@ -340,7 +332,7 @@ function import_locs_sfp(file_name::String; maximize::Bool=true)
 
     # x, y, z positions must be within -1..+1
     t = x[1]
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
     t -= x[1]
     # sometimes positions are shifted along x-axis, remove the shift
     x .+= abs(t)
@@ -351,34 +343,32 @@ function import_locs_sfp(file_name::String; maximize::Bool=true)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_csd(file_name; maximize)
+    import_locs_csd(file_name)
 
 Load channel locations from CSD file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_csd(file_name::String; maximize::Bool=true)
+function import_locs_csd(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".csd" "This is not CSD file."
@@ -401,31 +391,29 @@ function import_locs_csd(file_name::String; maximize::Bool=true)
         radius[idx], theta[idx] = sph2pol(radius_sph[idx], theta_sph[idx], phi_sph[idx])
     end
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    locs = _round_locs(locs)
-
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_geo(file_name; maximize)
+    import_locs_geo(file_name)
 
 Load channel locations from GEO file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_geo(file_name::String; maximize::Bool=true)
+function import_locs_geo(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".geo" "This is not GEO file."
@@ -456,12 +444,12 @@ function import_locs_geo(file_name::String; maximize::Bool=true)
         x[idx], y[idx], z[idx], = parse.(Float64, split(tmp, ", "))
     end
 
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
 
     # center x at 0
     x_adj = x[findfirst(isequal("Cz"), clabels)]
     x .-= x_adj
-    x, y, z = _locnorm(x, y, z)
+    x, y, z = _locs_norm(x, y, z)
 
     radius = zeros(length(clabels))
     theta = zeros(length(clabels))
@@ -469,34 +457,32 @@ function import_locs_geo(file_name::String; maximize::Bool=true)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
-
-    locs = _round_locs(locs)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
 
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
 
 end
 
 """
-    import_locs_mat(file_name; maximize)
+    import_locs_mat(file_name)
 
 Load channel locations from MAT file.
 
 # Arguments
 
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `locs::DataFrame`
 """
-function import_locs_mat(file_name::String; maximize::Bool=true)
+function import_locs_mat(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert splitext(file_name)[2] == ".mat" "This is not MAT file."
@@ -509,7 +495,7 @@ function import_locs_mat(file_name::String; maximize::Bool=true)
     clabels = string.(vec(dataset["Cnames"]))
 
     # x, y, z positions must be within -1..+1
-    x, y = _locnorm(x, y)
+    x, y = _locs_norm(x, y)
 
     z = zeros(ch_n)
     radius = zeros(length(clabels))
@@ -518,13 +504,13 @@ function import_locs_mat(file_name::String; maximize::Bool=true)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel=>collect(eachindex(clabels)), :labels=>clabels, :loc_theta=>theta, :loc_radius=>radius, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    locs = _round_locs(locs)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    maximize == true && locs_maximize!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
 
     return locs
     

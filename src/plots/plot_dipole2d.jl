@@ -11,7 +11,7 @@ Plot dipole in 2D.
 
 # Returns
 
-- `p::GLMakie.Figure`
+- `p::Plots.Plot{Plots.GRBackend}`
 
 # Notes
 

@@ -35,7 +35,7 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=:nirs_int))
 
@@ -47,7 +47,7 @@ function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     obj_new = deepcopy(obj)
     
     # add channels
-    obj_new.data = vcat(obj.data[ch, :, :], reshape(intensity2od(obj.data[ch, :, :]), length(ch), epoch_len(obj), epoch_n(obj)), obj.data[setdiff(collect(1:size(obj.data, 1)), ch), :, :])
+    obj_new.data = vcat(obj.data[ch, :, :], reshape(intensity2od(obj.data[ch, :, :]), length(ch), epoch_len(obj), nepochs(obj)), obj.data[setdiff(collect(1:size(obj.data, 1)), ch), :, :])
     
     # update header
     obj_new.header.recording[:wavelength_index] = vcat(obj.header.recording[:wavelength_index][ch], obj.header.recording[:wavelength_index][ch])

@@ -16,7 +16,7 @@ Plot ERP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -26,7 +26,7 @@ Plot ERP.
 """
 function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get limits
     ylim = (floor(minimum(s) * 1.1, digits=0), ceil(maximum(s) * 1.1, digits=0))
@@ -90,7 +90,7 @@ Butterfly plot of ERP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `avg::Bool=false`: plot average ERP
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
@@ -101,7 +101,7 @@ Butterfly plot of ERP.
 """
 function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     ch_n = size(s, 1)
 
@@ -205,7 +205,7 @@ Plot ERP amplitude mean and ±95% CI.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -215,7 +215,7 @@ Plot ERP amplitude mean and ±95% CI.
 """
 function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
     s_m, _, s_u, s_l = msci95(s)
@@ -294,7 +294,7 @@ Plot topographical map ERPs.
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `t::Vector{Float64}`: time vector
 - `s::Array{Float64, 2}`: ERPs
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
@@ -303,21 +303,20 @@ Plot topographical map ERPs.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `yrev::Bool=false`: reverse Y axis
-- `cart::Bool=false`: if true, use Cartesian x and y coordinates, otherwise use polar radius and theta coordinates
-- `mono::Bool=false`: use color or grey palette
-
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
-- `fig::GLMakie.Figure`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
 
     @assert size(s, 2) == length(t) "Signal length and time length must be equal."
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
     
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(s, 1)))
@@ -327,8 +326,8 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     ylim = _tuple_max(ylim)
 
     # plot parameters
-    plot_size = 1200
-    marker_size = (150, 75)
+    plot_size = 800
+    marker_size = (120, 80)
     
     # get locations
     if cart == false
@@ -348,15 +347,15 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
+    # origin is in the left top corner, convert positions
+    loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
+    loc_y = (plot_size - marker_size[2]) .- round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
-    fig = Figure(; resolution=(plot_size, plot_size))
-    fig_axis = Axis(fig[1, 1])
-    fig_axis.aspect = AxisAspect(1)
-    fig_axis.title = title
-    GLMakie.xlims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
-    GLMakie.ylims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
-    hidedecorations!(fig_axis, grid=true, ticks=true)
-
+    c = CairoRGBSurface(plot_size, plot_size)
+    cr = CairoContext(c)
+    Cairo.set_source_rgb(cr, 256, 256, 256)
+    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size)
+    Cairo.fill(cr)
     for idx in 1:size(s, 1)
         p = Plots.plot(xlabel=xlabel,
                        ylabel=ylabel,
@@ -400,14 +399,24 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
                          linecolor=:black,
                          label=false)
 
-        marker_img = tempname() * ".png"
-        savefig(p, marker_img)
-        marker = FileIO.load(marker_img)
-        GLMakie.scatter!(fig_axis, (loc_x[idx], loc_y[idx]), marker=marker, markersize=marker_size)
-        rm(marker_img)
+        show(io, MIME("image/png"), p)
+        img = read_from_png(io)
+        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx])
+        Cairo.paint(cr)
     end
 
-    return fig
+    img_png = tempname() * ".png"
+    Cairo.write_to_png(c, img_png)
+    img = FileIO.load(img_png)
+    p = nothing
+    p = Plots.plot(img,
+                   size=(plot_size + 100, plot_size + 100),
+                   title=title,
+                   titlefontsize=12,
+                   border=:none)
+    rm(img_png)
+
+    return p
 
 end
 
@@ -426,7 +435,7 @@ Plot EPRs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -438,7 +447,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     if clabels == [""]
         yticks = round.(Int64, range(1, size(s, 1), length=10))
@@ -495,7 +504,7 @@ Plot ERP.
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="default"`: color bar title, default is Amplitude [units] 
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
@@ -515,13 +524,13 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     _check_channels(obj, ch)
 
     # set units
-    units = _set_units(obj, ch[1])
+    units = _ch_units(obj, ch[1])
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
 
     # get data
-    ep_n = epoch_n(obj) - 1
+    ep_n = nepochs(obj) - 1
 
     if type in [:normal, :topo]
         s = obj.data[ch, :, 1]
@@ -672,11 +681,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
     end
 
-    if type !== :topo
-        Plots.plot(p)
-    else
-        GLMakie.show(p)
-    end
+    Plots.plot(p)
 
     return p
 

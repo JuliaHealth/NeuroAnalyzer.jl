@@ -77,14 +77,14 @@ function import_set(file_name::String; detect_type::Bool=true)
     clabels = _clean_labels(clabels)
     if detect_type == true
         ch_type = _set_channel_types(clabels, "eeg")
-        units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+        units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     else
         if length(dataset["chanlocs"]) > 0 && string.(dataset["chanlocs"]["type"][:]) == repeat([""], ch_n)
             ch_type = repeat(["eeg"], ch_n)
             units = repeat(["μV"], ch_n)
         else
             length(dataset["chanlocs"]) > 0 && (ch_type = lowercase.(string.(dataset["chanlocs"]["type"][:])))
-            units = [_set_units(ch_type[idx]) for idx in 1:ch_n]
+            units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
         end
     end
     channel_order = _sort_channels(ch_type)
@@ -156,8 +156,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             chanlocs["sph_theta"][:][idx] isa Float64 && (theta_sph[idx] = chanlocs["sph_theta"][:][idx])
         end
         radius_sph == zeros(ch_n) && (radius_sph = radius)
-        locs = DataFrame(:channel=>_c(ch_n),
-                         :labels=>clabels,
+        locs = DataFrame(:labels=>clabels,
                          :loc_theta=>theta,
                          :loc_radius=>radius,
                          :loc_x=>x,
@@ -172,11 +171,10 @@ function import_set(file_name::String; detect_type::Bool=true)
         nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found.")
         if nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
-            locs_maximize!(locs)
+            locs_normalize!(locs)
         end
     else
-        locs = DataFrame(:channel=>Int64,
-                         :labels=>String[],
+        locs = DataFrame(:labels=>String[],
                          :loc_theta=>Float64[],
                          :loc_radius=>Float64[],
                          :loc_x=>Float64[],
@@ -234,6 +232,7 @@ function import_set(file_name::String; detect_type::Bool=true)
                         first_name="",
                         middle_name="",
                         last_name=string(patient),
+                        head_circumference=-1,
                         handedness="",
                         weight=-1,
                         height=-1)
@@ -267,7 +266,7 @@ function import_set(file_name::String; detect_type::Bool=true)
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(channel_n(obj)) × $(epoch_len(obj)) × $(epoch_n(obj)); $(obj.time_pts[end]) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 
     return obj
 

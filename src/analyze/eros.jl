@@ -9,21 +9,24 @@ Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP, `ero()`
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Int64`: channel to analyze
-- `method::Symbol=:standard`: method of calculating spectrogram:
-    - `:standard`: standard
+- `method::Symbol=:stft`: method of calculating spectrogram:
     - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
+- `nt::Int64=8`: number of Slepian tapers
+- `wlen::Int64=sr(obj)`: window length, default is 4 seconds
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
 - `pad::Int64=0`: number of zeros to add
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -32,20 +35,16 @@ Named tuple containing:
 - `ero_f::Vector{Float64}`: frequencies
 - `ero_t::Vector{Float64}`: time
 """
-function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
+function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
     _check_channels(obj, ch)
-    _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
+    _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
-    frq_lim = tuple_order(frq_lim)
-    @assert !(frq_lim[1] < 0 || frq_lim[2] < 0 || frq_lim[1] > sr(obj) / 2 || frq_lim[2] > sr(obj) / 2) "frq_lim must be in [0, $(sr(obj) / 2)]."
-    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
-
-    ero_s, ero_f, ero_t = spectrogram(obj, ch=ch, pad=pad, frq_lim=frq_lim, frq_n=frq_n, method=method, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt)
+    ero_s, ero_f, ero_t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
 
     ero_s = ero_s[:, :, 1, :]
 
-    if method in [:standard, :mt, :stft]
+    if method in [:mt, :stft]
         f1_idx = vsearch(frq_lim[1], ero_f)
         f2_idx = vsearch(frq_lim[2], ero_f)
         ero_f = ero_f[f1_idx:f2_idx]

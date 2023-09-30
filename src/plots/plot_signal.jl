@@ -17,7 +17,7 @@ Plot amplitude of single- or multi-channel `s`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
@@ -54,8 +54,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     end
 
     # prepare plot
-    ch_n <= 2 && (plot_size = (1200, 400))
-    ch_n > 2 && (plot_size = (1200, 800))
+    ch_n in 1:2 && (plot_size = (1200, 400))
+    ch_n in 3:15 && (plot_size = (1200, 800))
+    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -67,6 +68,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    top_margin=0Plots.px,
                    bottom_margin=15Plots.px,
                    right_margin=10Plots.px,
+                   left_margin=10Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -117,7 +119,7 @@ Plot amplitude of single- or multi-channel `s`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
@@ -138,7 +140,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     s = @views reverse(s[:, eachindex(t)], dims = 1)
     bad = reverse(bad)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)
@@ -151,8 +153,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     end
 
     # prepare plot
-    ch_n <= 2 && (plot_size = (1200, 400))
-    ch_n > 2 && (plot_size = (1200, 800))
+    ch_n in 1:2 && (plot_size = (1200, 400))
+    ch_n in 3:15 && (plot_size = (1200, 800))
+    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -217,7 +220,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `norm::Bool=false`: normalize to -1 .. +1
@@ -229,7 +232,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 """
 function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)
@@ -316,7 +319,7 @@ Butterfly plot of `s` channels.
 - `title::String=""`: plot title
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `norm::Bool=false`: normalize to -1 .. +1
 - `kwargs`: optional arguments for plot() function
 
@@ -326,7 +329,7 @@ Butterfly plot of `s` channels.
 """
 function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
-    pal = mono == true ? :grays : :darktest
+    pal = mono ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)
@@ -433,8 +436,9 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     end
 
     # prepare plot
-    ch_n <= 2 && (plot_size = (1200, 400))
-    ch_n > 2 && (plot_size = (1200, 800))
+    ch_n in 1:2 && (plot_size = (1200, 400))
+    ch_n in 3:15 && (plot_size = (1200, 800))
+    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=NeuroAnalyzer._xlims(t),
@@ -497,12 +501,12 @@ Plot signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `emarkers::Bool`: draw epoch markers if available
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
@@ -520,9 +524,9 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
-    if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
+    if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
         _check_segment(obj, seg)
@@ -533,7 +537,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     if ep != 0
         _check_epochs(obj, ep)
-        if epoch_n(obj) == 1
+        if nepochs(obj) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
@@ -547,7 +551,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     # do not show epoch markers if there are no epochs
-    epoch_n(obj) == 1 && (emarkers = false)
+    nepochs(obj) == 1 && (emarkers = false)
     if emarkers == true
         epoch_markers = _get_epoch_markers(obj)
     end
@@ -557,7 +561,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     clabels = labels(obj)
 
     # set units
-    units = _set_units(obj, ch[1])
+    units = _ch_units(obj, ch[1])
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -596,7 +600,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         if bad == false
             if length(ch_tmp) > 1
                 for cht_idx in eachindex(ch_t_uni)
-                    units = _set_units(obj, ch_tmp[cht_idx][1])
+                    units = _ch_units(obj, ch_tmp[cht_idx][1])
                     if ch_t[ch_tmp[cht_idx][1]] == "eeg"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
                     end
@@ -754,7 +758,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if type === :butterfly
         @assert length(ch_t_uni) == 1 "For plot type=:butterfly all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
-        units = _set_units(obj, ch[1])
+        units = _ch_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
@@ -820,7 +824,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         @assert length(ch_t_uni) == 1 "For plot type=:mean all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
 
-        units = _set_units(obj, ch[1])
+        units = _ch_units(obj, ch[1])
         if ch_t[ch[1]] == "eeg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
@@ -1002,7 +1006,7 @@ Plot embedded or external component.
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
-- `mono::Bool=false`: use color or grey palette
+- `mono::Bool=false`: Use color or gray palette
 - `emarkers::Bool`: draw epoch markers if available
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
@@ -1031,7 +1035,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
 
     if ep != 0
         _check_epochs(obj, ep)
-        if epoch_n(obj) == 1
+        if nepochs(obj) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
@@ -1045,7 +1049,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     end
 
     # do not show epoch markers if there are no epochs
-    epoch_n(obj) == 1 && (emarkers = false)
+    nepochs(obj) == 1 && (emarkers = false)
     if emarkers == true
         epoch_markers = _get_epoch_markers(obj)
     end
@@ -1161,7 +1165,7 @@ Plot two signals. This function is used to compare two signals, e.g. before and 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object (before) - drawn in black
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object (after) - drawn in red
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj1))`: channel(s) to plot, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1))`: channel(s) to plot, default is all channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -1175,7 +1179,7 @@ Plot two signals. This function is used to compare two signals, e.g. before and 
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj1)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", emarkers::Bool=true, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
+function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", emarkers::Bool=true, scale::Bool=true, units::String="", kwargs...)
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
@@ -1190,7 +1194,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     if ep != 0
         _check_epochs(obj1, ep)
-        if epoch_n(obj1) == 1
+        if nepochs(obj1) == 1
             ep = 0
         else
             seg = (((ep[1] - 1) * epoch_len(obj1) + 1), seg[2])
@@ -1204,7 +1208,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # do not show epoch markers if there are no epochs
-    epoch_n(obj1) == 1 && (emarkers = false)
+    nepochs(obj1) == 1 && (emarkers = false)
     if emarkers == true
         epoch_markers = _get_epoch_markers(obj1)
     end
@@ -1214,7 +1218,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     clabels = labels(obj1)
 
     # set units
-    units = _set_units(obj1, ch[1])
+    units = _ch_units(obj1, ch[1])
 
     # get time vector
     if seg[2] <= epoch_len(obj1)
@@ -1253,7 +1257,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     if length(ch_tmp) > 1
         for cht_idx in eachindex(ch_t_uni)
-            units = _set_units(obj1, ch_tmp[cht_idx][1])
+            units = _ch_units(obj1, ch_tmp[cht_idx][1])
 
             if ch_t[ch_tmp[cht_idx][1]] == "eeg"
                 xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")

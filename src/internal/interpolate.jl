@@ -3,8 +3,8 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
     
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
-    x_lim_int = (-1.4, 1.4)
-    y_lim_int = (-1.4, 1.4)
+    x_lim_int = (-1.2, 1.2)
+    y_lim_int = (-1.2, 1.2)
 
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)

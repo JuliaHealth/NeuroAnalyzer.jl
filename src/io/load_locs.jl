@@ -17,8 +17,9 @@ Accepted formats:
 - MAT
 
 Channel locations:
-- `loc_theta`: planar polar angle
-- `loc_radius`: planar polar radius
+
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
 - `loc_x`: spherical Cartesian x
 - `loc_y`: spherical Cartesian y
 - `loc_z`: spherical Cartesian z
@@ -30,13 +31,12 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: name of the file to load
-- `maximize::Bool=true`: maximize locations to a unit circle after importing
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
+function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_labels() first."
@@ -45,23 +45,43 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"
-        locs = import_locs_ced(file_name, maximize=maximize)
+        locs = import_locs_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        locs = import_locs_elc(file_name, maximize=maximize)
+        locs = import_locs_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        locs = import_locs_locs(file_name, maximize=maximize)
+        locs = import_locs_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = import_locs_tsv(file_name, maximize=maximize)
+        locs = import_locs_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = import_locs_sfp(file_name, maximize=maximize)
+        locs = import_locs_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        locs = import_locs_csd(file_name, maximize=maximize)
+        locs = import_locs_csd(file_name)
     elseif splitext(file_name)[2] == ".geo"
-        locs = import_locs_geo(file_name, maximize=maximize)
+        locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
-        locs = import_locs_mat(file_name, maximize=maximize)
+        locs = import_locs_mat(file_name)
     else
         @error "Unknown file format."
+    end
+
+    # add locations of reference channels
+    ref_idx = get_channel_bytype(obj, type=:ref)
+    ref_labels = labels(obj)[ref_idx]
+    if length(ref_labels) > 0
+        for idx in eachindex(ref_labels)
+            occursin("1", ref_labels[idx]) && push!(locs, [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
+            occursin("2", ref_labels[idx]) && push!(locs, [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
+        end
+    end
+    
+    # add locations of EOG channels
+    eog_idx = get_channel_bytype(obj, type=:eog)
+    eog_labels = labels(obj)[eog_idx]
+    if length(eog_labels) > 0
+        for idx in eachindex(eog_labels)
+            occursin("1", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 145.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
+            occursin("2", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 35.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
+        end
     end
 
     f_labels = locs[!, :labels]
@@ -93,10 +113,9 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.locs = DataFrame(:channel=>collect(eachindex(f_labels[labels_idx])),
-                             :labels=>f_labels[labels_idx],
-                             :loc_theta=>loc_theta[labels_idx],
+    obj_new.locs = DataFrame(:labels=>f_labels[labels_idx],
                              :loc_radius=>loc_radius[labels_idx],
+                             :loc_theta=>loc_theta[labels_idx],
                              :loc_x=>loc_x[labels_idx],
                              :loc_y=>loc_y[labels_idx],
                              :loc_z=>loc_z[labels_idx],
@@ -104,7 +123,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
                              :loc_theta_sph=>loc_theta_sph[labels_idx],
                              :loc_phi_sph=>loc_phi_sph[labels_idx])
 
-    # add entry to :history field
+    _locs_round!(obj_new.locs)
+
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
 
     return obj_new
@@ -112,7 +132,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 end
 
 """
-    load_locs!(obj; file_name, maximize)
+    load_locs!(obj; file_name, normalize)
 
 Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
 
@@ -127,8 +147,9 @@ Accepted formats:
 - MAT
 
 Channel locations:
-- `loc_theta`: planar polar angle
-- `loc_radius`: planar polar radius
+
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
 - `loc_x`: spherical Cartesian x
 - `loc_y`: spherical Cartesian y
 - `loc_z`: spherical Cartesian z
@@ -140,11 +161,10 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
-- `maximize::Bool=true`: maximize locations after importing
 """
-function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
+function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)
 
-    obj_tmp = load_locs(obj, file_name=file_name, maximize=maximize)
+    obj_tmp = load_locs(obj, file_name=file_name)
     obj.locs = obj_tmp.locs
 
     return nothing

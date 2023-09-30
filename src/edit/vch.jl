@@ -16,7 +16,7 @@ Calculate virtual channel using formula `f`.
 """
 function vch(obj::NeuroAnalyzer.NEURO; f::String)
 
-    ep_n = epoch_n(obj)
+    ep_n = nepochs(obj)
     f = lowercase(f)
     clabels = lowercase.(labels(obj))
     vc = zeros(1, epoch_len(obj), ep_n)
