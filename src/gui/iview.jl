@@ -217,90 +217,93 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nb\tslide channels up\nn\tslide channels down\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-b\tslide channels up\nctrl-n\tslide channels down\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 113 # q
-            Gtk.destroy(win)
-        elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\nb\tslide channels up\nn\tslide channels down\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nh\tthis info\nq\texit\n")
-        elseif k == 98 # b
-            if ch_first > 1
-                ch_first -= 1
-                ch_last -= 1
+        s = event.state
+        if s == 20
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog("Keyboard shortcuts:\n\nctrl-b\tslide channels up\nctrl-n\tslide channels down\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 98 # b
+                if ch_first > 1
+                    ch_first -= 1
+                    ch_last -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                        ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                    end
+                    draw(can)
+                end
+            elseif k == 110 # n
+                if ch_last < ch[end]
+                    ch_first += 1
+                    ch_last += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                        ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                    end
+                    draw(can)
+                end
+            elseif k == 97 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
-                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                    set_gtk_property!(entry_time, :value, obj.time_pts[1])
                 end
                 draw(can)
-            end
-        elseif k == 110 # n
-            if ch_last < ch[end]
-                ch_first += 1
-                ch_last += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
-                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
-                end
-                draw(can)
-            end
-        elseif k == 97 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, obj.time_pts[1])
-            end
-            draw(can)
-        elseif k == 115 # s
-            time_current = obj.time_pts[end] - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
-            draw(can)
-        elseif k == 122 # z
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current >= obj.time_pts[1] + 1
-                time_current -= 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-            end
-            draw(can)
-        elseif k == 99 # c
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current >= obj.time_pts[1] + zoom
-                time_current = time_current - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-            end
-            draw(can)
-        elseif k == 120 # x
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current < obj.time_pts[end] - zoom
-                time_current += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-            else
+            elseif k == 115 # s
                 time_current = obj.time_pts[end] - zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            end
-        elseif k == 118 # v
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current < obj.time_pts[end] - zoom
-                time_current += zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
+                draw(can)
+            elseif k == 122 # z
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
                 end
-            else
-                time_current = obj.time_pts[end] - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
+                draw(can)
+            elseif k == 99 # c
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+                draw(can)
+            elseif k == 120 # x
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            elseif k == 118 # v
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
                 end
             end
         end
@@ -482,75 +485,78 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nb\tslide channels up\nn\tslide channels down\n\na\tgo to first epoch\ns\tgo to last epoch\nz\tprevious epoch\nx\tnext epoch\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-b\tslide channels up\nctrl-n\tslide channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 113 # q
-            Gtk.destroy(win)
-        elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\nb\tslide channels up\nn\tslide channels down\n\na\tgo to first epoch\ns\tgo to last epoch\nz\tprevious epoch\nx\tnext epoch\n\nh\tthis info\nq\texit\n")
-        elseif k == 98 # b
-            if ch_first > 1
-                ch_first -= 1
-                ch_last -= 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
-                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+        s = event.state
+        if s == 20
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog("Keyboard shortcuts:\n\nctrl-b\tslide channels up\nctrl-n\tslide channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 98 # b
+                if ch_first > 1
+                    ch_first -= 1
+                    ch_last -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                        ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                    end
+                    draw(can)
                 end
-                draw(can)
-            end
-        elseif k == 110 # n
-            if ch_last < ch[end]
-                ch_first += 1
-                ch_last += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
-                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+            elseif k == 110 # n
+                if ch_last < ch[end]
+                    ch_first += 1
+                    ch_last += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                        ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                    end
+                    draw(can)
                 end
-                draw(can)
-            end
-        elseif k == 97 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, 1)
-            end
-        elseif k == 115 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, nepochs(obj))
-            end
-        elseif k == 122 # z
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep >= 2
-                ep -= 1
+            elseif k == 97 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
+                    set_gtk_property!(entry_epoch, :value, 1)
                 end
-            end
-        elseif k == 120 # x
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < nepochs(obj)
-                ep += 1
+            elseif k == 115 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
+                    set_gtk_property!(entry_epoch, :value, nepochs(obj))
                 end
-            end
-        elseif k == 100 # d
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-                delete_epoch!(obj, ep=ep)
-                _info("Deleted epoch: $ep")
-                ep = ep > 1 ? ep -= 1 : ep = 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
-                    GAccessor.range(entry_epoch, 1, nepochs(obj))
+            elseif k == 122 # z
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep >= 2
+                    ep -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
+                end
+            elseif k == 120 # x
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep < nepochs(obj)
+                    ep += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
+                end
+            elseif k == 100 # d
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ask_dialog("Delete epoch $ep ?", "No", "Yes")
+                    delete_epoch!(obj, ep=ep)
+                    _info("Deleted epoch: $ep")
+                    ep = ep > 1 ? ep -= 1 : ep = 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                        GAccessor.range(entry_epoch, 1, nepochs(obj))
+                    end
                 end
             end
         end
     end
-
+    
     return nothing
 
 end

@@ -273,115 +273,118 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nDEL\tdelete current segment\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current segment\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 113 # q
-            Gtk.destroy(win)
-        elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nDEL\tdelete current segment\n\nh\tthis info\nq\texit\n")
-        elseif k == 97 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, obj.time_pts[1])
-                set_gtk_property!(entry_ts1, :value, obj.time_pts[1])
-                set_gtk_property!(entry_ts1, :value, obj.time_pts[1])
-            end
-            draw(can)
-        elseif k == 115 # s
-            time_current = obj.time_pts[end] - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-                set_gtk_property!(entry_ts1, :value, time_current)
-                set_gtk_property!(entry_ts2, :value, time_current)
-            end
-            draw(can)
-        elseif k == 122 # z
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current >= obj.time_pts[1] + 1
-                time_current -= 1
+        s = event.state
+        if s == 20
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current segment\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 97 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
+                    set_gtk_property!(entry_time, :value, obj.time_pts[1])
+                    set_gtk_property!(entry_ts1, :value, obj.time_pts[1])
+                    set_gtk_property!(entry_ts1, :value, obj.time_pts[1])
                 end
-            end
-            draw(can)
-        elseif k == 99 # c
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current >= obj.time_pts[1] + zoom
-                time_current = time_current - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                end
-            end
-            draw(can)
-        elseif k == 120 # x
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current < obj.time_pts[end] - zoom
-                time_current += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                end
-            else
+                draw(can)
+            elseif k == 115 # s
                 time_current = obj.time_pts[end] - zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                     set_gtk_property!(entry_ts1, :value, time_current)
                     set_gtk_property!(entry_ts2, :value, time_current)
                 end
-            end
-        elseif k == 118 # v
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current < obj.time_pts[end] - zoom
-                time_current += zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                end
-            else
-                time_current = obj.time_pts[end] - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                end
-            end
-        elseif k == 100 # d
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-            time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
-            if time1 > time2
-                warn_dialog("Cannot delete!\nSegment start is larger than segment end.")
-            elseif time1 == time2
-                warn_dialog("Cannot delete!\nSegment start must be different from segment end.")
-            elseif ask_dialog("Delete segment $time1:$time2 ?", "No", "Yes")
-                trim!(obj, seg=(time1, time2), remove_epochs=false)
-                _info("Deleted segment: $time1:$time2")
-                if time1 == time_current && time2 > obj.time_pts[end]
-                    time_current = obj.time_pts[end] - zoom
-                    time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                else
-                    if obj.time_pts[end] % zoom == 0
-                        time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
-                    else
-                        time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                draw(can)
+            elseif k == 122 # z
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
                     end
-                    time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                 end
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                    set_gtk_property!(entry_ts1, :value, time_current)
-                    set_gtk_property!(entry_ts2, :value, time_current)
-                    GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                    GAccessor.range(entry_ts1, obj.time_pts[1], obj.time_pts[end])
-                    GAccessor.range(entry_ts2, obj.time_pts[1], obj.time_pts[end])
+                draw(can)
+            elseif k == 99 # c
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
+                    end
+                end
+                draw(can)
+            elseif k == 120 # x
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
+                    end
+                end
+            elseif k == 118 # v
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
+                    end
+                end
+            elseif k == 100 # d
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
+                time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
+                if time1 > time2
+                    warn_dialog("Cannot delete!\nSegment start is larger than segment end.")
+                elseif time1 == time2
+                    warn_dialog("Cannot delete!\nSegment start must be different from segment end.")
+                elseif ask_dialog("Delete segment $time1:$time2 ?", "No", "Yes")
+                    trim!(obj, seg=(time1, time2), remove_epochs=false)
+                    _info("Deleted segment: $time1:$time2")
+                    if time1 == time_current && time2 > obj.time_pts[end]
+                        time_current = obj.time_pts[end] - zoom
+                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                    else
+                        if obj.time_pts[end] % zoom == 0
+                            time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
+                        else
+                            time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                        end
+                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                    end
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                        set_gtk_property!(entry_ts1, :value, time_current)
+                        set_gtk_property!(entry_ts2, :value, time_current)
+                        GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
+                        GAccessor.range(entry_ts1, obj.time_pts[1], obj.time_pts[end])
+                        GAccessor.range(entry_ts2, obj.time_pts[1], obj.time_pts[end])
+                    end
                 end
             end
         end
@@ -520,48 +523,51 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nd\tdelete current epoch\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 113 # q
-            Gtk.destroy(win)
-        elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nd\tdelete current epoch\n\nh\tthis info\nq\texit\n")
-        elseif k == 97 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, 1)
-            end
-        elseif k == 115 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, nepochs(obj))
-            end
-        elseif k == 122 # z
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep >= 2
-                ep -= 1
+        s = event.state
+        if s == 20
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 97 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
+                    set_gtk_property!(entry_epoch, :value, 1)
                 end
-            end
-        elseif k == 120 # x
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < nepochs(obj)
-                ep += 1
+            elseif k == 115 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
+                    set_gtk_property!(entry_epoch, :value, nepochs(obj))
                 end
-            end
-        elseif k == 100 # d
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-                delete_epoch!(obj, ep=ep)
-                _info("Deleted epoch: $ep")
-                ep = ep > 1 ? ep -= 1 : ep = 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
-                    GAccessor.range(entry_epoch, 1, nepochs(obj))
+            elseif k == 122 # z
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep >= 2
+                    ep -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
+                end
+            elseif k == 120 # x
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep < nepochs(obj)
+                    ep += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
+                end
+            elseif k == 100 # d
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ask_dialog("Delete epoch $ep ?", "No", "Yes")
+                    delete_epoch!(obj, ep=ep)
+                    _info("Deleted epoch: $ep")
+                    ep = ep > 1 ? ep -= 1 : ep = 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                        GAccessor.range(entry_epoch, 1, nepochs(obj))
+                    end
                 end
             end
         end

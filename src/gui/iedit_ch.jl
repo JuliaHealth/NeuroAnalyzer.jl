@@ -705,6 +705,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         return nothing
     end
 
+    signal_connect(win, "key-press-event") do widget, event
+        k = event.keyval
+        s = event.state
+        if s == 20
+        end
+    end
+
     return nothing
 
 end

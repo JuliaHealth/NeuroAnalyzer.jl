@@ -338,6 +338,7 @@ include("gui/iplot_locs3d.jl")
 include("gui/ipsd.jl")
 include("gui/ispectrogram.jl")
 include("gui/iplot_icatopo.jl")
+include("gui/iview_plot.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

@@ -107,7 +107,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
     else
-        marker_size = 6
+        marker_size = 4
         font_size = 4
         ch_labels = false
         grid = false
@@ -169,13 +169,8 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                            size=size(head_shape) .+ 1,
                            right_margin=-10*Plots.px,
                            bottom_margin=-30*Plots.px,
-                           top_margin=-10*Plots.px,
+                           top_margin=-20*Plots.px,
                            left_margin=-30*Plots.px,
-                           # size=size(head_shape),
-                           # right_margin=-30*Plots.px,
-                           # bottom_margin=-40*Plots.px,
-                           # top_margin=-30*Plots.px,
-                           # left_margin=-40*Plots.px,
                            xticks=xt,
                            yticks=yt,
                            xlims=xl,

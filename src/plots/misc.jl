@@ -57,16 +57,29 @@ function plot_empty()
 end
 
 """
-    add_locs(p1, p2, file_name)
+    add_locs(p1, p2, view, file_name)
 
-Add locations to a plot and saves as PNG file.
+Add locations to a plot. Locations are placed in the top right corner. If `file_name` is provided, the plot is saved as PNG file.
+
+# Arguments
+
+- `p1::Plots.Plot{Plots.GRBackend}`: signal plot
+- `p2::Plots.Plot{Plots.GRBackend}`: locations plot
+- `view::Bool=true`: view the output image
+- `file_name::String=""`: output image file name
+
+# Returns
+
+- `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; file_name::String)
+function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")
 
-    ext = lowercase(splitext(file_name)[2])
-    @assert ext == ".png" "File name extension must be .png"
+    if file_name != ""
+        ext = lowercase(splitext(file_name)[2])
+        @assert ext == ".png" "File name extension must be .png"
 
-    (isfile(file_name) && verbose == true) && _warn("File $file_name will be overwritten.")
+        (isfile(file_name) && verbose == true) && _warn("File $file_name will be overwritten.")
+    end
 
     p1_size = p1.attr[:size]
     p2_size = p2.attr[:size]
@@ -81,8 +94,13 @@ function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBacken
     img = read_from_png(io)
     Cairo.set_source_surface(cr, img, (2 * p1_size[1]) - p2_size[1], 0)
     Cairo.paint(cr)
-    Cairo.write_to_png(c, file_name)
 
-    return nothing
+    if file_name != ""
+        Cairo.write_to_png(c, file_name)
+    else
+        view && iview_plot(c)
+    end
+
+    return c
 
 end

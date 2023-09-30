@@ -10,10 +10,10 @@ Interactive PSD of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is the first channel
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Real=5)
+function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
 
     if nepochs(obj) == 1
         ipsd_cont(obj, ch=ch, zoom=zoom)
@@ -33,10 +33,10 @@ Interactive PSD of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is the first channel
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), zoom::Real=5)
+function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -546,64 +546,67 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 113 # q
-            Gtk.destroy(win)
-        elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\n\na\tgo to the signal beginning\ns\tgo to the signal end\nz\tgo back by 1 second\nx\tgo forward by 1 second\nc\tgo back by $zoom seconds\nv\tgo forward by $zoom seconds\n\nh\tthis info\nq\texit\n")
-        elseif k == 97 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, obj.time_pts[1])
-            end
-        elseif k == 115 # s
-            time_current = obj.time_pts[end] - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
-        elseif k == 122 # z
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current >= obj.time_pts[1] + 1
-                time_current -= 1
+        s = event.state
+        if s == 20
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 97 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
+                    set_gtk_property!(entry_time, :value, obj.time_pts[1])
                 end
-            end
-        elseif k == 99 # c
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current >= obj.time_pts[1] + zoom
-                time_current = time_current - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-            end
-        elseif k == 120 # x
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current < obj.time_pts[end] - zoom
-                time_current += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-            else
+            elseif k == 115 # s
                 time_current = obj.time_pts[end] - zoom
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            end
-        elseif k == 118 # v
-            time_current = get_gtk_property(entry_time, :value, Float64)
-            if time_current < obj.time_pts[end] - zoom
-                time_current += zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
+            elseif k == 122 # z
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
                 end
-            else
-                time_current = obj.time_pts[end] - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
+            elseif k == 99 # c
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            elseif k == 120 # x
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            elseif k == 118 # v
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
                 end
             end
         end
@@ -621,9 +624,9 @@ Interactive PSD of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is the first channel
 """
-function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1)
 
     @assert nepochs(obj) > 1 "ipsd_cont() should be used for continuous object."
     _check_channels(obj, ch)
@@ -1092,37 +1095,40 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\na\tgo to first epoch\ns\tgo to last epoch\nz\tprevious epoch\nx\tnext epoch\n\nh\tthis info\nq\texit\n")
+        info_dialog("Keyboard shortcuts:\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 113 # q
-            Gtk.destroy(win)
-        elseif k == 104 # h
-            info_dialog("Keyboard shortcuts:\na\tgo to first epoch\ns\tgo to last epoch\nz\tprevious epoch\nx\tnext epoch\n\nh\tthis info\nq\texit\n")
-        elseif k == 97 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, 1)
-            end
-        elseif k == 115 # a
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, nepochs(obj))
-            end
-        elseif k == 122 # z
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep >= 2
-                ep -= 1
+        s = event.state
+        if s == 20
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog("Keyboard shortcuts:\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 97 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
+                    set_gtk_property!(entry_epoch, :value, 1)
                 end
-            end
-        elseif k == 120 # x
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            if ep < nepochs(obj)
-                ep += 1
+            elseif k == 115 # a
                 Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, ep)
+                    set_gtk_property!(entry_epoch, :value, nepochs(obj))
+                end
+            elseif k == 122 # z
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep >= 2
+                    ep -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
+                end
+            elseif k == 120 # x
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep < nepochs(obj)
+                    ep += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
                 end
             end
         end
