@@ -11,6 +11,8 @@ using Documenter
 using DocumenterMarkdown
 @info "Loading package: Plots"
 using Plots
+@info "Loading package: Cairo"
+using Cairo
 @info "Loading package: DataFrames"
 using DataFrames
 @info "Loading package: Wavelets"
