@@ -186,7 +186,7 @@ p = plot_icatopo(eeg_new, ic, ic_mw)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "test 25/26: add_locs()"
-c = add_locs(plot(eeg), plot_locs(eeg), view=false, file_name="")
+c = add_locs(NeuroAnalyzer.plot(eeg), NeuroAnalyzer.plot_locs(eeg), view=false, file_name="")
 @test c isa Cairo.CairoSurfaceBase{UInt32}
 
 true

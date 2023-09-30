@@ -252,7 +252,7 @@ e10_tmp = remove_dc(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 29/51: scale()"
-e10_tmp = scale(e10, factor=2.0)
+e10_tmp = NeuroAnalyzer.scale(e10, factor=2.0)
 @test e10_tmp.data == e10.data .* 2.0
 
 @info "test 30/51: reference()"

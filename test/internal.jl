@@ -149,7 +149,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._v2r(1:3) == 1:3
 @test NeuroAnalyzer._v2r(1) == 1
 @test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
-@test _p2c(NeuroAnalyzer.plot(eeg)) isa Cairo.CairoSurfaceBase{UInt32}
+@test NeuroAnalyzer._p2c(NeuroAnalyzer.plot(eeg)) isa Cairo.CairoSurfaceBase{UInt32}
 @test NeuroAnalyzer._xlims(1:10) == (1.0, 10.0)
 @test NeuroAnalyzer._ticks(1:10) == 1.0:0.9:10.0
 @test NeuroAnalyzer._ticks((1, 10)) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

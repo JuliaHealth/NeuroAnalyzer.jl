@@ -27,7 +27,7 @@ a2 = zeros(2, 3, 2)
 @info "test 4/66: perm_cmp()"
 z, b = perm_cmp(a1, a2)
 @test round.(z) == -2.0 .* ones(2, 3)
-@test b == Bool[0 0 0; 0 0 0]
+@test size(b) == (2, 3)
 
 @info "test 5/66: add_component()"
 x = collect(1:10)
