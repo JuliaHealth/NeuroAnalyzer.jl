@@ -119,7 +119,7 @@ View Cairo surface object.
 
 # Arguments
 
-- `c::Cairo.CairoSurfaceBase{UInt32`
+- `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function iview_plot(c::Cairo.CairoSurfaceBase{UInt32})
 

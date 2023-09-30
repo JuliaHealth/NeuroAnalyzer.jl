@@ -182,10 +182,10 @@ e10_tmp = NeuroAnalyzer.join(e10, e10)
 @test size(e10_tmp) == (29, 4000, 10)
 
 @info "test 26/28: create()"
-@test typeof(create(data_type="eeg")) == NeuroAnalyzer.NEURO
-@test typeof(create(data_type="ecog")) == NeuroAnalyzer.NEURO
-@test typeof(create(data_type="meg")) == NeuroAnalyzer.NEURO
-@test typeof(create(data_type="nirs")) == NeuroAnalyzer.NEURO
+@test create(data_type="eeg") isa NeuroAnalyzer.NEURO
+@test create(data_type="ecog") isa NeuroAnalyzer.NEURO
+@test create(data_type="meg") isa NeuroAnalyzer.NEURO
+@test create(data_type="nirs") isa NeuroAnalyzer.NEURO
 
 @info "test 27/28: add_channel()"
 e = create(data_type="ecog")

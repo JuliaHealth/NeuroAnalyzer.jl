@@ -1,3 +1,14 @@
+function _p2c(p::Plots.Plot{Plots.GRBackend})
+    p_size = p.attr[:size]
+    c = CairoRGBSurface(p_size[1], p_size[2])
+    cr = CairoContext(c)
+    show(io, MIME("image/png"), p)
+    img = read_from_png(io)
+    Cairo.set_source_surface(cr, img, 0, 0)
+    Cairo.paint(cr)
+    return c
+end
+
 function _xlims(t::Union{Vector{<:Real}, AbstractRange})
     return floor(t[1], digits=2), ceil(t[end], digits=2)
 end

@@ -1,6 +1,7 @@
 using NeuroAnalyzer
 using Test
 using DataFrames
+using Cairo
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -66,10 +67,10 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test NeuroAnalyzer._has_locs(e10) == true
-@test typeof(NeuroAnalyzer._initialize_locs(e10)) == DataFrame
+@test NeuroAnalyzer._initialize_locs(e10) isa DataFrame
 NeuroAnalyzer._initialize_locs!(e10)
 @test NeuroAnalyzer._has_locs(e10) == true
-@test typeof(NeuroAnalyzer._initialize_locs()) == DataFrame
+@test NeuroAnalyzer._initialize_locs() isa DataFrame
 xn, yn = NeuroAnalyzer._locs_norm(x, y)
 @test xn[1] ≈ -0.31
 @test yn[1] == 0.95
@@ -148,6 +149,15 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._v2r(1:3) == 1:3
 @test NeuroAnalyzer._v2r(1) == 1
 @test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
+@test _p2c(NeuroAnalyzer.plot(eeg)) isa Cairo.CairoSurfaceBase{UInt32}
+@test NeuroAnalyzer._xlims(1:10) == (1.0, 10.0)
+@test NeuroAnalyzer._ticks(1:10) == 1.0:0.9:10.0
+@test NeuroAnalyzer._ticks((1, 10)) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+@test NeuroAnalyzer._erpticks(1:10) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0] 
+@test NeuroAnalyzer._erpticks((1, 10)) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0] 
+@test NeuroAnalyzer._set_defaults("a", "b", "c", "d", "e", "f") == ("a", "b", "c")
+@test NeuroAnalyzer._set_defaults("default", "default", "default", "d", "e", "f") == ("d", "e", "f")
+
 # these function are still in work:
 ## FIFF
 # NeuroAnalyzer._read_fiff_tag(fid::IOStream)
