@@ -31,12 +31,16 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
     obj_new = deepcopy(obj)
 
     # remove channel locations
-    if length(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch])) == 1
-        deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch]))
-    else
-        deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch])))
+    for ch_idx in ch
+        if labels(obj_new)[ch_idx] in obj_new.locs[!, :labels]
+            if length(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch_idx])) == 1
+                deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch_idx]))
+            else
+                deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch_idx])))
+            end
+        end
     end
-
+    
     # update headers
     for idx in ch
         loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))
