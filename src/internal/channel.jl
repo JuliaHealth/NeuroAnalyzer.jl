@@ -26,6 +26,10 @@ function _ch_units(ch_type::String)
     lowercase(ch_type) == "nirs_hbt" && (u = "μM/mm")
     lowercase(ch_type) == "nirs_aux" && (u = "")
     lowercase(ch_type) == "mrk" && (u = "")
+    lowercase(ch_type) == "accel" &&(u = "m/s²")
+    lowercase(ch_type) == "magfld" &&(u = "µT")
+    lowercase(ch_type) == "orient" &&(u = "°")
+    lowercase(ch_type) == "angvel" &&(u = "rad/s")
     lowercase(ch_type) == "other" && (u = "")
     return u
 end

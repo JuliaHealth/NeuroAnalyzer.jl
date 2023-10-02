@@ -18,8 +18,8 @@ Named tuple containing:
 """
 function dprime(p1::Real, p2::Real)
 
-    @assert !(p1 <= 0 || p1 >= 1) "p1 must be in <0, 1>."
-    @assert !(p2 <= 0 || p2 >= 1) "p2 must be in <0, 1>."
+    @assert !(p1 <= 0 || p1 >= 1) "p1 must be in [0, 1]."
+    @assert !(p2 <= 0 || p2 >= 1) "p2 must be in [0, 1]."
     
     p1_zscore = quantile(Distributions.Normal(), p1)
     p2_zscore = quantile(Distributions.Normal(), p2)

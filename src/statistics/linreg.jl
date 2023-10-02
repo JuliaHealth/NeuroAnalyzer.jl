@@ -4,7 +4,7 @@ export infcrit
 """
     linreg(x, y)
 
-Linear regression between `x` and `y`.
+Linear regression between two vectors.
 
 # Arguments
 

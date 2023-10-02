@@ -3,7 +3,7 @@ export jaccard_similarity
 """
     jaccard_similarity(x, y)
 
-Calculate Jaccard similarity between two vectors `x` and `y`.
+Calculate Jaccard similarity between two vectors.
 
 # Arguments
 
