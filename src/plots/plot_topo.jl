@@ -252,6 +252,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
             ep = 0
         end
     end
+
     # remove non-signal channels
     obj_tmp = keep_channel(obj, ch=signal_channels(obj))
 
@@ -331,7 +332,6 @@ Topographical plot of embedded or external component.
     - `:nn`: NearestNeighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
@@ -357,40 +357,44 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
 
-    no_timepoint = false
+    time_segment = true
+
     if c isa Matrix{Float64}
         c = reshape(c, size(c, 1), size(c, 2), 1)
-        seg = (0, size(c, 2) / sr(obj))
-        no_timepoint = true
+        time_segment = false
+    elseif c isa Array{Float64, 3} && size(c, 2) != epoch_len(obj)
+        time_segment = false
     elseif c isa Vector{Float64}
         c = reshape(c, length(c), 1, 1)
-        seg = (0, 1)
-        no_timepoint = true
-    elseif size(c, 2) == 1
-        no_timepoint = true
-        seg = (0, 1)
+        time_segment = false
     end
-
-    _check_segment(obj, seg)
-
-    if ep != 0
-        _check_epochs(obj, ep)
-        if nepochs(obj) == 1
-            ep = 0
-        else
-            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-            if ep isa Int64
-                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+    
+    if time_segment
+        if ep != 0
+            _check_epochs(obj, ep)
+            if nepochs(obj) == 1
+                ep = 0
             else
-                seg = (seg[1], (ep[end] * epoch_len(obj)))
+                seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
+                if ep isa Int64
+                    seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+                else
+                    seg = (seg[1], (ep[end] * epoch_len(obj)))
+                end
+                ep = 0
             end
-            ep = 0
         end
     end
 
     # remove non-signal channels
-    obj_tmp = deepcopy(obj)
-    keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
+    obj_tmp = keep_channel(obj, ch=signal_channels(obj))
+
+    # remove reference and EOG channels
+    c_idx = vec(collect(c_idx))
+    setdiff!(c_idx, get_channel_bytype(obj_tmp, type=:ref))
+    setdiff!(c_idx, get_channel_bytype(obj_tmp, type=:eog))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
 
     # select component channels, default is all channels
     c isa Symbol && (c = _get_component(obj_tmp, c).c)
@@ -400,22 +404,26 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     length(c_idx) == 1 && (clabels = [clabels])
 
     @assert length(c_idx) >= 2 "plot_topo() requires ≥ 2 channels."
-    @assert length(ch) <= nrow(obj_tmp.locs) "Some channels do not have locations."
+    @assert length(c_idx) <= nrow(obj_tmp.locs) "Some channels do not have locations."
 
     # get time vector
-    if seg[2] <= epoch_len(obj_tmp)
-        s = c[c_idx, seg[1]:seg[2], 1]
+    if time_segment
+        if seg[2] <= epoch_len(obj_tmp)
+            s = c[c_idx, seg[1]:seg[2], 1]
+        else
+            s = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
+        end
+        if seg[1] != seg[2]
+            t = _get_t(seg[1], seg[2], sr(obj_tmp))
+        else
+            t = _get_t(seg[1], seg[2] + 1, sr(obj_tmp))
+        end
+        _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
+        ep = _s2epoch(obj_tmp, seg[1], seg[2])
     else
-        s = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
+        s = c
     end
-    if seg[1] != seg[2]
-        t = _get_t(seg[1], seg[2], sr(obj_tmp))
-    else
-        t = _get_t(seg[1], seg[2] + 1, sr(obj_tmp))
-    end
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj_tmp, seg[1], seg[2])
-    
+
     # average signal and convert to vector
     if size(s, 2) > 1
         if amethod === :mean
@@ -427,19 +435,16 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
         s = vec(s)
     end
 
-    if seg[2] != seg[1]
-        if no_timepoint != true
-            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), epoch$(_pl(length(ep))): $ep, averaged ($(string(amethod))) over time window: $t_s1:$t_s2]")
+    if time_segment
+        if seg[2] != seg[1]
+          title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, averaged ($(string(amethod))) over time window: $t_s1:$t_s2]")
         else
-            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), averaged ($(string(amethod))) over $(length(seg[1]:seg[2])) time point$(_pl(length(seg)))]")
+            title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, time point: $t_s1]")
         end
     else
-        if no_timepoint != true
-            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), epoch$(_pl(length(ep))): $ep, time point: $t_s1]")
-        else
-            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), $(size(c, 2)) time point$(_pl(size(c, 2)))]")
-        end
+        title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx))]")
     end
+
     cb_label == "default" && (cb_label = "[A.U.]")
 
     p = plot_topo(s, ch=c_idx, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)

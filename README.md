@@ -4,9 +4,9 @@
 
 Welcome fellow researcher!
 
-NeuroAnalyzer is a [Julia](https://julialang.org) toolbox for analyzing neurophysiological data. Currently it allows importing, editing, processing and analyzing EEG and NIRS data. Preliminary functionality is also available for ECoG recordings. Future versions will also support MEG and SEEG and source localization techniques, also based on MRI data. Various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS/TUS/INS) will also be implemented.
+NeuroAnalyzer is a [Julia](https://julialang.org) toolbox for analyzing neurophysiological data. Currently it allows importing, editing, processing and analyzing EEG and NIRS data. Preliminary functionality is also available for ECoG and SEEG recordings. Future versions will also support MEG recordings and source localization techniques. Various methods for modeling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS/TUS/INS) will also be implemented.
 
-NeuroAnalyzer contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This, combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of research data.
+NeuroAnalyzer contains a set of separate (high-level) functions. Some interactive graphical user interface (GUI) functions are also available (to preview, edit, plot signal and its power spectrum/spectrogram); more GUI functions will be added in the future. NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This, combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of research data.
 
 NeuroAnalyzer is a collaborative, non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 

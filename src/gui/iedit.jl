@@ -3,7 +3,7 @@ export iedit_ep
 export iedit_cont
 
 """
-    iedit(obj, ch, mono, zoom)
+    iedit(obj, ch, mono, zoom, snap)
 
 Interactive edit of continuous or epoched signal.
 
@@ -13,11 +13,12 @@ Interactive edit of continuous or epoched signal.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Real=5`: how many seconds are displayed in one segment
+- `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 """
-function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5)
+function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
 
     if nepochs(obj) == 1
-        iedit_cont(obj, ch=ch, mono=mono, zoom=zoom)
+        iedit_cont(obj, ch=ch, mono=mono, zoom=zoom, snap=snap)
     else
         iedit_ep(obj, ch=ch, mono=mono)
     end
@@ -37,8 +38,9 @@ Interactive edit of continuous signal.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Real=5`: how many seconds are displayed in one segment
+- `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 """
-function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5)
+function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -51,7 +53,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 20)
-    set_gtk_property!(win, :resizable, true)
+    set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
@@ -158,8 +160,10 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         else
             ts1 = time_current + round((x_pos - 52) / (1130 / (obj.time_pts[end] - time_current)), digits=3)
         end
+        snap && (ts1 = round(ts1 * 4) / 4)
+        round(ts1, digits=3)
         Gtk.@sigatom begin
-            set_gtk_property!(entry_ts1, :value, round(ts1, digits=3))
+            set_gtk_property!(entry_ts1, :value, ts1)
         end
     end
 
@@ -173,6 +177,8 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         else
             ts2 = time_current + ((x_pos - 52) / (1130 / (obj.time_pts[end] - time_current)))
         end
+        snap && (ts2 = round(ts2 * 4) / 4)
+        round(ts2, digits=3)
         Gtk.@sigatom begin
             set_gtk_property!(entry_ts2, :value, round(ts2, digits=3))
         end
@@ -273,7 +279,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current segment\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -283,7 +289,10 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
-                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current segment\n\nctrl-h\tthis info\nctrl-q\texit\n")
+                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
+            elseif k == 92 # \
+                snap = !snap
+                @show snap
             elseif k == 97 # a
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -416,7 +425,7 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 20)
-    set_gtk_property!(win, :resizable, true)
+    set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
