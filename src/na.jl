@@ -71,6 +71,7 @@ function na_info()
             "Plots",
             "Polynomials",
             "Preferences",
+            "PrettyTables",
             "ProgressMeter",
             "SavitzkyGolay",
             "ScatteredInterpolation",

@@ -67,6 +67,7 @@ using Plots
 using Plots.PlotMeasures
 using Polynomials
 using Preferences
+using PrettyTables
 using ProgressMeter
 using Random
 using SavitzkyGolay
@@ -357,6 +358,7 @@ include("statistics/cmp_test.jl")
 include("statistics/cor_test.jl")
 include("statistics/segments.jl")
 include("statistics/sem_diff.jl")
+include("statistics/summary.jl")
 # utils
 include("utils/apply.jl")
 include("utils/array.jl")
@@ -375,6 +377,7 @@ include("utils/phase.jl")
 include("utils/pick.jl")
 include("utils/time.jl")
 include("utils/vector.jl")
+include("utils/make_table.jl")
 include("utils/to_df.jl")
 # study
 include("study/create.jl")

@@ -1,7 +1,7 @@
 export sem_diff
 
 """
-    sem_diff(x::AbstractVector, y::AbstractVector)
+    sem_diff(x, y)
 
 Calculate SEM (standard error of the mean) for the difference of two means.
 

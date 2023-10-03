@@ -39,15 +39,15 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
     if type !== :perm
         if (pks < alpha && type === :auto) || type === :p
             if paired == true
-                verbose == true && _info("Using one sample T-test.")
+                verbose == true && _info("Using one sample T-test")
                 t = OneSampleTTest(s1, s2)
             else
                 pf = pvalue(VarianceFTest(s1, s2))
-                if pf < alpha
-                    verbose == true && _info("Using equal variance two samples T-test.")
+                if pf > alpha
+                    verbose == true && _info("Using equal variance two samples T-test")
                     t = EqualVarianceTTest(s1, s2)
                 else
-                    verbose == true && _info("Using unequal variance two samples T-test.")
+                    verbose == true && _info("Using unequal variance two samples T-test")
                     t = UnequalVarianceTTest(s1, s2)
                 end
             end
@@ -58,17 +58,17 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         elseif (pks >= alpha && type === :auto) || type === :np
             if paired == true
                 if exact == true
-                    verbose == true && _info("Using exact signed rank (Wilcoxon) test.")
+                    verbose == true && _info("Using exact signed rank (Wilcoxon) test")
                     t = ExactSignedRankTest(s1, s2)
                 else
-                    verbose == true && _info("Using signed rank (Wilcoxon) test.")
+                    verbose == true && _info("Using signed rank (Wilcoxon) test")
                     t = SignedRankTest(s1, s2)
                 end
                 ts = t.W
                 df = t.n - 1
                 tn = "W"
             else
-                verbose == true && _info("Using Mann-Whitney U test.")
+                verbose == true && _info("Using Mann-Whitney U test")
                 t = MannWhitneyUTest(s1, s2)
                 ts = t.U
                 df = length(s1) + length(s2) - 2
@@ -109,7 +109,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
     if type !== :perm
         p = pvalue(t)
         p < eps() && (p = eps())
-        return (t=t, ts=(ts, tn), tc=tc, df=df, p=p)
+        return (t=t, ts=(round(ts, digits=4), tn), tc=round.(tc, digits=4), df=round(df, digits=4), p=round(p, digits=4))
     else
         if pks < alpha
             verbose == true && _info("H0 has non-normal distribution; p-value for KS-test: $(round(pks, digits=3))")
