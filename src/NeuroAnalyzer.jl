@@ -9,9 +9,9 @@ module NeuroAnalyzer
 global const VER = v"0.23.11-dev"
 const allow_wip = occursin("dev", string(VER)) # false for the stable branch, true for the devel branch
 const io = PipeBuffer() # required for interactive preview
-const data_types = ["eeg", "meg", "nirs", "ecog", "seeg"]
-const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :other]
-const channel_units = ["μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", ""]
+const data_types = ["eeg", "meg", "nirs", "ecog", "seeg", "sensors"]
+const channel_types = [:all, :eeg, :ecog, :seeg, :meg, :grad, :mag, :csd, :nirs_int, :nirs_od, :nirs_dmean, :nirs_dvar, :nirs_dskew, :nirs_mua, :nirs_musp, :nirs_hbo, :nirs_hbr, :nirs_hbt, :nirs_h2o, :nirs_lipid, :nirs_bfi, :nirs_hrf_dod, :nirs_hrf_dmean, :nirs_hrf_dvar, :nirs_hrf_dskew, :nirs_hrf_hbo, :nirs_hrf_hbr, :nirs_hrf_hbt, :nirs_hrf_bfi, :nirs_aux, :ecg, :eog, :emg, :ref, :mrk, :accel, :magfld, :orient, :angvel, :other]
+const channel_units = ["μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "rad/s", ""]
 const fiducial_points = (nasion = (0.0, 0.95, -0.2),
                          inion  = (0.0, -0.96, -0.2),
                          lra    = (-0.98, 0.0, -0.2),
