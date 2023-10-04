@@ -1,6 +1,10 @@
 function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}})
     if typeof(l) == String
-        return findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))[1]
+        if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))) > 0
+            return findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))[1]
+        else
+            return Int64[]
+        end
     else
         l_idx = Vector{Int64}()
         for idx in l

@@ -182,6 +182,7 @@ include("internal/tester.jl")
 include("internal/time.jl")
 include("internal/wl2ext.jl")
 include("internal/gdf_etp.jl")
+include("internal/statistics.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/acor.jl")

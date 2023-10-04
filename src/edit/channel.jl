@@ -380,8 +380,18 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
         _check_channels(obj, ch)
         clabels[ch] = name
     end
-    obj_new.header.recording[:labels] = clabels
     
+    # rename channel locs label
+    if ch isa String
+        l_idx = NeuroAnalyzer._find_bylabel(obj_new.locs, ch)
+    else
+        l_idx = NeuroAnalyzer._find_bylabel(obj_new.locs, obj.header.recording[:labels][ch])
+    end
+    if length(l_idx) == 1
+        l_idx = l_idx[1]
+        obj_new.locs[l_idx, :labels] = name
+    end
+
     push!(obj_new.history, "rename_channel(OBJ, ch=$ch, name=$name)")
 
     return obj_new
