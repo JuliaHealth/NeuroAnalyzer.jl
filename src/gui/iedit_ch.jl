@@ -88,6 +88,9 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         locs = obj_new.locs
         locs_ch = _find_bylabel(obj_new.locs, ch_labels[ch_signal])
     end
+    @show ch_signal
+    @show locs_ch    
+    @show obj_new.locs[!, :labels]  
 
     # Gtk canvas / Cairo context should be scaled only once
     already_scaled1 = false

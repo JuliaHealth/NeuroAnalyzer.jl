@@ -414,6 +414,7 @@ function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, nam
     obj_new = rename_channel(obj, ch=ch, name=name)
     obj.header = obj_new.header
     obj.history = obj_new.history
+    obj.locs = obj_new.locs
 
     return nothing
 

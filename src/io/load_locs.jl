@@ -71,8 +71,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
         for idx in eachindex(ref_labels)
             (occursin("a", lowercase(ref_labels[idx])) && occursin("1", ref_labels[idx])) && push!(locs, [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
             (occursin("a", lowercase(ref_labels[idx])) && occursin("2", ref_labels[idx])) && push!(locs, [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
-            (occursin("m", lowercase(ref_labels[idx])) && occursin("1", ref_labels[idx])) && push!(locs, [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
-            (occursin("m", lowercase(ref_labels[idx])) && occursin("2", ref_labels[idx])) && push!(locs, [ref_labels[idx], 1.0, -12.0, 0.92, -0.23, -0.55, 1.10, -14.04, -30.11])
+            (occursin("m", lowercase(ref_labels[idx])) && occursin("1", ref_labels[idx])) && push!(locs, [ref_labels[idx], 0.95, -173.93, -0.94, -0.1, -0.3, 0.99, -173.93, -17.61])
+            (occursin("m", lowercase(ref_labels[idx])) && occursin("2", ref_labels[idx])) && push!(locs, [ref_labels[idx], 0.95, -6.07, 0.94, -0.1, -0.3, 0.99, -6.07, -17.61])
         end
     end
     
