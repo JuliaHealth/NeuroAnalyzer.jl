@@ -48,16 +48,16 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
         deleteat!(obj_new.header.recording[:channel_type], idx)
         deleteat!(obj_new.header.recording[:units], idx)
         deleteat!(obj_new.header.recording[:prefiltering], idx)
-        if obj_new.header.recording[:data_type] === "eeg"
+        if obj_new.header.recording[:data_type] == "eeg"
             deleteat!(obj_new.header.recording[:transducers], idx)
             deleteat!(obj_new.header.recording[:gain], idx)
-        elseif obj_new.header.recording[:data_type] === "meg"
+        elseif obj_new.header.recording[:data_type] == "meg"
             deleteat!(obj_new.header.recording[:coils], idx)
             deleteat!(obj_new.header.recording[:magnetometers], idx)
             deleteat!(obj_new.header.recording[:gradiometers], idx)
             deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
             deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
-        elseif obj_new.header.recording[:data_type] === "nirs"
+        elseif obj_new.header.recording[:data_type] == "nirs"
             deleteat!(obj_new.header.recording[:wavelengths], idx)
             deleteat!(obj_new.header.recording[:wavelength_index], idx)
             # TO DO: remove channel pairs containing removed channel
@@ -162,19 +162,19 @@ Keep channel(s) of `type` type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::Symbol=:eeg`: type of channels to keep
+- `type::String="eeg"`: type of channels to keep
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
+function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::String="eeg")
 
     _check_var(type, channel_types, "type")
 
     chs_idx = Vector{Int64}()
-    for idx in 1:nchannels(obj, type=:all)
-        obj.header.recording[:channel_type][idx] == string(type) && push!(chs_idx, idx)
+    for idx in 1:nchannels(obj, type="all")
+        obj.header.recording[:channel_type][idx] == type && push!(chs_idx, idx)
     end
 
     obj_new = keep_channel(obj, ch=chs_idx)
@@ -191,9 +191,9 @@ Keep OBJ channels of `type` type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::Symbol=:eeg`: type of channels to keep
+- `type::String="eeg"`: type of channels to keep
 """
-function keep_channel_type!(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
+function keep_channel_type!(obj::NeuroAnalyzer.NEURO; type::String="eeg")
 
     obj_new = keep_channel_type(obj, type=type)
     obj.header = obj_new.header

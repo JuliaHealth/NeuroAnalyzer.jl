@@ -258,10 +258,10 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
 
     # remove reference and EOG channels
     ch = vec(collect(ch))
-    setdiff!(ch, get_channel_bytype(obj_tmp, type=:ref))
-    setdiff!(ch, get_channel_bytype(obj_tmp, type=:eog))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+    setdiff!(ch, get_channel_bytype(obj_tmp, type="ref"))
+    setdiff!(ch, get_channel_bytype(obj_tmp, type="eog"))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
 
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     _check_channels(obj_tmp, ch)
@@ -391,10 +391,10 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     # remove reference and EOG channels
     c_idx = vec(collect(c_idx))
-    setdiff!(c_idx, get_channel_bytype(obj_tmp, type=:ref))
-    setdiff!(c_idx, get_channel_bytype(obj_tmp, type=:eog))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:ref))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type=:eog))
+    setdiff!(c_idx, get_channel_bytype(obj_tmp, type="ref"))
+    setdiff!(c_idx, get_channel_bytype(obj_tmp, type="eog"))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
+    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
 
     # select component channels, default is all channels
     c isa Symbol && (c = _get_component(obj_tmp, c).c)

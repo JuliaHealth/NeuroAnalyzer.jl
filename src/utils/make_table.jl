@@ -12,6 +12,9 @@ Display data as a table.
 """
 function make_table(; header::Matrix{String}, data::Matrix{Any})
     @assert size(header, 2) == size(data, 2) "Number of columns must be equal in the header and in the data."
+    for idx in eachindex(data)
+        data[idx] isa Int && (data[idx] = string(data[idx]))
+    end
     pretty_table(
                  cat(header, data, dims=1);
                  body_hlines        = [1],

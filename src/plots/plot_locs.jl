@@ -419,8 +419,8 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 
     # remove reference and EOG channels
     ch = vec(collect(ch))
-    setdiff!(ch, get_channel_bytype(obj, type=:ref))
-    setdiff!(ch, get_channel_bytype(obj, type=:eog))
+    setdiff!(ch, get_channel_bytype(obj, type="ref"))
+    setdiff!(ch, get_channel_bytype(obj, type="eog"))
     # select channels, default is all channels
     _check_channels(signal_channels(obj), ch)
     selected != 0 && _check_channels(obj, selected)

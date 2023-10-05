@@ -271,9 +271,9 @@ function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real},
 
     # remove non-signal channels
     obj_tmp = deepcopy(obj)
-    keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
+    keep_channel_type!(obj_tmp, type=obj_tmp.header.recording[:data_type])
 
-    _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
+    _check_channels(obj, ch, obj.header.recording[:data_type])
 
     p = plot_connections(obj_tmp.locs, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
 

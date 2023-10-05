@@ -19,7 +19,7 @@ Detect a pair of positive and negative peaks of ERP.
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)
 
-    _check_datatype(obj, :erp)
+    _check_datatype(obj, "erp")
 
     ch_n = size(obj)[1]
     p = zeros(Int64, ch_n, 2)
@@ -49,7 +49,7 @@ Calculate amplitude at given time.
 """
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
 
-    _check_datatype(obj, :erp)
+    _check_datatype(obj, "erp")
     @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
     @assert t <= obj.epoch_time[end] "t must be ≤ $(obj.epoch_time[end])."
 
@@ -85,7 +85,7 @@ Calculate average amplitude at given time segment.
 """
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
-    _check_datatype(obj, :erp)
+    _check_datatype(obj, "erp")
     @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
     @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
     @assert t[1] <= t[2] "t[1] must be < t[2]."
@@ -123,7 +123,7 @@ Calculate maximum amplitude at given time segment.
 """
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
-    _check_datatype(obj, :erp)
+    _check_datatype(obj, "erp")
     @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
     @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
     @assert t[1] <= t[2] "t[1] must be < t[2]."
@@ -161,7 +161,7 @@ Calculate minimum amplitude at given time segment.
 """
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
-    _check_datatype(obj, :erp)
+    _check_datatype(obj, "erp")
     @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
     @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
     @assert t[1] <= t[2] "t[1] must be < t[2]."

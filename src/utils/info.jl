@@ -39,17 +39,17 @@ Return number of channels of `type`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::Vector{Symbol}=:all`: channel type (stored in the global channel_types constant variable)
+- `type::String="all"`: channel type (stored in the global channel_types constant variable)
 
 # Returns
 
 - `ch_n::Int64`
 """
-function nchannels(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
+function nchannels(obj::NeuroAnalyzer.NEURO; type::String="all")
 
     _check_var(type, channel_types, "type")
 
-    if type === :all
+    if type == "all"
         if ndims(obj.data) == 1
             ch_n = 1
         else
@@ -59,7 +59,7 @@ function nchannels(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
         @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
         ch_n = 0
         for idx in 1:nchannels(obj)
-            obj.header.recording[:channel_type][idx] == string(type) && (ch_n += 1)
+            obj.header.recording[:channel_type][idx] == type && (ch_n += 1)
         end
     end
 

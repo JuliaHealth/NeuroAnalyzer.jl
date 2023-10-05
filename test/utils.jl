@@ -172,15 +172,15 @@ s = generate_morlet_fwhm(100, 10)
 @test epoch_len(e10) == 2560
 
 @info "test 37/66: signal_channels()"
-@test signal_channels(:eeg, ["eeg", "eeg", "ecg", "mrk"]) == [1, 2]
+@test signal_channels("eeg", ["eeg", "eeg", "ecg", "mrk"]) == [1, 2]
 @test signal_channels(e10) == 1:23
 
 @info "test 38/66: get_channel_bytype()"
-@test get_channel_bytype(["eeg", "ecg", "mrk"], type=:eeg) == 1
-@test get_channel_bytype(e10, type=:eeg) == 1:19
+@test get_channel_bytype(["eeg", "ecg", "mrk"], type="eeg") == 1
+@test get_channel_bytype(e10, type="eeg") == 1:19
 
 @info "test 39/66: history()"
-@test history(e10) isa Vector{String}
+@test NeuroAnalyzer.history(e10) isa Vector{String}
 
 @info "test 40/66: labels()"
 @test length(labels(e10)) == 24

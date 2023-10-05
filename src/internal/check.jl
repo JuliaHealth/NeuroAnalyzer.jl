@@ -21,7 +21,7 @@ function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, type::Symbol)
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, type::String)
     channels = get_channel_bytype(obj, type=type)
     for idx in ch
         @assert idx in channels "ch $idx does not match type: $(uppercase(string(type))) data channels."
@@ -136,11 +136,11 @@ function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)
     return nothing
 end
 
-function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{Symbol, Vector{Symbol}})
-    if type isa Symbol
-        @assert Symbol(obj.header.recording[:data_type]) == type "This function works only for $(uppercase(string(type))) objects."
+function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{String}})
+    if type isa String
+        @assert obj.header.recording[:data_type] == type "This function works only for $(uppercase(string(type))) objects."
     else
-        @assert Symbol(obj.header.recording[:data_type]) in type "This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."
+        @assert obj.header.recording[:data_type] in type "This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."
     end
 end
 

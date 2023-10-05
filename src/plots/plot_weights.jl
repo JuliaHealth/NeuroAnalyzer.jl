@@ -223,8 +223,8 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Uni
 
     # remove reference and EOG channels
     ch = vec(collect(ch))
-    setdiff!(ch, get_channel_bytype(obj, type=:ref))
-    setdiff!(ch, get_channel_bytype(obj, type=:eog))
+    setdiff!(ch, get_channel_bytype(obj, type="ref"))
+    setdiff!(ch, get_channel_bytype(obj, type="eog"))
 
     _check_channels(signal_channels(obj), ch)
 

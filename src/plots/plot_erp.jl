@@ -518,7 +518,7 @@ Plot ERP.
 """
 function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, kwargs...)
 
-    _check_datatype(obj, :erp)
+    _check_datatype(obj, "erp")
 
     # check channels
     _check_channels(obj, ch)

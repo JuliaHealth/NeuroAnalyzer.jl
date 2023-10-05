@@ -60,10 +60,10 @@ keep_channel!(e10_tmp, ch=5:15)
 @test nchannels(e10_tmp) == 11
 
 @info "test 8/28: keep_channel_type()"
-e10_tmp = keep_channel_type(e10, type=:eog)
+e10_tmp = keep_channel_type(e10, type="eog")
 @test nchannels(e10_tmp) == 2
 e10_tmp = deepcopy(e10)
-keep_channel_type!(e10_tmp, type=:eog)
+keep_channel_type!(e10_tmp, type="eog")
 @test nchannels(e10_tmp) == 2
 
 @info "test 9/28: delete_epoch()"
@@ -189,7 +189,7 @@ e10_tmp = NeuroAnalyzer.join(e10, e10)
 
 @info "test 27/28: add_channel()"
 e = create(data_type="ecog")
-add_channel!(e, data=rand(10, 10, 1), type=repeat([:ecog], 10), unit=repeat(["µV"], 10))
+add_channel!(e, data=rand(10, 10, 1), type=repeat(["ecog"], 10), unit=repeat(["µV"], 10))
 @test size(e.data) == (10, 10, 1)
 
 @info "test 28/28: create_time()"

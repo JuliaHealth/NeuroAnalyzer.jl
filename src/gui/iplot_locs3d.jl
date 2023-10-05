@@ -97,7 +97,7 @@ end
 function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     # select channels, default is all channels
-    _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
+    _check_channels(obj, ch, obj.header.recording[:data_type])
     selected != 0 && _check_channels(obj, selected)
 
     p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)

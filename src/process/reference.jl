@@ -28,7 +28,7 @@ Reference to selected channel(s). Only signal channels are processed.
 """
 function reference_ch(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
-    _check_datatype(obj, :eeg)
+    _check_datatype(obj, "eeg")
 
     # keep signal channels
     _check_channels(obj, ch)
@@ -108,7 +108,7 @@ Reference to common average reference. Only signal channels are processed.
 """
 function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
 
-    _check_datatype(obj, :eeg)
+    _check_datatype(obj, "eeg")
 
     # keep signal channels
     chs = signal_channels(obj)
@@ -192,7 +192,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 """
 function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
-    _check_datatype(obj, :eeg)
+    _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
     @assert !all(iszero, occursin.("a1", lowercase.(labels(obj)))) "OBJ does not contain A1 channel."
     @assert !all(iszero, occursin.("a2", lowercase.(labels(obj)))) "OBJ does not contain A2 channel."
@@ -327,7 +327,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 """
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
-    _check_datatype(obj, :eeg)
+    _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
     @assert !all(iszero, occursin.("m1", lowercase.(labels(obj)))) "OBJ does not contain M1 channel."
     @assert !all(iszero, occursin.("m2", lowercase.(labels(obj)))) "OBJ does not contain M2 channel."
@@ -460,7 +460,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 """
 function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
-    _check_datatype(obj, :eeg)
+    _check_datatype(obj, "eeg")
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     # keep signal channels
@@ -581,7 +581,7 @@ Examples of montages:
 """
 function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="BIP ||")
 
-    _check_datatype(obj, :eeg)
+    _check_datatype(obj, "eeg")
 
     chs = signal_channels(obj)
 

@@ -20,7 +20,7 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._check_channels(a1, 1) === nothing
 @test NeuroAnalyzer._check_channels(a1, 2) === nothing
 @test NeuroAnalyzer._check_channels(e10, 1:24) === nothing
-@test NeuroAnalyzer._check_channels(e10, 1:19, :eeg) === nothing
+@test NeuroAnalyzer._check_channels(e10, 1:19, "eeg") === nothing
 @test NeuroAnalyzer._check_channels(1:19, 2) === nothing
 @test NeuroAnalyzer._check_epochs(e10, 1:10) === nothing
 @test NeuroAnalyzer._check_cidx(a1, 1) === nothing

@@ -65,7 +65,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of reference channels
-    ref_idx = get_channel_bytype(obj, type=:ref)
+    ref_idx = get_channel_bytype(obj, type="ref")
     ref_labels = labels(obj)[ref_idx]
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
@@ -77,7 +77,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
     
     # add locations of EOG channels
-    eog_idx = get_channel_bytype(obj, type=:eog)
+    eog_idx = get_channel_bytype(obj, type="eog")
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
@@ -101,7 +101,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) not found in $file_name")
+    length(no_match) > 0 && _warn("Some labels: $(uppercase.(no_match)) were not found in $file_name")
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
