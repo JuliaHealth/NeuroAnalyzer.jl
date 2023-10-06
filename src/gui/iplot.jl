@@ -46,7 +46,7 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     p = NeuroAnalyzer.plot(obj, ch=ch)
 
-    win = GtkWindow("NeuroAnalyzer: plot()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -861,7 +861,7 @@ function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     ch_init = ch
 
     p = NeuroAnalyzer.plot(obj1, obj2, ch=ch)
-    win = GtkWindow("NeuroAnalyzer: plot()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iplot_cont()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -1235,7 +1235,7 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     p = NeuroAnalyzer.plot(obj1, obj2, ch=ch, ep=1)
     g = GtkGrid()
     g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: plot()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: iplot_cont_ep()", 1200, (p.attr[:size][2] + 40))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)

@@ -82,6 +82,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         font_size = 10
         loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+        !occursin("\n", title)  && (title *= "\n")
     else
         title=""
         cb_label=""
@@ -92,43 +93,85 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     end
 
     if large
-        p = Plots.plot(grid=false,
-                       framestyle=:none,
-                       border=:none,
-                       palette=pal,
-                       aspect_ratio=1,
-                       size=size(head_shape) .+ 102,
-                       right_margin=0*Plots.px,
-                       bottom_margin=-100*Plots.px,
-                       top_margin=-100*Plots.px,
-                       left_margin=-30*Plots.px,
-                       titlefontsize=font_size,
-                       colorbar=cb,
-                       colorbar_title=cb_label,
-                       colorbar_tickfontsize=2,
-                       xlims=xl,
-                       ylims=yl,
-                       title=title;
-                       kwargs...)
+        if cb
+            p = Plots.plot(grid=false,
+                           framestyle=:none,
+                           border=:none,
+                           palette=pal,
+                           aspect_ratio=1,
+                           size=size(head_shape) .+ 102,
+                           right_margin=0*Plots.px,
+                           bottom_margin=0*Plots.px,
+                           top_margin=0*Plots.px,
+                           left_margin=-30*Plots.px,
+                           titlefontsize=font_size,
+                           colorbar=cb,
+                           colorbar_title=cb_label,
+                           colorbar_tickfontsize=2,
+                           xlims=xl,
+                           ylims=yl,
+                           title=title;
+                           kwargs...)
+        else
+            p = Plots.plot(grid=false,
+                           framestyle=:none,
+                           border=:none,
+                           palette=pal,
+                           aspect_ratio=1,
+                           size=size(head_shape) .+ 34,
+                           right_margin=-100*Plots.px,
+                           bottom_margin=-50*Plots.px,
+                           top_margin=-5*Plots.px,
+                           left_margin=-100*Plots.px,
+                           titlefontsize=font_size,
+                           colorbar=cb,
+                           colorbar_title=cb_label,
+                           colorbar_tickfontsize=2,
+                           xlims=xl,
+                           ylims=yl,
+                           title=title;
+                           kwargs...)
+        end            
     else
-        p = Plots.plot(grid=false,
-                       framestyle=:none,
-                       border=:none,
-                       palette=pal,
-                       aspect_ratio=1,
-                       size=size(head_shape) .+ 35,
-                       right_margin=-100*Plots.px,
-                       bottom_margin=-100*Plots.px,
-                       top_margin=-100*Plots.px,
-                       left_margin=-30*Plots.px,
-                       titlefontsize=font_size,
-                       colorbar=cb,
-                       colorbar_title=cb_label,
-                       colorbar_ticks=false,
-                       xlims=xl,
-                       ylims=yl,
-                       title=title;
-                       kwargs...)
+        if cb
+            p = Plots.plot(grid=false,
+                           framestyle=:none,
+                           border=:none,
+                           palette=pal,
+                           aspect_ratio=1,
+                           size=size(head_shape) .+ 34,
+                           right_margin=-150*Plots.px,
+                           bottom_margin=-150*Plots.px,
+                           top_margin=-150*Plots.px,
+                           left_margin=-30*Plots.px,
+                           titlefontsize=font_size,
+                           colorbar=cb,
+                           colorbar_title=cb_label,
+                           colorbar_ticks=false,
+                           xlims=xl,
+                           ylims=yl,
+                           title=title;
+                           kwargs...)
+        else
+            p = Plots.plot(grid=false,
+                           framestyle=:none,
+                           border=:none,
+                           palette=pal,
+                           aspect_ratio=1,
+                           size=size(head_shape),
+                           right_margin=-100*Plots.px,
+                           bottom_margin=-100*Plots.px,
+                           top_margin=-100*Plots.px,
+                           left_margin=-100*Plots.px,
+                           titlefontsize=font_size,
+                           colorbar=cb,
+                           colorbar_title=cb_label,
+                           colorbar_ticks=false,
+                           xlims=xl,
+                           ylims=yl,
+                           title=title;
+                           kwargs...)
+        end
     end
 
     p = Plots.plot!(interpolated_x,
