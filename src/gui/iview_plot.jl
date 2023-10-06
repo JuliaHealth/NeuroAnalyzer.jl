@@ -11,20 +11,23 @@ View plot object.
 """
 function iview_plot(p::Plots.Plot{Plots.GRBackend})
 
-    win = GtkWindow("NeuroAnalyzer: iview_plot()", p.attr[:size][1], p.attr[:size][2])
+    win = GtkWindow("NeuroAnalyzer: iview_plot()", p.attr[:size][1] + 2, p.attr[:size][2] + 2)
     set_gtk_property!(win, :border_width, 0)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
-    can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+    can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
     push!(win, can)
     showall(win)
 
     @guarded draw(can) do widget
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
+        w = img.width
+        h = img.height
         ctx = getgc(can)
-        Cairo.set_source_surface(ctx, img, 0, 0)
+        # Cairo.scale(ctx, 242/w, 241/h)
+        Cairo.set_source_surface(ctx, img, 1, 2)
         Cairo.paint(ctx)
     end
 

@@ -20,6 +20,18 @@ _tuple_max(t::Tuple{Real, Real}) = abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1]
 
 _s2v(s::Union{<:Number, Vector{<:Number}}) = typeof(s) <: Number ? [s] : s
 
+function _v2s(x::Vector{<:Number})
+    s_tmp = string.(x)
+    s = ""
+    if length(s_tmp) > 1
+        for idx in 1:(length(s_tmp) - 1)
+            s *= s_tmp[idx] * ", "
+        end
+    end
+    s *= s_tmp[end]
+    return s
+end
+
 function _copy_lt2ut(m::AbstractArray)
     if ndims(m) == 2
         return m + m' - diagm(diag(m))

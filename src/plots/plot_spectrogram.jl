@@ -375,7 +375,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
         end
     end
 
-    # select component c_idxs, default is all c_idxs
+    # select component channel, default is all channels
     c isa Symbol && (c = _get_component(obj, c))
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
@@ -399,6 +399,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
     # calculate spectrogram
     length(c_idx) > 1 && @assert length(signal) / length(c_idx) >= 4 * sr(obj) "For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."
+
+    @show length(c_idx)
 
     if length(c_idx) == 1
         xlabel == "default" && (xlabel = "Time [s]")

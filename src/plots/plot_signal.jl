@@ -1056,7 +1056,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
 
     # select component channels, default is all channels
     c_name = ""
-    if typeof(c) == Symbol
+    if c isa Symbol
         c_name = string(c)
         c = _get_component(obj, c)
     end

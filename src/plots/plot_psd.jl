@@ -1107,7 +1107,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         end
     end
 
-    # select component c_idxs, default is all c_idxs
+    # select component channel, default is all channels
     c isa Symbol && (c = _get_component(obj, c))
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
