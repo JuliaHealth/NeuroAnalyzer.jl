@@ -17,7 +17,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
     - `:stft`: short time Fourier transform
     - `:mt`: multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
-- `wlen::Int64=fs`: window length, default is 4 seconds
+- `wlen::Int64=fs`: window length, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -37,9 +37,12 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
     @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
 
-
     if method === :stft
         w = w ? hanning : nothing
+        if length(s) < fs * 1.1
+            wlen = div(wlen, 2)
+            woverlap = div(woverlap, 2)
+        end
         sp = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
     elseif method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
