@@ -154,6 +154,9 @@ function import_locs_locs(file_name::String)
     theta = Float64.(locs[!, "theta"])
     radius = Float64.(locs[!, "radius"])
 
+    theta_sph = theta
+    radius_sph = radius
+
     locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_swapxy!(locs, polar=true, cart=false, spherical=false)

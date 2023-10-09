@@ -363,7 +363,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
                        xticks=false,
                        yticks=false,
                        grid=false,
-                       border=:none, 
+                       border=:none,
                        xlims=(t[1], t[end]),
                        ylims=ylim,
                        title=clabels[idx],

@@ -81,8 +81,24 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
-            occursin("1", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 145.0, -0.8, 0.53, -0.37, 1.03, 146.48, -21.08])
-            occursin("2", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 35.0, 0.8, 0.53, -0.37, 1.03, 33.52, -21.08])
+            if occursin("1", eog_labels[idx]) == true
+                occursin("v", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.01, 149.62, -0.87, 0.51, -0.37, 1.07, 149.62, -20.15])
+                occursin("h", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.0, 129.73, -0.64, 0.77, -0.04, 1.00, 129.73, -2.29])
+            end
+            if occursin("2", eog_labels[idx]) == true
+                occursin("v", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.01, 30.38, 0.87, 0.51, -0.37, 1.07, 30.38, -20.15])
+                occursin("h", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.0, 50.0, 0.64, 0.77, -0.04, 1.00, 50.27, -2.29])
+            end                
+            # if no numbers, assume that EOG channels are on the right side
+            if occursin("1", eog_labels[idx]) == false && occursin("2", eog_labels[idx]) == false
+                occursin("v", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.01, 30.38, 0.87, 0.51, -0.37, 1.07, 30.38, -20.15])
+                occursin("h", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.0, 50.0, 0.64, 0.77, -0.04, 1.00, 50.27, -2.29])
+            end
+            # if no V/H indicators, assume that EEG channels are vertical
+            if occursin("v", lowercase(eog_labels[idx])) == false && occursin("h", lowercase(eog_labels[idx])) == false
+                occursin("1", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.01, 149.62, -0.87, 0.51, -0.37, 1.07, 149.62, -20.15])
+                occursin("2", eog_labels[idx]) && push!(locs, [eog_labels[idx], 1.0, 35.0, 0.87, 0.51, -0.37, 1.03, 33.52, -21.08])
+            end
         end
     end
 
