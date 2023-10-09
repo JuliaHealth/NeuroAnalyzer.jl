@@ -1068,7 +1068,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
         clabels = _gen_clabels(c)[c_idx]
         clabels = c_name .* clabels
     end
-    length(c_idx) == 1 && (clabels = [clabels])
+    c_idx isa Int64 && (clabels = [clabels])
 
     # get time vector
     if seg[2] <= epoch_len(obj)

@@ -29,8 +29,6 @@ Interactive topographical plot of embedded ("ic" and "ic_mw") ICA components.
 """
 function iplot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
 
-    _wip()
-
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
     
@@ -71,9 +69,8 @@ Interactive topographical plot of external ICA components.
 """
 function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
 
-    _wip()
-
-    obj_orig = deepcopy(obj)
+    obj_new = deepcopy(obj)
+    obj_edited = false
 
     # select component channels, default is all channels
     ic_idx == 0 && (ic_idx = _select_cidx(ic, ic_idx))
@@ -115,14 +112,19 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     set_gtk_property!(entry_ic, :tooltip_text, "ICA component")
     current_ic = ic_idx[1]
     
-    bt_details_amp = GtkButton("Plot amplitude")
-    set_gtk_property!(bt_details_amp, :tooltip_text, "Show ICA component amplitude")
-    bt_details_psd = GtkButton("Plot PSD")
-    set_gtk_property!(bt_details_psd, :tooltip_text, "Show ICA component PSD")
-    bt_details_spec = GtkButton("Plot spectrogram")
-    set_gtk_property!(bt_details_spec, :tooltip_text, "Show ICA component spectrogram")
-    bt_details_topo = GtkButton("Show large topomap")
-    set_gtk_property!(bt_details_topo, :tooltip_text, "Show large ICA component topomap")
+    bt_details_amp = GtkButton("Show amplitude")
+    set_gtk_property!(bt_details_amp, :tooltip_text, "Show component amplitude")
+    bt_details_psd = GtkButton("Show PSD")
+    set_gtk_property!(bt_details_psd, :tooltip_text, "Show component PSD")
+    bt_details_spec = GtkButton("Show spectrogram")
+    set_gtk_property!(bt_details_spec, :tooltip_text, "Show component spectrogram")
+    bt_details_topo = GtkButton("Show topomap")
+    set_gtk_property!(bt_details_topo, :tooltip_text, "Show component topomap")
+
+    bt_signal_remove = GtkButton("Show signal\n  (remove)")
+    set_gtk_property!(bt_signal_remove, :tooltip_text, "Show signal with the current component removed")
+    bt_signal_reconstruct = GtkButton(" Show signal \n(reconstruct)")
+    set_gtk_property!(bt_signal_reconstruct, :tooltip_text, "Show signal reconstructed without the current component")
 
     cb_mark = GtkCheckButton("")
     set_gtk_property!(cb_mark, :active, false)
@@ -130,12 +132,17 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     cb_preview = GtkCheckButton("")
     set_gtk_property!(cb_preview, :active, true)
-    set_gtk_property!(cb_preview, :tooltip_text, "Preview signal after ICA component(s) removal")
+    set_gtk_property!(cb_preview, :tooltip_text, "Preview signal after ICA component(s) removal/reconstruction")
 
     bt_remove = GtkButton("Remove")
-    set_gtk_property!(entry_ic, :tooltip_text, "Remove marked ICA components")
-    bt_close = GtkButton("Close")
-    set_gtk_property!(entry_ic, :tooltip_text, "Close this window")
+    set_gtk_property!(bt_remove, :tooltip_text, "Remove marked ICA components")
+    bt_reconstruct = GtkButton("Reconstruct")
+    set_gtk_property!(bt_reconstruct, :tooltip_text, "Reconstruct the signal without marked ICA components")
+
+    bt_apply = GtkButton("Apply")
+    set_gtk_property!(bt_apply, :tooltip_text, "Apply changes and close this window")
+    bt_cancel = GtkButton("Cancel")
+    set_gtk_property!(bt_cancel, :tooltip_text, "Close this window and abandon changes")
 
     g_opts[1, 1] = GtkLabel("#IC:")
     g_opts[2, 1] = entry_ic
@@ -147,11 +154,16 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     g_opts[1:2, 6] = bt_details_spec
     g_opts[1:2, 7] = bt_details_topo
     g_opts[1:2, 8] = GtkLabel("")
-    g_opts[1:2, 9] = bt_remove
-    g_opts[1, 10] = GtkLabel("Preview:")
-    g_opts[2, 10] = cb_preview
+    g_opts[1:2, 9] = bt_signal_reconstruct
+    g_opts[1:2, 10] = bt_signal_remove
     g_opts[1:2, 11] = GtkLabel("")
-    g_opts[1:2, 12] = bt_close
+    g_opts[1:2, 12] = bt_reconstruct
+    g_opts[1:2, 13] = bt_remove
+    g_opts[1, 14] = GtkLabel("Preview:")
+    g_opts[2, 14] = cb_preview
+    g_opts[1:2, 15] = GtkLabel("")
+    g_opts[1:2, 16] = bt_apply
+    g_opts[1:2, 17] = bt_cancel
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -210,12 +222,12 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
         end
     end
 
-    signal_connect(bt_remove, "clicked") do widget
+    signal_connect(bt_reconstruct, "clicked") do widget
         if length(ic_idx[ic_remove_idx]) > 0
-            if ask_dialog("Remove ICA component$(_pl(ic_idx[ic_remove_idx])) $(_v2s(ic_idx[ic_remove_idx])) ?", "No", "Yes")
+            if ask_dialog("Reconstruct the signal without the ICA component$(_pl(ic_idx[ic_remove_idx])) $(_v2s(ic_idx[ic_remove_idx])) ?", "No", "Yes")
                 current_ic = get_gtk_property(entry_ic, :value, Int64)
-                _info("Removing ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                ica_remove!(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[ic_remove_idx])
+                _info("Reconstructing the signal without the ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
+                ica_reconstruct!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[ic_remove_idx])
                 ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                 Gtk.@sigatom begin
@@ -228,7 +240,33 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
                     set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
                 end
                 if get_gtk_property(cb_preview, :active, Bool)
-                    iview(obj_orig, obj)
+                    iview(obj, obj_new)
+                end
+            end
+        else
+            warn_dialog("No ICA components marked for removal!")
+        end
+    end
+
+    signal_connect(bt_remove, "clicked") do widget
+        if length(ic_idx[ic_remove_idx]) > 0
+            if ask_dialog("Remove ICA component$(_pl(ic_idx[ic_remove_idx])) $(_v2s(ic_idx[ic_remove_idx])) ?", "No", "Yes")
+                current_ic = get_gtk_property(entry_ic, :value, Int64)
+                _info("Removing ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
+                ica_remove!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[ic_remove_idx])
+                ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
+                ic_remove_idx[ic_idx[ic_remove_idx]] .= false
+                Gtk.@sigatom begin
+                    set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
+                    if ic_available_for_removal_idx[current_ic] == false
+                        set_gtk_property!(cb_mark, :opacity, 0.2)
+                    else
+                        set_gtk_property!(cb_mark, :opacity, 1)
+                    end
+                    set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
+                end
+                if get_gtk_property(cb_preview, :active, Bool)
+                    iview(obj, obj_new)
                 end
             end
         else
@@ -238,33 +276,57 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     signal_connect(bt_details_amp, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
-        p_ica_signal = plot(obj_tmp, ic, c_idx=current_ic, seg=seg)
-        iview_plot(p_ica_signal)
+        iview(obj, ic, c_idx=current_ic)
     end
 
     signal_connect(bt_details_psd, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
-        p_ica_psd = plot_psd(obj_tmp, ic, c_idx=current_ic, seg=seg)
-        iview_plot(p_ica_psd)
+        iview_plot(plot_psd(obj, ic, c_idx=current_ic, seg=seg))
     end
 
     signal_connect(bt_details_spec, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
-        p_ica_spectrogram = plot_spectrogram(obj_tmp, ic, c_idx=current_ic, seg=seg)
-        iview_plot(p_ica_spectrogram)
+        iview_plot(plot_spectrogram(obj, ic, c_idx=current_ic, seg=seg))
     end
 
     signal_connect(bt_details_topo, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
         obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
-        p_ica_topo = plot_topo(obj_tmp, cb=true, seg=seg, amethod=amethod, imethod=imethod, nmethod=nmethod, large=true)
-        iview_plot(p_ica_topo)
+        iview_plot(plot_topo(obj_tmp, cb=true, seg=seg, amethod=amethod, imethod=imethod, nmethod=nmethod, large=true))
+    end
+
+    signal_connect(bt_signal_reconstruct, "clicked") do widget
+        current_ic = get_gtk_property(entry_ic, :value, Int64)
+        ica_reconstruct!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
+        iview(obj, obj_new)
+        obj_edited = true
     end
     
-    signal_connect(bt_close, "clicked") do widget
+    signal_connect(bt_signal_remove, "clicked") do widget
+        current_ic = get_gtk_property(entry_ic, :value, Int64)
+        ica_remove!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic)
+        iview(obj, obj_new)
+        obj_edited = true
+    end
+    
+    signal_connect(bt_apply, "clicked") do widget
+        if obj_edited
+            if ask_dialog("This operation will apply all changes.\nPlease confirm.", "No", "Yes")
+                obj.header = obj_new.header
+                obj.data = obj_new.data
+                obj.locs = obj_new.locs
+                obj.components = obj_new.components
+                obj.history = obj_new.history
+                obj.markers = obj_new.markers
+                Gtk.destroy(win)
+                return nothing
+            end
+        else
+            warn_dialog("There are no changes to apply!")
+        end
+    end
+
+    signal_connect(bt_cancel, "clicked") do widget
         Gtk.destroy(win)
     end
 
