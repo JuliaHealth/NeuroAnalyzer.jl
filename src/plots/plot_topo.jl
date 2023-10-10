@@ -79,10 +79,10 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     origin = size(head_shape) ./ 2
     if large
         marker_size = 6
-        font_size = 10
+        font_size = 14
         loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-        !occursin("\n", title)  && (title *= "\n")
+        !occursin("\n", title) && title !== "" && (title *= "\n")
     else
         title=""
         cb_label=""
@@ -102,7 +102,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            size=size(head_shape) .+ 102,
                            right_margin=0*Plots.px,
                            bottom_margin=0*Plots.px,
-                           top_margin=0*Plots.px,
+                           top_margin=-5*Plots.px,
                            left_margin=-30*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
@@ -221,7 +221,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             head_mask = head_mask[80:end, 82:end]
             p = Plots.plot!(head_shape)
             p = Plots.plot!(head_mask)
-            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=1, fill=nothing, legend=false)
+            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=5, fill=nothing, legend=false)
         end
     end
 

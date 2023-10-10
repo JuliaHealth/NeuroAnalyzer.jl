@@ -48,6 +48,9 @@ function locs_rotz(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
 
     polar && locs_new[!, :loc_theta] .+= a % 360
 
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
+
     return locs_new
 
 end
@@ -116,6 +119,9 @@ function locs_roty(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
 
     polar && _warn("This is lossy conversion for polar coordinates and will be ignored.")
 
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
+
     return locs_new
 
 end
@@ -183,6 +189,9 @@ function locs_rotx(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     end
 
     polar && _warn("This is lossy conversion for polar coordinates and will be ignored.")
+
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 

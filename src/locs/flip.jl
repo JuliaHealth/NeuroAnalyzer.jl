@@ -52,6 +52,9 @@ function locs_flipy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
         end
     end
 
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
+
     return locs_new
 
 end
@@ -120,6 +123,9 @@ function locs_flipx(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
         end
     end
 
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
+
     return locs_new
 
 end
@@ -179,6 +185,9 @@ function locs_flipz(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
     end
 
     polar && _warn("This is lossy conversion for polar coordinates and will be ignored.")
+
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 

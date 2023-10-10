@@ -196,7 +196,8 @@ function locs_pol2cart(locs::DataFrame)
 
     _locs_norm!(locs_new)
     _locs_round!(locs_new)
-
+    _locs_remove_nans!(locs_new)
+    
     return locs_new
 
 end
@@ -245,6 +246,7 @@ function locs_pol2sph(locs::DataFrame)
     end
 
     _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 
@@ -296,6 +298,7 @@ function locs_sph2cart(locs::DataFrame)
 
     # _locs_norm!(locs_new)
     _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 
@@ -345,6 +348,7 @@ function locs_sph2pol(locs::DataFrame)
     end
 
     _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 
@@ -395,6 +399,7 @@ function locs_cart2sph(locs::DataFrame)
     end
 
     _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
     
@@ -443,6 +448,7 @@ function locs_cart2pol(locs::DataFrame)
     end
 
     _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 

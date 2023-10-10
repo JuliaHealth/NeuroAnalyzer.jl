@@ -36,6 +36,9 @@ function locs_scale(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true,
         locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = locs_tmp[!, :loc_x], locs_tmp[!, :loc_y], locs_tmp[!, :loc_z]
     end
 
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
+
     return locs_new
 
 end
@@ -105,6 +108,9 @@ function locs_normalize(locs::DataFrame; polar::Bool=true, cart::Bool=true, sphe
         locs_sph2cart!(locs_tmp)
         locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = locs_tmp[!, :loc_x], locs_tmp[!, :loc_y], locs_tmp[!, :loc_z]
     end
+
+    _locs_round!(locs_new)
+    _locs_remove_nans!(locs_new)
 
     return locs_new
 

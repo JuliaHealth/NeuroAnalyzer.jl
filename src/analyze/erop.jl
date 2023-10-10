@@ -19,6 +19,7 @@ Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `ero
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
@@ -30,7 +31,7 @@ Named tuple containing:
 - `ero_p::Array{Float64, 3}`: powers
 - `ero_f::Vector{Float64}`: frequencies
 """
-function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), method::Symbol=:welch, norm::Bool=true, frq::Symbol=:log, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength((0, sr(obj) / 2)), method::Symbol=:welch, norm::Bool=true, frq::Symbol=:log, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
     _check_var(method, [:welch, :stft, :fft, :mt, :mw], "method")
@@ -39,10 +40,25 @@ function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(o
 
     ero_p = ero_p[1, :, :]
 
+    if frq_lim[1] < ero_f[1]
+        frq_lim = (ero_f[1], frq_lim[2])
+        _info("Frequency limits truncated to: $frq_lim Hz.")
+    elseif frq_lim[2] > ero_f[end]
+        frq_lim = (frq_lim[1], ero_f[end])
+        _info("Frequency limits truncated to: $frq_lim Hz.")
+    elseif frq_lim[1] > ero_f[end] || frq_lim[2] < ero_f[1]
+        @error "Frequency limits must be in [$(ero_f[1]), $(ero_f[end])]."
+    end
+
+    f1_idx = vsearch(frq_lim[1], ero_f)
+    f2_idx = vsearch(frq_lim[2], ero_f)
+    ero_f = ero_f[f1_idx:f2_idx]
+    ero_p = ero_p[f1_idx:f2_idx, :, :]
+
     if obj.header.recording[:data_type] == "erp"
-        ero_p = cat(ero_p[:, 1], mean(ero_p, dims=2), dims=2)
+        ero_p = cat(ero_p[:, 1], mean(ero_p, dims=2), dims=2)[:, :]
     else
-        ero_p = mean(ero_p, dims=2)
+        ero_p = mean(ero_p, dims=2)[:, :]
     end
 
     return (ero_p=ero_p, ero_f=ero_f)

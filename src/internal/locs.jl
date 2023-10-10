@@ -1,4 +1,4 @@
-function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}})
+function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})
     if typeof(l) == String
         if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))) > 0
             return findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))[1]
@@ -59,6 +59,20 @@ function _locs_round!(locs::DataFrame)
     locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits=2)
     locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits=2)
     locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=2)
+end
+
+function _locs_remove_nans(locs::DataFrame)
+    locs_new = deepcopy(locs)
+    for idx in eachcol(locs_new)
+        replace!(idx, NaN => 0)
+    end
+    return locs_new
+end
+
+function _locs_remove_nans!(locs::DataFrame)
+    for idx in eachcol(locs)
+        replace!(idx, NaN => 0)
+    end
 end
 
 function _locs_round(obj::NeuroAnalyzer.NEURO)

@@ -89,6 +89,7 @@ locs = NeuroAnalyzer._locs_round(locs)
 @test NeuroAnalyzer._angle_quadrant(180+45) == 3
 @test NeuroAnalyzer._angle_quadrant(270) == 3
 @test NeuroAnalyzer._angle_quadrant(270+45) == 4
+@test NeuroAnalyzer._locs_remove_nans(DataFrame(:a=>[0.0, 1.0, NaN])) == DataFrame(:a=>[0.0, 1.0, 0.0])
 a = NeuroAnalyzer._make_epochs(rand(10, 1000), ep_len=100)
 @test size(a) == (10, 100, 10)
 a = NeuroAnalyzer._make_epochs(rand(10, 1000), ep_n=100)

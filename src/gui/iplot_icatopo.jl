@@ -198,9 +198,9 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, cx_set[idx], 0, 0)
             Cairo.paint(ctx)
-            Cairo.move_to(ctx, 10.0, 12.0);
-            Cairo.set_source_rgb(ctx, 0, 0, 0);
-            Cairo.show_text(ctx, "#IC: $idx");
+            Cairo.move_to(ctx, 10.0, 12.0)
+            Cairo.set_source_rgb(ctx, 0, 0, 0)
+            Cairo.show_text(ctx, "#IC: $idx")
         end
     end
 

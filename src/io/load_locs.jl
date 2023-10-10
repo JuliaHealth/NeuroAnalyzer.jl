@@ -142,6 +142,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
                              :loc_phi_sph=>loc_phi_sph[labels_idx])
 
     _locs_round!(obj_new.locs)
+    _locs_remove_nans!(obj_new.locs)
 
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
 
