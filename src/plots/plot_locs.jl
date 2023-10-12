@@ -427,8 +427,6 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 
     if obj.header.recording[:data_type] == "ecog"
         @error "Use plot_locs_ecog() for ECoG data."
-    elseif obj.header.recording[:data_type] == "nirs"
-        @error "Use plot_locs_nirs() for NIRS data."
     elseif threed == false
         if obj.header.recording[:data_type] == "nirs"
             ch_pairs = obj.header.recording[:channel_pairs]

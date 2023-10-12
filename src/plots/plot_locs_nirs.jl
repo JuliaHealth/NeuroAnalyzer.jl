@@ -116,7 +116,7 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
     end
 
     if head == true
-        _warning("TO DO: add head outline")
+        _warn("TO DO: add head outline")
     end
 
     p = Plots.plot!()

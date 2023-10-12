@@ -47,25 +47,32 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
         deleteat!(obj_new.header.recording[:labels], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
         deleteat!(obj_new.header.recording[:units], idx)
-        deleteat!(obj_new.header.recording[:prefiltering], idx)
         if obj_new.header.recording[:data_type] == "eeg"
-            deleteat!(obj_new.header.recording[:transducers], idx)
-            deleteat!(obj_new.header.recording[:gain], idx)
+            idx in obj_new.header.recording[:prefiltering] && deleteat!(obj_new.header.recording[:prefiltering], idx)
+            idx in obj_new.header.recording[:transducers] && deleteat!(obj_new.header.recording[:transducers], idx)
+            idx in obj_new.header.recording[:gain] && deleteat!(obj_new.header.recording[:gain], idx)
         elseif obj_new.header.recording[:data_type] == "meg"
-            deleteat!(obj_new.header.recording[:coils], idx)
-            deleteat!(obj_new.header.recording[:magnetometers], idx)
-            deleteat!(obj_new.header.recording[:gradiometers], idx)
-            deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
-            deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
+            idx in obj_new.header.recording[:prefiltering] && deleteat!(obj_new.header.recording[:prefiltering], idx)
+            idx in obj_new.header.recording[:coils] && deleteat!(obj_new.header.recording[:coils], idx)
+            idx in obj_new.header.recording[:magnetometers] && deleteat!(obj_new.header.recording[:magnetometers], idx)
+            idx in obj_new.header.recording[:gradiometers] && deleteat!(obj_new.header.recording[:gradiometers], idx)
+            idx in obj_new.header.recording[:gradiometers_axial] && deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
+            idx in obj_new.header.recording[:gradiometers_planar] && deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
         elseif obj_new.header.recording[:data_type] == "nirs"
-            deleteat!(obj_new.header.recording[:wavelengths], idx)
-            deleteat!(obj_new.header.recording[:wavelength_index], idx)
-            # TO DO: remove channel pairs containing removed channel
-            _warn("TO DO: remove channel pairs containing removed channel")
-            deleteat!(obj_new.header.recording[:channel_pairs], idx)
+            idx in 1:length(obj_new.header.recording[:wavelength_index]) && (deleteat!(obj_new.header.recording[:wavelength_index], idx))
+            if idx in obj_new.header.recording[:channel_pairs]
+                chp1 = obj_new.header.recording[:channel_pairs][:, 1]
+                chp2 = obj_new.header.recording[:channel_pairs][:, 2]
+                for chp_idx in size(chp1, 1):-1:1
+                    if idx in chp1[chp_idx] == idx || idx in chp2[chp_idx] == idx
+                        deleteat!(chp1, chp_idx)
+                        deleteat!(chp2, chp_idx)
+                    end
+                end
+                obj_new.header.recording[:channel_pairs] = hcat(chp1, chp2)
+            end
             _warn("TO DO: remove optode_labels if contains removed channel")
-            # TO DO: remove optode_labels if contains removed channel
-            deleteat!(obj_new.header.recording[:optode_labels], idx)
+            # deleteat!(obj_new.header.recording[:optode_labels], idx)
         end
     end
 
