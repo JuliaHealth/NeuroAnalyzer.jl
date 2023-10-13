@@ -48,10 +48,12 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
         deleteat!(obj_new.header.recording[:channel_type], idx)
         deleteat!(obj_new.header.recording[:units], idx)
         if obj_new.header.recording[:data_type] == "eeg"
+            _info("TO DO: not all channels must have :prefiltering, :transducers and :gain available")
             idx in obj_new.header.recording[:prefiltering] && deleteat!(obj_new.header.recording[:prefiltering], idx)
             idx in obj_new.header.recording[:transducers] && deleteat!(obj_new.header.recording[:transducers], idx)
             idx in obj_new.header.recording[:gain] && deleteat!(obj_new.header.recording[:gain], idx)
         elseif obj_new.header.recording[:data_type] == "meg"
+            _info("TO DO: not all channels must have :prefiltering, :coils, :magnetometers, ;gradiometers, :gradiometers_axial and :gradiometers_planar available")
             idx in obj_new.header.recording[:prefiltering] && deleteat!(obj_new.header.recording[:prefiltering], idx)
             idx in obj_new.header.recording[:coils] && deleteat!(obj_new.header.recording[:coils], idx)
             idx in obj_new.header.recording[:magnetometers] && deleteat!(obj_new.header.recording[:magnetometers], idx)
@@ -59,7 +61,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
             idx in obj_new.header.recording[:gradiometers_axial] && deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
             idx in obj_new.header.recording[:gradiometers_planar] && deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
         elseif obj_new.header.recording[:data_type] == "nirs"
-            idx in 1:length(obj_new.header.recording[:wavelength_index]) && (deleteat!(obj_new.header.recording[:wavelength_index], idx))
+            idx in 1:size(obj_new.header.recording[:channel_pairs], 1) && (deleteat!(obj_new.header.recording[:wavelength_index], idx))
             if idx in obj_new.header.recording[:channel_pairs]
                 chp1 = obj_new.header.recording[:channel_pairs][:, 1]
                 chp2 = obj_new.header.recording[:channel_pairs][:, 2]
