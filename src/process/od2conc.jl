@@ -31,7 +31,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
 
     wl = obj.header.recording[:wavelengths]
     wl_idx = obj.header.recording[:wavelength_index][ch]
-    chp = obj.header.recording[:channel_pairs][ch, :]
+    chp = obj.header.recording[:optode_pairs][ch, :]
 
     e = zeros(length(wl), 2)
     for w_idx in eachindex(wl)
@@ -86,7 +86,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
 
     #=
     for idx in 1:size(dc, 3)
-        obj_new.header.recording[:channel_pairs] = vcat(obj_new.header.recording[:channel_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
+        obj_new.header.recording[:optode_pairs] = vcat(obj_new.header.recording[:optode_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
     end
     obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
     =#

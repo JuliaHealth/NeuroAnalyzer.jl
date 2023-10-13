@@ -50,10 +50,10 @@ function import_nirs(file_name::String)
     # col4: wavelength index
     tmp = Int.(probes["MeasList"])
     ch_n = size(tmp, 1)
-    ch_pairs=zeros(Int64, size(tmp, 1), 2)
+    opt_pairs=zeros(Int64, size(tmp, 1), 2)
     for idx in 1:size(tmp, 1)
-        ch_pairs[idx, 1] = tmp[idx, 1]
-        ch_pairs[idx, 2] = tmp[idx, 2]
+        opt_pairs[idx, 1] = tmp[idx, 1]
+        opt_pairs[idx, 2] = tmp[idx, 2]
     end
     # probes["SpringList"]
     # probes["SrcMap"]
@@ -81,6 +81,8 @@ function import_nirs(file_name::String)
     for idx in 1:Int(probes["nDets"])
         push!(opt_labels, "D$idx")
     end
+    src_labels = opt_labels[1:Int(probes["nSrcs"])]
+    det_labels = opt_labels[(Int(probes["nSrcs"] + 1):end)]
 
     # channel labels
     clabels = repeat([""], ch_n)
@@ -170,10 +172,12 @@ function import_nirs(file_name::String)
                                recording_notes="",
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,
-                               channel_pairs=ch_pairs,
+                               optode_pairs=opt_pairs,
                                ch_type=ch_type,
                                clabels=clabels,
                                units=data_unit,
+                               src_labels=src_labels,
+                               det_labels=det_labels,
                                opt_labels=opt_labels,
                                sampling_rate=sampling_rate)
     e = _create_experiment(name="", notes="", design="")

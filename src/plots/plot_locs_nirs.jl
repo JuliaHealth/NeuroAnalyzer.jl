@@ -7,8 +7,8 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 # Arguments
 
-- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch_pairs::Matrix{Int64}`: pairs of source and detector
+- `locs::DataFrame`: columns: labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `opt_pairs::Matrix{Int64}`: pairs of source and detector
 - `src_n::Int64`: number of sources
 - `det_n::Int64`: number of detectors
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
@@ -18,7 +18,6 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: Use color or gray palette
-- `head_details::Bool=true`: draw nose and ears
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
 
@@ -26,7 +25,9 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, head::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
+function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, plot_size::Int64=400, large::Bool=true)
+
+    # TO DO: plot channel numbers
 
     if plot_size > 400
         marker_size = plot_size ÷ 100
@@ -36,57 +37,74 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
         font_size = plot_size ÷ 100
     end
 
-    if grid == true
+    if large
+        marker_size = 4
+        font_size = 6
+        # loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+        # loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+    else
+        marker_size = 4
+        font_size = 4
+        src_labels = false
+        det_labels = false
+        grid = false
+        # loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+        # loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+    end
+
+    if grid
         p = Plots.plot(grid=true,
-                       xlim=(-1.22, 1.23),
-                       ylim=(-1.1, 1.2),
+                       xlim=(-1.2, 1.2),
+                       ylim=(-1.2, 1.2),
                        ratio=1,
                        legend=false,
-                       xticks=-1:0.1:1,
-                       yticks=-1:0.1:1,
+                       xticks=-1.2:0.1:1.2,
+                       yticks=-1.2:0.1:1.2,
                        xtickfontsize=4,
                        ytickfontsize=4;
                        right_margin=-20*Plots.px,
                        bottom_margin=-10*Plots.px,
                        top_margin=-20*Plots.px,
-                       left_margin=-10*Plots.px,
+                       left_margin=-5*Plots.px,
                        size=(plot_size, plot_size))
     else
         p = Plots.plot(border=:none,
                        grid=false,
-                       # xlim=(-1.22, 1.23),
-                       # ylim=(-1.1, 1.2),
+                       xlim=(-1.2, 1.2),
+                       ylim=(-1.2, 1.2),
                        ratio=1,
                        legend=false,
+                       xticks=-1.2:0.1:1.2,
+                       yticks=-1.2:0.1:1.2,
+                       xtickfontsize=4,
+                       ytickfontsize=4;
                        right_margin=-20*Plots.px,
                        bottom_margin=-10*Plots.px,
                        top_margin=-20*Plots.px,
-                       left_margin=-10*Plots.px,
+                       left_margin=-5*Plots.px,
                        size=(plot_size, plot_size))
     end
 
-    x = locs[:, :loc_x]
-    y = locs[:, :loc_y]
+    x = locs[!, :loc_x]
+    y = locs[!, :loc_y]
 
-    ch_connectors = zeros(size(ch_pairs, 1), 4)
-    for idx in 1:size(ch_pairs, 1)
-        xs = x[ch_pairs[idx, 1]]
-        xd = x[src_n + ch_pairs[idx, 2]]
-        ys = y[ch_pairs[idx, 1]]
-        yd = y[src_n + ch_pairs[idx, 2]]
-        ch_connectors[idx, :] = vcat(xs, ys, xd, yd)
+    for idx in 1:size(opt_pairs, 1)
+        xs = x[opt_pairs[idx, 1]]
+        xd = x[src_n + opt_pairs[idx, 2]]
+        ys = y[opt_pairs[idx, 1]]
+        yd = y[src_n + opt_pairs[idx, 2]]
         if mono == true
-            p = Plots.plot!([ch_connectors[idx, 1], ch_connectors[idx, 3]], [ch_connectors[idx, 2], ch_connectors[idx, 4]], lc=:gray, lw=0.5, alpha=0.5)
+            p = Plots.plot!([xs, xd], [ys, yd], lc=:gray, lw=1, alpha=0.5)
         else
-            p = Plots.plot!([ch_connectors[idx, 1], ch_connectors[idx, 3]], [ch_connectors[idx, 2], ch_connectors[idx, 4]], lc=:blue, lw=0.5, alpha=0.5)
+            p = Plots.plot!([xs, xd], [ys, yd], lc=:blue, lw=1, alpha=0.5)
         end
     end
     
-    if src_labels == true
+    if src_labels
         for idx in 1:src_n
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
-    else
+    elseif opt_labels == false
         if mono == true
             p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:black, msc=:black, ms=marker_size, msa=1)
         else
@@ -94,11 +112,11 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
         end
     end
     
-    if det_labels == true
+    if det_labels
         for idx in (src_n + 1):(src_n + det_n)
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
-    else
+    elseif opt_labels == false
         if mono == true
             p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:white, msc=:black, ms=marker_size, msa=1)
         else
@@ -106,12 +124,13 @@ function plot_locs_nirs(locs::DataFrame, ch_pairs::Matrix{Int64}, src_n::Int64, 
         end
     end
     
-    if opt_labels == true
+    if opt_labels
         for idx in 1:src_n
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text("S" * string(idx), pointsize=font_size)))
         end
-        for idx in (src_n + 1):(src_n + det_n)
-            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text("D" * string(idx), pointsize=font_size)))
+        # for idx in (src_n + 1):(src_n + det_n)
+        for idx in 1:det_n
+            p = Plots.plot!(annotations=(x[src_n + idx], y[src_n + idx], Plots.text("D" * string(idx), pointsize=font_size)))
         end
     end
 

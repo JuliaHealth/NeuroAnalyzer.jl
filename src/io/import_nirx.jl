@@ -139,13 +139,13 @@ function import_nirx(file_name::String)
         end
     end
 
-    # parse ch_pairs
+    # parse opt_pairs
     pairs = hdr[findfirst(startswith.(lowercase.(hdr), "s-d-key="))]
     pairs = split(replace(lowercase.(pairs), "s-d-key="=>""), ",")[1:end - 1]
     ch_n = length(pairs)
-    ch_pairs = zeros(Int64, ch_n, 2)
+    opt_pairs = zeros(Int64, ch_n, 2)
     for idx in 1:ch_n
-        ch_pairs[idx, :] = [parse(Int64, split(pairs[idx], "-")[1]), parse(Int64, split(split(pairs[idx], "-")[2], ":")[1])]
+        opt_pairs[idx, :] = [parse(Int64, split(pairs[idx], "-")[1]), parse(Int64, split(split(pairs[idx], "-")[2], ":")[1])]
     end
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = hdr[ch_mask_start + 1:ch_mask_start + sources]
@@ -158,7 +158,7 @@ function import_nirx(file_name::String)
     end
     ch_n = sum(ch_masks)
     ch_masks = Bool.(ch_masks)
-    ch_pairs = ch_pairs[ch_masks, :]
+    opt_pairs = opt_pairs[ch_masks, :]
 
     # parse dark noise ???
     dark_noise = zeros(length(wavelengths), detectors)
@@ -183,7 +183,7 @@ function import_nirx(file_name::String)
     for idx in 2:length(wavelengths)
         nirs_int = vcat(nirs_int, Matrix(CSV.read(splitext(file_name)[1] * ".wl$idx", header=false, stringtype=String, DataFrame))'[ch_masks, :])
         wavelength_index = vcat(wavelength_index, repeat([idx], ch_n))
-        ch_pairs = vcat(ch_pairs, ch_pairs)
+        opt_pairs = vcat(opt_pairs, opt_pairs)
         data_type_label = vcat(data_type_label, repeat(["nirs_int"], ch_n))
         data_unit = vcat(data_unit, repeat(["V"], ch_n))
     end
@@ -238,8 +238,8 @@ function import_nirx(file_name::String)
     # read probes data
     probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
     # head_model = probes["probeInfo"]["headmodel"]
-    ch_pairs = Int64.(probes["probeInfo"]["probes"]["index_c"])
-    ch_pairs = vcat(ch_pairs, ch_pairs)
+    opt_pairs = Int64.(probes["probeInfo"]["probes"]["index_c"])
+    opt_pairs = vcat(opt_pairs, opt_pairs)
     # probes["probeInfo"]["probes"]["labels_o"]
     det_labels = probes["probeInfo"]["probes"]["labels_d"][:]
     src_labels = probes["probeInfo"]["probes"]["labels_s"][:]
@@ -247,7 +247,7 @@ function import_nirx(file_name::String)
 
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
-        clabels[idx] = src_labels[ch_pairs[idx, :][1]] * "_" * det_labels[ch_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]])
+        clabels[idx] = src_labels[opt_pairs[idx, :][1]] * "_" * det_labels[opt_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]])
     end
     clabels = replace.(clabels, ".0"=>"")
 
@@ -334,10 +334,12 @@ function import_nirx(file_name::String)
                                recording_notes="NIRStar: $nirstar",
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,
-                               channel_pairs=ch_pairs,
+                               optode_pairs=opt_pairs,
                                ch_type=data_type_label,
                                clabels=clabels,
                                units=data_unit,
+                               src_labels=string.(src_labels),
+                               det_labels=string.(det_labels),
                                opt_labels=opt_labels,
                                sampling_rate=sampling_rate)
     e = _create_experiment(name=string(study_type1), notes=string(study_type2), design=string(study_type3))

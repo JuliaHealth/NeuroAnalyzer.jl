@@ -429,10 +429,10 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         @error "Use plot_locs_ecog() for ECoG data."
     elseif threed == false
         if obj.header.recording[:data_type] == "nirs"
-            ch_pairs = obj.header.recording[:channel_pairs]
-            src_n = length(unique(ch_pairs[:, 1]))
-            det_n = length(unique(ch_pairs[:, 2]))
-            p = plot_locs_nirs(obj.locs, ch_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, grid=grid, mono=mono)
+            opt_pairs = obj.header.recording[:optode_pairs]
+            src_n = length(source_labels(obj))
+            det_n = length(detector_labels(obj))
+            p = plot_locs_nirs(obj.locs, opt_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, grid=grid, mono=mono)
         else
             p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane, transparent=transparent)
         end

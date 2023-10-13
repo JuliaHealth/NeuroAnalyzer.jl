@@ -5,6 +5,9 @@ export signal_len
 export epoch_len
 export history
 export labels
+export optode_labels
+export source_labels
+export detector_labels
 export types
 export info
 export channel_cluster
@@ -172,8 +175,71 @@ Return channel labels.
 """
 function labels(obj::NeuroAnalyzer.NEURO)
 
-    @assert length(obj.header.recording[:labels]) > 0 "OBJ has no labels."
+    @assert length(obj.header.recording[:labels]) > 0 "OBJ has no channel labels."
     return obj.header.recording[:labels]
+
+end
+
+"""
+    optode_labels(obj)
+
+Return optode labels.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `labels::Vector{String}`
+"""
+function optode_labels(obj::NeuroAnalyzer.NEURO)
+
+    _check_datatype(obj, "nirs")
+    @assert length(obj.header.recording[:optode_labels]) > 0 "OBJ has no optode labels."
+    return obj.header.recording[:optode_labels]
+
+end
+
+"""
+    source_labels(obj)
+
+Return NIRS source labels.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `labels::Vector{String}`
+"""
+function source_labels(obj::NeuroAnalyzer.NEURO)
+
+    _check_datatype(obj, "nirs")
+    @assert length(obj.header.recording[:src_labels]) > 0 "OBJ has no source labels."
+    return obj.header.recording[:src_labels]
+
+end
+
+"""
+    detector_labels(obj)
+
+Return NIRS detector labels.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `labels::Vector{String}`
+"""
+function detector_labels(obj::NeuroAnalyzer.NEURO)
+
+    _check_datatype(obj, "nirs")
+    @assert length(obj.header.recording[:det_labels]) > 0 "OBJ has no detector labels."
+    return obj.header.recording[:det_labels]
 
 end
 

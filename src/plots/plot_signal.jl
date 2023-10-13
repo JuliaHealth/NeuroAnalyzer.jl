@@ -68,7 +68,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    top_margin=0Plots.px,
                    bottom_margin=15Plots.px,
                    right_margin=10Plots.px,
-                   left_margin=10Plots.px,
+                   left_margin=ch_n < 31 ? 10Plots.px : 120Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,

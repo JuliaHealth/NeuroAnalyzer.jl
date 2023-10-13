@@ -67,7 +67,7 @@ function import_snirf(file_name::String; n::Int64=0)
     t_cor_delay = nothing
     t_cor_delay_width = nothing
     src_labels = nothing
-    detector_labels = nothing
+    det_labels = nothing
     landmark_pos2d = nothing
     landmark_pos3d = nothing
     landmark_labels = nothing
@@ -125,7 +125,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     # String arrays specifying detector names
     k = "$n_id/probe/detectorLabels"
-    k in keys(nirs) && (detector_labels = nirs[k])
+    k in keys(nirs) && (det_labels = nirs[k])
 
     # Anatomical landmark 2-D positions
     k = "$n_id/probe/landmarkPos2D"
@@ -311,10 +311,10 @@ function import_snirf(file_name::String; n::Int64=0)
     end
 
     # collect channels
-    ch_pairs = zeros(Int64, ch_n, 2)
+    opt_pairs = zeros(Int64, ch_n, 2)
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
-        ch_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
+        opt_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
         clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx]) * " " * string(wavelengths[wavelength_index[idx]])
     end
     clabels = replace.(clabels, ".0"=>"")
@@ -327,14 +327,14 @@ function import_snirf(file_name::String; n::Int64=0)
             push!(src_labels, "S" * string(s[idx]))
         end
     end
-    if detector_labels === nothing
+    if det_labels === nothing
         d = sort(unique(detector_index))
-        detector_labels = String[]
+        det_labels = String[]
         for idx in eachindex(d)
-            push!(detector_labels, "D" * string(d[idx]))
+            push!(det_labels, "D" * string(d[idx]))
         end
     end
-    opt_labels = vcat(src_labels, detector_labels)
+    opt_labels = vcat(src_labels, det_labels)
 
     # stimulus measurements
     stim_n = 0
@@ -493,10 +493,12 @@ function import_snirf(file_name::String; n::Int64=0)
                                recording_notes="",
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,
-                               channel_pairs=ch_pairs,
+                               optode_pairs=opt_pairs,
                                ch_type=data_type_label,
                                clabels=clabels,
                                units=data_unit,
+                               src_labels=src_labels,
+                               det_labels=det_labels,
                                opt_labels=opt_labels,
                                sampling_rate=round(Int64, sampling_rate))
     e = _create_experiment(name="", notes="", design="")

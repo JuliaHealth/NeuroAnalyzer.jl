@@ -94,7 +94,7 @@ function _create_recording_meg(;data_type::String, file_name::String, file_size_
                 :coils=>coils)
 end
 
-function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, channel_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64)
+function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, optode_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, src_labels::Vector{String}, det_labels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64)
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -106,10 +106,12 @@ function _create_recording_nirs(;data_type::String, file_name::String, file_size
                 :recording_notes=>recording_notes,
                 :wavelengths=>wavelengths,
                 :wavelength_index=>wavelength_index,
-                :channel_pairs=>channel_pairs,
+                :optode_pairs=>optode_pairs,
                 :channel_type=>ch_type,
                 :labels=>clabels,
                 :units=>units,
+                :src_labels=>src_labels,
+                :det_labels=>det_labels,
                 :optode_labels=>opt_labels,
                 :sampling_rate=>sampling_rate)
 end

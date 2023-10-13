@@ -14,12 +14,13 @@ Delete channel(s).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
+- `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, del_opt::Bool=false)
 
     typeof(ch) <: AbstractRange && (ch = collect(ch))
     ch_n = nchannels(obj)
@@ -31,12 +32,12 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
     obj_new = deepcopy(obj)
 
     # remove channel locations
-    for ch_idx in ch
-        if labels(obj_new)[ch_idx] in obj_new.locs[!, :labels]
-            if length(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch_idx])) == 1
-                deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch_idx]))
+    for idx in ch
+        if labels(obj_new)[idx] in obj_new.locs[!, :labels]
+            if length(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[idx])) == 1
+                deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[idx]))
             else
-                deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[ch_idx])))
+                deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[idx])))
             end
         end
     end
@@ -59,20 +60,18 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
             idx in obj_new.header.recording[:gradiometers_axial] && deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
             idx in obj_new.header.recording[:gradiometers_planar] && deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
         elseif obj_new.header.recording[:data_type] == "nirs"
-            idx in 1:length(obj_new.header.recording[:wavelength_index]) && (deleteat!(obj_new.header.recording[:wavelength_index], idx))
-            if idx in obj_new.header.recording[:channel_pairs]
-                chp1 = obj_new.header.recording[:channel_pairs][:, 1]
-                chp2 = obj_new.header.recording[:channel_pairs][:, 2]
-                for chp_idx in size(chp1, 1):-1:1
-                    if idx in chp1[chp_idx] == idx || idx in chp2[chp_idx] == idx
-                        deleteat!(chp1, chp_idx)
-                        deleteat!(chp2, chp_idx)
-                    end
-                end
-                obj_new.header.recording[:channel_pairs] = hcat(chp1, chp2)
+            if del_opt == false && idx in 1:length(obj_new.header.recording[:optode_labels])
+                @warn "NIRS signal channels must be deleted using delete_optode()."
+                return nothing
             end
-            _warn("TO DO: remove optode_labels if contains removed channel")
-            # deleteat!(obj_new.header.recording[:optode_labels], idx)
+            idx in 1:length(obj_new.header.recording[:wavelength_index]) && deleteat!(obj_new.header.recording[:wavelength_index], idx)
+            chp1 = obj_new.header.recording[:optode_pairs][:, 1]
+            chp2 = obj_new.header.recording[:optode_pairs][:, 2]
+            if idx in 1:size(obj_new.header.recording[:optode_pairs], 1)
+                deleteat!(chp1, idx)
+                deleteat!(chp2, idx)
+                obj_new.header.recording[:optode_pairs] = hcat(chp1, chp2)
+            end
         end
     end
 
@@ -95,10 +94,11 @@ Delete channel(s).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
+- `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 """
-function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, del_opt::Bool=false)
 
-    obj_new = delete_channel(obj, ch=ch)
+    obj_new = delete_channel(obj, ch=ch, del_opt=del_opt)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

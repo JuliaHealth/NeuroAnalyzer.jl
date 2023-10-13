@@ -11,8 +11,11 @@ Interactive edit signal channels properties and locations.
 """
 function iedit_ch(obj::NeuroAnalyzer.NEURO)
 
+    @assert obj.header.recording[:data_type] == "eeg" "Currently this function only works for EEG data."
+
     # TO DO: select channel by clicking its location
     # TO DO: generate locations
+    # TO DO: other recording types
 
     obj_new = deepcopy(obj)
 
