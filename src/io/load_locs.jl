@@ -79,12 +79,12 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     # add locations of EMG channels
     emg_idx = get_channel_bytype(obj, type="emg")
     emg_labels = labels(obj)[emg_idx]
-    if length(eog_labels) > 0
+    if length(emg_labels) > 0
         for idx in eachindex(emg_labels)
             occursin("1", emg_labels[idx]) && push!(locs, [emg_labels[idx], 0.99, 135.0, -0.70, 0.70, -1.10, 1.48, 135.00, -48.01])
             occursin("2", emg_labels[idx]) && push!(locs, [emg_labels[idx], 0.99, 45.0, 0.70, 0.70, -1.10, 1.48, 45.00, -48.01])
             # if no numbers, assume that EMG channel is on the right side
-            (occursin("1", emg_labels[idx]) == false && occursin("2", emg_labels[idx]) == false) && push!(locs, [eog_labels[idx], 0.99, 45.0, 0.70, 0.70, -1.10, 1.48, 45.00, -48.01])
+            (occursin("1", emg_labels[idx]) == false && occursin("2", emg_labels[idx]) == false) && push!(locs, [emg_labels[idx], 0.99, 45.0, 0.70, 0.70, -1.10, 1.48, 45.00, -48.01])
         end
     end
 

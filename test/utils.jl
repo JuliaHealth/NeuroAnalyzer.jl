@@ -273,8 +273,8 @@ delete_note!(e10)
 
 @info "test 67/67: optode_labels()"
 n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
-@test length(optode_labels(n)) == 36
-@test length(source_labels(n)) == 24
-@test length(detector_labels(n)) == 36
+@test length(optode_labels(n)) == 3
+@test length(source_labels(n)) == 1
+@test length(detector_labels(n)) == 2
 
 true

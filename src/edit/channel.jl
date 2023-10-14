@@ -192,7 +192,7 @@ Return NIRS channel number(s) for wavelength `wl`.
 """
 function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
 
-    _check_datatype(obj, [:nirs])
+    _check_datatype(obj, ["nirs"])
     @assert wl in obj.header.recording[:wavelengths] "OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."
 
     wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])

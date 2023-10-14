@@ -99,6 +99,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
+    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, w * 4 + 40)
     set_gtk_property!(win_view, :min_content_height, h * 3 + 20)

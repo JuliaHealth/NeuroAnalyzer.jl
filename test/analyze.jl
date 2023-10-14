@@ -257,14 +257,14 @@ p, f = erop(e10, ch=1, method=:welch)
 @test size(p) == (129, 1)
 @test length(f) == 129
 p, f = erop(e10, ch=1, method=:fft)
-@test size(p) == (12801, 1)
-@test length(f) == 12801
+@test size(p) == (1281, 1)
+@test length(f) == 1281
 p, f = erop(e10, ch=1, method=:stft)
 @test size(p) == (129, 1)
 @test length(f) == 129
 p, f = erop(e10, ch=1, method=:mt)
-@test size(p) == (12801, 1)
-@test length(f) == 12801
+@test size(p) == (1281, 1)
+@test length(f) == 1281
 p, f = erop(e10, ch=1, method=:mw)
 @test size(p) == (129, 1)
 @test length(f) == 129

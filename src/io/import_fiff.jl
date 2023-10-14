@@ -129,6 +129,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     gradiometers_planar = Vector{Int64}()
     gradiometers_axial = Vector{Int64}()
     magnetometers = Vector{Int64}()
+    _info("TO DO: all channels must have :prefiltering, :coils, :magnetometers, ;gradiometers, :gradiometers_axial and :gradiometers_planar available")
     for ch_idx in 1:ch_n
         push!(clabels, string(ch_idx))
         coils[ch_idx] in [2001, 3011, 3012, 3013, 3014, 4002] && push!(gradiometers, ch_idx)

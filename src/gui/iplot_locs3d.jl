@@ -25,6 +25,7 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
+    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     push!(win, can)
     showall(win)
 
@@ -107,6 +108,7 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
+    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     push!(win, can)
     showall(win)
 

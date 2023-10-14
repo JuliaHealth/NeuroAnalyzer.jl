@@ -104,6 +104,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
+    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
