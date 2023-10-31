@@ -15,9 +15,9 @@ steps:
       - cd NA-stable/docs
       - cat header-stable.md > src/index.md
       - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_md.jl
       - cp build/index.md ../../NA-docs/Documentation-stable.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_html.jl
       - mv build docs-stable
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html
       - sed -i 's///g' docs-stable/index.html
@@ -28,9 +28,9 @@ steps:
       - cd NA-devel/docs
       - cat header-devel.md > src/index.md
       - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_md.jl
       - cp build/index.md ../../NA-docs/Documentation-devel.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_html.jl
       - mv build docs-devel
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html
       - sed -i 's///g' docs-devel/index.html
@@ -55,6 +55,6 @@ steps:
       - mkdir ~/NeuroAnalyzer/plugins
       - apt-get update
       - apt-get install -y xvfb
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
 
 branch: [ stable, devel ]
