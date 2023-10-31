@@ -300,6 +300,7 @@ include("locs/flip.jl")
 include("locs/rotate.jl")
 include("locs/scale.jl")
 include("locs/swap.jl")
+include("locs/generate.jl")
 #process
 include("process/add_signal.jl")
 include("process/average.jl")
