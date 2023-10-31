@@ -6,9 +6,9 @@ module NeuroAnalyzer
 
 # set constants
 
-global const VER = v"0.23.11-dev"
-const allow_wip = occursin("dev", string(VER)) # false for the stable branch, true for the devel branch
-const io = PipeBuffer() # required for interactive preview
+const VER = v"0.23.11-dev"
+const allow_wip = occursin("dev", string(VER))  # false for the stable branch, true for the devel branch
+const io = PipeBuffer()                         # required for interactive preview
 const data_types = ["eeg",
                     "meg",
                     "nirs",
