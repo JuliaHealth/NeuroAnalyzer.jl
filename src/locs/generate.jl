@@ -1,6 +1,13 @@
 export locs_generate
 
+"""
+    locs_generate()
+
+Generate locs according to 10/5 system.
+"""
 function locs_generate()
+
+    _wip()
 
     lab = ["Fpz", "Fz", "Cz", "Pz", "Oz", "Fp1", "Fp2", "F7", "F3", "F4", "F8", "T3", "T7", "C3", "C4", "T4", "T5", "T8", "P3", "P4", "T6", "O1", "O2"]
 
