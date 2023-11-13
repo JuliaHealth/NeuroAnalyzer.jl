@@ -9,6 +9,7 @@ export binom_prob
 export binom_stat
 export cvar_mean
 export cvar_median
+export ci_median
 
 """
     z_score(x)
@@ -252,4 +253,32 @@ function cvar_median(x::AbstractVector)
 
     return ((quantile(x, 0.75) - quantile(x, 0.25)) / 2) / median(x)
     
+end
+
+"""
+    ci_median(x; ci_level)
+
+Calculate confidence interval for a median.
+
+# Arguments
+
+- `x::AbstractVector`
+- `ci_level::Float64=0.95`: confidence level
+
+# Returns
+
+- `ci_median::Tuple(Float64, Float64)`
+"""
+function ci_median(x::AbstractVector; ci_level::Float64=0.95)
+
+    x_new = sort(x)
+    n = length(x)
+    q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
+    z = quantile.(Normal(0, 1), ci_level)
+
+    j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
+    k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
+
+    return (x_new[j], x_new[k])
+
 end
