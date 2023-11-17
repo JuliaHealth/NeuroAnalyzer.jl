@@ -656,9 +656,12 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         _refresh_plots()
     end
 
-    ## TO DO: GENERATE
     signal_connect(bt_generate, "clicked") do widget
-        info_dialog("This feature has not been implemented yet.")
+        locs_generate!(obj_new.locs)
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
     end
 
     signal_connect(bt_load, "clicked") do widget

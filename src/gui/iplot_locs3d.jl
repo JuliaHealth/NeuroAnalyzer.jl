@@ -62,15 +62,18 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
-        if k == 116 # t
-            camera_pos = (0, 90)
-            draw(can)
-        elseif k == 115 # s
-            camera_pos = (90, 0)
-            draw(can)
-        elseif k == 102 # f
-            camera_pos = (180, 0)
-            draw(can)
+        s = event.state
+        if s == 20
+            if k == 116 # t
+                camera_pos = (0, 90)
+                draw(can)
+            elseif k == 115 # s
+                camera_pos = (90, 0)
+                draw(can)
+            elseif k == 102 # f
+                camera_pos = (180, 0)
+                draw(can)
+            end
         end
     end
 
