@@ -339,6 +339,9 @@ function locs_generate(locs::DataFrame)
     r[lab .== "tp8"] .= 1
     t[lab .== "tp8"] .= 342
 
+    locs_new[:, :loc_radius] = r
+    locs_new[:, :loc_theta] = t
+
     return locs_new
 
 end
