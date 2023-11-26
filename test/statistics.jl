@@ -124,12 +124,13 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test ci_median(collect(1:100)) == (42, 59)
 
 @info "test 36/38: ci_r()"
-@test ci_r(0.3, n=50) == (0.02, 0.53)
+@test ci_r(r=0.3, n=50) == (0.02, 0.53)
+@test ci_r(ones(10), zeros(10)) == (0.01, 0.64)
 
 @info "test 37/38: ci2z()"
 @test ci2z(0.95) == 1.9599639845400576
 
 @info "test 38/38: r_test()"
-@test r_test(0.3, 0.6, n1=50, n2=50) == -1.8566613853904539
+@test r_test(r1=0.3, r2=0.6, n1=50, n2=50) == -1.8566613853904539
 
 true
