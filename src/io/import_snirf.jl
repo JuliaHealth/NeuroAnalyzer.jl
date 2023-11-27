@@ -32,7 +32,11 @@ function import_snirf(file_name::String; n::Int64=0)
 
     file_type = "SNIRF"
 
-    parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected.")
+    if typeof(nirs["formatVersion"]) == Vector{String}
+        parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected.")
+    else
+        parse(Float64, nirs["formatVersion"]) > 1.0 && _info("SNIRF version >1.0 detected.")
+    end
 
     # check for multi-subject recordings
     n_id = "nirs"
@@ -43,12 +47,18 @@ function import_snirf(file_name::String; n::Int64=0)
     end
 
     # read metadata
-    subject_id = nirs["$n_id/metaDataTags/SubjectID"][1]
-    recording_date = nirs["$n_id/metaDataTags/MeasurementDate"][1]
-    recording_time = nirs["$n_id/metaDataTags/MeasurementTime"][1]
-    length_unit = nirs["$n_id/metaDataTags/LengthUnit"][1]
-    time_unit = nirs["$n_id/metaDataTags/TimeUnit"][1]
-    frq_unit = nirs["$n_id/metaDataTags/FrequencyUnit"][1]
+    subject_id = nirs["$n_id/metaDataTags/SubjectID"]
+    typeof(subject_id) == Vector{String} && (subject_id = subject_id[1])
+    recording_date = nirs["$n_id/metaDataTags/MeasurementDate"]
+    typeof(recording_date) == Vector{String} && (recording_date = recording_date[1])
+    recording_time = nirs["$n_id/metaDataTags/MeasurementTime"]
+    typeof(recording_time) == Vector{String} && (recording_time = recording_time[1])
+    length_unit = nirs["$n_id/metaDataTags/LengthUnit"]
+    typeof(length_unit) == Vector{String} && (length_unit = length_unit[1])
+    time_unit = nirs["$n_id/metaDataTags/TimeUnit"]
+    typeof(time_unit) == Vector{String} && (time_unit = time_unit[1])
+    frq_unit = nirs["$n_id/metaDataTags/FrequencyUnit"]
+    typeof(frq_unit) == Vector{String} && (frq_unit = frq_unit[1])
 
     # probes
 
@@ -197,36 +207,48 @@ function import_snirf(file_name::String; n::Int64=0)
     for ch_idx in 1:ch_n
         # Source index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/sourceIndex"
-        k in keys(nirs) && (push!(source_index, Int.(nirs[k][1])))
+        k in keys(nirs) && push!(source_index, Int.(nirs[k][1]))
 
         # Detector index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/detectorIndex"
-        k in keys(nirs) && (push!(detector_index, Int.(nirs[k][1])))
+        k in keys(nirs) && push!(detector_index, Int.(nirs[k][1]))
 
         # Wavelength index for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/wavelengthIndex"
-        k in keys(nirs) && (push!(wavelength_index, Int.(nirs[k][1])))
+        k in keys(nirs) && push!(wavelength_index, Int.(nirs[k][1]))
 
         # Actual wavelength for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/wavelengthActual"
-        k in keys(nirs) && (push!(wavelength_actual, nirs[k][1]))
+        k in keys(nirs) && push!(wavelength_actual, nirs[k][1])
 
         # Actual emission wavelength for a channel
         k = "$n_id/$d_id/measurementList$ch_idx/wavelengthEmissionActual"
-        k in keys(nirs) && (push!(wavelength_emission_actual, nirs[k][1]))
+        k in keys(nirs) && push!(wavelength_emission_actual, nirs[k][1])
 
         # Data type for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataType"
-        k in keys(nirs) && (push!(data_type, Int.(nirs[k][1])))
+        if k in keys(nirs)
+            if ndims(nirs[k]) == 1
+                push!(data_type, Int.(nirs[k][1]))
+            else
+                push!(data_type, Int.(nirs[k]))
+            end
+        end
 
         # SI unit for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataUnit"
-        k in keys(nirs) && (push!(data_unit, nirs[k][1]))
+        k in keys(nirs) && push!(data_unit, nirs[k][1])
         data_unit == String[] && (data_unit = repeat(["V"], ch_n))
 
         # Data type name for a given channel
         k = "$n_id/$d_id/measurementList$ch_idx/dataTypeLabel"
-        k in keys(nirs) && (push!(data_type_label, nirs[k][1]))
+        if k in keys(nirs)
+            if typeof(nirs[k]) == Vector{String}
+                push!(data_type_label, nirs[k][1])
+            else
+                push!(data_type_label, nirs[k])
+            end
+        end
         # assume its raw data (intensity) if there is no data type
         data_type_label == String[] && (data_type_label = repeat(["nirs_int"], ch_n))
         # Change in optical density
@@ -315,7 +337,11 @@ function import_snirf(file_name::String; n::Int64=0)
     clabels = repeat([""], ch_n)
     for idx in 1:ch_n
         opt_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
-        clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx]) * " " * string(wavelengths[wavelength_index[idx]])
+        if length(wavelength_index) == ch_n
+            clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx]) * " " * string(wavelengths[wavelength_index[idx]])
+        else
+            clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx])
+        end
     end
     clabels = replace.(clabels, ".0"=>"")
 
@@ -351,7 +377,9 @@ function import_snirf(file_name::String; n::Int64=0)
 
     s_id = "stim1"
     stim_data = nothing
-
+    stim_name = nothing
+    stim_labels = nothing
+    
     # Name of the stimulus data
     k = "$n_id/$s_id/name"
     k in keys(nirs) && (stim_name = nirs[k][1])
@@ -390,7 +418,11 @@ function import_snirf(file_name::String; n::Int64=0)
 
     a_id = "aux$aux_n"
     aux_data = nothing
-    
+    aux_name = nothing
+    aux_unit = nothing
+    aux_time = nothing
+    aux_timeoffset = nothing
+
     # Name of the auxiliary channel
     k = "$n_id/$a_id/name"
     k in keys(nirs) && (aux_name = nirs[k][1])
@@ -412,11 +444,15 @@ function import_snirf(file_name::String; n::Int64=0)
     k in keys(nirs) && (aux_timeoffset = nirs[k])
 
     if aux_data !== nothing
-        data = vcat(data, aux_data)
+        data = vcat(data, reshape(aux_data, size(aux_data, 2), :))
         for idx in 1:size(aux_data, 1)
             push!(clabels, "AUX$idx")
-            push!(ch_type, "nirs_aux")
-            data_unit = vcat(data_unit, aux_unit)
+            push!(data_type_label, "nirs_aux")
+            if aux_unit !== nothing
+                data_unit = vcat(data_unit, aux_unit)
+            else
+                data_unit = vcat(data_unit, repeat([""], size(aux_data, 2)))
+            end
         end
     end
 

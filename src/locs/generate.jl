@@ -175,6 +175,22 @@ function locs_generate(locs::DataFrame)
     y[lab .== "p4"] .= sph2cart(1.0, 315, 45)[2]
     z[lab .== "p4"] .= sph2cart(1.0, 315, 45)[3]
 
+    x[lab .== "fc2"] .= sph2cart(1.0, 45, 67.5)[1]
+    y[lab .== "fc2"] .= sph2cart(1.0, 45, 67.5)[2]
+    z[lab .== "fc2"] .= sph2cart(1.0, 45, 67.5)[3]
+
+    x[lab .== "fc1"] .= sph2cart(1.0, 135, 67.5)[1]
+    y[lab .== "fc1"] .= sph2cart(1.0, 135, 67.5)[2]
+    z[lab .== "fc1"] .= sph2cart(1.0, 135, 67.5)[3]
+
+    x[lab .== "cp1"] .= sph2cart(1.0, 225, 67.5)[1]
+    y[lab .== "cp1"] .= sph2cart(1.0, 225, 67.5)[2]
+    z[lab .== "cp1"] .= sph2cart(1.0, 225, 67.5)[3]
+
+    x[lab .== "cp2"] .= sph2cart(1.0, 315, 67.5)[1]
+    y[lab .== "cp2"] .= sph2cart(1.0, 315, 67.5)[2]
+    z[lab .== "cp2"] .= sph2cart(1.0, 315, 67.5)[3]
+
     x[lab .== "a1"] .= -0.92
     y[lab .== "a1"] .= -0.23
     z[lab .== "a1"] .= -0.55
@@ -338,6 +354,18 @@ function locs_generate(locs::DataFrame)
 
     r[lab .== "tp8"] .= 1
     t[lab .== "tp8"] .= 342
+
+    r[lab .== "f4"] .= 0.5
+    t[lab .== "f4"] .= 45
+
+    r[lab .== "f3"] .= 0.5
+    t[lab .== "f3"] .= 135
+
+    r[lab .== "p3"] .= 0.5
+    t[lab .== "p3"] .= 225
+
+    r[lab .== "p4"] .= 0.5
+    t[lab .== "p4"] .= 225
 
     locs_new[:, :loc_radius] = r
     locs_new[:, :loc_theta] = t

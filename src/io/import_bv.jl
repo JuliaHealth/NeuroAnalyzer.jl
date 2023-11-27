@@ -176,7 +176,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
         end
         locs = DataFrame(:ch_n=>1:ch_n,
-                         :labels=>labels,
+                         :labels=>clabels,
                          :loc_theta=>loc_theta,
                          :loc_radius=>loc_radius,
                          :loc_x=>loc_x,

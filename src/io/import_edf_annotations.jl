@@ -47,7 +47,7 @@ function import_edf_annotations(file_name::String)
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    @assert data_records_duration > 0 "This file is a regular $file_type file, use import_edf()."
+    @assert data_records_duration == 0 "This file is a regular $file_type file, use import_edf()."
     ch_n  = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)
@@ -128,10 +128,8 @@ function import_edf_annotations(file_name::String)
 
     if file_type == "EDF"
         annotation_channels = Int64[]
-        markers_channel = []
     else
         annotation_channels = sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
-        markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
     # we assume that all channels have the same sampling rate
@@ -165,7 +163,7 @@ function import_edf_annotations(file_name::String)
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
-        markers = _a2df(annotations)
+        markers = NeuroAnalyzer._a2df(annotations)
     end
 
     return markers
