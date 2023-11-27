@@ -68,6 +68,7 @@ function na_info()
             "Loess",
             "MAT",
             "MultivariateStats",
+            "NPZ",
             "Plots",
             "Polynomials",
             "Preferences",

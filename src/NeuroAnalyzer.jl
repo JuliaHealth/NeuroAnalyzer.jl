@@ -89,6 +89,7 @@ using LinearAlgebra
 using Loess
 using MAT
 using MultivariateStats
+using NPZ
 using Pkg
 using Plots
 using Plots.PlotMeasures
@@ -291,6 +292,7 @@ include("io/export_markers.jl")
 include("io/import_gdf.jl")
 include("io/import_montage.jl")
 include("io/import_nwb.jl")
+include("io/import_npy.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")
