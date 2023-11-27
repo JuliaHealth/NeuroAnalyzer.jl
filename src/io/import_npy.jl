@@ -23,14 +23,12 @@ function import_npy(file_name::String; sampling_rate::Int64)
     file_type = "NPY"
 
     data = npzread(file_name)
+    data = reshape(data, size(data, 1), :, 1)
     ch_n = size(data, 1)
     clabels = String[]
     for idx in 1:ch_n
         push!(clabels, "ch_$idx")
     end
-    ch_type = repeat(["eeg"], ch_n)
-    units = repeat(["μV"], ch_n)
-    channel_order = collect(1:ch_n)
 
     x = zeros(ch_n)
     y = zeros(ch_n)
@@ -76,7 +74,7 @@ function import_npy(file_name::String; sampling_rate::Int64)
                               recording_date="",
                               recording_time="",
                               recording_notes="",
-                              channel_type=ch_type,
+                              channel_type=repeat(["eeg"], ch_n),
                               reference="",
                               clabels=clabels,
                               transducers=repeat([""], ch_n),
@@ -95,7 +93,7 @@ function import_npy(file_name::String; sampling_rate::Int64)
     components = Dict()
     history = String[]
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 
