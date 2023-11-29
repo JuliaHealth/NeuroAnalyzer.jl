@@ -4,7 +4,7 @@ export locs_generate!
 """
     locs_generate(locs)
 
-Generate spherical coordinates according to 10/5 system.
+Generate spherical coordinates according to 10/10 system.
 
 # Arguments
 
@@ -27,169 +27,273 @@ function locs_generate(locs::DataFrame)
     r = zeros(length(lab))
     t = zeros(length(lab))
 
-    x[lab .== "afz"] .= sph2cart(1.0, 90, 22.5)[1]
-    y[lab .== "afz"] .= sph2cart(1.0, 90, 22.5)[2]
-    z[lab .== "afz"] .= sph2cart(1.0, 90, 22.5)[3]
-
-    x[lab .== "fz"] .= sph2cart(1.0, 90, 45)[1]
-    y[lab .== "fz"] .= sph2cart(1.0, 90, 45)[2]
-    z[lab .== "fz"] .= sph2cart(1.0, 90, 45)[3]
-
-    x[lab .== "fcz"] .= sph2cart(1.0, 90, 67.5)[1]
-    y[lab .== "fcz"] .= sph2cart(1.0, 90, 67.5)[2]
-    z[lab .== "fcz"] .= sph2cart(1.0, 90, 67.5)[3]
-
     x[lab .== "cz"] .= sph2cart(1.0, 0, 90)[1]
     y[lab .== "cz"] .= sph2cart(1.0, 0, 90)[2]
     z[lab .== "cz"] .= sph2cart(1.0, 0, 90)[3]
-
-    x[lab .== "cpz"] .= sph2cart(1.0, 270, 67.5)[1]
-    y[lab .== "cpz"] .= sph2cart(1.0, 270, 67.5)[2]
-    z[lab .== "cpz"] .= sph2cart(1.0, 270, 67.5)[3]
-
-    x[lab .== "pz"] .= sph2cart(1.0, 270, 45)[1]
-    y[lab .== "pz"] .= sph2cart(1.0, 270, 45)[2]
-    z[lab .== "pz"] .= sph2cart(1.0, 270, 45)[3]
-
-    x[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[1]
-    y[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[2]
-    z[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[3]
-
-    x[lab .== "t4" .|| lab .== "t8"] .= sph2cart(1.0, 0, 0)[1]
-    y[lab .== "t4" .|| lab .== "t8"] .= sph2cart(1.0, 0, 0)[2]
-    z[lab .== "t4" .|| lab .== "t8"] .= sph2cart(1.0, 0, 0)[3]
-    
-    x[lab .== "fc8"] .= sph2cart(1.0, 18, 0)[1]
-    y[lab .== "fc8"] .= sph2cart(1.0, 18, 0)[2]
-    z[lab .== "fc8"] .= sph2cart(1.0, 18, 0)[3]
-    
-    x[lab .== "f8"] .= sph2cart(1.0, 36, 0)[1]
-    y[lab .== "f8"] .= sph2cart(1.0, 36, 0)[2]
-    z[lab .== "f8"] .= sph2cart(1.0, 36, 0)[3]
-
-    x[lab .== "af8"] .= sph2cart(1.0, 54, 0)[1]
-    y[lab .== "af8"] .= sph2cart(1.0, 54, 0)[2]
-    z[lab .== "af8"] .= sph2cart(1.0, 54, 0)[3]
-
-    x[lab .== "fp2"] .= sph2cart(1.0, 72, 0)[1]
-    y[lab .== "fp2"] .= sph2cart(1.0, 72, 0)[2]
-    z[lab .== "fp2"] .= sph2cart(1.0, 72, 0)[3]
-
-    x[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[1]
-    y[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[2]
-    z[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[3]
-
-    x[lab .== "fp1"] .= sph2cart(1.0, 108, 0)[1]
-    y[lab .== "fp1"] .= sph2cart(1.0, 108, 0)[2]
-    z[lab .== "fp1"] .= sph2cart(1.0, 108, 0)[3]
-
-    x[lab .== "af7"] .= sph2cart(1.0, 126, 0)[1]
-    y[lab .== "af7"] .= sph2cart(1.0, 126, 0)[2]
-    z[lab .== "af7"] .= sph2cart(1.0, 126, 0)[3]
-
-    x[lab .== "f7"] .= sph2cart(1.0, 144, 0)[1]
-    y[lab .== "f7"] .= sph2cart(1.0, 144, 0)[2]
-    z[lab .== "f7"] .= sph2cart(1.0, 144, 0)[3]
-
-    x[lab .== "ft7"] .= sph2cart(1.0, 162, 0)[1]
-    y[lab .== "ft7"] .= sph2cart(1.0, 162, 0)[2]
-    z[lab .== "ft7"] .= sph2cart(1.0, 162, 0)[3]
-
-    x[lab .== "t3" .|| lab .== "t7"] .= sph2cart(1.0, 180, 0)[1]
-    y[lab .== "t3" .|| lab .== "t7"] .= sph2cart(1.0, 180, 0)[2]
-    z[lab .== "t3" .|| lab .== "t7"] .= sph2cart(1.0, 180, 0)[3]
-
-    y[lab .== "tp7"] .= sph2cart(1.0, 198, 0)[2]
-    x[lab .== "tp7"] .= sph2cart(1.0, 198, 0)[1]
-    z[lab .== "tp7"] .= sph2cart(1.0, 198, 0)[3]
-
-    y[lab .== "t5" .|| lab .== "p7"] .= sph2cart(1.0, 216, 0)[2]
-    x[lab .== "t5" .|| lab .== "p7"] .= sph2cart(1.0, 216, 0)[1]
-    z[lab .== "t5" .|| lab .== "p7"] .= sph2cart(1.0, 216, 0)[3]
-
-    y[lab .== "po7"] .= sph2cart(1.0, 234, 0)[2]
-    x[lab .== "po7"] .= sph2cart(1.0, 234, 0)[1]
-    z[lab .== "po7"] .= sph2cart(1.0, 234, 0)[3]
-
-    x[lab .== "o1"] .= sph2cart(1.0, 252, 0)[1]
-    y[lab .== "o1"] .= sph2cart(1.0, 252, 0)[2]
-    z[lab .== "o1"] .= sph2cart(1.0, 252, 0)[3]
-
-    x[lab .== "oz"] .= sph2cart(1.0, 270, 0)[1]
-    y[lab .== "oz"] .= sph2cart(1.0, 270, 0)[2]
-    z[lab .== "oz"] .= sph2cart(1.0, 270, 0)[3]
-
-    x[lab .== "o2"] .= sph2cart(1.0, 288, 0)[1]
-    y[lab .== "o2"] .= sph2cart(1.0, 288, 0)[2]
-    z[lab .== "o2"] .= sph2cart(1.0, 288, 0)[3]
-
-    x[lab .== "po8"] .= sph2cart(1.0, 306, 0)[1]
-    y[lab .== "po8"] .= sph2cart(1.0, 306, 0)[2]
-    z[lab .== "po8"] .= sph2cart(1.0, 306, 0)[3]
-
-    x[lab .== "t6" .|| lab .== "p8"] .= sph2cart(1.0, 324, 0)[1]
-    y[lab .== "t6" .|| lab .== "p8"] .= sph2cart(1.0, 324, 0)[2]
-    z[lab .== "t6" .|| lab .== "p8"] .= sph2cart(1.0, 324, 0)[3]
-
-    x[lab .== "tp8"] .= sph2cart(1.0, 342, 0)[1]
-    y[lab .== "tp8"] .= sph2cart(1.0, 342, 0)[2]
-    z[lab .== "tp8"] .= sph2cart(1.0, 342, 0)[3]
-
-    x[lab .== "c5"] .= sph2cart(1.0, 180, 22.5)[1]
-    y[lab .== "c5"] .= sph2cart(1.0, 180, 22.5)[2]
-    z[lab .== "c5"] .= sph2cart(1.0, 180, 22.5)[3]
-
-    x[lab .== "c3"] .= sph2cart(1.0, 180, 45)[1]
-    y[lab .== "c3"] .= sph2cart(1.0, 180, 45)[2]
-    z[lab .== "c3"] .= sph2cart(1.0, 180, 45)[3]
-
-    x[lab .== "c1"] .= sph2cart(1.0, 180, 67.5)[1]
-    y[lab .== "c1"] .= sph2cart(1.0, 180, 67.5)[2]
-    z[lab .== "c1"] .= sph2cart(1.0, 180, 67.5)[3]
-
-    x[lab .== "c6"] .= sph2cart(1.0, 0, 22.5)[1]
-    y[lab .== "c6"] .= sph2cart(1.0, 0, 22.5)[2]
-    z[lab .== "c6"] .= sph2cart(1.0, 0, 22.5)[3]
-
-    x[lab .== "c4"] .= sph2cart(1.0, 0, 45)[1]
-    y[lab .== "c4"] .= sph2cart(1.0, 0, 45)[2]
-    z[lab .== "c4"] .= sph2cart(1.0, 0, 45)[3]
 
     x[lab .== "c2"] .= sph2cart(1.0, 0, 67.5)[1]
     y[lab .== "c2"] .= sph2cart(1.0, 0, 67.5)[2]
     z[lab .== "c2"] .= sph2cart(1.0, 0, 67.5)[3]
 
-    x[lab .== "f4"] .= sph2cart(1.0, 45, 45)[1]
-    y[lab .== "f4"] .= sph2cart(1.0, 45, 45)[2]
-    z[lab .== "f4"] .= sph2cart(1.0, 45, 45)[3]
+    x[lab .== "c4"] .= sph2cart(1.0, 0, 45)[1]
+    y[lab .== "c4"] .= sph2cart(1.0, 0, 45)[2]
+    z[lab .== "c4"] .= sph2cart(1.0, 0, 45)[3]
 
-    x[lab .== "f3"] .= sph2cart(1.0, 135, 45)[1]
-    y[lab .== "f3"] .= sph2cart(1.0, 135, 45)[2]
-    z[lab .== "f3"] .= sph2cart(1.0, 135, 45)[3]
+    x[lab .== "c6"] .= sph2cart(1.0, 0, 22.5)[1]
+    y[lab .== "c6"] .= sph2cart(1.0, 0, 22.5)[2]
+    z[lab .== "c6"] .= sph2cart(1.0, 0, 22.5)[3]
 
-    x[lab .== "p3"] .= sph2cart(1.0, 225, 45)[1]
-    y[lab .== "p3"] .= sph2cart(1.0, 225, 45)[2]
-    z[lab .== "p3"] .= sph2cart(1.0, 225, 45)[3]
+    x[lab .== "t4" .|| lab .== "t8"] .= sph2cart(1.0, 0, 0)[1]
+    y[lab .== "t4" .|| lab .== "t8"] .= sph2cart(1.0, 0, 0)[2]
+    z[lab .== "t4" .|| lab .== "t8"] .= sph2cart(1.0, 0, 0)[3]
 
-    x[lab .== "p4"] .= sph2cart(1.0, 315, 45)[1]
-    y[lab .== "p4"] .= sph2cart(1.0, 315, 45)[2]
-    z[lab .== "p4"] .= sph2cart(1.0, 315, 45)[3]
+    x[lab .== "c1"] .= sph2cart(1.0, 0, 112.5)[1]
+    y[lab .== "c1"] .= sph2cart(1.0, 0, 112.5)[2]
+    z[lab .== "c1"] .= sph2cart(1.0, 0, 112.5)[3]
 
-    x[lab .== "fc2"] .= sph2cart(1.0, 45, 67.5)[1]
-    y[lab .== "fc2"] .= sph2cart(1.0, 45, 67.5)[2]
-    z[lab .== "fc2"] .= sph2cart(1.0, 45, 67.5)[3]
+    x[lab .== "c3"] .= sph2cart(1.0, 0, 135)[1]
+    y[lab .== "c3"] .= sph2cart(1.0, 0, 135)[2]
+    z[lab .== "c3"] .= sph2cart(1.0, 0, 135)[3]
 
-    x[lab .== "fc1"] .= sph2cart(1.0, 135, 67.5)[1]
-    y[lab .== "fc1"] .= sph2cart(1.0, 135, 67.5)[2]
-    z[lab .== "fc1"] .= sph2cart(1.0, 135, 67.5)[3]
+    x[lab .== "c5"] .= sph2cart(1.0, 0, 157.5)[1]
+    y[lab .== "c5"] .= sph2cart(1.0, 0, 157.5)[2]
+    z[lab .== "c5"] .= sph2cart(1.0, 0, 157.5)[3]
 
-    x[lab .== "cp1"] .= sph2cart(1.0, 225, 67.5)[1]
-    y[lab .== "cp1"] .= sph2cart(1.0, 225, 67.5)[2]
-    z[lab .== "cp1"] .= sph2cart(1.0, 225, 67.5)[3]
+    x[lab .== "t3" .|| lab .== "t7"] .= sph2cart(1.0, 0, 180)[1]
+    y[lab .== "t3" .|| lab .== "t7"] .= sph2cart(1.0, 0, 180)[2]
+    z[lab .== "t3" .|| lab .== "t7"] .= sph2cart(1.0, 0, 180)[3]
 
-    x[lab .== "cp2"] .= sph2cart(1.0, 315, 67.5)[1]
-    y[lab .== "cp2"] .= sph2cart(1.0, 315, 67.5)[2]
-    z[lab .== "cp2"] .= sph2cart(1.0, 315, 67.5)[3]
+    x[lab .== "fcz"] .= sph2cart(1.0, 90, 67.5)[1]
+    y[lab .== "fcz"] .= sph2cart(1.0, 90, 67.5)[2]
+    z[lab .== "fcz"] .= sph2cart(1.0, 90, 67.5)[3]
+
+    x[lab .== "fc2"] .= sph2cart(cosd(22.5), 0, 67.5)[1]
+    y[lab .== "fc2"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 67.5)[2]
+    z[lab .== "fc2"] .= sph2cart(cosd(22.5), 0, 67.5)[3]
+    
+    x[lab .== "fc4"] .= sph2cart(cosd(22.5), 0, 45)[1]
+    y[lab .== "fc4"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 45)[2]
+    z[lab .== "fc4"] .= sph2cart(cosd(22.5), 0, 45)[3]
+    
+    x[lab .== "fc6"] .= sph2cart(cosd(22.5), 0, 22.5)[1]
+    y[lab .== "fc6"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 22.5)[2]
+    z[lab .== "fc6"] .= sph2cart(cosd(22.5), 0, 22.5)[3]
+
+    x[lab .== "fc8"] .= sph2cart(cosd(22.5), 0, 0)[1]
+    y[lab .== "fc8"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 0)[2]
+    z[lab .== "fc8"] .= sph2cart(cosd(22.5), 0, 0)[3]
+
+    x[lab .== "fc1"] .= sph2cart(cosd(22.5), 0, 112.5)[1]
+    y[lab .== "fc1"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 112.5)[2]
+    z[lab .== "fc1"] .= sph2cart(cosd(22.5), 0, 112.5)[3]
+    
+    x[lab .== "fc3"] .= sph2cart(cosd(22.5), 0, 135)[1]
+    y[lab .== "fc3"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 135)[2]
+    z[lab .== "fc3"] .= sph2cart(cosd(22.5), 0, 135)[3]
+    
+    x[lab .== "fc5"] .= sph2cart(cosd(22.5), 0, 157.5)[1]
+    y[lab .== "fc5"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 157.5)[2]
+    z[lab .== "fc5"] .= sph2cart(cosd(22.5), 0, 157.5)[3]
+
+    x[lab .== "fc7"] .= sph2cart(cosd(22.5), 0, 180)[1]
+    y[lab .== "fc7"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 180)[2]
+    z[lab .== "fc7"] .= sph2cart(cosd(22.5), 0, 180)[3]
+
+    x[lab .== "fz"] .= sph2cart(1.0, 90, 45)[1]
+    y[lab .== "fz"] .= sph2cart(1.0, 90, 45)[2]
+    z[lab .== "fz"] .= sph2cart(1.0, 90, 45)[3]
+    
+    x[lab .== "f2"] .= sph2cart(cosd(45), 0, 67.5)[1]
+    y[lab .== "f2"] .= cosd(45) + sph2cart(cosd(45), 0, 67.5)[2]
+    z[lab .== "f2"] .= sph2cart(cosd(45), 0, 67.5)[3]
+    
+    x[lab .== "f4"] .= sph2cart(cosd(45), 0, 45)[1]
+    y[lab .== "f4"] .= cosd(45) + sph2cart(cosd(45), 0, 45)[2]
+    z[lab .== "f4"] .= sph2cart(cosd(45), 0, 45)[3]
+    
+    x[lab .== "f6"] .= sph2cart(cosd(45), 0, 22.5)[1]
+    y[lab .== "f6"] .= cosd(45) + sph2cart(cosd(45), 0, 22.5)[2]
+    z[lab .== "f6"] .= sph2cart(cosd(45), 0, 22.5)[3]
+    
+    x[lab .== "f8"] .= sph2cart(cosd(45), 0, 0)[1]
+    y[lab .== "f8"] .= cosd(45) + sph2cart(cosd(45), 0, 0)[2]
+    z[lab .== "f8"] .= sph2cart(cosd(45), 0, 0)[3]
+
+    x[lab .== "f1"] .= sph2cart(cosd(45), 0, 112.5)[1]
+    y[lab .== "f1"] .= cosd(45) + sph2cart(cosd(45), 0, 112.5)[2]
+    z[lab .== "f1"] .= sph2cart(cosd(45), 0, 112.5)[3]
+    
+    x[lab .== "f3"] .= sph2cart(cosd(45), 0, 135)[1]
+    y[lab .== "f3"] .= cosd(45) + sph2cart(cosd(45), 0, 135)[2]
+    z[lab .== "f3"] .= sph2cart(cosd(45), 0, 135)[3]
+    
+    x[lab .== "f5"] .= sph2cart(cosd(45), 0, 157.5)[1]
+    y[lab .== "f5"] .= cosd(45) + sph2cart(cosd(45), 0, 157.5)[2]
+    z[lab .== "f5"] .= sph2cart(cosd(45), 0, 157.5)[3]
+    
+    x[lab .== "f7"] .= sph2cart(cosd(45), 0, 180)[1]
+    y[lab .== "f7"] .= cosd(45) + sph2cart(cosd(45), 0, 180)[2]
+    z[lab .== "f7"] .= sph2cart(cosd(45), 0, 180)[3]
+    
+    x[lab .== "afz"] .= sph2cart(1.0, 90, 67.5)[1]
+    y[lab .== "afz"] .= sph2cart(1.0, 90, 67.5)[2]
+    z[lab .== "afz"] .= sph2cart(1.0, 90, 67.5)[3]
+        
+    x[lab .== "af2"] .= sph2cart(cosd(67.5), 0, 67.5)[1]
+    y[lab .== "af2"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 67.5)[2]
+    z[lab .== "af2"] .= sph2cart(cosd(67.5), 0, 67.5)[3]
+    
+    x[lab .== "af4"] .= sph2cart(cosd(67.5), 0, 45)[1]
+    y[lab .== "af4"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 45)[2]
+    z[lab .== "af4"] .= sph2cart(cosd(67.5), 0, 45)[3]
+    
+    x[lab .== "af6"] .= sph2cart(cosd(67.5), 0, 22.5)[1]
+    y[lab .== "af6"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 22.5)[2]
+    z[lab .== "af6"] .= sph2cart(cosd(67.5), 0, 22.5)[3]
+    
+    x[lab .== "af1"] .= sph2cart(cosd(67.5), 0, 112.5)[1]
+    y[lab .== "af1"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 112.5)[2]
+    z[lab .== "af1"] .= sph2cart(cosd(67.5), 0, 112.5)[3]
+    
+    x[lab .== "af3"] .= sph2cart(cosd(67.5), 0, 135)[1]
+    y[lab .== "af3"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 135)[2]
+    z[lab .== "af3"] .= sph2cart(cosd(67.5), 0, 135)[3]
+    
+    x[lab .== "af7"] .= sph2cart(cosd(67.5), 0, 157.5)[1]
+    y[lab .== "af7"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 157.5)[2]
+    z[lab .== "af7"] .= sph2cart(cosd(67.5), 0, 157.5)[3]
+
+    x[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[1]
+    y[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[2]
+    z[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[3]
+        
+    x[lab .== "fp2"] .= sph2cart(1.0, 67.5, 0)[1]
+    y[lab .== "fp2"] .= sph2cart(1.0, 67.5, 0)[2]
+    z[lab .== "fp2"] .= sph2cart(1.0, 67.5, 0)[3]
+        
+    x[lab .== "fp1"] .= sph2cart(1.0, 112.5, 0)[1]
+    y[lab .== "fp1"] .= sph2cart(1.0, 112.5, 0)[2]
+    z[lab .== "fp1"] .= sph2cart(1.0, 112.5, 0)[3]
+
+    x[lab .== "cpz"] .= sph2cart(1.0, 270, 67.5)[1]
+    y[lab .== "cpz"] .= sph2cart(1.0, 270, 67.5)[2]
+    z[lab .== "cpz"] .= sph2cart(1.0, 270, 67.5)[3]
+
+    x[lab .== "cp2"] .= sph2cart(cosd(22.5), 0, 67.5)[1]
+    y[lab .== "cp2"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 67.5)[2]
+    z[lab .== "cp2"] .= sph2cart(cosd(22.5), 0, 67.5)[3]
+    
+    x[lab .== "cp4"] .= sph2cart(cosd(22.5), 0, 45)[1]
+    y[lab .== "cp4"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 45)[2]
+    z[lab .== "cp4"] .= sph2cart(cosd(22.5), 0, 45)[3]
+    
+    x[lab .== "cp6"] .= sph2cart(cosd(22.5), 0, 22.5)[1]
+    y[lab .== "cp6"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 22.5)[2]
+    z[lab .== "cp6"] .= sph2cart(cosd(22.5), 0, 22.5)[3]
+    
+    x[lab .== "cp8" .|| lab .== "tp8"] .= sph2cart(cosd(22.5), 0, 0)[1]
+    y[lab .== "cp8" .|| lab .== "tp8"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 0)[2]
+    z[lab .== "cp8" .|| lab .== "tp8"] .= sph2cart(cosd(22.5), 0, 0)[3]
+
+    x[lab .== "cp1"] .= sph2cart(cosd(22.5), 0, 112.5)[1]
+    y[lab .== "cp1"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 112.5)[2]
+    z[lab .== "cp1"] .= sph2cart(cosd(22.5), 0, 112.5)[3]
+    
+    x[lab .== "cp3"] .= sph2cart(cosd(22.5), 0, 135)[1]
+    y[lab .== "cp3"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 135)[2]
+    z[lab .== "cp3"] .= sph2cart(cosd(22.5), 0, 135)[3]
+    
+    x[lab .== "cp5"] .= sph2cart(cosd(22.5), 0, 157.5)[1]
+    y[lab .== "cp5"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 157.5)[2]
+    z[lab .== "cp5"] .= sph2cart(cosd(22.5), 0, 157.5)[3]
+    
+    x[lab .== "cp7" .|| lab .== "tp7"] .= sph2cart(cosd(22.5), 0, 180)[1]
+    y[lab .== "cp7" .|| lab .== "tp7"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 180)[2]
+    z[lab .== "cp7" .|| lab .== "tp7"] .= sph2cart(cosd(22.5), 0, 180)[3]
+ 
+    x[lab .== "pz"] .= sph2cart(1.0, 270, 45)[1]
+    y[lab .== "pz"] .= sph2cart(1.0, 270, 45)[2]
+    z[lab .== "pz"] .= sph2cart(1.0, 270, 45)[3]
+
+    x[lab .== "p2"] .= sph2cart(cosd(45), 0, 67.5)[1]
+    y[lab .== "p2"] .= -cosd(45) + sph2cart(cosd(45), 0, 67.5)[2]
+    z[lab .== "p2"] .= sph2cart(cosd(45), 0, 67.5)[3]
+    
+    x[lab .== "p4"] .= sph2cart(cosd(45), 0, 45)[1]
+    y[lab .== "p4"] .= -cosd(45) + sph2cart(cosd(45), 0, 45)[2]
+    z[lab .== "p4"] .= sph2cart(cosd(45), 0, 45)[3]
+    
+    x[lab .== "p6"] .= sph2cart(cosd(45), 0, 22.5)[1]
+    y[lab .== "p6"] .= -cosd(45) + sph2cart(cosd(45), 0, 22.5)[2]
+    z[lab .== "p6"] .= sph2cart(cosd(45), 0, 22.5)[3]
+    
+    x[lab .== "p8" .|| lab .== "t6"] .= sph2cart(cosd(45), 0, 0)[1]
+    y[lab .== "p8" .|| lab .== "t6"] .= -cosd(45) + sph2cart(cosd(45), 0, 0)[2]
+    z[lab .== "p8" .|| lab .== "t6"] .= sph2cart(cosd(45), 0, 0)[3]
+
+    x[lab .== "p1"] .= sph2cart(cosd(45), 0, 112.5)[1]
+    y[lab .== "p1"] .= -cosd(45) + sph2cart(cosd(45), 0, 112.5)[2]
+    z[lab .== "p1"] .= sph2cart(cosd(45), 0, 112.5)[3]
+    
+    x[lab .== "p3"] .= sph2cart(cosd(45), 0, 135)[1]
+    y[lab .== "p3"] .= -cosd(45) + sph2cart(cosd(45), 0, 135)[2]
+    z[lab .== "p3"] .= sph2cart(cosd(45), 0, 135)[3]
+    
+    x[lab .== "p5"] .= sph2cart(cosd(45), 0, 157.5)[1]
+    y[lab .== "p5"] .= -cosd(45) + sph2cart(cosd(45), 0, 157.5)[2]
+    z[lab .== "p5"] .= sph2cart(cosd(45), 0, 157.5)[3]
+    
+    x[lab .== "p7" .|| lab .== "t5"] .= sph2cart(cosd(45), 0, 180)[1]
+    y[lab .== "p7" .|| lab .== "t5"] .= -cosd(45) + sph2cart(cosd(45), 0, 180)[2]
+    z[lab .== "p7" .|| lab .== "t5"] .= sph2cart(cosd(45), 0, 180)[3]
+ 
+    x[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[1]
+    y[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[2]
+    z[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[3]
+
+    x[lab .== "po2"] .= sph2cart(cosd(67.5), 0, 67.5)[1]
+    y[lab .== "po2"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 67.5)[2]
+    z[lab .== "po2"] .= sph2cart(cosd(67.5), 0, 67.5)[3]
+    
+    x[lab .== "po4"] .= sph2cart(cosd(67.5), 0, 45)[1]
+    y[lab .== "po4"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 45)[2]
+    z[lab .== "po4"] .= sph2cart(cosd(67.5), 0, 45)[3]
+    
+    x[lab .== "po6"] .= sph2cart(cosd(67.5), 0, 22.5)[1]
+    y[lab .== "po6"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 22.5)[2]
+    z[lab .== "po6"] .= sph2cart(cosd(67.5), 0, 22.5)[3]
+    
+    x[lab .== "po8"] .= sph2cart(cosd(67.5), 0, 0)[1]
+    y[lab .== "po8"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 0)[2]
+    z[lab .== "po8"] .= sph2cart(cosd(67.5), 0, 0)[3]
+    
+    x[lab .== "po1"] .= sph2cart(cosd(67.5), 0, 112.5)[1]
+    y[lab .== "po1"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 112.5)[2]
+    z[lab .== "po1"] .= sph2cart(cosd(67.5), 0, 112.5)[3]
+    
+    x[lab .== "po3"] .= sph2cart(cosd(67.5), 0, 135)[1]
+    y[lab .== "po3"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 135)[2]
+    z[lab .== "po3"] .= sph2cart(cosd(67.5), 0, 135)[3]
+    
+    x[lab .== "po5"] .= sph2cart(cosd(67.5), 0, 157.5)[1]
+    y[lab .== "po5"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 157.5)[2]
+    z[lab .== "po5"] .= sph2cart(cosd(67.5), 0, 157.5)[3]
+
+    x[lab .== "po7"] .= sph2cart(cosd(67.5), 0, 180)[1]
+    y[lab .== "po7"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 180)[2]
+    z[lab .== "po7"] .= sph2cart(cosd(67.5), 0, 180)[3]
+
+    x[lab .== "oz"] .= sph2cart(1.0, 270, 0)[1]
+    y[lab .== "oz"] .= sph2cart(1.0, 270, 0)[2]
+    z[lab .== "oz"] .= sph2cart(1.0, 270, 0)[3]
+
+    x[lab .== "o2"] .= sph2cart(1.0, 292.5, 0)[1]
+    y[lab .== "o2"] .= sph2cart(1.0, 292.5, 0)[2]
+    z[lab .== "o2"] .= sph2cart(1.0, 292.5, 0)[3]
+        
+    x[lab .== "o1"] .= sph2cart(1.0, 247.5, 0)[1]
+    y[lab .== "o1"] .= sph2cart(1.0, 247.5, 0)[2]
+    z[lab .== "o1"] .= sph2cart(1.0, 247.5, 0)[3]
 
     x[lab .== "a1"] .= -0.92
     y[lab .== "a1"] .= -0.23
@@ -247,128 +351,16 @@ function locs_generate(locs::DataFrame)
     y[lab .== "heog"] .= 0.77
     z[lab .== "heog"] .= -0.04
 
+    x = round.(x, digits=3)
+    y = round.(y, digits=3)
+    z = round.(z, digits=3)
+
     locs_new[:, :loc_x] = x
     locs_new[:, :loc_y] = y
     locs_new[:, :loc_z] = z
 
     locs_cart2sph!(locs_new) 
-   
-    # TO DO: generate polar coordinates
     locs_sph2pol!(locs_new) 
-
-    r[lab .== "afz"] .= 0.75
-    t[lab .== "afz"] .= 90
-
-    r[lab .== "fz"] .= 0.5
-    t[lab .== "fz"] .= 90
-
-    r[lab .== "fcz"] .= 0.25
-    t[lab .== "fcz"] .= 90
-
-    r[lab .== "cz"] .= 0
-    t[lab .== "cz"] .= 0
-
-    r[lab .== "cpz"] .= 0.25
-    t[lab .== "cpz"] .= 270
-
-    r[lab .== "pz"] .= 0.5
-    t[lab .== "pz"] .= 270
-
-    r[lab .== "poz"] .= 0.75
-    t[lab .== "poz"] .= 270
-
-    r[lab .== "c2"] .= 0.25
-    t[lab .== "c2"] .= 0
-
-    r[lab .== "c4"] .= 0.5
-    t[lab .== "c4"] .= 0
-
-    r[lab .== "c6"] .= 0.75
-    t[lab .== "c6"] .= 0
-
-    r[lab .== "t4" .|| lab .== "t8"] .= 1
-    t[lab .== "t4" .|| lab .== "t8"] .= 0
-
-    r[lab .== "c1"] .= 0.25
-    t[lab .== "c1"] .= 180
-
-    r[lab .== "c3"] .= 0.5
-    t[lab .== "c3"] .= 180
-
-    r[lab .== "c5"] .= 0.75
-    t[lab .== "c5"] .= 180
-
-    r[lab .== "fc8"] .= 1
-    t[lab .== "fc8"] .= 18
-    
-    r[lab .== "f8"] .= 1
-    t[lab .== "f8"] .= 36
-
-    r[lab .== "af8"] .= 1
-    t[lab .== "af8"] .= 54
-
-    r[lab .== "fp2"] .= 1
-    t[lab .== "fp2"] .= 72
-
-    r[lab .== "fpz"] .= 1
-    t[lab .== "fpz"] .= 90
-
-    r[lab .== "fp1"] .= 1
-    t[lab .== "fp1"] .= 108
-
-    r[lab .== "af7"] .= 1
-    t[lab .== "af7"] .= 126
-
-    r[lab .== "f7"] .= 1
-    t[lab .== "f7"] .= 144
-
-    r[lab .== "ft7"] .= 1
-    t[lab .== "ft7"] .= 162
-
-    r[lab .== "t3" .|| lab .== "t7"] .= 1
-    t[lab .== "t3" .|| lab .== "t7"] .= 180
-
-    r[lab .== "tp7"] .= 1
-    t[lab .== "tp7"] .= 198
-
-    r[lab .== "t5" .|| lab .== "p7"] .= 1
-    t[lab .== "t5" .|| lab .== "p7"] .= 216
-
-    r[lab .== "po7"] .= 1
-    t[lab .== "po7"] .= 234
-
-    r[lab .== "o1"] .= 1
-    t[lab .== "o1"] .= 252
-
-    r[lab .== "oz"] .= 1
-    t[lab .== "oz"] .= 270
-
-    r[lab .== "o2"] .= 1
-    t[lab .== "o2"] .= 288
-
-    r[lab .== "po8"] .= 1
-    t[lab .== "po8"] .= 306
-
-    r[lab .== "t6" .|| lab .== "p8"] .= 1
-    t[lab .== "t6" .|| lab .== "p8"] .= 324
-
-    r[lab .== "tp8"] .= 1
-    t[lab .== "tp8"] .= 342
-
-    r[lab .== "f4"] .= 0.5
-    t[lab .== "f4"] .= 45
-
-    r[lab .== "f3"] .= 0.5
-    t[lab .== "f3"] .= 135
-
-    r[lab .== "p3"] .= 0.5
-    t[lab .== "p3"] .= 225
-
-    r[lab .== "p4"] .= 0.5
-    t[lab .== "p4"] .= 225
-
-    locs_new[:, :loc_radius] = r
-    locs_new[:, :loc_theta] = t
 
     return locs_new
 
