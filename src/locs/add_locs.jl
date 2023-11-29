@@ -59,7 +59,6 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
         obj_new.locs[l_idx, :loc_theta_sph] = locs[idx, :loc_theta_sph]
         obj_new.locs[l_idx, :loc_phi_sph] = locs[idx, :loc_phi_sph]
     end
-    obj_new.locs = locs
 
     # add entry to :history field
     push!(obj_new.history, "add_locs(OBJ, locs)")
