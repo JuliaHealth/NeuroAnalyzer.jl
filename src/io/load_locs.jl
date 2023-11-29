@@ -129,7 +129,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && _warn("Some labels: $(uppercase.(no_match)) were not found in $file_name")
+    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) were not found in $file_name")
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
@@ -143,15 +143,17 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.locs = DataFrame(:labels=>f_labels[labels_idx],
-                             :loc_radius=>loc_radius[labels_idx],
-                             :loc_theta=>loc_theta[labels_idx],
-                             :loc_x=>loc_x[labels_idx],
-                             :loc_y=>loc_y[labels_idx],
-                             :loc_z=>loc_z[labels_idx],
-                             :loc_radius_sph=>loc_radius_sph[labels_idx],
-                             :loc_theta_sph=>loc_theta_sph[labels_idx],
-                             :loc_phi_sph=>loc_phi_sph[labels_idx])
+    for idx in labels_idx
+        l_idx = findfirst(e_labels .== lowercase.(f_labels)[idx])
+        obj_new.locs[l_idx, :loc_radius] = loc_radius[idx]
+        obj_new.locs[l_idx, :loc_theta] = loc_theta[idx]
+        obj_new.locs[l_idx, :loc_x] = loc_x[idx]
+        obj_new.locs[l_idx, :loc_y] = loc_y[idx]
+        obj_new.locs[l_idx, :loc_z] = loc_z[idx]
+        obj_new.locs[l_idx, :loc_radius_sph] = loc_radius_sph[idx]
+        obj_new.locs[l_idx, :loc_theta_sph] = loc_theta_sph[idx]
+        obj_new.locs[l_idx, :loc_phi_sph] = loc_phi_sph[idx]
+    end
 
     _locs_round!(obj_new.locs)
     _locs_remove_nans!(obj_new.locs)

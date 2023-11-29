@@ -34,7 +34,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, f_labels)
 
-    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) not found in the LOCS object")
+    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) were not found in the LOCS object")
     
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
@@ -48,6 +48,17 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     # create new dataset
     obj_new = deepcopy(obj)
+    for idx in labels_idx
+        l_idx = findfirst(e_labels .== lowercase.(f_labels)[idx])
+        obj_new.locs[l_idx, :loc_radius] = locs[idx, :loc_radius]
+        obj_new.locs[l_idx, :loc_theta] = locs[idx, :loc_theta]
+        obj_new.locs[l_idx, :loc_x] = locs[idx, :loc_x]
+        obj_new.locs[l_idx, :loc_y] = locs[idx, :loc_y]
+        obj_new.locs[l_idx, :loc_z] = locs[idx, :loc_z]
+        obj_new.locs[l_idx, :loc_radius_sph] = locs[idx, :loc_radius_sph]
+        obj_new.locs[l_idx, :loc_theta_sph] = locs[idx, :loc_theta_sph]
+        obj_new.locs[l_idx, :loc_phi_sph] = locs[idx, :loc_phi_sph]
+    end
     obj_new.locs = locs
 
     # add entry to :history field
