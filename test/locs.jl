@@ -9,11 +9,11 @@ locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 @info "test 1/21: add_locs()"
 eeg_tmp = add_locs(eeg, locs=locs)
 @test NeuroAnalyzer._has_locs(eeg_tmp) == true
-@test nrow(eeg_tmp.locs) == 19
+@test nrow(eeg_tmp.locs) == 23
 @test NeuroAnalyzer._has_locs(eeg) == true
 add_locs!(eeg, locs=locs)
 @test NeuroAnalyzer._has_locs(eeg) == true
-@test nrow(eeg.locs) == 19
+@test nrow(eeg.locs) == 23
 
 @info "test 2/21: locs_details()"
 @test locs_details(eeg, ch=1, out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
@@ -167,9 +167,9 @@ locs2 = locs_rotz(locs, a=20)
 @test locs2[1, :loc_phi_sph] == -1.87
 
 @info "test 24/24: locs_generate()"
-eeg_tmp = deepcopy(eeg)
-locs_tmp = deepcopy(locs)
-@test locs_generate(locs_tmp) isa DataFrame
-@test locs_generate(eeg_tmp) isa DataFrame
+locs_tmp = locs_generate(locs_tmp)
+eeg_tmp = locs_generate(eeg_tmp)
+@test locs_tmp isa DataFrame
+@test eeg_tmp isa NeuroAnalyzer.NEURO
 
 true

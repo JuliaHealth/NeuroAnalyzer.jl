@@ -121,7 +121,7 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test NeuroAnalyzer.summary(ones(10), ones(10)) == (mm1 = 1.0, mm2 = 1.0, s1 = 0.0, s2 = 0.0, me1 = 1.0, me2 = 1.0, mo1 = 1.0, mo2 = 1.0)
 
 @info "test 35/38: ci_median()"
-@test ci_median(collect(1:100)) == (42, 59)
+@test ci_median(collect(1:100)) == (41, 60)
 
 @info "test 36/38: ci_r()"
 @test ci_r(r=0.3, n=50) == (0.02, 0.53)

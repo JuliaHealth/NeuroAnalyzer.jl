@@ -89,6 +89,7 @@ l = import_locs_mat(joinpath(testfiles_path, "locs.mat"))
 @test l isa DataFrame
 
 @info "test 18/29: load_locs()"
+eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 @test NeuroAnalyzer._has_locs(eeg) == true
 
