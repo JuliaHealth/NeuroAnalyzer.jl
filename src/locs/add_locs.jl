@@ -34,7 +34,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, f_labels)
 
-    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) were not found in the LOCS object")
+    length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.")
     
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
@@ -92,7 +92,6 @@ Electrode locations:
 function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     obj_new = add_locs(obj, locs=locs)
-    obj.header = obj_new.header
     obj.history = obj_new.history
     obj.locs = obj_new.locs
 

@@ -133,7 +133,7 @@ locs2 = locs_swapxy(locs)
 @test locs2[1, :loc_theta] == 198.0
 @test locs2[1, :loc_theta_sph] == -161.93
 
-@info "test 21/23: locs_rotx()"
+@info "test 21/24: locs_rotx()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.02
@@ -144,7 +144,7 @@ locs2 = locs_rotx(locs, a=20)
 @test locs2[1, :loc_theta_sph] == 108.95
 @test locs2[1, :loc_phi_sph] == 17.27
 
-@info "test 22/23: locs_roty()"
+@info "test 22/24: locs_roty()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.02
@@ -155,7 +155,7 @@ locs2 = locs_roty(locs, a=20)
 @test locs2[1, :loc_theta_sph] == 107.61
 @test locs2[1, :loc_phi_sph] == 4.47
 
-@info "test 23/23: locs_rotz()"
+@info "test 23/24: locs_rotz()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.02
@@ -165,5 +165,11 @@ locs2 = locs_rotz(locs, a=20)
 @test locs2[1, :loc_theta] == 128.0
 @test locs2[1, :loc_theta_sph] == 132.1
 @test locs2[1, :loc_phi_sph] == -1.87
+
+@info "test 24/24: locs_generate()"
+eeg_tmp = deepcopy(eeg)
+locs_tmp = deepcopy(locs)
+@test locs_generate(locs_tmp) isa DataFrame
+@test locs_generate(eeg_tmp) isa DataFrame
 
 true

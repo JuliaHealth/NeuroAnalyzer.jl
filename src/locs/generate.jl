@@ -27,6 +27,8 @@ function locs_generate(locs::DataFrame)
     r = zeros(length(lab))
     t = zeros(length(lab))
 
+    e_labels = ["cz", "c2", "c4", "c6", "t4", "t8", "c1", "c3", "c5", "t3","t7", "fcz", "fc2", "fc4", "fc6", "fc8", "fc1", "fc3", "fc5", "fc7", "fz", "f2", "f4", "f6", "f8", "f1", "f3", "f5", "f7", "afz", "af2", "af4", "af6", "af1", "af3", "af7", "fpz", "fp2", "fp1", "cpz", "cp2", "cp4", "cp6", "cp8","tp8", "cp1", "cp3", "cp5", "cp7","tp7", "pz", "p2", "p4", "p6", "p8","t6", "p1", "p3", "p5", "p7","t5", "poz", "po2", "po4", "po6", "po8", "po1", "po3", "po5", "po7", "oz", "o2", "o1", "a1", "a2", "m1", "m2", "emg1", "emg2", "eog1", "eog2", "veog1", "veog2", "heog1", "heog2", "veog", "heog"]
+
     x[lab .== "cz"] .= sph2cart(1.0, 0, 90)[1]
     y[lab .== "cz"] .= sph2cart(1.0, 0, 90)[2]
     z[lab .== "cz"] .= sph2cart(1.0, 0, 90)[3]
@@ -362,6 +364,10 @@ function locs_generate(locs::DataFrame)
     locs_cart2sph!(locs_new) 
     locs_sph2pol!(locs_new) 
 
+    f_labels = lowercase.(locs[!, :labels])
+    no_match = setdiff(f_labels, e_labels)
+    length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be generated.")
+
     return locs_new
 
 end
@@ -387,6 +393,51 @@ function locs_generate!(locs::DataFrame)
     locs[:, :loc_radius_sph] = locs_tmp[:, :loc_radius_sph]
     locs[:, :loc_theta_sph] = locs_tmp[:, :loc_theta_sph]
     locs[:, :loc_phi_sph] = locs_tmp[:, :loc_phi_sph]
+
+    return nothing
+
+end
+
+"""
+    locs_generate(obj)
+
+Generate spherical coordinates according to 10/5 system.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function locs_generate(obj::NeuroAnalyzer.NEURO)
+
+    obj_new = deepcopy(obj)
+    locs = locs_generate(obj.locs)
+    obj_new.locs = locs
+
+    # add entry to :history field
+    push!(obj_new.history, "locs_generate(OBJ)")
+
+    return obj_new
+
+end
+
+"""
+    locs_generate!(obj)
+
+Generate spherical coordinates according to 10/5 system.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+"""
+function locs_generate!(obj::NeuroAnalyzer.NEURO)
+
+    obj_new = locs_generate(obj)
+    obj.history = obj_new.history
+    obj.locs = obj_new.locs
 
     return nothing
 

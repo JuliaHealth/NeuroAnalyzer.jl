@@ -129,7 +129,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && _warn("Labels: $(uppercase.(no_match)) were not found in $file_name")
+    length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name")
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
