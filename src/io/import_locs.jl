@@ -7,6 +7,7 @@ export import_locs_tsv
 export import_locs_sfp
 export import_locs_geo
 export import_locs_mat
+export import_locs_txt
 
 """
     import_locs(file_name)
@@ -20,6 +21,7 @@ Load channel locations. Supported formats:
 - CSD
 - GEO
 - MAT
+- TXT
 
 This is a meta-function that triggers appropriate `import_locs_*()` function. File format is detected based on file extension.
 
@@ -54,6 +56,8 @@ function import_locs(file_name::String)
         locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
         locs = import_locs_mat(file_name)
+    elseif splitext(file_name)[2] == ".txt"
+        locs = import_locs_txt(file_name)
     else
         @error "Unknown file format."
     end
@@ -348,6 +352,10 @@ function import_locs_sfp(file_name::String)
 
     locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
+    # center X-axis at 0, 0, 0
+    x_range = (maximum(x) + abs(minimum(x))) / 2
+    locs[:, :loc_x] .-= x_range
+
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
@@ -517,4 +525,69 @@ function import_locs_mat(file_name::String)
 
     return locs
     
+end
+
+"""
+    import_locs_txt(file_name)
+
+Load channel locations from TXT file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function import_locs_txt(file_name::String)
+
+    @assert isfile(file_name) "$file_name not found."
+    @assert splitext(file_name)[2] == ".txt" "This is not TXT file."
+
+    locs = CSV.read(file_name, header=true, delim="\t", stringtype=String, DataFrame)
+
+    DataFrames.rename!(locs, [:labels, :theta, :phi])
+    clabels = lstrip.(locs[!, "labels"])
+
+    x = zeros(length(clabels))
+    y = zeros(length(clabels))
+    z = zeros(length(clabels))
+
+    radius_sph = ones(length(clabels))
+    theta_sph = Float64.(locs[!, "theta"])
+    phi_sph = Float64.(locs[!, "phi"])
+
+    radius = radius_sph
+    theta = theta_sph
+
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+
+    locs_sph2cart!(locs)
+    locs_swapxy!(locs, polar=false, cart=true, spherical=false)
+    locs_rotx!(locs, a=90, polar=false, cart=true, spherical=false)
+
+    q1_idx = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .>= 0 
+    q2_idx = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .>= 0 
+    q3_idx = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .< 0 
+    q4_idx = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .< 0 
+
+    x = locs[!, :loc_x]
+    y = locs[!, :loc_y]
+
+    locs[q1_idx, :loc_x] .= -locs[q1_idx, :loc_x]
+    locs[q2_idx, :loc_x] .= -locs[q2_idx, :loc_x]
+    locs[q2_idx, :loc_y] .= -locs[q2_idx, :loc_y]
+    locs[q3_idx, :loc_x] .= -locs[q3_idx, :loc_x]
+    locs[q3_idx, :loc_y] .= -locs[q3_idx, :loc_y]
+    locs[q4_idx, :loc_x] .= -locs[q4_idx, :loc_x]
+
+    locs_cart2sph!(locs)
+    locs_sph2pol!(locs)
+
+    locs_normalize!(locs)
+    _locs_round!(locs)
+
+    return locs
+
 end
