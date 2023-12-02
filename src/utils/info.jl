@@ -340,6 +340,10 @@ function info(obj::NeuroAnalyzer.NEURO)
                 rpad("label", 16) * 
                 rpad("type", 12) * 
                 rpad("unit", 8))
+        println(" " * repeat("-", 6) * " " * 
+                repeat("-", 15) * " " * 
+                repeat("-", 11) * " " * 
+                repeat("-", 7))
         for idx in eachindex(obj.header.recording[:labels])
             println(rpad(" $idx", 8) * 
                     rpad("$(obj.header.recording[:labels][idx])", 16) * 
