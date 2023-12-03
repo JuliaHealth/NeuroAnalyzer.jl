@@ -24,9 +24,6 @@ function locs_generate(locs::DataFrame)
     y = zeros(length(lab))
     z = zeros(length(lab))
 
-    r = zeros(length(lab))
-    t = zeros(length(lab))
-
     e_labels = ["cz", "c2", "c4", "c6", "t4", "t8", "t10", "c1", "c3", "c5", "t3", "t7", "t9", "fcz", "fc2", "fc4", "fc6", "fc8", "ft8", "fc10", "ft10", "fc1", "fc3", "fc5", "fc7", "ft7", "fc9", "ft9", "fz", "f2", "f4", "f6", "f8", "f10", "f1", "f3", "f5", "f7", "f9", "afz", "af2", "af4", "af6", "af1", "af3", "af7", "fpz", "fp2", "fp1", "cpz", "cp2", "cp4", "cp6", "cp8", "tp8", "tp10", "cp1", "cp3", "cp5", "cp7", "tp7", "tp9", "pz", "p2", "p4", "p6", "p8", "p10", "t6", "p1", "p3", "p5", "p7", "p9", "t5", "poz", "po2", "po4", "po6", "po8", "po1", "po3", "po5", "po7", "oz", "o2", "o1", "a1", "a2", "m1", "m2", "emg1", "emg2", "eog1", "eog2", "veog1", "veog2", "heog1", "heog2", "veog", "heog"]
 
     x[lab .== "cz"] .= sph2cart(1.0, 0, 90)[1]

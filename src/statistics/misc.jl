@@ -13,6 +13,7 @@ export ci_median
 export ci_r
 export ci2z
 export r_test
+export slope
 
 """
     z_score(x)
@@ -413,3 +414,5 @@ function r_test(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)
 
 end
 
+slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real}) = (p2[2] - p1[2]) / (p2[1] - p1[1])
+distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real}) = sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
