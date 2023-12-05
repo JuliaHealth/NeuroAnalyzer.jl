@@ -27,13 +27,13 @@ s = create_study([eeg1, eeg2], [:a, :b])
 @info "test 6/8: sr()"
 @test sr(s) == 256
 
-@info "test 7/8: save()"
+@info "test 7/8: save_study()"
 isfile("test.hdf5") && rm("test.hdf5")
-NeuroAnalyzer.save(s, file_name="test.hdf5")
+NeuroAnalyzer.save_study(s, file_name="test.hdf5")
 @test isfile("test.hdf5") == true
 
-@info "test 8/8: load()"
-s = NeuroAnalyzer.load("test.hdf5")
+@info "test 8/8: load_study()"
+s = NeuroAnalyzer.load_study("test.hdf5")
 @test s isa NeuroAnalyzer.STUDY
 isfile("test.hdf5") && rm("test.hdf5")
 

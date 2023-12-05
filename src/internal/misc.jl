@@ -79,3 +79,22 @@ function _s2ti(s::String)
     s = replace(s, ")"=>"")
     return (parse(Int64, split(s, ",")[1]), parse(Int64, split(s, ",")[2]))
 end
+
+function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_type::String)
+    if count(occursin.("-", clabels[ch_type .== data_type])) == length(clabels[ch_type .== data_type])
+        m = match.(r"(.+)\-(.+)", clabels)
+        r = String[]
+        for idx in 1:length(m)
+            push!(r, m[idx].captures[2])
+        end
+        if length(unique(r)) == 1
+            occursin("a", lowercase(r[1])) && return "A"
+            occursin("m", lowercase(r[1])) && return "M"
+            return "CAR"
+        else
+            return "bipolar"
+        end
+    else
+        return "physical"
+    end
+end

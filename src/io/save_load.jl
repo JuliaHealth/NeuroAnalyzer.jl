@@ -1,5 +1,7 @@
 export save
 export load
+export save_study
+export load_study
 
 """
     save(obj; file_name, overwrite)
@@ -52,7 +54,7 @@ function load(file_name::String)
 end
 
 """
-    save(obj; file_name, overwrite)
+    save_study(obj; file_name, overwrite)
 
 Save `NeuroAnalyzer.STUDY` object to `file_name` file (HDF5-based).
 
@@ -62,7 +64,7 @@ Save `NeuroAnalyzer.STUDY` object to `file_name` file (HDF5-based).
 - `file_name::String`: name of the file to save to
 - `overwrite::Bool=false`
 """
-function save(obj::NeuroAnalyzer.STUDY; file_name::String, overwrite::Bool=false)
+function save_study(obj::NeuroAnalyzer.STUDY; file_name::String, overwrite::Bool=false)
 
     @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
     JLD2.save_object(file_name, obj)
@@ -70,7 +72,7 @@ function save(obj::NeuroAnalyzer.STUDY; file_name::String, overwrite::Bool=false
 end
 
 """
-    load(file_name)
+    load_study(file_name)
 
 Load `NeuroAnalyzer.STUDY` object from `file_name` file (HDF5-based).
 
@@ -82,7 +84,7 @@ Load `NeuroAnalyzer.STUDY` object from `file_name` file (HDF5-based).
 
 - `obj::NeuroAnalyzer.STUDY`
 """
-function load(file_name::String)
+function load_study(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
