@@ -26,7 +26,7 @@ function test_pipeline(eeg::NeuroAnalyzer.NEURO, pl_frq::Real=50, lp::Real=45, h
     NeuroAnalyzer.filter!(eeg_processed, fprototype=:fir, ftype=:lp, cutoff=lp, order=8)
     
     # re-reference to common average
-    eeg_processed = reference_car(eeg)
+    eeg_processed = reference_avg(eeg)
 
     return eeg_processed
     

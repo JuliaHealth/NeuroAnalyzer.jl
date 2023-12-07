@@ -3,9 +3,9 @@ export import_montage
 """
     import_montage(file_name)
 
-Load montage from a text file. The structure of the file is:
+Load montage from a text file. Example montage files are located in the `montages/` folder. The structure of the file is:
 
-- first line: name of the montage, e.g. `BIP ||`
+- first line: name of the montage, e.g. `longitudinal-BIP`
 - next lines: channel pairs or individual channels, e.g. `Fz-Cz` or `Fp1`
 
 Each channel/channel pair must be in a separate line
