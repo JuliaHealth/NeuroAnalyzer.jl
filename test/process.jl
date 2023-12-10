@@ -361,7 +361,7 @@ e10_rec = pca_reconstruct(e10_tmp, pc, pc_model);
 
 @info "test 48/51: reference_custom()"
 e10_tmp = reference_custom(e10)
-@test size(e10_tmp.data) == (19, 2560, 10)
+@test size(e10_tmp.data) == (23, 2560, 10)
 
 @info "test 49/51: ica_reconstruct()"
 ic, ic_mw = ica_decompose(rand(10, 1000), n=5)

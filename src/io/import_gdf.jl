@@ -46,7 +46,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     file_type_ver = parse(Float64, String(Char.(header[5:8])))
     @assert file_type == "GDF" "File $file_name is not GDF file."
 
-    (file_type_ver == 1.25 || file_type_ver == 2.20) || _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly. ")
+    (file_type_ver == 1.25 || file_type_ver == 2.20) || _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly.")
 
     if file_type_ver < 2.00
 
