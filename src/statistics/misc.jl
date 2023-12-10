@@ -14,6 +14,7 @@ export ci_r
 export ci2z
 export r_test
 export slope
+export distance
 
 """
     z_score(x)
