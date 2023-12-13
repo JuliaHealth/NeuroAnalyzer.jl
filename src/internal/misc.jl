@@ -95,7 +95,7 @@ function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_
             return "bipolar"
         end
     end
-    m = match.(r"(.+)(\d{1})(.+)(\d{1})", clabels[ch_type .== data_type])
+    m = match.(r"([A-Z, a-z]+)([0:9]+[0:9]?)(.+)([0:9]+)", clabels[ch_type .== data_type])
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
         for idx in 1:length(m)
