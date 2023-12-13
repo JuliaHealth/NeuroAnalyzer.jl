@@ -81,16 +81,30 @@ function _s2ti(s::String)
 end
 
 function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_type::String)
-    if count(occursin.("-", clabels[ch_type .== data_type])) == length(clabels[ch_type .== data_type])
-        m = match.(r"(.+)\-(.+)", clabels)
+    m = match.(r"(.+)\-(.+)", clabels[ch_type .== data_type])
+    if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
         for idx in 1:length(m)
             push!(r, m[idx].captures[2])
         end
         if length(unique(r)) == 1
-            occursin("a", lowercase(r[1])) && return "A"
-            occursin("m", lowercase(r[1])) && return "M"
-            return "CAR"
+            occursin("a", lowercase(r[1])) && return "common (A)"
+            occursin("m", lowercase(r[1])) && return "common (M)"
+            return "common"
+        else
+            return "bipolar"
+        end
+    end
+    m = match.(r"(.+)(\d{1})(.+)(\d{1})", clabels[ch_type .== data_type])
+    if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
+        r = String[]
+        for idx in 1:length(m)
+            push!(r, m[idx].captures[3])
+        end
+        if length(unique(r)) == 1
+            occursin("a", lowercase(r[1])) && return "common (A)"
+            occursin("m", lowercase(r[1])) && return "common (M)"
+            return "common"
         else
             return "bipolar"
         end

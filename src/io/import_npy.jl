@@ -30,25 +30,6 @@ function import_npy(file_name::String; sampling_rate::Int64)
         push!(clabels, "ch_$idx")
     end
 
-    x = zeros(ch_n)
-    y = zeros(ch_n)
-    z = zeros(ch_n)
-    theta = zeros(ch_n)
-    radius = zeros(ch_n)
-    phi_sph = zeros(ch_n)
-    radius_sph = zeros(ch_n)
-    theta_sph = zeros(ch_n)
-    radius_sph == zeros(ch_n) && (radius_sph = radius)
-    locs = DataFrame(:labels=>clabels,
-                     :loc_theta=>theta,
-                     :loc_radius=>radius,
-                     :loc_x=>x,
-                     :loc_y=>y,
-                     :loc_z=>z,
-                     :loc_radius_sph=>radius_sph,
-                     :loc_theta_sph=>theta_sph,
-                     :loc_phi_sph=>phi_sph)
-
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
@@ -93,7 +74,9 @@ function import_npy(file_name::String; sampling_rate::Int64)
     components = Dict()
     history = String[]
 
+    locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 

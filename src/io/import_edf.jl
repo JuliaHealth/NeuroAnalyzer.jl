@@ -312,7 +312,6 @@ function import_edf(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
     _initialize_locs!(obj)
     

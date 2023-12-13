@@ -371,7 +371,8 @@ function import_bv(file_name::String; detect_type::Bool=true)
     history = String[]
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[channel_order, :, :], components, markers, locs, history)
-
+    nrow(locs) == 0 && _initialize_locs!(obj)
+    
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 
     return obj

@@ -31,6 +31,8 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         error("File $file_name cannot be loaded.")
     end
 
+    _info("Loading Alice4 EDF format")
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -297,8 +299,8 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
+    _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 

@@ -41,8 +41,8 @@ const channel_units = ["μV",
                        ""]
 const fiducial_points = (nasion = (0.0, 0.95, -0.2),
                          inion  = (0.0, -0.96, -0.2),
-                         lra    = (-0.98, 0.0, -0.2),
-                         rla    = (0.98, 0.0, -0.2))
+                         lpa    = (-0.98, 0.0, -0.2),
+                         rpa    = (0.98, 0.0, -0.2))
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))

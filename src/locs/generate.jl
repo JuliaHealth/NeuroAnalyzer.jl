@@ -378,9 +378,17 @@ function locs_generate(locs::DataFrame)
     y[lab .== "heog1"] .= 0.77
     z[lab .== "heog1"] .= -0.04
 
+    x[lab .== "leog"] .= -0.64
+    y[lab .== "leog"] .= 0.77
+    z[lab .== "leog"] .= -0.04
+
     x[lab .== "heog2"] .= 0.64
     y[lab .== "heog2"] .= 0.77
     z[lab .== "heog2"] .= -0.04
+
+    x[lab .== "reog"] .= 0.64
+    y[lab .== "reog"] .= 0.77
+    z[lab .== "reog"] .= -0.04
 
     x[lab .== "veog"] .= 0.87
     y[lab .== "veog"] .= 0.51

@@ -174,15 +174,7 @@ function import_set(file_name::String; detect_type::Bool=true)
             locs_normalize!(locs)
         end
     else
-        locs = DataFrame(:labels=>String[],
-                         :loc_theta=>Float64[],
-                         :loc_radius=>Float64[],
-                         :loc_x=>Float64[],
-                         :loc_y=>Float64[],
-                         :loc_z=>Float64[],
-                         :loc_radius_sph=>Float64[],
-                         :loc_theta_sph=>Float64[],
-                         :loc_phi_sph=>Float64[])
+        locs = _initialize_locs()
     end
 
     # MARKERS
@@ -265,6 +257,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     history = history
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 
