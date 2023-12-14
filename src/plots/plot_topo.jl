@@ -79,7 +79,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     origin = size(head_shape) ./ 2
     if large
         marker_size = 6
-        font_size = 14
+        font_size = 12
         loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
         !occursin("\n", title) && title !== "" && (title *= "\n")
