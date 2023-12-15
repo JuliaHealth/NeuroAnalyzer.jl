@@ -18,7 +18,8 @@ function derivative(s::AbstractVector)
 
     s_der = diff(s)
     
-    return vcat(s_der, s_der[end])
+    # return vcat(s_der, s_der[end])
+    return vcat(s[1], s_der)
 
 end
 
