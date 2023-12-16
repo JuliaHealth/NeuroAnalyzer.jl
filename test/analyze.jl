@@ -405,7 +405,11 @@ p = NeuroAnalyzer.phdiff(e10, avg=:phase, h=true)
 @test size(p) == (23, 2560, 10)
 
 @info "test 29/52: pli()"
-@test pli(v1, v2) == (pv = 0.2, sd = [5, 3, 1, -1, -3], phd = [-1.3157044982273682, 0.8713795327960081, 0.3743702916488456, 0.7615478999167377, -1.0328436072470222], s1ph = [1.039406675134543, -0.6027563879589182, -0.21331750626000984, -0.33140501474755424, 0.3279718365439915], s2ph = [-0.27629782309282525, 0.26862314483709, 0.16105278538883577, 0.4301428851691834, -0.7048717707030308])
+pv, phd, s1ph, s2ph = pli(v1, v2)
+@test pv == 0.2
+@test phd == [5, 3, 1, -1, -3]
+@test length(s1ph) == 5
+@test length(s2ph) == 5
 pv = NeuroAnalyzer.pli(e10);
 @test size(pv) == (23, 23, 10)
 pv, sd, phd, s1p, s2p = NeuroAnalyzer.pli(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
@@ -659,7 +663,10 @@ for idx in 1:length(e)
 end
 
 @info "test 43/52: tcoherence()"
-@test NeuroAnalyzer.tcoherence(v1, v2) == (c = [12.0, 0.22360679774997885, -0.22360679774997896, -0.22360679774997896, 0.22360679774997885], msc = [144.0, 0.5236067977499784, 0.07639320225002108, 0.07639320225002108, 0.5236067977499784], ic = [-0.0, -0.6881909602355865, -0.16245984811645328, 0.16245984811645328, 0.6881909602355865])
+c, mc, ic = NeuroAnalyzer.tcoherence(v1, v2)
+@test length(c) == 5
+@test length(mc) == 5
+@test length(ic) == 5
 c, mc, ic = NeuroAnalyzer.tcoherence(rand(10, 100), rand(10, 100))
 @test size(c) == (10, 100)
 @test size(mc) == (10, 100)

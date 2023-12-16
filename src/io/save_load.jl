@@ -47,7 +47,7 @@ function load(file_name::String)
 
     obj = JLD2.load_object(file_name)
 
-    _info("Loaded: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=1)) s)")
+    _info("Loaded: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
 
     return obj
 
