@@ -4,7 +4,7 @@ export derivative!
 """
     derivative(s)
 
-Return derivative of the same length.
+Return derivative (calculated using finite difference operator) of the same length (first element copied from the source).
 
 # Arguments
 
@@ -55,7 +55,7 @@ end
 """
     derivative(obj; ch)
 
-Return derivative of the same length.
+Return derivative (calculated using finite difference operator) of the same length (first element copied from the source).
 
 # Arguments
 
@@ -82,7 +82,7 @@ end
 """
     derivative!(obj; ch)
 
-Return derivative of the same length.
+Return derivative (calculated using finite difference operator) of the same length (first element copied from the source).
 
 # Arguments
 

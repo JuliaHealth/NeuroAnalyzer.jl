@@ -288,6 +288,35 @@ function ci_median(x::AbstractVector; ci_level::Float64=0.95)
 
 end
 
+
+"""
+    ci_median(x; ci_level)
+
+Calculate confidence interval for a median.
+
+# Arguments
+
+- `x::AbstractArray`
+- `ci_level::Float64=0.95`: confidence level
+
+# Returns
+
+- `ci_median::Tuple(Float64, Float64)`
+"""
+function ci_median(x::AbstractArray; ci_level::Float64=0.95)
+
+    x_new = sort(vec(median(x, dims=1)))
+    n = size(x, 2)
+    q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
+    z = ci2z(ci_level)
+
+    j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
+    k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
+
+    return (x_new[j], x_new[k])
+
+end
+
 """
     ci_r(x, y; ci_level)
 
