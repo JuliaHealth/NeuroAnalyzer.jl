@@ -4,7 +4,7 @@ export derivative!
 """
     derivative(s)
 
-Return derivative (calculated using finite difference operator) of the same length (first element copied from the source).
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 
@@ -16,17 +16,20 @@ Return derivative (calculated using finite difference operator) of the same leng
 """
 function derivative(s::AbstractVector)
 
-    s_der = diff(s)
-    
-    # return vcat(s_der, s_der[end])
-    return vcat(s[1], s_der)
+    @assert length(s) > 2 "Signal length must be > 2."
+
+    s_new = diff(s)
+    first = vcat(s_new[1], s_new)
+    last = vcat(s_new, s_new[end])
+
+    return (first + last) / 2
 
 end
 
 """
     derivative(s)
 
-Return derivative of the same length.
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 
@@ -55,7 +58,7 @@ end
 """
     derivative(obj; ch)
 
-Return derivative (calculated using finite difference operator) of the same length (first element copied from the source).
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 
@@ -82,7 +85,7 @@ end
 """
     derivative!(obj; ch)
 
-Return derivative (calculated using finite difference operator) of the same length (first element copied from the source).
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 

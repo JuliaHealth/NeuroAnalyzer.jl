@@ -80,7 +80,7 @@ e10_tmp = denoise_wien(e10)
 
 @info "test 10/51: derivative()"
 @test NeuroAnalyzer.derivative(v1) == [1, 1, 1, 1, 1]
-@test NeuroAnalyzer.derivative(a1) == [1.0 0.0 0.0; 1.0 0.0 0.0;;; 1.0 0.0 0.0; 1.0 0.0 0.0]
+@test NeuroAnalyzer.derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
 e10_tmp = NeuroAnalyzer.derivative(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 

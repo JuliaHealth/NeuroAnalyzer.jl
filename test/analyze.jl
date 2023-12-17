@@ -758,7 +758,7 @@ c, mc, ic = NeuroAnalyzer.tcoherence(e10, e10, ch1=1:10, ch2=1:10, ep1=1, ep2=2)
 @info "test 44/54: tkeo()"
 @test NeuroAnalyzer.tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
 @test NeuroAnalyzer.tkeo(a1) == [1.0 0.0 1.0; 1.0 0.0 1.0;;; 1.0 0.0 1.0; 1.0 0.0 1.0]
-t = NeuroAnalyzer.tkeo(e10)
+t = NeuroAnalyzer.tkeo(e10, method=:pow)
 @test size(t) == (23, 2560, 10)
 t = NeuroAnalyzer.tkeo(e10, method=:der)
 @test size(t) == (23, 2560, 10)
