@@ -8,7 +8,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 # Arguments
 
 - `s::AbstractVector`: signal
-- `t::AbstractVector`: time points
+- `t::AbstractVector=collect(1:length(s))`: time points
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
     - `:der`: TKEO = f'(t) - f(t) × f''(t)
@@ -18,7 +18,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Vector{Float64}`
 """
-function tkeo(s::AbstractVector, t::AbstractVector; method::Symbol=:pow)
+function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)
 
     _check_var(method, [:pow, :der, :amp], "method")
 
@@ -59,7 +59,7 @@ Calculate Teager-Kaiser energy-tracking operator
 # Arguments
 
 - `s::AbstractArray`: signal
-- `t::AbstractArray`: time points
+- `t::AbstractArray=collect(1:length(s))`: time points
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
     - `:der`: TKEO = f'(t) - f(t) × f''(t)
@@ -69,7 +69,7 @@ Calculate Teager-Kaiser energy-tracking operator
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(s::AbstractArray, t::AbstractVector; method::Symbol=:pow)
+function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
