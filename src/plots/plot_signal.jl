@@ -113,13 +113,11 @@ Plot amplitude of single- or multi-channel `s`.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::Union{AbstractVector, AbstractArray}`: data to plot
-- `norm::Bool=false`: normalize signal for butterfly and averaged plots
-- `bad::Vector{Bool}}`: list of bad channels
+- `bad::Vector{Bool}`: list of bad channels
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
@@ -140,7 +138,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     s = @views reverse(s[:, eachindex(t)], dims = 1)
     bad = reverse(bad)
 
-    pal = mono ? :grays : :darktest
+    pal = :darktest
 
     # get range of the original signal for the scale
     range = _get_range(s)
@@ -516,7 +514,7 @@ Plot signal.
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
-- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
+- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty -- plot bad channels using this list
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
 - `kwargs`: optional arguments for plot() function
 

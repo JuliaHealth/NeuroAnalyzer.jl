@@ -8,19 +8,21 @@ Detect bad channels and epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
     - `:flat`: flat channel(s)
-    - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
-    - `:var`: mean signal variance outside of 95%CI and variance inter-quartile outliers
     - `:rmse`: RMSE vs average channel outside of 95%CI
     - `:rmsd`: RMSD
     - `:euclid`: Euclidean distance
+    - `:var`: mean signal variance outside of 95%CI and variance inter-quartile outliers
+    - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
+    - `:tkeo`: z-score TKEO value outside of 95%CI 
 - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
 - `ftol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
-- `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326) 
+- `p::Float64=0.99`: probability threshold (0.0 to 1.0) for marking channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326) 
 - `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
+- `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
 
 # Returns
 
@@ -28,10 +30,10 @@ Named tuple containing:
 - `bm::Matrix{Bool}`: matrix of bad channels × epochs
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.95, tc::Float64=0.2)
+function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow)
 
     for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p], "method")
+        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo], "method")
     end
 
     @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]"
@@ -184,6 +186,32 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             for ch_idx in 1:ch_n
                 bad_chs[ch_idx] == true && (bm[ch_idx, ep_idx] = true)
             end 
+            (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
+        end
+    end
+
+    if :tkeo in method
+        _info("Using :tkeo method")
+        @inbounds @simd for ep_idx in 1:ep_n
+            bad_chs_score = 0
+            bad_chs = zeros(Bool, ch_n)
+            Threads.@threads for ch_idx in 1:ch_n
+                s = @views tkeo(obj.data[ch[ch_idx], :, ep_idx], obj.epoch_time, method=tkeo_method)
+                z_signal = vec(zscore(obj.data[ch[ch_idx], :, ep_idx]))
+                z_tkeo = vec(zscore(s))
+                # scan in 10-sample windows
+                w = length(s) ÷ 10
+                bad_windows = 0
+                for idx in 1:w:length(s)
+                    count(abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .> ci2z(p)) > 1 && (bad_windows += 1)
+                end
+                # mark channel as bad if there is at least one bad window per epoch
+                if bad_windows > 1
+                    bad_chs_score += 1
+                    bad_chs[ch_idx] = true
+                end
+            end
+            [bad_chs[ch_idx] == true && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
