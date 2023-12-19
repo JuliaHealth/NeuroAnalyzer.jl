@@ -585,9 +585,12 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             end
             push!(ch_tmp, ch_tmp2)
         end
-    else
+    elseif ch isa Int64
         ch_t_uni = ch_t[ch]
         ch_tmp = [[ch]]
+    else
+        ch_t_uni = ch_t[ch]
+        ch_tmp = [ch]
     end
 
     xl, yl, tt = "", "", ""
@@ -1244,9 +1247,11 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
             end
             push!(ch_tmp, ch_tmp2)
         end
-    else
+    elseif ch isa Int64
         ch_t_uni = ch_t[ch]
         ch_tmp = [[ch]]
+    else
+        ch_t_uni = ch_t[ch]
     end
 
     xl, yl, tt = "", "", ""

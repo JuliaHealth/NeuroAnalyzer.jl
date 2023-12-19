@@ -818,7 +818,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     units = _ch_units(obj, ch[1])
 
     clabels = labels(obj)[ch]
-    length(ch) == 1 && (clabels = [clabels])
+    ch isa Int64 && (clabels = [clabels])
 
     ref !== :abs && (f = band_frq(obj, band=ref))
 

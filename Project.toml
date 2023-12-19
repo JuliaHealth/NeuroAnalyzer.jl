@@ -1,7 +1,7 @@
 name = "NeuroAnalyzer"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"]
-version = "0.24.01"
+version = "0.24.1"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -28,7 +28,11 @@ GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 Git = "d7ba0133-e1db-5d97-8f8c-041e4b3a1eb2"
 Gtk = "4c0ca9eb-093a-5379-98c5-f87ac0bbbf44"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
+ImageBinarization = "cbc4b850-ae4b-5111-9e64-df94c024a13d"
+ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
+ImageMorphology = "787d08f9-d448-5407-9aad-5290dd7ab264"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 InformationMeasures = "96684042-fbdc-5399-9b8e-d34e539a126c"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"

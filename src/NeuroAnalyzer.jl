@@ -80,6 +80,10 @@ using Git
 using GLM
 using Gtk
 using HypothesisTests
+using Images
+using ImageBinarization
+using ImageFiltering
+using ImageMorphology
 using InformationMeasures
 using Interpolations
 using Jacobi
@@ -299,6 +303,7 @@ include("io/import_gdf.jl")
 include("io/import_montage.jl")
 include("io/import_nwb.jl")
 include("io/import_npy.jl")
+include("io/import_thymatron.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")

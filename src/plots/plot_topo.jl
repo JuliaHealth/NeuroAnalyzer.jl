@@ -444,7 +444,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     clabels = _gen_clabels(c)[c_idx]
-    length(c_idx) == 1 && (clabels = [clabels])
+    c_idx isa Int64 && (clabels = [clabels])
 
     @assert length(c_idx) >= 2 "plot_topo() requires ≥ 2 channels."
     @assert length(c_idx) <= nrow(obj_tmp.locs) "Some channels do not have locations."
