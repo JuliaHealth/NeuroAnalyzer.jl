@@ -1,9 +1,34 @@
 export import_thymatron
 
-function import_thymatron(file_name::Union{String, Vector{String}}; dpi::Int64=100)
+"""
+    import_thymatron(file_name)
+
+Load scanned images of EEG printed by Thymatron ECT equipment. Usually there are three images: baseline, during seizure activity and after seizure activity. If more then one image is provided, images are added as consecutive channels in the same object.
+
+Image properties:
+
+- 100 DPI
+- 490 x 100 px
+- height 2.5 cm
+- width 12.5 cm
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `dpi::Int64=100`: DPI of the scanned images
+
+# Returns
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Source
+
+Wysokiński A. EEG_ADC: Digitizer and Analyzer of Electroconvulsive Therapy Paper Electroencephalogram Recordings. JECT 2022; 4: 255-256
+"""
+function import_thymatron(file_name::Union{String, Vector{String}})
 
     data_tmp = Vector{Vector{Float64}}()
-    sampling_rate = dpi
+    sampling_rate = 100 # = DPI
 
     typeof(file_name) == String && (file_name = [file_name])
 
@@ -71,9 +96,9 @@ function import_thymatron(file_name::Union{String, Vector{String}}; dpi::Int64=1
         end
 
         # digitize: convert to EEG signal
-        px_cm = 0.03937008 * dpi * 10      # 1 dpi = 0.03937008 px/mm => px/mm => px/cm
-        px_uv = 200 / px_cm                # 1 cm = 200 uV => convert to pixels
-        px_s = 0.00025 * px_cm             # 2.5 cm = 1 s => convert to pixels
+        px_cm = 0.03937008 * sampling_rate * 10      # 1 dpi = 0.03937008 px/mm => px/mm => px/cm
+        px_uv = 200 / px_cm                          # 1 cm = 200 uV => convert to pixels
+        px_s = 0.00025 * px_cm                       # 2.5 cm = 1 s => convert to pixels
         eeg_signal = zeros(dimy)
         eeg_time = zeros(dimy)
         for idx in 1:dimy
