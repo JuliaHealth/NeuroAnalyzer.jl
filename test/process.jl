@@ -237,6 +237,7 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test normalize_pos(v1) == [2, 3, 4, 5, 6]
 @test normalize_perc(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
 @test normalize_invroot(v1) == [0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579, 0.4082482904638631]
+@test normalize_softmax(v1) == [0.011656230956039607, 0.03168492079612427, 0.0861285444362687, 0.23412165725273662, 0.6364086465588308]
 e10_tmp = normalize(e10, method=:zscore)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
@@ -258,9 +259,19 @@ e10_tmp = NeuroAnalyzer.scale(e10, factor=2.0)
 @info "test 30/51: reference()"
 e10_tmp = reference_ce(e10, ch=1)
 @test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_ce(e10, ch=1:5)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_ce(e10, ch=1, med=true)
+@test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 31/51: reference_a()"
 e10_tmp = reference_a(e10)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_a(e10, med=true)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_a(e10, type=:c)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_a(e10, type=:i)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 32/51: reference_m()"
@@ -268,13 +279,29 @@ edit_channel!(e10, ch=20, field=:labels, value="M1")
 edit_channel!(e10, ch=21, field=:labels, value="M2")
 e10_tmp = reference_m(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_m(e10, med=true)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_m(e10, type=:c)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_m(e10, type=:i)
+@test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 33/51: reference_avg()"
 e10_tmp = reference_avg(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_avg(e10, exclude_fpo=true)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_avg(e10, exclude_current=true)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_avg(e10, average=false)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_avg(e10, weighted=true)
+@test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 34/51: reference_plap()"
 e10_tmp = reference_plap(e10)
+@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_plap(e10, weighted=true)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 35/51: csd()"
@@ -285,9 +312,9 @@ e10_tmp = csd(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 36/51: standardize()"
-m_s, sc = standardize(a1)
+m_s, sc = NeuroAnalyzer.standardize(a1)
 @test length(sc) == 2
-m_s, sc = standardize(e10)
+m_s, sc = NeuroAnalyzer.standardize(e10)
 @test length(sc) == 10
 
 @info "test 37/51: taper()"

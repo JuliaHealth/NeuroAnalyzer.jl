@@ -23,6 +23,8 @@ Return set of channel indices corresponding with `p` of electrodes
 """
 function pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
 
+    _check_datatype(obj, "eeg")
+
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
     if p isa Vector{Symbol}
@@ -41,7 +43,7 @@ function pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
         end
         
         # check which channels are in the picks list
-        clabels = labels(obj)
+        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
         channels = Vector{Int64}()
         for idx1 in eachindex(clabels)
             for idx2 in eachindex(c)
@@ -67,7 +69,7 @@ function pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
             end
         end
 
-        clabels = labels(obj)
+        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
         clabels = clabels[channels]
         pat = nothing
         for idx in p
@@ -95,7 +97,7 @@ function pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
         (p === :parietal || p === :p) && (c = ['P'])
         (p === :occipital || p === :o) && (c = ['O'])
 
-        clabels = labels(obj)
+        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
         channels = Vector{Int64}()
         for idx1 in eachindex(c)
             for idx2 in eachindex(clabels)

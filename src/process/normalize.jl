@@ -11,6 +11,7 @@ export normalize_neg
 export normalize_pos
 export normalize_perc
 export normalize_invroot
+export normalize_softmax
 
 """
     normalize(s, n; method)
@@ -34,6 +35,7 @@ Normalize.
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
     - `:invroot`: in inverse root (1/sqrt(x))
+    - `:softmax`: exp(x_i) / sum(exp(x))
     - `:n`: in [0, n1], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
     - `:none`
 
@@ -67,6 +69,8 @@ function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
         return normalize_gauss(s)
     elseif method === :invroot
         return normalize_invroot(s)
+    elseif method === :softmax
+        return normalize_softmax(s)
     elseif method === :n
         return normalize_n(s, n)
     elseif method === :none
@@ -342,6 +346,25 @@ function normalize_invroot(s::AbstractArray)
 
     # make s > 0
     return 1 ./ (sqrt.(s .+ abs(minimum(s)) .+ eps()))
+
+end
+
+"""
+    normalize_softmax(s)
+
+Softmax normalize: `exp(x_i) / sum(exp(x))`
+
+# Arguments
+
+- `s::AbstractArray`
+
+# Returns
+
+- `normalize_softmax::Vector{Float64}`
+"""
+function normalize_softmax(s::AbstractArray)
+
+    return exp.(s) ./ sum(exp.(s))
 
 end
 
