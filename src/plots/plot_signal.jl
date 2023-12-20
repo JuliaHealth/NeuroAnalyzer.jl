@@ -43,16 +43,23 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
         channel_color = ch_n:-1:1
     end
 
-    # get range of the original signal for the scale
-    range = _get_range(s)
-
-    # normalize and shift so all channels are visible
-    s = normalize(s, method=:minmax)
-    # each channel is between -1.0 and +1.0
-    for idx in 1:ch_n
-        # scale by 0.5 so maxima do not overlap
-        # s[idx, :] = normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
-        s[idx, :] = s[idx, :] .* 0.5 .+ (idx - 1)
+    if scale == true
+        # get range of the original signal for the scale
+        range = _get_range(s)
+        # normalize and shift so all channels are visible
+        s = normalize(s, method=:minmax)
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = s[idx, :] .* 0.5 .+ (idx - 1)
+        end
+    else
+        # normalize and shift so all channels are visible
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+        end
     end
 
     # prepare plot
@@ -142,14 +149,23 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
 
     pal = :darktest
 
-    # get range of the original signal for the scale
-    range = _get_range(s)
-
-    # normalize and shift so all channels are visible
-    # each channel is between -1.0 and +1.0
-    for idx in 1:ch_n
-        # scale by 0.5 so maxima do not overlap
-        s[idx, :] = @views normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+    if scale == true
+        # get range of the original signal for the scale
+        range = _get_range(s)
+        # normalize and shift so all channels are visible
+        s = normalize(s, method=:minmax)
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = s[idx, :] .* 0.5 .+ (idx - 1)
+        end
+    else
+        # normalize and shift so all channels are visible
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+        end
     end
 
     # prepare plot
