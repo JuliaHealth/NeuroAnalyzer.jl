@@ -557,7 +557,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     if type === :normal
-        @assert length(ch) == 1 "For :normal plot type, only one channel must be specified."
+        @assert ch isa Int64 "For :normal plot type, only one channel must be specified."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude channel $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp(t,
                      s,

@@ -43,7 +43,7 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            if length(ch) == 1
+            if ch isa Int64
                 ref_ch = @views vec(s[ch, :, ep_idx])
                 if ch_idx != ch
                     @views s[ch_idx, :, ep_idx] .-= ref_ch
@@ -59,7 +59,7 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         end
     end
 
-    obj_new.header.recording[:labels][chs] .*= length(ch) == 1 ? "-$(labels(obj)[ch])" : "-cavg"
+    obj_new.header.recording[:labels][chs] .*= ch isa Int64 ? "-$(labels(obj)[ch])" : "-cavg"
     obj_new.data[chs, :, :] = s
     if ch isa Int64
         obj_new.header.recording[:reference] = "common ($(labels(obj)[ch]))"

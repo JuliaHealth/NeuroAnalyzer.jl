@@ -733,7 +733,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 if ch_t[ch_tmp[1][1]] == "mrk"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
-                if length(ch) == 1
+                if ch isa Int64
                     p = plot_signal(t,
                                     s[ch, :],
                                     clabels=[clabels[ch_tmp[1][1]]],
@@ -1425,7 +1425,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
 
-        if length(ch) == 1
+        if ch isa Int64
             p = plot_2signals(t,
                               s1[ch, :],
                               s2[ch, :],

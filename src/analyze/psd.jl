@@ -207,8 +207,8 @@ function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 
     _check_channels(obj, ch)
 
-    if length(ch) == 1
-        pw, pf = psd(reshape(obj.data[ch, :, :], length(ch), :, nepochs(obj)), fs=sr(obj), norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    if ch isa Int64
+        pw, pf = psd(reshape(obj.data[ch, :, :], 1, :, nepochs(obj)), fs=sr(obj), norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
     else
         pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq=frq, ncyc=ncyc)
     end
@@ -395,8 +395,8 @@ function mwpsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 
     _check_channels(obj, ch)
 
-    if length(ch) == 1
-        pw, pf = @views mwpsd(reshape(obj.data[ch, :, :], length(ch), :, size(obj.data[ch, :, :], 2)), pad=pad, fs=sr(obj), norm=norm, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
+    if ch isa Int64
+        pw, pf = @views mwpsd(reshape(obj.data[ch, :, :], 1, :, size(obj.data[ch, :, :], 2)), pad=pad, fs=sr(obj), norm=norm, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     else
         pw, pf = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     end

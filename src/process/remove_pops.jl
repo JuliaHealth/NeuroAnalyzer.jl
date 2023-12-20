@@ -219,7 +219,7 @@ function remove_pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 
     obj_new = deepcopy(obj)
 
-    if length(ch) == 1
+    if ch isa Int64
         s = @views reshape(obj_new.data[ch, :, 1], 1, :, size(obj_new.data[ch, :, 1], 2))
     else
         s = @views obj_new.data[ch, :, :]
