@@ -413,7 +413,6 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     end
 
     pw, pf = penv(obj, ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=woverlap, frq=frq, ncyc=ncyc)
-    @show typeof(pf)
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -634,7 +633,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
             end
             
             f_idx = zeros(length(st))
-            m = maximum(sp, dims=1)
+            m = vec(maximum(sp, dims=1))
             for idx2 in eachindex(m)
                 f_idx[idx2] = sf[vsearch(m[idx2], sp[:, idx2])]
             end
