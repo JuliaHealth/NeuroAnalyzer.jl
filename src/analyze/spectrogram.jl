@@ -305,10 +305,10 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 
     if frq_lim[1] < sf[1]
         frq_lim = (sf[1], frq_lim[2])
-        _info("Frequency limits truncated to: $frq_lim Hz.")
+        _info("Frequency limits truncated to: $frq_lim Hz")
     elseif frq_lim[2] > sf[end]
         frq_lim = (frq_lim[1], sf[end])
-        _info("Frequency limits truncated to: $frq_lim Hz.")
+        _info("Frequency limits truncated to: $frq_lim Hz")
     elseif frq_lim[1] > sf[end] || frq_lim[2] < sf[1]
         @error "Frequency limits must be in [$(sf[1]), $(sf[end])]."
     end
