@@ -88,11 +88,22 @@ function corm(s::AbstractArray; norm::Bool=false)
     cm = zeros(ch_n, ch_n, ep_len, ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for s_idx in 1:ep_len
-            @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
+        if use_cuda
+            CUDA.synchronize()
+            for s_idx in 1:ep_len
+                @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
 
-            # update progress bar
-            progress_bar == true && next!(progbar)
+                # update progress bar
+                progress_bar == true && next!(progbar)
+            end
+            CUDA.synchronize()
+        else
+            Threads.@threads for s_idx in 1:ep_len
+                @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
+
+                # update progress bar
+                progress_bar == true && next!(progbar)
+            end
         end
     end
     
