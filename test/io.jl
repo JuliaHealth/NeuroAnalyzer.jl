@@ -174,7 +174,7 @@ mep = import_duomag(joinpath(testfiles_path, "mep-duomag.ascii"))
 @test mep isa NeuroAnalyzer.NEURO
 
 @info "test 32/32: import_thymatron()"
-mep = import_duomag(joinpath(testfiles_path, "thymatrion/1.png"))
+mep = import_thymatron(joinpath(testfiles_path, "thymatron/1.png"))
 @test mep isa NeuroAnalyzer.NEURO
 
 true
