@@ -38,6 +38,8 @@ Interactive view of continuous signal.
 """
 function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), zoom::Real=5)
 
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iview_ep() should be used for epoched object."
@@ -632,6 +634,8 @@ Interactive view of continuous signal.
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
 function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj1)), zoom::Real=5)
+
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
 
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."

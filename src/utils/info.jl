@@ -291,10 +291,16 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
     println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
-    println("     Number of channels: $(nchannels(obj))")
-    println("       Number of epochs: $(nepochs(obj))")
-    println(" Epoch length [samples]: $(epoch_len(obj))")
-    println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+    if obj.header.recording[:data_type] in ["mep", "sensors"] == true
+        println("     Number of signals: $(nchannels(obj))")
+    else
+        println("     Number of channels: $(nchannels(obj))")
+    end
+    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+        println("       Number of epochs: $(nepochs(obj))")
+        println(" Epoch length [samples]: $(epoch_len(obj))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+    end
     if obj.header.recording[:data_type] == "eeg"
         if obj.header.recording[:reference] == ""
             println("         Reference type: unknown")
@@ -310,15 +316,17 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                 Labels: yes")
     end
-    if _has_markers(obj) == false
-        println("                Markers: no")
-    else
-        println("                Markers: yes")
-    end
-    if _has_locs(obj) == false
-        println("      Channel locations: no")
-    else
-        println("      Channel locations: yes")
+    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+        if _has_markers(obj) == false
+            println("                Markers: no")
+        else
+            println("                Markers: yes")
+        end
+        if _has_locs(obj) == false
+            println("      Channel locations: no")
+        else
+            println("      Channel locations: yes")
+        end
     end
     if length(keys(obj.components)) > 0
         print("             Components: ")
@@ -334,7 +342,11 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("             Components: no")
     end
-    println("Channels:")
+    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+        println("Channels:")
+    else
+        println("Signals:")
+    end
     if obj.header.recording[:data_type] != "nirs"
         println(rpad(" ch", 8) * 
                 rpad("label", 16) * 

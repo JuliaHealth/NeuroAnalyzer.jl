@@ -49,21 +49,36 @@ Calculate amplitude at given time.
 """
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
 
-    _check_datatype(obj, "erp")
-    @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
-    @assert t <= obj.epoch_time[end] "t must be ≤ $(obj.epoch_time[end])."
+    _check_datatype(obj, ["erp", "mep"])
 
-    t_idx = vsearch(t, obj.epoch_time)
+    if obj.header.recording[:data_type] == "erp"
+        @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
+        @assert t <= obj.epoch_time[end] "t must be ≤ $(obj.epoch_time[end])."
 
-    ch_n = size(obj)[1]
-    ep_n = size(obj)[3]
-    p = zeros(ch_n, ep_n)
-    
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, ep_idx] = obj.data[ch_idx, t_idx, ep_idx]
+        t_idx = vsearch(t, obj.epoch_time)
+
+        ch_n = size(obj)[1]
+        ep_n = size(obj)[3]
+        p = zeros(ch_n, ep_n)
+        
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                p[ch_idx, ep_idx] = @views obj.data[ch_idx, t_idx, ep_idx]
+            end
         end
-    end
+    else
+        @assert t >= obj.time_pts[1] "t must be ≥ $(obj.time_pts[1])."
+        @assert t <= obj.time_pts[end] "t must be ≤ $(obj.time_pts[end])."
+
+        t_idx = vsearch(t, obj.time_pts)
+
+        ch_n = size(obj)[1]
+        p = zeros(ch_n)
+    
+        Threads.@threads for ch_idx in 1:ch_n
+            @inbounds p[ch_idx] = @views obj.data[ch_idx, t_idx, 1]
+        end
+    end        
 
     return p
     
@@ -85,21 +100,38 @@ Calculate average amplitude at given time segment.
 """
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
-    _check_datatype(obj, "erp")
-    @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
-    @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
-    @assert t[1] <= t[2] "t[1] must be < t[2]."
-    
-    t_idx1 = vsearch(t[1], obj.epoch_time)
-    t_idx2 = vsearch(t[2], obj.epoch_time)
+    _check_datatype(obj, ["erp", "mep"])
 
-    ch_n = size(obj)[1]
-    ep_n = size(obj)[3]
-    p = zeros(ch_n, ep_n)
-    
-    @inbounds @simd for ep_idx in 1:ep_n
+    if obj.header.recording[:data_type] == "erp"
+        @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
+        @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
+        @assert t[1] <= t[2] "t[1] must be < t[2]."
+        
+        t_idx1 = vsearch(t[1], obj.epoch_time)
+        t_idx2 = vsearch(t[2], obj.epoch_time)
+
+        ch_n = size(obj)[1]
+        ep_n = size(obj)[3]
+        p = zeros(ch_n, ep_n)
+        
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+            end
+        end
+    else
+        @assert t[1] >= obj.time_pts[1] "t[1] must be ≥ $(obj.time_pts[1])."
+        @assert t[2] <= obj.time_pts[end] "t[2] must be ≤ $(obj.time_pts[end])."
+        @assert t[1] <= t[2] "t[1] must be < t[2]."
+        
+        t_idx1 = vsearch(t[1], obj.time_pts)
+        t_idx2 = vsearch(t[2], obj.time_pts)
+
+        ch_n = size(obj)[1]
+        p = zeros(ch_n)
+        
         Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+            @inbounds p[ch_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
 
@@ -123,21 +155,38 @@ Calculate maximum amplitude at given time segment.
 """
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
-    _check_datatype(obj, "erp")
-    @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
-    @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
-    @assert t[1] <= t[2] "t[1] must be < t[2]."
-    
-    t_idx1 = vsearch(t[1], obj.epoch_time)
-    t_idx2 = vsearch(t[2], obj.epoch_time)
+    _check_datatype(obj, ["erp", "mep"])
 
-    ch_n = size(obj)[1]
-    ep_n = size(obj)[3]
-    p = zeros(ch_n, ep_n)
-    
-    @inbounds @simd for ep_idx in 1:ep_n
+    if obj.header.recording[:data_type] == "erp"
+        @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
+        @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
+        @assert t[1] <= t[2] "t[1] must be < t[2]."
+        
+        t_idx1 = vsearch(t[1], obj.epoch_time)
+        t_idx2 = vsearch(t[2], obj.epoch_time)
+
+        ch_n = size(obj)[1]
+        ep_n = size(obj)[3]
+        p = zeros(ch_n, ep_n)
+        
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                p[ch_idx, ep_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+            end
+        end
+    else
+        @assert t[1] >= obj.time_pts[1] "t[1] must be ≥ $(obj.time_pts[1])."
+        @assert t[2] <= obj.time_pts[end] "t[2] must be ≤ $(obj.time_pts[end])."
+        @assert t[1] <= t[2] "t[1] must be < t[2]."
+        
+        t_idx1 = vsearch(t[1], obj.time_pts)
+        t_idx2 = vsearch(t[2], obj.time_pts)
+
+        ch_n = size(obj)[1]
+        p = zeros(ch_n)
+        
         Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, ep_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+            @inbounds p[ch_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
 
@@ -161,24 +210,41 @@ Calculate minimum amplitude at given time segment.
 """
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
-    _check_datatype(obj, "erp")
-    @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
-    @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
-    @assert t[1] <= t[2] "t[1] must be < t[2]."
-    
-    t_idx1 = vsearch(t[1], obj.epoch_time)
-    t_idx2 = vsearch(t[2], obj.epoch_time)
+    _check_datatype(obj, ["erp", "mep"])
 
-    ch_n = size(obj)[1]
-    ep_n = size(obj)[3]
-    p = zeros(ch_n, ep_n)
-    
-    @inbounds @simd for ep_idx in 1:ep_n
+    if obj.header.recording[:data_type] == "erp"
+        @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
+        @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
+        @assert t[1] <= t[2] "t[1] must be < t[2]."
+        
+        t_idx1 = vsearch(t[1], obj.epoch_time)
+        t_idx2 = vsearch(t[2], obj.epoch_time)
+
+        ch_n = size(obj)[1]
+        ep_n = size(obj)[3]
+        p = zeros(ch_n, ep_n)
+        
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                p[ch_idx, ep_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
+            end
+        end
+    else
+        @assert t[1] >= obj.time_pts[1] "t[1] must be ≥ $(obj.time_pts[1])."
+        @assert t[2] <= obj.time_pts[end] "t[2] must be ≤ $(obj.time_pts[end])."
+        @assert t[1] <= t[2] "t[1] must be < t[2]."
+
+        t_idx1 = vsearch(t[1], obj.time_pts)
+        t_idx2 = vsearch(t[2], obj.time_pts)
+
+        ch_n = size(obj)[1]
+        p = zeros(ch_n)
+
         Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, ep_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
+            @inbounds p[ch_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
-
+    
     return p
     
 end

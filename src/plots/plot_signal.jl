@@ -51,14 +51,14 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
         # each channel is between -1.0 and +1.0
         for idx in 1:ch_n
             # scale by 0.5 so maxima do not overlap
-            s[idx, :] = s[idx, :] .* 0.5 .+ (idx - 1)
+            s[idx, :] = (s[idx, :] .* 0.5) .+ (idx - 1)
         end
     else
         # normalize and shift so all channels are visible
         # each channel is between -1.0 and +1.0
         for idx in 1:ch_n
             # scale by 0.5 so maxima do not overlap
-            s[idx, :] = normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+            s[idx, :] = (normalize(s[idx, :], method=:minmax) .* 0.5) .+ (idx - 1)
         end
     end
 
@@ -105,8 +105,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
 
     # draw scale
     if scale == true
-        p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
-        p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!([_xlims(t)[1], _xlims(t)[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
+        p = Plots.plot!(annotations=(_xlims(t)[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -542,8 +542,11 @@ Plot signal.
 """
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
+    obj.header.recording[:data_type] == "erp" && _warn("For ERP objects, use plot_erp()")
+    obj.header.recording[:data_type] == "mep" && _warn("For MEP objects, use plot_mep()")
+
     if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
-        seg = (0, obj.time_pts[end])
+        seg = (obj.time_pts[1], obj.time_pts[end])
     else
         _check_segment(obj, seg)
     end

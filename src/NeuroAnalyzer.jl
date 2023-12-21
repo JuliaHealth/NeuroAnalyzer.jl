@@ -14,7 +14,8 @@ const data_types = ["eeg",
                     "nirs",
                     "ecog",
                     "seeg",
-                    "sensors"]
+                    "sensors",
+                    "mep"]
 const channel_types = ["all",
                        "eeg", "ecog", "seeg",
                        "meg", "grad", "mag",
@@ -26,6 +27,7 @@ const channel_types = ["all",
                        "ref",
                        "mrk",
                        "accel", "magfld", "orient", "angvel",
+                       "mep",
                        "other"]
 const channel_units = ["μV",
                        "mV",
@@ -244,6 +246,7 @@ include("analyze/ged.jl")
 include("analyze/hrv.jl")
 include("analyze/ispc.jl")
 include("analyze/itpc.jl")
+include("analyze/mep.jl")
 include("analyze/mi.jl")
 include("analyze/msci95.jl")
 include("analyze/pli.jl")
@@ -304,6 +307,7 @@ include("io/import_montage.jl")
 include("io/import_nwb.jl")
 include("io/import_npy.jl")
 include("io/import_thymatron.jl")
+include("io/import_duomag.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")
@@ -363,6 +367,7 @@ include("plots/plot_connections.jl")
 include("plots/plot_locs.jl")
 include("plots/plot_erp.jl")
 include("plots/plot_filter_response.jl")
+include("plots/plot_mep.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_save.jl")
 include("plots/plot_signal.jl")

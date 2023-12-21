@@ -38,6 +38,8 @@ Interactive plot of continuous signal.
 """
 function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), zoom::Real=5)
 
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iplot_ep() should be used for epoched object."
@@ -852,6 +854,8 @@ Interactive plot of two continuous signals.
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
 function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj1)), zoom::Real=5)
+
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj1) / sr(obj1) "zoom must be ≤ $(signal_len(obj1) / sr(obj1))."
