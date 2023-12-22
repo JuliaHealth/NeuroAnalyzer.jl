@@ -392,6 +392,7 @@ include("gui/iview_plot.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")
+include("statistics/friedman.jl")
 include("statistics/hildebrand_rule.jl")
 include("statistics/jaccard_similarity.jl")
 include("statistics/linreg.jl")
