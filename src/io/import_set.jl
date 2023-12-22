@@ -35,7 +35,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     ep_n = 1
     # data in .FTD file
     if data_src isa String
-        fid = ""
+        fid = nothing
         try
             fid = open(data_src, "r")
         catch

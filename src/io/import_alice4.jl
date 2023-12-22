@@ -24,7 +24,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -33,9 +33,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     _info("Loading Alice4 EDF format")
 
-    header = zeros(UInt8, 256)
-    readbytes!(fid, header, 256)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, 256, :s))
 
     file_type = parse(Int, strip(header[1:8]))
     file_type == 0 && (file_type = "EDF")
@@ -67,66 +65,48 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     prefiltering = Vector{String}(undef, ch_n)
     samples_per_datarecord = Vector{Int64}(undef, ch_n)
 
-    header = zeros(UInt8, ch_n * 16)
-    readbytes!(fid, header, ch_n * 16)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 16, :s))
     for idx in 1:ch_n
         clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
-    header = zeros(UInt8, ch_n * 80)
-    readbytes!(fid, header, ch_n * 80)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 80, :s))
     for idx in 1:ch_n
         transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
         units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
     units = replace(lowercase.(units), "uv"=>"μV")
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
         physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
         physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
         digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
         digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, ch_n * 80)
-    readbytes!(fid, header, ch_n * 80)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 80, :s))
     for idx in 1:ch_n
         prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, ch_n * 8)
-    readbytes!(fid, header, ch_n * 8)
-    header = String(Char.(header))
+    header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
         samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
@@ -157,7 +137,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -186,7 +166,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     else
         max_sampling_rate = maximum(sampling_rate)
 
-        fid = ""
+        fid = nothing
         try
             fid = open(file_name, "r")
         catch

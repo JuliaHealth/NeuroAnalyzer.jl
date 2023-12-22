@@ -30,10 +30,10 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
     # remove channel locations
     for idx in opt
         if optode_labels(obj_new)[idx] in obj_new.locs[!, :labels]
-            if length(NeuroAnalyzer._find_bylabel(obj_new.locs, optode_labels(obj)[idx])) == 1
-                deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, optode_labels(obj)[idx]))
+            if length(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])) == 1
+                deleteat!(obj_new.locs, _find_bylabel(obj_new.locs, optode_labels(obj)[idx]))
             else
-                deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, optode_labels(obj)[idx])))
+                deleteat!(obj_new.locs, sort(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])))
             end
         end
     end

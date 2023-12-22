@@ -33,7 +33,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -164,7 +164,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -198,7 +198,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         max_sampling_rate = maximum(sampling_rate[setdiff(1:ch_n, annotation_channels)])
         max_samples_per_datarecord = maximum(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])
 
-        fid = ""
+        fid = nothing
         try
             fid = open(file_name, "r")
         catch

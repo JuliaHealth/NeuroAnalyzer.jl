@@ -62,7 +62,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = NeuroAnalyzer._interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
+    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
 
     if head
         xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))

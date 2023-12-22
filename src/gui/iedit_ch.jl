@@ -146,7 +146,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     for idx in NeuroAnalyzer.channel_units
         push!(combo_chunits, idx)
     end
-    set_gtk_property!(combo_chunits, :active, findfirst(isequal(NeuroAnalyzer._ch_units(ch_types[current_channel])), NeuroAnalyzer.channel_units) - 1)
+    set_gtk_property!(combo_chunits, :active, findfirst(isequal(_ch_units(ch_types[current_channel])), NeuroAnalyzer.channel_units) - 1)
 
     lab_chlabel = GtkLabel("Label")
     #set_gtk_property!(lab_chlabel, :halign, 2)

@@ -31,7 +31,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -156,7 +156,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch

@@ -44,8 +44,8 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
     end
-    loc_x = NeuroAnalyzer._s2v(loc_x)
-    loc_y = NeuroAnalyzer._s2v(loc_y)
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
     anode_pos = (loc_x[anode_ch], loc_y[anode_ch])
     cathode_pos = (loc_x[cathode_ch], loc_y[cathode_ch])
 

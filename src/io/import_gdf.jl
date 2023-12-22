@@ -33,7 +33,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -63,17 +63,13 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         ch_n = reinterpret(Int32, header[253:256])[1]
 
         clabels = String[]
-        buf = UInt8[]
         for idx in 1:ch_n
-            readbytes!(fid, buf, 16)
-            push!(clabels, replace(strip(String(Char.(buf))), '\0'=>""))
+            push!(clabels, _v2s(_fread(fid, 16, :c)))
         end
 
         transducers = String[]
-        buf = UInt8[]
         for idx in 1:ch_n
-            readbytes!(fid, buf, 80)
-            push!(transducers, replace(strip(String(Char.(buf))), '\0'=>""))
+            push!(transducers, _v2s(_fread(fid, 80, :c)))
         end
 
         units = String[]
@@ -351,7 +347,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -445,7 +441,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     if file_type_ver < 2.0
         if header_bytes + data_bytes < filesize(file_name)
-            fid = ""
+            fid = nothing
             try
                 fid = open(file_name, "r")
             catch
@@ -500,7 +496,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         end
     else
         if header_bytes + data_bytes < filesize(file_name)
-            fid = ""
+            fid = nothing
             try
                 fid = open(file_name, "r")
             catch

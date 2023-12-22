@@ -270,7 +270,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
             @error "Binary formats other than Float32 and Int16 are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
         end
 
-        fid = ""
+        fid = nothing
         try
             fid = open(eeg_file, "r")
         catch

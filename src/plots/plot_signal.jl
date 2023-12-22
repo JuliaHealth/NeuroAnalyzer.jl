@@ -439,8 +439,8 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     s2 = @views reverse(s2[:, eachindex(t)], dims = 1)
 
     # get range of the original signal for the scale
-    range1 = NeuroAnalyzer._get_range(s1)
-    range2 = NeuroAnalyzer._get_range(s2)
+    range1 = _get_range(s1)
+    range2 = _get_range(s2)
     range = range1 > range2 ? range1 : range2
 
     # normalize and shift so all channels are visible
@@ -457,8 +457,8 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
-                   xlims=NeuroAnalyzer._xlims(t),
-                   xticks=NeuroAnalyzer._ticks(t),
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
                    ylims=(-1, ch_n),
                    title=title,
                    palette=:darktest,

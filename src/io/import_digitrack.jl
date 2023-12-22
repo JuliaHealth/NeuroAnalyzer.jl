@@ -20,7 +20,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
 
     fid = nothing
     try
-        fid = open(file_name)
+        fid = open(file_name, "r")
     catch
         @error "File $file_name cannot be loaded."
     end

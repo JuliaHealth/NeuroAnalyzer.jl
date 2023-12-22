@@ -672,8 +672,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 
         loc_x = locs[ch, :loc_x]
         loc_y = locs[ch, :loc_y]
     end
-    loc_x = NeuroAnalyzer._s2v(loc_x)
-    loc_y = NeuroAnalyzer._s2v(loc_y)
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
