@@ -8,6 +8,7 @@ export import_locs_sfp
 export import_locs_geo
 export import_locs_mat
 export import_locs_txt
+export import_locs_dat
 
 """
     import_locs(file_name)
@@ -22,6 +23,7 @@ Load channel locations. Supported formats:
 - GEO
 - MAT
 - TXT
+- DAT
 
 This is a meta-function that triggers appropriate `import_locs_*()` function. File format is detected based on file extension.
 
@@ -585,6 +587,72 @@ function import_locs_txt(file_name::String)
     locs_cart2sph!(locs)
     locs_sph2pol!(locs)
 
+    locs_normalize!(locs)
+    _locs_round!(locs)
+
+    return locs
+
+end
+
+"""
+    import_locs_dat(file_name)
+
+Load channel locations from DAT file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function import_locs_dat(file_name::String)
+
+    @assert isfile(file_name) "$file_name not found."
+    @assert splitext(file_name)[2] == ".dat" "Not DAT file."
+
+    locs = CSV.read(file_name, ignorerepeated=true, delim=' ', stringtype=String, header=0, DataFrame)
+    if ncol(locs) == 4
+        if typeof(locs[!, 2]) == Vector{String}
+            colnames = ["channel", "labels", "x", "y"]
+        else
+            colnames = ["channel", "x", "y", "z"]
+        end
+    elseif ncol(locs) == 5
+        colnames = ["channel", "labels", "x", "y", "z"]
+    end
+
+    DataFrames.rename!(locs, colnames)
+    if "labels" in colnames
+        clabels = string.(lstrip.(locs[!, "labels"]))
+    else
+        clabels = string.(locs[!, "channel"])
+    end
+
+    x = zeros(length(clabels))
+    y = zeros(length(clabels))
+    z = zeros(length(clabels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
+
+    "x" in colnames && (x = Float64.(locs[!, "x"]))
+    "y" in colnames && (y = Float64.(locs[!, "y"]))
+    "z" in colnames && (z = Float64.(locs[!, "z"]))
+    "theta" in colnames && (theta = Float64.(locs[!, "theta"]))
+    "radius" in colnames && (radius = Float64.(locs[!, "radius"]))
+    "sph_radius" in colnames && (radius_sph = Float64.(locs[!, "sph_radius"]))
+    "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
+    "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
+
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+
+    locs_center!(locs, polar=false, spherical=false)
+    locs_cart2pol!(locs)
+    locs_cart2sph!(locs)
     locs_normalize!(locs)
     _locs_round!(locs)
 

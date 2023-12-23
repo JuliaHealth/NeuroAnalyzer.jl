@@ -3,7 +3,7 @@ export edit_montage
 """
     edit_montage(file_name; data_format, detect_type)
 
-Edit montage file in the OS editor. 
+Edit montage file in the OS editor.
 
 # Arguments
 
