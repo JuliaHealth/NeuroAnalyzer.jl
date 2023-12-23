@@ -178,7 +178,7 @@ mep = import_thymatron(joinpath(testfiles_path, "thymatron/1.png"))
 @test mep isa NeuroAnalyzer.NEURO
 
 @info "test 33/34: import_cnt()"
-eeg = import_locs_mat(joinpath(testfiles_path, "eeg-test-cnt.cnt"))
+eeg = import_cnt(joinpath(testfiles_path, "eeg-test-cnt.cnt"))
 @test eeg isa NeuroAnalyzer.NEURO
 
 @info "test 34/34: import_locs_dat()"
