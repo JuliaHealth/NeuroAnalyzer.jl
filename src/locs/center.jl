@@ -4,7 +4,7 @@ export locs_center!
 """
     locs_center(locs; polar, cart, spherical)
 
-Center locs at X=0.
+Center locs at (0, 0).
 
 # Arguments
 
@@ -47,6 +47,7 @@ function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
         locs_tmp = deepcopy(locs)
         locs_sph2cart!(locs_tmp)
         locs_new[!, :loc_x] = locs[!, :loc_x] .- x_offset
+        locs_new[!, :loc_y] = locs[!, :loc_y] .- y_offset
         locs_cart2sph!(locs_tmp)
         locs_new[!, :loc_radius_sph] = locs_tmp[!, :loc_radius_sph]
         locs_new[!, :loc_theta_sph] = locs_tmp[!, :loc_theta_sph]
