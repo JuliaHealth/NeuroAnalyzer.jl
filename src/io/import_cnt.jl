@@ -1,21 +1,27 @@
 export import_cnt
 
 """
-# Load a Neuroscan continuous signal file
-# based on loadcnt.m by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html)
+    import_cnt(file_name; data_format, detect_type)
 
-# data_format = :i16
-# data_format = :i32
+Load Neuroscan continuous signal file.
+
 # Arguments
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: detect channel type based on its label
+- `data_format::Symbol=:i32`
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
+
+# Notes
+
+Based on loadcnt.m by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html)
 """
-function import_cnt(file_name; data_format::Symbol=:i32, detect_type::Bool=true)
+function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bool=true)
+
+    _check_var(data_format, [:i32, :i16], "data_format")
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert splitext(file_name)[2] == ".cnt" "This is not CNT file."
@@ -30,7 +36,7 @@ function import_cnt(file_name; data_format::Symbol=:i32, detect_type::Bool=true)
     file_type = "CNT"
 
     rev = _v2s(_fread(fid, 12, :c))
-    rev != "Version 3.0" && _warn("CNT files with version number other than 3.0 may not work properly; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    rev != "Version 3.0" && _warn("CNT files with version number other than 3.0 may not be imported properly; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
     nextfile = _fread(fid, 1, :l)
     prevfile = _fread(fid, 1, :ul)
     type = _fread(fid, 1, :c)

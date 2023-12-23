@@ -15,6 +15,7 @@ Accepted formats:
 - CSD
 - GEO
 - MAT
+- TXT
 
 Channel locations:
 
@@ -60,6 +61,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
         locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
         locs = import_locs_mat(file_name)
+    elseif splitext(file_name)[2] == ".txt"
+        locs = import_locs_txt(file_name)
     else
         @error "Unknown file format."
     end
@@ -178,6 +181,7 @@ Accepted formats:
 - CSD
 - GEO
 - MAT
+- TXT
 
 Channel locations:
 
