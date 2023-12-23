@@ -34,7 +34,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})
 
     for file_idx in 1:length(file_name)
 
-        @assert isfile(file_name[file_idx]) "File $(file_name[file_idx]) does not exist!"
+        @assert isfile(file_name[file_idx]) "File $(file_name[file_idx]) cannot be loaded."
 
         # load data
         img = Gray.(FileIO.load(file_name[file_idx]))

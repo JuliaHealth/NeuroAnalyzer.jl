@@ -172,8 +172,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     end
 
     if sampling_rate isa Int64
-        header = zeros(UInt8, data_offset)
-        readbytes!(fid, header, data_offset)
+        seek(fid, data_offset)
         data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
         annotations = String[]
 
@@ -205,9 +204,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
             error("File $file_name cannot be loaded.")
         end
 
-        header = zeros(UInt8, data_offset)
-        readbytes!(fid, header, data_offset)
-
+        seek(fid, data_offset)
         data_size = filesize(file_name) - data_offset
         signal = UInt8[]
         readbytes!(fid, signal, data_size, all=true)

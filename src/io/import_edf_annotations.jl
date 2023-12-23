@@ -145,8 +145,7 @@ function import_edf_annotations(file_name::String)
         error("File $file_name cannot be loaded.")
     end
 
-    header = zeros(UInt8, data_offset)
-    readbytes!(fid, header, data_offset)
+    seek(fid, data_offset)
     data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
     annotations = String[]
     for idx1 in 1:data_records

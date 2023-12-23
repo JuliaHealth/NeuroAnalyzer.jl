@@ -9,7 +9,7 @@ Load Neuroscan continuous signal file.
 
 - `file_name::String`: name of the file to load
 - `detect_type::Bool=true`: detect channel type based on its label
-- `data_format::Symbol=:i32`
+- `data_format::Symbol=:i32`: Neuroscan stores data either in 16-bit (`:i16`) or 32-bit (`:i32`) representation, but does not say so in the file format
 
 # Returns
 

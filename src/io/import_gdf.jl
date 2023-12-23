@@ -353,8 +353,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     catch
         error("File $file_name cannot be loaded.")
     end
-    header = UInt8[]
-    readbytes!(fid, header, header_bytes)
+    seek(fid, header_bytes)
 
     # check TLV header
     if file_type_ver >= 2.10 && (etv_hdr - (ch_n + 1)) * 256 > 0
