@@ -264,18 +264,14 @@ Plot weights at electrode positions.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 
-    # remove non-signal channels
-    obj_tmp = deepcopy(obj)
-    keep_channel_type!(obj_tmp, type=obj_tmp.header.recording[:data_type])
+    _check_channels(obj, ch, datatype(obj))
 
-    _check_channels(obj, ch, obj.header.recording[:data_type])
-
-    p = plot_connections(obj_tmp.locs, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
+    p = plot_connections(obj, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
 
     Plots.plot!(p, title=title)
 

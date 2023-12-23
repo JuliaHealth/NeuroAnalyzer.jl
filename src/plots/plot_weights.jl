@@ -217,16 +217,11 @@ Plot weights at electrode positions.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    # remove reference and EOG channels
-    ch = vec(collect(ch))
-    setdiff!(ch, get_channel_bytype(obj, type="ref"))
-    setdiff!(ch, get_channel_bytype(obj, type="eog"))
-
-    _check_channels(signal_channels(obj), ch)
+    _check_channels(obj, ch)
 
     p = plot_weights(obj.locs, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
 
