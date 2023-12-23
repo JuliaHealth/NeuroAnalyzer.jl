@@ -14,6 +14,7 @@ export channel_cluster
 export band_frq
 export describe
 export size
+export datatype
 
 """
     sr(obj)
@@ -605,5 +606,24 @@ Return size of the `obj` data.
 function Base.size(obj::NeuroAnalyzer.NEURO)
     
     return size(obj.data)
+
+end
+
+"""
+    datatype(obj)
+
+Return data type of the `obj`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `data_type::String`
+"""
+function datatype(obj::NeuroAnalyzer.NEURO)
+    
+    return obj.header.recording[:data_type]
 
 end
