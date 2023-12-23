@@ -9,6 +9,7 @@ export import_locs_geo
 export import_locs_mat
 export import_locs_txt
 export import_locs_dat
+export import_locs_asc
 
 """
     import_locs(file_name)
@@ -24,6 +25,7 @@ Load channel locations. Supported formats:
 - MAT
 - TXT
 - DAT
+- ASC
 
 This is a meta-function that triggers appropriate `import_locs_*()` function. File format is detected based on file extension.
 
@@ -60,6 +62,10 @@ function import_locs(file_name::String)
         locs = import_locs_mat(file_name)
     elseif splitext(file_name)[2] == ".txt"
         locs = import_locs_txt(file_name)
+    elseif splitext(file_name)[2] == ".dat"
+        locs = import_locs_dat(file_name)
+    elseif splitext(file_name)[2] == ".asc"
+        locs = import_locs_asc(file_name)
     else
         @error "Unknown file format."
     end
@@ -651,6 +657,70 @@ function import_locs_dat(file_name::String)
     locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_center!(locs, polar=false, spherical=false)
+    locs_cart2pol!(locs)
+    locs_cart2sph!(locs)
+    locs_normalize!(locs)
+    _locs_round!(locs)
+
+    return locs
+
+end
+
+"""
+    import_locs_asc(file_name)
+
+Load channel locations from ASC file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function import_locs_asc(file_name::String)
+
+    @assert isfile(file_name) "$file_name not found."
+    @assert splitext(file_name)[2] == ".asc" "Not ASC file."
+
+    buffer = readlines(file_name)
+    # remove comments
+    for idx in length(buffer):-1:1
+        buffer[idx][1] == ';' && deleteat!(buffer, idx)
+    end
+    labels = String[]
+    for idx in 1:length(buffer)
+        buffer[idx][1] == '#' && push!(labels, buffer[idx])
+    end
+    labels_regexp = match.(r"\#.+ (.+)", labels)
+    clabels = String[]
+    for idx in 1:length(labels_regexp)
+        push!(clabels, labels_regexp[idx][1])
+    end
+    buffer = buffer[length(labels) + 1:2 * length(labels)]
+    locs = zeros(length(labels), 4)
+    locs_regexp = match.(r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)", buffer)
+    for idx in 1:length(labels_regexp)
+        locs[idx, 1] = parse(Float64, strip(locs_regexp[idx][3]))
+        locs[idx, 2] = parse(Float64, strip(locs_regexp[idx][4]))
+        locs[idx, 3] = parse(Float64, strip(locs_regexp[idx][5]))
+        locs[idx, 4] = parse(Float64, strip(locs_regexp[idx][6]))
+    end
+
+    x = locs[:, 1]
+    y = locs[:, 2]
+    z = zeros(length(clabels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
+
+    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+
+    locs_center!(locs, polar=false, spherical=false)
+    locs_flipy!(locs)
     locs_cart2pol!(locs)
     locs_cart2sph!(locs)
     locs_normalize!(locs)

@@ -18,14 +18,15 @@ Named tuple containing:
 
 # Notes
 
-Kendall's coefficient of concordance ranges from 0 to 1, with 0 meaning no agreement across raters (judges).
-H0 (Friedman) is that the treatments are equal
-H0 (Kendall) is that there is agreement between rankings or test results.
+- H0 (Friedman) is that the treatments are equal
+- H0 (Kendall) is that there is agreement between rankings or test results
+- Kendall's coefficient of concordance ranges from 0 to 1, with 0 meaning no agreement across raters (judges)
 """
 function friedman(m::AbstractMatrix)
     rs = zeros(eltype(m), size(m, 1))
     k = size(m, 2)
     n = size(m, 1)
+    @assert k >= 2 "Data must have at least two groups."
     for idx in 1:size(m, 2)
         r = ordinalrank(m[:, idx])
         rs .+= r

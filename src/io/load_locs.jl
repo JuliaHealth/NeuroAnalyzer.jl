@@ -17,6 +17,7 @@ Accepted formats:
 - MAT
 - TXT
 - DAT
+- ASC
 
 Channel locations:
 
@@ -66,6 +67,8 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
         locs = import_locs_txt(file_name)
     elseif splitext(file_name)[2] == ".dat"
         locs = import_locs_dat(file_name)
+    elseif splitext(file_name)[2] == ".asc"
+        locs = import_locs_asc(file_name)
     else
         @error "Unknown file format."
     end
@@ -186,6 +189,7 @@ Accepted formats:
 - MAT
 - TXT
 - DAT
+- ASC
 
 Channel locations:
 
