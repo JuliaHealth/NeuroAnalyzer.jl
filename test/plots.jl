@@ -114,7 +114,7 @@ p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1), amethod=:median, imethod=:nn)
 
 @info "test 11/31: plot_matrix()"
 c = corm(e10)
-channels = signal_channels(e10)
+channels = get_channel_bytype(obj, type=datatype(e10))
 p = NeuroAnalyzer.plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
 @test p isa Plots.Plot{Plots.GRBackend}
 

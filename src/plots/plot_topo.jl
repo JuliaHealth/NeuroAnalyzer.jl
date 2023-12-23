@@ -296,31 +296,21 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
         end
     end
 
-    # remove non-signal channels
-    obj_tmp = keep_channel(obj, ch=signal_channels(obj))
-
-    # remove reference and EOG channels
-    ch = vec(collect(ch))
-    setdiff!(ch, get_channel_bytype(obj_tmp, type="ref"))
-    setdiff!(ch, get_channel_bytype(obj_tmp, type="eog"))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
-
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
-    _check_channels(obj_tmp, ch)
+    _check_channels(obj, ch)
 
-    @assert length(ch) <= nrow(obj_tmp.locs) "Some channels do not have locations."
+    @assert length(ch) <= nrow(obj.locs) "Some channels do not have locations."
 
     # get time vector
-    if seg[2] <= epoch_len(obj_tmp)
-        s = obj_tmp.data[ch, seg[1]:seg[2], 1]
+    if seg[2] <= epoch_len(obj)
+        s = obj.data[ch, seg[1]:seg[2], 1]
     else
-        s = epoch(obj_tmp, ep_n=1).data[ch, seg[1]:seg[2], 1]
+        s = epoch(obj, ep_n=1).data[ch, seg[1]:seg[2], 1]
     end
-    # t = _get_t(seg[1], seg[2], sr(obj_tmp))
+    # t = _get_t(seg[1], seg[2], sr(obj))
     t = obj.time_pts[seg[1]:seg[2]]
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj_tmp, seg[1], seg[2])
+    ep = _s2epoch(obj, seg[1], seg[2])
     
     # average signal and convert to vector
     if size(s, 2) > 1
@@ -340,7 +330,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=ch, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
+    p = plot_topo(s, ch=ch, locs=obj.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
 
     Plots.plot(p)
 
@@ -429,40 +419,30 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
         end
     end
 
-    # remove non-signal channels
-    obj_tmp = keep_channel(obj, ch=signal_channels(obj))
-
-    # remove reference and EOG channels
-    c_idx = vec(collect(c_idx))
-    setdiff!(c_idx, get_channel_bytype(obj_tmp, type="ref"))
-    setdiff!(c_idx, get_channel_bytype(obj_tmp, type="eog"))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
-
     # select component channels, default is all channels
-    c isa Symbol && (c = _get_component(obj_tmp, c).c)
+    c isa Symbol && (c = _get_component(obj, c).c)
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     clabels = _gen_clabels(c)[c_idx]
     c_idx isa Int64 && (clabels = [clabels])
 
     @assert length(c_idx) >= 2 "plot_topo() requires ≥ 2 channels."
-    @assert length(c_idx) <= nrow(obj_tmp.locs) "Some channels do not have locations."
+    @assert length(c_idx) <= nrow(obj.locs) "Some channels do not have locations."
 
     # get time vector
     if time_segment
-        if seg[2] <= epoch_len(obj_tmp)
+        if seg[2] <= epoch_len(obj)
             s = c[c_idx, seg[1]:seg[2], 1]
         else
             s = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
         end
         if seg[1] != seg[2]
-            t = _get_t(seg[1], seg[2], sr(obj_tmp))
+            t = _get_t(seg[1], seg[2], sr(obj))
         else
-            t = _get_t(seg[1], seg[2] + 1, sr(obj_tmp))
+            t = _get_t(seg[1], seg[2] + 1, sr(obj))
         end
         _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-        ep = _s2epoch(obj_tmp, seg[1], seg[2])
+        ep = _s2epoch(obj, seg[1], seg[2])
     else
         s = c
     end
@@ -490,7 +470,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=c_idx, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
+    p = plot_topo(s, ch=c_idx, locs=obj.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
 
     Plots.plot(p)
 

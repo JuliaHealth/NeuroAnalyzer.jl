@@ -271,7 +271,7 @@ function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real},
 
     _check_channels(obj, ch, datatype(obj))
 
-    p = plot_connections(obj, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
+    p = plot_connections(obj.locs, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
 
     Plots.plot!(p, title=title)
 
