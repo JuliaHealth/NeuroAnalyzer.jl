@@ -143,6 +143,49 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         paint(ctx)
     end
 
+    can.mouse.button1press = @guarded (widget, event) -> begin
+        time_current = get_gtk_property(entry_time, :value, Float64)
+        x_pos = event.x
+        x_pos < 52 && (x_pos = 52)
+        x_pos > 1182 && (x_pos = 1182)
+        if time_current + zoom < obj.time_pts[end]
+            ts1 = time_current + round((x_pos - 52) / (1130 / zoom), digits=3)
+        else
+            ts1 = time_current + round((x_pos - 52) / (1130 / (obj.time_pts[end] - time_current)), digits=3)
+        end
+        snap && (ts1 = round(ts1 * 4) / 4)
+        round(ts1, digits=3)
+        Gtk.@sigatom begin
+            set_gtk_property!(entry_ts1, :value, ts1)
+        end
+    end
+
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        if event.direction == 1 # down
+            if ch_last < ch[end]
+                ch_first += 1
+                ch_last += 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                end
+                draw(can)
+            end
+        elseif event.direction == 0 # up
+            if ch_first > 1
+                ch_first -= 1
+                ch_last -= 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                end
+                draw(can)
+            end
+        end
+    end
+
     signal_connect(bt_chdown, "clicked") do widget
         if ch_last < ch[end]
             ch_first += 1

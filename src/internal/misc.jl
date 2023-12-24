@@ -150,7 +150,7 @@ function _fread(fid, n, t)
     t === :f64 && return Float64(map(ltoh, reinterpret(Float64, header))[1])
 end
 
-function _v2s(x::Vector{Int64})
+function _vint2str(x::Vector{Int64})
     s = strip(String(Char.(x)))
     return replace(s, "\0"=>"")
 end
