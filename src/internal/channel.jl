@@ -35,9 +35,7 @@ function _ch_units(ch_type::String)
     return u
 end
 
-function _ch_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
-    return _ch_units(obj.header.recording[:channel_type][ch])
-end
+_ch_units(obj::NeuroAnalyzer.NEURO, ch::Int64) = _ch_units(obj.header.recording[:channel_type][ch])
 
 function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     if ch isa Int64

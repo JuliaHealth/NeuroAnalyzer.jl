@@ -75,17 +75,13 @@ function _locs_remove_nans!(locs::DataFrame)
     end
 end
 
-function _locs_round(obj::NeuroAnalyzer.NEURO)
-    return _locs_round(obj.locs)
-end
+_locs_round(obj::NeuroAnalyzer.NEURO) = _locs_round(obj.locs)
 
 function _locs_round!(obj::NeuroAnalyzer.NEURO)
     obj.locs = _locs_round(obj.locs)
 end
 
-function _has_locs(obj::NeuroAnalyzer.NEURO)
-    return nrow(obj.locs) > 0 ? true : false
-end
+_has_locs(obj::NeuroAnalyzer.NEURO) = nrow(obj.locs) > 0 ? true : false
 
 function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
     xy = normalize_minmax(hcat(x, y))
@@ -150,3 +146,6 @@ function _angle_quadrant(a::Real)
     end
     return q    
 end 
+
+_xyz2dist(x, y, z) = sqrt(x^2 + y^2 + z^2)
+
