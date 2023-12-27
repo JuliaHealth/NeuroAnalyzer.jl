@@ -2,11 +2,11 @@ __precompile__()
 
 module NeuroAnalyzer
 
-@assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
+@assert VERSION >= v"1.10.0" "This version of NeuroAnalyzer requires Julia 1.10.0 or above."
 
 # set constants
 
-const VER = v"0.24.01"
+const VER = v"0.24.1"
 const allow_wip = occursin("dev", string(VER))  # false for the stable branch, true for the devel branch
 const io = PipeBuffer()                         # required for interactive preview
 const data_types = ["eeg",
