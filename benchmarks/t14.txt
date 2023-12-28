@@ -6,7 +6,7 @@ RAM: 17.2 GB free / 22.7 GB
 
 # Loading NeuroAnalyzer.jl
 
- 81.715775 seconds (13.39 M allocations: 879.602 MiB, 1.03% gc time, 2.63% compilation time: 61% of which was recompilation)
+ 12.786360 seconds (14.64 M allocations: 962.063 MiB, 6.08% gc time, 17.93% compilation time: 42% of which was recompilation)
 
 # NeuroAnalyzer info
 
