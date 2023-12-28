@@ -64,7 +64,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
 
     phd = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if avg === :phase
                 ref_channels = setdiff(ch, ch_idx)

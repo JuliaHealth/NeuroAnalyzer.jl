@@ -50,7 +50,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     Gs_inv_sum = sum(Gs_rs)
 
     obj_new = deepcopy(obj)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         data = @views obj.data[chs, :, ep_idx]
         # dataGs = data[chs, :]' / Gs
         dataGs = Gs / data'
@@ -148,7 +148,7 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)
 
     # compute all cosine distances
     Threads.@threads for i = 1:ch_n
-        @inbounds @simd  for j = 1:ch_n
+        @inbounds  for j = 1:ch_n
             cosdist[i, j]  =  1 - (( (x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2 ) / 2 )
         end
     end
@@ -156,17 +156,17 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)
     # compute Legendre polynomial
     legpoly = zeros(n, ch_n, ch_n)
     Threads.@threads for idx1 in 1:n
-        @inbounds @simd for idx2 in 1:ch_n
+        @inbounds for idx2 in 1:ch_n
             legpoly[idx1, idx2, :] = @views legendre.(cosdist[idx2, :], idx1)
         end
     end
 
     # compute G and H
     Threads.@threads for i = 1:ch_n
-        @inbounds @simd for j = 1:ch_n
+        @inbounds for j = 1:ch_n
             g = 0
             h = 0
-            @inbounds @simd for idx_n = 1:n
+            @inbounds for idx_n = 1:n
                 g = g + ((2.0 * idx_n + 1.0) * legpoly[idx_n, i, j] / ((idx_n * (idx_n + idx_n))^m))
                 h = h - ((2.0 * (idx_n + 1.0) * legpoly[idx_n, i, j]) / ((idx_n * (idx_n + idx_n))^(m - 1)))
             end

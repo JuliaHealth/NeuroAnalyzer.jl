@@ -59,7 +59,7 @@ function wbp(s::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6
     ep_n = size(s, 3)
 
     s_new = similar(s)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views wbp(s[ch_idx, :, ep_idx], pad=pad, frq=frq, fs=fs, ncyc=ncyc)
         end

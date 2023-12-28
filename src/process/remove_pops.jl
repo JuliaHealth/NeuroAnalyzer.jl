@@ -233,7 +233,7 @@ function remove_pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     @assert window <= signal_len(obj) "window must be ≤ $(signal_len(obj) / sr(obj))."
     ch_n = size(s, 1)
 
-    @inbounds @simd for ch_idx in 1:ch_n
+    @inbounds for ch_idx in 1:ch_n
         for window_idx in Int64.(1:window:(signal_len(obj) - signal_len(obj) % window))
             p = @views remove_pops(obj_new.data[ch[ch_idx], Int64.(window_idx:(window_idx + window - 1)), 1], repair=repair, r=r)
             if p !== nothing

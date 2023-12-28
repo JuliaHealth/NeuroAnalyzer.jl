@@ -58,7 +58,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector
     # initialize progress bar
     progress_bar == true && (progbar = Progress(ep_n * ep_len, dt=1, barlen=20, color=:white))
 
-    @inbounds @simd for ep_idx in eachindex(ep)
+    @inbounds for ep_idx in eachindex(ep)
         Threads.@threads for length_idx in 1:ep_len
             s_tmp, x, y = @views _interpolate2d(obj_tmp.data[chs, length_idx, ep[ep_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for ch_idx in eachindex(ch)

@@ -115,7 +115,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=true)
     sp = similar(s)
     sph = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             hc[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
         end
@@ -162,7 +162,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
         sp = zeros(ch_n, fft_size ÷ 2, ep_n)
     end        
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if h == true
                 c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)

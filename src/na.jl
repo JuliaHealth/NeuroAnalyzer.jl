@@ -250,7 +250,7 @@ Change `use_cuda` preference.
 function na_set_use_cuda(use_cuda::Bool)
 
     @set_preferences!("use_cuda" => use_cuda)
-    _info("New option value set, restart your Julia session for this change to take effect.")
+    _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 
@@ -266,7 +266,7 @@ Change `progress_bar` preference.
 function na_set_progress_bar(progress_bar::Bool)
 
     @set_preferences!("progress_bar" => progress_bar)
-    _info("New option value set, restart your Julia session for this change to take effect.")
+    _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 
@@ -301,7 +301,7 @@ Change `verbose` preference.
 function na_set_verbose(verbose::Bool)
 
     @set_preferences!("verbose" => verbose)
-    _info("New option value set, restart your Julia session for this change to take effect.")
+    _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 

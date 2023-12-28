@@ -129,7 +129,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int
         end
     end
 
-    @inbounds @simd for frq_idx in 1:frq_n
+    @inbounds for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, sf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=false)
         cs[frq_idx, :] = tconv(s .* w, kernel=kernel)
@@ -189,7 +189,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
     sp = zeros(length(sf), length(s))
     sph = zeros(length(sf), length(s))
 
-    @inbounds @simd for frq_idx in eachindex(sf)
+    @inbounds for frq_idx in eachindex(sf)
         s_tmp = filter_g(s .* w, fs=fs, f=sf[frq_idx], gw=gw)
         sp[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
         sph[frq_idx, :] = angle.(hilbert(s_tmp))
@@ -319,7 +319,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     # initialize progress bar
     progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if method === :stft
                 sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)

@@ -48,7 +48,7 @@ function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
     idx = zeros(length(y))
     d = zeros(length(y))
 
-    @inbounds @simd for y_idx in eachindex(y)
+    @inbounds for y_idx in eachindex(y)
         d[y_idx], idx[y_idx] = findmin(abs.(x .- y[y_idx]))
     end
 
@@ -76,7 +76,7 @@ function vsplit(x::AbstractVector, n::Int64=1)
 
     x_m = reshape(x, length(x) ÷ n, n)
     result = [x_m[1, :]]
-    @inbounds @simd for idx in 2:size(x_m, 1)
+    @inbounds for idx in 2:size(x_m, 1)
         result = vcat(result, [x_m[idx, :]])
     end
 

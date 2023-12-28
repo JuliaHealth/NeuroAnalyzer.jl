@@ -43,7 +43,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     lst = findall(wl_idx .== 1)
     dc = zeros(3, ep_len, length(lst), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         dod = @views obj_new.data[ch, :, ep_idx]
 
         for idx=eachindex(lst)

@@ -147,5 +147,4 @@ function _angle_quadrant(a::Real)
     return q    
 end 
 
-_xyz2dist(x, y, z) = sqrt(x^2 + y^2 + z^2)
-
+_xyz2r(x, y, z) = sqrt(x^2 + y^2 + z^2)

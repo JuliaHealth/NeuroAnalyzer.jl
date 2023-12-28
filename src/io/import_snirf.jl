@@ -33,9 +33,9 @@ function import_snirf(file_name::String; n::Int64=0)
     file_type = "SNIRF"
 
     if typeof(nirs["formatVersion"]) == Vector{String}
-        parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected.")
+        parse(Float64, nirs["formatVersion"][1]) > 1.0 && _info("SNIRF version >1.0 detected")
     else
-        parse(Float64, nirs["formatVersion"]) > 1.0 && _info("SNIRF version >1.0 detected.")
+        parse(Float64, nirs["formatVersion"]) > 1.0 && _info("SNIRF version >1.0 detected")
     end
 
     # check for multi-subject recordings

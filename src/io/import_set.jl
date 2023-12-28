@@ -56,7 +56,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     dataset["trials"] isa Float64 && (ep_n = Int(dataset["trials"]))
     if ndims(data) == 3
         ep_n == size(data, 2)
-        _info("$ep_n epochs found.")
+        _info("$ep_n epochs found")
     end
     ndims(data) == 2 && (data = data[:, :, :])
 
@@ -168,7 +168,7 @@ function import_set(file_name::String; detect_type::Bool=true)
         for idx in nrow(locs):-1:1
             (chanlocs["X"][:][idx] isa Float64 && chanlocs["Y"][:][idx] isa Float64 && chanlocs["Z"][:][idx] isa Float64) || deleteat!(locs, idx)
         end
-        nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found.")
+        nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found")
         if nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
             locs_normalize!(locs)

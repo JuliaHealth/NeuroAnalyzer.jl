@@ -87,7 +87,7 @@ function covm(s::AbstractArray; norm::Bool=false)
     progress_bar == true && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
 
     cm = zeros(ch_n, ch_n, ep_len, ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         if use_cuda
             CUDA.synchronize()
             for s_idx in 1:ep_len

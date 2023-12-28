@@ -23,7 +23,7 @@ function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRan
 
     ad = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         for ch_idx in 1:ch_n
             ref_ch = setdiff(ch, ch_idx)
             amp_ref = @views vec(mean(s[ref_ch, :, ep_idx], dims=1))

@@ -44,7 +44,7 @@ function denoise_wavelet(s::AbstractArray; wt::T) where {T<:DiscreteWavelet}
 
     s_new = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views denoise_wavelet(s[ch_idx, :, ep_idx], wt=wt)
         end

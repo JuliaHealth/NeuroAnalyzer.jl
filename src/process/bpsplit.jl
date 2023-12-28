@@ -35,7 +35,7 @@ function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         band_f = band_frq(obj, band=bn[band_idx])
         push!(bf, band_f)
         flt = filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=epoch_len(obj))
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 s[band_idx, ch_idx, :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt)
             end

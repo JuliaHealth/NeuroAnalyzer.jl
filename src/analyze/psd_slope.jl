@@ -89,7 +89,7 @@ function psd_slope(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}=(0, fs / 2)
     lf = zeros(ch_n, length(lf), ep_n)
     ls = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             lf[ch_idx, :, ep_idx], ls[ch_idx, ep_idx], _ = psd_slope(s[ch_idx, :, ep_idx], fs=fs, f=f, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end

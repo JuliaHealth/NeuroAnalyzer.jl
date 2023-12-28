@@ -99,7 +99,7 @@ function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::
     ep_n = size(s, 3)
 
     s_new = similar(s)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views detrend(s[ch_idx, :, ep_idx], type=type, offset=offset, order=order, f=f)
         end

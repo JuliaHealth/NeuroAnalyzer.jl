@@ -117,7 +117,7 @@ function psd(s::AbstractMatrix; fs::Int64, norm::Bool=false, method::Symbol=:wel
 
     pw = zeros(ch_n, length(pf))
 
-    @inbounds @simd for ch_idx in 1:ch_n
+    @inbounds for ch_idx in 1:ch_n
         pw[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
     end
     
@@ -163,7 +163,7 @@ function psd(s::AbstractArray; fs::Int64, norm::Bool=false, method::Symbol=:welc
 
     pw = zeros(ch_n, length(pf), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end
@@ -273,7 +273,7 @@ function mwpsd(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
     pw = zeros(length(pf))
 
     pad > 0 && (s = pad0(s, pad))
-    @inbounds @simd for frq_idx in 1:frq_n
+    @inbounds for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, pf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # w_conv = fconv(s .* w, kernel=kernel, norm=true)
         w_conv = tconv(s .* w, kernel=kernel)
@@ -315,7 +315,7 @@ function mwpsd(s::AbstractMatrix; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
     _, pf = mwpsd(s[1, :], pad=pad, norm=norm, fs=fs, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     pw = zeros(ch_n, length(pf))
 
-    @inbounds @simd for ch_idx in 1:ch_n
+    @inbounds for ch_idx in 1:ch_n
         pw[ch_idx, :], _ = @views mwpsd(s[ch_idx, :], pad=pad, norm=norm, fs=fs, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     end
 
@@ -356,7 +356,7 @@ function mwpsd(s::AbstractArray; pad::Int64=0, norm::Bool=true, fs::Int64, frq_n
     # initialize progress bar
     progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw[ch_idx, :, ep_idx], _ = @views mwpsd(s[ch_idx, :, ep_idx], pad=pad, norm=norm, fs=fs, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
 

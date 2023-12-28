@@ -46,7 +46,7 @@ function rmse(s1::AbstractArray, s2::AbstractArray)
     
     r = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             r[ch_idx, ep_idx] = @views rmse(s1[ch_idx, :, ep_idx], s1[ch_idx, :, ep_idx])
         end

@@ -54,7 +54,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
         progress_bar == true && (progbar = Progress(length(ch), dt=1, barlen=20, color=:white))
 
         # Threads.@threads for ch_idx in eachindex(ch)
-        @inbounds @simd for ch_idx in eachindex(ch)
+        @inbounds for ch_idx in eachindex(ch)
             # detect power line peak
             p, f = psd(obj_new, ch=ch[ch_idx], norm=true)
             p = p[:]
@@ -103,7 +103,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             bw_values = collect(0:q:5.0)[2:end]
             if n > 0
                 best_bw = zeros(n)
-                @inbounds @simd for peak_idx in 1:n
+                @inbounds for peak_idx in 1:n
                     v = zeros(length(bw_values))
                     Threads.@threads for bw_idx in eachindex(bw_values)
                         obj_tmp = NeuroAnalyzer.filter(obj_new, ch=ch[ch_idx], fprototype=:iirnotch, cutoff=pks_frq[peak_idx], bw=bw_values[bw_idx])
@@ -116,7 +116,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
                     end
                     best_bw[peak_idx] = bw_values[vsearch(minimum(v), v)]
                 end
-                @inbounds @simd for peak_idx in 1:n
+                @inbounds for peak_idx in 1:n
                     NeuroAnalyzer.filter!(obj_new, ch=ch[ch_idx], fprototype=:iirnotch, cutoff=pks_frq[peak_idx], bw=best_bw[peak_idx])
                 end
                 push!(pks_best_bw, best_bw)

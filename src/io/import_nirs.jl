@@ -31,8 +31,8 @@ function import_nirs(file_name::String)
 
     file_type = "NIRS"
 
-    "d" in keys(nirs) || _info("This is not NIRS file.")
-    "t" in keys(nirs) || _info("This is not NIRS file.")
+    @assert "d" in keys(nirs) "File $file_name is not NIRS file."
+    @assert "t" in keys(nirs) "File $file_name is not NIRS file."
 
     # time points
     time_pts = nirs["t"][:]

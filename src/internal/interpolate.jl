@@ -12,7 +12,7 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
     interpolated_y = round.(interpolated_y, digits=2)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
 
-    @inbounds @simd for idx1 in 1:interpolation_factor
+    @inbounds for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
         end
@@ -29,7 +29,7 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
     imethod === :nn && (itp = ScatteredInterpolation.interpolate(NearestNeighbor(), electrode_locations, s))
     imethod === :ga && (itp = ScatteredInterpolation.interpolate(Gaussian(), electrode_locations, s))
 
-    @inbounds @simd for idx1 in 1:interpolation_factor
+    @inbounds for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end

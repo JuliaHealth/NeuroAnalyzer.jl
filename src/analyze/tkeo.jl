@@ -27,7 +27,7 @@ function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method:
         tk[1] = s[1]
         tk[end] = s[end]
 
-        @inbounds @simd for idx in 2:(length(s) - 1)
+        @inbounds for idx in 2:(length(s) - 1)
             tk[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
         end
         
@@ -76,7 +76,7 @@ function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::
 
     tk = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             tk[ch_idx, :, ep_idx] = @views tkeo(s[ch_idx, :, ep_idx], t, method=method)
         end

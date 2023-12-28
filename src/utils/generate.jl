@@ -54,7 +54,7 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
         w = @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
     elseif type === :triangle
         w = zeros(n)
-        @inbounds @simd for idx in 1:((n ÷ 2) + 1)
+        @inbounds for idx in 1:((n ÷ 2) + 1)
             w[idx] = @. (idx * (idx + 1)) / 2
         end
         w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
@@ -62,13 +62,13 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     elseif type === :exp
         w = ones(n)
         if mod(n, 2) == 0
-            @inbounds @simd for idx in 1:(n ÷ 2)
+            @inbounds for idx in 1:(n ÷ 2)
                 w[idx] = 1 / idx
             end
             w[1:((n ÷ 2))] = reverse(w[1:((n ÷ 2))])
             w[((n ÷ 2) + 1):n] = reverse(w[1:(n ÷ 2)])
         else
-            @inbounds @simd for idx in 1:((n ÷ 2) + 1)
+            @inbounds for idx in 1:((n ÷ 2) + 1)
                 w[idx] = 1 / idx
             end
             w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])

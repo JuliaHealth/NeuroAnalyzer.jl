@@ -53,7 +53,7 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)
             e = Loess.predict(model, x)
         end
     else
-        _info("Less than 5 peaks detected, using Loess.")
+        _info("Less than 5 peaks detected, using Loess")
         model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
         e = Loess.predict(model, x)
     end
@@ -108,7 +108,7 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)
             e = Loess.predict(model, x)
         end
     else
-        _info("Less than 5 peaks detected, using Loess.")
+        _info("Less than 5 peaks detected, using Loess")
         model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
         e = Loess.predict(model, x)
     end
@@ -148,7 +148,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     t_env = zeros(ch_n, epoch_len(obj), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             t_env[ch_idx, :, ep_idx] = @views env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
         end
@@ -201,7 +201,7 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         t_env_u = zeros(length(s_t), ep_n)
         t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             t_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
             t_env_u[:, ep_idx] = @views @. t_env_m[:, ep_idx] + s
@@ -214,7 +214,7 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         t_env_u = zeros(length(s_t), ch_n)
         t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             t_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
             t_env_u[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] + s
@@ -281,7 +281,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         t_env_u = zeros(length(s_t), ep_n)
         t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             t_env_m[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims=1)
             for m_idx in 1:length(s_t)
                 t_env_u[m_idx, ep_idx], t_env_l[m_idx, ep_idx] = ci_median(s_a[:, m_idx, ep_idx])
@@ -294,7 +294,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         t_env_u = zeros(length(s_t), ch_n)
         t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             t_env_m[:, ch_idx] = @views median(s_a[ch_idx, :, :], dims=2)
             for m_idx in 1:length(s_t)
                 t_env_u[m_idx, ch_idx], t_env_l[m_idx, ch_idx] = ci_median(s_a[ch_idx, m_idx, :])
@@ -358,7 +358,7 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     p_env = zeros(ch_n, length(pw), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
             p_env[ch_idx, :, ep_idx] = env_up(pw, pf, d=d)
@@ -424,7 +424,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_u = zeros(length(pf), ep_n)
         p_env_l = zeros(length(pf), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             p_env_m[:, ep_idx] = @views mean(pw[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
             p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + s
@@ -437,7 +437,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_u = zeros(length(pf), ch_n)
         p_env_l = zeros(length(pf), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             p_env_m[:, ch_idx] = @views mean(pw[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
             p_env_u[:, ch_idx] = @views @. p_env_m[:, ch_idx] + s
@@ -515,7 +515,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         p_env_u = zeros(length(pf), ep_n)
         p_env_l = zeros(length(pf), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             p_env_m[:, ep_idx] = @views median(pw[:, :, ep_idx], dims=1)
             for m_idx in 1:length(pf)
                 p_env_u[m_idx, ep_idx], p_env_l[m_idx, ep_idx] = ci_median(pw[:, m_idx, ep_idx])
@@ -528,7 +528,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         p_env_u = zeros(length(pf), ch_n)
         p_env_l = zeros(length(pf), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             p_env_m[:, ch_idx] = @views median(pw[ch_idx, :, :], dims=2)
             for m_idx in 1:length(pf)
                 p_env_u[m_idx, ch_idx], p_env_l[m_idx, ch_idx] = ci_median(pw[ch_idx, :, :])
@@ -610,7 +610,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     s_env = zeros(ch_n, length(st), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if method === :stft
@@ -707,7 +707,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_u = zeros(length(st), ep_n)
         s_env_l = zeros(length(st), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             s_env_m[:, ep_idx] = @views mean(sp[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
             s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + s
@@ -720,7 +720,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_u = zeros(length(st), ch_n)
         s_env_l = zeros(length(st), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             s_env_m[:, ch_idx] = @views mean(sp[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
             s_env_u[:, ch_idx] = @views @. s_env_m[:, ch_idx] + s
@@ -804,7 +804,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_u = zeros(length(st), ep_n)
         s_env_l = zeros(length(st), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             s_env_m[:, ep_idx] = @views median(sp[:, :, ep_idx], dims=1)
             for m_idx in 1:length(st)
                 s_env_u[m_idx, ep_idx], s_env_l[m_idx, ep_idx] = ci_median(sp[:, m_idx, ep_idx])
@@ -817,7 +817,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_u = zeros(length(st), ch_n)
         s_env_l = zeros(length(st), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             s_env_m[:, ch_idx] = @views median(sp[ch_idx, :, :], dims=2)
             for m_idx in 1:length(st)
                 s_env_u[m_idx, ch_idx], s_env_l[m_idx, ch_idx] = ci_median(sp[ch_idx, :, :])
@@ -868,7 +868,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     s_t = obj.epoch_time
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s = @view hamp[ch_idx, :, ep_idx]
             h_env[ch_idx, :, ep_idx] = env_up(s, s_t, d=d)
@@ -921,7 +921,7 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         h_env_u = zeros(length(s_t), ep_n)
         h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             h_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
             h_env_u[:, ep_idx] = @. h_env_m[:, ep_idx] + s
@@ -934,7 +934,7 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         h_env_u = zeros(length(s_t), ch_n)
         h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             h_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
             h_env_u[:, ch_idx] = @views @. h_env_m[:, ch_idx] + s
@@ -999,7 +999,7 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         h_env_u = zeros(length(s_t), ep_n)
         h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             h_env_m[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims=1)
             for m_idx in 1:length(s_t)
                 h_env_u[m_idx, ep_idx], h_env_l[m_idx, ep_idx] = ci_median(s_a[:, m_idx, ep_idx])
@@ -1012,7 +1012,7 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         h_env_u = zeros(length(s_t), ch_n)
         h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             h_env_m[:, ch_idx] = median(s_a[ch_idx, :, :], dims=2)
             for m_idx in 1:length(s_t)
                 h_env_u[m_idx, ch_idx], h_env_l[m_idx, ch_idx] = ci_median(s_a[ch_idx, m_idx, :])

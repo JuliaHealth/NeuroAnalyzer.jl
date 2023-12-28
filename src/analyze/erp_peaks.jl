@@ -23,7 +23,7 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)
 
     ch_n = size(obj)[1]
     p = zeros(Int64, ch_n, 2)
-    @inbounds @simd for ch_idx in 1:ch_n
+    @inbounds for ch_idx in 1:ch_n
         pp_pos = @views maximum(obj.data[ch_idx, :, 1])
         pp_neg = @views minimum(obj.data[ch_idx, :, 1])
         p[ch_idx, :] = @views [vsearch(pp_pos, obj.data[ch_idx, :, 1]), vsearch(pp_neg, obj.data[ch_idx, :, 1])]
@@ -61,7 +61,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
         
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = @views obj.data[ch_idx, t_idx, ep_idx]
             end
@@ -114,7 +114,7 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
         
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
             end
@@ -169,7 +169,7 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
         
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
             end
@@ -224,7 +224,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
         
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
             end

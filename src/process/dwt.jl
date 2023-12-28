@@ -37,7 +37,7 @@ function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <
 
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
     dwt_c[1, :] = @view dwt_coefs[:, 1]
-    @inbounds @simd for idx in 2:(l + 1)
+    @inbounds for idx in 2:(l + 1)
         dwt_c[idx, :] = @views dwt_coefs[:, (end - idx + 2)]
     end
 
@@ -72,7 +72,7 @@ function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0) where {T <:
     ch_n, ep_len, ep_n = size(s)
 
     dt = zeros(ch_n, (l + 1), ep_len, ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             dt[ch_idx, :, :, ep_idx] = @views dw_trans(s[ch_idx, :, ep_idx], wt=wt, type=type, l=l)
         end
@@ -134,7 +134,7 @@ function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: Di
     # reconstruct array of DWT coefficients as returned by Wavelets.jl functions
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
     dwt_c[:, 1] = @view dwt_coefs[1, :]
-    @inbounds @simd for idx in 2:size(dwt_coefs, 1)
+    @inbounds for idx in 2:size(dwt_coefs, 1)
         dwt_c[:, idx] = @views dwt_coefs[(end - idx + 2), :]
     end
 

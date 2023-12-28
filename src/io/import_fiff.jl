@@ -141,7 +141,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     end
 
     # # events
-    _info("Events are not supported yet.")
+    _warn("Events are not supported yet.")
     # # event channel numbers
     # event_channel = _read_fiff_data(fid, fiff_block, fiff_event_channels)
     # # 3 integers per event: [number of samples, before, after]
@@ -157,7 +157,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     @assert length(data_buffer) > 0 "Only raw data import is supported now."
     # data skip in buffers
     data_skip = _read_fiff_tag(fid, fiff_block, fiff_data_skip)
-    data_skip !== nothing && _info("data_skip is not supported yet.")
+    data_skip !== nothing && _warn("data_skip is not supported yet.")
     # # buffer containing one epoch and channel
     # epoch = _read_fiff_tag(fid, fiff_block, fiff_epoch)
     # # data skip in samples
@@ -168,7 +168,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     # time_stamp = _read_fiff_tag(fid, fiff_block, fiff_time_stamp)
 
     # locs
-    _info("Channel locations are not supported yet.")
+    _warn("Channel locations are not supported yet.")
 
     close(fid)
 

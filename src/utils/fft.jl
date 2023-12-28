@@ -174,7 +174,7 @@ function dft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     ft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)
     f = nothing
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ft[ch_idx, :, ep_idx], f = @views dft(obj.data[ch[ch_idx], :, ep_idx], fs=fs, pad=pad)
         end

@@ -49,7 +49,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     if :flat in method
         _info("Using :flat method")
         @assert w < size(obj.data, 2) "w must be < $(size(obj.data, 2))"
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
             Threads.@threads for ch_idx in 1:ch_n
@@ -71,7 +71,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     
     if :rmse in method
         _info("Using :rmse method")
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             ch_m = @views vec(median(obj.data[ch, :, ep_idx], dims=1))
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
@@ -93,7 +93,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     if :rmsd in method
         _info("Using :rmsd method")
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             ch_m = @views vec(median(obj.data[ch, :, ep_idx], dims=1))
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
@@ -115,7 +115,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     if :euclid in method
         _info("Using :euclid method")
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             ch_m = @views vec(median(obj.data[ch, :, ep_idx], dims=1))
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
@@ -143,7 +143,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         # variance outliers
         o = reshape(outlier_detect(vec(s_v), method=:iqr), ch_n, ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
             ch_v = @views vec(var(obj.data[ch, :, ep_idx], dims=2))
@@ -162,7 +162,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     if :p2p in method
         _info("Using :p2p method")
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
             Threads.@threads for ch_idx in 1:ch_n
@@ -192,7 +192,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     if :tkeo in method
         _info("Using :tkeo method")
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
             Threads.@threads for ch_idx in 1:ch_n

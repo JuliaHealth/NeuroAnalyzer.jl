@@ -46,13 +46,13 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
     Threads.@threads for idx1 in 1:(size(s1, 1) * n)
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
         sample_idx = rand(1:size(ss, 1), size(ss, 1))
-        @inbounds @simd for idx2 in 1:size(s1, 1)
+        @inbounds for idx2 in 1:size(s1, 1)
             s_tmp1[idx2, :] = @views ss[sample_idx[idx2], :]'
         end
         s1_mean = vec(mean(s_tmp1, dims=1))
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
         sample_idx = rand(1:size(ss, 1), size(ss, 1))
-        @inbounds @simd for idx2 in 1:size(s1, 1)
+        @inbounds for idx2 in 1:size(s1, 1)
             s_tmp1[idx2, :] = @views ss[sample_idx[idx2], :]'
         end
         s2_mean = vec(mean(s_tmp1, dims=1))
@@ -106,7 +106,7 @@ function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=
     sts = zeros(ep_n)
     p = zeros(ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         st[ep_idx, :], sts[ep_idx], p[ep_idx] = mdiff(s1[:, :, ep_idx], s2[:, :, ep_idx], n=n, method=method)
     end
 

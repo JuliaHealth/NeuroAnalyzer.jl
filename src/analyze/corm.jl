@@ -87,7 +87,7 @@ function corm(s::AbstractArray; norm::Bool=false)
 
     cm = zeros(ch_n, ch_n, ep_len, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         if use_cuda
             CUDA.synchronize()
             for s_idx in 1:ep_len

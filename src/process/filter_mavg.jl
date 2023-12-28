@@ -27,7 +27,7 @@ function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractV
 
     s_filtered = deepcopy(s)
 
-    @inbounds @simd for idx in (1 + k):(length(s) - k)
+    @inbounds for idx in (1 + k):(length(s) - k)
         if t > 0
             if s[idx] < mean(s) - t * std(s) || s[idx] > (mean(s) + t * std(s))
                 s_filtered[idx] = @views mean(s[(idx - k):(idx + k)] .* window)
@@ -64,7 +64,7 @@ function filter_mavg(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVe
 
     s_filtered = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_filtered[ch_idx, :, ep_idx] = @views filter_mavg(s[ch_idx, :, ep_idx], k=k, t=t, window=window)
         end

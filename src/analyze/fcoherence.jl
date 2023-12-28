@@ -109,7 +109,7 @@ function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Un
     c = zeros(length(c), ep_n)
     msc = zeros(length(msc), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         c[:, ep_idx], msc[:, ep_idx], _ = fcoherence(s1[:, :, ep_idx], s2[:, :, ep_idx], fs=fs, frq_lim=frq_lim)
     end
 

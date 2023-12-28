@@ -78,7 +78,7 @@ function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, p
     spec_all = cat(a1, a2, dims=3)
     perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
     ep_n = size(spec_all, 3)
-    @inbounds @simd for perm_idx in 1:perm_n
+    @inbounds for perm_idx in 1:perm_n
         rand_idx = sample(1:ep_n, ep_n, replace=false)
         rand_spec = @view spec_all[:, :, rand_idx]
         perm_maps[:, :, perm_idx] = @views dropdims(mean(rand_spec[:, :, (ep_n ÷ 2 + 1):end], dims=3) .- mean(rand_spec[:, :, 1:(ep_n ÷ 2)], dims=3), dims=3)

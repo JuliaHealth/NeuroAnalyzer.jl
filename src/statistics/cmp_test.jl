@@ -93,7 +93,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         # initialize progress bar
         progress_bar == true && (progbar = Progress(nperm, dt=1, barlen=20, color=:white))
 
-        @inbounds @simd for idx in 1:nperm
+        @inbounds for idx in 1:nperm
             f_idx = randperm(n1 + n2)
             f_idx[f_idx .< n1 + 1] .= 0
             f_idx[f_idx .> 0 ] .= 1
