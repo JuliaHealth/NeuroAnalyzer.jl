@@ -290,7 +290,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         end
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
-            if length(ch) == 1 && !in(ch, get_channel_bytype(obj))
+            if ch isa Int64 && !in(ch, get_channel_bytype(obj))
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -871,11 +871,11 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         end
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
-            if length(ch) == 1 && !in(ch, get_channel_bytype(obj))
+            if ch isa Int64 && !in(ch, get_channel_bytype(obj))
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif length(ch) > 1 && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))

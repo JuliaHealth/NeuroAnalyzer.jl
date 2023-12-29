@@ -43,14 +43,23 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
         channel_color = ch_n:-1:1
     end
 
-    # get range of the original signal for the scale
-    range = _get_range(s)
-
-    # normalize and shift so all channels are visible
-    # each channel is between -1.0 and +1.0
-    for idx in 1:ch_n
-        # scale by 0.5 so maxima do not overlap
-        s[idx, :] = @views normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+    if scale == true
+        # get range of the original signal for the scale
+        range = _get_range(s)
+        # normalize and shift so all channels are visible
+        s = normalize(s, method=:minmax)
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = (s[idx, :] .* 0.5) .+ (idx - 1)
+        end
+    else
+        # normalize and shift so all channels are visible
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = (normalize(s[idx, :], method=:minmax) .* 0.5) .+ (idx - 1)
+        end
     end
 
     # prepare plot
@@ -96,8 +105,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
 
     # draw scale
     if scale == true
-        p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
-        p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!([_xlims(t)[1], _xlims(t)[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
+        p = Plots.plot!(annotations=(_xlims(t)[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -113,13 +122,11 @@ Plot amplitude of single- or multi-channel `s`.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::Union{AbstractVector, AbstractArray}`: data to plot
-- `norm::Bool=false`: normalize signal for butterfly and averaged plots
-- `bad::Vector{Bool}}`: list of bad channels
+- `bad::Vector{Bool}`: list of bad channels
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
 - `scale::Bool=true`: draw scale
 - `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
@@ -140,16 +147,25 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     s = @views reverse(s[:, eachindex(t)], dims = 1)
     bad = reverse(bad)
 
-    pal = mono ? :grays : :darktest
+    pal = :darktest
 
-    # get range of the original signal for the scale
-    range = _get_range(s)
-
-    # normalize and shift so all channels are visible
-    # each channel is between -1.0 and +1.0
-    for idx in 1:ch_n
-        # scale by 0.5 so maxima do not overlap
-        s[idx, :] = @views normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+    if scale == true
+        # get range of the original signal for the scale
+        range = _get_range(s)
+        # normalize and shift so all channels are visible
+        s = normalize(s, method=:minmax)
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = s[idx, :] .* 0.5 .+ (idx - 1)
+        end
+    else
+        # normalize and shift so all channels are visible
+        # each channel is between -1.0 and +1.0
+        for idx in 1:ch_n
+            # scale by 0.5 so maxima do not overlap
+            s[idx, :] = normalize(s[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+        end
     end
 
     # prepare plot
@@ -423,8 +439,8 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     s2 = @views reverse(s2[:, eachindex(t)], dims = 1)
 
     # get range of the original signal for the scale
-    range1 = NeuroAnalyzer._get_range(s1)
-    range2 = NeuroAnalyzer._get_range(s2)
+    range1 = _get_range(s1)
+    range2 = _get_range(s2)
     range = range1 > range2 ? range1 : range2
 
     # normalize and shift so all channels are visible
@@ -441,8 +457,8 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
-                   xlims=NeuroAnalyzer._xlims(t),
-                   xticks=NeuroAnalyzer._ticks(t),
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
                    ylims=(-1, ch_n),
                    title=title,
                    palette=:darktest,
@@ -516,7 +532,7 @@ Plot signal.
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
-- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
+- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty -- plot bad channels using this list
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
 - `kwargs`: optional arguments for plot() function
 
@@ -526,8 +542,11 @@ Plot signal.
 """
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
+    obj.header.recording[:data_type] == "erp" && _warn("For ERP objects, use plot_erp()")
+    obj.header.recording[:data_type] == "mep" && _warn("For MEP objects, use plot_mep()")
+
     if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
-        seg = (0, obj.time_pts[end])
+        seg = (obj.time_pts[1], obj.time_pts[end])
     else
         _check_segment(obj, seg)
     end
@@ -587,9 +606,12 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             end
             push!(ch_tmp, ch_tmp2)
         end
-    else
+    elseif ch isa Int64
         ch_t_uni = ch_t[ch]
         ch_tmp = [[ch]]
+    else
+        ch_t_uni = ch_t[ch]
+        ch_tmp = [ch]
     end
 
     xl, yl, tt = "", "", ""
@@ -714,7 +736,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 if ch_t[ch_tmp[1][1]] == "mrk"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 end
-                if length(ch) == 1
+                if ch isa Int64
                     p = plot_signal(t,
                                     s[ch, :],
                                     clabels=[clabels[ch_tmp[1][1]]],
@@ -1246,9 +1268,11 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
             end
             push!(ch_tmp, ch_tmp2)
         end
-    else
+    elseif ch isa Int64
         ch_t_uni = ch_t[ch]
         ch_tmp = [[ch]]
+    else
+        ch_t_uni = ch_t[ch]
     end
 
     xl, yl, tt = "", "", ""
@@ -1404,7 +1428,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
 
-        if length(ch) == 1
+        if ch isa Int64
             p = plot_2signals(t,
                               s1[ch, :],
                               s2[ch, :],

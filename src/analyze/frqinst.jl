@@ -49,7 +49,7 @@ function frqinst(s::AbstractArray; fs::Int64)
     
     f = zeros(ch_n, ep_len, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             f[ch_idx, :, ep_idx] = @views frqinst(s[ch_idx, :, ep_idx], fs=fs)
         end

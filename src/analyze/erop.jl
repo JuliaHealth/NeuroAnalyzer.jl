@@ -42,10 +42,10 @@ function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=8, wlen::Int64=sr(o
 
     if frq_lim[1] < ero_f[1]
         frq_lim = (ero_f[1], frq_lim[2])
-        _info("Frequency limits truncated to: $frq_lim Hz.")
+        _info("Frequency limits truncated to: $frq_lim Hz")
     elseif frq_lim[2] > ero_f[end]
         frq_lim = (frq_lim[1], ero_f[end])
-        _info("Frequency limits truncated to: $frq_lim Hz.")
+        _info("Frequency limits truncated to: $frq_lim Hz")
     elseif frq_lim[1] > ero_f[end] || frq_lim[2] < ero_f[1]
         @error "Frequency limits must be in [$(ero_f[1]), $(ero_f[end])]."
     end

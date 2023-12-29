@@ -150,7 +150,7 @@ function get_channel_bytype(ct::Vector{String}; type::Union{String, Vector{Strin
         _check_var(type, ct, "type")
     else
         for idx in type
-            NeuroAnalyzer._check_var(idx, ct, "type")
+            _check_var(idx, ct, "type")
         end
     end
         
@@ -259,7 +259,7 @@ Set channel type.
 function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::String)
 
     type = lowercase(type)
-    NeuroAnalyzer._check_var(type, string.(NeuroAnalyzer.channel_types), "type")
+    _check_var(type, string.(NeuroAnalyzer.channel_types), "type")
 
     clabels = labels(obj)
 
@@ -386,9 +386,9 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
     
     # rename channel locs label
     if ch isa String
-        l_idx = NeuroAnalyzer._find_bylabel(obj_new.locs, ch)
+        l_idx = _find_bylabel(obj_new.locs, ch)
     else
-        l_idx = NeuroAnalyzer._find_bylabel(obj_new.locs, obj.header.recording[:labels][ch])
+        l_idx = _find_bylabel(obj_new.locs, obj.header.recording[:labels][ch])
     end
     if length(l_idx) == 1
         l_idx = l_idx[1]

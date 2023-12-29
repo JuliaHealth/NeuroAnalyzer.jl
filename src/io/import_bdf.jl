@@ -31,7 +31,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -156,7 +156,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -257,7 +257,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes="",
                               channel_type=ch_type[ch_order],
-                              reference="",
+                              reference=_detect_montage(clabels, ch_type, data_type),
                               clabels=clabels[ch_order],
                               transducers=transducers[ch_order],
                               units=units[ch_order],
@@ -275,10 +275,10 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
-    
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    _initialize_locs!(obj)
+
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
     

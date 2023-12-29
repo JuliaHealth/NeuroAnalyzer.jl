@@ -130,7 +130,7 @@ function cums(signal::Array{<:Real, 3})
     ch_n, _, ep_n = size(signal)
     signal_cs = similar(signal)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             signal_cs[ch_idx, :, ep_idx] = @views cumsum(signal[ch_idx, :, ep_idx])
         end
@@ -158,7 +158,7 @@ function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64
 
     d = zeros(size(m))
 
-    @inbounds @simd for idx1 in 1:size(m, 1)
+    @inbounds for idx1 in 1:size(m, 1)
         for idx2 in 1:size(m, 2)
             d[idx1, idx2] = euclidean(m[idx1, idx2], p)
         end

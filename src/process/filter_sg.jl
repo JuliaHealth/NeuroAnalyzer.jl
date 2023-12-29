@@ -51,7 +51,7 @@ function filter_sg(s::AbstractArray; order::Int64=6, window::Int64=11)
 
     s_filtered = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_filtered[ch_idx, :, ep_idx] = @views filter_sg(s[ch_idx, :, ep_idx], order=order, window=window)
         end

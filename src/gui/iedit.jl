@@ -15,7 +15,7 @@ Interactive edit of continuous or epoched signal.
 - `zoom::Real=5`: how many seconds are displayed in one segment
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 """
-function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
+function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
 
     if nepochs(obj) == 1
         iedit_cont(obj, ch=ch, mono=mono, zoom=zoom, snap=snap)
@@ -40,7 +40,9 @@ Interactive edit of continuous signal.
 - `zoom::Real=5`: how many seconds are displayed in one segment
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 """
-function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
+function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
+
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -415,7 +417,7 @@ Interactive edit of epoched signal.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `mono::Bool=true`: Use color or gray palette
 """
-function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=NeuroAnalyzer._c(nchannels(obj)), mono::Bool=true)
+function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), mono::Bool=true)
 
     @assert nepochs(obj) > 1 "iedit_cont() should be used for continuous object."
     _check_channels(obj, ch)

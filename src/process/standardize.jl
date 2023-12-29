@@ -22,7 +22,7 @@ function standardize(s::AbstractArray)
     scaler = Vector{ZScoreTransform{Float64, Vector{Float64}}}()
 
     s_new = similar(s)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         @views push!(scaler, StatsBase.fit(ZScoreTransform, s[:, :, ep_idx], dims=2)) 
         @views s_new[:, :, ep_idx] = StatsBase.transform(scaler[ep_idx], s[:, :, ep_idx])
     end

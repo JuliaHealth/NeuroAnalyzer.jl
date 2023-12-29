@@ -78,7 +78,7 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     s1ph = zeros(ch_n, epoch_len(obj1), ep_n)
     s2ph = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pv[ch_idx, ep_idx], sd[ch_idx, :, ep_idx], phd[ch_idx, :, ep_idx], s1ph[ch_idx, :, ep_idx], s2ph[ch_idx, :, ep_idx] = @views pli(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         end
@@ -110,7 +110,7 @@ function pli(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:Ab
 
     pv = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
                 pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views pli(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])

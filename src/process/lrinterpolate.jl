@@ -46,7 +46,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
 
     # predict
     obj_new = deepcopy(obj) 
-    @inbounds @simd for ep_idx in ep
+    @inbounds for ep_idx in ep
         df = @views DataFrame(hcat(bad_signal[ch, :, ep_idx], bad_signal[good_chs, :, ep_idx]'), :auto)
         obj_new.data[ch, :, ep_idx] = GLM.predict(linear_regressor, df)
     end

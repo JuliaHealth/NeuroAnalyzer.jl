@@ -198,7 +198,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     units = _ch_units(obj, ch[1])
 
     clabels = labels(obj)[ch]
-    length(ch) == 1 && (clabels = [clabels])
+    ch isa Int64 && (clabels = [clabels])
 
     # get frequency range
     fs = sr(obj)
@@ -207,7 +207,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     # calculate spectrogram
     length(ch) > 1 && @assert length(signal) / length(ch) >= 4 * sr(obj) "For multi-channel plot, signal length must be ≥ 4 × sampling rate (4 × $(sr(obj)) samples)."
 
-    if length(ch) == 1
+    if ch isa Int64
         xlabel == "default" && (xlabel = "Time [s]")
         ylabel == "default" && (ylabel = "Frequency [Hz]")
         if method === :stft
@@ -380,7 +380,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     clabels = _gen_clabels(c)[c_idx]
-    length(c_idx) == 1 && (clabels = [clabels])
+    c_idx isa Int64 && (clabels = [clabels])
 
     # get time vector
     if seg[2] <= epoch_len(obj)

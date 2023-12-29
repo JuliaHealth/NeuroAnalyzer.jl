@@ -30,7 +30,7 @@ function pca_decompose(s::AbstractArray; n::Int64)
     # check maximum n
     pc_tmp = []
     n_tmp = n
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         pc_tmp = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n)
         size(pc_tmp)[2] < n_tmp && (n_tmp = size(pc_tmp)[2])
     end
@@ -41,7 +41,7 @@ function pca_decompose(s::AbstractArray; n::Int64)
     pcv = zeros(n, ep_n)
     pc_model = nothing
     
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)
         # eig_val_idx = sortperm(eig_val, rev=true)
@@ -110,7 +110,7 @@ function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::Multivar
     s_new = similar(s)
     ep_n = size(s, 3)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         s_new[:, :, ep_idx] = @views MultivariateStats.reconstruct(pc_model, pc[:, :, ep_idx])
     end
 

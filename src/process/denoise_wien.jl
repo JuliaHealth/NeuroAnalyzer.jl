@@ -19,7 +19,7 @@ function denoise_wien(s::AbstractArray)
     ch_n, _, ep_n = size(s)
     s_new = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         s_m = @views mean(s[:, :, ep_idx], dims=1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m

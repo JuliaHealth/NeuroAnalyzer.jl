@@ -53,12 +53,12 @@ function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
     
     idx = zeros(Int, size(m))
     if dims == 1
-        @inbounds @simd for m_idx = 1:size(m, 2)
+        @inbounds for m_idx = 1:size(m, 2)
             # sort by columns
             idx[:, m_idx] = sortperm(m[:, m_idx], rev=rev)
         end
     else
-        @inbounds @simd for m_idx = 1:size(m, 1)
+        @inbounds for m_idx = 1:size(m, 1)
             # sort by rows
             idx[m_idx, :] = sortperm(m[m_idx, :], rev=rev)'
         end     
@@ -92,12 +92,12 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1
-        @inbounds @simd for idx = 1:size(m, 2)
+        @inbounds for idx = 1:size(m, 2)
             # sort by columns
             m_sorted[:, idx] = @views m[:, idx][m_idx]
         end
     else
-        @inbounds @simd for idx = 1:size(m, 1)
+        @inbounds for idx = 1:size(m, 1)
             # sort by rows
             m_sorted[idx, :] = @views m[idx, :][m_idx]
         end

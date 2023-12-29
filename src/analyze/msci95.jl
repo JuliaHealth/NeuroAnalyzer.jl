@@ -34,7 +34,7 @@ function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
         Threads.@threads for idx1 in 1:length(s) * n
             s_tmp2 = zeros(length(s))
             sample_idx = rand(1:length(s), length(s))
-            @inbounds @simd for idx2 in 1:length(s)
+            @inbounds for idx2 in 1:length(s)
                 s_tmp2[idx2] = s[sample_idx[idx2]]
             end
             s_tmp1[idx1] = mean(s_tmp2)
@@ -85,7 +85,7 @@ function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)
         Threads.@threads for idx1 in 1:size(s, 1) * n
             s_tmp2 = zeros(size(s))
             sample_idx = rand(1:size(s, 1), size(s, 1))
-            @inbounds @simd for idx2 in 1:size(s, 1)
+            @inbounds for idx2 in 1:size(s, 1)
                 s_tmp2[idx2, :] = s[sample_idx[idx2], :]'
             end
             s_tmp1[idx1, :] = mean(s_tmp2, dims=1)
@@ -242,7 +242,7 @@ function msci95(s1::AbstractArray, s2::AbstractArray)
     sl = zeros(ch_n, ep_n)
 
     Threads.@threads for ep_idx in 1:ep_n
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             sm[ch_idx, ep_idx], ss[ch_idx, ep_idx], su[ch_idx, ep_idx], sl[ch_idx, ep_idx] = @views msci95(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
         end
     end

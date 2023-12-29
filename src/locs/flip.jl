@@ -114,7 +114,7 @@ function locs_flipx(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
     if polar
         for idx in 1:nrow(locs)
             t = locs[idx, :loc_theta]
-            q = NeuroAnalyzer._angle_quadrant(t)
+            q = _angle_quadrant(t)
             q == 1 && (t = 90 + (90 - t))
             q == 2 && (t = 90 - (t - 90))
             q == 3 && (t = 270 + (270 - t))

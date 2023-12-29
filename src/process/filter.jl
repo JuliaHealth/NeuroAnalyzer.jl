@@ -59,7 +59,7 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
 
     if fprototype === :iirnotch
         if ftype !== nothing
-            _info("For :iirnotch filter ftype is ignored.")
+            _info("For :iirnotch filter ftype is ignored")
             ftype = nothing
         end
         @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
@@ -293,7 +293,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     _info("Signal should be tapered prior to filtering to reduce edge artifacts")
 
     if preview == true
-        _info("When `preview=true`, signal is not being filtered.")
+        _info("When `preview=true`, signal is not being filtered")
         fprototype === :iirnotch && (ftype = :bs)    
         p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
@@ -310,7 +310,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     # initialize progress bar
     progress_bar == true && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
             # update progress bar

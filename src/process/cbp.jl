@@ -54,7 +54,7 @@ function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     fs = sr(obj)
 
     obj_new = deepcopy(obj)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views cbp(obj_new.data[ch[ch_idx], :, ep_idx], pad=pad, frq=frq, fs=fs)
         end

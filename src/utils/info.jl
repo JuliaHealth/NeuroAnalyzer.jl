@@ -14,6 +14,7 @@ export channel_cluster
 export band_frq
 export describe
 export size
+export datatype
 
 """
     sr(obj)
@@ -292,9 +293,11 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("Signal length [samples]: $(signal_len(obj))")
     println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
     println("     Number of channels: $(nchannels(obj))")
-    println("       Number of epochs: $(nepochs(obj))")
-    println(" Epoch length [samples]: $(epoch_len(obj))")
-    println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+        println("       Number of epochs: $(nepochs(obj))")
+        println(" Epoch length [samples]: $(epoch_len(obj))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+    end
     if obj.header.recording[:data_type] == "eeg"
         if obj.header.recording[:reference] == ""
             println("         Reference type: unknown")
@@ -310,15 +313,17 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                 Labels: yes")
     end
-    if _has_markers(obj) == false
-        println("                Markers: no")
-    else
-        println("                Markers: yes")
-    end
-    if _has_locs(obj) == false
-        println("      Channel locations: no")
-    else
-        println("      Channel locations: yes")
+    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+        if _has_markers(obj) == false
+            println("                Markers: no")
+        else
+            println("                Markers: yes")
+        end
+        if _has_locs(obj) == false
+            println("      Channel locations: no")
+        else
+            println("      Channel locations: yes")
+        end
     end
     if length(keys(obj.components)) > 0
         print("             Components: ")
@@ -340,6 +345,10 @@ function info(obj::NeuroAnalyzer.NEURO)
                 rpad("label", 16) * 
                 rpad("type", 12) * 
                 rpad("unit", 8))
+        println(" " * repeat("-", 6) * " " * 
+                repeat("-", 15) * " " * 
+                repeat("-", 11) * " " * 
+                repeat("-", 7))
         for idx in eachindex(obj.header.recording[:labels])
             println(rpad(" $idx", 8) * 
                     rpad("$(obj.header.recording[:labels][idx])", 16) * 
@@ -470,11 +479,11 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
     band === :gamma_higher && (bf = (80.0, 150.0))
     
     if bf[1] > sr(obj) / 2
-        _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(sr(obj) / 2 - 0.2), $(sr(obj) / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(sr(obj) / 2 - 0.2), $(sr(obj) / 2 - 0.1)).")
         bf = (sr(obj) / 2 - 0.2, sr(obj) / 2 - 0.1)
     end
     if bf[2] > sr(obj) / 2
-        _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(sr(obj) / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(sr(obj) / 2 - 0.1)).")
         bf = (bf[1], sr(obj) / 2 - 0.1)
     end
 
@@ -531,11 +540,11 @@ function band_frq(fs::Int64; band::Symbol)
     band === :gamma_higher && (bf = (80.0, 150.0))
     
     if bf[1] > fs / 2
-        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1)).")
         bf = (fs / 2 - 0.2, fs / 2 - 0.1)
     end
     if bf[2] > fs / 2
-        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(fs / 2 - 0.1))")
+        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(fs / 2 - 0.1)).")
         bf = (bf[1], fs / 2 - 0.1)
     end
 
@@ -597,5 +606,24 @@ Return size of the `obj` data.
 function Base.size(obj::NeuroAnalyzer.NEURO)
     
     return size(obj.data)
+
+end
+
+"""
+    datatype(obj)
+
+Return data type of the `obj`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `data_type::String`
+"""
+function datatype(obj::NeuroAnalyzer.NEURO)
+    
+    return obj.header.recording[:data_type]
 
 end

@@ -20,7 +20,7 @@ function import_edf_annotations(file_name::String)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -138,15 +138,14 @@ function import_edf_annotations(file_name::String)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
         error("File $file_name cannot be loaded.")
     end
 
-    header = zeros(UInt8, data_offset)
-    readbytes!(fid, header, data_offset)
+    seek(fid, data_offset)
     data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
     annotations = String[]
     for idx1 in 1:data_records
@@ -163,7 +162,7 @@ function import_edf_annotations(file_name::String)
     if length(annotation_channels) == 0
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     else
-        markers = NeuroAnalyzer._a2df(annotations)
+        markers = _a2df(annotations)
     end
 
     return markers

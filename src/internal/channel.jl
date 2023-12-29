@@ -30,13 +30,12 @@ function _ch_units(ch_type::String)
     lowercase(ch_type) == "magfld" &&(u = "µT")
     lowercase(ch_type) == "orient" &&(u = "°")
     lowercase(ch_type) == "angvel" &&(u = "rad/s")
+    lowercase(ch_type) == "mep" &&(u = "μV")
     lowercase(ch_type) == "other" && (u = "")
     return u
 end
 
-function _ch_units(obj::NeuroAnalyzer.NEURO, ch::Int64)
-    return _ch_units(obj.header.recording[:channel_type][ch])
-end
+_ch_units(obj::NeuroAnalyzer.NEURO, ch::Int64) = _ch_units(obj.header.recording[:channel_type][ch])
 
 function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     if ch isa Int64

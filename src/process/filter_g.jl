@@ -62,7 +62,7 @@ function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5
     ep_n = size(s, 3)
 
     s_filtered = similar(s)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_filtered[ch_idx, :, ep_idx] = @views filter_g(s[ch_idx, :, ep_idx], fs=fs, pad=pad, f=f, gw=gw)
         end

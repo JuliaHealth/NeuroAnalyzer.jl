@@ -43,7 +43,7 @@ function mutual_information(s1::AbstractArray, s2::AbstractArray)
 
     m = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             m[ch_idx, ep_idx] = @views mutual_information(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
         end
@@ -75,7 +75,7 @@ function mutual_information(s::AbstractArray)
 
     m = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
            for ch_idx2 in 1:ch_idx1
                 m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx])
@@ -117,7 +117,7 @@ function mutual_information(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int6
 
     m = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         # create half of the matrix
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1

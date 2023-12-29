@@ -62,7 +62,7 @@ function cps(s::AbstractArray; fs::Int64)
     # initialize progress bar
     progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
            for ch_idx2 in 1:ch_idx1
                 pw[ch_idx1, ch_idx2, :, ep_idx], ph[ch_idx1, ch_idx2, :, ep_idx], _ = @views cps(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx], fs=fs)
@@ -73,7 +73,7 @@ function cps(s::AbstractArray; fs::Int64)
         end
     end
 
-    @inbounds @simd for cps_idx in 1:size(pw, 3)
+    @inbounds for cps_idx in 1:size(pw, 3)
         Threads.@threads for ep_idx in 1:ep_n
             for ch_idx1 in 1:(ch_n - 1)
                 for ch_idx2 in (ch_idx1 + 1):ch_n
@@ -119,7 +119,7 @@ function cps(s1::AbstractArray, s2::AbstractArray; fs::Int64)
     ph = zeros(ch_n, length(ph), ep_n)
     f = zeros(ch_n, length(f), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx], f[ch_idx, :, ep_idx] = @views cps(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], fs=fs)
         end

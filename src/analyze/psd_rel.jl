@@ -80,7 +80,7 @@ function psd_rel(s::AbstractMatrix; fs::Int64, norm::Bool=false, f::Union{Tuple{
 
     pw = zeros(ch_n, length(pf))
 
-    @inbounds @simd for ch_idx in 1:ch_n
+    @inbounds for ch_idx in 1:ch_n
         pw[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, norm=norm, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
     end
     
@@ -127,7 +127,7 @@ function psd_rel(s::AbstractArray; fs::Int64, norm::Bool=false, f::Union{Tuple{R
 
     pw = zeros(ch_n, length(pf), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, norm=norm, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end

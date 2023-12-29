@@ -23,14 +23,15 @@ function fft0(x::AbstractVector, n::Int64=0)
     @assert n >=0 "n must be ≥ 0."
 
     if CUDA.functional() && use_cuda
+        # CUDA.memory_status()
         # _free_gpumem()
-        CUDA.memory_status()
+        CUDA.synchronize()
         if n == 0
-            cx = CuArray(x)
+            return Vector(fft(CuVector(x)))
         else
-            cx = CuArray(pad0(x, n))
+            return Vector(fft(CuVector(pad0(x, n))))
         end
-        return Vector(fft(cx))
+        CUDA.synchronize()
     else
         if n == 0
             return fft(x)
@@ -60,8 +61,9 @@ function ifft0(x::AbstractVector, n::Int64=0)
     @assert n >= 0 "n must be ≥ 0."
 
     if CUDA.functional() && use_cuda
-        # _free_gpumem()
-        x = Vector(ifft(CuArray(x)))
+        CUDA.synchronize()
+        x = Vector(ifft(CuVector(x)))
+        CUDA.synchronize()
     else
         x = ifft(x)
     end
@@ -172,7 +174,7 @@ function dft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     ft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)
     f = nothing
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ft[ch_idx, :, ep_idx], f = @views dft(obj.data[ch[ch_idx], :, ep_idx], fs=fs, pad=pad)
         end

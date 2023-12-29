@@ -25,7 +25,7 @@ function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, Abstr
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
        Threads.@threads for ch_idx1 in 1:ch_n
             # create half of the matrix
             for ch_idx2 in 1:ch_idx1
@@ -81,7 +81,7 @@ function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Unio
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
        Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_n
                 ftest = @views VarianceFTest(obj1.data[ch1[ch_idx1], :, ep1[ep_idx]], obj2.data[ch2[ch_idx2], :, ep2[ep_idx]])

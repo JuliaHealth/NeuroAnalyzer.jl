@@ -22,8 +22,8 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Source
 
-1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
-2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
+1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992; 82(5): 391–3
+2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003; 114: 1755–61
 3. https://www.edfplus.info/specs/
 """
 function import_edf(file_name::String; detect_type::Bool=true)
@@ -33,7 +33,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     file_type = ""
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -164,7 +164,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch
@@ -172,8 +172,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     end
 
     if sampling_rate isa Int64
-        header = zeros(UInt8, data_offset)
-        readbytes!(fid, header, data_offset)
+        seek(fid, data_offset)
         data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
         annotations = String[]
 
@@ -198,16 +197,14 @@ function import_edf(file_name::String; detect_type::Bool=true)
         max_sampling_rate = maximum(sampling_rate[setdiff(1:ch_n, annotation_channels)])
         max_samples_per_datarecord = maximum(samples_per_datarecord[setdiff(1:ch_n, annotation_channels)])
 
-        fid = ""
+        fid = nothing
         try
             fid = open(file_name, "r")
         catch
             error("File $file_name cannot be loaded.")
         end
 
-        header = zeros(UInt8, data_offset)
-        readbytes!(fid, header, data_offset)
-
+        seek(fid, data_offset)
         data_size = filesize(file_name) - data_offset
         signal = UInt8[]
         readbytes!(fid, signal, data_size, all=true)
@@ -294,7 +291,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes="",
                               channel_type=ch_type[ch_order],
-                              reference="",
+                              reference=_detect_montage(clabels, ch_type, data_type),
                               clabels=clabels[ch_order],
                               transducers=transducers[ch_order],
                               units=units[ch_order],
@@ -312,11 +309,10 @@ function import_edf(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
     _initialize_locs!(obj)
     
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
     

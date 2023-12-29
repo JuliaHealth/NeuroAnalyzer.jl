@@ -1,6 +1,4 @@
-function _xlims(t::Union{Vector{<:Real}, AbstractRange})
-    return floor(t[1], digits=2), ceil(t[end], digits=2)
-end
+_xlims(t::Union{Vector{<:Real}, AbstractRange}) = floor(t[1], digits=2), ceil(t[end], digits=2)
 
 function _ticks(t::Union{Vector{<:Real}, AbstractRange})
     if length(t) > 1 / (t[2] - t[1])

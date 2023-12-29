@@ -118,7 +118,7 @@ function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
 
     v = var(obj.data[ch, :, 1])
     ic_var = ones(n)
-    @inbounds @simd for ic_idx in 1:n
+    @inbounds for ic_idx in 1:n
         ic_back = @views ic_mw[:, ic_idx] * ic[ic_idx, :][:, :]'
         ic_var[ic_idx] = @views 100 * (1 - var(obj.data[ch, :, 1] - ic_back) / v)
     end
@@ -310,7 +310,7 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
 
     obj_new = deepcopy(obj)
 
-    @inbounds @simd for ica_idx in eachindex(ic_idx)
+    @inbounds for ica_idx in eachindex(ic_idx)
         Threads.@threads for ch_idx in eachindex(ch)
             obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=ch[ch_idx], ic_idx=ic_idx[ica_idx], keep=true)
             obj_new.data[ch[ch_idx], :, 1] = @views obj_new.data[ch[ch_idx], :, 1] - obj_tmp.data[ch[ch_idx], :, 1]

@@ -81,10 +81,10 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     _info("Preparing signal reconstructed from ICA components")
     cx_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
-    @inbounds @simd for idx in ic_idx
+    @inbounds for idx in ic_idx
         obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=idx, keep=true)
         p_tmp = plot_topo(obj_tmp, seg=seg, amethod=amethod, imethod=imethod, nmethod=nmethod, cb=true, large=false)
-        cx_tmp = NeuroAnalyzer._p2c(p_tmp)
+        cx_tmp = _p2c(p_tmp)
         push!(cx_set, cx_tmp)
     end
 

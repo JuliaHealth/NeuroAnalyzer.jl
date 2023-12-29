@@ -4,7 +4,7 @@ export derivative!
 """
     derivative(s)
 
-Return derivative of the same length.
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 
@@ -16,16 +16,20 @@ Return derivative of the same length.
 """
 function derivative(s::AbstractVector)
 
-    s_der = diff(s)
-    
-    return vcat(s_der, s_der[end])
+    @assert length(s) > 2 "Signal length must be > 2."
+
+    s_new = diff(s)
+    first = vcat(s_new[1], s_new)
+    last = vcat(s_new, s_new[end])
+
+    return (first + last) / 2
 
 end
 
 """
     derivative(s)
 
-Return derivative of the same length.
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 
@@ -41,7 +45,7 @@ function derivative(s::AbstractArray)
     ep_n = size(s, 3)
     
     s_new = similar(s)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views derivative(s[ch_idx, :, ep_idx])
         end
@@ -54,7 +58,7 @@ end
 """
     derivative(obj; ch)
 
-Return derivative of the same length.
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 
@@ -81,7 +85,7 @@ end
 """
     derivative!(obj; ch)
 
-Return derivative of the same length.
+Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
 # Arguments
 

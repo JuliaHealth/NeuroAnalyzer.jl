@@ -4,6 +4,6 @@ using JET
 
 @info "Running NeuroAnalyzer code analysis.."
 
-report_file("../src/NeuroAnalyzer.jl"; annotate_types = true)
+report_file("../src/NeuroAnalyzer.jl")
 
 @info "Done."

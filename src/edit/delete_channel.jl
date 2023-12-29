@@ -34,10 +34,10 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
     # remove channel locations
     for idx in ch
         if labels(obj_new)[idx] in obj_new.locs[!, :labels]
-            if length(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[idx])) == 1
-                deleteat!(obj_new.locs, NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[idx]))
+            if length(_find_bylabel(obj_new.locs, labels(obj_new)[idx])) == 1
+                deleteat!(obj_new.locs, _find_bylabel(obj_new.locs, labels(obj_new)[idx]))
             else
-                deleteat!(obj_new.locs, sort(NeuroAnalyzer._find_bylabel(obj_new.locs, labels(obj_new)[idx])))
+                deleteat!(obj_new.locs, sort(_find_bylabel(obj_new.locs, labels(obj_new)[idx])))
             end
         end
     end

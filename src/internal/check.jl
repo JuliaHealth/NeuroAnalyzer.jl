@@ -78,6 +78,17 @@ function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
     return nothing
 end
 
+function _check_segment_topo(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
+    from = seg[1]
+    to = seg[2]
+    @assert to >= from "to must be >= from."
+    @assert from >= obj.time_pts[1] "from must be ≥ $(obj.time_pts[1])."
+    @assert to >= obj.time_pts[1] "to must be ≥ $(obj.time_pts[1])."
+    @assert from <= obj.time_pts[end] "from must be ≤ $(obj.time_pts[end])."
+    @assert to <= obj.time_pts[end] "to must be ≤ $(obj.time_pts[end])."
+    return nothing
+end
+
 function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
     @assert from >= 0 "from must be ≥ 0."
     @assert to >= 0 "to must be ≥ 0."

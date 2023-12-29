@@ -97,7 +97,7 @@ function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:sampling_rate] = fs
-    obj_new.time_pts, obj_new.epoch_time = NeuroAnalyzer._get_t(obj_new)
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     reset_components!(obj_new)
     push!(obj_new.history, "create_time(OBJ, fs=$fs)")
 

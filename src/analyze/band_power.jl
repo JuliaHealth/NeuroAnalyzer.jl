@@ -83,7 +83,7 @@ function band_power(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::S
     ep_n = size(s, 3)
     bp = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             bp[ch_idx, ep_idx] = @views band_power(s[ch_idx, :, ep_idx], fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end

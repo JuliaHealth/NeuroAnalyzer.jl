@@ -112,7 +112,7 @@ function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
     ep_n = nepochs(obj1)
 
     obj_new = deepcopy(obj1)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             obj_new.data[ch_idx, :, ep_idx] = @views average(obj1.data[ch_idx, :, ep_idx], obj2.data[ch_idx, :, ep_idx])
         end

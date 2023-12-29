@@ -44,7 +44,7 @@ function taper(s::AbstractArray; t::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     s_new = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views taper(s[ch_idx, :, ep_idx], t=t)
         end

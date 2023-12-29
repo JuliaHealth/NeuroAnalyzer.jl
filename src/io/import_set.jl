@@ -35,7 +35,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     ep_n = 1
     # data in .FTD file
     if data_src isa String
-        fid = ""
+        fid = nothing
         try
             fid = open(data_src, "r")
         catch
@@ -56,7 +56,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     dataset["trials"] isa Float64 && (ep_n = Int(dataset["trials"]))
     if ndims(data) == 3
         ep_n == size(data, 2)
-        _info("$ep_n epochs found.")
+        _info("$ep_n epochs found")
     end
     ndims(data) == 2 && (data = data[:, :, :])
 
@@ -168,21 +168,13 @@ function import_set(file_name::String; detect_type::Bool=true)
         for idx in nrow(locs):-1:1
             (chanlocs["X"][:][idx] isa Float64 && chanlocs["Y"][:][idx] isa Float64 && chanlocs["Z"][:][idx] isa Float64) || deleteat!(locs, idx)
         end
-        nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found.")
+        nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found")
         if nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
             locs_normalize!(locs)
         end
     else
-        locs = DataFrame(:labels=>String[],
-                         :loc_theta=>Float64[],
-                         :loc_radius=>Float64[],
-                         :loc_x=>Float64[],
-                         :loc_y=>Float64[],
-                         :loc_z=>Float64[],
-                         :loc_radius_sph=>Float64[],
-                         :loc_theta_sph=>Float64[],
-                         :loc_phi_sph=>Float64[])
+        locs = _initialize_locs()
     end
 
     # MARKERS
@@ -265,8 +257,9 @@ function import_set(file_name::String; detect_type::Bool=true)
     history = history
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    nrow(locs) == 0 && _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

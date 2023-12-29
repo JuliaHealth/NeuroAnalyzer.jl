@@ -16,9 +16,10 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 """
 function import_npy(file_name::String; sampling_rate::Int64)
 
-    @assert sampling_rate > 1 "Sampling rate must be ≥ 1."
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert splitext(file_name)[2] == ".npy" "This is not NPY file."
+
+    @assert sampling_rate > 1 "Sampling rate must be ≥ 1."
 
     file_type = "NPY"
 
@@ -29,25 +30,6 @@ function import_npy(file_name::String; sampling_rate::Int64)
     for idx in 1:ch_n
         push!(clabels, "ch_$idx")
     end
-
-    x = zeros(ch_n)
-    y = zeros(ch_n)
-    z = zeros(ch_n)
-    theta = zeros(ch_n)
-    radius = zeros(ch_n)
-    phi_sph = zeros(ch_n)
-    radius_sph = zeros(ch_n)
-    theta_sph = zeros(ch_n)
-    radius_sph == zeros(ch_n) && (radius_sph = radius)
-    locs = DataFrame(:labels=>clabels,
-                     :loc_theta=>theta,
-                     :loc_radius=>radius,
-                     :loc_x=>x,
-                     :loc_y=>y,
-                     :loc_z=>z,
-                     :loc_radius_sph=>radius_sph,
-                     :loc_theta_sph=>theta_sph,
-                     :loc_phi_sph=>phi_sph)
 
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
@@ -93,9 +75,11 @@ function import_npy(file_name::String; sampling_rate::Int64)
     components = Dict()
     history = String[]
 
+    locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

@@ -193,7 +193,7 @@ end
 
 function _create_fiff_block(file_name::String)
 
-    fid = ""
+    fid = nothing
     try
         fid = open(file_name, "r")
     catch

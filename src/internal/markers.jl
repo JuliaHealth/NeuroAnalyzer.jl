@@ -30,9 +30,7 @@ function _has_markers(channel_types::Vector{String})
     return markers, markers_channel
 end
 
-function _has_markers(obj::NeuroAnalyzer.NEURO)
-    return nrow(obj.markers) > 0 ? true : false
-end
+_has_markers(obj::NeuroAnalyzer.NEURO) = nrow(obj.markers) > 0 ? true : false
 
 function _a2df(annotations::Vector{String})
     # convert EDF/BDF annotations to markers DataFrame

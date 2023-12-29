@@ -2,11 +2,11 @@ __precompile__()
 
 module NeuroAnalyzer
 
-@assert VERSION >= v"1.9.0" "This version of NeuroAnalyzer requires Julia 1.9.0 or above."
+@assert VERSION >= v"1.10.0" "This version of NeuroAnalyzer requires Julia 1.10.0 or above."
 
 # set constants
 
-const VER = v"0.23.12"
+const VER = v"0.24.1"
 const allow_wip = occursin("dev", string(VER))  # false for the stable branch, true for the devel branch
 const io = PipeBuffer()                         # required for interactive preview
 const data_types = ["eeg",
@@ -14,7 +14,8 @@ const data_types = ["eeg",
                     "nirs",
                     "ecog",
                     "seeg",
-                    "sensors"]
+                    "sensors",
+                    "mep"]
 const channel_types = ["all",
                        "eeg", "ecog", "seeg",
                        "meg", "grad", "mag",
@@ -26,6 +27,7 @@ const channel_types = ["all",
                        "ref",
                        "mrk",
                        "accel", "magfld", "orient", "angvel",
+                       "mep",
                        "other"]
 const channel_units = ["μV",
                        "mV",
@@ -41,8 +43,8 @@ const channel_units = ["μV",
                        ""]
 const fiducial_points = (nasion = (0.0, 0.95, -0.2),
                          inion  = (0.0, -0.96, -0.2),
-                         lra    = (-0.98, 0.0, -0.2),
-                         rla    = (0.98, 0.0, -0.2))
+                         lpa    = (-0.98, 0.0, -0.2),
+                         rpa    = (0.98, 0.0, -0.2))
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
@@ -80,6 +82,10 @@ using Git
 using GLM
 using Gtk
 using HypothesisTests
+using Images
+using ImageBinarization
+using ImageFiltering
+using ImageMorphology
 using InformationMeasures
 using Interpolations
 using Jacobi
@@ -143,11 +149,17 @@ end
 # set package options
 
 Plots.gr_cbar_width[] = 0.01
-if occursin("amd", lowercase(Sys.cpu_info()[1].model)) || occursin("intel", lowercase(Sys.cpu_info()[1].model))
-    FFTW.set_provider!("mkl")
+
+if Sys.islinux()
+    if occursin("amd", lowercase(Sys.cpu_info()[1].model)) || occursin("intel", lowercase(Sys.cpu_info()[1].model))
+        FFTW.set_provider!("mkl")
+    else
+        FFTW.set_provider!("fftw")
+    end
 else
     FFTW.set_provider!("fftw")
 end
+
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
@@ -234,6 +246,7 @@ include("analyze/ged.jl")
 include("analyze/hrv.jl")
 include("analyze/ispc.jl")
 include("analyze/itpc.jl")
+include("analyze/mep.jl")
 include("analyze/mi.jl")
 include("analyze/msci95.jl")
 include("analyze/pli.jl")
@@ -275,7 +288,9 @@ include("io/import.jl")
 include("io/import_alice4.jl")
 include("io/import_bdf.jl")
 include("io/import_bv.jl")
+include("io/import_cnt.jl")
 include("io/import_csv.jl")
+include("io/import_dat.jl")
 include("io/import_digitrack.jl")
 include("io/import_edf.jl")
 include("io/import_fiff.jl")
@@ -293,6 +308,8 @@ include("io/import_gdf.jl")
 include("io/import_montage.jl")
 include("io/import_nwb.jl")
 include("io/import_npy.jl")
+include("io/import_thymatron.jl")
+include("io/import_duomag.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")
@@ -303,6 +320,7 @@ include("locs/rotate.jl")
 include("locs/scale.jl")
 include("locs/swap.jl")
 include("locs/generate.jl")
+include("locs/center.jl")
 #process
 include("process/add_signal.jl")
 include("process/average.jl")
@@ -318,6 +336,7 @@ include("process/derivative.jl")
 include("process/detrend.jl")
 include("process/dwt.jl")
 include("process/dwtsplit.jl")
+include("process/edit_montage.jl")
 include("process/erp.jl")
 include("process/fconv.jl")
 include("process/filter.jl")
@@ -352,6 +371,7 @@ include("plots/plot_connections.jl")
 include("plots/plot_locs.jl")
 include("plots/plot_erp.jl")
 include("plots/plot_filter_response.jl")
+include("plots/plot_mep.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_save.jl")
 include("plots/plot_signal.jl")
@@ -376,6 +396,7 @@ include("gui/iview_plot.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")
+include("statistics/friedman.jl")
 include("statistics/hildebrand_rule.jl")
 include("statistics/jaccard_similarity.jl")
 include("statistics/linreg.jl")

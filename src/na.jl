@@ -59,7 +59,9 @@ function na_info()
             "GLM",
             "Gtk",
             "HypothesisTests",
-            "ImageIO",
+            "Images",
+            "ImageBinarization",
+            "ImageMorphology",
             "InformationMeasures",
             "Interpolations",
             "Jacobi",
@@ -103,7 +105,7 @@ Reload NeuroAnalyzer plugins.
 """
 function na_plugins_reload()
 
-    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
+    @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -128,7 +130,7 @@ List NeuroAnalyzer plugins.
 """
 function na_plugins_list()
 
-    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
+    @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -153,12 +155,12 @@ Remove NeuroAnalyzer `plugin`.
 function na_plugins_remove(plugin::String)
 
     _warn("This will remove the whole $plugin directory, along with its file contents.")
-    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
+    @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
-    @assert plugin in plugins "Plugin $plugin does not exist."
+    @assert plugin in plugins "Plugin $plugin cannot be loaded."
     try
         rm(plugin, recursive=true)
     catch
@@ -180,7 +182,7 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_install(plugin::String)
 
-    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
+    @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -205,7 +207,7 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_update(plugin::Union{String, Nothing}=nothing)
 
-    @assert isdir(plugins_path) "Folder $plugins_path does not exist."
+    @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
     path_tmp = pwd()
     cd(plugins_path)
@@ -222,7 +224,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
             cd(plugins_path)
         end
     else
-        @assert plugin in plugins "Plugin $plugin does not exist."
+        @assert plugin in plugins "Plugin $plugin cannot be loaded."
         cd(plugin)
         try
             run(`$(git()) pull`)
@@ -248,7 +250,7 @@ Change `use_cuda` preference.
 function na_set_use_cuda(use_cuda::Bool)
 
     @set_preferences!("use_cuda" => use_cuda)
-    _info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 
@@ -264,7 +266,7 @@ Change `progress_bar` preference.
 function na_set_progress_bar(progress_bar::Bool)
 
     @set_preferences!("progress_bar" => progress_bar)
-    _info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 
@@ -299,7 +301,7 @@ Change `verbose` preference.
 function na_set_verbose(verbose::Bool)
 
     @set_preferences!("verbose" => verbose)
-    _info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 

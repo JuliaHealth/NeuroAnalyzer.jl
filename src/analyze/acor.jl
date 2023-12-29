@@ -43,7 +43,7 @@ function acor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1,
 
     ac = zeros(1, length(0:l), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         ac[1, :, ep_idx] = @views reshape(autocor(s[:, ep_idx], 0:l, demean=demean), 1, :, ep_n)
     end
 
@@ -73,7 +73,7 @@ function acor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 
 
     ac = zeros(ch_n, length(0:l), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ac[ch_idx, :, ep_idx] = @views autocor(s[ch_idx, :, ep_idx], 0:l, demean=demean)
         end

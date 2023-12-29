@@ -226,19 +226,11 @@ function import_nwb(file_name::String; detect_type::Bool=true)
 
     history = String[]
 
-    locs = DataFrame(:labels=>String[],
-                     :loc_theta=>Float64[],
-                     :loc_radius=>Float64[],
-                     :loc_x=>Float64[],
-                     :loc_y=>Float64[],
-                     :loc_z=>Float64[],
-                     :loc_radius_sph=>Float64[],
-                     :loc_theta_sph=>Float64[],
-                     :loc_phi_sph=>Float64[])
-
+    locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
+    _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

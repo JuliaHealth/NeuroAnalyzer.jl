@@ -20,14 +20,21 @@ function locs_generate(locs::DataFrame)
 
     lab = lowercase.(locs[!, :labels])
 
+    # remove referencing labels from channel names
+    m = match.(r"(.+)\-(.+)", lab)
+    for idx in 1:length(lab)
+        m[idx] !== nothing && (lab[idx] = m[idx].captures[1])
+    end
+    m = match.(r"([a-z]+[0-9]+[0-9]?)([a-z]+[0-9]+)", lab)
+    for idx in 1:length(lab)
+        m[idx] !== nothing && (lab[idx] = m[idx].captures[1])
+    end
+
     x = zeros(length(lab))
     y = zeros(length(lab))
     z = zeros(length(lab))
 
-    r = zeros(length(lab))
-    t = zeros(length(lab))
-
-    e_labels = ["cz", "c2", "c4", "c6", "t4", "t8", "t10", "c1", "c3", "c5", "t3", "t7", "t9", "fcz", "fc2", "fc4", "fc6", "fc8", "ft8", "fc10", "ft10", "fc1", "fc3", "fc5", "fc7", "ft7", "fc9", "ft9", "fz", "f2", "f4", "f6", "f8", "f10", "f1", "f3", "f5", "f7", "f9", "afz", "af2", "af4", "af6", "af1", "af3", "af7", "fpz", "fp2", "fp1", "cpz", "cp2", "cp4", "cp6", "cp8", "tp8", "tp10", "cp1", "cp3", "cp5", "cp7", "tp7", "tp9", "pz", "p2", "p4", "p6", "p8", "p10", "t6", "p1", "p3", "p5", "p7", "p9", "t5", "poz", "po2", "po4", "po6", "po8", "po1", "po3", "po5", "po7", "oz", "o2", "o1", "a1", "a2", "m1", "m2", "emg1", "emg2", "eog1", "eog2", "veog1", "veog2", "heog1", "heog2", "veog", "heog"]
+    e_labels = ["cz", "c2", "c4", "c6", "t4", "t8", "t10", "c1", "c3", "c5", "t3", "t7", "t9", "fcz", "fc2", "fc4", "fc6", "fc8", "ft8", "fc10", "ft10", "fc1", "fc3", "fc5", "fc7", "ft7", "fc9", "ft9", "fz", "f2", "f4", "f6", "f8", "f10", "f1", "f3", "f5", "f7", "f9", "afz", "af2", "af4", "af6", "af1", "af3", "af7", "fpz", "fp2", "fp1", "cpz", "cp2", "cp4", "cp6", "cp8", "tp8", "tp10", "cp1", "cp3", "cp5", "cp7", "tp7", "tp9", "pz", "p2", "p4", "p6", "p8", "p10", "t6", "p1", "p3", "p5", "p7", "p9", "t5", "poz", "po2", "po4", "po6", "po8", "po1", "po3", "po5", "po7", "oz", "o2", "o1", "a1", "a2", "m1", "m2", "emg1", "emg2", "eog1", "eog2", "veog1", "veog2", "heog1", "heog2", "veog", "heog", "reog", "leog"]
 
     x[lab .== "cz"] .= sph2cart(1.0, 0, 90)[1]
     y[lab .== "cz"] .= sph2cart(1.0, 0, 90)[2]
@@ -381,9 +388,17 @@ function locs_generate(locs::DataFrame)
     y[lab .== "heog1"] .= 0.77
     z[lab .== "heog1"] .= -0.04
 
+    x[lab .== "leog"] .= -0.64
+    y[lab .== "leog"] .= 0.77
+    z[lab .== "leog"] .= -0.04
+
     x[lab .== "heog2"] .= 0.64
     y[lab .== "heog2"] .= 0.77
     z[lab .== "heog2"] .= -0.04
+
+    x[lab .== "reog"] .= 0.64
+    y[lab .== "reog"] .= 0.77
+    z[lab .== "reog"] .= -0.04
 
     x[lab .== "veog"] .= 0.87
     y[lab .== "veog"] .= 0.51
@@ -404,8 +419,7 @@ function locs_generate(locs::DataFrame)
     locs_cart2sph!(locs_new) 
     locs_sph2pol!(locs_new) 
 
-    f_labels = lowercase.(locs[!, :labels])
-    no_match = setdiff(f_labels, e_labels)
+    no_match = setdiff(lab, e_labels)
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be generated.")
 
     return locs_new

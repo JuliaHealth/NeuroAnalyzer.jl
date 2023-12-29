@@ -279,7 +279,7 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
 
     ev_ch = zeros(Int64, length(ev_start))
     
-    _info("$(length(ev_start)) events added.")
+    _info("$(length(ev_start)) events added")
 
     obj_new = deepcopy(obj)
     append!(obj_new.markers, DataFrame(:id=>ev_id, :start=>(ev_start ./ sr(obj)), :length=>(ev_len ./ sr(obj)), :description=>ev_desc, :channel=>ev_ch))

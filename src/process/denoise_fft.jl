@@ -55,9 +55,17 @@ function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)
 
     s_new = similar(s)
 
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad=pad, t=t)
+    @inbounds for ep_idx in 1:ep_n
+        if use_cuda
+            CUDA.synchronize()
+            for ch_idx in 1:ch_n
+                s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad=pad, t=t)
+            end
+            CUDA.synchronize()
+        else
+            Threads.@threads for ch_idx in 1:ch_n
+                s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad=pad, t=t)
+            end
         end
     end
 

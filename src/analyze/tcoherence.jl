@@ -63,7 +63,7 @@ function tcoherence(s1::AbstractArray, s2::AbstractArray; pad::Int64=0)
     msc = similar(s1)
     ic = similar(s1)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], ic[ch_idx, :, ep_idx] = @views tcoherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], pad=pad)
         end

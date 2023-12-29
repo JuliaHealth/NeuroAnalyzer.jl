@@ -146,3 +146,24 @@ function _create_header(subject::Dict, recording::Dict, experiment::Dict)
                                 recording,
                                 experiment)
 end
+
+function _create_recording_mep(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, sampling_rate::Int64, stimulation_intensity::Vector{Int64}, coil_type::Vector{String}, stimulation_sample::Vector{Int64}, markers_pos::Vector{Int64}, markers_neg::Vector{Int64})
+
+    return Dict(:data_type=>data_type,
+                :file_name=>file_name,
+                :file_size_mb=>file_size_mb,
+                :file_type=>file_type,
+                :recording=>recording,
+                :recording_date=>recording_date,
+                :recording_time=>recording_time,
+                :recording_notes=>recording_notes,
+                :channel_type=>channel_type,
+                :labels=>clabels,
+                :units=>units,
+                :sampling_rate=>sampling_rate,
+                :stimulation_intensity=>stimulation_intensity,
+                :coil_type=>coil_type,
+                :stimulation_sample=>stimulation_sample,
+                :markers_pos=>markers_pos,
+                :markers_neg=>markers_neg)
+end

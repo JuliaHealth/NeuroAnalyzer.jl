@@ -25,7 +25,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         @error "File $file_name cannot be loaded."
     end
     vhdr[1][1] == '\ufeff' && (vhdr[1] = vhdr[1][4:end])
-    @assert startswith(lowercase(replace(vhdr[1], " " => "")), "brainvision") "This is not BrainVision .VHDR file."
+    @assert startswith(lowercase(replace(vhdr[1], " " => "")), "brainvision") "File $file_name is not BrainVision .VHDR file."
 
     file_type = "BrainVision"
 
@@ -204,7 +204,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         for idx in length(vmrk):-1:1
             startswith(vmrk[idx], ';') && deleteat!(vmrk, idx)
         end
-        @assert startswith(lowercase(replace(vmrk[1], " " => "")), "brainvision") "This is not BrainVision .VMRK file."
+        @assert startswith(lowercase(replace(vmrk[1], " " => "")), "brainvision") "File $file_name is not BrainVision .VMRK file."
         markers_idx = 0
         for idx in eachindex(vmrk)
             startswith(lowercase(replace(vmrk[idx], " " => "")), "[markerinfos]") && (markers_idx = idx)
@@ -270,7 +270,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
             @error "Binary formats other than Float32 and Int16 are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
         end
 
-        fid = ""
+        fid = nothing
         try
             fid = open(eeg_file, "r")
         catch
@@ -371,8 +371,9 @@ function import_bv(file_name::String; detect_type::Bool=true)
     history = String[]
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[channel_order, :, :], components, markers, locs, history)
-
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    nrow(locs) == 0 && _initialize_locs!(obj)
+    
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
     

@@ -39,7 +39,7 @@ function epoch_stats(obj::NeuroAnalyzer.NEURO)
     e_max_dif = zeros(ep_n)
     e_dev_mean = zeros(ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         e_mean[ep_idx] = @views mean(obj.data[:, :, ep_idx])
         e_median[ep_idx] = @views median(obj.data[:, :, ep_idx])
         e_std[ep_idx] = @views std(obj.data[:, :, ep_idx])
@@ -95,7 +95,7 @@ function channel_stats(obj::NeuroAnalyzer.NEURO)
     c_max_dif = zeros(ch_n, ep_n)
     c_dev_mean = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             c_mean[ch_idx, ep_idx] = @views mean(obj.data[ch_idx, :, ep_idx])
             c_median[ch_idx, ep_idx] = @views median(obj.data[ch_idx, :, ep_idx])

@@ -1,3 +1,5 @@
+export env_up
+export env_lo
 export tenv
 export tenv_mean
 export tenv_median
@@ -11,6 +13,113 @@ export henv
 export henv_mean
 export henv_median
 export env_cor
+
+"""
+    env_up(s, x; d)
+
+Calculate upper envelope.
+
+# Arguments
+
+- `s::AbstractVector`: signal
+- `x::AbstractVector`: x-axis points
+- `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
+
+# Returns
+
+- `e::Vector{Float64}`: envelope
+"""
+function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)
+    
+    e = similar(s)
+
+    # find peaks
+    p_idx = findpeaks(s, d=d)
+    
+    # add first time-point
+    p_idx[1] != 1 && pushfirst!(p_idx, 1)
+    
+    # add last time-point
+    p_idx[end] != length(s) && push!(p_idx, length(s))
+    
+    # interpolate peaks using cubic spline or loess
+    if length(p_idx) >= 5
+        model = CubicSpline(x[p_idx], s[p_idx])
+        try
+            e = model(x)
+        catch
+            @warn "CubicSpline error, using Loess."
+            model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
+            e = Loess.predict(model, x)
+        end
+    else
+        _info("Less than 5 peaks detected, using Loess")
+        model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
+        e = Loess.predict(model, x)
+    end
+    
+    e[1] = e[2]
+
+    length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
+
+    return e
+
+end
+
+"""
+    env_lo(s, x; d)
+
+Calculate lower envelope.
+
+# Arguments
+
+- `s::AbstractVector`: signal
+- `x::AbstractVector`: x-axis points
+- `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
+
+# Returns
+
+- `e::Vector{Float64}`: envelope
+"""
+function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)
+    
+    e = similar(s)
+
+    # find peaks
+    p_idx = Int64[]
+    for idx in 1:d:(length(s) - d)
+        push!(p_idx, idx + vsearch(minimum(s[idx:(idx + (d - 1))]), s[idx:(idx + (d - 1))]) - 1)
+    end
+
+    # add first time-point
+    p_idx[1] != 1 && pushfirst!(p_idx, 1)
+    
+    # add last time-point
+    p_idx[end] != length(s) && push!(p_idx, length(s))
+    
+    # interpolate peaks using cubic spline or loess
+    if length(p_idx) >= 5
+        model = CubicSpline(x[p_idx], s[p_idx])
+        try
+            e = model(x)
+        catch
+            @warn "CubicSpline error, using Loess."
+            model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
+            e = Loess.predict(model, x)
+        end
+    else
+        _info("Less than 5 peaks detected, using Loess")
+        model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
+        e = Loess.predict(model, x)
+    end
+    
+    e[1] = e[2]
+    
+    length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
+
+    return e
+
+end
 
 """
     tenv(obj; ch, d)
@@ -39,31 +148,9 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     t_env = zeros(ch_n, epoch_len(obj), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s = @view obj.data[ch[ch_idx], :, ep_idx]
-            # find peaks
-            p_idx = findpeaks(s, d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(s))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(s_t[p_idx], s[p_idx])
-                try
-                    t_env[ch_idx, :, ep_idx] = model(s_t)
-                catch
-                    @warn "CubicSpline error, using Loess."
-                    model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
-                    t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
-                end
-            else
-                _info("Less than 5 peaks detected, using Loess.")
-                model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
-                t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
-            end
-            t_env[ch_idx, 1, ep_idx] = t_env[ch_idx, 2, ep_idx]
+            t_env[ch_idx, :, ep_idx] = @views env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
         end
     end
     
@@ -114,11 +201,11 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         t_env_u = zeros(length(s_t), ep_n)
         t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            t_env_m[:, ep_idx] = mean(s_a[:, :, ep_idx], dims=1)
-            s = std(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
-            t_env_u[:, ep_idx] = @. t_env_m[:, ep_idx] + 1.96 * s
-            t_env_l[:, ep_idx] = @. t_env_m[:, ep_idx] - 1.96 * s
+        @inbounds for ep_idx in 1:ep_n
+            t_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
+            s = @views 1.96 * std(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
+            t_env_u[:, ep_idx] = @views @. t_env_m[:, ep_idx] + s
+            t_env_l[:, ep_idx] = @views @. t_env_m[:, ep_idx] - s
         end
     elseif dims == 2
         # mean over epochs
@@ -127,11 +214,11 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         t_env_u = zeros(length(s_t), ch_n)
         t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            t_env_m[:, ch_idx] = mean(s_a[ch_idx, :, :], dims=2)
-            s = std(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
-            t_env_u[:, ch_idx] = @views @. t_env_m[:, ch_idx] + 1.96 * s
-            t_env_l[:, ch_idx] = @views @. t_env_m[:, ch_idx] - 1.96 * s
+        @inbounds for ch_idx in 1:ch_n
+            t_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
+            s = @views 1.96 * std(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
+            t_env_u[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] + s
+            t_env_l[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -194,22 +281,11 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         t_env_u = zeros(length(s_t), ep_n)
         t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            t_env_m[:, ep_idx] = median(s_a[:, :, ep_idx], dims=1)
-            t_idx = findpeaks(t_env_m[:, ep_idx], d=d)
-            pushfirst!(t_idx, 1)
-            push!(t_idx, length(t_env_m[:, ep_idx]))
-            if length(t_idx) > 4
-                model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
-                try
-                    t_env_m[:, ep_idx] = model(s_t)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ep_idx in 1:ep_n
+            t_env_m[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims=1)
+            for m_idx in 1:length(s_t)
+                t_env_u[m_idx, ep_idx], t_env_l[m_idx, ep_idx] = ci_median(s_a[:, m_idx, ep_idx])
             end
-            s = iqr(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
-            t_env_u[:, ep_idx] = @. t_env_m[:, ep_idx] + 1.96 * s
-            t_env_l[:, ep_idx] = @. t_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -218,32 +294,19 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         t_env_u = zeros(length(s_t), ch_n)
         t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            t_env_m[:, idx] = median(s_a[ch_idx, :, :], dims=2)
-            t_idx = findpeaks(t_env_m[:, ch_idx], d=d)
-            pushfirst!(t_idx, 1)
-            push!(t_idx, length(t_env_m[:, ch_idx]))
-            if length(t_idx) > 4
-                model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
-                try
-                    t_env_m[:, ch_idx] = model(s_t)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ch_idx in 1:ch_n
+            t_env_m[:, ch_idx] = @views median(s_a[ch_idx, :, :], dims=2)
+            for m_idx in 1:length(s_t)
+                t_env_u[m_idx, ch_idx], t_env_l[m_idx, ch_idx] = ci_median(s_a[ch_idx, m_idx, :])
             end
-            s = iqr(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
-            t_env_u[:, ch_idx] = @views @. t_env_m[:, ch_idx] + 1.96 * s
-            t_env_l[:, ch_idx] = @views @. t_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
 
         t_env_m, t_env_u, t_env_l, _ = tenv_median(obj, dims=1, d=d)
-
         t_env_m = median(t_env_m, dims=2)
         t_env_u = median(t_env_u, dims=2)
         t_env_l = median(t_env_l, dims=2)
-
         t_env_m = reshape(t_env_m, size(t_env_m, 1))
         t_env_u = reshape(t_env_u, size(t_env_u, 1))
         t_env_l = reshape(t_env_l, size(t_env_l, 1))
@@ -295,30 +358,12 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     p_env = zeros(ch_n, length(pw), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
-            # find peaks
-            p_idx = findpeaks(pw, d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(pw))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(pf[p_idx], pw[p_idx])
-                try
-                    p_env[ch_idx, :, ep_idx] = model(pf)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
-            else
-                p_env[ch_idx, :, ep_idx] = pw
-            end
-            p_env[ch_idx, 1, ep_idx] = p_env[ch_idx, 2, ep_idx]
+            p_env[ch_idx, :, ep_idx] = env_up(pw, pf, d=d)
         end
     end
-    
     return (p_env=p_env, p_env_frq=pf)
 
 end
@@ -367,7 +412,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, pf = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw, pf = penv(obj, ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=woverlap, frq=frq, ncyc=ncyc)
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -379,26 +424,11 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_u = zeros(length(pf), ep_n)
         p_env_l = zeros(length(pf), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            p_env_m[:, ep_idx] = mean(pw[:, :, ep_idx], dims=1)
-            # find peaks
-            p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(p_env_m[:, ep_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
-                try
-                    p_env_m[:, ep_idx] = model(pf)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
-            end
-            s = std(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
-            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + 1.96 * s
-            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - 1.96 * s
+        @inbounds for ep_idx in 1:ep_n
+            p_env_m[:, ep_idx] = @views mean(pw[:, :, ep_idx], dims=1)
+            s = @views 1.96 * std(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
+            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + s
+            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - s
         end
     elseif dims == 2
         # mean over epochs
@@ -407,26 +437,11 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_u = zeros(length(pf), ch_n)
         p_env_l = zeros(length(pf), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            p_env_m[:, ch_idx] = mean(pw[ch_idx, :, :], dims=2)
-            # find peaks
-            p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(p_env_m[:, ch_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
-                try
-                    p_env_m[:, ch_idx] = model(pf)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
-            end
-            s = std(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
-            p_env_u[:, ch_idx] = @views @. p_env_m[:, ch_idx] + 1.96 * s
-            p_env_l[:, ch_idx] = @views @. p_env_m[:, ch_idx] - 1.96 * s
+        @inbounds for ch_idx in 1:ch_n
+            p_env_m[:, ch_idx] = @views mean(pw[ch_idx, :, :], dims=2)
+            s = @views 1.96 * std(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
+            p_env_u[:, ch_idx] = @views @. p_env_m[:, ch_idx] + s
+            p_env_l[:, ch_idx] = @views @. p_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -488,7 +503,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         @assert nepochs(obj) >= 2 "Number of epochs must be ≥ 2."
     end
 
-    pw, pf = psd(obj, ch=ch, norm=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw, pf = penv(obj, ch=ch, d=d, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=woverlap, frq=frq, ncyc=ncyc)
 
     ch_n = size(pw, 1)
     ep_n = size(pw, 3)
@@ -500,26 +515,11 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         p_env_u = zeros(length(pf), ep_n)
         p_env_l = zeros(length(pf), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            p_env_m[:, ep_idx] = median(pw[:, :, ep_idx], dims=1)
-            # find peaks
-            p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(p_env_m[:, ep_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
-                try
-                    p_env_m[:, ep_idx] = model(pf)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ep_idx in 1:ep_n
+            p_env_m[:, ep_idx] = @views median(pw[:, :, ep_idx], dims=1)
+            for m_idx in 1:length(pf)
+                p_env_u[m_idx, ep_idx], p_env_l[m_idx, ep_idx] = ci_median(pw[:, m_idx, ep_idx])
             end
-            s = iqr(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
-            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + 1.96 * s
-            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -528,26 +528,11 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         p_env_u = zeros(length(pf), ch_n)
         p_env_l = zeros(length(pf), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            p_env_m[:, ch_idx] = median(pw[ch_idx, :, :], dims=2)
-            # find peaks
-            p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(p_env_m[:, ch_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(pf[p_idx], p_env_m[p_idx])
-                try
-                    p_env_m[:, ch_idx] = model(pf)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ch_idx in 1:ch_n
+            p_env_m[:, ch_idx] = @views median(pw[ch_idx, :, :], dims=2)
+            for m_idx in 1:length(pf)
+                p_env_u[m_idx, ch_idx], p_env_l[m_idx, ch_idx] = ci_median(pw[ch_idx, :, :])
             end
-            s = iqr(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
-            p_env_u[:, ch_idx] = @views @. p_env_m[:, ch_idx] + 1.96 * s
-            p_env_l[:, ch_idx] = @views @. p_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
@@ -625,7 +610,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     s_env = zeros(ch_n, length(st), ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if method === :stft
@@ -648,28 +633,11 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
             end
             
             f_idx = zeros(length(st))
-            m = maximum(sp, dims=1)
+            m = vec(maximum(sp, dims=1))
             for idx2 in eachindex(m)
                 f_idx[idx2] = sf[vsearch(m[idx2], sp[:, idx2])]
             end
-            # find peaks
-            p_idx = findpeaks(f_idx, d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(st))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(st[p_idx], f_idx[p_idx])
-                try
-                    s_env[ch_idx, :, ep_idx] = model(st)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
-            else
-                s_env[ch_idx, :, ep_idx] = f_idx
-            end
-            s_env[ch_idx, 1, ep_idx] = s_env[ch_idx, 2, ep_idx]
+            s_env[ch_idx, :, ep_idx] = env_up(f_idx, st, d=d)
         end
     end
     
@@ -739,25 +707,11 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_u = zeros(length(st), ep_n)
         s_env_l = zeros(length(st), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            s_env_m[:, ep_idx] = mean(sp[:, :, ep_idx], dims=1)
-            # find peaks
-            s_idx = findpeaks(s_env_m[:, ep_idx], d=d)
-            # add first time-point
-            pushfirst!(s_idx, 1)
-            # interpolate peaks using cubic spline or loess
-            push!(s_idx, length(s_env_m[:, ep_idx]))
-            if length(s_idx) > 4
-                model = CubicSpline(st[s_idx], s_env_m[s_idx])
-                try
-                    s_env_m[:, ep_idx] = model(st)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
-            end
-            s = std(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
-            s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + 1.96 * s
-            s_env_l[:, ep_idx] = @. s_env_m[:, ep_idx] - 1.96 * s
+        @inbounds for ep_idx in 1:ep_n
+            s_env_m[:, ep_idx] = @views mean(sp[:, :, ep_idx], dims=1)
+            s = @views 1.96 * std(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
+            s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + s
+            s_env_l[:, ep_idx] = @. s_env_m[:, ep_idx] - s
         end
     elseif dims == 2
         # mean over epochs
@@ -766,26 +720,11 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_u = zeros(length(st), ch_n)
         s_env_l = zeros(length(st), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            s_env_m[:, ch_idx] = mean(sp[ch_idx, :, :], dims=2)
-            # find peaks
-            s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
-            # add first time-point
-            pushfirst!(s_idx, 1)
-            # add last time-point
-            push!(s_idx, length(s_env_m[:, ch_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(s_idx) > 4
-                model = CubicSpline(st[s_idx], s_env_m[s_idx])
-                try
-                    s_env_m[:, ch_idx] = model(st)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
-            end
-            s = std(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
-            s_env_u[:, ch_idx] = @views @. s_env_m[:, ch_idx] + 1.96 * s
-            s_env_l[:, ch_idx] = @views @. s_env_m[:, ch_idx] - 1.96 * s
+        @inbounds for ch_idx in 1:ch_n
+            s_env_m[:, ch_idx] = @views mean(sp[ch_idx, :, :], dims=2)
+            s = @views 1.96 * std(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
+            s_env_u[:, ch_idx] = @views @. s_env_m[:, ch_idx] + s
+            s_env_l[:, ch_idx] = @views @. s_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -865,26 +804,11 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_u = zeros(length(st), ep_n)
         s_env_l = zeros(length(st), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            s_env_m[:, ep_idx] = median(sp[:, :, ep_idx], dims=1)
-            # find peaks
-            s_idx = findpeaks(s_env_m[:, ep_idx], d=d)
-            # add first time-point
-            pushfirst!(s_idx, 1)
-            # add last time-point
-            push!(s_idx, length(s_env_m[:, ep_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(s_idx) > 4
-                model = CubicSpline(st[s_idx], s_env_m[s_idx])
-                try
-                    s_env_m[:, ep_idx] = model(st)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ep_idx in 1:ep_n
+            s_env_m[:, ep_idx] = @views median(sp[:, :, ep_idx], dims=1)
+            for m_idx in 1:length(st)
+                s_env_u[m_idx, ep_idx], s_env_l[m_idx, ep_idx] = ci_median(sp[:, m_idx, ep_idx])
             end
-            s = iqr(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
-            s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + 1.96 * s
-            s_env_l[:, ep_idx] = @. s_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -893,26 +817,11 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_u = zeros(length(st), ch_n)
         s_env_l = zeros(length(st), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            s_env_m[:, ch_idx] = median(sp[ch_idx, :, :], dims=2)
-            # find peaks
-            s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
-            # add first time-point
-            pushfirst!(s_idx, 1)
-            # add last time-point
-            push!(s_idx, length(s_env_m[:, ch_idx]))
-            # interpolate peaks using cubic spline or loess
-            if length(s_idx) > 4
-                model = CubicSpline(st[s_idx], s_env_m[s_idx])
-                try
-                    s_env_m[:, ch_idx] = model(st)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ch_idx in 1:ch_n
+            s_env_m[:, ch_idx] = @views median(sp[ch_idx, :, :], dims=2)
+            for m_idx in 1:length(st)
+                s_env_u[m_idx, ch_idx], s_env_l[m_idx, ch_idx] = ci_median(sp[ch_idx, :, :])
             end
-            s = iqr(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
-            s_env_u[:, ch_idx] = @views @. s_env_m[:, ch_idx] + 1.96 * s
-            s_env_l[:, ch_idx] = @views @. s_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
@@ -959,31 +868,10 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     s_t = obj.epoch_time
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s = @view hamp[ch_idx, :, ep_idx]
-            # find peaks
-            p_idx = findpeaks(s, d=d)
-            # add first time-point
-            pushfirst!(p_idx, 1)
-            # add last time-point
-            push!(p_idx, length(s))
-            # interpolate peaks using cubic spline or loess
-            if length(p_idx) >= 5
-                model = CubicSpline(s_t[p_idx], s[p_idx])
-                try
-                    h_env[ch_idx, :, ep_idx] = model(s_t)
-                catch
-                    @warn "CubicSpline error, using Loess."
-                    model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
-                    h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
-                end
-            else
-                _info("Less than 5 peaks detected, using Loess.")
-                model = Loess.loess(s_t[p_idx], s[p_idx], span=0.5)
-                h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
-            end
-            h_env[ch_idx, 1, ep_idx] = h_env[ch_idx, 2, ep_idx]
+            h_env[ch_idx, :, ep_idx] = env_up(s, s_t, d=d)
         end
     end
     
@@ -1033,11 +921,11 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         h_env_u = zeros(length(s_t), ep_n)
         h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            h_env_m[:, ep_idx] = mean(s_a[:, :, ep_idx], dims=1)
-            s = std(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
-            h_env_u[:, ep_idx] = @. h_env_m[:, ep_idx] + 1.96 * s
-            h_env_l[:, ep_idx] = @. h_env_m[:, ep_idx] - 1.96 * s
+        @inbounds for ep_idx in 1:ep_n
+            h_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
+            s = @views 1.96 * std(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
+            h_env_u[:, ep_idx] = @. h_env_m[:, ep_idx] + s
+            h_env_l[:, ep_idx] = @. h_env_m[:, ep_idx] - s
         end
     elseif dims == 2
         # mean over epochs
@@ -1046,11 +934,11 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         h_env_u = zeros(length(s_t), ch_n)
         h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
-            h_env_m[:, ch_idx] = mean(s_a[ch_idx, :, :], dims=2)
-            s = std(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
-            h_env_u[:, ch_idx] = @views @. h_env_m[:, ch_idx] + 1.96 * s
-            h_env_l[:, ch_idx] = @views @. h_env_m[:, ch_idx] - 1.96 * s
+        @inbounds for ch_idx in 1:ch_n
+            h_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
+            s = @views 1.96 * std(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
+            h_env_u[:, ch_idx] = @views @. h_env_m[:, ch_idx] + s
+            h_env_l[:, ch_idx] = @views @. h_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -1111,22 +999,11 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         h_env_u = zeros(length(s_t), ep_n)
         h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for ep_idx in 1:ep_n
-            h_env_m[:, ep_idx] = median(s_a[:, :, ep_idx], dims=1)
-            t_idx = findpeaks(h_env_m[:, ep_idx], d=d)
-            pushfirst!(t_idx, 1)
-            push!(t_idx, length(h_env_m[:, ep_idx]))
-            if length(t_idx) > 4
-                model = CubicSpline(s_t[t_idx], h_env_m[t_idx])
-                try
-                    h_env_m[:, ep_idx] = model(s_t)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+        @inbounds for ep_idx in 1:ep_n
+            h_env_m[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims=1)
+            for m_idx in 1:length(s_t)
+                h_env_u[m_idx, ep_idx], h_env_l[m_idx, ep_idx] = ci_median(s_a[:, m_idx, ep_idx])
             end
-            s = iqr(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
-            h_env_u[:, ep_idx] = @views @. h_env_m[:, ep_idx] + 1.96 * s
-            h_env_l[:, ep_idx] = @views @. h_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -1135,22 +1012,11 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         h_env_u = zeros(length(s_t), ch_n)
         h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for ch_idx in 1:ch_n
+        @inbounds for ch_idx in 1:ch_n
             h_env_m[:, ch_idx] = median(s_a[ch_idx, :, :], dims=2)
-            t_idx = findpeaks(h_env_m[:, ch_idx], d=d)
-            pushfirst!(t_idx, 1)
-            push!(t_idx, length(h_env_m[:, ch_idx]))
-            if length(t_idx) > 4
-                model = CubicSpline(s_t[t_idx], h_env_m[t_idx])
-                try
-                    h_env_m[:, ch_idx] = model(s_t)
-                catch
-                    _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
-                end
+            for m_idx in 1:length(s_t)
+                h_env_u[m_idx, ch_idx], h_env_l[m_idx, ch_idx] = ci_median(s_a[ch_idx, m_idx, :])
             end
-            s = iqr(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
-            h_env_u[:, ch_idx] = @views @. h_env_m[:, ch_idx] + 1.96 * s
-            h_env_l[:, ch_idx] = @views @. h_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs

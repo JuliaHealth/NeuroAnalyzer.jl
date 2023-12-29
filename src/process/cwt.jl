@@ -83,7 +83,7 @@ function cw_trans(s::AbstractArray; wt::T) where {T<:CWT}
     l = size(ContinuousWavelets.cwt(s[1, :, 1], wt), 2)
     ct = zeros(ch_n, l, ep_len, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ct[ch_idx, :, :, ep_idx] = @views cw_trans(s[ch_idx, :, ep_idx], wt=wt)
         end

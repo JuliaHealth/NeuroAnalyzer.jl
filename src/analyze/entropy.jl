@@ -57,7 +57,7 @@ function entropy(s::AbstractArray)
     sent = zeros(ch_n, ep_n)
     leent = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views entropy(s[ch_idx, :, ep_idx])
         end
@@ -137,7 +137,7 @@ function negentropy(s::AbstractArray)
     
     ne = zeros(ch_n, ep_n)
 
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ne[ch_idx, ep_idx] = @views negentropy(s[ch_idx, :, ep_idx])
         end

@@ -29,7 +29,7 @@ Preview channel locations.
 """
 function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false)
 
-    NeuroAnalyzer._check_var(plane, [:xy, :yz, :xz], "plane")
+    _check_var(plane, [:xy, :yz, :xz], "plane")
 
     pal = mono ? :grays : :darktest
 
@@ -418,9 +418,9 @@ Preview of channel locations.
 function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, kwargs...)
 
     # remove reference and EOG channels
-    ch = vec(collect(ch))
-    setdiff!(ch, get_channel_bytype(obj, type="ref"))
-    setdiff!(ch, get_channel_bytype(obj, type="eog"))
+    # ch = vec(collect(ch))
+    # setdiff!(ch, get_channel_bytype(obj, type="ref"))
+    # setdiff!(ch, get_channel_bytype(obj, type="eog"))
     # select channels, default is all channels
     _check_channels(signal_channels(obj), ch)
     selected != 0 && _check_channels(obj, selected)

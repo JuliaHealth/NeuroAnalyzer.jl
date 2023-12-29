@@ -34,7 +34,7 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
     @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
     
     s_phase = zeros(size(s, 2), ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
+    @inbounds for ep_idx in 1:ep_n
         _, _, _, s_phase[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
  
@@ -140,11 +140,11 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(Float64, 1, ep_len, ep_n)
         # convolute with Morlet wavelet
-        @inbounds @simd for ep_idx in 1:ep_n
+        @inbounds for ep_idx in 1:ep_n
             s_conv[1, :, ep_idx] = @views DSP.conv(obj.data[ch, :, ep_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
-        @inbounds @simd for t_idx in 1:ep_len
+        @inbounds for t_idx in 1:ep_len
             itpc_value, itpc_z, _, _ = itpc(s_conv, t=t_idx, w=w)
             itpc_s[frq_idx, t_idx] = itpc_value
             itpcz_s[frq_idx, t_idx] = itpc_z
