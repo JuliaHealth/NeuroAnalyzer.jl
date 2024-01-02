@@ -5,7 +5,7 @@ export iplot_topo_cont
 """
     iplot_topo(obj, ch, mono, zoom, snap)
 
-Interactive topoplot of continuous or epoched signal.
+Interactive topographical plot of continuous or epoched signal.
 
 # Arguments
 
@@ -32,7 +32,7 @@ end
 """
     iplot_topo_cont(obj, ch, mono, zoom)
 
-Interactive edit of continuous signal.
+Interactive topographical plot of continuous signal.
 
 # Arguments
 
@@ -50,11 +50,11 @@ function iplot_topo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert nepochs(obj) == 1 "iedit_ep() should be used for epoched object."
+    @assert nepochs(obj) == 1 "iplot_topo_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
-    win = GtkWindow("NeuroAnalyzer: iedit_cont()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iplot_topo_cont()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -354,31 +354,9 @@ function iplot_topo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                 time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
                 time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
                 if time1 > time2
-                    warn_dialog("Cannot delete!\nSegment start is larger than segment end.")
-                elseif time1 == time2
-                    warn_dialog("Cannot delete!\nSegment start must be different from segment end.")
-                elseif ask_dialog("Delete segment $time1:$time2 ?", "No", "Yes")
-                    trim!(obj, seg=(time1, time2), remove_epochs=false)
-                    _info("Deleted segment: $time1:$time2")
-                    if time1 == time_current && time2 > obj.time_pts[end]
-                        time_current = obj.time_pts[end] - zoom
-                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                    else
-                        if obj.time_pts[end] % zoom == 0
-                            time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
-                        else
-                            time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
-                        end
-                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                    end
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                        set_gtk_property!(entry_ts1, :value, time_current)
-                        set_gtk_property!(entry_ts2, :value, time_current)
-                        GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                        GAccessor.range(entry_ts1, obj.time_pts[1], obj.time_pts[end])
-                        GAccessor.range(entry_ts2, obj.time_pts[1], obj.time_pts[end])
-                    end
+                    warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
+                else
+                    itopo(obj, seg=(time1, time2))
                 end
             end
         end
@@ -391,7 +369,7 @@ end
 """
     iplot_topo_ep(obj, ch, mono)
 
-Interactive edit of epoched signal.
+Interactive topographical plot of epoched signal.
 
 # Arguments
 
