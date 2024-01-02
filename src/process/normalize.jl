@@ -30,13 +30,13 @@ Normalize.
     - `:log10`: using log10-transformation
     - `:neglog`: using -log-transformation
     - `:neglog10`: using -log10-transformation
-    - `:neg`: in [0, -∞]
+    - `:neg`: in [-∞, 0]
     - `:pos`: in [0, +∞]
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
     - `:invroot`: in inverse root (1/sqrt(x))
     - `:softmax`: exp(x_i) / sum(exp(x))
-    - `:n`: in [0, n1], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
+    - `:n`: in [0, n], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
     - `:none`
 
 # Returns
@@ -45,7 +45,7 @@ Normalize.
 """
 function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
 
-    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :mn, :none], "method")
+    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :mn, :softmax, :none], "method")
 
     if method === :zscore
         return normalize_zscore(s)
@@ -263,7 +263,7 @@ end
 """
     normalize_neg(s)
 
-Normalize in [0, -∞].
+Normalize in [-∞, 0].
 
 # Arguments
 
