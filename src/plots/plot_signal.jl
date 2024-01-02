@@ -957,30 +957,28 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     # draw segment borders
-    if s_pos[1] != s_pos[2]
-        if length(p) > 1
-            for p_idx in eachindex(p)
-                p[p_idx] = Plots.vline!(p[p_idx],
-                                        [s_pos[1]],
-                                        color=:black,
-                                        lw=1,
-                                        labels="");
-                p[p_idx] = Plots.vline!(p[p_idx],
-                                        [s_pos[2]],
-                                        color=:black,
-                                        lw=1,
-                                        labels="")
-            end
-        else
-            p = Plots.vline!(p,
-                             [s_pos[1]],
-                             color=:black,
-                             labels="")
-            p = Plots.vline!(p,
-                             [s_pos[2]],
-                             color=:black,
-                             labels="")
+    if length(p) > 1
+        for p_idx in eachindex(p)
+            p[p_idx] = Plots.vline!(p[p_idx],
+                                    [s_pos[1]],
+                                    color=:black,
+                                    lw=1,
+                                    labels="");
+            p[p_idx] = Plots.vline!(p[p_idx],
+                                    [s_pos[2]],
+                                    color=:black,
+                                    lw=1,
+                                    labels="")
         end
+    else
+        p = Plots.vline!(p,
+                         [s_pos[1]],
+                         color=:black,
+                         labels="")
+        p = Plots.vline!(p,
+                         [s_pos[2]],
+                         color=:black,
+                         labels="")
     end
 
     if length(p) > 1
