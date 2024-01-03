@@ -719,6 +719,13 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
         end
     end
 
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
+
     return nothing
 
 end

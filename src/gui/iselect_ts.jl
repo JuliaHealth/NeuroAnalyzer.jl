@@ -1,9 +1,9 @@
-export iplot_topo
+export iselect_ts
 
 """
-    iplot_topo(obj, ch, mono, zoom, snap)
+    iselect_ts(obj, ch, mono, zoom, snap)
 
-Interactive topographical plot of continuous or epoched signal.
+Select time segment.
 
 # Arguments
 
@@ -12,8 +12,14 @@ Interactive topographical plot of continuous or epoched signal.
 - `mono::Bool=true`: Use color or gray palette
 - `zoom::Real=5`: how many seconds are displayed in one segment
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
+
+# Returns
+
+- `seg::Tuple{Float64, Float64}`
 """
-function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
+function iselect_ts(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
+
+    quit = false
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
@@ -23,11 +29,10 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    # @assert nepochs(obj) == 1 "iplot_topo_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
-    win = GtkWindow("NeuroAnalyzer: iplot_topo()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iselect_ts()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -68,8 +73,8 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_plot_topo = GtkButton("Plot topo")
-    set_gtk_property!(bt_plot_topo, :tooltip_text, "Plot topographical map of the current segment")
+    bt_ts = GtkButton("Return TS")
+    set_gtk_property!(bt_ts, :tooltip_text, "Return selected time segment")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
     g[1:16, 1] = win_view
@@ -85,7 +90,7 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     g[10, 2] = GtkLabel("|")
     g[11, 2] = entry_ts2
     g[12, 2] = GtkLabel("")
-    g[13, 2] = bt_plot_topo
+    g[13, 2] = bt_ts
     g[14, 2] = GtkLabel("")
     g[15, 2] = bt_help
     g[16, 2] = bt_close
@@ -223,24 +228,18 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
     end
 
-    @guarded signal_connect(bt_plot_topo, "clicked") do widget
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-        time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
-        if time1 > time2
-            warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
-        else
-            itopo(obj, seg=(time1, time2))
-        end
+    signal_connect(bt_ts, "clicked") do widget
+        Gtk.destroy(win)
     end
 
-    signal_connect(bt_close, "clicked") do widget
+    signal_connect(bt_close, "clicked") do widget        
+        quit = true
         Gtk.destroy(win)
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        nepochs(obj) == 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-p\tplot topographical map of the current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
-        nepochs(obj) > 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by 1 epoch\nctrl-v\tgo forward by 1 epoch\n\nctrl-p\tplot topographical map of the current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        nepochs(obj) == 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-p\treturn selected time segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        nepochs(obj) > 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by 1 epoch\nctrl-v\tgo forward by 1 epoch\n\nctrl-p\treturn selected time segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -248,10 +247,11 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         s = event.state
         if s == 20
             if k == 113 # q
+                quit = true
                 Gtk.destroy(win)
             elseif k == 104 # h
-                nepochs(obj) == 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-p\tplot topographical map of the current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
-                nepochs(obj) > 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by 1 epoch\nctrl-v\tgo forward by 1 epoch\n\nctrl-p\tplot topographical map of the current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
+                nepochs(obj) == 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-p\treturn selected time segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
+                nepochs(obj) > 1 && info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by 1 epoch\nctrl-v\tgo forward by 1 epoch\n\nctrl-p\treturn selected time segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
             elseif k == 92 # \
                 snap = !snap
             elseif k == 97 # a
@@ -326,18 +326,25 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                     end
                 end
             elseif k == 112 # p
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-                time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
-                if time1 > time2
-                    warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
-                else
-                    itopo(obj, seg=(time1, time2))
-                end
+                Gtk.destroy(win)
             end
         end
     end
 
-    return nothing
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
+    if quit == false
+        time_current = get_gtk_property(entry_time, :value, Float64)
+        time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
+        time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
+        seg = (time1, time2)
+        return seg
+    else
+        return nothing
+    end
 
 end
