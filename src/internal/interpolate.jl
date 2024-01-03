@@ -35,7 +35,7 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
         end
     end
 
-    s_interpolated = s_interpolated'
+    s_interpolated = rotl90(s_interpolated)
     
     return normalize(s_interpolated, method=nmethod), interpolated_x, interpolated_y
 

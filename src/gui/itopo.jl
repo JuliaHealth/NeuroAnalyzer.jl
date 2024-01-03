@@ -32,6 +32,16 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     set_gtk_property!(g_opts, :row_spacing, 10)
     set_gtk_property!(g_opts, :column_spacing, 10)
 
+    entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.01)
+    set_gtk_property!(entry_ts1, :value, seg[1])
+    set_gtk_property!(entry_ts1, :digits, 3)
+    set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
+
+    entry_ts2 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.01)
+    set_gtk_property!(entry_ts2, :value, seg[2])
+    set_gtk_property!(entry_ts2, :digits, 3)
+    set_gtk_property!(entry_ts2, :tooltip_text, "Segment end [s]")
+
     bt_close = GtkButton("Close")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
 
@@ -49,7 +59,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 
     cb_cart = GtkCheckButton()
     set_gtk_property!(cb_cart, :tooltip_text, "Use Cartesian coordinates of electrodes")
-    set_gtk_property!(cb_cart, :active, true)
+    set_gtk_property!(cb_cart, :active, false)
 
     cb_large = GtkCheckButton()
     set_gtk_property!(cb_large, :tooltip_text, "Draw large plot")
@@ -118,30 +128,38 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     set_gtk_property!(lab_elec, :halign, 2)
     lab_contour = GtkLabel("Draw contours:")
     set_gtk_property!(lab_contour, :halign, 2)
-    g_opts[1, 1] = lab_t
-    g_opts[1, 2] = lab_type
-    g_opts[1, 3] = lab_amethod
-    g_opts[1, 4] = lab_nmethod
-    g_opts[1, 5] = lab_cb
-    g_opts[1, 6] = lab_cb_draw
-    g_opts[1, 7] = lab_cart
-    g_opts[1, 8] = lab_large
-    g_opts[1, 9] = lab_elec
-    g_opts[1, 10] = lab_contour
-    g_opts[1, 11] = bt_save
-    g_opts[2, 1] = entry_title
-    g_opts[2, 2] = combo_imethod
-    g_opts[2, 3] = combo_amethod
-    g_opts[2, 4] = combo_nmethod
-    g_opts[2, 5] = entry_cblab
-    g_opts[2, 6] = cb_cb
-    g_opts[2, 7] = cb_cart
-    g_opts[2, 8] = cb_large
-    g_opts[2, 9] = cb_elec
-    g_opts[2, 10] = cb_contour
-    g_opts[2, 11] = combo_save
-    g_opts[1:2, 12] = bt_refresh
-    g_opts[1:2, 13] = bt_close
+    lab_ts1 = GtkLabel("Segment start")
+    #set_gtk_property!(lab_ts1, :halign, 2)
+    lab_ts2 = GtkLabel("Segment end")
+    #set_gtk_property!(lab_ts2, :halign, 2)
+    g_opts[1, 2] = entry_ts1
+    g_opts[2, 2] = entry_ts2
+    g_opts[1, 3] = lab_t
+    g_opts[1, 4] = lab_type
+    g_opts[1, 5] = lab_amethod
+    g_opts[1, 6] = lab_nmethod
+    g_opts[1, 7] = lab_cb
+    g_opts[1, 8] = lab_cb_draw
+    g_opts[1, 9] = lab_cart
+    g_opts[1, 10] = lab_large
+    g_opts[1, 11] = lab_elec
+    g_opts[1, 12] = lab_contour
+    g_opts[1, 13] = bt_save
+    g_opts[1, 1] = lab_ts1
+    g_opts[2, 1] = lab_ts2
+    g_opts[2, 3] = entry_title
+    g_opts[2, 4] = combo_imethod
+    g_opts[2, 5] = combo_amethod
+    g_opts[2, 6] = combo_nmethod
+    g_opts[2, 7] = entry_cblab
+    g_opts[2, 8] = cb_cb
+    g_opts[2, 9] = cb_cart
+    g_opts[2, 10] = cb_large
+    g_opts[2, 11] = cb_elec
+    g_opts[2, 12] = cb_contour
+    g_opts[2, 13] = combo_save
+    g_opts[1:2, 14] = bt_refresh
+    g_opts[1:2, 15] = bt_close
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
@@ -156,6 +174,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     showall(win)
 
     @guarded draw(can) do widget
+        seg = round.((get_gtk_property(entry_ts1, :value, Float64), get_gtk_property(entry_ts2, :value, Float64)), digits=3)
         title = get_gtk_property(entry_title, :text, String)
         cblab = get_gtk_property(entry_cblab, :text, String)
         cb = get_gtk_property(cb_cb, :active, Bool)
@@ -210,6 +229,27 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
+    end
+
+    signal_connect(entry_ts1, "value-changed") do widget
+        Gtk.@sigatom begin
+            seg = round.((get_gtk_property(entry_ts1, :value, Float64), get_gtk_property(entry_ts2, :value, Float64)), digits=3)
+        end
+        if seg[1] > seg[2]
+            warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
+        else
+            draw(can)
+        end
+    end
+    signal_connect(entry_ts2, "value-changed") do widget
+        Gtk.@sigatom begin
+            seg = round.((get_gtk_property(entry_ts1, :value, Float64), get_gtk_property(entry_ts2, :value, Float64)), digits=3)
+        end
+        if seg[1] > seg[2]
+            warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
+        else
+            draw(can)
+        end
     end
 
     signal_connect(bt_refresh, "clicked") do widget
