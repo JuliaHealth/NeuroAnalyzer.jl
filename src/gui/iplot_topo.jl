@@ -277,7 +277,6 @@ function iplot_topo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                 info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-p\tplot topographical map of the current segment\n\nctrl-\\\tswitch snapping\n\nctrl-h\tthis info\nctrl-q\texit\n")
             elseif k == 92 # \
                 snap = !snap
-                @show snap
             elseif k == 97 # a
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, obj.time_pts[1])
