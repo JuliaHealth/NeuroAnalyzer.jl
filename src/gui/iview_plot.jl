@@ -52,6 +52,13 @@ function iview_plot(p::Plots.Plot{Plots.GRBackend})
         end
     end
 
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
+
     return nothing
 
 end
@@ -113,6 +120,13 @@ function iview_plot(file_name::String)
         end
     end
 
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
+
     return nothing
 
 end
@@ -163,6 +177,13 @@ function iview_plot(c::Cairo.CairoSurfaceBase{UInt32})
             end
         end
     end
+
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
 
     return nothing
 

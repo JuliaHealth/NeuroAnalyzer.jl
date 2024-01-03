@@ -401,6 +401,13 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
     end
 
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
+
     return nothing
 
 end
@@ -584,6 +591,13 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             end
         end
     end
+
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
 
     return nothing
 

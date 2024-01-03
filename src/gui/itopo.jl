@@ -9,9 +9,11 @@ Interactive topographical map.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj))`: channel(s) to plot, default is EEG/MEG/ERP channels
-- `seg::Tuple{Real, Real}`: segment (from, to) in seconds to display
+- `seg::Tuple{Real, Real}=(0, 0)`: segment (from, to) in seconds to display
 """
-function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), seg::Tuple{Real, Real})
+function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), seg::Tuple{Real, Real}=(0, 0))
+
+    redraw = true
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
@@ -105,6 +107,9 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     set_gtk_property!(combo_save, :active, 0)
     bt_save = GtkButton("Save as:")
 
+    bt_select_ts = GtkButton("Time segment")
+    set_gtk_property!(bt_select_ts, :tooltip_text, "Select time segment")
+
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
@@ -134,32 +139,33 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     #set_gtk_property!(lab_ts2, :halign, 2)
     g_opts[1, 2] = entry_ts1
     g_opts[2, 2] = entry_ts2
-    g_opts[1, 3] = lab_t
-    g_opts[1, 4] = lab_type
-    g_opts[1, 5] = lab_amethod
-    g_opts[1, 6] = lab_nmethod
-    g_opts[1, 7] = lab_cb
-    g_opts[1, 8] = lab_cb_draw
-    g_opts[1, 9] = lab_cart
-    g_opts[1, 10] = lab_large
-    g_opts[1, 11] = lab_elec
-    g_opts[1, 12] = lab_contour
-    g_opts[1, 13] = bt_save
+    g_opts[1:2, 3] = bt_select_ts
+    g_opts[1, 4] = lab_t
+    g_opts[1, 5] = lab_type
+    g_opts[1, 6] = lab_amethod
+    g_opts[1, 7] = lab_nmethod
+    g_opts[1, 8] = lab_cb
+    g_opts[1, 9] = lab_cb_draw
+    g_opts[1, 10] = lab_cart
+    g_opts[1, 11] = lab_large
+    g_opts[1, 12] = lab_elec
+    g_opts[1, 13] = lab_contour
+    g_opts[1, 14] = bt_save
     g_opts[1, 1] = lab_ts1
     g_opts[2, 1] = lab_ts2
-    g_opts[2, 3] = entry_title
-    g_opts[2, 4] = combo_imethod
-    g_opts[2, 5] = combo_amethod
-    g_opts[2, 6] = combo_nmethod
-    g_opts[2, 7] = entry_cblab
-    g_opts[2, 8] = cb_cb
-    g_opts[2, 9] = cb_cart
-    g_opts[2, 10] = cb_large
-    g_opts[2, 11] = cb_elec
-    g_opts[2, 12] = cb_contour
-    g_opts[2, 13] = combo_save
-    g_opts[1:2, 14] = bt_refresh
-    g_opts[1:2, 15] = bt_close
+    g_opts[2, 4] = entry_title
+    g_opts[2, 5] = combo_imethod
+    g_opts[2, 6] = combo_amethod
+    g_opts[2, 7] = combo_nmethod
+    g_opts[2, 8] = entry_cblab
+    g_opts[2, 9] = cb_cb
+    g_opts[2, 10] = cb_cart
+    g_opts[2, 11] = cb_large
+    g_opts[2, 12] = cb_elec
+    g_opts[2, 13] = cb_contour
+    g_opts[2, 14] = combo_save
+    g_opts[1:2, 15] = bt_refresh
+    g_opts[1:2, 16] = bt_close
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
@@ -174,61 +180,63 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     showall(win)
 
     @guarded draw(can) do widget
-        seg = round.((get_gtk_property(entry_ts1, :value, Float64), get_gtk_property(entry_ts2, :value, Float64)), digits=3)
-        title = get_gtk_property(entry_title, :text, String)
-        cblab = get_gtk_property(entry_cblab, :text, String)
-        cb = get_gtk_property(cb_cb, :active, Bool)
-        imethod = get_gtk_property(combo_imethod, :active, String)
-        imethod == "0" && (imethod = :sh)
-        imethod == "1" && (imethod = :mq)
-        imethod == "2" && (imethod = :imq)
-        imethod == "3" && (imethod = :tp)
-        imethod == "4" && (imethod = :nn)
-        imethod == "5" && (imethod = :ga)
-        amethod = get_gtk_property(combo_amethod, :active, String)
-        amethod == "0" && (amethod = :mean)
-        amethod == "1" && (amethod = :median)
-        nmethod = get_gtk_property(combo_nmethod, :active, String)
-        nmethod == "0" && (nmethod = :zscore)
-        nmethod == "1" && (nmethod = :gauss)
-        nmethod == "2" && (nmethod = :invroot)
-        nmethod == "3" && (nmethod = :log)
-        nmethod == "4" && (nmethod = :minmax)
-        nmethod == "5" && (nmethod = :neg)
-        nmethod == "6" && (nmethod = :neglog)
-        nmethod == "7" && (nmethod = :neglog10)
-        nmethod == "8" && (nmethod = :perc)
-        nmethod == "9" && (nmethod = :pos)
-        nmethod == "10" && (nmethod = :softmax)
-        nmethod == "11" && (nmethod = :none)
-        plot_contours = get_gtk_property(cb_contour, :active, Bool)
-        plot_electrodes = get_gtk_property(cb_elec, :active, Bool)
-        cart = get_gtk_property(cb_cart, :active, Bool)
-        large = get_gtk_property(cb_large, :active, Bool)
-        p = NeuroAnalyzer.plot_topo(obj,
-                                    ch=ch,
-                                    seg=seg,
-                                    title=title,
-                                    cb=cb,
-                                    cb_label=cblab,
-                                    amethod=amethod,
-                                    imethod=imethod,
-                                    nmethod=nmethod,
-                                    large=large,
-                                    plot_contours=plot_contours,
-                                    plot_electrodes=plot_electrodes,
-                                    cart=cart)
-        Gtk.resize!(win, p.attr[:size][2] + 100, p.attr[:size][2] + 40)
-        set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-        set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-        ctx = getgc(can)
-        # Gtk.rectangle(ctx, 0, 0, 705, 705)
-        # Cairo.set_source_rgb(ctx, 255, 255, 255)
-        # Gtk.fill(ctx)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
+        if redraw
+            seg = round.((get_gtk_property(entry_ts1, :value, Float64), get_gtk_property(entry_ts2, :value, Float64)), digits=3)
+            title = get_gtk_property(entry_title, :text, String)
+            cblab = get_gtk_property(entry_cblab, :text, String)
+            cb = get_gtk_property(cb_cb, :active, Bool)
+            imethod = get_gtk_property(combo_imethod, :active, String)
+            imethod == "0" && (imethod = :sh)
+            imethod == "1" && (imethod = :mq)
+            imethod == "2" && (imethod = :imq)
+            imethod == "3" && (imethod = :tp)
+            imethod == "4" && (imethod = :nn)
+            imethod == "5" && (imethod = :ga)
+            amethod = get_gtk_property(combo_amethod, :active, String)
+            amethod == "0" && (amethod = :mean)
+            amethod == "1" && (amethod = :median)
+            nmethod = get_gtk_property(combo_nmethod, :active, String)
+            nmethod == "0" && (nmethod = :zscore)
+            nmethod == "1" && (nmethod = :gauss)
+            nmethod == "2" && (nmethod = :invroot)
+            nmethod == "3" && (nmethod = :log)
+            nmethod == "4" && (nmethod = :minmax)
+            nmethod == "5" && (nmethod = :neg)
+            nmethod == "6" && (nmethod = :neglog)
+            nmethod == "7" && (nmethod = :neglog10)
+            nmethod == "8" && (nmethod = :perc)
+            nmethod == "9" && (nmethod = :pos)
+            nmethod == "10" && (nmethod = :softmax)
+            nmethod == "11" && (nmethod = :none)
+            plot_contours = get_gtk_property(cb_contour, :active, Bool)
+            plot_electrodes = get_gtk_property(cb_elec, :active, Bool)
+            cart = get_gtk_property(cb_cart, :active, Bool)
+            large = get_gtk_property(cb_large, :active, Bool)
+            p = NeuroAnalyzer.plot_topo(obj,
+                                        ch=ch,
+                                        seg=seg,
+                                        title=title,
+                                        cb=cb,
+                                        cb_label=cblab,
+                                        amethod=amethod,
+                                        imethod=imethod,
+                                        nmethod=nmethod,
+                                        large=large,
+                                        plot_contours=plot_contours,
+                                        plot_electrodes=plot_electrodes,
+                                        cart=cart)
+            Gtk.resize!(win, p.attr[:size][2] + 100, p.attr[:size][2] + 40)
+            set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+            set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
+            ctx = getgc(can)
+            # Gtk.rectangle(ctx, 0, 0, 705, 705)
+            # Cairo.set_source_rgb(ctx, 255, 255, 255)
+            # Gtk.fill(ctx)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
+        end
     end
 
     signal_connect(entry_ts1, "value-changed") do widget
@@ -279,6 +287,19 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     signal_connect(cb_contour, "clicked") do widget
         draw(can)
     end
+    signal_connect(bt_select_ts, "clicked") do widget
+        seg = nothing
+        Gtk.@sigatom begin
+            seg = iselect_ts(obj)
+        end
+        if !isnothing(seg)
+            redraw = false
+            set_gtk_property!(entry_ts1, :value, seg[1])
+            redraw = true
+            set_gtk_property!(entry_ts2, :value, seg[2])
+            draw(can)
+        end
+    end
 
     signal_connect(bt_save, "clicked") do widget
         format = get_gtk_property(combo_save, :active, String)
@@ -320,6 +341,13 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
             end
         end
     end
+
+    c = Condition()
+    signal_connect(win, :destroy) do widget
+        notify(c)
+    end
+    @async Gtk.gtk_main()
+    wait(c)
 
     return nothing
 
