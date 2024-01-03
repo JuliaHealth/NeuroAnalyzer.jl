@@ -141,9 +141,9 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            palette=pal,
                            aspect_ratio=1,
                            size=size(head_shape) .+ 34,
-                           right_margin=-150*Plots.px,
-                           bottom_margin=-150*Plots.px,
-                           top_margin=-150*Plots.px,
+                           right_margin=-10*Plots.px,
+                           bottom_margin=-100*Plots.px,
+                           top_margin=-10*Plots.px,
                            left_margin=-30*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
@@ -217,7 +217,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             head_mask = head_mask[158:end, 147:end]
             p = Plots.plot!(head_shape)
             p = Plots.plot!(head_mask)
-            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
+            #p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=1, fill=nothing, legend=false)
         else
             head_mask = head_mask[80:end, 82:end]
             p = Plots.plot!(head_shape)
