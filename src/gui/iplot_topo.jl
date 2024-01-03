@@ -5,7 +5,7 @@ export iplot_topo_cont
 """
     iplot_topo(obj, ch, mono, zoom, snap)
 
-Interactive topoplot of continuous or epoched signal.
+Interactive topographical plot of continuous or epoched signal.
 
 # Arguments
 
@@ -22,7 +22,7 @@ function iplot_topo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     if nepochs(obj) == 1
         iplot_topo_cont(obj, ch=ch, mono=mono, zoom=zoom, snap=snap)
     else
-        iplot_topo_ep(obj, ch=ch, mono=mono)
+        iplot_topo_ep(obj, ch=ch, mono=mono, snap=snap)
     end
 
     return nothing
@@ -32,7 +32,7 @@ end
 """
     iplot_topo_cont(obj, ch, mono, zoom)
 
-Interactive edit of continuous signal.
+Interactive topographical plot of continuous signal.
 
 # Arguments
 
@@ -50,11 +50,11 @@ function iplot_topo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert nepochs(obj) == 1 "iedit_ep() should be used for epoched object."
+    @assert nepochs(obj) == 1 "iplot_topo_ep() should be used for epoched object."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
-    win = GtkWindow("NeuroAnalyzer: iedit_cont()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iplot_topo_cont()", 1200, 800)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 800)
@@ -353,31 +353,9 @@ function iplot_topo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                 time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
                 time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
                 if time1 > time2
-                    warn_dialog("Cannot delete!\nSegment start is larger than segment end.")
-                elseif time1 == time2
-                    warn_dialog("Cannot delete!\nSegment start must be different from segment end.")
-                elseif ask_dialog("Delete segment $time1:$time2 ?", "No", "Yes")
-                    trim!(obj, seg=(time1, time2), remove_epochs=false)
-                    _info("Deleted segment: $time1:$time2")
-                    if time1 == time_current && time2 > obj.time_pts[end]
-                        time_current = obj.time_pts[end] - zoom
-                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                    else
-                        if obj.time_pts[end] % zoom == 0
-                            time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
-                        else
-                            time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
-                        end
-                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                    end
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                        set_gtk_property!(entry_ts1, :value, time_current)
-                        set_gtk_property!(entry_ts2, :value, time_current)
-                        GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                        GAccessor.range(entry_ts1, obj.time_pts[1], obj.time_pts[end])
-                        GAccessor.range(entry_ts2, obj.time_pts[1], obj.time_pts[end])
-                    end
+                    warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
+                else
+                    itopo(obj, seg=(time1, time2))
                 end
             end
         end
@@ -390,15 +368,16 @@ end
 """
     iplot_topo_ep(obj, ch, mono)
 
-Interactive edit of epoched signal.
+Interactive topographical plot of epoched signal.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj))`: channel(s) to plot, default is EEG/MEG/ERP channels
 - `mono::Bool=true`: Use color or gray palette
+- `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 """
-function iplot_topo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), mono::Bool=true)
+function iplot_topo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), mono::Bool=true, snap::Bool=true)
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
@@ -423,6 +402,12 @@ function iplot_topo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
     set_gtk_property!(g, :row_spacing, 10)
     entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
+    entry_ts1 = GtkSpinButton(obj.epoch_time[1], obj.epoch_time[end], 0.5)
+    set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
+    set_gtk_property!(entry_ts1, :digits, 3)
+    entry_ts2 = GtkSpinButton(obj.epoch_time[1], obj.epoch_time[end], 0.5)
+    set_gtk_property!(entry_ts2, :digits, 3)
+    set_gtk_property!(entry_ts2, :tooltip_text, "Segment end [s]")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
     bt_prev = GtkButton("←")
@@ -433,36 +418,79 @@ function iplot_topo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_plot_topo = GtkButton("DEL")
-    set_gtk_property!(bt_plot_topo, :tooltip_text, "Delete epoch")
+    bt_plot_topo = GtkButton("Plot topo")
+    set_gtk_property!(bt_plot_topo, :tooltip_text, "Plot topographical map of the current segment")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    g[1:10, 1] = win_view
+    g[1:14, 1] = win_view
     g[1, 2] = bt_start
     g[2, 2] = bt_prev
     g[3, 2] = entry_epoch
     g[4, 2] = bt_next
     g[5, 2] = bt_end
     g[6, 2] = GtkLabel("")
-    g[7, 2] = bt_plot_topo
-    g[8, 2] = GtkLabel("")
-    g[9, 2] = bt_help
-    g[10, 2] = bt_close
+    g[7, 2] = entry_ts1
+    g[8, 2] = GtkLabel("|")
+    g[9, 2] = entry_ts2
+    g[10, 2] = GtkLabel("")
+    g[11, 2] = bt_plot_topo
+    g[12, 2] = GtkLabel("")
+    g[13, 2] = bt_help
+    g[14, 2] = bt_close
     push!(win, g)
 
     showall(win)
 
     @guarded draw(can) do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
+        ts1 = get_gtk_property(entry_ts1, :value, Float64)
+        ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
         show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
                                                        ch=ch,
                                                        ep=ep,
+                                                       s_pos=(ts1, ts2),
                                                        mono=mono,
                                                        title=""))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
+    end
+
+    can.mouse.button1press = @guarded (widget, event) -> begin
+        ep = get_gtk_property(entry_epoch, :value, Int64)
+        time_current = obj.time_pts[ep * (epoch_len(obj) + 1)]
+        x_pos = event.x
+        x_pos < 52 && (x_pos = 52)
+        x_pos > 1182 && (x_pos = 1182)
+        if time_current + (epoch_len(obj) / sr(obj)) < obj.epoch_time[end]
+            ts1 = time_current + round((x_pos - 52) / (1130 / (epoch_len(obj) / sr(obj))), digits=3)
+        else
+            ts1 = time_current + round((x_pos - 52) / (1130 / (obj.epoch_time[end] - time_current)), digits=3)
+        end
+        snap && (ts1 = round(ts1 * 4) / 4)
+        round(ts1, digits=3)
+        Gtk.@sigatom begin
+            set_gtk_property!(entry_ts1, :value, ts1)
+        end
+    end
+
+    can.mouse.button3press = @guarded (widget, event) -> begin
+        ep = get_gtk_property(entry_epoch, :value, Int64)
+        time_current = obj.time_pts[ep * (epoch_len(obj) + 1)]
+        x_pos = event.x
+        x_pos < 52 && (x_pos = 52)
+        x_pos > 1182 && (x_pos = 1182)
+        if time_current + (epoch_len(obj) / sr(obj)) < obj.epoch_time[end]
+            ts2 = time_current + ((x_pos - 52) / (1130 / (epoch_len(obj) / sr(obj))))
+        else
+            ts2 = time_current + ((x_pos - 52) / (1130 / (obj.epoch_time[end] - time_current)))
+        end
+        snap && (ts2 = round(ts2 * 4) / 4)
+        round(ts2, digits=3)
+        Gtk.@sigatom begin
+            set_gtk_property!(entry_ts2, :value, round(ts2, digits=3))
+        end
     end
 
     signal_connect(entry_epoch, "value-changed") do widget
