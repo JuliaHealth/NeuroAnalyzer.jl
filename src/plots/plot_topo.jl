@@ -78,16 +78,16 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
 
     origin = size(head_shape) ./ 2
     if large
-        marker_size = 6
-        font_size = 12
+        marker_size = 4
+        font_size = 10
         loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
         !occursin("\n", title) && title !== "" && (title *= "\n")
     else
         title=""
         cb_label=""
-        marker_size = 3
-        font_size = 3
+        marker_size = 2
+        font_size = 2
         loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
         loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
     end
@@ -107,7 +107,8 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            titlefontsize=font_size,
                            colorbar=cb,
                            colorbar_title=cb_label,
-                           colorbar_tickfontsize=2,
+                           colorbar_tickfontsize=1,
+                           colorbar_titlefontsize=6,
                            xlims=xl,
                            ylims=yl,
                            title=title;
@@ -118,7 +119,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 99,
+                           size=size(head_shape) .+ 90,
                            right_margin=-100*Plots.px,
                            bottom_margin=5*Plots.px,
                            top_margin=10*Plots.px,
@@ -126,7 +127,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            titlefontsize=font_size,
                            colorbar=cb,
                            colorbar_title=cb_label,
-                           colorbar_tickfontsize=2,
+                           colorbar_tickfontsize=1,
                            xlims=xl,
                            ylims=yl,
                            title=title;
@@ -158,7 +159,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape),
+                           size=size(head_shape) .+ 2,
                            right_margin=-50*Plots.px,
                            bottom_margin=-50*Plots.px,
                            top_margin=-50*Plots.px,
