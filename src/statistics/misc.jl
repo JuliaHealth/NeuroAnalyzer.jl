@@ -15,6 +15,7 @@ export ci2z
 export r_test
 export slope
 export distance
+export count_thresh
 
 """
     z_score(x)
@@ -446,3 +447,47 @@ end
 
 slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real}) = (p2[2] - p1[2]) / (p2[1] - p1[1])
 distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real}) = sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
+
+"""
+    count_thresh(x; t, t_type)
+
+Collect thresholded elements, e.g. in a topographical map.
+
+# Arguments
+
+- `x::AbstractMatrix`
+- `t::Real`: threshold value
+- `t_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
+
+# Returns
+
+Named tuple containing:
+- `x_t::Int64`: thresholded matrix
+- `n::Int64`: number of elements
+"""
+function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)
+
+    _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
+
+    x_t = zeros(Int64, size(x))
+
+    if t_type === :eq
+        n = count(==(t), x)
+        x_t[x .== t] .= 1
+    elseif t_type === :g
+        n = count(>(t), x)
+        x_t[x .> t] .= 1
+    elseif t_type === :geq
+        n = count(>=(t), x)
+        x_t[x .>= t] .= 1
+    elseif t_type === :l
+        n = count(<(t), x)
+        x_t[x .< t] .= 1
+    elseif t_type === :leq
+        n = count(<=(t), x)
+        x_t[x .<= t] .= 1
+    end
+
+    return (x_t=x_t, n=n)
+
+end

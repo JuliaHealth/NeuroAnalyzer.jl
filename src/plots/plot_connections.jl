@@ -244,7 +244,7 @@ Plot weights at electrode positions.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `connections::Matrix{<:Real}`: matrix of connections weights
-- `threshold::Real`: plot all connection above threshold
+- `threshold::Real`: threshold value
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
 - `weights::Bool=true`: weight line widths and alpha based on connection value
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
