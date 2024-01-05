@@ -18,7 +18,7 @@ Plot PSD (power spectrum density).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
@@ -110,7 +110,7 @@ Plot multi-channel PSD (power spectrum density).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
@@ -236,7 +236,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
@@ -351,7 +351,7 @@ Butterfly PSD plot.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
@@ -454,7 +454,7 @@ Plot 3-d waterfall PSD plot.
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 - `kwargs`: optional arguments for plot() function
@@ -602,7 +602,7 @@ Plot topographical map PSDs.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
@@ -761,7 +761,7 @@ Plot power spectrum density.
 - `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
 - `kwargs`: optional arguments for plot() function
 
@@ -1067,7 +1067,7 @@ Plot power spectrum density of embedded or external component.
 - `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
 - `units::String=""`
 - `kwargs`: optional arguments for plot() function

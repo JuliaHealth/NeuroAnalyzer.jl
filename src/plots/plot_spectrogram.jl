@@ -15,7 +15,7 @@ Plot single-channel spectrogram.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
@@ -73,7 +73,7 @@ Plot multiple-channel spectrogram.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
@@ -147,7 +147,7 @@ Plots spectrogram.
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
 - `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[channel: 1, epoch: 1, time window: 0 ms:10 s]
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `markers::Bool`: draw markers if available
 - `kwargs`: optional arguments for plot() function
 
@@ -338,7 +338,7 @@ Plots spectrogram of embedded or external component.
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
 - `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[component: 1, epoch: 1, time window: 0 ms:10 s]
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `markers::Bool`: draw markers if available
 - `units::String=""`
 - `kwargs`: optional arguments for plot() function

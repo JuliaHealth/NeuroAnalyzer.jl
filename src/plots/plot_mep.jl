@@ -15,7 +15,7 @@ Plot MEP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -89,7 +89,7 @@ Butterfly plot of MEP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average MEP
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
@@ -204,7 +204,7 @@ Plot MEP amplitude mean and ±95% CI.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -301,7 +301,7 @@ Plot EPRs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -370,7 +370,7 @@ Plot MEP.
 - `title::String="default"`: plot title, default is MEP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="default"`: color bar title, default is Amplitude [units] 
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `peaks_detect::Bool=true`: if true, detect MEP peaks, otherwise use embedded
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot

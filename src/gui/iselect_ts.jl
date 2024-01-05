@@ -9,7 +9,7 @@ Select time segment.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj))`: channel(s) to plot, default is EEG/MEG/ERP channels
-- `mono::Bool=true`: Use color or gray palette
+- `mono::Bool=true`: use color or gray palette
 - `zoom::Real=5`: how many seconds are displayed in one segment
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 

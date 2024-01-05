@@ -12,7 +12,7 @@ export iplot_locs3d
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 """
@@ -94,7 +94,7 @@ end
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 """

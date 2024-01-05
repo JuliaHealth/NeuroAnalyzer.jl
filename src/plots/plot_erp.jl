@@ -16,7 +16,7 @@ Plot ERP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -90,7 +90,7 @@ Butterfly plot of ERP.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average ERP
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
@@ -205,7 +205,7 @@ Plot ERP amplitude mean and ±95% CI.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
@@ -304,7 +304,7 @@ Plot topographical map ERPs.
 - `title::String=""`: plot title
 - `yrev::Bool=false`: reverse Y axis
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -435,14 +435,16 @@ Plot EPRs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)
+function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3,kwargs...)
 
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
@@ -454,6 +456,11 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
     else
         yticks = (1:size(s, 1), clabels)
     end
+
+    if smooth
+        s = imfilter(s, Kernel.gaussian(n))
+    end
+
     p = Plots.heatmap(t,
                       1:size(s, 1),
                       s,
@@ -504,19 +511,21 @@ Plot ERP.
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="default"`: color bar title, default is Amplitude [units] 
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
 - `yrev::Bool=false`: reverse Y axis
 - `avg::Bool=false`: plot average ERP for `:butterfly` plot
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, kwargs...)
+function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, smooth::Bool=false, n::Int64=3, kwargs...)
 
     _check_datatype(obj, "erp")
 
@@ -633,6 +642,8 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                            clabels=clabels,
                            cb=cb,
                            cb_title=cb_title,
+                           smooth=smooth,
+                           n=n,
                            mono=mono;
                            kwargs...)
     end

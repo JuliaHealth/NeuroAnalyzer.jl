@@ -13,7 +13,7 @@ Plot weights at electrode positions.
 - `ch_labels::Bool=true`: plot channel labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
@@ -204,7 +204,7 @@ Plot weights at electrode positions.
 - `ch_labels::Bool=false`: plot ch_labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:

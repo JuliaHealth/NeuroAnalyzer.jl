@@ -14,7 +14,7 @@ Preview channel locations.
 - `ch_labels::Bool=true`: plot channel labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
@@ -271,7 +271,7 @@ end
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 
@@ -400,7 +400,7 @@ Preview of channel locations.
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
 - `threed::Bool=false`: 3-dimensional plot
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes

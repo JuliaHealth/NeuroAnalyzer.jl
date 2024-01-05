@@ -14,7 +14,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
 - `layout::Union(Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}`: layout
-- `mono::Bool=false`: Use color or gray palette
+- `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for `p` vector plots
 
 # Returns
