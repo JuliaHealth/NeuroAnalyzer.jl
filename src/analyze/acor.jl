@@ -13,7 +13,6 @@ Calculate auto-correlation
 
 # Returns
 
-Named tuple containing:
 - `ac::Matrix{Float64}`
 """
 function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true)

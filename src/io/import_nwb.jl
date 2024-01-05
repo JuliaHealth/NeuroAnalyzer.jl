@@ -3,7 +3,7 @@ export import_nwb
 """
     import_nwb(file_name; detect_type)
 
-Load Neurodata Without Borders (NWB) file and return `NeuroAnalyzer.NEURO` object.
+Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -28,38 +28,47 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     file_type = "NWB"
 
     # process header
-    file_json = splitext(file_name)[1] * ".json"
-    @assert isfile(file_json) "$file_json not found."
-    f = open(file_json, "r")
-    s = read(f, String)
-    close(f)
-    header = JSON.parse(s)
-    k = keys(header)
-    recording = "Manufacturer" in k ? header["Manufacturer"] : ""
-    recording_reference = "iEEGReference" in k ? header["iEEGReference"] : ""
-    recording_notes = "iEEGGround" in k ? ("iEEG ground: " * header["iEEGGround"]) : ""
-    sampling_rate = "SamplingFrequency" in k ? round(Int64, header["SamplingFrequency"]) : nothing
-    exp_name = "TaskName" in k ? header["TaskName"] : ""
-    exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
-    exp_notes = "Instructions" in k ? header["Instructions"] : ""
-    "RecordingType" in k && @assert header["RecordingType"] == "continuous" "Non-continuous recordings are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
-
-    # what if the files contains mixed recordings (e.g. EEG + SEEG)
+    recording = ""
+    recording_reference = ""
+    recording_notes = ""
+    sampling_rate = nothing
+    exp_name = ""
+    exp_design = ""
+    exp_notes = ""
     data_type = ""
-    if "EEGChannelCount" in k && header["EEGChannelCount"] > 0
-        data_type = "eeg"
-    elseif "ECOGChannelCount" in k && header["ECOGChannelCount"] > 0
-        data_type = "ecog"
-    elseif "SEEGChannelCount" in k && header["SEEGChannelCount"] > 0
-        data_type = "seeg"
-    elseif "EOGChannelCount" in k && header["EOGChannelCount"] > 0
-    elseif "EMGChannelCount" in k && header["EMGChannelCount"] > 0
-    elseif "EMGChannelCount" in k && header["EMGChannelCount"] > 0
-    elseif "TriggerChannelCount" in k && header["TriggerChannelCount"] > 0
-    end
 
-    # header["PowerLineFrequency"]
-    # header["RecordingDuration"]
+    file_json = splitext(file_name)[1] * ".json"
+    if isfile(file_json)
+        f = open(file_json, "r")
+        s = read(f, String)
+        close(f)
+        header = JSON.parse(s)
+        k = keys(header)
+        recording = "Manufacturer" in k ? header["Manufacturer"] : ""
+        recording_reference = "iEEGReference" in k ? header["iEEGReference"] : ""
+        recording_notes = "iEEGGround" in k ? ("iEEG ground: " * header["iEEGGround"]) : ""
+        sampling_rate = "SamplingFrequency" in k ? round(Int64, header["SamplingFrequency"]) : nothing
+        exp_name = "TaskName" in k ? header["TaskName"] : ""
+        exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
+        exp_notes = "Instructions" in k ? header["Instructions"] : ""
+        "RecordingType" in k && @assert header["RecordingType"] == "continuous" "Non-continuous recordings are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+
+        # what if the files contains mixed recordings (e.g. EEG + SEEG)
+        if "EEGChannelCount" in k && header["EEGChannelCount"] > 0
+            data_type = "eeg"
+        elseif "ECOGChannelCount" in k && header["ECOGChannelCount"] > 0
+            data_type = "ecog"
+        elseif "SEEGChannelCount" in k && header["SEEGChannelCount"] > 0
+            data_type = "seeg"
+        elseif "EOGChannelCount" in k && header["EOGChannelCount"] > 0
+        elseif "EMGChannelCount" in k && header["EMGChannelCount"] > 0
+        elseif "EMGChannelCount" in k && header["EMGChannelCount"] > 0
+        elseif "TriggerChannelCount" in k && header["TriggerChannelCount"] > 0
+        end
+
+        # header["PowerLineFrequency"]
+        # header["RecordingDuration"]
+    end
 
     # load data
     dataset = JLD2.load(file_name)
@@ -68,7 +77,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     recording_date = ""
     recording_time = ""
     if "file_create_date" in k
-        t = dataset["file_create_date"][1]
+        t = typeof(dataset["file_create_date"]) == Vector{String} ? dataset["file_create_date"][1] : dataset["file_create_date"]
         # remove microseconds
         m = match(r".*(\.[0-9]*)\+.*", t)
         m !== nothing && (t = replace(t, m.captures[1]=>""))
@@ -93,7 +102,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     # check if there is an offset of time points
     t_start = 0
     if "timestamps_reference_time" in k
-        t = dataset["timestamps_reference_time"][1]
+        t = typeof(dataset["timestamps_reference_time"]) == Vector{String} ? dataset["timestamps_reference_time"][1] : dataset["timestamps_reference_time"]
         # remove microseconds
         m = match(r".*(\.[0-9]*)\+.*", t)
         m !== nothing && (t = replace(t, m.captures[1]=>""))

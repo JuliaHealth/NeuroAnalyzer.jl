@@ -16,6 +16,8 @@ export r_test
 export slope
 export distance
 export count_thresh
+export crit_z
+export z2pow
 
 """
     z_score(x)
@@ -472,22 +474,57 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)
     x_t = zeros(Int64, size(x))
 
     if t_type === :eq
-        n = count(==(t), x)
         x_t[x .== t] .= 1
     elseif t_type === :g
-        n = count(>(t), x)
         x_t[x .> t] .= 1
     elseif t_type === :geq
-        n = count(>=(t), x)
         x_t[x .>= t] .= 1
     elseif t_type === :l
-        n = count(<(t), x)
         x_t[x .< t] .= 1
     elseif t_type === :leq
-        n = count(<=(t), x)
         x_t[x .<= t] .= 1
     end
 
+    n = count(==(1), x_t)
+
     return (x_t=x_t, n=n)
+
+end
+
+"""
+    crit_z(ci_level)
+
+Calculate critical Z value
+
+# Arguments
+
+- `c::Float64=0.95`: confidence level
+
+# Returns
+
+- `z_score::Float64`
+"""
+function crit_z(c::Float64=0.95)
+
+    return quantile(Distributions.Normal(0.0, 1.0), c)
+
+end
+
+"""
+    z2pow(z)
+
+Calculate power for a given Z value
+
+# Arguments
+
+- `z::Real`: Z value
+
+# Returns
+
+- `power::Float64`
+"""
+function z2pow(z::Real)
+
+    return cdf(Distributions.Normal(0.0, 1.0), z)
 
 end
