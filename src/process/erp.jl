@@ -1,5 +1,7 @@
 export erp
 export erp!
+export sort_epochs
+export sort_epochs!
 
 """
     erp(obj; bl)
@@ -65,4 +67,67 @@ function erp!(obj::NeuroAnalyzer.NEURO; bl::Real=0)
 
     return nothing
 
+end
+
+"""
+    sort_epochs(obj; s)
+
+Sort epochs.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `s::Vector{Int64}`: vector of sorting indices
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
+
+    _check_datatype(obj, "erp")
+    @assert length(s) == nepochs(obj) - 1 "Length of the sorting vector must be equal to the number of epochs."
+
+    obj_new = deepcopy(obj)
+    obj_new.data[:, :, 2:end] = obj.data[:, :, s]
+
+    _warn("Markers are not sorted.")
+
+    reset_components!(obj_new)
+    push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
+
+    return obj_new
+    
+end
+
+"""
+    sort_epochs(obj; s)
+
+Sort epochs.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `s::Vector{Int64}`: vector of sorting indices
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
+
+    obj_new = sort_epochs(obj, s=s)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
+
+    # to do: markers should be sorted
+    _warn("Markers are not sorted.")
+    obj.markers = obj_new.markers
+
+    reset_components!(obj_new)
+    push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
+
+    return obj_new
+    
 end
