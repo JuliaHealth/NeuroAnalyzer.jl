@@ -370,12 +370,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -640,12 +640,12 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -981,12 +981,12 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -1252,12 +1252,12 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -1579,12 +1579,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -1835,12 +1835,12 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 

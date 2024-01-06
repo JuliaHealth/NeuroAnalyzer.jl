@@ -46,11 +46,11 @@ Resize CairoSurfaceBase by a factor.
 """
 function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)
 
-    c_tmp = CairoRGBSurface(round(Int64, c.width * r), round(Int64, c.height * r))
+    c_tmp = CairoRGBSurface(ceil(Int64, c.width * r) - 1, round(Int64, c.height * r) - 1)
     cr = CairoContext(c_tmp)
     Cairo.scale(cr, r, r)
     # Cairo.set_source_rgb(cr, 256, 256, 256)
-    # Cairo.rectangle(cr, 0.0, 0.0, round(Int64, c.width * r) - 1, round(Int64, c.height * r) - 1) 
+    # Cairo.rectangle(cr, 0, 0, ceil(Int64, c.width * r) + 10, ceil(Int64, c.height * r) + 10) 
     # Cairo.fill(cr)
     Cairo.set_source_surface(cr, c, 0, 0)
     Cairo.paint(cr)

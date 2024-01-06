@@ -613,12 +613,12 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -1143,12 +1143,12 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 

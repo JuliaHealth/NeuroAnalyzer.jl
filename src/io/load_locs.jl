@@ -137,6 +137,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     loc_z = float.(locs[!, :loc_z])
 
     e_labels = lowercase.(obj.header.recording[:labels])
+    
     no_match = setdiff(e_labels, lowercase.(f_labels))
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name")
 

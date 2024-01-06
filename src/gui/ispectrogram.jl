@@ -557,12 +557,12 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 
@@ -1028,12 +1028,12 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
         end
     end
 
-    c = Condition()
+    cnd = Condition()
     signal_connect(win, :destroy) do widget
-        notify(c)
+        notify(cnd)
     end
     @async Gtk.gtk_main()
-    wait(c)
+    wait(cnd)
 
     return nothing
 end
