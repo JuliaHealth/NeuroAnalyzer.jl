@@ -13,6 +13,7 @@ Plot ERP.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractVector`: data to plot
+- `rt::Union{Nothing, Real}=nothing`:: response time value
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -24,7 +25,7 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
     pal = mono ? :grays : :darktest
 
@@ -73,6 +74,14 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xl
                      linecolor=:black,
                      label=false)
 
+    # plot RT v-line
+    if isnothing(rt) == false
+        p = Plots.vline!([rt],
+                         linewidth=1.0,
+                         linecolor=:red,
+                         label=false)
+    end
+
     return p
 
 end
@@ -86,6 +95,7 @@ Butterfly plot of ERP.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractArray`: data to plot
+- `rt::Union{Nothing, Real}=nothing`:: response time value
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -99,7 +109,7 @@ Butterfly plot of ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)
+function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)
 
     pal = mono ? :grays : :darktest
 
@@ -189,6 +199,14 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                      linecolor=:black,
                      label=false)
 
+    # plot RT v-line
+    if isnothing(rt) == false
+        p = Plots.vline!([rt],
+                         linewidth=1.0,
+                         linecolor=:red,
+                         label=false)
+    end
+
     return p
 
 end
@@ -202,6 +220,7 @@ Plot ERP amplitude mean and ±95% CI.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractArray`: data to plot
+- `rt::Union{Nothing, Real}=nothing`:: response time value
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -213,7 +232,7 @@ Plot ERP amplitude mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
+function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
     pal = mono ? :grays : :darktest
 
@@ -282,6 +301,14 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                      linewidth=0.5,
                      linecolor=:black,
                      label=false)
+
+    # plot RT v-line
+    if isnothing(rt) == false
+        p = Plots.vline!([rt],
+                         linewidth=1.0,
+                         linecolor=:red,
+                         label=false)
+    end
 
     return p
 
@@ -429,7 +456,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `t::AbstractVector`: x-axis values
 - `s::AbstractArray`
-- `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the reponse time line will be plotted over the `:stack` plot
+- `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -532,7 +559,7 @@ Plot ERP.
 - `avg::Bool=false`: plot average ERP for `:butterfly` plot
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the reponse time line will be plotted over the `:stack` plot
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
 - `sort_epochs::Bool=false`:: sort epochs by rt vector
 - `kwargs`: optional arguments for plot() function
 
@@ -540,7 +567,7 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, AbstractVector}=nothing, sort_epochs::Bool=false, kwargs...)
+function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false, kwargs...)
 
     _check_datatype(obj, "erp")
 
@@ -589,6 +616,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                      ylabel=yl,
                      title=tt,
                      mono=mono,
+                     rt=rt,
                      yrev=yrev;
                      kwargs...)
     elseif type === :butterfly
@@ -606,6 +634,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                                clabels=clabels,
                                mono=mono,
                                avg=avg,
+                               rt=rt,
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
@@ -616,6 +645,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                          ylabel=yl,
                          title=tt,
                          mono=mono,
+                         rt=rt,
                          yrev=yrev;
                          kwargs...)
     elseif type === :topo
