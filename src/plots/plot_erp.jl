@@ -429,6 +429,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `t::AbstractVector`: x-axis values
 - `s::AbstractArray`
+- `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the reponse time line will be plotted over the `:stack` plot
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -444,10 +445,14 @@ Plot EPRs stacked by channels or by epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3,kwargs...)
+function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, AbstractVector}=nothing; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3, kwargs...)
 
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
+
+    if isnothing(rt) == false
+        @assert length(rt) == size(s, 1) "Length of the rt vector must be the same as the number of ERP epochs ($(size(s, 1)))."
+    end
 
     pal = mono ? :grays : :darktest
 
@@ -490,6 +495,14 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
                      linecolor=:black,
                      label=false)
 
+    # plot RT line
+    if isnothing(rt) == false
+        p = Plots.plot!(rt, 1:length(rt),
+                        linewidth=1,
+                        linecolor=:black,
+                        label=false)
+    end
+
     Plots.plot(p)
 
     return p
@@ -519,13 +532,15 @@ Plot ERP.
 - `avg::Bool=false`: plot average ERP for `:butterfly` plot
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the reponse time line will be plotted over the `:stack` plot
+- `sort_epochs::Bool=false`:: sort epochs by rt vector
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, smooth::Bool=false, n::Int64=3, kwargs...)
+function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, AbstractVector}=nothing, sort_epochs::Bool=false, kwargs...)
 
     _check_datatype(obj, "erp")
 
@@ -624,18 +639,33 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     elseif type === :stack
         peaks = false
         cb_title == "default" && (cb_title = "Amplitude [$units]")
+
         if ch isa Int64
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         else
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Channels", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         end
+
         if channel_labels == true
             clabels = labels(obj)[ch]
         else
             clabels = repeat([""], length(ch))
         end
+
+        if ch isa Int64
+            if sort_epochs == true
+                rt_idx = sortperm(rt)
+                rt = rt[rt_idx]
+                s = s[rt_idx, :]
+            end
+        else
+            rt = nothing
+            sort_epochs = false
+        end
+
         p = plot_erp_stack(t,
                            s,
+                           rt,
                            xlabel=xl,
                            ylabel=yl,
                            title=tt,
