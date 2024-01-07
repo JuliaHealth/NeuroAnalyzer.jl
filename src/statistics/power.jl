@@ -6,6 +6,8 @@ export power_c2g
 export power_c1g
 export power_p2g
 export power_p1g
+export size_c1diff
+export size_p1diff
 
 """
     size_c2g(m1, s1, m2, r, alpha, power)
@@ -244,5 +246,139 @@ function power_p1g(; p0::Float64, p1::Float64, n1::Int64, alpha::Float64=0.05)
     z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - crit_z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
 
     return z2pow(z)
+
+end
+
+"""
+    size_c1diff(s1, s2, alpha, power)
+
+Calculate required sample size for detecting a difference in a continuous variable (group 1 vs population).
+
+# Arguments
+
+- `s0::Real`: population standard deviation
+- `s1::Real`: study standard deviation that we want to detect
+- `two_sided::Bool=true`: if true, the estimation is for two-sided difference
+- `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
+
+# Returns
+
+- `n::Int64`: study sample size
+"""
+function size_c1diff(; s0::Real, s1::Real, two_sided::Bool=true, power::Float64=0.8)
+
+    sdiff = s1 / s0
+
+    sdiff_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
+    power_values = [0.99, 0.95, 0.9, 0.8]
+
+    !(sdiff in sdiff_values) && _warn("Sample size will be estimated.")
+    !(power in power_values) && _warn("Sample size will be estimated.")
+
+    if sdiff < 0.1
+        sdiff = 0.1
+        _warn("Sample size will be estimated.")
+    elseif sdiff > 1.5
+        sdiff = 1.5
+        _warn("Sample size will be estimated.")
+    end
+
+    if power < 0.8
+        power = 0.8
+        _warn("Sample size will be estimated.")
+    elseif power > 0.99
+        power = 0.99
+        _warn("Sample size will be estimated.")
+    end
+
+    sdiff_idx = vsearch(sdiff, sdiff_values)
+    power_idx = vsearch(power, power_values)
+    
+    table = [3676 2600 2103 1571;
+             920 651 527 394;
+             410 290 235 176;
+             231 164 133 100;
+             148 105 86 64;
+             104 74 60 45;
+             76 54 44 33;
+             59 42 34 26;
+             47 34 27 21;
+             38 27 22 17;
+             32 23 19 14;
+             27 20 16 12;
+             23 17 14 11;
+             20 15 12 9;
+             18 13 11 8]
+
+    n = table[sdiff_idx, power_idx]
+
+    return two_sided ? 2 * n : n
+
+end
+
+"""
+    size_p1diff(p0, p1, power)
+
+Calculate required sample size for detecting a difference in a proportion (group 1 vs population).
+
+# Arguments
+
+- `p0::Real`: population proportion
+- `p1::Real`: study proportion that we want to detect
+- `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
+
+# Returns
+
+- `n::Int64`: study sample size (for both study groups)
+"""
+function size_p1diff(; p0::Real, p1::Real, power::Float64=0.8)
+
+    p = (p0 + p1) / 2
+    sdiff = round((p0 - p1) / sqrt(p * (1 - p)), digits=1)
+
+    sdiff_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
+    power_values = [0.99, 0.95, 0.9, 0.8]
+
+    !(sdiff in sdiff_values) && _warn("Sample size will be estimated.")
+    !(power in power_values) && _warn("Sample size will be estimated.")
+
+    if sdiff < 0.1
+        sdiff = 0.1
+        _warn("Sample size will be estimated.")
+    elseif sdiff > 1.5
+        sdiff = 1.5
+        _warn("Sample size will be estimated.")
+    end
+
+    if power < 0.8
+        power = 0.8
+        _warn("Sample size will be estimated.")
+    elseif power > 0.99
+        power = 0.99
+        _warn("Sample size will be estimated.")
+    end
+
+    sdiff_idx = vsearch(sdiff, sdiff_values)
+    power_idx = vsearch(sdiff, sdiff_values)
+    
+    table = [3676 2600 2103 1571;
+             920 651 527 394;
+             410 290 235 176;
+             231 164 133 100;
+             148 105 86 64;
+             104 74 60 45;
+             76 54 44 33;
+             59 42 34 26;
+             47 34 27 21;
+             38 27 22 17;
+             32 23 19 14;
+             27 20 16 12;
+             23 17 14 11;
+             20 15 12 9;
+             18 13 11 8]
+
+    n = table[sdiff_idx, power_idx]
+
+    return 2 * n
 
 end
