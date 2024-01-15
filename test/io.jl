@@ -94,14 +94,14 @@ eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-el
 @test NeuroAnalyzer._has_locs(eeg) == true
 
 @info "test 19/35: save()"
-isfile("test.hdf5") && rm("test.hdf5")
-NeuroAnalyzer.save(eeg, file_name="test.hdf5")
-@test isfile("test.hdf5") == true
+isfile("test.hdf") && rm("test.hdf")
+NeuroAnalyzer.save(eeg, file_name="test.hdf")
+@test isfile("test.hdf") == true
 
 @info "test 20/35: load()"
-new = NeuroAnalyzer.load("test.hdf5")
+new = NeuroAnalyzer.load("test.hdf")
 @test new isa NeuroAnalyzer.NEURO
-isfile("test.hdf5") && rm("test.hdf5")
+isfile("test.hdf") && rm("test.hdf")
 
 @info "test 21/35: export_csv()"
 isfile("eeg.csv") && rm("eeg.csv")

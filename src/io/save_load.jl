@@ -17,6 +17,7 @@ Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
     @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
+    @assert splitext(file_name)[2] == ".hdf" "File name extension should be .HDF."
 
     obj.header.recording[:file_name] = file_name
 
@@ -67,6 +68,9 @@ Save `NeuroAnalyzer.STUDY` object to `file_name` file (HDF5-based).
 function save_study(obj::NeuroAnalyzer.STUDY; file_name::String, overwrite::Bool=false)
 
     @assert !(isfile(file_name) && overwrite == false) "File $file_name cannot be saved, to overwrite use overwrite=true."
+
+    @assert splitext(file_name)[2] == ".hdf" "File name extension should be .HDF."
+
     JLD2.save_object(file_name, obj)
 
 end

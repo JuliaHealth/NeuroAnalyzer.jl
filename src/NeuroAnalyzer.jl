@@ -1,5 +1,8 @@
-__precompile__()
+"""
+Neurophysiological data analysis with Julia.
 
+https://neuroanalyzer.org
+"""
 module NeuroAnalyzer
 
 @assert VERSION >= v"1.10.0" "This version of NeuroAnalyzer requires Julia 1.10.0 or above."
