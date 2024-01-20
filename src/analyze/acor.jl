@@ -3,13 +3,13 @@ export acor
 """
    acor(s; l, demean)
 
-Calculate auto-correlation
+Calculate auto-correlation.
 
 # Arguments
 
 - `s::AbstractVector`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
- - `demean::Bool=true`: demean signal before computing auto-correlation
+- `demean::Bool=true`: demean signal before computing auto-correlation
 
 # Returns
 
@@ -24,13 +24,13 @@ end
 """
    acor(s; l, demean)
 
-Calculate auto-correlation
+Calculate auto-correlation.
 
 # Arguments
 
 - `s::AbstractMatrix`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
- - `demean::Bool=true`: demean signal before computing auto-correlation
+- `demean::Bool=true`: demean signal before computing auto-correlation
 
 # Returns
 
@@ -53,13 +53,13 @@ end
 """
    acor(s; l, demean)
 
-Calculate auto-correlation
+Calculate auto-correlation.
 
 # Arguments
 
 - `s::AbstractArray`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
- - `demean::Bool=true`: demean signal before computing auto-correlation
+- `demean::Bool=true`: demean signal before computing auto-correlation
 
 # Returns
 
@@ -85,7 +85,7 @@ end
 """
    acor(obj; ch, lag, demean)
 
-Calculate auto-correlation
+Calculate auto-correlation.
 
 # Arguments
 

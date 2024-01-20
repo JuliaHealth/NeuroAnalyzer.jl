@@ -9,7 +9,7 @@ Calculate auto-covariance.
 
 - `s::AbstractVector`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
- - `demean::Bool=true`: demean signal before computing auto-covariance
+- `demean::Bool=true`: demean signal before computing auto-covariance
 
 # Returns
 
@@ -30,7 +30,7 @@ Calculate auto-covariance.
 
 - `s::AbstractMatrix`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
- - `demean::Bool=true`: demean signal before computing auto-covariance
+- `demean::Bool=true`: demean signal before computing auto-covariance
 
 # Returns
 
@@ -59,7 +59,7 @@ Calculate auto-covariance.
 
 - `s::AbstractArray`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
- - `demean::Bool=true`: demean signal before computing auto-covariance
+- `demean::Bool=true`: demean signal before computing auto-covariance
 
 # Returns
 
