@@ -219,7 +219,11 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     close(fid)
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+        markers = DataFrame(:id=>String[],
+                            :start=>Float64[],
+                            :length=>Float64[],
+                            :description=>String[],
+                            :channel=>Int64[])
     else
         markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)

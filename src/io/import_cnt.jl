@@ -422,7 +422,11 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     ch_order = _sort_channels(ch_type)
 
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
 
     time_pts = round.(collect(0:1/sampling_rate:nums / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:nums / sampling_rate))[1:end-1], digits=3)

@@ -224,7 +224,7 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
 
 @info "test 26/52: normalize()"
-@test normalize(v1, method=:none) == v1
+@test NeuroAnalyzer.normalize(v1, method=:none) == v1
 @test normalize_zscore(v1) == [-1.2649110640673518, -0.6324555320336759, 0.0, 0.6324555320336759, 1.2649110640673518]
 @test normalize_minmax(v1) == [-1.0, -0.5, 0.0, 0.5, 1.0]
 @test normalize_n(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
@@ -238,7 +238,7 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test normalize_perc(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
 @test normalize_invroot(v1) == [0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579, 0.4082482904638631]
 @test normalize_softmax(v1) == [0.011656230956039607, 0.03168492079612427, 0.0861285444362687, 0.23412165725273662, 0.6364086465588308]
-e10_tmp = normalize(e10, method=:zscore)
+e10_tmp = NeuroAnalyzer.normalize(e10, method=:zscore)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 27/52: plinterpolate_channel()"

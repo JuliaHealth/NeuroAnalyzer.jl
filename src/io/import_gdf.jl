@@ -437,7 +437,12 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
     data .*= gain
 
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
+
     if file_type_ver < 2.0
         if header_bytes + data_bytes < filesize(file_name)
             fid = nothing
@@ -488,9 +493,17 @@ function import_gdf(file_name::String; detect_type::Bool=true)
                 end
             end
             if etp_sr == 0
-                markers = DataFrame(:id=>id, :start=>round.(start ./ sampling_rate, digits=3), :length=>round.(len ./ sampling_rate, digits=3), :description=>desc, :channel=>ch)
+                markers = DataFrame(:id=>id,
+                                    :start=>round.(start ./ sampling_rate, digits=3),
+                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :description=>desc,
+                                    :channel=>ch)
             else
-                markers = DataFrame(:id=>id, :start=>round.(start ./ etp_sr, digits=3), :length=>round.(len ./ sampling_rate, digits=3), :description=>desc, :channel=>ch)
+                markers = DataFrame(:id=>id,
+                                    :start=>round.(start ./ etp_sr, digits=3),
+                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :description=>desc,
+                                    :channel=>ch)
             end
         end
     else
@@ -543,9 +556,17 @@ function import_gdf(file_name::String; detect_type::Bool=true)
                 end
             end
             if etp_sr == 0
-                markers = DataFrame(:id=>id, :start=>round.(start ./ sampling_rate, digits=3), :length=>round.(len ./ sampling_rate, digits=3), :description=>desc, :channel=>ch)
+                markers = DataFrame(:id=>id,
+                                    :start=>round.(start ./ sampling_rate, digits=3),
+                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :description=>desc,
+                                    :channel=>ch)
             else
-                markers = DataFrame(:id=>id, :start=>round.(start ./ etp_sr, digits=3), :length=>round.(len ./ sampling_rate, digits=3), :description=>desc, :channel=>ch)
+                markers = DataFrame(:id=>id,
+                                    :start=>round.(start ./ etp_sr, digits=3),
+                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :description=>desc,
+                                    :channel=>ch)
             end
         end
     end

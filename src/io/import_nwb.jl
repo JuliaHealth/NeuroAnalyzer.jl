@@ -164,9 +164,17 @@ function import_nwb(file_name::String; detect_type::Bool=true)
         [event_start[idx] = time_pts[event_start_sample[idx]] for idx in eachindex(event_start_sample)]
         event_length = round.(events[!, :duration], digits=3)
         event_channel = zeros(Int64, nrow(events))
-        markers = DataFrame(:id=>event_id, :start=>event_start, :length=>event_length, :description=>event_description, :channel=>event_channel)
+        markers = DataFrame(:id=>event_id,
+                            :start=>event_start,
+                            :length=>event_length,
+                            :description=>event_description,
+                            :channel=>event_channel)
     else
-        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+        markers = DataFrame(:id=>String[],
+                            :start=>Float64[],
+                            :length=>Float64[],
+                            :description=>String[],
+                            :channel=>Int64[])
     end
 
     @assert isfile(file_json) "$file_json not found."

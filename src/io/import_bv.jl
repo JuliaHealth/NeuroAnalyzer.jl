@@ -78,6 +78,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
     soft_filt = false
     if soft_filt_idx != 0
         if lowercase(vhdr[soft_filt_idx + 2]) != "disabled"
+            _info("Embedded software filters are not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
         end
     end
     soft_filt_file = replace(splitext(file_name)[1], "eeg"=>"channels.tsv")
@@ -219,14 +220,14 @@ function import_bv(file_name::String; detect_type::Bool=true)
         end
         m_id = repeat([""], length(markers))
         m_desc = repeat(["marker"], length(markers))
-        m_pos = zeros(Float64, length(markers))
-        m_len = zeros(Float64, length(markers))
+        m_pos = zeros(Int64, length(markers))
+        m_len = zeros(Int64, length(markers))
         m_ch = zeros(Int64, length(markers))
         for idx in eachindex(markers)
             m_id[idx] = replace(split(split(markers[idx], '=')[2], ',')[1], "\1" => ",")
             replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ",") != "" && (m_desc[idx] = replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ","))
-            m_pos[idx] = parse(Float64, split(split(markers[idx], '=')[2], ',')[3])
-            m_len[idx] = parse(Float64, split(split(markers[idx], '=')[2], ',')[4])
+            m_pos[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[3])
+            m_len[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[4])
             # 0 = marker is related to all channels
             m_ch[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[5])
         end
@@ -247,8 +248,8 @@ function import_bv(file_name::String; detect_type::Bool=true)
                             :channel=>m_ch)
     else
         markers = DataFrame(:id=>String[], 
-                            :start=>Int64[], 
-                            :length=>Int64[], 
+                            :start=>Float64[], 
+                            :length=>Float64[], 
                             :description=>String[], 
                             :channel=>Int64[])
     end

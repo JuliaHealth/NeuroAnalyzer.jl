@@ -393,14 +393,22 @@ function import_snirf(file_name::String; n::Int64=0)
     k in keys(nirs) && (stim_labels = nirs[k])
 
     if stim_data !== nothing
-        markers = DataFrame(:id=>repeat([""], size(stim_data, 2)), :start=>stim_data[1, :], :length=>stim_data[2, :], :description=>stim_name, :channel=>repeat([0], size(stim_data, 2)))
+        markers = DataFrame(:id=>repeat([""], size(stim_data, 2)),
+                            :start=>stim_data[1, :],
+                            :length=>stim_data[2, :],
+                            :description=>stim_name,
+                            :channel=>repeat([0], size(stim_data, 2)))
         # generate unique IDs
         desc = unique(markers[!, :description])
         for idx1 in 1:nrow(markers), idx2 in eachindex(desc)
             markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
         end
     else
-        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+        markers = DataFrame(:id=>String[],
+                            :start=>Float64[],
+                            :length=>Float64[],
+                            :description=>String[],
+                            :channel=>Int64[])
     end
 
     # auxiliary measurements

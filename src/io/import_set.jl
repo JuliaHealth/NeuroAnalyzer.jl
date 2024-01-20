@@ -178,7 +178,12 @@ function import_set(file_name::String; detect_type::Bool=true)
     end
 
     # MARKERS
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
+
     if "event" in keys(dataset)
         events = dataset["event"]
         if length(keys(events)) > 0

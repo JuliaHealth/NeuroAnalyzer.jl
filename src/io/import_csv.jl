@@ -52,10 +52,20 @@ function import_csv(file_name::String; detect_type::Bool=true)
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     ch_order = _sort_channels(ch_type)
 
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
+
     sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
     gain = ones(ch_n)
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
+
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)

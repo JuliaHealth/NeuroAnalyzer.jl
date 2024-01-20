@@ -19,7 +19,11 @@ function create(; data_type::String)
 
     _check_var(data_type, data_types, "data_type")
 
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
 
     time_pts = Float64[]
     ep_time = Float64[]
