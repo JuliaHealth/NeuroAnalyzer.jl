@@ -826,9 +826,14 @@ t = linspace(0, 10, 1000)
 @test length(env_lo(x, t)) == 1000
 
 @info "test 55/55: gradient()"
-x = rand(10, 10)
-g, g_l = NeuroAnalyzer.gradient(x)
+g, g_l = NeuroAnalyzer.gradient(rand(10))
+@test size(g) == (10, )
+@test size(g_l) == (10, )
+g, g_l = NeuroAnalyzer.gradient(rand(10, 10))
 @test size(g) == (10, 10)
 @test size(g_l) == (10, 10)
+g, g_l = NeuroAnalyzer.gradient(rand(10, 10, 10))
+@test size(g) == (10, 10, 10)
+@test size(g_l) == (10, 10, 10)
 
 true
