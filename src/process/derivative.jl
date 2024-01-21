@@ -18,11 +18,11 @@ function derivative(s::AbstractVector)
 
     @assert length(s) > 2 "Signal length must be > 2."
 
-    s_new = diff(s)
-    first = vcat(s_new[1], s_new)
-    last = vcat(s_new, s_new[end])
+    dv  = diff(s) / 2       # half the derivative
+    s_new = [dv[1]; dv]     # copies first element
+    s_new .+= [dv; dv[end]] # copies last element, add both results to compute average
 
-    return (first + last) / 2
+    return s_new
 
 end
 
