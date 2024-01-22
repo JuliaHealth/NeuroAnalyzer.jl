@@ -32,7 +32,6 @@ function apply(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
             f_tmp = replace(f, "obj" => "$(obj.data[ch[ch_idx], :, ep_idx])")
             try
                 out[ch_idx, :, ep_idx] = eval(Meta.parse(f_tmp))
-
             catch
                 @error "Formula is incorrect."
             end

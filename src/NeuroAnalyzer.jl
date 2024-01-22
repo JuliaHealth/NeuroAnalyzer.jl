@@ -420,6 +420,7 @@ include("statistics/cor_test.jl")
 include("statistics/segments.jl")
 include("statistics/sem_diff.jl")
 include("statistics/summary.jl")
+include("statistics/bootstrap.jl")
 # utils
 include("utils/apply.jl")
 include("utils/array.jl")

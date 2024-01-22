@@ -11,6 +11,7 @@ export plot_polar
 export plot_eros
 export plot_erop
 export plot_icatopo
+export plot_ci
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -125,6 +126,7 @@ Plot histogram.
 # Arguments
 
 - `s::AbstractVector`
+- `x::Union{Nothing, Real}=nothing`: value to plot against the histogram
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
 - `bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
 - `label::String=""`: channel label
@@ -138,7 +140,7 @@ Plot histogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_histogram(s::AbstractVector; type::Symbol=:hist, bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type::Symbol=:hist, bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, draw_mean::Bool=true, draw_median::Bool=true, kwargs...)
 
     _check_var(type, [:hist, :kd], "type")
 
@@ -150,7 +152,7 @@ function plot_histogram(s::AbstractVector; type::Symbol=:hist, bins::Union{Int64
         xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), ceil(maximum(s), digits=1)]
     else
         xticks = [floor(minimum(s), digits=1), round(median(s), digits=1), round(mean(s), digits=1), ceil(maximum(s), digits=1)]
-    end        
+    end
 
     p = Plots.plot(s,
                    seriestype=type,
@@ -177,8 +179,9 @@ function plot_histogram(s::AbstractVector; type::Symbol=:hist, bins::Union{Int64
                    xtickfontsize=5,
                    ytickfontsize=5;
                    kwargs...)
-    p = Plots.vline!([round(mean(s), digits=1)], lw=1, ls=:dot, lc=:black, label="mean")
-    p = Plots.vline!([round(median(s), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median")
+    draw_mean == true && (p = Plots.vline!([round(mean(s), digits=1)], lw=1, ls=:dot, lc=:black, label="mean"))
+    draw_median == true && (p = Plots.vline!([round(median(s), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median"))
+    isnothing(x) == false && (p = Plots.vline!([x], lw=1, ls=:dot, lc=:red, label="$(round(x, digits=4))"))
 
     Plots.plot(p)
 
@@ -1025,6 +1028,85 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matr
     else
         p = plot_compose(p_topo, layout=(4, ceil(Int64, length(ic_idx) / 4)))
     end
+
+    return p
+
+end
+
+
+"""
+    plot_ci(s, s_ci_l, s_ci_h; <keyword arguments>)
+
+Dots plot.
+
+# Arguments
+
+- `s::AbstractVector`: signal
+- `s_l::AbstractVector`: CI lower bound
+- `s_u::AbstractVector`: CI upper bound
+- `t::AbstractVector`: time points
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    @assert length(s) == length(s_l) == length(s_u) "All input signals must be of the same length."
+
+    pal = mono ? :grays : :darktest
+
+    ylim = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0))
+    ylim = _tuple_max(ylim)
+    yticks = [ylim[1], 0, ylim[2]]
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title=title,
+                   palette=pal,
+                   size=(1200, 500),
+                   margins=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+    # plot upper bound
+    p = Plots.plot!(t,
+                    s_u,
+                    fillrange=s_l,
+                    fillalpha=0.35, 
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot lower bound
+    p = Plots.plot!(t,
+                    s_l,
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot signal
+    p = Plots.plot!(t,
+                    s,
+                    label=false,
+                    t=:line,
+                    c=:black,
+                    lw=0.5)
+
+    Plots.plot(p)
 
     return p
 
