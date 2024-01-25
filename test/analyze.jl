@@ -19,10 +19,10 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "test 1/54: acov()"
-@test NeuroAnalyzer.acov(v) == [2.0 0.8 -0.2 -0.8 -0.8;;;]
+@test NeuroAnalyzer.acov(v) == [-0.8 -0.8 -0.2 0.8 2.0 0.8 -0.2 -0.8 -0.8;;;]
 ac, l = NeuroAnalyzer.acov(e10)
-@test size(ac) == (23, 257, 10)
-@test length(l) == 257
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
 
 @info "test 2/54: ampdiff()"
 @test size(NeuroAnalyzer.ampdiff(a1)) == (2, 3, 2)

@@ -77,7 +77,7 @@ Plot cross/auto-covariance/correlation.
 # Arguments
 
 - `m::Abstractvector`: covariance matrix
-- `lags::AbstractVector`: covariance lags, lags will be displayed in s
+- `lags::AbstractVector`: covariance lags
 - `xlabel::String="lag"`
 - `ylabel::String=""`
 - `title::String=""`
@@ -91,6 +91,12 @@ Plot cross/auto-covariance/correlation.
 """
 function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
+    if minimum(m) >= -1.0 && maximum(m) <= 1.0
+        ylim = (-1.0, 1.0)
+    else
+        ylim = extrema(m)
+    end
+
     pal = mono ? :grays : :darktest
     r = length(lags) > 10 ? 90 : 0
     p = Plots.plot(lags,
@@ -98,20 +104,21 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
                    title=title,
                    xlabel=xlabel,
                    ylabel=ylabel,
-                   xticks=[lags[1], lags[end]],
+                   xticks=lags[round.(Int64, range(1, length(lags), 21))],
                    xaxis=(tickfontrotation=r),
-                   yticks=[round(minimum(m), digits=1), round(maximum(m), digits=1)],
+                   ylims=ylim,
                    palette=pal,
-                   size=(600, 200),
+                   size=(800, 300),
                    lw=0.5,
                    grid=false,
                    legend=false,
-                   bottom_margin=10*Plots.px,
-                   titlefontsize=5,
-                   xlabelfontsize=5,
-                   ylabelfontsize=5,
-                   xtickfontsize=4,
-                   ytickfontsize=4;
+                   top_margin=10*Plots.px,
+                   bottom_margin=30*Plots.px,
+                   titlefontsize=6,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
+                   xtickfontsize=5,
+                   ytickfontsize=5;
                    kwargs...)
 
     return p
@@ -148,11 +155,14 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
 
     pal = mono ? :grays : :darktest
 
-    if mean(s) < median(s)
-        xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), ceil(maximum(s), digits=1)]
+    if isnothing(x) == false
+        xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), round(x, digits=1), ceil(maximum(s), digits=1)]
     else
-        xticks = [floor(minimum(s), digits=1), round(median(s), digits=1), round(mean(s), digits=1), ceil(maximum(s), digits=1)]
+        xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), ceil(maximum(s), digits=1)]
     end
+    draw_median == false && deleteat!(xticks, 3)
+    draw_mean == false && deleteat!(xticks, 2)
+    sort!(xticks)
 
     p = Plots.plot(s,
                    seriestype=type,
@@ -179,9 +189,17 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
                    xtickfontsize=5,
                    ytickfontsize=5;
                    kwargs...)
+
     draw_mean == true && (p = Plots.vline!([round(mean(s), digits=1)], lw=1, ls=:dot, lc=:black, label="mean"))
     draw_median == true && (p = Plots.vline!([round(median(s), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median"))
-    isnothing(x) == false && (p = Plots.vline!([x], lw=1, ls=:dot, lc=:red, label="$(round(x, digits=4))"))
+
+    if isnothing(x) != true
+        pal === :darktest && (p = Plots.vline!([x], lw=2, lc=:red, label=nothing))
+        pal === :grays && (p = Plots.vline!([x], lw=2, lc=:black, label=nothing))
+        prop = round(cmp_stat(s, x), digits=3)
+        _info("Proportion of values > $x: $prop")
+        _info("Proportion of values < $x: $(1 - prop)")
+    end
 
     Plots.plot(p)
 

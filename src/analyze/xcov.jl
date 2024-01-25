@@ -25,7 +25,7 @@ function xcov(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
     xc = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        xc[1, :, ep_idx] = @views crosscor(s1[1, :, ep_idx], s2[1, :, ep_idx], -l:l, demean=demean)
+        xc[1, :, ep_idx] = @views crosscov(s1[1, :, ep_idx], s2[1, :, ep_idx], -l:l, demean=demean)
     end
 
     return xc
@@ -59,7 +59,7 @@ function xcov(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xc[ch_idx, :, ep_idx] = @views crosscor(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], -l:l, demean=demean)
+            xc[ch_idx, :, ep_idx] = @views crosscov(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], -l:l, demean=demean)
         end
     end
 
@@ -68,7 +68,7 @@ function xcov(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
 end
 
 """
-    xcov(obj1, obj2; ch1, ch2, ep1, ep2, lag, norm)
+    xcov(obj1, obj2; ch1, ch2, ep1, ep2, l, norm)
 
 Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
 
@@ -80,16 +80,18 @@ Calculate cross-covariance (a measure of similarity of two signals as a function
 - `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
-- `lag::Real=1`: lags range is `-lag:lag` [s]
+- `l::Real=1`: lags range is `-l:l` [s]
 - `demean::Bool=true`: demean signal before computing cross-covariance
 
 # Returns
 
 Named tuple containing:
 - `xc::Array{Float64, 3}`: cross-covariance
-- `lag::Vector{Float64}`: lags [s]
+- `l::Vector{Float64}`: lags [s]
 """
-function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), lag::Real=1, demean::Bool=true)
+function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), l::Real=1, demean::Bool=true)
+
+    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
 
     # check channels
     _check_channels(obj1, ch1)
@@ -102,12 +104,11 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    @assert lag <= obj1.epoch_time[end] "lag must be ≤ $(obj1.epoch_time[end])."
-
-    l = vsearch(lag, obj1.epoch_time)
+    @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
+    @assert l >= 0 "l must be ≥ 0."
 
     xc = @views xcov(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean)
 
-    return (xc=xc, lag=vcat(-reverse(obj1.epoch_time[1:l]), 0, obj1.epoch_time[1:l]))
+    return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=5))
 
 end

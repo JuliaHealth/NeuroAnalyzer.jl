@@ -18,6 +18,7 @@ export distance
 export count_thresh
 export crit_z
 export z2pow
+export cmp_stat
 
 """
     z_score(x)
@@ -494,7 +495,7 @@ end
 """
     crit_z(ci_level)
 
-Calculate critical Z value
+Calculate critical Z value.
 
 # Arguments
 
@@ -513,7 +514,7 @@ end
 """
     z2pow(z)
 
-Calculate power for a given Z value
+Calculate power for a given Z value.
 
 # Arguments
 
@@ -527,4 +528,25 @@ function z2pow(z::Real)
 
     return cdf(Distributions.Normal(0.0, 1.0), z)
 
+end
+
+"""
+    cmp_stat(stat_dist, stat_value)
+
+Calculate proportion of elements below or above a given statistic value.
+
+# Arguments
+
+- `stat_dist::AbstractVector`: statistic values distribution
+- `stat_value::Real`: statistic value
+- `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `stat_value` 
+
+# Returns
+
+- `p::Float64`
+"""
+function cmp_stat(stat_dist::AbstractVector, stat_value::Real; type::Symbol=:g)
+    _check_var(type, [:g, :l], "type")
+    type === :g && return count(stat_dist .> stat_value) / length(stat_dist)
+    type === :l && return count(stat_dist .< stat_value) / length(stat_dist)
 end

@@ -610,6 +610,27 @@ function Base.size(obj::NeuroAnalyzer.NEURO)
 end
 
 """
+    size(obj, n)
+
+Return size of the `obj` data.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `n::Int64`
+
+# Returns
+
+- `size::Int64`
+"""
+function Base.size(obj::NeuroAnalyzer.NEURO, n::Int64)
+    
+    @assert n <= ndims(obj.data) "n must be ≤ ndims(obj.data)."
+    return size(obj.data, n)
+
+end
+
+"""
     datatype(obj)
 
 Return data type of the `obj`.
