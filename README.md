@@ -18,7 +18,7 @@ Note: this toolbox is under active development and is subject to change without 
 
 ## Quickstart
 
-Add NeuroAnalyzer from the [Pkg REPL](https://docs.julialang.org/en/v1/stdlib/REPL/#Pkg-mode), i.e., `pkg> add NeuroAnalyzer`.
+Add NeuroAnalyzer from the [Pkg REPL](https://docs.julialang.org/en/v1/stdlib/REPL/#Pkg-mode): `pkg> add NeuroAnalyzer`.
 
 ## Documentation
 

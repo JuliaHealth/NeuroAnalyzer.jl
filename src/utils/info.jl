@@ -625,7 +625,7 @@ Return size of the `obj` data.
 """
 function Base.size(obj::NeuroAnalyzer.NEURO, n::Int64)
     
-    @assert n <= ndims(obj.data) "n must be ≤ ndims(obj.data)."
+    @assert n <= ndims(obj.data) "n must be ≤ $(ndims(obj.data))."
     return size(obj.data, n)
 
 end
