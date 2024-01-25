@@ -16,6 +16,10 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 
 Note: this toolbox is under active development and is subject to change without prior notice.
 
+## Quickstart
+
+Add NeuroAnalyzer from the [Pkg REPL](https://docs.julialang.org/en/v1/stdlib/REPL/#Pkg-mode), i.e., `pkg> add NeuroAnalyzer`.
+
 ## Documentation
 
 1. [Stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/stable) branch:
