@@ -1,6 +1,55 @@
 export xcor
 
 """
+   xcor(s1, s2; l, demean, n, biased)
+
+Calculate cross-correlation.
+
+# Arguments
+
+- `s1::AbstractVector`
+- `s2::AbstractVector`
+- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `demean::Bool=true`: demean signal before computing cross-correlation
+- `biased::Bool=true`: calculate biased or unbiased cross-correlation
+
+# Returns
+
+- `xc::Matrix{Float64}`
+"""
+function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true)
+
+    @assert length(s1) == length(s2) "Both signals must have the same length."
+
+    xc = zeros(l + 1)
+
+    ms1 = mean(s1)
+    ms2 = mean(s2)
+    if demean == true
+        s1_tmp = s1 .- ms1
+        s2_tmp = s2 .- ms2
+    else
+        s1_tmp = s1
+        s2_tmp = s2
+    end
+
+    for idx in 0:l
+        xc[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        if biased == true 
+            xc[idx + 1] /= length(s1)
+        else
+            xc[idx + 1] /= (length(s1) - idx)
+        end
+    end
+        
+    xc = round.(xc ./ (std(s1) * std(s2)), digits=8)
+    xc = vcat(reverse(xc), xc[2:end])
+
+    return reshape(xc, 1, :, 1)
+
+end
+
+"""
    xcor(s1, s2; l, demean)
 
 Calculate cross-correlation (a measure of similarity of two signals as a function of the displacement of one relative to the other).

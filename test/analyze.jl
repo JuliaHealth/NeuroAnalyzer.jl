@@ -20,6 +20,7 @@ a2 = zeros(2, 3, 2)
 
 @info "test 1/54: acov()"
 @test NeuroAnalyzer.acov(v) == [-0.8 -0.8 -0.2 0.8 2.0 0.8 -0.2 -0.8 -0.8;;;]
+@test NeuroAnalyzer.acov(v, biased=false) == [-4.0 -2.0 -0.33333333 1.0 2.0 1.0 -0.33333333 -2.0 -4.0;;;]
 ac, l = NeuroAnalyzer.acov(e10)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
@@ -349,10 +350,11 @@ p, f = erop(e10, ch=1, method=:mw)
 @test length(f) == 129
 
 @info "test 20/54: acor()"
-@test NeuroAnalyzer.acor(v) == [1.0 0.4 -0.1 -0.4 -0.4;;;]
+@test NeuroAnalyzer.acor(v) == [-0.32 -0.32 -0.08 0.32 0.8 0.32 -0.08 -0.32 -0.32;;;]
+@test NeuroAnalyzer.acor(v, biased=false) == [-1.6 -0.8 -0.13333333 0.4 0.8 0.4 -0.13333333 -0.8 -1.6;;;]
 ac, l = NeuroAnalyzer.acor(e10)
-@test size(ac) == (23, 257, 10)
-@test length(l) == 257
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
 
 @info "test 21/54: ispc()"
 iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer.ispc(v1, v2)
@@ -794,13 +796,19 @@ f, p = NeuroAnalyzer.vartest(e10, e10)
 
 @info "test 47/54: xcov()"
 xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
-@test size(xc) == (1, 515, 1)
-@test length(l) == 515
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, biased=false)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
 
 @info "test 48/54: xcor()"
 xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
-@test size(xc) == (1, 515, 1)
-@test length(l) == 515
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, biased=false)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
 
 @info "test 49/54: amp_at()"
 e = NeuroAnalyzer.erp(e10)

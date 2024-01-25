@@ -135,14 +135,14 @@ et = extract_eptime(e10)
 
 @info "test 19/29: trim()"
 s = collect(1:100)
-@test trim(s, seg=(1, 10)) == 11:100
+@test NeuroAnalyzer.trim(s, seg=(1, 10)) == 11:100
 m = rand(10, 100)
-@test size(trim(m, seg=(1, 10))) == (10, 90)
+@test size(NeuroAnalyzer.trim(m, seg=(1, 10))) == (10, 90)
 a = rand(10, 100, 10)
-@test size(trim(a, seg=(1, 10))) == (10, 90, 10)
-e10_tmp = trim(e10, seg=(0, 11), remove_epochs=true)
+@test size(NeuroAnalyzer.trim(a, seg=(1, 10))) == (10, 90, 10)
+e10_tmp = NeuroAnalyzer.trim(e10, seg=(0, 11), remove_epochs=true)
 @test size(e10_tmp) == (24, 2560, 118)
-e10_tmp = trim(e10, seg=(0, 21), remove_epochs=false)
+e10_tmp = NeuroAnalyzer.trim(e10, seg=(0, 21), remove_epochs=false)
 @test size(e10_tmp) == (24, 2560, 117)
 
 @info "test 20/29: delete_marker()"

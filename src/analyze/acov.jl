@@ -18,23 +18,25 @@ Calculate autocovariance.
 """
 function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true)
 
-    if biased == true
-        ac = autocov(s, 0:l, demean=demean)
+    ac = zeros(l + 1)
+
+    ms = mean(s)
+    if demean == true
+        s_tmp = s .- ms
     else
-        ac = zeros(l + 1)
-        ms = mean(s)
-        if demean == true
-            s_tmp = s .- ms
-        else
-            s_tmp = s
-        end
-        for idx in 0:l
-            s1 = s_tmp[1:(end - idx)]
-            s2 = s_tmp[(1 + idx):end]
-            ac[idx + 1] = sum(s1 .* s2) / (length(s) - idx)
-        end
+        s_tmp = s
     end
 
+    for idx in 0:l
+        ac[idx + 1] = @views sum(s_tmp[1:(end - idx)] .* s_tmp[(1 + idx):end])
+        if biased == true 
+            ac[idx + 1] /= length(s)
+        else
+            ac[idx + 1] /= (length(s) - idx)
+        end
+    end
+    
+    ac = round.(ac, digits=8)
     ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
