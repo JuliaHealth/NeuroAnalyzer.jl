@@ -321,6 +321,8 @@ f = NeuroAnalyzer.frqinst(rand(100), fs=10)
 @test length(f) == 100
 f = NeuroAnalyzer.frqinst(rand(10, 100, 10), fs=10)
 @test size(f) == (10, 100, 10)
+f = NeuroAnalyzer.frqinst(e10)
+@test size(f) == (23, 2560, 10)
 
 @info "test 18/54: ged()"
 s, r, rn = NeuroAnalyzer.ged(rand(10, 10), rand(10, 10))

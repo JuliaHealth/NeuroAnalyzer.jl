@@ -2,7 +2,7 @@ export spectrum
 export hspectrum
 
 """
-    spectrum(s; pad)
+    spectrum(s; pad, norm)
 
 Calculate FFT, amplitudes, powers and phases.
 
@@ -82,7 +82,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 end
 
 """
-    hspectrum(s; pad)
+    hspectrum(s; pad, norm)
 
 Calculate amplitudes, powers and phases using Hilbert transform.
 

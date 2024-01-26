@@ -10,4 +10,4 @@ julia -O3 -g0 --threads 24 --cpu-target=native benchmarks/na_benchmarking.jl > b
 Here are some results:
 
 - [Lenovo T14](benchmarks/t14.txt) (AMD Ryzen 5 PRO 4650U, 12 threads, CUDA disabled)
-- [workstation](benchmarks/3960x_nocuda.txt) (AMD Threadripper 3960X, 24 threads, CUDA disabled)
+- [AMD workstation](benchmarks/3960x_nocuda.txt) (AMD Threadripper 3960X, 24 threads, CUDA disabled)
