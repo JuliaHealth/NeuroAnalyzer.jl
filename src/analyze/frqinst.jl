@@ -18,8 +18,8 @@ function frqinst(s::AbstractVector; fs::Int64)
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    _, _, _, h_ph = hspectrum(s)
-    f = 256 * derivative(h_ph) / (2*pi)
+    _, _, _, pha = hspectrum(s)
+    f = fs / (2 * pi) * derivative(DSP.unwrap(pha))
 
     return f
 

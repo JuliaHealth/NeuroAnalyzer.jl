@@ -25,9 +25,9 @@ function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
     ft = fft0(s, pad)
 
     # amplitudes
-    sa = abs.(ft) ./ length(s)              # normalize
-    sa = sa[1:(length(sa) ÷ 2)]             # remove negative frequencies
-    sa[2:end] .*= 2                         # double positive frequencies
+    sa = @. abs(ft) / length(s)              # normalize
+    sa = @views sa[1:(length(sa) ÷ 2)]       # remove negative frequencies
+    sa[2:end] .*= 2                          # double positive frequencies
 
     # replace amplitudes at extreme frequencies
     # sa[1] = sa[2]
@@ -53,7 +53,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 - `s::AbstractVector`
 - `pad::Int64`: number of zeros to add at the end of the signal
-- `norm::Bool=true`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 
 # Returns
 
@@ -63,16 +63,12 @@ Named tuple containing:
 - `sp::Vector{Float64}`: powers
 - `sph::Vector{Float64}`: phases
 """
-function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=true)
+function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
     hc = hilbert(pad0(s, pad))
 
     # amplitudes
-    sa = @. abs(hc)
-
-    # replace amplitudes at extreme frequencies
-    # sa[1] = sa[2]
-    # sa[end] = sa[end - 1]
+    sa = abs.(hc)
 
     # powers
     sp = sa.^2
@@ -86,7 +82,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=true)
 end
 
 """
-    hspectrum(s; pad=0)
+    hspectrum(s; pad)
 
 Calculate amplitudes, powers and phases using Hilbert transform.
 
@@ -94,7 +90,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 - `s::AbstractArray`
 - `pad::Int64`: number of zeros to add at the end of the signal
-- `norm::Bool=true`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 
 # Returns
 
@@ -104,7 +100,7 @@ Named tuple containing:
 - `sp::Array{Float64, 3}`: powers
 - `sph::Array{Float64, 3}`: phases
 """
-function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=true)
+function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
 
     ch_n = size(s, 1)
     ep_len = size(s, 2)
@@ -126,7 +122,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=true)
 end
 
 """
-    spectrum(s; pad, h)
+    spectrum(s; pad, h, norm)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
@@ -177,7 +173,7 @@ end
 
 
 """
-    spectrum(obj; ch, pad, h)
+    spectrum(obj; ch, pad, h, norm)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
