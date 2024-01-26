@@ -22,10 +22,10 @@ Named tuple containing:
 """
 function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
-    ft = fft0(s, pad)
+    ft = fft0(s, pad) / length(s)
 
     # amplitudes
-    sa = @. abs(ft) / length(s)              # normalize
+    sa = @. abs(ft)                          # normalize
     sa = @views sa[1:(length(sa) ÷ 2)]       # remove negative frequencies
     sa[2:end] .*= 2                          # double positive frequencies
 
@@ -151,6 +151,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
     sph = zeros(ch_n, fft_size, ep_n)
 
     if h == true
+        _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
         sa = zeros(ch_n, fft_size, ep_n)
         sp = zeros(ch_n, fft_size, ep_n)
     else

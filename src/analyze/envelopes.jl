@@ -1,5 +1,7 @@
 export env_up
 export env_lo
+export henv_up
+export henv_lo
 export tenv
 export tenv_mean
 export tenv_median
@@ -118,6 +120,48 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)
     length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
 
     return e
+
+end
+
+"""
+    henv_up(s)
+
+Calculate upper envelope using Hilbert transform.
+
+# Arguments
+
+- `s::AbstractVector`: signal
+
+# Returns
+
+- `e::Vector{Float64}`: envelope
+"""
+function henv_up(s::AbstractVector)
+    
+    _, e, _, _ = hspectrum(s)
+
+    return e
+
+end
+
+"""
+    henv_lo(s)
+
+Calculate lower envelope using Hilbert transform.
+
+# Arguments
+
+- `s::AbstractVector`: signal
+
+# Returns
+
+- `e::Vector{Float64}`: envelope
+"""
+function henv_lo(s::AbstractVector)
+    
+    _, e, _, _ = hspectrum(-s)
+
+    return -e
 
 end
 
@@ -860,6 +904,8 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     _check_channels(obj, ch)
 
+    _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
+
     _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])
 
     ch_n = size(hamp, 1)
@@ -899,7 +945,7 @@ Named tuple containing:
 - `s_t::Vector{Float64}`: signal time
 """
 function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
-    
+
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
