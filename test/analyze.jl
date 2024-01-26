@@ -317,9 +317,9 @@ c, msc, f = NeuroAnalyzer.fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
 @test length(f) == 2049
 
 @info "test 17/54: frqinst()"
-f = NeuroAnalyzer.frqinst(rand(100), fs=10)
+f = NeuroAnalyzer.frqinst(rand(100))
 @test length(f) == 100
-f = NeuroAnalyzer.frqinst(rand(10, 100, 10), fs=10)
+f = NeuroAnalyzer.frqinst(rand(10, 100, 10))
 @test size(f) == (10, 100, 10)
 f = NeuroAnalyzer.frqinst(e10)
 @test size(f) == (23, 2560, 10)
