@@ -27,16 +27,16 @@ function fft0(x::AbstractVector, n::Int64=0)
         # _free_gpumem()
         CUDA.synchronize()
         if n == 0
-            return Vector(fft(CuVector(x)))
+            return Vector(rfft(CuVector(x)))
         else
-            return Vector(fft(CuVector(pad0(x, n))))
+            return Vector(rfft(CuVector(pad0(x, n))))
         end
         CUDA.synchronize()
     else
         if n == 0
-            return fft(x)
+            return rfft(x)
         else
-            return fft(pad0(x, n))
+            return rfft(pad0(x, n))
         end
     end
 
