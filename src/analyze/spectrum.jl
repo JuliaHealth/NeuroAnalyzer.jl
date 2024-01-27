@@ -26,12 +26,7 @@ function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
     # amplitudes
     sa = @. abs(ft)                          # normalize
-    # sa = @views sa[1:(length(sa) ÷ 2)]       # remove negative frequencies
-    # sa[2:end] .*= 2                          # double positive frequencies
-
-    # replace amplitudes at extreme frequencies
-    # sa[1] = sa[2]
-    # sa[end] = sa[end - 1]
+    sa[2:end] .*= 2                          # double positive frequencies
 
     # power
     sp = sa.^2
