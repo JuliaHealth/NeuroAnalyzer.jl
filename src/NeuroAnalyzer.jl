@@ -314,6 +314,7 @@ include("io/import_nwb.jl")
 include("io/import_npy.jl")
 include("io/import_thymatron.jl")
 include("io/import_duomag.jl")
+include("io/import_ncs.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")
