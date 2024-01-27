@@ -25,8 +25,8 @@ function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
     ft = fft0(s, pad) / length(s)
 
     # amplitudes
-    sa = @. abs(ft)                          # normalize
-    sa[2:end] .*= 2                          # double positive frequencies
+    sa = abs.(ft)                          # get real values
+    # sa[2:end] .*= 2                      # double positive frequencies
 
     # power
     sp = sa.^2
