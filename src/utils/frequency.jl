@@ -112,7 +112,8 @@ function freqs(t::Union{AbstractVector, AbstractRange})
     nf = fs / 2
 
     # frequency array
-    hz = linspace(0, nf, floor(Int64, length(t) / 2))
+    # hz = linspace(0, nf, floor(Int64, length(t) / 2))
+    hz = rfftfreq(length(t), fs)
 
     return hz, nf
 
@@ -140,7 +141,8 @@ function freqs(s::Vector{Float64}, fs::Int64)
     # Nyquist frequency
     nf = fs / 2
     # frequency array
-    hz = linspace(0, nf, floor(Int64, length(s) / 2))
+    # hz = linspace(0, nf, floor(Int64, length(s) / 2))
+    hz = rfftfreq(length(s), fs)
 
     return hz, nf
 
