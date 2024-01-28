@@ -20,7 +20,7 @@ https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 function import_nirs(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".nirs" "This is not NIRS file."
+    @assert lowercase(splitext(file_name)[2]) == ".nirs" "This is not NIRS file."
 
     nirs = nothing
     try

@@ -17,7 +17,7 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 function import_npy(file_name::String; sampling_rate::Int64)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".npy" "This is not NPY file."
+    @assert lowercase(splitext(file_name)[2]) == ".npy" "This is not NPY file."
 
     @assert sampling_rate > 1 "Sampling rate must be ≥ 1."
 

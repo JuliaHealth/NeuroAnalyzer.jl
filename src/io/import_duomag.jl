@@ -3,7 +3,7 @@ export import_duomag
 """
     import_duomag(file_name)
 
-Load DuoMAG TMS MEP recording file (.ascii or .m).
+Load DuoMAG TMS MEP recording file (.ascii or .m) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 

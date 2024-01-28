@@ -21,7 +21,7 @@ https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 function import_snirf(file_name::String; n::Int64=0)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".snirf" "This is not SNIRF file."
+    @assert lowercase(splitext(file_name)[2]) == ".snirf" "This is not SNIRF file."
 
     nirs = nothing
     try

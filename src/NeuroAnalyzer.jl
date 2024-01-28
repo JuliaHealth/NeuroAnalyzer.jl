@@ -13,14 +13,15 @@ const VER = v"0.24.2-dev"
 const allow_wip = occursin("dev", string(VER))  # false for the stable branch, true for the devel branch
 const io = PipeBuffer()                         # required for interactive preview
 const data_types = ["eeg",
-                    "meg",
-                    "nirs",
                     "ecog",
                     "seeg",
+                    "ieeg",
+                    "meg",
+                    "nirs",
                     "sensors",
                     "mep"]
 const channel_types = ["all",
-                       "eeg", "ecog", "seeg",
+                       "eeg", "ecog", "seeg", "ieeg",
                        "meg", "grad", "mag",
                        "csd",
                        "nirs_int", "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux",
@@ -118,6 +119,7 @@ using TimeZones
 using TOML
 using Wavelets
 using WaveletsExt
+using XDF
 
 # define structures
 
@@ -315,6 +317,7 @@ include("io/import_npy.jl")
 include("io/import_thymatron.jl")
 include("io/import_duomag.jl")
 include("io/import_ncs.jl")
+include("io/import_xdf.jl")
 # locs
 include("locs/add_locs.jl")
 include("locs/convert.jl")

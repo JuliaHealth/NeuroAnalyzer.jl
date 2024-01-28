@@ -16,7 +16,7 @@ Load annotations from EDF+ file and return `markers` DataFrame. This function is
 function import_edf_annotations(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".edf" "This is not EDF file."
+    @assert lowercase(splitext(file_name)[2]) == ".edf" "This is not EDF file."
 
     file_type = ""
 

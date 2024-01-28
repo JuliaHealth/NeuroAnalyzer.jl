@@ -3,7 +3,9 @@ export import_thymatron
 """
     import_thymatron(file_name)
 
-Load scanned images of EEG printed by Thymatron ECT equipment. Usually there are three images: baseline, during seizure activity and after seizure activity. If more then one image is provided, images are added as consecutive channels in the same object.
+Import scanned images of EEG printed by Thymatron ECT equipment and return `NeuroAnalyzer.NEURO` object.
+
+Usually there are three images: baseline, during seizure activity and after seizure activity. If more then one image is provided, images are added as consecutive channels in the same object.
 
 Image properties:
 

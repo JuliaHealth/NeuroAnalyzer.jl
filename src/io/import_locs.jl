@@ -92,7 +92,7 @@ Load channel locations from CED file.
 function import_locs_ced(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".ced" "Not CED file."
+    @assert lowercase(splitext(file_name)[2]) == ".ced" "Not CED file."
 
     locs = CSV.read(file_name, delim="\t", stringtype=String, DataFrame)
 
@@ -147,7 +147,7 @@ Load channel locations from LOCS file.
 function import_locs_locs(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".locs" "This is not LOCS file."
+    @assert lowercase(splitext(file_name)[2]) == ".locs" "This is not LOCS file."
 
     locs = CSV.read(file_name, header=false, delim="\t", stringtype=String, DataFrame)
 
@@ -199,7 +199,7 @@ Load channel locations from ELC file.
 function import_locs_elc(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".elc" "This is not ELC file."
+    @assert lowercase(splitext(file_name)[2]) == ".elc" "This is not ELC file."
 
     f = open(file_name, "r")
     elc_file = readlines(f)
@@ -268,7 +268,7 @@ Load channel locations from TSV file.
 function import_locs_tsv(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".tsv" "This is not TSV file."
+    @assert lowercase(splitext(file_name)[2]) == ".tsv" "This is not TSV file."
 
     locs = CSV.read(file_name, header=true, delim="\t", ignorerepeated=true, stringtype=String, DataFrame)
 
@@ -328,7 +328,7 @@ Load channel locations from SFP file.
 function import_locs_sfp(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".sfp" "This is not SFP file."
+    @assert lowercase(splitext(file_name)[2]) == ".sfp" "This is not SFP file."
     
     locs = CSV.read(file_name, header=false, stringtype=String, DataFrame)
     _info("Checking TAB as delimeter")
@@ -390,7 +390,7 @@ Load channel locations from CSD file.
 function import_locs_csd(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".csd" "This is not CSD file."
+    @assert lowercase(splitext(file_name)[2]) == ".csd" "This is not CSD file."
 
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, stringtype=String, DataFrame)
 
@@ -435,7 +435,7 @@ Load channel locations from GEO file.
 function import_locs_geo(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".geo" "This is not GEO file."
+    @assert lowercase(splitext(file_name)[2]) == ".geo" "This is not GEO file."
 
     f = open(file_name, "r")
     locs = readlines(f)
@@ -504,7 +504,7 @@ Load channel locations from MAT file.
 function import_locs_mat(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".mat" "This is not MAT file."
+    @assert lowercase(splitext(file_name)[2]) == ".mat" "This is not MAT file."
 
     dataset = matread(file_name)
     x = dataset["Cpos"][1, :]
@@ -551,7 +551,7 @@ Load channel locations from TXT file.
 function import_locs_txt(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".txt" "This is not TXT file."
+    @assert lowercase(splitext(file_name)[2]) == ".txt" "This is not TXT file."
 
     locs = CSV.read(file_name, header=true, delim="\t", stringtype=String, DataFrame)
 
@@ -616,7 +616,7 @@ Load channel locations from DAT file.
 function import_locs_dat(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".dat" "Not DAT file."
+    @assert lowercase(splitext(file_name)[2]) == ".dat" "Not DAT file."
 
     locs = CSV.read(file_name, ignorerepeated=true, delim=' ', stringtype=String, header=0, DataFrame)
     if ncol(locs) == 4
@@ -682,7 +682,7 @@ Load channel locations from ASC file.
 function import_locs_asc(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
-    @assert splitext(file_name)[2] == ".asc" "Not ASC file."
+    @assert lowercase(splitext(file_name)[2]) == ".asc" "Not ASC file."
 
     buffer = readlines(file_name)
     # remove comments

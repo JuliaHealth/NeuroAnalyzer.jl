@@ -16,7 +16,7 @@ Load Neuroscan DAT file.
 function import_dat(file_name)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".dat" "This is not DAT file."
+    @assert lowercase(splitext(file_name)[2]) == ".dat" "This is not DAT file."
 
     dat = CSV.read(file_name, stringtype=String, delim=' ', ignorerepeated=true, skipto=21, header=0, DataFrame)
     DataFrames.rename!(dat, [:event, :trial, :response, :type, :correct])

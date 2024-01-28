@@ -16,7 +16,7 @@ Load BrainVision BVCDF file and return `NeuroAnalyzer.NEURO` object. At least tw
 function import_bv(file_name::String; detect_type::Bool=true)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] in [".vhdr", ".ahdr"] "file_name must specify .VHDR/.AHDR file."
+    @assert lowercase(splitext(file_name)[2]) in [".vhdr", ".ahdr"] "file_name must specify .VHDR/.AHDR file."
 
     vhdr = nothing
     try

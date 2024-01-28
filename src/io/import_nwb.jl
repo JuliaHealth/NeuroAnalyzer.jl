@@ -23,7 +23,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     _wip()
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".nwb" "This is not NWB file."
+    @assert lowercase(splitext(file_name)[2]) == ".nwb" "This is not NWB file."
 
     file_type = "NWB"
 

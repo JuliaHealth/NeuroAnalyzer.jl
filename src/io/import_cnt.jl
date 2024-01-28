@@ -3,7 +3,7 @@ export import_cnt
 """
     import_cnt(file_name; data_format, detect_type)
 
-Load Neuroscan continuous signal file.
+Load Neuroscan continuous signal file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -24,7 +24,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     _check_var(data_format, [:i32, :i16], "data_format")
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".cnt" "This is not CNT file."
+    @assert lowercase(splitext(file_name)[2]) == ".cnt" "This is not CNT file."
 
     fid = nothing
     try

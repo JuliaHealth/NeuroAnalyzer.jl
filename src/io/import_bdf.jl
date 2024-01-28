@@ -27,7 +27,7 @@ https://www.biosemi.com/faq/file_format.htm
 function import_bdf(file_name::String; detect_type::Bool=true)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".bdf" "This is not BDF file."
+    @assert lowercase(splitext(file_name)[2]) == ".bdf" "This is not BDF file."
 
     file_type = ""
 

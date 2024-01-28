@@ -86,7 +86,8 @@ function na_info()
             "TimeZones",
             "TOML",
             "Wavelets",
-            "WaveletsExt" ]
+            "WaveletsExt",
+            "XDF" ]
         versions = TOML.parsefile(joinpath(NeuroAnalyzer.PATH, "Manifest.toml"))["deps"]
         for idx in 1:length(required_packages)
             pkg = lpad(required_packages[idx], 25 - length(idx), " ")

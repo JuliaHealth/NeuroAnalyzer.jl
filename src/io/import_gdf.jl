@@ -29,7 +29,7 @@ Load GDF file and return `NeuroAnalyzer.NEURO` object.
 function import_gdf(file_name::String; detect_type::Bool=true)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".gdf" "This is not GDF file."
+    @assert lowercase(splitext(file_name)[2]) == ".gdf" "This is not GDF file."
 
     file_type = ""
 

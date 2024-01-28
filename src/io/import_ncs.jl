@@ -3,7 +3,7 @@ export import_ncs
 """
     import_ncs(file_name)
 
-Load Neuralinx Continuously Sampled Channels (CSC).
+Load Neuralinx Continuously Sampled Channels (CSC) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -12,7 +12,7 @@ Load Neuralinx Continuously Sampled Channels (CSC).
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
-""" 
+"""
 function import_ncs(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
@@ -54,10 +54,16 @@ function import_ncs(file_name::String)
         header[idx][1] == "ADBitVolts" && (ADBitVolts = parse(Float64, header[idx][2]))
         header[idx][1] == "SamplingFrequency" && (sampling_rate = parse(Int64, header[idx][2]))
         header[idx][1] == "ADChannel" && (ADChannel = parse(Int64, header[idx][2]))
-        header[idx][1] == "ADGain" && (ADGain = parse(Int64, header[idx][2]))
-        header[idx][1] == "AmpGain" && (AmpGain = parse(Int64, header[idx][2]))
-        header[idx][1] == "AmpLowCut" && (AmpLowCut = parse(Int64, header[idx][2]))
-        header[idx][1] == "AmpHiCut" && (AmpHiCut = parse(Int64, header[idx][2]))
+        header[idx][1] == "ADGain" && (ADGain = parse(Float64, header[idx][2]))
+        header[idx][1] == "AmpGain" && (AmpGain = parse(Float64, header[idx][2]))
+        header[idx][1] == "AmpLowCut" && (AmpLowCut = parse(Float64, header[idx][2]))
+        header[idx][1] == "AmpHiCut" && (AmpHiCut = parse(Float64, header[idx][2]))
+    end
+
+    if AmpLowCut != 0 && AmpHiCut != 0
+        filter = "HP: $AmpLowCut Hz, LP: $AmpHiCut Hz"
+    else
+        filter = ""
     end
 
     header_size = 16 * 1024
@@ -71,7 +77,7 @@ function import_ncs(file_name::String)
     dwSampleFreq = zeros(Int64, n_blocks)
     dwNumValidSamples = zeros(Int64, n_blocks)
     
-    # gain = ADBitVolts * ADGain * AmpGain * 10^3 # mV
+    # gain = ADBitVolts * ADGain * AmpGain * 10^6 # μV
     gain = ADBitVolts * 10^3 # mV
 
     for idx in 1:n_blocks
@@ -88,7 +94,7 @@ function import_ncs(file_name::String)
     ch_n > 1 && _warn("Multi-channel files are not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
     clabels = ["Ch$ADChannel"]
-    ch_type = repeat(["eeg"], ch_n)
+    ch_type = repeat(["ieeg"], ch_n)
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     ch_order = _sort_channels(ch_type)
 
@@ -103,7 +109,7 @@ function import_ncs(file_name::String)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     
-    data_type = "eeg"
+    data_type = "ieeg"
 
     s = _create_subject(id="",
                         first_name="",
@@ -120,7 +126,7 @@ function import_ncs(file_name::String)
                               recording="",
                               recording_date="",
                               recording_time="",
-                              recording_notes="",
+                              recording_notes="filter: $filter",
                               channel_type=ch_type[ch_order],
                               reference="",
                               clabels=clabels[ch_order],

@@ -20,7 +20,7 @@ https://nirx.net/file-formats
 function import_nirx(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert splitext(file_name)[2] == ".hdr" "This is not NIRX .hdr file."
+    @assert lowercase(splitext(file_name)[2]) == ".hdr" "This is not NIRX .hdr file."
 
     hdr = nothing
     try
