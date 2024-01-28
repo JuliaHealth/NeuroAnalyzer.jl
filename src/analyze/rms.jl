@@ -90,7 +90,7 @@ Calculate Mean Square Amplitude.
 """
 function msa(s::AbstractVector)
 
-    return return 1/length(s) * sum(s.^2)
+    return 1/length(s) * sum(s.^2)
 
 end
 
