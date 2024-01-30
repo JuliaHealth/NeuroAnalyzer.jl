@@ -637,8 +637,8 @@ r = NeuroAnalyzer.msa(e10)
 @test NeuroAnalyzer.snr2(v1) == 1.2060453783110545
 sn, f = NeuroAnalyzer.snr(e10, type=:rms)
 sn, f = NeuroAnalyzer.snr(e10, type=:mean)
-@test size(sn) == (23, 1280)
-@test length(f) == 1280
+@test size(sn) == (23, 1281)
+@test length(f) == 1281
 
 @info "test 37/56: spectrogram()"
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:stft)
@@ -692,8 +692,8 @@ sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0.54, 10))
 @info "test 39/56: spectrum()"
 c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(100))
 @test length(c) == 100
-@test length(sa) == 50
-@test length(sp) == 50
+@test length(sa) == 100
+@test length(sp) == 100
 @test length(sph) == 100
 c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(100))
 @test length(c) == 100
@@ -702,8 +702,8 @@ c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(100))
 @test length(sph) == 100
 c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10))
 @test size(c) == (10, 100, 10)
-@test size(sa) == (10, 50, 10)
-@test size(sp) == (10, 50, 10)
+@test size(sa) == (10, 100, 10)
+@test size(sp) == (10, 100, 10)
 @test size(sph) == (10, 100, 10)
 c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(10, 100, 10))
 @test size(c) == (10, 100, 10)
@@ -717,8 +717,8 @@ c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10), h=true)
 @test size(sph) == (10, 100, 10)
 c, sa, sp, sph = NeuroAnalyzer.spectrum(e10)
 @test size(c) == (23, 2560, 10)
-@test size(sa) == (23, 1280, 10)
-@test size(sp) == (23, 1280, 10)
+@test size(sa) == (23, 2560, 10)
+@test size(sp) == (23, 2560, 10)
 @test size(sph) == (23, 2560, 10)
 c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, h=true)
 @test size(c) == (23, 2560, 10)

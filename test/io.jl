@@ -193,7 +193,7 @@ l = import_locs_asc(joinpath(testfiles_path, "locs.asc"))
 eeg = import_ncs(joinpath(testfiles_path, "eeg-test-ncs.ncs"))
 @test eeg isa NeuroAnalyzer.NEURO
 
-@info "test 37/37: import_ncs()"
+@info "test 37/37: import_xdf()"
 eeg = import_xdf(joinpath(testfiles_path, "eeg-test-xdf.xdf"))
 @test eeg isa NeuroAnalyzer.NEURO
 

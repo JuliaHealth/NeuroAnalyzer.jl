@@ -61,13 +61,13 @@ reset_components!(e10_tmp)
 @test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
 
 @info "test 13/69: fft0()"
-x = fft0(v1, 1024)
-@test length(x) == 1029
+x = fft0(v1, 2)
+@test length(x) == 7
 
 @info "test 14/69: ifft0()"
-@test round.(real.(ifft0(x, 1024))) == v1
+@test round.(real.(ifft0(x, 2))) == [1.0, 2.0, 3.0, 4.0, 5.0]
 
-@info "test 15/69: fft0()"
+@info "test 15/69: fft2()"
 x = fft2(v1)
 @test length(x) == 8
 
@@ -101,13 +101,13 @@ x[10] *= 1000
 
 @info "test 23/69: freqs()"
 f, nf = freqs(0:1/10:10)
-@test length(f) == 50
+@test length(f) == 51
 @test nf == 5
 f, nf = freqs(rand(100), 10)
-@test length(f) == 50
+@test length(f) == 51
 @test nf == 5
 f, nf = freqs(e10)
-@test length(f) == 1280
+@test length(f) == 1281
 @test nf == 128
 
 @info "test 24/69: generate_window()"

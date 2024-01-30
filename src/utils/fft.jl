@@ -34,9 +34,9 @@ function fft0(x::AbstractVector, n::Int64=0)
         CUDA.synchronize()
     else
         if n == 0
-            return rfft(x)
+            return fft(x)
         else
-            return rfft(pad0(x, n))
+            return fft(pad0(x, n))
         end
     end
 
@@ -171,7 +171,8 @@ function dft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     ep_n = nepochs(obj)
 
     fs = sr(obj)
-    ft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)
+    ft_tmp, _ = dft(obj.data[1, :, 1], fs=fs, pad=pad)
+    ft = zeros(ComplexF64, ch_n, length(ft_tmp), ep_n)
     f = nothing
 
     @inbounds for ep_idx in 1:ep_n

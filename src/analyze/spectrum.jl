@@ -150,8 +150,8 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
         sa = zeros(ch_n, fft_size, ep_n)
         sp = zeros(ch_n, fft_size, ep_n)
     else
-        sa = zeros(ch_n, fft_size ÷ 2, ep_n)
-        sp = zeros(ch_n, fft_size ÷ 2, ep_n)
+        sa = zeros(ch_n, fft_size, ep_n)
+        sp = zeros(ch_n, fft_size, ep_n)
     end        
 
     @inbounds for ep_idx in 1:ep_n
