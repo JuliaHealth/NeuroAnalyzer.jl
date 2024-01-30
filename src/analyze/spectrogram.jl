@@ -16,7 +16,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `method::Symbol=:stft`: method used to calculate PSD:
     - `:stft`: short time Fourier transform
     - `:mt`: multi-tapered periodogram
-- `nt::Int64=8`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length, default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
@@ -28,7 +28,7 @@ Named tuple containing:
 - `sf::Vector{Float64}`: frequencies
 - `st::Vector{Float64}`: time
 """
-function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symbol=:stft, nt::Int64=8, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     _check_var(method, [:stft, :mt], "method")
     @assert fs >= 1 "fs must be ≥ 1."
@@ -46,7 +46,7 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
         sp = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
     elseif method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
-        sp = DSP.mt_spectrogram(s .* w, fs=fs, nw=(nt ÷ 2 + 1), ntapers=nt)
+        sp = DSP.mt_spectrogram(s .* w, fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
     end
 
     sp = sp.power
@@ -266,7 +266,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
-- `nt::Int64=8`: number of Slepian tapers
+- `nt::Int64=7`: number of Slepian tapers
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
@@ -282,7 +282,7 @@ Named tuple containing:
 - `sf::Vector{Float64}`: frequencies (frequency indices for continuous wavelet transformation)
 - `st::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, norm::Bool=true, nt::Int64=8, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, norm::Bool=true, nt::Int64=7, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)
