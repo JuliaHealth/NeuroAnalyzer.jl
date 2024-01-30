@@ -11,7 +11,7 @@ Compare two vectors; Kruskall-Wallis test is used first, next t-test (paired on 
 - `s2::AbstractVector`
 - `paired::Bool`
 - `alpha::Float64=0.05`: confidence level
-- `type::Symbol=:auto`: choose test automatically (`:auto`), permutation-based (`:perm`) parametric (`:p`) or non-parametric (`:np`)
+- `type::Symbol=:auto`: choose test automatically (`:auto`), permutation-based (`:perm`), parametric (`:p`) or non-parametric (`:np`)
 - `exact::Bool=false`: if true, use exact Wilcoxon test
 - `nperm::Int64=1000`: number of permutation for `:perm` method
 
