@@ -4,7 +4,7 @@
 
 Welcome fellow researcher!
 
-NeuroAnalyzer is a [Julia](https://julialang.org) toolbox for analyzing neurophysiological data. Currently it allows importing, editing, processing and analyzing EEG and NIRS data. Preliminary functionality is also available for ECoG and SEEG recordings. Future versions will also support MEG recordings and source localization techniques. Various methods for modeling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS/TUS/INS) will also be implemented.
+NeuroAnalyzer is a [Julia](https://julialang.org) toolbox for analyzing neurophysiological data. Currently it allows importing, editing, processing and analyzing EEG, MEP and NIRS data. Preliminary functionality is also available for ECoG, SEEG and iEEG recordings. Future versions will also support MEG recordings and source localization techniques. Various methods for modeling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS/TUS/INS) will also be implemented.
 
 NeuroAnalyzer contains a set of separate (high-level) functions. Some interactive graphical user interface (GUI) functions are also available (to preview, edit, plot signal and its power spectrum/spectrogram); more GUI functions will be added in the future. NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This, combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of research data.
 

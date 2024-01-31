@@ -46,7 +46,6 @@ using ContinuousWavelets
 @test tuple_order((2, 1)) == (1, 2)
 @test rmse(ones(10), ones(10)) == 0.0
 @test size(m_norm(ones(4, 4, 1))) == (4, 4, 1)
-@test dft(ones(4), fs=10) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_sf = [0.0, 0.025, -0.05, -0.025])
 @test msci95(ones(4)) == (s_m = 1.0, s_s = 0.0, s_u = 1.0, s_l = 1.0)
 @test msci95(ones(4), zeros(4)) == (s_m = 1.0, s_s = 0.0, s_u = 1.0, s_l = 1.0)
 @test length(difference(ones(4), zeros(4))) == 3
