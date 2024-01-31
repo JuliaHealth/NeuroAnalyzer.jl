@@ -61,10 +61,17 @@ reset_components!(e10_tmp)
 @test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
 
 @info "test 13/68: fft0()"
-x = fft0(v1, 2)
-@test length(x) == 7
+x = fft0(v1)
+@test length(x) == 5
+x = fft0(v1, 10)
+@test length(x) == 15
+x = rfft0(v1)
+@test length(x) == 3
+x = rfft0(v1, 10)
+@test length(x) == div(length(v1) + 10, 2) + 1
 
 @info "test 14/68: ifft0()"
+x = fft0(v1, 2)
 @test round.(real.(ifft0(x, 2))) == [1.0, 2.0, 3.0, 4.0, 5.0]
 
 @info "test 15/68: fft2()"

@@ -1,5 +1,7 @@
 export fft0
 export fft2
+export rfft0
+export rfft2
 export ifft0
 export nextpow2
 
@@ -26,16 +28,16 @@ function fft0(x::AbstractVector, n::Int64=0)
         # _free_gpumem()
         CUDA.synchronize()
         if n == 0
-            return Vector(rfft(CuVector(x)))
+            return Vector(fft(CuVector(x)))
         else
-            return Vector(rfft(CuVector(pad0(x, n))))
+            return Vector(fft(CuVector(pad0(x, n))))
         end
         CUDA.synchronize()
     else
         if n == 0
-            return rfft(x)
+            return fft(x)
         else
-            return rfft(pad0(x, n))
+            return fft(pad0(x, n))
         end
     end
 
@@ -109,5 +111,64 @@ function nextpow2(x::Int64)
 
     # return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
     return nextpow(2, x)
+
+end
+
+"""
+    rfft0(x, n)
+
+Zeros-padded FFT.
+
+# Arguments
+
+- `x::AbstractVector`
+- `n::Int64`: number of zeros to add
+
+# Returns
+
+- `rfft0::Vector{ComplexF64}`
+"""
+function rfft0(x::AbstractVector, n::Int64=0)
+
+    @assert n >=0 "n must be ≥ 0."
+
+    if CUDA.functional() && use_cuda
+        # CUDA.memory_status()
+        # _free_gpumem()
+        CUDA.synchronize()
+        if n == 0
+            return Vector(rfft(CuVector(x)))
+        else
+            return Vector(rfft(CuVector(pad0(x, n))))
+        end
+        CUDA.synchronize()
+    else
+        if n == 0
+            return rfft(x)
+        else
+            return rfft(pad0(x, n))
+        end
+    end
+
+end
+
+"""
+    rfft2(x)
+
+Zeros-padded FFT, so the length of padded vector is a power of 2.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `rfft2::Vector{ComplexF64}`
+"""
+function fft2(x::AbstractVector)
+    
+    n = nextpow2(length(x)) - length(x)
+    
+    return rfft0(x, n)
 
 end
