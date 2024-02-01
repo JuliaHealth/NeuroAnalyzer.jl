@@ -32,7 +32,6 @@ Named tuple containing:
 """
 function psd(s::AbstractVector; fs::Int64, norm::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, fs / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
-
     _check_var(method, [:fft, :welch, :mt, :mw, :stft], "method")
     @assert nt >= 1 "nt must be ≥ 1."
     @assert fs >= 1 "fs must be ≥ 1."

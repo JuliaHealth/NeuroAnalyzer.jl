@@ -123,7 +123,7 @@ end
 """
     xcor(obj1, obj2; ch1, ch2, ep1, ep2, l, norm)
 
-Calculate cross-correlation.
+Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
 # Arguments
 
@@ -161,7 +161,12 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    xc = @views xcor(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+    if obj.header.recording[:data_type] == "erp"
+        xc = @views xcor(reshape(obj1.data[ch1, 2:end, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, 2:end, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+        xc = mean(xc, dims=3)
+    else
+        xc = @views xcor(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+    end
 
     return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=5))
 

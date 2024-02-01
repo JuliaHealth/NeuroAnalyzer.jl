@@ -52,7 +52,7 @@ end
 """
    xcov(s1, s2; l, demean)
 
-Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
+Calculate cross-covariance.
 
 # Arguments
 
@@ -85,7 +85,7 @@ end
 """
    xcov(s1, s2; l, demean)
 
-Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
+Calculate cross-covariance.
 
 # Arguments
 
@@ -121,7 +121,7 @@ end
 """
     xcov(obj1, obj2; ch1, ch2, ep1, ep2, l, norm)
 
-Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
+Calculate cross-covariance. For ERP return trial-averaged cross-covariance.
 
 # Arguments
 
@@ -159,7 +159,12 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    xc = @views xcov(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+    if obj.header.recording[:data_type] == "erp"
+        xc = @views xcov(reshape(obj1.data[ch1, 2:end, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, 2:end, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+        xc = mean(xc, dims=3)
+    else
+        xc = @views xcov(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+    end
 
     return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=5))
 

@@ -109,7 +109,7 @@ end
 """
    acov(obj; ch, l, demean, n, biased)
 
-Calculate autocovariance.
+Calculate autocovariance. For ERP return trial-averaged autocovariance.
 
 # Arguments
 
@@ -131,7 +131,12 @@ function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+    if obj.header.recording[:data_type] == "erp"
+        ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased)
+        ac = mean(ac, dims=3)
+    else
+        ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+    end
 
     return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=5))
 
