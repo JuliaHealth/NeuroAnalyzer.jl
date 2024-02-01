@@ -77,6 +77,8 @@ x = fft0(v1, 2)
 @info "test 15/68: fft2()"
 x = fft2(v1)
 @test length(x) == 8
+x = rfft2(v1)
+@test length(x) == 5
 
 @info "test 16/68: nextpow()"
 @test nextpow2(5) == 8

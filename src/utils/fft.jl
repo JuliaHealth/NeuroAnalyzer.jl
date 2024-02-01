@@ -1,9 +1,9 @@
 export fft0
 export fft2
-export rfft0
-export rfft2
 export ifft0
 export nextpow2
+export rfft0
+export rfft2
 
 """
     fft0(x, n)
@@ -165,7 +165,7 @@ Zeros-padded FFT, so the length of padded vector is a power of 2.
 
 - `rfft2::Vector{ComplexF64}`
 """
-function fft2(x::AbstractVector)
+function rfft2(x::AbstractVector)
     
     n = nextpow2(length(x)) - length(x)
     

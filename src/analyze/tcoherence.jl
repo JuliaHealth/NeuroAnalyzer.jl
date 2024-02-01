@@ -22,8 +22,8 @@ function tcoherence(s1::AbstractVector, s2::AbstractVector; pad::Int64=0)
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
-    s1_fft = fft0(s1, pad) ./ length(s1)
-    s2_fft = fft0(s2, pad) ./ length(s2)
+    s1_fft = rfft0(s1, pad) ./ length(s1)
+    s2_fft = rfft0(s2, pad) ./ length(s2)
 
     coh = @. (abs((s1_fft) * conj.(s2_fft))^2) / (s1_fft * s2_fft)
 

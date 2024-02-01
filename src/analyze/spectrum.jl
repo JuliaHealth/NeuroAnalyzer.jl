@@ -22,14 +22,13 @@ Named tuple containing:
 """
 function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
-    ft = fft0(s, pad) / length(s)
+    ft = rfft0(s, pad) / length(s)
 
     # amplitudes
     sa = abs.(ft)                          # get real values
-    # sa[2:end] .*= 2                      # double positive frequencies
 
     # power
-    sp = sa.^2
+    sp = abs.(ft .* conj(ft))
     norm == true && (sp = pow2db.(sp))
 
     # phases
@@ -140,19 +139,19 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    fft_size = size(s, 2) + pad
+    
+    if h == false
+        fft_size = div(size(s, 2) + pad, 2) + 1
+    else
+        fft_size = size(s, 2) + pad
+    end
 
     c = zeros(ComplexF64, ch_n, fft_size, ep_n)
     sph = zeros(ch_n, fft_size, ep_n)
 
-    if h == true
-        _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
-        sa = zeros(ch_n, fft_size, ep_n)
-        sp = zeros(ch_n, fft_size, ep_n)
-    else
-        sa = zeros(ch_n, fft_size, ep_n)
-        sp = zeros(ch_n, fft_size, ep_n)
-    end        
+    sa = zeros(ch_n, fft_size, ep_n)
+    sp = zeros(ch_n, fft_size, ep_n)
+    h == true && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
