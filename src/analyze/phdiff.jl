@@ -59,10 +59,18 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
     _check_channels(s, ch)
 
     ch_n = size(s, 1)
-    ep_len = size(s, 2)
+    if h == true
+        ep_len = size(s, 2)
+    else
+        ep_len = div(size(s, 2) + pad, 2) + 1
+    end
     ep_n = size(s, 3)
 
-    phd = similar(s)
+    if h == true
+        phd = similar(s)
+    else
+        phd = zeros(ch_n, ep_len, ep_n)
+    end
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n

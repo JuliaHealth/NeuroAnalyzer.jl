@@ -59,9 +59,9 @@ function tcoherence(s1::AbstractArray, s2::AbstractArray; pad::Int64=0)
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 
-    c = similar(s1)
-    msc = similar(s1)
-    ic = similar(s1)
+    c = zeros(ch_n, div(size(s1, 2), 2) + 1, ep_n)
+    msc = zeros(ch_n, div(size(s1, 2), 2) + 1, ep_n)
+    ic = zeros(ch_n, div(size(s1, 2), 2) + 1, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n

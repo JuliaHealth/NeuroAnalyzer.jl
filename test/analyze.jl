@@ -479,9 +479,9 @@ s, f, t = eros(e10, ch=1, method=:cwt)
 @info "test 28/56: phdiff()"
 @test NeuroAnalyzer.phdiff(a1, avg=:phase, h=true) == zeros(2, 3, 2)
 p = NeuroAnalyzer.phdiff(e10, avg=:phase)
-@test size(p) == (23, 2560, 10)
+@test size(p) == (23, 1281, 10)
 p = NeuroAnalyzer.phdiff(e10, avg=:phase)
-@test size(p) == (23, 2560, 10)
+@test size(p) == (23, 1281, 10)
 p = NeuroAnalyzer.phdiff(e10, avg=:phase, h=true)
 @test size(p) == (23, 2560, 10)
 p = NeuroAnalyzer.phdiff(e10, avg=:phase, h=true)
@@ -752,17 +752,17 @@ end
 
 @info "test 43/56: tcoherence()"
 c, mc, ic = NeuroAnalyzer.tcoherence(v1, v2)
-@test length(c) == 5
-@test length(mc) == 5
-@test length(ic) == 5
+@test length(c) == 3
+@test length(mc) == 3
+@test length(ic) == 3
 c, mc, ic = NeuroAnalyzer.tcoherence(rand(10, 100), rand(10, 100))
-@test size(c) == (10, 100)
-@test size(mc) == (10, 100)
-@test size(ic) == (10, 100)
+@test size(c) == (10, 51, 1)
+@test size(mc) == (10, 51, 1)
+@test size(ic) == (10, 51, 1)
 c, mc, ic = NeuroAnalyzer.tcoherence(e10, e10, ch1=1:10, ch2=1:10, ep1=1, ep2=2)
-@test size(c) == (10, 2560, 1)
-@test size(mc) == (10, 2560, 1)
-@test size(ic) == (10, 2560, 1)
+@test size(c) == (10, 1281, 1)
+@test size(mc) == (10, 1281, 1)
+@test size(ic) == (10, 1281, 1)
 
 @info "test 44/56: tkeo()"
 @test NeuroAnalyzer.tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
