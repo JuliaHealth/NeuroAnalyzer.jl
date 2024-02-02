@@ -273,6 +273,7 @@ include("analyze/total_power.jl")
 include("analyze/vartest.jl")
 include("analyze/xcov.jl")
 include("analyze/xcor.jl")
+include("analyze/axc2frq.jl")
 # edit
 include("edit/channel.jl")
 include("edit/create.jl")

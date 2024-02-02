@@ -22,6 +22,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     xc = zeros(l + 1)
+    xc_neg = zeros(l + 1)
 
     ms1 = mean(s1)
     ms2 = mean(s2)
@@ -34,7 +35,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
     end
 
     for idx in 0:l
-        xc[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
         if biased == true 
             xc[idx + 1] /= length(s1)
         else
@@ -42,8 +43,17 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
         end
     end
     
-    xc = round.(xc, digits=8)
-    xc = vcat(reverse(xc), xc[2:end])
+    for idx in 0:l
+        xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        if biased == true 
+            xc_neg[idx + 1] /= length(s1)
+        else
+            xc_neg[idx + 1] /= (length(s1) - idx)
+        end
+    end
+
+    xc = vcat(reverse(xc_neg), xc[2:end])
+    xc = round.(xc, digits=3)
 
     return reshape(xc, 1, :, 1)
 
@@ -159,13 +169,13 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    if obj.header.recording[:data_type] == "erp"
-        xc = @views xcov(reshape(obj1.data[ch1, 2:end, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, 2:end, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
-        xc = mean(xc, dims=3)
+    if obj1.header.recording[:data_type] == "erp" && obj2.header.recording[:data_type] == "erp"
+        xc = @views xcov(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased)
+        xc = cat(mean(xc, dims=3), xc, dims=3)
     else
         xc = @views xcov(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
     end
 
-    return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=5))
+    return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=3))
 
 end

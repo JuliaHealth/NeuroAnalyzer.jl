@@ -36,7 +36,7 @@ function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
         end
     end
 
-    ac = round.(ac ./ std(s)^2, digits=8)
+    ac = round.(ac ./ std(s)^2, digits=3)
     ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
@@ -133,11 +133,11 @@ function acor(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     if obj.header.recording[:data_type] == "erp"
         ac = @views acor(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased)
-        ac = mean(ac, dims=3)
+        ac = cat(mean(ac, dims=3), ac, dims=3)
     else
         ac = @views acor(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
     end
 
-    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=5))
+    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=3))
 
 end

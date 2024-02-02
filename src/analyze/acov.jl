@@ -35,8 +35,8 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
             ac[idx + 1] /= (length(s) - idx)
         end
     end
-    
-    ac = round.(ac, digits=8)
+
+    ac = round.(ac, digits=3)
     ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
@@ -133,11 +133,11 @@ function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 
     if obj.header.recording[:data_type] == "erp"
         ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased)
-        ac = mean(ac, dims=3)
+        ac = cat(mean(ac, dims=3), ac, dims=3)
     else
         ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
     end
 
-    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=5))
+    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=3))
 
 end
