@@ -1,6 +1,8 @@
 export l1
 export l2
 export perm_cmp
+export tavg
+export delmean
 
 """
     l1(a1, a2)
@@ -97,5 +99,53 @@ function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, p
     bm = map(x -> !x, bm)
 
     return (zmap=zmap, bm=bm)
+
+end
+
+"""
+    tavg(s)
+
+Average signal across trials.
+
+# Arguments
+
+- `s::AbstractArray`
+
+# Returns
+
+- `s_new::AbstractArray`
+"""
+function tavg(s::AbstractArray)
+
+    @assert ndims(s) == 3 "Signal must have 3 dimensions."
+
+    return mean(s, dims=3)
+
+end
+
+"""
+    delmean(s)
+
+Demean signal.
+
+# Arguments
+
+- `s::AbstractArray`
+
+# Returns
+
+- `s_new::AbstractArray`
+"""
+function delmean(s::AbstractArray; dims::Union{Int64, Nothing}=nothing)
+
+    ms = 0
+    if isnothing(dims)
+        ms = mean(s)
+    else
+        @assert dims <= ndims(s) "dims must be ≤ $(ndims(s))"
+        ms = mean(s, dims=dims)
+    end
+
+    return s .- ms
 
 end

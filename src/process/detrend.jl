@@ -12,7 +12,8 @@ Perform piecewise detrending.
 - `type::Symbol=:linear`:
     - `:loess`: fit loess approximation and subtract it from `s`
     - `:poly`: polynomial of `order` is subtracted from `s`
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for :constant detrending
@@ -24,7 +25,7 @@ Perform piecewise detrending.
 """
 function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
-    _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
+    _check_var(type, [:ls, :linear, :mean, :constant, :poly, :loess, :hp], "type")
     @assert f > 0 "f must be > 0."
     @assert order >= 1 "order must be ≥ 1."
 
@@ -41,8 +42,9 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
             trend[idx] = p(t[idx])
         end
         s_new = s .- trend
+    elseif type === :mean
+        s_new = s .- mean(s)
     elseif type === :constant
-        offset == 0 && (offset = mean(s))
         s_new = s .- offset
     elseif type === :ls
         T = eltype(s)
@@ -82,7 +84,8 @@ Perform piecewise detrending.
 - `type::Symbol=:linear`: detrending method
     - `:loess`: fit loess approximation and subtract it from `s`
     - `:poly`: polynomial of `order` is subtracted from `s`
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for `:constant` detrending
@@ -121,7 +124,8 @@ Perform piecewise detrending.
 - `type::Symbol=:linear`: detrending method
     - `:loess`: fit loess approximation and subtract it from `s`
     - `:poly`: polynomial of `order` is subtracted from `s`
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for `:constant` detrending
@@ -155,7 +159,8 @@ Perform piecewise detrending.
 - `type::Symbol=:linear`: detrending method
     - `:loess`: fit loess approximation and subtract it from `s`
     - `:poly`: polynomial of `order` is subtracted from `s`
-    - `:constant`: `offset` or the mean of `s` (if `offset` = 0) is subtracted from `s`
+    - `:mean`: the mean of `s` is subtracted from `s`
+    - `:constant`: `offset` is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for :constant detrending

@@ -298,14 +298,14 @@ function info(obj::NeuroAnalyzer.NEURO)
         println(" Epoch length [samples]: $(epoch_len(obj))")
         println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
     end
-    if obj.header.recording[:data_type] == "eeg"
+    if datatype(obj) == "eeg"
         if obj.header.recording[:reference] == ""
             println("         Reference type: unknown")
         else
             println("         Reference type: $(obj.header.recording[:reference])")
         end
     end
-    if obj.header.recording[:data_type] == "nirs"
+    if datatype(obj) == "nirs"
         println("        Wavelength [nm]: $(obj.header.recording[:wavelengths])")
     end
     if length(labels(obj)) == 0

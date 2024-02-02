@@ -542,8 +542,8 @@ Plot signal.
 """
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
-    obj.header.recording[:data_type] == "erp" && _warn("For ERP objects, use plot_erp()")
-    obj.header.recording[:data_type] == "mep" && _warn("For MEP objects, use plot_mep()")
+    datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
+    datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
 
     if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
         seg = (obj.time_pts[1], obj.time_pts[end])
@@ -982,25 +982,25 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     if length(p) > 1
-        if obj.header.recording[:data_type] == "eeg"
+        if datatype(obj) == "eeg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj.header.recording[:data_type] == "ecog"
+        if datatype(obj) == "ecog"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj.header.recording[:data_type] == "meg"
+        if datatype(obj) == "meg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj.header.recording[:data_type] == "nirs"
+        if datatype(obj) == "nirs"
             p = Plots.plot!(p..., layout=(length(ch_t_uni), 1); kwargs...)
         end
     end
@@ -1203,7 +1203,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
-    @assert obj1.header.recording[:data_type] == obj2.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
+    @assert datatype(obj1) == obj2.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
 
     if signal_len(obj1) < 10 * sr(obj1) && seg == (0, 10)
         seg = (0, obj1.time_pts[end])
@@ -1473,25 +1473,25 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     if length(p) > 1
-        if obj1.header.recording[:data_type] == "eeg"
+        if datatype(obj1) == "eeg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj1.header.recording[:data_type] == "ecog"
+        if datatype(obj1) == "ecog"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj1.header.recording[:data_type] == "meg"
+        if datatype(obj1) == "meg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj1.header.recording[:data_type] == "nirs"
+        if datatype(obj1) == "nirs"
             p = Plots.plot!(p..., layout=(length(ch_t_uni), 1); kwargs...)
         end
     end

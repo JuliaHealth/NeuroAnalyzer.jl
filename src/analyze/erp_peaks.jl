@@ -51,7 +51,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
 
     _check_datatype(obj, ["erp", "mep"])
 
-    if obj.header.recording[:data_type] == "erp"
+    if datatype(obj) == "erp"
         @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
         @assert t <= obj.epoch_time[end] "t must be ≤ $(obj.epoch_time[end])."
 
@@ -102,7 +102,7 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
     _check_datatype(obj, ["erp", "mep"])
 
-    if obj.header.recording[:data_type] == "erp"
+    if datatype(obj) == "erp"
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
         @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
@@ -157,7 +157,7 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
     _check_datatype(obj, ["erp", "mep"])
 
-    if obj.header.recording[:data_type] == "erp"
+    if datatype(obj) == "erp"
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
         @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
@@ -212,7 +212,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 
     _check_datatype(obj, ["erp", "mep"])
 
-    if obj.header.recording[:data_type] == "erp"
+    if datatype(obj) == "erp"
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
         @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."

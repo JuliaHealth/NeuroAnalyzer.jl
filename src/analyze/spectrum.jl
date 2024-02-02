@@ -166,7 +166,6 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
     return (c=c, sa=sa, sp=sp, sph=sph)
 end
 
-
 """
     spectrum(obj; ch, pad, h, norm)
 

@@ -24,11 +24,9 @@ function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
     xc = zeros(l + 1)
     xc_neg = zeros(l + 1)
 
-    ms1 = mean(s1)
-    ms2 = mean(s2)
     if demean == true
-        s1_tmp = s1 .- ms1
-        s2_tmp = s2 .- ms2
+        s1_tmp = delmean(s1)
+        s2_tmp = delmean(s2)
     else
         s1_tmp = s1
         s2_tmp = s2
@@ -171,7 +169,7 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    if obj1.header.recording[:data_type] == "erp" && obj2.header.recording[:data_type] == "erp"
+    if datatype(obj1) == "erp" && datatype(obj2) == "erp"
         xc = @views xcor(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased)
         xc = cat(mean(xc, dims=3), xc, dims=3)
     else
