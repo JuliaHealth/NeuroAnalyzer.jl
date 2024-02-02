@@ -138,6 +138,6 @@ function acor(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
         ac = @views acor(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
     end
 
-    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=3))
+    return (ac=ac, l=collect(-l:l) .* 1/sr(obj1))
 
 end

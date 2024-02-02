@@ -16,9 +16,10 @@ Detect peaks in auto-/cross- correlation/covariance and transform them into freq
 """
 function axc2frq(c::AbstractVector, l::AbstractVector)
 
-    p_idx = findpeaks1d(c)[1]
+    p_idx = findpeaks(c, d=2)
     l_pts = l[p_idx]
-    frq = sort(unique(round.(1 ./ diff(l_pts), digits=0)))
+    l_pts .+= abs(minimum(l_pts))
+    frq = sort(unique(round.(1 ./ round.(diff(l_pts), digits=3), digits=2)))
     deleteat!(frq, isinf.(frq))
 
     return frq

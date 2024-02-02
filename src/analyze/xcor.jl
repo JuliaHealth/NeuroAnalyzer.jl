@@ -178,6 +178,6 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
         xc = @views xcor(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
     end
 
-    return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=3))
+    return (xc=xc, l=collect(-l:l) .* 1/sr(obj1))
 
 end
