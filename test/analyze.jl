@@ -20,7 +20,7 @@ a2 = zeros(2, 3, 2)
 
 @info "test 1/67: acov()"
 @test NeuroAnalyzer.acov(v) == [-0.8 -0.8 -0.2 0.8 2.0 0.8 -0.2 -0.8 -0.8;;;]
-@test NeuroAnalyzer.acov(v, biased=false) == [-4.0 -2.0 -0.33333333 1.0 2.0 1.0 -0.33333333 -2.0 -4.0;;;]
+@test NeuroAnalyzer.acov(v, biased=false) == [-4.0 -2.0 -0.333 1.0 2.0 1.0 -0.333 -2.0 -4.0;;;]
 ac, l = NeuroAnalyzer.acov(e10)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
@@ -353,7 +353,7 @@ p, f = erop(e10, ch=1, method=:mw)
 
 @info "test 20/67: acor()"
 @test NeuroAnalyzer.acor(v) == [-0.32 -0.32 -0.08 0.32 0.8 0.32 -0.08 -0.32 -0.32;;;]
-@test NeuroAnalyzer.acor(v, biased=false) == [-1.6 -0.8 -0.13333333 0.4 0.8 0.4 -0.13333333 -0.8 -1.6;;;]
+@test NeuroAnalyzer.acor(v, biased=false) == [-1.6 -0.8 -0.133 0.4 0.8 0.4 -0.133 -0.8 -1.6;;;]
 ac, l = NeuroAnalyzer.acor(e10)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
