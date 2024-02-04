@@ -280,8 +280,8 @@ delete_note!(e10)
 @info "test 65/70: to_df()"
 @test to_df(eeg) isa DataFrame
 
-@info "test 66/70: types()"
-@test length(types(e10)) == 24
+@info "test 66/70: chtypes()"
+@test length(chtypes(e10)) == 24
 
 @info "test 67/70: optode_labels()"
 n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))

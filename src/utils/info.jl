@@ -8,7 +8,7 @@ export labels
 export optode_labels
 export source_labels
 export detector_labels
-export types
+export chtypes
 export info
 export channel_cluster
 export band_frq
@@ -60,7 +60,7 @@ function nchannels(obj::NeuroAnalyzer.NEURO; type::String="all")
             ch_n = size(obj.data, 1)
         end
     else
-        @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
+        @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel chtypes."
         ch_n = 0
         for idx in 1:nchannels(obj)
             obj.header.recording[:channel_type][idx] == type && (ch_n += 1)
@@ -245,9 +245,9 @@ function detector_labels(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    types(obj)
+    chtypes(obj)
 
-Return channel types.
+Return channel chtypes.
 
 # Arguments
 
@@ -255,11 +255,11 @@ Return channel types.
 
 # Returns
 
-- `types::Vector{String}`
+- `chtypes::Vector{String}`
 """
-function types(obj::NeuroAnalyzer.NEURO)
+function chtypes(obj::NeuroAnalyzer.NEURO)
 
-    @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel types."
+    @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel chtypes."
     return obj.header.recording[:channel_type]
 
 end
