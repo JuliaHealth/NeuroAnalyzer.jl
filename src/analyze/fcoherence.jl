@@ -139,7 +139,7 @@ Named tuple containing:
 - `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
-function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=0, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)), frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
