@@ -33,17 +33,17 @@ function import_csv(file_name::String; detect_type::Bool=true)
         time_pts = df[!, 1]
         data = Array(df[:, 2:end])'
         ch_n = ncol(df) - 1
-        clabels = String.(names(df)[2:end])
+        clabels_tmp = String.(names(df)[2:end])
     else
         # channels by time
         time_pts = parse.(Float64, names(df)[2:end])
         data = Array(df[!, 2:end])
         ch_n = nrow(df)
-        clabels = String.(df[!, 1])
+        clabels_tmp = String.(df[:, 1])
     end
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
-    clabels = _clean_labels(clabels)
+    clabels = _clean_labels(clabels_tmp)
     if detect_type == true
         ch_type = _set_channel_types(clabels, "eeg")
     else

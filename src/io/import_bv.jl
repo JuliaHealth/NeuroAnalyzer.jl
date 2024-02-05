@@ -141,16 +141,16 @@ function import_bv(file_name::String; detect_type::Bool=true)
         prefiltering = repeat(["LP: "], ch_n) .* string.(round.(soft_filt[!, :low_cutoff], digits=4)) .* repeat([" Hz, HP: "], ch_n) .* string.(round.(soft_filt[!, :high_cutoff], digits=4)) .* " Hz"
     end
     
-    clabels = NeuroAnalyzer._clean_labels(clabels)
+    clabels = _clean_labels(clabels)
     if ch_types == repeat([""], ch_n)
         if detect_type == true
-            ch_type = NeuroAnalyzer._set_channel_types(clabels, "eeg")
+            ch_type = _set_channel_types(clabels, "eeg")
         else
             ch_type = repeat(["eeg"], ch_n)
         end
     end
-    units = [NeuroAnalyzer._ch_units(ch_type[idx]) for idx in 1:ch_n]
-    channel_order = NeuroAnalyzer._sort_channels(ch_type)
+    units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
+    channel_order = _sort_channels(ch_type)
 
     # read locs
     loc_theta = zeros(ch_n)
@@ -161,7 +161,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
     loc_radius_sph = zeros(ch_n)
     loc_theta_sph = zeros(ch_n)
     loc_phi_sph = zeros(ch_n)
-    locs = NeuroAnalyzer._initialize_locs()
+    locs = _initialize_locs()
     if locs_idx != 0
         for idx in 1:ch_n
             if occursin('=', vhdr[locs_idx + idx])
