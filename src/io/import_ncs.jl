@@ -27,7 +27,7 @@ function import_ncs(file_name::String)
 
     file_type = "CSC"
 
-    header = split(NeuroAnalyzer._vint2str(NeuroAnalyzer._fread(fid, 16 * 1024, :c)), "\r\n")
+    header = split(_vint2str(_fread(fid, 16 * 1024, :c)), "\r\n")
     header = replace.(header, "\t-"=>"")
     header = replace.(header, "-"=>"")
     header = replace.(header, "\t"=>" ")
@@ -81,10 +81,10 @@ function import_ncs(file_name::String)
     gain = ADBitVolts * 10^3 # mV
 
     for idx in 1:n_blocks
-        qwTimeStamp[idx] = NeuroAnalyzer._fread(fid, 1, :ui64)
-        dwChannelNumber[idx] = NeuroAnalyzer._fread(fid, 1, :ui32)
-        dwSampleFreq[idx] = NeuroAnalyzer._fread(fid, 1, :ui32)
-        dwNumValidSamples[idx] = NeuroAnalyzer._fread(fid, 1, :ui32)
+        qwTimeStamp[idx] = _fread(fid, 1, :ui64)
+        dwChannelNumber[idx] = _fread(fid, 1, :ui32)
+        dwSampleFreq[idx] = _fread(fid, 1, :ui32)
+        dwNumValidSamples[idx] = _fread(fid, 1, :ui32)
         buf = UInt8[]
         readbytes!(fid, buf, dwNumValidSamples[idx] * 2)
         data[1, (1 + (512 * (idx - 1))):(idx * 512), 1] = map(ltoh, reinterpret(Int16, buf)) .* gain
