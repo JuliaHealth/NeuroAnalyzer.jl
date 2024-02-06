@@ -2,7 +2,7 @@ export itpc
 export itpc_spec
 
 """
-    itpc(s; t)
+    itpc(s; t, w)
 
 Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
@@ -90,6 +90,54 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
+    itpc_spec(s; w)
+
+Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
+
+# Arguments
+
+- `s::AbstractArray`: one channel over epochs
+- `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+
+# Returns
+
+Named tuple containing:
+- `itpc_values::Vector{Float64}`: ITPC values
+- `itpcz_values::Vector{Float64}`: Rayleigh's ITPC Z values
+- `itpc_angles::Vector{Float64}`: ITPC angles
+- `itpc_phases::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
+"""
+function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)
+
+    @assert size(s, 1) == 1 "s must have 1 channel."
+
+    ep_n = size(s, 3)
+
+    w === nothing && (w = ones(ep_n))
+    # scale w if w contains negative values
+    any(i -> i < 0, w) && (w .+= abs(minimum(w)))
+    @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
+    
+    itpc_phases = zeros(size(s, 2), ep_n)
+    itpc_values = zeros(size(s, 2))
+    itpc_angles = zeros(size(s, 2))
+    itpcz_values = zeros(size(s, 2))
+
+    @inbounds for ep_idx in 1:ep_n
+        _, _, _, itpc_phases[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
+    end
+
+    for idx in 1:size(itpc_phases, 1)
+        itpc_values[idx] = @views abs.(mean(exp.(1im .* itpc_phases[idx, :] .* w)))
+        itpc_angles[idx] = @views angle.(mean(exp.(1im .* itpc_phases[idx, :] .* w)))
+        itpcz_values[idx] = @views ep_n * itpc_values[idx]^2
+    end
+
+    return (itpc_values=itpc_values, itpcz_values=itpcz_values, itpc_angles=itpc_angles, itpc_phases=itpc_phases)
+
+end
+
+"""
     itpc_spec(obj; <keyword arguments>)
 
 Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
@@ -144,11 +192,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
             s_conv[1, :, ep_idx] = @views DSP.conv(obj.data[ch, :, ep_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
-        @inbounds for t_idx in 1:ep_len
-            itpc_value, itpc_z, _, _ = itpc(s_conv, t=t_idx, w=w)
-            itpc_s[frq_idx, t_idx] = itpc_value
-            itpcz_s[frq_idx, t_idx] = itpc_z
-        end
+        itpc_s[frq_idx, :], itpcz_s[frq_idx, :], _, _ = itpc_spec(s_conv, w=w)
 
         # update progress bar
         progress_bar == true && next!(progbar)
