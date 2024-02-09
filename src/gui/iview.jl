@@ -692,7 +692,7 @@ Interactive view of continuous signal.
 """
 function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1)), zoom::Real=5)
 
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."

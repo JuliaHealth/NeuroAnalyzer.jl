@@ -42,7 +42,7 @@ Interactive edit of continuous signal.
 """
 function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), mono::Bool=true, zoom::Real=5, snap::Bool=true)
 
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."

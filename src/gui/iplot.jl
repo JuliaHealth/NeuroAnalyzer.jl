@@ -38,7 +38,7 @@ Interactive plot of continuous signal.
 """
 function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), zoom::Real=5)
 
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -869,7 +869,7 @@ Interactive plot of two continuous signals.
 """
 function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1)), zoom::Real=5)
 
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj1) / sr(obj1) "zoom must be ≤ $(signal_len(obj1) / sr(obj1))."

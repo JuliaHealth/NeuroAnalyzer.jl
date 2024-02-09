@@ -404,6 +404,7 @@ include("gui/ipsd.jl")
 include("gui/ispectrogram.jl")
 include("gui/iplot_icatopo.jl")
 include("gui/iview_plot.jl")
+include("gui/iselect.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")
