@@ -293,7 +293,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("Signal length [samples]: $(signal_len(obj))")
     println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
     println("     Number of channels: $(nchannels(obj))")
-    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+    if datatype(obj) in ["mep", "sensors", "eda"] == false
         println("       Number of epochs: $(nepochs(obj))")
         println(" Epoch length [samples]: $(epoch_len(obj))")
         println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
@@ -313,7 +313,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                 Labels: yes")
     end
-    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+    if obj.header.recording[:data_type] in ["mep", "sensors", "eda"] == false
         if _has_markers(obj) == false
             println("                Markers: no")
         else

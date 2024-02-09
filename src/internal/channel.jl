@@ -33,6 +33,7 @@ function _ch_units(ch_type::String)
     lowercase(ch_type) == "orient" &&(u = "°")
     lowercase(ch_type) == "angvel" &&(u = "rad/s")
     lowercase(ch_type) == "mep" &&(u = "μV")
+    lowercase(ch_type) == "eda" &&(u = "μS")
     lowercase(ch_type) == "other" && (u = "")
     return u
 end

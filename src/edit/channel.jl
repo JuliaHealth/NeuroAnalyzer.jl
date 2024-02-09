@@ -365,7 +365,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
 
     # create new dataset
     obj_new = deepcopy(obj)
-    clabels = labels(obj_new)
+    clabels = obj_new.header.recording[:labels]
     @assert !(name in clabels) "Channel $name already exist."
 
     if ch isa String
@@ -394,6 +394,8 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
         l_idx = l_idx[1]
         obj_new.locs[l_idx, :labels] = name
     end
+
+    obj_new.header.recording[:labels] = clabels
 
     push!(obj_new.history, "rename_channel(OBJ, ch=$ch, name=$name)")
 
@@ -568,6 +570,7 @@ function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
     push!(obj_new.history, "add_labels(OBJ, clabels=$clabels")
  
     return obj_new
+    
 end
 
 """
