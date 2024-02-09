@@ -1,20 +1,29 @@
-export iselect
+export iselect_seg
 
 """
-    iselect(m)
+    iselect_seg(m; c, extract, v)
 
 Interactive selection of matrix area.
 
 # Arguments
 
 - `m::AbstractMatrix`
+- `c::Bool=false`: if true, select circular segment
+- `extract::Bool=false`
+- `v::Bool=false`
 
 # Returns
 
-- `r::Vector{Int64}`: list of row indices
-- `c::Vector{Int64}`: list of column indices
+- `r1::Int64`: upper-left corner
+- `r2::Int64`: bottom-right corner
+- `c1::Int64`: upper-left corner
+- `c2::Int64`: bottom-right corner
+
+or
+
+- `seg::Union{AbstractMatrix, AbstractVector}`: extracted segment
 """
-function iselect(m::AbstractMatrix)
+function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::Bool=false)
 
     p = heatmap(m,
                 framestyle=:none,
@@ -28,7 +37,7 @@ function iselect(m::AbstractMatrix)
     size_x = p.attr[:size][1] ÷ dim_x
     size_y = p.attr[:size][2] ÷ dim_y
 
-    win = GtkWindow("NeuroAnalyzer: iselect()", p.attr[:size][1] + 2, p.attr[:size][2] + 2)
+    win = GtkWindow("NeuroAnalyzer: iselect_seg()", p.attr[:size][1] + 2, p.attr[:size][2] + 2)
     set_gtk_property!(win, :border_width, 0)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -52,65 +61,47 @@ function iselect(m::AbstractMatrix)
     can.mouse.button1press = @guarded (widget, event) -> begin
         x_pos = round(event.x)
         y_pos = round(event.y)
-        push!(x, x_pos)
-        push!(y, y_pos)
         ctx = getgc(widget)
+        if length(x) >= 0 && length(x) < 2
+            push!(x, x_pos)
+            push!(y, y_pos)
+        end
         if length(x) == 1
-            Gtk.arc(ctx, x[end], y[end], 2.5, 0, 2*pi)
+            Gtk.arc(ctx, x[1], y[1], 2, 0, 2*pi)
             Gtk.set_source_rgb(ctx, 1, 0, 0)
             Gtk.fill(ctx)
-        else
-            Gtk.set_line_cap(ctx, Cairo.CAIRO_LINE_CAP_ROUND)
-            Gtk.move_to(ctx, x[end - 1], y[end - 1])
-            Gtk.line_to(ctx, x[end], y[end])
+            Gtk.stroke(ctx)
+            Gtk.reveal(widget)
+        else length(x) == 2
+            if c == true
+                Gtk.arc(ctx, x[1], y[1], distance((x[1], y[1]), (x[2], y[2])), 0, 2*pi)
+            else
+                Gtk.rectangle(ctx, x[1], y[1], x[2] - x[1], y[2] - y[1])
+            end
             Gtk.set_source_rgb(ctx, 1, 0, 0)
-            Gtk.set_line_width(ctx, 5.0);
-        end
-        Gtk.stroke(ctx)
-        Gtk.reveal(widget)
-    end
-
-    can.mouse.button3press = @guarded (widget, event) -> begin
-        if length(x) > 2
-            push!(x, x[1])
-            push!(y, y[1])
-            ctx = getgc(widget)
-            Gtk.set_line_cap(ctx, Cairo.CAIRO_LINE_CAP_ROUND)
-            Gtk.move_to(ctx, x[end - 1], y[end - 1])
-            Gtk.line_to(ctx, x[end], y[end])
-            Gtk.set_source_rgb(ctx, 1, 0, 0)
-            Gtk.set_line_width(ctx, 5.0);
+            Gtk.set_line_width(ctx, 4.0);
             Gtk.stroke(ctx)
             Gtk.reveal(widget)
         end
     end
 
     can.mouse.button2press = @guarded (widget, event) -> begin
+        show(io, MIME("image/png"), p)
+        img = read_from_png(io)
+        ctx = getgc(can)
+        Cairo.set_source_surface(ctx, img, 1, 1)
+        Cairo.paint(ctx)
         if length(x) > 0
-            show(io, MIME("image/png"), p)
-            img = read_from_png(io)
-            ctx = getgc(can)
-            Cairo.set_source_surface(ctx, img, 1, 1)
-            Cairo.paint(ctx)
             pop!(x)
             pop!(y)
-            if length(x) > 0
-                Gtk.arc(ctx, x[1], y[1], 2.5, 0, 2*pi)
-                Gtk.set_source_rgb(ctx, 1, 0, 0)
-                Gtk.fill(ctx)
-            end
-            if length(x) > 1
-                Gtk.set_line_cap(ctx, Cairo.CAIRO_LINE_CAP_ROUND)
-                Gtk.set_source_rgb(ctx, 1, 0, 0)
-                Gtk.set_line_width(ctx, 5.0);
-                for idx in 2:length(x)
-                    Gtk.move_to(ctx, x[idx - 1], y[idx - 1])
-                    Gtk.line_to(ctx, x[idx], y[idx])
-                end
-            end
-            Gtk.stroke(ctx)
-            Gtk.reveal(widget)
         end
+        if length(x) == 1
+            Gtk.arc(ctx, x[1], y[1], 2, 0, 2*pi)
+            Gtk.set_source_rgb(ctx, 1, 0, 0)
+            Gtk.fill(ctx)
+            Gtk.stroke(ctx)
+        end
+        Gtk.reveal(widget)
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -150,11 +141,15 @@ function iselect(m::AbstractMatrix)
             pop!(x)
             pop!(y)
         end
-        r = div.(x, size_x) .+ 1
-        c = div.(y, size_y) .+ 1
-        return r, c
+        c1 = div(x[1], size_x) .+ 1
+        c2 = div(x[2], size_x) .+ 1
+        r1 = div(y[1], size_y) .+ 1
+        r2 = div(y[2], size_y) .+ 1
+        r1 > r2 && ((r1, r2) = _swap(r1, r2))
+        c1 > c2 && ((c1, c2) = _swap(c1, c2))
+        return extract == false ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
     else
-        return Int64[], Int64[]
+        return nothing
     end
 
 end

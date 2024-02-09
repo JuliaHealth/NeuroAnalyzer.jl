@@ -154,3 +154,5 @@ function _vint2str(x::Vector{Int64})
     s = strip(String(Char.(x)))
     return replace(s, "\0"=>"")
 end
+
+_swap(x, y) = y, x
