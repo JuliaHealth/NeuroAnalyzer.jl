@@ -665,6 +665,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                     if ch_t[ch_tmp[cht_idx][1]] == "ecg"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
                     end
+                    if ch_t[ch_tmp[cht_idx][1]] == "eda"
+                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EDA channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                    end
                     if ch_t[ch_tmp[cht_idx][1]] == "other"
                         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
                     end
@@ -729,6 +732,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 end
                 if ch_t[ch_tmp[1][1]] == "ecg"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[1])))")
+                end
+                if ch_t[ch_tmp[1][1]] == "eda"
+                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EDA channel ($(_channel2channel_name(ch_tmp[1])))")
                 end
                 if ch_t[ch_tmp[1][1]] == "other"
                     xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -822,6 +828,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         end
         if ch_t[ch[1]] == "ecg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "ECG channel\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        end
+        if ch_t[ch[1]] == "eda"
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EDA channel\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         end
         if ch_t[ch[1]] == "other"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Other channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
@@ -1337,6 +1346,10 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
                 xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
             end
 
+            if ch_t[ch_tmp[cht_idx][1]] == "eda"
+                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EDA channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
+            end
+
             if ch_t[ch_tmp[cht_idx][1]] == "other"
                 xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
             end
@@ -1416,6 +1429,10 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
         if ch_t[ch_tmp[1][1]] == "ecg"
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[1])))")
+        end
+
+        if ch_t[ch_tmp[1][1]] == "eda"
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EDA channel ($(_channel2channel_name(ch_tmp[1])))")
         end
 
         if ch_t[ch_tmp[1][1]] == "other"
