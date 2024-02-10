@@ -36,7 +36,9 @@ function na_info()
     end
     println()
 
-    if isfile(joinpath(NeuroAnalyzer.PATH, "Manifest.toml"))
+    na_pkg = dirname(dirname(Base.find_package("NeuroAnalyzer")))
+
+    if isfile(joinpath(na_pkg, "Manifest.toml"))
         println("Imported packages:")
         required_packages = [
             "Cairo",
@@ -88,14 +90,14 @@ function na_info()
             "Wavelets",
             "WaveletsExt",
             "XDF" ]
-        versions = TOML.parsefile(joinpath(NeuroAnalyzer.PATH, "Manifest.toml"))["deps"]
+        versions = TOML.parsefile(joinpath(na_pkg, "Manifest.toml"))["deps"]
         for idx in 1:length(required_packages)
             pkg = lpad(required_packages[idx], 25 - length(idx), " ")
             pkg_ver = versions[required_packages[idx]][1]["version"]
             println("$pkg $pkg_ver")
         end
     else
-        @warn "Manifest.toml file could not be found in $(NeuroAnalyzer.PATH), cannot report versions of imported packages."
+        @warn "Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages."
     end
 end
 
