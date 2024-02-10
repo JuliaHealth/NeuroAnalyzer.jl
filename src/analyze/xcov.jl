@@ -9,7 +9,7 @@ Calculate cross-covariance.
 
 - `s1::AbstractVector`
 - `s2::AbstractVector`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
 
@@ -17,7 +17,7 @@ Calculate cross-covariance.
 
 - `xc::Matrix{Float64}`
 """
-function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true)
+function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true)
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 

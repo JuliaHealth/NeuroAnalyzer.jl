@@ -9,7 +9,7 @@ Calculate cross-correlation.
 
 - `s1::AbstractVector`
 - `s2::AbstractVector`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -17,7 +17,7 @@ Calculate cross-correlation.
 
 - `xc::Matrix{Float64}`
 """
-function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true)
+function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true)
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
@@ -66,7 +66,7 @@ Calculate cross-correlation.
 
 - `s1::AbstractMatrix`
 - `s2::AbstractMatrix`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -101,7 +101,7 @@ Calculate cross-correlation.
 
 - `s1::AbstractArray`
 - `s2::AbstractArray`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -141,7 +141,7 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 - `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
