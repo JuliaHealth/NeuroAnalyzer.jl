@@ -129,7 +129,8 @@ Named tuple containing:
 function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
-    
+    length(ch) == 1 && (ch = [ch])
+
     mbp, maxfrq, maxbp = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)

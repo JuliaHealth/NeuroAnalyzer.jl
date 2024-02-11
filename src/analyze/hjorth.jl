@@ -101,6 +101,7 @@ Named tuple containing:
 function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
     h_act, h_mob, h_comp = @views hjorth(obj.data[ch, :, :])
 

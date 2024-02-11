@@ -1159,6 +1159,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
         end
     else
+        units = _ch_units(obj1, ch_tmp[1][1])
         ch_name = _ch_rename(ch_t[ch_tmp[1][1]])
         !(ch_t[ch_tmp[1][1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
         ch_name *= _pl(length(ch_tmp[1]))
@@ -1167,7 +1168,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
                                    title,
                                    "Time [s]",
                                    "",
-                                   "$ch_name ($(_channel2channel_name(ch_tmp[cht_idx])))")
+                                   "$ch_name ($(_channel2channel_name(ch_tmp[1])))")
         if ch isa Int64
             p = plot_2signals(t,
                               s1[ch, :],

@@ -205,12 +205,9 @@ Named tuple containing:
 function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
-    if ch isa Int64
-        pw, pf = psd(reshape(obj.data[ch, :, :], 1, :, nepochs(obj)), fs=sr(obj), norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
-    else
-        pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq=frq, ncyc=ncyc)
-    end
+    pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq=frq, ncyc=ncyc)
 
     return (pw=pw, pf=pf)
 
@@ -393,12 +390,9 @@ Named tuple containing:
 function mwpsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, norm::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
     _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
-    if ch isa Int64
-        pw, pf = @views mwpsd(reshape(obj.data[ch, :, :], 1, :, size(obj.data[ch, :, :], 2)), pad=pad, fs=sr(obj), norm=norm, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
-    else
-        pw, pf = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
-    end
+    pw, pf = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), norm=norm, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
 
     return (pw=pw, pf=pf)
 

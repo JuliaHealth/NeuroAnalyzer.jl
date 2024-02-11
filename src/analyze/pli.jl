@@ -89,31 +89,32 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
 end
 
 """
-    pli(obj; channel)
+    pli(obj; ch)
 
 Calculate PLIs (Phase Lag Index).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
 - `pv::Array{Float64, 3}`: PLI value matrices over epochs
 """
-function pli(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function pli(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
+    _check_channels(obj, ch)
+    ch_n = length(ch)
     ep_n = nepochs(obj)
+    length(ch) == 1 && (ch = [ch])
 
     pv = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views pli(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
+                pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views pli(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
             end
         end
     end
