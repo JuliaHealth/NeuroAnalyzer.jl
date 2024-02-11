@@ -152,7 +152,10 @@ function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::U
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
 
-    c, msc, f = @views fcoherence(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), fs=sr(obj1), frq_lim=frq_lim)
+    length(ch1) == 1 && (ch1 = [ch1])
+    length(ch2) == 1 && (ch2 = [ch2])
+
+    c, msc, f = @views fcoherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], fs=sr(obj1), frq_lim=frq_lim)
 
     return (c=c, msc=msc, f=f)
 

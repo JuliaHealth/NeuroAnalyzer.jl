@@ -286,7 +286,10 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    sm, ss, su, sl = @views msci95(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)))
+    length(ch1) == 1 && (ch1 = [ch1])
+    length(ch2) == 1 && (ch2 = [ch2])
+
+    sm, ss, su, sl = @views msci95(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 
     return (sm=sm, ss=ss, su=su, sl=sl)
 

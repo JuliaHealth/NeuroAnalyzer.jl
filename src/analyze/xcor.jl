@@ -173,7 +173,9 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
         xc = @views xcor(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased)
         xc = cat(mean(xc, dims=3), xc, dims=3)
     else
-        xc = @views xcor(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+        length(ch1) == 1 && (ch1 = [ch1])
+        length(ch2) == 1 && (ch2 = [ch2])
+        xc = @views xcor(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased)
     end
 
     return (xc=xc, l=collect(-l:l) .* 1/sr(obj1))
