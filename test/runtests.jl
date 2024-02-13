@@ -2,7 +2,7 @@ using NeuroAnalyzer
 using Test
 using Artifacts
 
-global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "test-files")
+global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "neuroanalyzer-test-files")
 
 @testset "runtests.jl" begin
 
