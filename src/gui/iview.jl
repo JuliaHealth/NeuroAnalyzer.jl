@@ -396,7 +396,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     @assert nepochs(obj) > 1 "iview_cont() should be used for continuous object."
     _check_channels(obj, ch)
 
-
     if length(ch) > 10
         ch_first = 1
         ch_last = 10
@@ -486,6 +485,32 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
+    end
+
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        if event.direction == 1 # down
+            if ch_last < ch[end]
+                ch_first += 1
+                ch_last += 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                end
+                draw(can)
+            end
+        elseif event.direction == 0 # up
+            if ch_first > 1
+                ch_first -= 1
+                ch_last -= 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                end
+                draw(can)
+            end
+        end
     end
 
     signal_connect(bt_chdown, "clicked") do widget
@@ -692,7 +717,7 @@ Interactive view of continuous signal.
 """
 function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1)), zoom::Real=5)
 
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
+    (signal_len(obj1) / sr(obj1)) < zoom && (zoom = obj1.time_pts[end])
 
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."
@@ -795,6 +820,32 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
+    end
+
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        if event.direction == 1 # down
+            if ch_last < ch[end]
+                ch_first += 1
+                ch_last += 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                end
+                draw(can)
+            end
+        elseif event.direction == 0 # up
+            if ch_first > 1
+                ch_first -= 1
+                ch_last -= 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                end
+                draw(can)
+            end
+        end
     end
 
     signal_connect(bt_chdown, "clicked") do widget
@@ -1100,6 +1151,32 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
         paint(ctx)
     end
 
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        if event.direction == 1 # down
+            if ch_last < ch[end]
+                ch_first += 1
+                ch_last += 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                end
+                draw(can)
+            end
+        elseif event.direction == 0 # up
+            if ch_first > 1
+                ch_first -= 1
+                ch_last -= 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                end
+                draw(can)
+            end
+        end
+    end
+
     signal_connect(bt_chdown, "clicked") do widget
         if ch_last < ch[end]
             ch_first += 1
@@ -1395,6 +1472,32 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
         paint(ctx)
     end
 
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        if event.direction == 1 # down
+            if ch_last < ch[end]
+                ch_first += 1
+                ch_last += 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                end
+                draw(can)
+            end
+        elseif event.direction == 0 # up
+            if ch_first > 1
+                ch_first -= 1
+                ch_last -= 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                end
+                draw(can)
+            end
+        end
+    end
+
     signal_connect(bt_chdown, "clicked") do widget
         if c_idx_last < c_idx[end]
             c_idx_first += 1
@@ -1681,6 +1784,32 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
+    end
+
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        if event.direction == 1 # down
+            if ch_last < ch[end]
+                ch_first += 1
+                ch_last += 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                end
+                draw(can)
+            end
+        elseif event.direction == 0 # up
+            if ch_first > 1
+                ch_first -= 1
+                ch_last -= 1
+                Gtk.@sigatom begin
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                end
+                draw(can)
+            end
+        end
     end
 
     signal_connect(bt_chdown, "clicked") do widget

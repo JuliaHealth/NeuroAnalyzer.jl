@@ -24,6 +24,17 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
 
     obj_new = deepcopy(obj)
 
+    # create ID for epochs
+    if marker != ""
+        epoch_id = marker
+    elseif marker == ""
+        if ep_len !== nothing
+            epoch_id = "length_$(ep_len)s"
+        else
+            epoch_id = "n_$(ep_n)"
+        end
+    end
+
     if marker != ""
         # split by markers
         @assert _has_markers(obj) == true "OBJ does not contain markers."
@@ -62,8 +73,12 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
             round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
         end
     end
+    
     # update signal
     obj_new.data = epochs
+
+    # create ID for epochs
+    obj_new.header.recording[:epoch_id] = epoch_id
 
     # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)

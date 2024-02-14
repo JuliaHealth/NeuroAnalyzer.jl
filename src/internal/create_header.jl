@@ -27,7 +27,8 @@ function _create_recording_eeg(;data_type::String, file_name::String, file_size_
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
-                :gain=>gain)
+                :gain=>gain,
+                :epoch_id=>"")
 end
 
 function _create_recording_seeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
@@ -47,7 +48,8 @@ function _create_recording_seeg(;data_type::String, file_name::String, file_size
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
-                :gain=>gain)
+                :gain=>gain,
+                :epoch_id=>"")
 end
 
 function _create_recording_ecog(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
@@ -67,7 +69,8 @@ function _create_recording_ecog(;data_type::String, file_name::String, file_size
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
-                :gain=>gain)
+                :gain=>gain,
+                :epoch_id=>"")
 end
 
 function _create_recording_meg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, gradiometers_planar::Vector{Int64}, gradiometers_axial::Vector{Int64}, coils::Vector{Int64})
@@ -90,7 +93,8 @@ function _create_recording_meg(;data_type::String, file_name::String, file_size_
                 :gradiometers=>gradiometers,
                 :gradiometers_planar=>gradiometers_planar,
                 :gradiometers_axial=>gradiometers_axial,
-                :coils=>coils)
+                :coils=>coils,
+                :epoch_id=>"")
 end
 
 function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, optode_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, src_labels::Vector{String}, det_labels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64)
@@ -112,7 +116,8 @@ function _create_recording_nirs(;data_type::String, file_name::String, file_size
                 :src_labels=>src_labels,
                 :det_labels=>det_labels,
                 :optode_labels=>opt_labels,
-                :sampling_rate=>sampling_rate)
+                :sampling_rate=>sampling_rate,
+                :epoch_id=>"")
 end
 
 function _create_recording_sensors(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64)
@@ -181,5 +186,6 @@ function _create_recording_eda(;data_type::String, file_name::String, file_size_
                 :labels=>clabels,
                 :units=>units,
                 :prefiltering=>prefiltering,
-                :sampling_rate=>sampling_rate)
+                :sampling_rate=>sampling_rate,
+                :epoch_id=>"")
 end

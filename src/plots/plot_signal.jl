@@ -1133,7 +1133,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     if length(ch_tmp) > 1
         for cht_idx in eachindex(ch_t_uni)
             units = _ch_units(obj1, ch_tmp[cht_idx][1])
-            ch_name = _ch_rename(ch_tmp[cht_idx][1])
+            ch_name = _ch_rename(ch_t[ch_tmp[cht_idx][1]])
             !(ch_tmp[cht_idx][1] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
             ch_name *= _pl(length(ch_tmp[cht_idx]))
             xl, yl, tt = _set_defaults(xlabel,

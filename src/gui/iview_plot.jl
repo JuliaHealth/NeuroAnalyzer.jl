@@ -75,7 +75,7 @@ View PNG image.
 function iview_plot(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be opened."
-    if splitext(file_name)[2] in [".png"] == false
+    if splitext(file_name)[2] != ".png"
         @error "Incorrect file name!"
         return nothing
     end
