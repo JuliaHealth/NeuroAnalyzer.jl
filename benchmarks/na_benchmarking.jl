@@ -2,7 +2,7 @@ using Wavelets
 using ContinuousWavelets
 using Artifacts
 
-global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "test-files")
+global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "neuroanalyzer-test-files")
 
 #=
 using BenchmarkTools
