@@ -120,6 +120,7 @@ using StatsModels
 using StatsPlots
 using TimeZones
 using TOML
+using WAV
 using Wavelets
 using WaveletsExt
 using XDF
@@ -232,6 +233,7 @@ include("internal/time.jl")
 include("internal/wl2ext.jl")
 include("internal/gdf_etp.jl")
 include("internal/statistics.jl")
+include("internal/recorder.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/acor.jl")
@@ -463,5 +465,7 @@ include("study/info.jl")
 include("stim/tes.jl")
 include("stim/ect.jl")
 include("stim/tes_model.jl")
+# recorder
+include("recorder/ftt.jl")
 
 end # NeuroAnalyzer

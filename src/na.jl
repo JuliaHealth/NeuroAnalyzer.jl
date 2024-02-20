@@ -87,6 +87,7 @@ function na_info()
             "StatsPlots",
             "TimeZones",
             "TOML",
+            "WAV",
             "Wavelets",
             "WaveletsExt",
             "XDF" ]
