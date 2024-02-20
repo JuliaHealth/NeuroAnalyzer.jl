@@ -3,14 +3,14 @@ export ftt
 """
     ftt(; duration, trials, interval, gpio)
 
-Perform Finger Tapping Test (FTT). Use computer keyboard (SPACE key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded.
+Perform Finger Tapping Test (FTT). Use computer keyboard (SPACE key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded.
 
 # Arguments
 
 - `duration::Int64=10`: single trial duration in seconds
 - `trials::Int64=6`: number of trials
 - `interval::Int64=10`: interval between trials in seconds
-- `gpio::Int64=23`: Raspberry Pi pin to which the switch is connected (default pin is 16 BOARD = 23 GPIO)
+- `gpio::Int64=23`: Raspberry Pi GPIO to which the switch is connected (default is GPIO 23 = BOARD 16 pin)
 
 # Returns
 
@@ -22,7 +22,7 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [s] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [s] during intervals
 """
-function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::Int64=21)
+function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::Int64=23)
 
     img1 = read_from_png(joinpath(res_path, "finger_noclick.png"))
     img2 = read_from_png(joinpath(res_path, "finger_click.png"))
@@ -190,6 +190,7 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
     @async Gtk.gtk_main()
     wait(cnd)
 
+    # format time points
     t_kp = t_kp .- t_s
     t_keypressed = Vector{Vector{Float64}}()
     d_keypressed = Vector{Vector{Float64}}()
@@ -209,6 +210,7 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
     reverse!(t_keypressed)
     reverse!(d_keypressed)
 
+    # format time points
     int_t_kp = int_t_kp .- t_s
     int_t_keypressed = Vector{Vector{Float64}}()
     int_d_keypressed = Vector{Vector{Float64}}()
@@ -227,6 +229,26 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
+
+    # remove out of time boundary taps
+    for idx1 in 1:trials
+        for idx2 in length(t_keypressed[idx1]):-1:1
+            if t_keypressed[idx1][idx2] > duration
+                deleteat!(t_keypressed[idx1], idx2)
+                deleteat!(d_keypressed[idx1], idx2)
+                result[idx1] -= 1
+            end
+        end
+    end
+    for idx1 in 1:trials
+        for idx2 in length(int_t_keypressed[idx1]):-1:1
+            if int_t_keypressed[idx1][idx2] > interval
+                deleteat!(int_t_keypressed[idx1], idx2)
+                deleteat!(int_d_keypressed[idx1], idx2)
+                int_result[idx1] -= 1
+            end
+        end
+    end
 
     return (taps=result, tap_t=t_keypressed, tap_d=d_keypressed, taps_int=int_result, tap_t_int=int_t_keypressed, tap_d_int=int_d_keypressed)
 
