@@ -159,12 +159,8 @@ end
 
 Plots.gr_cbar_width[] = 0.01
 
-if Sys.islinux()
-    if occursin("amd", lowercase(Sys.cpu_info()[1].model)) || occursin("intel", lowercase(Sys.cpu_info()[1].model))
-        FFTW.set_provider!("mkl")
-    else
-        FFTW.set_provider!("fftw")
-    end
+if Sys.islinux() && Sys.ARCH === :x86_64
+    FFTW.set_provider!("mkl")
 else
     FFTW.set_provider!("fftw")
 end
