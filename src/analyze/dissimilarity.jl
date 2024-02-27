@@ -213,6 +213,8 @@ function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
 
     length(ch1) == 1 && (ch1 = [ch1])
     length(ch2) == 1 && (ch2 = [ch2])
+    length(ep1) == 1 && (ep1 = [ep1])
+    length(ep2) == 1 && (ep2 = [ep2])
 
     gd, sc = @views diss(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 

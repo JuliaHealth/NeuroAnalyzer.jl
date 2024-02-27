@@ -312,8 +312,8 @@ c, msc, f = NeuroAnalyzer.fcoherence(rand(10, 100), rand(10, 100), fs=10)
 @test size(msc) == (20, 20, 65)
 @test length(f) == 65
 c, msc, f = NeuroAnalyzer.fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
-@test size(c) == (2, 2, 2049)
-@test size(msc) == (2, 2, 2049)
+@test size(c) == (2, 2, 2049, 1)
+@test size(msc) == (2, 2, 2049, 1)
 @test length(f) == 2049
 
 @info "test 17/59: frqinst()"
@@ -855,7 +855,7 @@ f = axc2frq(xc[1, :, 1], l)
 h_act, h_mob, h_comp = hjorth(v1)
 @test h_act == 2.5
 @test h_mob == 0.0
-@test h_comp == 0.0
+@test isnan(h_comp)
 h_act, h_mob, h_comp = hjorth(a1)
 @test h_act == zeros(2, 2)
 h_act, h_mob, h_comp = hjorth(e10)

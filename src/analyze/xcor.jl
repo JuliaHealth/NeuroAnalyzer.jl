@@ -78,6 +78,7 @@ function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
+    ch_n = size(s1, 1)
     ep_n = size(s1, 2)
 
     xc = zeros(1, length(-l:l), ep_n)
@@ -175,6 +176,8 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     else
         length(ch1) == 1 && (ch1 = [ch1])
         length(ch2) == 1 && (ch2 = [ch2])
+        length(ep1) == 1 && (ep1 = [ep1])
+        length(ep2) == 1 && (ep2 = [ep2])
         xc = @views xcor(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased)
     end
 
