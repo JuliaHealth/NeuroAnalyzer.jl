@@ -74,7 +74,6 @@ function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::
         c = c[:, :, idx1:idx2]
         f = f[idx1:idx2]
     end
-    c = c[1, 2, :]
     
     return (c=c, msc=c.^2, f=f)
 
@@ -106,8 +105,8 @@ function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Un
     
     c, msc, f = fcoherence(s1[:, :, 1], s2[:, :, 1], fs=fs, frq_lim=frq_lim)
 
-    c = zeros(length(c), ep_n)
-    msc = zeros(length(msc), ep_n)
+    c = zeros(size(c), ep_n)
+    msc = zeros(size(msc), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         c[:, ep_idx], msc[:, ep_idx], _ = fcoherence(s1[:, :, ep_idx], s2[:, :, ep_idx], fs=fs, frq_lim=frq_lim)
