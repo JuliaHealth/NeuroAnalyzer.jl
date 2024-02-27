@@ -73,3 +73,9 @@ echo ""
 echo "\`\`\`@docs"
 cat ../src/stim/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
+echo ""
+echo "## NeuroRecorder"
+echo ""
+echo "\`\`\`@docs"
+cat ../src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
+echo "\`\`\`"
