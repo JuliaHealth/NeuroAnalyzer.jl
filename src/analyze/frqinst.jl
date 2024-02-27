@@ -63,17 +63,18 @@ Calculate instantaneous frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
 - `f::Array{Float64, 3}`
 """
-function frqinst(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
-    f = @views frqinst(obj.data[channel, :, :])
+    f = @views frqinst(obj.data[ch, :, :])
 
     return f
 

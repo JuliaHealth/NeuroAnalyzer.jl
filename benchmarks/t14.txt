@@ -198,7 +198,7 @@ Remove ICA                            0.894659 seconds (11.10 k allocations: 4.1
 ISPC 1                                1.156707 seconds (373.75 k allocations: 2.121 GiB)
 ISPC 2                                0.000624 seconds (300 allocations: 508.469 KiB)
 ITPC                                  0.003413 seconds (604 allocations: 3.165 MiB)
-ITPC spectrogram                     56.129586 seconds (13.10 M allocations: 86.558 GiB, 3.05% gc time)
+ITPC spectrogram                      0.067063 seconds (68.36 k allocations: 83.438 MiB)
 Signal difference: absdiff            0.236452 seconds (51.50 k allocations: 1.357 GiB, 3.58% gc time)
 Signal difference: diff2int           0.263931 seconds (73.90 k allocations: 1.492 GiB, 9.90% gc time)
 Mutual information 1                  0.444130 seconds (185.85 k allocations: 775.796 MiB, 16.84% gc time)

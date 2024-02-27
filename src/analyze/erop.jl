@@ -55,7 +55,7 @@ function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=7, wlen::Int64=sr(o
     ero_f = ero_f[f1_idx:f2_idx]
     ero_p = ero_p[f1_idx:f2_idx, :, :]
 
-    if obj.header.recording[:data_type] == "erp"
+    if datatype(obj) == "erp"
         ero_p = cat(ero_p[:, 1], mean(ero_p, dims=2), dims=2)[:, :]
     else
         ero_p = mean(ero_p, dims=2)[:, :]

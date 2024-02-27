@@ -149,7 +149,7 @@ end
 
 function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{String}})
     if type isa String
-        @assert obj.header.recording[:data_type] == type "This function works only for $(uppercase(string(type))) objects."
+        @assert datatype(obj) == type "This function works only for $(uppercase(string(type))) objects."
     else
         @assert obj.header.recording[:data_type] in type "This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."
     end

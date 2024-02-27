@@ -542,8 +542,8 @@ Plot signal.
 """
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
-    obj.header.recording[:data_type] == "erp" && _warn("For ERP objects, use plot_erp()")
-    obj.header.recording[:data_type] == "mep" && _warn("For MEP objects, use plot_mep()")
+    datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
+    datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
 
     if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
         seg = (obj.time_pts[1], obj.time_pts[end])
@@ -623,54 +623,15 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             if length(ch_tmp) > 1
                 for cht_idx in eachindex(ch_t_uni)
                     units = _ch_units(obj, ch_tmp[cht_idx][1])
-                    if ch_t[ch_tmp[cht_idx][1]] == "eeg"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "ecog"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECoG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "grad"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "mag"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Magnetometer$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_int"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS intensity channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_od"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS optical density channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbo"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbO concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbr"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbR concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbt"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "nirs_aux"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS AUX channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "ref"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "eog"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EOG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "emg"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EMG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "ecg"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "other"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
-                    if ch_t[ch_tmp[cht_idx][1]] == "mrk"
-                        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-                    end
+                    ch_name = _ch_rename(ch_t[ch_tmp[cht_idx][1]])
+                    !(ch_t[ch_tmp[cht_idx][1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
+                    ch_name *= _pl(length(ch_tmp[cht_idx]))
+                    xl, yl, tt = _set_defaults(xlabel,
+                                               ylabel,
+                                               title,
+                                               "Time [s]",
+                                               "",
+                                               "$ch_name ($(_channel2channel_name(ch_tmp[cht_idx])))")
 
                     cht_idx < length(ch_t_uni) && (xl = "")
 
@@ -688,54 +649,16 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
                 end
             else
-                if ch_t[ch_tmp[1][1]] == "eeg"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "ecog"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECoG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "grad"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "mag"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Magnetometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "nirs_int"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS intensity channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "nirs_od"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS optical density channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "nirs_hbo"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbO concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "nirs_hbr"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbR concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "nirs_hbt"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "nirs_aux"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS AUX channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "ref"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "eog"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EOG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "emg"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EMG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "ecg"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[1])))")
-                end
-                if ch_t[ch_tmp[1][1]] == "other"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
-                if ch_t[ch_tmp[1][1]] == "mrk"
-                    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-                end
+                ch_name = _ch_rename(ch_t[ch_tmp[1][1]])
+                !(ch_t[ch_tmp[1][1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
+                ch_name *= _pl(length(ch_tmp[1]))
+                xl, yl, tt = _set_defaults(xlabel,
+                                           ylabel,
+                                           title,
+                                           "Time [s]",
+                                           "",
+                                           "$ch_name ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+
                 if ch isa Int64
                     p = plot_signal(t,
                                     s[ch, :],
@@ -780,55 +703,19 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if type === :butterfly
         @assert length(ch_t_uni) == 1 "For plot type=:butterfly all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
+
         units = _ch_units(obj, ch[1])
-        if ch_t[ch[1]] == "eeg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "ecog"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "ECoG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "grad"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Gradiometer$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "mag"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Magnetometer$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_int"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Intensity [$units]", "NIRS intensity channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_od"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "OD [$units]", "NIRS optical density channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_hbo"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "HbO concentration [$units]", "NIRS HbO concentration channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_hbr"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "HbR concentration [$units]", "NIRS HbR concentration channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_hbt"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "HbT concentration [$units]", "NIRS HbT concentration channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_aux"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "NIRS AUX channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "ref"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Reference channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "eog"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EOG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "emg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "EMG channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "ecg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "ECG channel\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "other"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Other channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "mrk"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Marker$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
+        ch_name = _ch_rename(ch_t[ch[1]])
+        !(ch_t[ch[1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
+        def_ylabel = _def_ylabel(ch_t[ch[1]], units)
+        ch_name *= _pl(length(ch))
+        xl, yl, tt = _set_defaults(xlabel,
+                                   ylabel,
+                                   title,
+                                   "Time [s]",
+                                   def_ylabel,
+                                   "$ch_name $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+
         p = plot_signal_butterfly(t,
                                   s[ch, :],
                                   clabels=clabels[ch],
@@ -847,51 +734,17 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
 
         units = _ch_units(obj, ch[1])
-        if ch_t[ch[1]] == "eeg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged EEG channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "ecog"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged ECoG channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "grad"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged gradiometer$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "mag"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged magnetometer$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_int"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Intensity [$units]", "Averaged NIRS intensity channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_od"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "OD [$units]", "Averaged NIRS optical density channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_hbo"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "HbO concentration [$units]", "Averaged NIRS HbO concentration channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_hbr"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "HbR concentration [$units]", "Averaged NIRS HbR concentration channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_hbt"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "HbT concentration [$units]", "Averaged NIRS HbT concentration channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "nirs_aux"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged NIRS AUX channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "ref"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged Reference channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "eog"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged EOG channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "emg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged EMG channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "other"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged  other channel$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        if ch_t[ch[1]] == "mrk"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged  marker$(_pl(length(ch))) $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
+        ch_name = _ch_rename(ch_t[ch[1]])
+        !(ch_t[ch[1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
+        def_ylabel = _def_ylabel(ch_t[ch[1]], units)
+        ch_name *= _pl(length(ch))
+        xl, yl, tt = _set_defaults(xlabel,
+                                   ylabel,
+                                   title,
+                                   "Time [s]",
+                                   def_ylabel,
+                                   "Averaged $ch_name $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+
         p = plot_signal_avg(t,
                             s[ch, :],
                             xlabel=xl,
@@ -982,25 +835,25 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     if length(p) > 1
-        if obj.header.recording[:data_type] == "eeg"
+        if datatype(obj) == "eeg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj.header.recording[:data_type] == "ecog"
+        if datatype(obj) == "ecog"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj.header.recording[:data_type] == "meg"
+        if datatype(obj) == "meg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj.header.recording[:data_type] == "nirs"
+        if datatype(obj) == "nirs"
             p = Plots.plot!(p..., layout=(length(ch_t_uni), 1); kwargs...)
         end
     end
@@ -1203,7 +1056,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
-    @assert obj1.header.recording[:data_type] == obj2.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
+    @assert datatype(obj1) == obj2.header.recording[:data_type] "OBJ1 and OBJ2 must have the same data type."
 
     if signal_len(obj1) < 10 * sr(obj1) && seg == (0, 10)
         seg = (0, obj1.time_pts[end])
@@ -1280,70 +1133,15 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     if length(ch_tmp) > 1
         for cht_idx in eachindex(ch_t_uni)
             units = _ch_units(obj1, ch_tmp[cht_idx][1])
-
-            if ch_t[ch_tmp[cht_idx][1]] == "eeg"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "ecog"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECoG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "grad"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "mag"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Magnetometer$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "nirs_int"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS intensity channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "nirs_od"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS optical density channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbo"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbO concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbr"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbR concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "nirs_hbt"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "nirs_aux"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS AUX channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "ref"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "eog"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EOG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "emg"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EMG channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "ecg"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "other"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
-
-            if ch_t[ch_tmp[cht_idx][1]] == "mrk"
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[cht_idx]))) ($(_channel2channel_name(ch_tmp[cht_idx])))")
-            end
+            ch_name = _ch_rename(ch_t[ch_tmp[cht_idx][1]])
+            !(ch_tmp[cht_idx][1] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
+            ch_name *= _pl(length(ch_tmp[cht_idx]))
+            xl, yl, tt = _set_defaults(xlabel,
+                                       ylabel,
+                                       title,
+                                       "Time [s]",
+                                       "",
+                                       "$ch_name ($(_channel2channel_name(ch_tmp[cht_idx])))")
 
             cht_idx < length(ch_t_uni) && (xl = "")
 
@@ -1361,71 +1159,16 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
         end
     else
-
-        if ch_t[ch_tmp[1][1]] == "eeg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EEG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "ecog"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECoG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "grad"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Gradiometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "mag"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Magnetometer$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "nirs_int"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS intensity channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "nirs_od"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS optical density channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "nirs_hbo"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbO concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "nirs_hbr"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbR concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "nirs_hbt"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS HbT concentration channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "nirs_aux"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "NIRS AUX channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "ref"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Reference channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "eog"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EOG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "emg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "EMG channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "ecg"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "ECG channel ($(_channel2channel_name(ch_tmp[1])))")
-        end
-
-        if ch_t[ch_tmp[1][1]] == "other"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Other channel$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-        
-        if ch_t[ch_tmp[1][1]] == "mrk"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Marker$(_pl(length(ch_tmp[1]))) ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-        end
-
+        units = _ch_units(obj1, ch_tmp[1][1])
+        ch_name = _ch_rename(ch_t[ch_tmp[1][1]])
+        !(ch_t[ch_tmp[1][1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
+        ch_name *= _pl(length(ch_tmp[1]))
+        xl, yl, tt = _set_defaults(xlabel,
+                                   ylabel,
+                                   title,
+                                   "Time [s]",
+                                   "",
+                                   "$ch_name ($(_channel2channel_name(ch_tmp[1])))")
         if ch isa Int64
             p = plot_2signals(t,
                               s1[ch, :],
@@ -1473,25 +1216,25 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     if length(p) > 1
-        if obj1.header.recording[:data_type] == "eeg"
+        if datatype(obj1) == "eeg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj1.header.recording[:data_type] == "ecog"
+        if datatype(obj1) == "ecog"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj1.header.recording[:data_type] == "meg"
+        if datatype(obj1) == "meg"
             h_primary = (0.75 + 0.05 * (5 - length(p)))
             h_secondary = 1.0 - h_primary
             h = vcat(h_primary, repeat([h_secondary / (length(ch_t_uni) - 1)], (length(ch_t_uni) - 1)))
             p = Plots.plot!(p..., layout=grid(length(ch_t_uni), 1, heights=h); kwargs...)
         end
-        if obj1.header.recording[:data_type] == "nirs"
+        if datatype(obj1) == "nirs"
             p = Plots.plot!(p..., layout=(length(ch_t_uni), 1); kwargs...)
         end
     end

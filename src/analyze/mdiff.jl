@@ -114,38 +114,7 @@ function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=
 end
 
 """
-    mdiff(obj; ch, n, method)
-
-Calculate mean difference and its 95% CI between channels.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `n::Int64=3`: number of bootstraps
-- `method::Symbol=:absdiff`
-    - `:absdiff`: maximum difference
-    - `:diff2int`: integrated area of the squared difference
-
-# Returns
-
-Named tuple containing:
-- `st::Matrix{Float64}`
-- `sts::Vector{Float64}`
-- `p::Vector{Float64}`
-"""
-function mdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:absdiff)
-
-    _check_channels(obj, ch)
-
-    st, sts, p = mdiff(obj.data[ch, :, :], n=n, method=method)
-
-    return (st=st, sts=sts, p=p)
-
-end
-
-"""
-    mdiff(obj1, obj2; channel1, channel2, epoch1, epoch2, n, method)
+    mdiff(obj1, obj2; ch1, ch2, ep1, ep2, n, method)
 
 Calculates mean difference and 95% confidence interval for two channels.
 
@@ -153,10 +122,10 @@ Calculates mean difference and 95% confidence interval for two channels.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2:NeuroAnalyzer.NEURO`
-- `channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
-- `epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
+- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 - `n::Int64`: number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
     - `:absdiff`: maximum difference
@@ -169,18 +138,23 @@ Named tuple containing:
 - `sts::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)), n::Int64=3, method::Symbol=:absdiff)
+function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)), n::Int64=3, method::Symbol=:absdiff)
 
-    _check_channels(obj1, channel1)
-    _check_channels(obj2, channel2)
-    @assert length(channel1) == length(channel2) "ch1 and ch2 must have the same length."
+    _check_channels(obj1, ch1)
+    _check_channels(obj2, ch2)
+    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
     
-    _check_epochs(obj1, epoch1)
-    _check_epochs(obj2, epoch2)
-    @assert length(epoch1) == length(epoch2) "ep1 and ep2 must have the same length."
+    _check_epochs(obj1, ep1)
+    _check_epochs(obj2, ep2)
+    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    st, sts, p = @views mdiff(obj1.data[channel1, :, epoch1], obj2.data[channel2, :, epoch2], n=n, method=method)
+    length(ch1) == 1 && (ch1 = [ch1])
+    length(ch2) == 1 && (ch2 = [ch2])
+    length(ep1) == 1 && (ep1 = [ep1])
+    length(ep2) == 1 && (ep2 = [ep2])
+
+    st, sts, p = @views mdiff(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], n=n, method=method)
 
     return (st=st, sts=sts, p=p)
 end

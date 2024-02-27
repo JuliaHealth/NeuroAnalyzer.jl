@@ -9,7 +9,7 @@ Calculate cross-correlation.
 
 - `s1::AbstractVector`
 - `s2::AbstractVector`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -17,33 +17,41 @@ Calculate cross-correlation.
 
 - `xc::Matrix{Float64}`
 """
-function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true)
+function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true)
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     xc = zeros(l + 1)
+    xc_neg = zeros(l + 1)
 
-    ms1 = mean(s1)
-    ms2 = mean(s2)
     if demean == true
-        s1_tmp = s1 .- ms1
-        s2_tmp = s2 .- ms2
+        s1_tmp = delmean(s1)
+        s2_tmp = delmean(s2)
     else
         s1_tmp = s1
         s2_tmp = s2
     end
 
     for idx in 0:l
-        xc[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
         if biased == true 
             xc[idx + 1] /= length(s1)
         else
             xc[idx + 1] /= (length(s1) - idx)
         end
     end
-        
-    xc = round.(xc ./ (std(s1) * std(s2)), digits=8)
-    xc = vcat(reverse(xc), xc[2:end])
+    
+    for idx in 0:l
+        xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        if biased == true 
+            xc_neg[idx + 1] /= length(s1)
+        else
+            xc_neg[idx + 1] /= (length(s1) - idx)
+        end
+    end
+
+    xc = vcat(reverse(xc_neg), xc[2:end])
+    xc = round.(xc ./ (std(s1) * std(s2)), digits=3)
 
     return reshape(xc, 1, :, 1)
 
@@ -58,7 +66,7 @@ Calculate cross-correlation.
 
 - `s1::AbstractMatrix`
 - `s2::AbstractMatrix`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -70,6 +78,7 @@ function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
+    ch_n = size(s1, 1)
     ep_n = size(s1, 2)
 
     xc = zeros(1, length(-l:l), ep_n)
@@ -93,7 +102,7 @@ Calculate cross-correlation.
 
 - `s1::AbstractArray`
 - `s2::AbstractArray`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -123,7 +132,7 @@ end
 """
     xcor(obj1, obj2; ch1, ch2, ep1, ep2, l, norm)
 
-Calculate cross-correlation.
+Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
 # Arguments
 
@@ -133,7 +142,7 @@ Calculate cross-correlation.
 - `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
 
@@ -161,8 +170,17 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    xc = @views xcor(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+    if datatype(obj1) == "erp" && datatype(obj2) == "erp"
+        xc = @views xcor(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased)
+        xc = cat(mean(xc, dims=3), xc, dims=3)
+    else
+        length(ch1) == 1 && (ch1 = [ch1])
+        length(ch2) == 1 && (ch2 = [ch2])
+        length(ep1) == 1 && (ep1 = [ep1])
+        length(ep2) == 1 && (ep2 = [ep2])
+        xc = @views xcor(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased)
+    end
 
-    return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=5))
+    return (xc=xc, l=collect(-l:l) .* 1/sr(obj1))
 
 end

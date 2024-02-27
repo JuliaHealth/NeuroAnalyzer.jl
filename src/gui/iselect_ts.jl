@@ -25,17 +25,17 @@ function iselect_ts(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     nepochs(obj) > 1 && (zoom = epoch_len(obj) / sr(obj))
 
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = signal_len(obj) / sr(obj))
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     _check_channels(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
-    win = GtkWindow("NeuroAnalyzer: iselect_ts()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: iselect_ts()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 40)
     win_view = GtkScrolledWindow()
-    set_gtk_property!(win_view, :min_content_width, 1200)
-    set_gtk_property!(win_view, :min_content_height, 800)
+    set_gtk_property!(win_view, :min_content_width, Int32(p.attr[:size][1]))
+    set_gtk_property!(win_view, :min_content_height, Int32(p.attr[:size][2]))
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)

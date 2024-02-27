@@ -19,6 +19,7 @@ const data_types = ["eeg",
                     "meg",
                     "nirs",
                     "sensors",
+                    "eda",
                     "mep"]
 const channel_types = ["all",
                        "eeg", "ecog", "seeg", "ieeg",
@@ -32,6 +33,7 @@ const channel_types = ["all",
                        "mrk",
                        "accel", "magfld", "orient", "angvel",
                        "mep",
+                       "eda",
                        "other"]
 const channel_units = ["μV",
                        "mV",
@@ -43,6 +45,7 @@ const channel_units = ["μV",
                        "m/s²",
                        "µT",
                        "°",
+                       "μS",
                        "rad/s",
                        ""]
 const fiducial_points = (nasion = (0.0, 0.95, -0.2),
@@ -117,6 +120,7 @@ using StatsModels
 using StatsPlots
 using TimeZones
 using TOML
+using WAV
 using Wavelets
 using WaveletsExt
 using XDF
@@ -155,12 +159,8 @@ end
 
 Plots.gr_cbar_width[] = 0.01
 
-if Sys.islinux()
-    if occursin("amd", lowercase(Sys.cpu_info()[1].model)) || occursin("intel", lowercase(Sys.cpu_info()[1].model))
-        FFTW.set_provider!("mkl")
-    else
-        FFTW.set_provider!("fftw")
-    end
+if Sys.islinux() && Sys.ARCH === :x86_64
+    FFTW.set_provider!("mkl")
 else
     FFTW.set_provider!("fftw")
 end
@@ -190,7 +190,7 @@ function __init__()
 
     # setup resources
     _info("Preparing resources")
-    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "resources")
+    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
 
     # load plugins
     _info("Loading plugins:")
@@ -229,6 +229,7 @@ include("internal/time.jl")
 include("internal/wl2ext.jl")
 include("internal/gdf_etp.jl")
 include("internal/statistics.jl")
+include("internal/recorder.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/acor.jl")
@@ -273,6 +274,11 @@ include("analyze/total_power.jl")
 include("analyze/vartest.jl")
 include("analyze/xcov.jl")
 include("analyze/xcor.jl")
+include("analyze/axc2frq.jl")
+include("analyze/hjorth.jl")
+include("analyze/peak_frq.jl")
+include("analyze/sef.jl")
+include("analyze/phsd.jl")
 # edit
 include("edit/channel.jl")
 include("edit/create.jl")
@@ -391,6 +397,7 @@ include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_locs_nirs.jl")
 include("plots/cairo.jl")
+include("plots/plot_phsd.jl")
 # gui
 include("gui/iview.jl")
 include("gui/iedit.jl")
@@ -403,6 +410,7 @@ include("gui/ipsd.jl")
 include("gui/ispectrogram.jl")
 include("gui/iplot_icatopo.jl")
 include("gui/iview_plot.jl")
+include("gui/iselect_seg.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")
@@ -453,5 +461,7 @@ include("study/info.jl")
 include("stim/tes.jl")
 include("stim/ect.jl")
 include("stim/tes_model.jl")
+# recorder
+include("recorder/ftt.jl")
 
 end # NeuroAnalyzer

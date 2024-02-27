@@ -9,7 +9,7 @@ Calculate cross-covariance.
 
 - `s1::AbstractVector`
 - `s2::AbstractVector`
-- `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
+- `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
 
@@ -17,24 +17,23 @@ Calculate cross-covariance.
 
 - `xc::Matrix{Float64}`
 """
-function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true)
+function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true)
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
     xc = zeros(l + 1)
+    xc_neg = zeros(l + 1)
 
-    ms1 = mean(s1)
-    ms2 = mean(s2)
     if demean == true
-        s1_tmp = s1 .- ms1
-        s2_tmp = s2 .- ms2
+        s1_tmp = delmean(s1)
+        s2_tmp = delmean(s2)
     else
         s1_tmp = s1
         s2_tmp = s2
     end
 
     for idx in 0:l
-        xc[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
         if biased == true 
             xc[idx + 1] /= length(s1)
         else
@@ -42,8 +41,17 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
         end
     end
     
-    xc = round.(xc, digits=8)
-    xc = vcat(reverse(xc), xc[2:end])
+    for idx in 0:l
+        xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+        if biased == true 
+            xc_neg[idx + 1] /= length(s1)
+        else
+            xc_neg[idx + 1] /= (length(s1) - idx)
+        end
+    end
+
+    xc = vcat(reverse(xc_neg), xc[2:end])
+    xc = round.(xc, digits=3)
 
     return reshape(xc, 1, :, 1)
 
@@ -52,7 +60,7 @@ end
 """
    xcov(s1, s2; l, demean)
 
-Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
+Calculate cross-covariance.
 
 # Arguments
 
@@ -85,7 +93,7 @@ end
 """
    xcov(s1, s2; l, demean)
 
-Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
+Calculate cross-covariance.
 
 # Arguments
 
@@ -121,7 +129,7 @@ end
 """
     xcov(obj1, obj2; ch1, ch2, ep1, ep2, l, norm)
 
-Calculate cross-covariance (a measure of similarity of two signals as a function of the displacement of one relative to the other).
+Calculate cross-covariance. For ERP return trial-averaged cross-covariance.
 
 # Arguments
 
@@ -159,8 +167,17 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    xc = @views xcov(reshape(obj1.data[ch1, :, ep1], length(ch1), :, length(ep1)), reshape(obj2.data[ch2, :, ep2], length(ch2), :, length(ep2)), l=l, demean=demean, biased=biased)
+    if datatype(obj1) == "erp" && datatype(obj2) == "erp"
+        xc = @views xcov(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased)
+        xc = cat(mean(xc, dims=3), xc, dims=3)
+    else
+        length(ch1) == 1 && (ch1 = [ch1])
+        length(ch2) == 1 && (ch2 = [ch2])
+        length(ep1) == 1 && (ep1 = [ep1])
+        length(ep2) == 1 && (ep2 = [ep2])
+        xc = @views xcov(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased)
+    end
 
-    return (xc=xc, l=round.(collect(-l:l) .* (1/sr(obj1)), digits=5))
+    return (xc=xc, l=collect(-l:l) .* 1/sr(obj1))
 
 end

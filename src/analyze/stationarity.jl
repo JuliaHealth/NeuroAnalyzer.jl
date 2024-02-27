@@ -106,6 +106,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= epoch_len(obj) "window must be ≤ $(epoch_len(obj))."
+    length(ch) == 1 && (ch = [ch])
 
     ch_n = length(ch)
     ep_n = nepochs(obj)

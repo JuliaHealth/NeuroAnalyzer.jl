@@ -137,6 +137,8 @@ Named tuple containing:
 """
 function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=false)
 
+    h == true && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
+
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     
@@ -148,10 +150,8 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
 
     c = zeros(ComplexF64, ch_n, fft_size, ep_n)
     sph = zeros(ch_n, fft_size, ep_n)
-
     sa = zeros(ch_n, fft_size, ep_n)
     sp = zeros(ch_n, fft_size, ep_n)
-    h == true && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
@@ -165,7 +165,6 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
 
     return (c=c, sa=sa, sp=sp, sph=sph)
 end
-
 
 """
     spectrum(obj; ch, pad, h, norm)
@@ -191,6 +190,7 @@ Named tuple containing:
 function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
 
     _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
     c, sa, sp, sph = spectrum(obj.data[ch, :, :], pad=pad, h=h, norm=norm)
 

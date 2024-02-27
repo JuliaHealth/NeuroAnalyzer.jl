@@ -8,7 +8,7 @@ export labels
 export optode_labels
 export source_labels
 export detector_labels
-export types
+export chtypes
 export info
 export channel_cluster
 export band_frq
@@ -60,7 +60,7 @@ function nchannels(obj::NeuroAnalyzer.NEURO; type::String="all")
             ch_n = size(obj.data, 1)
         end
     else
-        @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
+        @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel chtypes."
         ch_n = 0
         for idx in 1:nchannels(obj)
             obj.header.recording[:channel_type][idx] == type && (ch_n += 1)
@@ -245,9 +245,9 @@ function detector_labels(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    types(obj)
+    chtypes(obj)
 
-Return channel types.
+Return channel chtypes.
 
 # Arguments
 
@@ -255,11 +255,11 @@ Return channel types.
 
 # Returns
 
-- `types::Vector{String}`
+- `chtypes::Vector{String}`
 """
-function types(obj::NeuroAnalyzer.NEURO)
+function chtypes(obj::NeuroAnalyzer.NEURO)
 
-    @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel types."
+    @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel chtypes."
     return obj.header.recording[:channel_type]
 
 end
@@ -293,19 +293,20 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("Signal length [samples]: $(signal_len(obj))")
     println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
     println("     Number of channels: $(nchannels(obj))")
-    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+    if !(datatype(obj) in ["mep", "sensors", "eda"])
+        println("              Epochs ID: $(obj.header.recording[:epoch_id])")
         println("       Number of epochs: $(nepochs(obj))")
         println(" Epoch length [samples]: $(epoch_len(obj))")
         println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
     end
-    if obj.header.recording[:data_type] == "eeg"
+    if datatype(obj) == "eeg"
         if obj.header.recording[:reference] == ""
             println("         Reference type: unknown")
         else
             println("         Reference type: $(obj.header.recording[:reference])")
         end
     end
-    if obj.header.recording[:data_type] == "nirs"
+    if datatype(obj) == "nirs"
         println("        Wavelength [nm]: $(obj.header.recording[:wavelengths])")
     end
     if length(labels(obj)) == 0
@@ -313,7 +314,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                 Labels: yes")
     end
-    if obj.header.recording[:data_type] in ["mep", "sensors"] == false
+    if !(obj.header.recording[:data_type] in ["mep", "sensors", "eda"])
         if _has_markers(obj) == false
             println("                Markers: no")
         else

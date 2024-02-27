@@ -8,32 +8,65 @@ end
 _v2r(v::AbstractRange) = return v
 _v2r(v::Int64) = return v
 
+function _ch_rename(ch_name::String)
+    n = replace(uppercase(ch_name), "_"=>" ")
+    lowercase(ch_name) == "ecog" && return "ECoG"
+    lowercase(ch_name) == "ieeg" && return "iEEG"
+    lowercase(ch_name) == "seeg" && return "sEEG"
+    lowercase(ch_name) == "grad" && return "Gradiometer"
+    lowercase(ch_name) == "mag" && return "Magnetometer"
+    lowercase(ch_name) == "nirs_int" && return "NIRS intensity"
+    lowercase(ch_name) == "nirs_od" && return "NIRS optical density"
+    lowercase(ch_name) == "nirs_hbo" && return "NIRS HbO concentration"
+    lowercase(ch_name) == "nirs_hbr" && return "NIRS HbR concentration"
+    lowercase(ch_name) == "nirs_hbt" && return "NIRS HbT concentration"
+    lowercase(ch_name) == "ref" && return "Reference"
+    lowercase(ch_name) == "other" && return "Other"
+    lowercase(ch_name) == "mrk" && return "Marker"
+    lowercase(ch_name) == "accel" && return "Acceleration"
+    lowercase(ch_name) == "magfld" && return "Magnetic field"
+    lowercase(ch_name) == "orient" && return "Orientation"
+    lowercase(ch_name) == "angvel" && return "Angular velocity"
+    return n
+end
+
+function _def_ylabel(ch_name::String, u::String)
+    yl = "Amplitude [$u]"
+    lowercase(ch_name) == "nirs_int" && return "Intensity [$u]"
+    lowercase(ch_name) == "nirs_od" && return "OD [$u]"
+    lowercase(ch_name) == "nirs_hbo" && return "HbO concentration [$u]"
+    lowercase(ch_name) == "nirs_hbr" && return "HbR concentration [$u]"
+    lowercase(ch_name) == "nirs_hbt" && return "HbT concentration [$u]"
+    return yl
+end
+
 function _ch_units(ch_type::String)
     u = ""
-    lowercase(ch_type) == "eeg" && (u = "μV")
-    lowercase(ch_type) == "ecog" && (u = "μV")
-    lowercase(ch_type) == "seeg" && (u = "μV")
-    lowercase(ch_type) == "ieeg" && (u = "mV")
-    lowercase(ch_type) == "csd" && (u = "μV/m²")
-    lowercase(ch_type) == "mag" && (u = "fT")
-    lowercase(ch_type) == "grad" && (u = "fT/cm")
-    lowercase(ch_type) == "emg" && (u = "μV")
-    lowercase(ch_type) == "eog" && (u = "μV")
-    lowercase(ch_type) == "ref" && (u = "μV")
-    lowercase(ch_type) == "ecg" && (u = "mV")
-    lowercase(ch_type) == "nirs_int" && (u = "V")
-    lowercase(ch_type) == "nirs_od" && (u = "")
-    lowercase(ch_type) == "nirs_hbo" && (u = "μM/mm")
-    lowercase(ch_type) == "nirs_hbr" && (u = "μM/mm")
-    lowercase(ch_type) == "nirs_hbt" && (u = "μM/mm")
-    lowercase(ch_type) == "nirs_aux" && (u = "")
-    lowercase(ch_type) == "mrk" && (u = "")
-    lowercase(ch_type) == "accel" &&(u = "m/s²")
-    lowercase(ch_type) == "magfld" &&(u = "µT")
-    lowercase(ch_type) == "orient" &&(u = "°")
-    lowercase(ch_type) == "angvel" &&(u = "rad/s")
-    lowercase(ch_type) == "mep" &&(u = "μV")
-    lowercase(ch_type) == "other" && (u = "")
+    lowercase(ch_type) == "eeg" && return "μV"
+    lowercase(ch_type) == "ecog" && return "μV"
+    lowercase(ch_type) == "seeg" && return "μV"
+    lowercase(ch_type) == "ieeg" && return "mV"
+    lowercase(ch_type) == "csd" && return "μV/m²"
+    lowercase(ch_type) == "mag" && return "fT"
+    lowercase(ch_type) == "grad" && return "fT/cm"
+    lowercase(ch_type) == "emg" && return "μV"
+    lowercase(ch_type) == "eog" && return "μV"
+    lowercase(ch_type) == "ref" && return "μV"
+    lowercase(ch_type) == "ecg" && return "mV"
+    lowercase(ch_type) == "nirs_int" && return "V"
+    lowercase(ch_type) == "nirs_od" && return ""
+    lowercase(ch_type) == "nirs_hbo" && return "μM/mm"
+    lowercase(ch_type) == "nirs_hbr" && return "μM/mm"
+    lowercase(ch_type) == "nirs_hbt" && return "μM/mm"
+    lowercase(ch_type) == "nirs_aux" && return ""
+    lowercase(ch_type) == "mrk" && return ""
+    lowercase(ch_type) == "accel" &&return "m/s²"
+    lowercase(ch_type) == "magfld" &&return "µT"
+    lowercase(ch_type) == "orient" &&return "°"
+    lowercase(ch_type) == "angvel" &&return "rad/s"
+    lowercase(ch_type) == "mep" &&return "μV"
+    lowercase(ch_type) == "eda" &&return "μS"
+    lowercase(ch_type) == "other" && return ""
     return u
 end
 

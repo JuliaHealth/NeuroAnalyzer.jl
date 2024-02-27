@@ -51,7 +51,7 @@ function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, frq_lim::Tuple{
         ero_s = ero_s[f1_idx:f2_idx, :, :]
     end
 
-    if obj.header.recording[:data_type] == "erp"
+    if datatype(obj) == "erp"
         ero_s = cat(ero_s[:, :, 1], mean(ero_s, dims=3), dims=3)
     else
         ero_s = mean(ero_s, dims=3)

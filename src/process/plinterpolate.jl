@@ -1,5 +1,6 @@
 export plinterpolate_channel
 export plinterpolate_channel!
+export plinterpolate
 
 """
     plinterpolate_channel(obj; ch, ep, m, q)
@@ -103,4 +104,57 @@ function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vecto
 
     return nothing
     
+end
+
+"""
+    plinterpolate(s; locs, ch, imethod, nmethod, cart)
+
+Interpolate channel(s) using planar interpolation.
+
+# Arguments
+
+- `s::Vector{<:Real}`: values to plot (one value per channel)
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
+- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `interpolation_factor::Int64=100`: interpolation quality
+
+# Returns
+
+- `int_s::Matrix{Float64}`: interpolated signal
+- `int_x::Vector{Float64}`: X-axis coordinates
+- `int_y::Vector{Float64}`: Y-axis coordinates
+"""
+function plinterpolate(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, interpolation_factor::Int64=100)
+    
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+
+    locs = locs[ch, :]
+
+    if cart == false
+        loc_x = zeros(length(ch))
+        loc_y = zeros(length(ch))
+        for idx in eachindex(ch)
+            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        end
+    else
+        loc_x = locs[ch, :loc_x]
+        loc_y = locs[ch, :loc_y]
+    end
+
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
+
+    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, interpolation_factor, imethod, nmethod)
+
+    return (int_s=s_interpolated, int_x = interpolated_x, int_y = interpolated_y)
+
 end

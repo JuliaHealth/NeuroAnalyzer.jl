@@ -2,7 +2,7 @@ using Wavelets
 using ContinuousWavelets
 using Artifacts
 
-global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "test-files")
+global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "neuroanalyzer-test-files")
 
 #=
 using BenchmarkTools
@@ -79,9 +79,9 @@ print(rpad("Import NIRX", 36))
 import_nirx(joinpath(testfiles_path, "nirx/NIRS-2020-08-18_001.hdr"))
 @time import_nirx(joinpath(testfiles_path, "nirx/NIRS-2020-08-18_001.hdr"))
 print(rpad("Save HDF5", 36))
-tmp = tempname()
+tmp = tempname() * ".hdf"
 NeuroAnalyzer.save(eeg, file_name=tmp)
-tmp = tempname()
+tmp = tempname() * ".hdf"
 @time NeuroAnalyzer.save(eeg, file_name=tmp)
 print(rpad("Load HDF5", 36))
 NeuroAnalyzer.load(tmp)

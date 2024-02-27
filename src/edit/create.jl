@@ -1,9 +1,11 @@
-export create
+export create_object
 export create_time
 export create_time!
+export create_data
+export create_data!
 
 """
-    create(; data_type)
+    create_object(; data_type)
 
 Create an empty `NeuroAnalyzer.NEURO` object.
 
@@ -15,7 +17,7 @@ Create an empty `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function create(; data_type::String)
+function create_object(; data_type::String)
 
     _check_var(data_type, data_types, "data_type")
 
@@ -81,14 +83,14 @@ function create(; data_type::String)
 end
 
 """
-    create_time(obj)
+    create_time(obj; fs)
 
 Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `fs::Int64
+- `fs::Int64`
 
 # Returns
 
@@ -110,19 +112,82 @@ function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)
 end
 
 """
-    create_time!(obj)
+    create_time!(obj; fs)
 
 Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `fs::Int64
+- `fs::Int64`
 """
 function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)
 
     obj_new = create_time(obj, fs=fs)
     obj.header = obj_new.header
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
+
+    return nothing
+
+end
+
+"""
+    create_data(obj; data, fs)
+
+Create data, channel labels, types and units and time points for `NeuroAnalyzer.NEURO` object.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `data::Array{Float64, 3}`
+- `fs::Int64`
+- `type::String`: channel types of imported data channels
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)
+
+    @assert length(obj.data) == 0 "OBJ already contains data."
+    @assert length(obj.time_pts) == 0 "OBJ already has time points."
+
+    _check_var(type, channel_types, "type")
+    obj_new = deepcopy(obj)
+    obj_new.data = data
+    clabels = repeat(["ch-"], size(data, 1))
+    clabels = clabels .* string.(collect(1:size(data, 1)))
+    obj_new.header.recording[:labels] = clabels
+    obj_new.header.recording[:units] = repeat([_ch_units(type)])
+    obj_new.header.recording[:sampling_rate] = fs
+    obj_new.header.recording[:channel_type] = repeat([type], size(data, 1))
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    reset_components!(obj_new)
+    push!(obj_new.history, "create_data(OBJ, data, fs=$fs)")
+
+    return obj_new
+
+end
+
+"""
+    create_data!(obj; data, fs)
+
+Create data, channel labels, types and units and time points for `NeuroAnalyzer.NEURO` object.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `data::Array{Float64, 3}`
+- `fs::Int64`
+- `type::String`: channel types of imported data channels
+"""
+function create_data!(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)
+
+    obj_new = create_data(obj, data=data, fs=fs, type=type)
+    obj.header = obj_new.header
+    obj.data = obj_new.data
     obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time

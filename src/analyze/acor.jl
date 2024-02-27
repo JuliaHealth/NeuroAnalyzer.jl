@@ -20,9 +20,8 @@ function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
 
     ac = zeros(l + 1)
 
-    ms = mean(s)
     if demean == true
-        s_tmp = s .- ms
+        s_tmp = delmean(s)
     else
         s_tmp = s
     end
@@ -36,7 +35,7 @@ function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
         end
     end
 
-    ac = round.(ac ./ std(s)^2, digits=8)
+    ac = round.(ac ./ std(s)^2, digits=3)
     ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
@@ -109,7 +108,7 @@ end
 """
    acor(obj; ch, lag, demean)
 
-Calculate auto-correlation.
+Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 
 # Arguments
 
@@ -131,8 +130,13 @@ function acor(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ac = @views acor(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+    if datatype(obj) == "erp"
+        ac = @views acor(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased)
+        ac = cat(mean(ac, dims=3), ac, dims=3)
+    else
+        ac = @views acor(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+    end
 
-    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=5))
+    return (ac=ac, l=collect(-l:l) .* 1/sr(obj))
 
 end

@@ -20,9 +20,8 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
 
     ac = zeros(l + 1)
 
-    ms = mean(s)
     if demean == true
-        s_tmp = s .- ms
+        s_tmp = delmean(s)
     else
         s_tmp = s
     end
@@ -35,8 +34,8 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
             ac[idx + 1] /= (length(s) - idx)
         end
     end
-    
-    ac = round.(ac, digits=8)
+
+    ac = round.(ac, digits=3)
     ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
@@ -109,7 +108,7 @@ end
 """
    acov(obj; ch, l, demean, n, biased)
 
-Calculate autocovariance.
+Calculate autocovariance. For ERP return trial-averaged autocovariance.
 
 # Arguments
 
@@ -131,8 +130,13 @@ function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+    if datatype(obj) == "erp"
+        ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased)
+        ac = cat(mean(ac, dims=3), ac, dims=3)
+    else
+        ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+    end
 
-    return (ac=ac, l=round.(collect(-l:l) .* (1/sr(obj)), digits=5))
+    return (ac=ac, l=collect(-l:l) .* 1/sr(obj))
 
 end

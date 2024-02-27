@@ -68,6 +68,7 @@ Calculate Root Mean Square.
 function rms(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
     r = @views rms(obj.data[ch, :, :])
 
@@ -141,6 +142,7 @@ Calculate Mean Square Amplitude.
 function msa(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
 
     r = @views msa(obj.data[ch, :, :])
 

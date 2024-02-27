@@ -425,10 +425,10 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     _check_channels(signal_channels(obj), ch)
     selected != 0 && _check_channels(obj, selected)
 
-    if obj.header.recording[:data_type] == "ecog"
+    if datatype(obj) == "ecog"
         @error "Use plot_locs_ecog() for ECoG data."
     elseif threed == false
-        if obj.header.recording[:data_type] == "nirs"
+        if datatype(obj) == "nirs"
             opt_pairs = obj.header.recording[:optode_pairs]
             src_n = length(source_labels(obj))
             det_n = length(detector_labels(obj))

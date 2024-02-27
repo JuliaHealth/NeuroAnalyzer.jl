@@ -1,5 +1,4 @@
 # Specify filepatterns you want git to ignore.
 
-Manifest.toml
 LocalPreferences.toml
 .ipynb_checkpoints
