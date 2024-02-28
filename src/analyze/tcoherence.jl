@@ -3,7 +3,7 @@ export tcoherence
 """
     tcoherence(s1, s2; pad)
 
-Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence).
+Calculate coherence, IC (imaginary coherence) and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -37,7 +37,7 @@ end
 """
     tcoherence(s1, s2; ch1, ch2, ep1, ep2)
 
-Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence).
+Calculate coherence, IC (imaginary coherence) and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -75,7 +75,7 @@ end
 """
     tcoherence(obj1, obj2; ch1, ch2, ep1, ep2)
 
-Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence).
+Calculate coherence, IC (imaginary coherence) and MSC (magnitude-squared coherence).
 
 # Arguments
 

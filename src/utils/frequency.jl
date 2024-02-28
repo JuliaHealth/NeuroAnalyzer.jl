@@ -142,7 +142,7 @@ function freqs(s::Vector{Float64}, fs::Int64)
     nf = fs / 2
     # frequency array
     # hz = linspace(0, nf, floor(Int64, length(s) / 2))
-    hz = Vector(rfftfreq(length(s), fs))
+    hz = round.(Vector(rfftfreq(length(s), fs)), digits=3)
 
     return hz, nf
 
