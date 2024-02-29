@@ -1,6 +1,3 @@
-when:
-  branch: [ stable ]
-
 steps:
   docs:
     image: julia
@@ -12,44 +9,30 @@ steps:
       - apt-get install -y xvfb ncftp git
 
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
-      - git clone -b stable https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-stable
-      - git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-devel
+      - git clone -b main https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
 
-      - cd NA-stable/docs
-      - cat header-stable.md > src/index.md
+      - cd NeuroAnalyzer.jl/docs
+      - cat header.md > src/index.md
       - ./template.sh >> src/index.md
       - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_md.jl
-      - cp build/index.md ../../NA-docs/Documentation-stable.md
+      - cp build/index.md ../../NA-docs/Documentation.md
       - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_html.jl
-      - mv build docs-stable
-      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html
-      - sed -i 's///g' docs-stable/index.html
-      - ncftpput -R -u "$FTP_USER" -p "$FTP_PASS" $FTP / docs-stable/
-
-      - cd ../../
-
-      - cd NA-devel/docs
-      - cat header-devel.md > src/index.md
-      - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_md.jl
-      - cp build/index.md ../../NA-docs/Documentation-devel.md
-      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_html.jl
-      - mv build docs-devel
-      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html
-      - sed -i 's///g' docs-devel/index.html
-      - ncftpput -R -u "$FTP_USER" -p "$FTP_PASS" $FTP / docs-devel/
+      - mv build docs
+      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
+      - sed -i 's///g' docs/index.html
+      - ncftpput -R -u "$FTP_USER" -p "$FTP_PASS" $FTP / docs/
 
       - cd ../../
 
       - cd NA-docs
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
-      - git config --global init.defaultBranch stable
+      - git config --global init.defaultBranch main
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer-docs.git
       - git add --all
       # - git diff --exit-code || git commit -m "Woodpecker CI Documentation Build"
       - git commit -m "Woodpecker CI Documentation Build"
-      - git push -f origin HEAD:stable
+      - git push -f origin HEAD:main
 
   test:
     image: julia
