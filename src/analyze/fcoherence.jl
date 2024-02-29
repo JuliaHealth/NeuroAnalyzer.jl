@@ -3,7 +3,7 @@ export fcoherence
 """
     fcoherence(s; fs, frq_lim)
 
-Calculate frequencies coherence and MSC (magnitude-squared coherence) between channels.
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -41,7 +41,7 @@ end
 """
     fcoherence(s1, s2; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-Calculate frequencies coherence and MSC (magnitude-squared coherence) between channels of `s1` and `s2`.
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -82,7 +82,7 @@ end
 """
     fcoherence(s1, s2; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-Calculate frequencies coherence and MSC (magnitude-squared coherence) between channels of `s1` and `s2`.
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -119,7 +119,7 @@ end
 """
     fcoherence(obj1, obj2; ch1, ch2, ep1, ep2, frq_lim)
 
-Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence).
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
