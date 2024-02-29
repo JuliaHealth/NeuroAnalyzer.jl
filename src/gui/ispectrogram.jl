@@ -406,7 +406,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
                     plot_save(p, file_name=file_name)
                     _info("Plot saved as: $file_name")
                 else
-                    warn_dialog("Incorrect file name!")
+                    warn_dialog("Incorrect filename!")
                 end
             end
         else
@@ -417,7 +417,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
                     plot_save(p, file_name=file_name)
                     _info("Plot saved as: $file_name")
                 else
-                    warn_dialog("Incorrect file name!")
+                    warn_dialog("Incorrect filename!")
                 end
             end
         end
@@ -935,7 +935,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                     plot_save(p, file_name=file_name)
                     _info("Plot saved as: $file_name")
                 else
-                    warn_dialog("Incorrect file name!")
+                    warn_dialog("Incorrect filename!")
                 end
             end
         else
@@ -946,7 +946,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                     plot_save(p, file_name=file_name)
                     _info("Plot saved as: $file_name")
                 else
-                    warn_dialog("Incorrect file name!")
+                    warn_dialog("Incorrect filename!")
                 end
             end
         end

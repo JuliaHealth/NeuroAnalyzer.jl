@@ -292,7 +292,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
                     plot_save(p, file_name=file_name)
                     _info("Plot saved as: $file_name")
                 else
-                    warn_dialog("Incorrect file name!")
+                    warn_dialog("Incorrect filename!")
                 end
             end
         else
@@ -303,7 +303,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
                     plot_save(p, file_name=file_name)
                     _info("Plot saved as: $file_name")
                 else
-                    warn_dialog("Incorrect file name!")
+                    warn_dialog("Incorrect filename!")
                 end
             end
         end

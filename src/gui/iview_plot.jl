@@ -43,7 +43,7 @@ function iview_plot(p::Plots.Plot{Plots.GRBackend})
                             surface_buf = Gtk.cairo_surface(can)
                             Cairo.write_to_png(surface_buf, file_name)
                         else
-                            warn_dialog("Incorrect file name!")
+                            warn_dialog("Incorrect filename!")
                         end
                     end
             elseif k == 113 # q
@@ -76,7 +76,7 @@ function iview_plot(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be opened."
     if splitext(file_name)[2] != ".png"
-        @error "Incorrect file name!"
+        @error "Incorrect filename!"
         return nothing
     end
 
@@ -109,7 +109,7 @@ function iview_plot(file_name::String)
                             surface_buf = Gtk.cairo_surface(can)
                             Cairo.write_to_png(surface_buf, file_name)
                         else
-                            warn_dialog("Incorrect file name!")
+                            warn_dialog("Incorrect filename!")
                         end
                     end
             elseif k == 111 # o
@@ -170,7 +170,7 @@ function iview_plot(c::Cairo.CairoSurfaceBase{UInt32})
                             surface_buf = Gtk.cairo_surface(can)
                             Cairo.write_to_png(surface_buf, file_name)
                         else
-                            warn_dialog("Incorrect file name!")
+                            warn_dialog("Incorrect filename!")
                         end
                     end
             elseif k == 113 # q

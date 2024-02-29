@@ -678,7 +678,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
                     _refresh_plots()
                 end
             else
-                warn_dialog("Incorrect file name!")
+                warn_dialog("Incorrect filename!")
             end
         end
     end
@@ -689,7 +689,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
                 export_locs(obj_new, file_name=file_name, overwrite=true)
             else
-                warn_dialog("Incorrect file name!")
+                warn_dialog("Incorrect filename!")
             end
         end
     end

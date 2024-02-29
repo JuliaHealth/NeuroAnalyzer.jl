@@ -115,7 +115,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
                             surface_buf = Gtk.cairo_surface(can)
                             Cairo.write_to_png(surface_buf, file_name)
                         else
-                            warn_dialog("Incorrect file name!")
+                            warn_dialog("Incorrect filename!")
                         end
                     end
             elseif k == 113 # q

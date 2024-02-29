@@ -66,7 +66,7 @@ Add locations to a plot. Locations are placed in the top right corner. If `file_
 - `p1::Plots.Plot{Plots.GRBackend}`: signal plot
 - `p2::Plots.Plot{Plots.GRBackend}`: locations plot
 - `view::Bool=true`: view the output image
-- `file_name::String=""`: output image file name
+- `file_name::String=""`: output image filename
 
 # Returns
 
@@ -76,7 +76,7 @@ function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBacken
 
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])
-        @assert ext == ".png" "File name extension must be .png"
+        @assert ext == ".png" "Filename extension must be .png"
 
         (isfile(file_name) && verbose == true) && _warn("File $file_name will be overwritten.")
     end

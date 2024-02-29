@@ -100,7 +100,7 @@ Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, 
 - `y::Int64`
 - `title::String=""`: title of the subplot
 - `view::Bool=true`: view the output image
-- `file_name::String=""`: output image file name
+- `file_name::String=""`: output image filename
 
 # Returns
 
@@ -110,7 +110,7 @@ function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfac
 
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])
-        @assert ext == ".png" "File name extension must be .png"
+        @assert ext == ".png" "Filename extension must be .png"
 
         (isfile(file_name) && verbose == true) && _warn("File $file_name will be overwritten.")
     end
