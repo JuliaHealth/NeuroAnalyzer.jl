@@ -78,6 +78,7 @@ function na_info()
             "Preferences",
             "PrettyTables",
             "ProgressMeter",
+            "Reexport",
             "SavitzkyGolay",
             "ScatteredInterpolation",
             "Simpson",

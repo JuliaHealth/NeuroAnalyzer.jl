@@ -1,0 +1,24 @@
+name = "NeuroRecorder"
+uuid = "b6bea70e-5364-4141-b21b-0b3b04a52764"
+authors = ["Adam Wysokiński <adam.wysokinski@tutanota.com> and contributors"]
+version = "0.24.4-dev"
+
+[deps]
+Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Gtk = "4c0ca9eb-093a-5379-98c5-f87ac0bbbf44"
+PiGPIO = "bb151fc1-c6dc-5496-8ed6-07f94907e623"
+REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+WAV = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"
+
+[compat]
+julia = "1"
+
+[extras]
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

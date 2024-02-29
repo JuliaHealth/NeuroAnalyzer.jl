@@ -111,6 +111,7 @@ using Preferences
 using PrettyTables
 using ProgressMeter
 using Random
+using Reexport
 using SavitzkyGolay
 using ScatteredInterpolation
 using Simpson
@@ -124,6 +125,8 @@ using WAV
 using Wavelets
 using WaveletsExt
 using XDF
+
+@reexport using NeuroRecorder
 
 # define structures
 
@@ -229,7 +232,6 @@ include("internal/time.jl")
 include("internal/wl2ext.jl")
 include("internal/gdf_etp.jl")
 include("internal/statistics.jl")
-include("internal/recorder.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/acor.jl")
@@ -461,7 +463,5 @@ include("study/info.jl")
 include("stim/tes.jl")
 include("stim/ect.jl")
 include("stim/tes_model.jl")
-# recorder
-include("recorder/ftt.jl")
 
 end # NeuroAnalyzer
