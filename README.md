@@ -22,12 +22,10 @@ Add NeuroAnalyzer from the [Pkg REPL](https://docs.julialang.org/en/v1/stdlib/RE
 
 ## Documentation
 
-1. [Stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/stable) branch:
-    - [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs/src/branch/stable/Documentation-stable.md)
-    - [HTML](https://neuroanalyzer.org/docs-stable) 
-2. [Devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/devel) branch:
-    - [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs/src/branch/stable/Documentation-devel.md)
-    - [HTML](https://neuroanalyzer.org/docs-devel)
+Documentation is available in the following formats:
+
+- [HTML](https://neuroanalyzer.org/docs)
+- [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs/src/branch/main/Documentation.md)
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.html](https://neuroanalyzer.org/changelog.html).
 
