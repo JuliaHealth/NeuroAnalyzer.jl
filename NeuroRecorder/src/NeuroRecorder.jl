@@ -32,7 +32,7 @@ end
 
 # load sub-modules
 
-include("internal.jl")
-include("ftt.jl")
+include("internal/misc.jl")
+include("recorder/ftt.jl")
 
 end

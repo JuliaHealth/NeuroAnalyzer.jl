@@ -77,5 +77,5 @@ echo ""
 echo "## NeuroRecorder"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
+cat ../NeuroRecorder/src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroRecorder."/g
 echo "\`\`\`"
