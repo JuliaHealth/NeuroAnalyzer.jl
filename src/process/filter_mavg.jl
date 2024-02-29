@@ -4,7 +4,7 @@ export filter_mavg!
 """
     filter_mavg(s; <keyword arguments>)
 
-Filter using moving average (FIR) filter (with threshold).
+Filter using moving average filter (with threshold).
 
 # Arguments
 
