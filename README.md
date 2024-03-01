@@ -1,6 +1,6 @@
 ![NeuroAnalyzer.jl](images/neuroanalyzer.png)
 
-[![DOI: 10.5281/zenodo.7372648](images/doi.png)](https://doi.org/10.5281/zenodo.10718848) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) [![docs-badge](https://img.shields.io/badge/docs-stable-blue.svg)](https://neuroanalyzer.org/docs-stable/) [![docs-badge](https://img.shields.io/badge/docs-devel-blue.svg)](https://neuroanalyzer.org/docs-devel/)
+[![DOI: 10.5281/zenodo.7372648](images/doi.png)](https://doi.org/10.5281/zenodo.10718848) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) [![docs-badge](https://img.shields.io/badge/docs-blue.svg)](https://neuroanalyzer.org/docs/)
 
 Welcome fellow researcher!
 
