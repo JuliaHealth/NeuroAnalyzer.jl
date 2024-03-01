@@ -51,7 +51,7 @@ See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.h
 
 If you have contributed, please add your name below.
 
-[Adam Wysokiński](mailto:adam.wysokinski@neuroanalyzer.org) [![ORCID](images/orcid.png)](https://orcid.org/0000-0002-6159-6579")
+[Adam Wysokiński](mailto:adam.wysokinski@neuroanalyzer.org) [![ORCID](images/orcid.png)](https://orcid.org/0000-0002-6159-6579)
 
 [![Medical University of Lodz](images/umed.png)](https://en.umed.pl)
 
