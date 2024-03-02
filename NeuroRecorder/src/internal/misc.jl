@@ -1,4 +1,4 @@
-_wip() = @warn "This function has the WIP (Work In Progress) status and is not ready for production use."
+_wip() = allow_wip == true ? (@warn "This function has the WIP (Work In Progress) status and is not ready for production use.") : (@error "This function has the WIP (Work In Progress) status and is not ready for production use.")
 
 function _beep()
     beep, fs = wavread(joinpath(res_path, "beep.wav"))

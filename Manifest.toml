@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.1"
+julia_version = "1.10.2"
 manifest_format = "2.0"
 project_hash = "6c6d3c47b7e5428e2b26bb1505c86efbb2dbf973"
 
@@ -1701,12 +1701,10 @@ uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
 
 [[deps.NeuroRecorder]]
-deps = ["Artifacts", "Cairo", "Dates", "Gtk", "PiGPIO", "REPL", "WAV"]
-git-tree-sha1 = "52a486975b1489ea9073a4ce7cfbf98770715150"
-repo-rev = "stable"
-repo-url = "NeuroRecorder"
+deps = ["Artifacts", "Cairo", "Dates", "Gtk", "PiGPIO", "REPL", "Reexport", "WAV"]
+path = "NeuroRecorder"
 uuid = "b6bea70e-5364-4141-b21b-0b3b04a52764"
-version = "0.24.3"
+version = "0.24.4-dev"
 
 [[deps.Observables]]
 git-tree-sha1 = "7438a59546cf62428fc9d1bc94729146d37a7225"

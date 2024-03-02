@@ -9,6 +9,9 @@ module NeuroRecorder
 
 # set constants
 
+const VER = v"0.24.4-dev"
+const allow_wip = occursin("dev", string(VER))  # false for the stable branch, true for the devel branch
+
 # add dependencies
 
 using Artifacts
