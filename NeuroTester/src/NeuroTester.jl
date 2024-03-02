@@ -23,4 +23,6 @@ end
 
 # load sub-modules
 
+include("internal/misc.jl")
+
 end # NeuroTester
