@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "6c6d3c47b7e5428e2b26bb1505c86efbb2dbf973"
+project_hash = "fb4f323bce1dc48d988ba6552210bb8c89d75394"
 
 [[deps.ATK_jll]]
 deps = ["Artifacts", "Glib_jll", "JLLWrappers", "Libdl"]
@@ -1704,6 +1704,16 @@ version = "1.2.0"
 deps = ["Artifacts", "Cairo", "Dates", "Gtk", "PiGPIO", "REPL", "Reexport", "WAV"]
 path = "NeuroRecorder"
 uuid = "b6bea70e-5364-4141-b21b-0b3b04a52764"
+version = "0.24.4-dev"
+
+[[deps.NeuroStim]]
+path = "NeuroStim"
+uuid = "e023c5a6-369d-49ee-bc04-3b86d881f6f7"
+version = "0.24.4-dev"
+
+[[deps.NeuroTester]]
+path = "NeuroTester"
+uuid = "85ca5511-8440-4271-b57d-6b73a9046dbb"
 version = "0.24.4-dev"
 
 [[deps.Observables]]

@@ -68,14 +68,20 @@ echo "\`\`\`@docs"
 cat ../src/study/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
-echo "## NIBS"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/stim/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
-echo "\`\`\`"
-echo ""
 echo "## NeuroRecorder"
 echo ""
 echo "\`\`\`@docs"
 cat ../NeuroRecorder/src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroRecorder."/g
+echo "\`\`\`"
+echo ""
+echo "## NeuroStim"
+echo ""
+echo "\`\`\`@docs"
+cat ../NeuroStim/src/stim/*.jl | grep ^function | sed s/"function "/"NeuroStim."/g
+echo "\`\`\`"
+echo ""
+echo "## NeuroTester"
+echo ""
+echo "\`\`\`@docs"
+cat ../NeuroTester/src/tester/*.jl | grep ^function | sed s/"function "/"NeuroTester."/g
 echo "\`\`\`"

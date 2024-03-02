@@ -4,7 +4,7 @@ using Artifacts
 
 global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "neuroanalyzer-test-files")
 
-@testset "runtests.jl" begin
+@testset "NeuroAnalyzer.jl" begin
 
     @info "Running internal.jl tests"
     @test include("internal.jl")
@@ -32,9 +32,6 @@ global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "neuroanaly
 
     @info "Running statistics.jl tests"
     @test include("statistics.jl")
-
-    @info "Running stim.jl tests"
-    @test include("stim.jl")
 
     @info "Running study.jl tests"
     @test include("study.jl")

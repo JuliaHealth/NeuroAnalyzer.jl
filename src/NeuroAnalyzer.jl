@@ -5,7 +5,7 @@ https://neuroanalyzer.org
 """
 module NeuroAnalyzer
 
-@assert VERSION >= v"1.10.0" "This version of NeuroAnalyzer requires Julia 1.10.0 or above."
+@assert VERSION >= v"1.10.0" "NeuroAnalyzer requires Julia 1.10.0 or above."
 
 # set constants
 
@@ -126,7 +126,12 @@ using Wavelets
 using WaveletsExt
 using XDF
 
+@info "Loading sub-module: NeuroRecorder"
 @reexport using NeuroRecorder
+@info "Loading sub-module: NeuroStim"
+@reexport using NeuroStim
+@info "Loading sub-module: NeuroTester"
+@reexport using NeuroTester
 
 # define structures
 
@@ -184,7 +189,7 @@ function __init__()
 
     _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
     _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
-    
+
     # load preferences)
     _info("Preferences loaded:")
     _info(" Use CUDA: $use_cuda")
@@ -205,7 +210,7 @@ end
 
 # load sub-modules
 
-# internal functions are exposed outside NA
+# internal functions
 include("internal/check.jl")
 include("internal/component.jl")
 include("internal/create_header.jl")
@@ -459,9 +464,5 @@ include("utils/to_df.jl")
 # study
 include("study/create.jl")
 include("study/info.jl")
-# stim
-include("stim/tes.jl")
-include("stim/ect.jl")
-include("stim/tes_model.jl")
 
 end # NeuroAnalyzer

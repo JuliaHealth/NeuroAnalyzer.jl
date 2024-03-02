@@ -5,7 +5,7 @@ https://neuroanalyzer.org
 """
 module NeuroRecorder
 
-@assert VERSION >= v"1.10.0" "This version of NeuroAnalyzer requires Julia 1.10.0 or above."
+@assert VERSION >= v"1.10.0" "NeuroRecorder requires Julia 1.10.0 or above."
 
 # set constants
 
@@ -32,7 +32,9 @@ end
 
 # load sub-modules
 
+# internal functions
 include("internal/misc.jl")
+# record
 include("recorder/ftt.jl")
 
-end
+end # NeuroRecorder

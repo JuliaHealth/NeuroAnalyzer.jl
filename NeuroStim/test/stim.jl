@@ -1,4 +1,4 @@
-using NeuroAnalyzer
+using NeuroStim
 using Test
 
 @info "test 1/3: tes_dose()"
