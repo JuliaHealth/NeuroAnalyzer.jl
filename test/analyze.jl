@@ -24,6 +24,18 @@ a2 = zeros(2, 3, 2)
 ac, l = NeuroAnalyzer.acov(e10)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
+ac, l = NeuroAnalyzer.acov(e10, biased=false)
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
+ac, l = NeuroAnalyzer.acov(e10, method=:cov)
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
+ac, l = NeuroAnalyzer.acov(e10, method=:cov, biased=false)
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
+ac, l = NeuroAnalyzer.acov(e10, method=:stat)
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
 
 @info "test 2/59: ampdiff()"
 @test size(NeuroAnalyzer.ampdiff(a1)) == (2, 3, 2)
@@ -355,6 +367,12 @@ p, f = erop(e10, ch=1, method=:mw)
 @test NeuroAnalyzer.acor(v) == [-0.32 -0.32 -0.08 0.32 0.8 0.32 -0.08 -0.32 -0.32;;;]
 @test NeuroAnalyzer.acor(v, biased=false) == [-1.6 -0.8 -0.133 0.4 0.8 0.4 -0.133 -0.8 -1.6;;;]
 ac, l = NeuroAnalyzer.acor(e10)
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
+ac, l = NeuroAnalyzer.acor(e10, method=:cor)
+@test size(ac) == (23, 3, 10)
+@test length(l) == 3
+ac, l = NeuroAnalyzer.acor(e10, method=:stat)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
 
@@ -803,12 +821,30 @@ xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
 xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, biased=false)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
+xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:cov, biased=false)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:cov, biased=true)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:stat)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
 
 @info "test 48/59: xcor()"
 xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
 xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, biased=false)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:cor, biased=false)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:cor, biased=true)
+@test size(xc) == (1, 3, 1)
+@test length(l) == 3
+xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:stat)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
 

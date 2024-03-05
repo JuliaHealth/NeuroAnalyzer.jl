@@ -8,7 +8,7 @@ Pad vector / rows of matrix / array with zeros. Works with 1-, 2- and 3-dimensio
 
 # Arguments
 
-- `x::Union{AbstractVector, AbstractArray`
+- `x::Union{AbstractVector, AbstractArray}`
 - `n::Int64`: number of zeros to add
 
 # Returns
@@ -33,7 +33,7 @@ Pad vector / rows of matrix / array with zeros to the nearest power of 2 length.
 
 # Arguments
 
-- `x::Union{AbstractVector, AbstractArray`
+- `x::Union{AbstractVector, AbstractArray}`
 
 # Returns
 

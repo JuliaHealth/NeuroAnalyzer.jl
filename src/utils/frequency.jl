@@ -126,7 +126,7 @@ Return vector of frequencies and Nyquist frequency for signal.
 
 # Arguments
 
-- `s::Vector{Float64}`
+- `s::AbstractVector`
 - `fs::Int64`
 
 # Returns
@@ -134,7 +134,7 @@ Return vector of frequencies and Nyquist frequency for signal.
 - `hz::Vector{Float64`: signal vector
 - `nf::Float64`
 """
-function freqs(s::Vector{Float64}, fs::Int64)
+function freqs(s::AbstractVector, fs::Int64)
 
     @assert fs >= 1 "fs must be ≥ 1."
 

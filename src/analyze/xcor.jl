@@ -1,7 +1,7 @@
 export xcor
 
 """
-   xcor(s1, s2; l, demean, n, biased)
+   xcor(s1, s2; l, demean, biased, method)
 
 Calculate cross-correlation.
 
@@ -12,12 +12,18 @@ Calculate cross-correlation.
 - `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ (std(s1) × std(s2))`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`, `biased` value is ignored
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
 - `xc::Matrix{Float64}`
 """
-function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true)
+function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+
+    _check_var(method, [:sum, :cor, :stat], "method")
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
@@ -32,33 +38,47 @@ function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
         s2_tmp = s2
     end
 
-    for idx in 0:l
-        xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
-        if biased == true 
-            xc[idx + 1] /= length(s1)
-        else
-            xc[idx + 1] /= (length(s1) - idx)
+    if method === :sum
+        for idx in 0:l
+            xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
+            if biased == true 
+                xc[idx + 1] /= length(s1)
+            else
+                xc[idx + 1] /= (length(s1) - idx)
+            end
         end
-    end
-    
-    for idx in 0:l
-        xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
-        if biased == true 
-            xc_neg[idx + 1] /= length(s1)
-        else
-            xc_neg[idx + 1] /= (length(s1) - idx)
+        for idx in 0:l
+            xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
+            if biased == true 
+                xc_neg[idx + 1] /= length(s1)
+            else
+                xc_neg[idx + 1] /= (length(s1) - idx)
+            end
         end
+    elseif method === :cor
+        for idx in 0:l
+            xc[idx + 1] = @views cor(s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)])
+        end
+        for idx in 0:l
+            xc_neg[idx + 1] = @views cor(s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end])
+        end
+    elseif method === :stat
+        xc = crosscor(s1, s2, 0:l, demean=demean)
+        xc_neg = crosscor(s2, s1, 0:l, demean=demean)
     end
 
     xc = vcat(reverse(xc_neg), xc[2:end])
-    xc = round.(xc ./ (std(s1) * std(s2)), digits=3)
+    if method === :sum
+        xc = xc ./ (std(s1) * std(s2))
+    end
+    xc = round.(xc, digits=3)
 
     return reshape(xc, 1, :, 1)
 
 end
 
 """
-   xcor(s1, s2; l, demean)
+   xcor(s1, s2; l, demean, biased, method)
 
 Calculate cross-correlation.
 
@@ -69,12 +89,16 @@ Calculate cross-correlation.
 - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
 - `xc::Array{Float64, 3}`
 """
-function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true, biased::Bool=true)
+function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -85,7 +109,7 @@ function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xc[1, :, ep_idx] = @views xcor(s1[1, :, ep_idx], s2[1, :, ep_idx], l=l, demean=demean, biased=biased)
+            xc[1, :, ep_idx] = @views xcor(s1[1, :, ep_idx], s2[1, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end
 
@@ -94,7 +118,7 @@ function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 end
 
 """
-   xcor(s1, s2; l, demean)
+   xcor(s1, s2; l, demean, biased, method)
 
 Calculate cross-correlation.
 
@@ -105,12 +129,16 @@ Calculate cross-correlation.
 - `l::Int64=round(Int64, min(size(s1[1, :, 1], 1) - 1, 10 * log10(size(s1[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
 - `xc::Array{Float64, 3}`
 """
-function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true)
+function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -121,7 +149,7 @@ function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xc[ch_idx, :, ep_idx] = @views xcor(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased)
+            xc[ch_idx, :, ep_idx] = @views xcor(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end
 
@@ -130,7 +158,7 @@ function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
 end
 
 """
-    xcor(obj1, obj2; ch1, ch2, ep1, ep2, l, norm)
+    xcor(obj1, obj2; ch1, ch2, ep1, ep2, l, demean, biased, method)
 
 Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 
@@ -145,6 +173,10 @@ Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 - `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-correlation
 - `biased::Bool=true`: calculate biased or unbiased cross-correlation
+- `method::Symbol=:sum`: method of calculating cross-correlation:
+    - `:sum`: `acf = Σ(s1[1:end - l] .* s1[1+l:end]) ./ var(s)`
+    - `:cor`: `acf = cor(s1[1:end - l], s2[1+l:end])`
+    - `:stat`: use StatsBase `crosscor()`, `biased` value is ignored
 
 # Returns
 
@@ -152,7 +184,7 @@ Named tuple containing:
 - `xc::Array{Float64, 3}`: cross-correlation
 - `l::Vector{Float64}`: lags [s]
 """
-function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), l::Real=1, demean::Bool=true, biased::Bool=true)
+function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
 
@@ -171,14 +203,14 @@ function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     @assert l >= 0 "l must be ≥ 0."
 
     if datatype(obj1) == "erp" && datatype(obj2) == "erp"
-        xc = @views xcor(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased)
+        xc = @views xcor(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased, method=method)
         xc = cat(mean(xc, dims=3), xc, dims=3)
     else
-        length(ch1) == 1 && (ch1 = [ch1])
-        length(ch2) == 1 && (ch2 = [ch2])
-        length(ep1) == 1 && (ep1 = [ep1])
-        length(ep2) == 1 && (ep2 = [ep2])
-        xc = @views xcor(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased)
+        size(ch1) == () && (ch1 = [ch1])
+        size(ch2) == () && (ch2 = [ch2])
+        size(ep1) == () && (ep1 = [ep1])
+        size(ep2) == () && (ep2 = [ep2])
+        xc = @views xcor(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased, method=method)
     end
 
     return (xc=xc, l=collect(-l:l) .* 1/sr(obj1))

@@ -15,7 +15,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 
 Named tuple containing:
 - `c::Array{Float64, 3}`: coherence
-- `msc::Array{Float64, 3}`: MSC
+- `msc::Array{Float64, 3}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
 function fcoherence(s::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -53,7 +53,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 # Returns
 
 - `c::Array{Float64, 3}`: coherence
-- `msc::Array{Float64, 3}`: MSC
+- `msc::Array{Float64, 3}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
 function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -66,16 +66,18 @@ function fcoherence(s1::AbstractMatrix, s2::AbstractMatrix; fs::Int64, frq_lim::
     c = mt_coherence(s, fs=fs)
     f = Vector(c.freq)
     c = c.coherence
+    msc = @. abs(c)^2
 
     if frq_lim !== nothing
         _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
         idx2 = vsearch(frq_lim[2], f)
         c = c[:, :, idx1:idx2]
+        msc = msc[:, :, idx1:idx2]
         f = f[idx1:idx2]
     end
     
-    return (c=c, msc=c.^2, f=f)
+    return (c=c, msc=msc, f=f)
 
 end
 
@@ -94,7 +96,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 # Returns
 
 - `c::Array{Float64, 3}`: coherence
-- `msc::Array{Float64, 3}`: MSC
+- `msc::Array{Float64, 3}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
 function fcoherence(s1::AbstractArray, s2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -135,7 +137,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 
 Named tuple containing:
 - `c::Array{Float64, 3}`: coherence
-- `msc::Array{Float64, 3}`: MSC
+- `msc::Array{Float64, 3}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
 function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)), frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -151,10 +153,10 @@ function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::U
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
 
-    length(ch1) == 1 && (ch1 = [ch1])
-    length(ch2) == 1 && (ch2 = [ch2])
-    length(ep1) == 1 && (ep1 = [ep1])
-    length(ep2) == 1 && (ep2 = [ep2])
+    size(ch1) == () && (ch1 = [ch1])
+    size(ch2) == () && (ch2 = [ch2])
+    size(ep1) == () && (ep1 = [ep1])
+    size(ep2) == () && (ep2 = [ep2])
 
     c, msc, f = @views fcoherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], fs=sr(obj1), frq_lim=frq_lim)
 

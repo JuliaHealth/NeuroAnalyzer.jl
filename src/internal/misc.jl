@@ -156,3 +156,15 @@ function _vint2str(x::Vector{Int64})
 end
 
 _swap(x, y) = y, x
+
+function _veqlen(s1::AbstractVector, s2::AbstractVector)
+    if length(s1) > length(s2)
+        n = length(s1) - length(s2)
+        return s1, pad0(s2, n)
+    elseif length(s2) > length(s1)
+        n = length(s2) - length(s1)
+        return pad0(s1, n), s2
+    else
+        return s1, s2
+    end
+end
