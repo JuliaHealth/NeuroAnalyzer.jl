@@ -285,6 +285,7 @@ include("analyze/hjorth.jl")
 include("analyze/peak_frq.jl")
 include("analyze/sef.jl")
 include("analyze/phsd.jl")
+include("analyze/pacor.jl")
 # edit
 include("edit/channel.jl")
 include("edit/create.jl")
