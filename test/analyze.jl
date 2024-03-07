@@ -85,27 +85,22 @@ mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:mw)
 @test size(NeuroAnalyzer.covm(a1)) == (2, 2, 3, 2)
 @test size(NeuroAnalyzer.covm(e10)) == (23, 23, 2560, 10)
 
-@info "test 7/60: cps()"
-cp, cph, cf = NeuroAnalyzer.cps(rand(10), rand(10), fs=1)
-@test length(cp) == 9
-@test length(cph) == 9
-@test length(cf) == 9
-cp, cph, cf = NeuroAnalyzer.cps(rand(10, 10, 2), fs=1)
-@test size(cp) == (10, 10, 9, 2) 
-@test size(cph) == (10, 10, 9, 2) 
-@test length(cf) == 9
-cp, cph, cf = NeuroAnalyzer.cps(e10)
-@test size(cp) == (23, 23, 2049, 10) 
-@test size(cph) == (23, 23, 2049, 10) 
-@test length(cf) == 2049
-cp, cph, cf = NeuroAnalyzer.cps(rand(10, 10, 2), rand(10, 10, 2), fs=1)
-@test size(cp) == (10, 9, 2) 
-@test size(cph) == (10, 9, 2) 
-@test length(cf) == 180
-cp, cph, cf = NeuroAnalyzer.cps(e10, e10, ch1=1:2, ch2=2:3, ep1=1, ep2=1)
-@test size(cp) == (2, 2049, 1) 
-@test size(cph) == (2, 2049, 1) 
-@test length(cf) == 4098
+@info "test 7/60: cph()"
+ph, f = NeuroAnalyzer.cph(rand(10), rand(10), fs=1)
+@test length(ph) == 9
+@test length(f) == 9
+ph, f = NeuroAnalyzer.cph(rand(10, 10, 2), fs=1)
+@test size(ph) == (10, 10, 9, 2) 
+@test length(f) == 9
+ph, f = NeuroAnalyzer.cph(e10)
+@test size(ph) == (23, 23, 2049, 10) 
+@test length(f) == 2049
+ph, f = NeuroAnalyzer.cph(rand(10, 10, 2), rand(10, 10, 2), fs=1)
+@test size(ph) == (10, 9, 2) 
+@test length(f) == 9
+ph, f = NeuroAnalyzer.cph(e10, e10, ch1=1:2, ch2=2:3, ep1=1, ep2=1)
+@test size(ph) == (2, 2049, 1) 
+@test length(f) == 2049
 
 @info "test 8/60: diss()"
 @test NeuroAnalyzer.diss(v1, v2) == (gd = 0.21320071635561044, sc = 0.9772727272727273)
@@ -313,18 +308,22 @@ e = NeuroAnalyzer.erp(e10)
 p = NeuroAnalyzer.erp_peaks(e)
 @test size(p) == (23, 2)
 
-@info "test 16/60: fcoherence()"
-c, msc, f = NeuroAnalyzer.fcoherence(rand(10, 100), fs=10)
-@test size(c) == (10, 10, 65)
-@test size(msc) == (10, 10, 65)
+@info "test 16/60: coherence()"
+c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:mt)
+@test length(c) == 65
+@test length(msc) == 65
 @test length(f) == 65
-c, msc, f = NeuroAnalyzer.fcoherence(rand(10, 100), rand(10, 100), fs=10)
-@test size(c) == (20, 20, 65)
-@test size(msc) == (20, 20, 65)
+c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:fft)
+@test length(c) == 65
+@test length(msc) == 65
 @test length(f) == 65
-c, msc, f = NeuroAnalyzer.fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
-@test size(c) == (2, 2, 2049, 1)
-@test size(msc) == (2, 2, 2049, 1)
+c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method=:mt)
+@test size(c) == (1, 2049, 1)
+@test size(msc) == (1, 2049, 1)
+@test length(f) == 2049
+c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method=:fft)
+@test size(c) == (1, 2049, 1)
+@test size(msc) == (1, 2049, 1)
 @test length(f) == 2049
 
 @info "test 17/60: frqinst()"
@@ -769,19 +768,13 @@ for idx in 1:length(e)
     @test length(e[idx]) == 10
 end
 
-@info "test 43/60: tcoherence()"
-c, mc, ic = NeuroAnalyzer.tcoherence(v1, v2)
-@test length(c) == 3
-@test length(mc) == 3
-@test length(ic) == 3
-c, mc, ic = NeuroAnalyzer.tcoherence(rand(10, 100), rand(10, 100))
-@test size(c) == (10, 51, 1)
-@test size(mc) == (10, 51, 1)
-@test size(ic) == (10, 51, 1)
-c, mc, ic = NeuroAnalyzer.tcoherence(e10, e10, ch1=1:10, ch2=1:10, ep1=1, ep2=2)
-@test size(c) == (10, 1281, 1)
-@test size(mc) == (10, 1281, 1)
-@test size(ic) == (10, 1281, 1)
+@info "test 43/60: cpsd()"
+pxy, f = cpsd(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method=:mt)
+@test size(pxy) == (1, 2049, 1)
+@test length(f) == 2049
+pxy, f = cpsd(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method=:fft)
+@test size(pxy) == (1, 1290, 1)
+@test length(f) == 1290
 
 @info "test 44/60: tkeo()"
 @test NeuroAnalyzer.tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
@@ -908,7 +901,7 @@ ph, f = phsd(e10)
 
 @info "test 60/60: pacor()"
 pac, l = pacor(e10, l=2)
-@test size(pac) == (23, 5, 1)
+@test size(pac) == (23, 5, 10)
 @test length(l) == 5
 
 true

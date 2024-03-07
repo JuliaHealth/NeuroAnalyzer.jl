@@ -16,17 +16,11 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 
 Note: this toolbox is under active development and is subject to change without prior notice.
 
----
-
 ## Quickstart
 
 Add NeuroAnalyzer from the [Pkg REPL](https://docs.julialang.org/en/v1/stdlib/REPL/#Pkg-mode): `pkg> add NeuroAnalyzer`.
 
----
-
 ## Documentation
-
----
 
 Documentation is available in the following formats:
 
@@ -35,54 +29,34 @@ Documentation is available in the following formats:
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.html](https://neuroanalyzer.org/changelog.html).
 
----
-
 ## Tutorials
 
----
-
 NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org#tutorials](https://neuroanalyzer.org#tutorials).
-
----
 
 ## Requirements
 
 See [https://neuroanalyzer.org/requirements.html](https://neuroanalyzer.org/requirements.html) for more details.
 
----
-
 ## What's next
 
 This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future developments of NeuroAnalyzer is neither complete, nor in any particular order.
 
----
-
 ## Performance
 
----
-
 For testing performance between individual machines, a [complete set of benchmarks](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-benchmarks) is available.
-
----
 
 ## Plugins (extensions)
 
 See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.html) for more details.
 
----
-
 ## License
 
 This software is licensed under [The 2-Clause BSD License](LICENSE).
-
----
 
 ## Financial support
 
 If you would like to support the project financially, we have the Liberapay account:
 <a href="https://liberapay.com/~1829183/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
-
----
 
 ## Contributors
 

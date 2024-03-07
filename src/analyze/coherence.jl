@@ -1,9 +1,9 @@
-export cpsd
+export coherence
 
 """
-   cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
+   coherence(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
 
-Calculate cross power spectral density (CPSD).
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -19,14 +19,14 @@ Calculate cross power spectral density (CPSD).
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `norm::Bool=false`: normalize do dB
 
 # Returns
 
-- `pxy::Vector{Float64}`: cross-power spectrum
+- `coh::Vector{Float64}`: coherence
+- `mscoh::Vector{Float64}`: magnitude-squared coherence
 - `p::Vector{Float64}`: frequencies
 """
-function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
+function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     _check_var(method, [:mt, :fft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -43,34 +43,37 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         # multitaper
         s = hcat(s1, s2)'
         n_samples = length(s1)
-        pxy = mt_cross_power_spectra(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=nothing, nw=((nt + 1) ÷ 2), ntapers=nt)
-        f = freq(pxy)
-        pxy = power(pxy)
+        c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=nothing, nw=((nt + 1) ÷ 2), ntapers=nt)
+        f = DSP.freq(c)
+        coh = DSP.coherence(c)
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)
         f = f[f1_idx:f2_idx]
-        pxy = @views abs.(pxy[1, 2, f1_idx:f2_idx])
+        coh = @views coh[1, 2, f1_idx:f2_idx]
+        mscoh = coh.^2
     elseif method === :fft
         # fft
-        ss1, f = fft_transform(s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, mode=:r)
-        ss2, f = fft_transform(s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, mode=:r)
-        pxy = conj.(ss1) .* ss2
+        s1s1, f = cpsd(s1, s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean)
+        s1s2, f = cpsd(s1, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean)
+        s2s2, f = cpsd(s2, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean)
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)
         f = f[f1_idx:f2_idx]
-        pxy = @views abs.(pxy[f1_idx:f2_idx])
+        s1s1 = @views s1s1[f1_idx:f2_idx]
+        s2s2 = @views s2s2[f1_idx:f2_idx]
+        s1s2 = @views s1s2[f1_idx:f2_idx]
+        coh = @. abs(s1s2) / sqrt(s1s1 * s2s2)
+        mscoh = @. (abs(s1s2))^2 / (s1s1 * s2s2)
     end
 
-    norm == true && (pxy = pow2db.(pxy))
-
-    return (pxy=pxy, f=f)
+    return (coh=coh, mscoh=mscoh, f=f)
 
 end
 
 """
-    cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
+   coherence(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
 
-Calculate cross power spectral density (CPSD).
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -81,27 +84,26 @@ Calculate cross power spectral density (CPSD).
     - `:fft`: fast Fourier transformation
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
-- `demean::Bool=false`: if true, the channelwise mean will be subtracted from the input signals before the cross spectral powers are computed
+- `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `norm::Bool=false`: normalize do dB
 
 # Returns
 
-Named tuple containing:
-- `pxy::Array{Float64, 3}`: cross-power spectrum
-- `f::Vector{Float64}`: frequencies
+- `coh::Array{Float64, 3}`: coherence
+- `mscoh::Array{Float64, 3}`: magnitude-squared coherence
+- `p::Vector{Float64}`: frequencies
 """
-function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
+function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 
-    _, f = cpsd(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, norm=norm)
+    _, _, f = coherence(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     if frq_lim !== nothing
         _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
@@ -109,21 +111,22 @@ function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int6
         f = f[idx1:idx2]
     end
 
-    pxy = zeros(ch_n, length(f), ep_n)
+    coh = zeros(ch_n, length(f), ep_n)
+    mscoh = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pxy[ch_idx, :, ep_idx], _ = @views cpsd(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, norm=norm)
+            coh[ch_idx, :, ep_idx], mscoh[ch_idx, :, ep_idx], _ = @views coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
 
-    return (pxy=pxy, f=f)
+    return (coh=coh, mscoh=mscoh, f=f)
 end
 
 """
-    cpsd(obj1, obj2; ch1, ch2, ep1, ep2, method, frq_lim, demean, nt, wlen, woverlap, w, norm)
+    coherence(obj1, obj2; ch1, ch2, ep1, ep2, method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
 
-Calculate cross power spectral density (CPSD).
+Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
@@ -136,21 +139,21 @@ Calculate cross power spectral density (CPSD).
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2)`: frequency bounds
-- `demean::Bool=false`: if true, the channelwise mean will be subtracted from the input signals before the cross spectral powers are computed
+- `fs::Int64`: sampling rate
+- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
+- `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
 - `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj1)`: window length (in samples), default is 1 second
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `norm::Bool=false`: normalize do dB
 
 # Returns
 
-Named tuple containing:
-- `pxy::Array{Float64, 3}`: cross-power spectrum
-- `f::Vector{Float64}`: frequencies
+- `coh::Array{Float64, 3}`: coherence
+- `mscoh::Array{Float64, 3}`: magnitude-squared coherence
+- `p::Vector{Float64}`: frequencies
 """
-function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), method::Symbol=:mt, frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=sr(obj1), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
+function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), method::Symbol=:mt, frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=sr(obj1), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
@@ -168,8 +171,8 @@ function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     size(ep1) == () && (ep1 = [ep1])
     size(ep2) == () && (ep2 = [ep2])
 
-    pxy, f = @views cpsd(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, norm=norm)
+    coh, mscoh, f = @views coherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
-    return (pxy=pxy, f=f)
+    return (coh=coh, mscoh=mscoh, f=f)
 
 end
