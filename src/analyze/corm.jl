@@ -15,6 +15,7 @@ Calculate correlation matrix of `s * s'`.
 - `cm::Matrix{Float64}`
 """
 function corm(s::AbstractVector; norm::Bool=false)
+
     # channels-vs-channels
     if CUDA.functional() && use_cuda
         cm = Matrix(cor(CuVector(s) * CuVector(s)'))

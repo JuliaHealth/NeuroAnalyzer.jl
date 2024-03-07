@@ -58,6 +58,23 @@ This software is licensed under [The 2-Clause BSD License](LICENSE).
 If you would like to support the project financially, we have the Liberapay account:
 <a href="https://liberapay.com/~1829183/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 
+## How to Cite
+
+If you use this package please acknowledge us by citing our paper. 
+
+DOIs for specific version numbers are provided by [Zenodo](https://zenodo.org/search?page=1&size=20&q=conceptrecid%3A%227372648%22&sort=-version&all_versions=True). To cite the current version, use:
+```bibtex
+@software{adam_wysokinski_7372648,
+  author       = {Adam Wysokiński},
+  title        = {NeuroAnalyzer},
+  year         = 2024,
+  publisher    = {Zenodo},
+  version      = {0.24.3},
+  doi          = {10.5281/zenodo.7372648},
+  url          = {https://doi.org/10.5281/zenodo.7372648}
+}
+```
+
 ## Contributors
 
 Below is the list of contributors and their affiliations.
