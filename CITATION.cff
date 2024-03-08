@@ -1,11 +1,26 @@
-cff-version: 1.0.3
-message: "If you use this software, please cite it as below."
+cff-version: 1.2.0
+title: NeuroAnalyzer
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
 authors:
-  - family-names: "Wysokiński"
-    given-names: "Adam"
-    orcid: https://orcid.org/0000-0002-6159-6579
-title: 'NeuroAnalyzer.jl: Toolbox for analyzing neurophysiological data with Julia'
-doi: 10.5281/zenodo.10718848
-version: 0.24.3
-date-released: 2024-03-01
-repository-code: https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
+  - given-names: Adam
+    family-names: Wysokiński
+    email: adam.wysokinski@neuroanalyzer.org
+    affiliation: Medical University of Lodz
+    orcid: 'https://orcid.org/0000-0002-6159-6579'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.10718848
+repository-code: 'https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl'
+url: 'https://neuroanalyzer.org'
+repository: 'https://github.com/JuliaHealth/NeuroAnalyzer.jl'
+abstract: >-
+  NeuroAnalyzer is a Julia toolbox for analyzing
+  neurophysiological data.
+keywords:
+  - EEG
+  - MEG
+  - NIBS
+license: BSD-2-Clause
