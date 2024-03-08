@@ -3,6 +3,7 @@ export m_sortperm
 export m_sort
 export m_norm
 export vec2mat
+export arr2mat
 
 """
     m_pad0(m)
@@ -155,6 +156,32 @@ function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)
     m[1, :] = x[1:wlen]
     for idx in 2:seg
         m[idx, :] = x[(((idx - 1) * wlen + 1) - woverlap):((((idx - 1) * wlen) - woverlap) + wlen)]
+    end
+
+    return m
+
+end
+
+"""
+    arr2mat(x)
+
+Reshape array into matrix.
+
+# Arguments
+
+- `x::AbstractArray`
+
+# Returns
+
+- `m::Matrix{eltype(x)}`
+"""
+function arr2mat(x::AbstractArray)
+
+    @assert size(x, 1) == 1 "First dimension of x must be 1."
+
+    m = zeros(size(x, 3), size(x, 2))
+    for idx in 1:size(x, 3)
+        m[idx, :] = x[1, :, idx]
     end
 
     return m

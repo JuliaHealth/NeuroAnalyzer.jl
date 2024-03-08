@@ -129,7 +129,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                    aspect_ratio=1,
                    size=size(img),
                    right_margin=-30*Plots.px,
-                   bottom_margin=-40*Plots.px,
+                   bottom_margin=-100*Plots.px,
                    top_margin=-30*Plots.px,
                    left_margin=-40*Plots.px,
                    ticks_fontsize=font_size,
@@ -186,7 +186,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
     m_tmp = normalize_n(connections)
 
     for idx1 in 1:size(connections, 1)
-        for idx2 in 1:size(connections, 1)
+        for idx2 in 2:size(connections, 1)
             if threshold_type === :g
                 if connections[idx1, idx2] > threshold
                     if weights == true
@@ -271,9 +271,12 @@ function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real},
 
     _check_channels(obj, ch, datatype(obj))
 
-    p = plot_connections(obj.locs, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
+    p = plot_connections(obj.locs, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
 
-    Plots.plot!(p, title=title)
+    large == false && (title = "")
+    Plots.plot!(p,
+                title=title,
+                titlefontsize=10)
 
     return p
 

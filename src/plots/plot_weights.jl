@@ -126,9 +126,10 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
                    aspect_ratio=1,
                    size=size(img),
                    right_margin=-30*Plots.px,
-                   bottom_margin=-40*Plots.px,
+                   bottom_margin=-100*Plots.px,
                    top_margin=-30*Plots.px,
                    left_margin=-40*Plots.px,
+                   titlefontsize=10,
                    ticks_fontsize=font_size,
                    xticks=xt,
                    yticks=yt,
@@ -223,9 +224,12 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Uni
 
     _check_channels(obj, ch)
 
-    p = plot_weights(obj.locs, weights=weights, ch=ch, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
+    p = plot_weights(obj.locs, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
 
-    Plots.plot!(p, title=title)
+    large == false && (title = "")
+    Plots.plot!(p,
+                title=title,
+                titlefontsize=10)
 
     return p
     
