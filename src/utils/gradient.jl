@@ -1,24 +1,24 @@
 export gradient
 
 """
-   gradient(x; l, demean)
+   gradient(x; rev)
 
 Calculate gradient of a 1-dimensional scalar field.
 
 # Arguments
 
 - `x::AbstractVector`
-- `inverse::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `inverse=true`, the direction is towards the minimum value
+- `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
 
 # Returns
 
 Named tuple containing:
 - `g::Vector{Vector{Float64}}`: vector field of gradients
-- `g::Vector{Float64}`: scalar field of gradient lengths
+- `g_len::Vector{Float64}`: scalar field of gradient lengths
 """
-function gradient(x::AbstractVector; inverse::Bool=false)
+function gradient(x::AbstractVector; rev::Bool=false)
 
-    g_tmp, g_len = _gradient(x, inverse=inverse)
+    g_tmp, g_len = _gradient(x, rev=rev)
 
     g = Vector{Vector{Float64}}(undef, length(g_tmp))
     for idx in CartesianIndices(g_tmp)
@@ -30,24 +30,24 @@ function gradient(x::AbstractVector; inverse::Bool=false)
 end
 
 """
-   gradient(x; l, demean)
+   gradient(x; rev)
 
 Calculate gradient of a 2-dimensional scalar field.
 
 # Arguments
 
 - `x::AbstractMatrix`
-- `inverse::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `inverse=true`, the direction is towards the minimum value
+- `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
 
 # Returns
 
 Named tuple containing:
 - `g::Matrix{Vector{Float64}}`: vector field of gradients
-- `g::Matrix{Float64}`: scalar field of gradient lengths
+- `g_len::Matrix{Float64}`: scalar field of gradient lengths
 """
-function gradient(x::AbstractMatrix; inverse::Bool=false)
+function gradient(x::AbstractMatrix; rev::Bool=false)
 
-    g_tmp, g_len = _gradient(x, inverse=inverse)
+    g_tmp, g_len = _gradient(x, rev=rev)
 
     g = Matrix{Vector{Float64}}(undef, size(g_tmp))
     for idx in CartesianIndices(g_tmp)
@@ -59,24 +59,24 @@ function gradient(x::AbstractMatrix; inverse::Bool=false)
 end
 
 """
-   gradient(x; l, demean)
+   gradient(x; rev)
 
 Calculate gradient of a ≥3-dimensional scalar field.
 
 # Arguments
 
 - `x::AbstractArray`
-- `inverse::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `inverse=true`, the direction is towards the minimum value
+- `rev::Bool=false`: by default the direction of the gradient vector field is towards maximum value, if `rev=true`, the direction is towards the minimum value
 
 # Returns
 
 Named tuple containing:
 - `g::Array{Vector{Float64}, 3}`: vector field of gradients
-- `g::Array{Float64, 3}`: scalar field of gradient lengths
+- `g_len::Array{Float64, 3}`: scalar field of gradient lengths
 """
-function gradient(x::AbstractArray; inverse::Bool=false)
+function gradient(x::AbstractArray; rev::Bool=false)
 
-    g_tmp, g_len = _gradient(x, inverse=inverse)
+    g_tmp, g_len = _gradient(x, rev=rev)
 
     g = Array{Vector{Float64}}(undef, size(g_tmp))
     for idx in CartesianIndices(g_tmp)

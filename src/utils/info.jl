@@ -386,7 +386,7 @@ end
 """
     channels_cluster(obj, cluster)
 
-Return channels belonging to a `cluster` of channels.
+Return channels belonging to a cluster of channels.
 
 # Arguments
 
@@ -434,7 +434,7 @@ end
 """
     band_frq(obj, band)
 
-Return frequency limits for a `band`.
+Return band frequency limits.
 
 # Arguments
 
@@ -494,7 +494,7 @@ end
 """
     band_frq(fs, band)
 
-Return frequency limits of a `band`.
+Return band frequency limits.
 
 # Arguments
 
@@ -555,7 +555,7 @@ end
 """
     describe(obj)
 
-Return basic descriptive statistics of `obj.data`.
+Return basic descriptive statistics of the object data.
 
 # Arguments
 
@@ -594,7 +594,7 @@ end
 """
     size(obj)
 
-Return size of the `obj` data.
+Return size of the object data.
 
 # Arguments
 
@@ -613,8 +613,7 @@ end
 """
     size(obj, n)
 
-Return size of the `obj` data.
-
+Return size of the object data.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
@@ -634,7 +633,7 @@ end
 """
     datatype(obj)
 
-Return data type of the `obj`.
+Return data type of the object.
 
 # Arguments
 

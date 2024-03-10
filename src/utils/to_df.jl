@@ -3,7 +3,7 @@ export to_df
 """
     to_df(obj)
 
-Export OBJ data to DataFrame.
+Export object data as DataFrame.
 
 # Arguments
 

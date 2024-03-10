@@ -35,15 +35,15 @@ function m_pad0(m::Matrix{<:Number})
 end
 
 """
-    m_sortperm(m; rev=false, dims=1)
+    m_sortperm(m; rev, dims)
 
-Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
+Generates matrix sorting index.
 
 # Arguments
 
 - `m::AbstractMatrix`
-- `rev::Bool`
-- `dims::Int64`
+- `rev::Bool`: reverse sort
+- `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
 
 # Returns
 
@@ -71,15 +71,15 @@ function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
 end
 
 """
-    m_sort(m, m_idx; rev=false, dims=1)
+    m_sort(m, m_idx; rev, dims)
 
-Sorts matrix `m` using sorting index `m_idx`
+Sorts matrix using sorting index.
 
 # Arguments
 
 - `m::Matrix`
-- `m_idx::Vector{Int64}`
-- `rev::Bool=false`
+- `m_idx::Vector{Int64}`: sorting index
+- `rev::Bool=false`: reverse sort
 - `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
 
 # Returns

@@ -4,7 +4,7 @@ export s2t
 """
     t2s(t, fs)
 
-Convert time to sample number.
+Convert time in seconds to sample number.
 
 # Arguments
 
@@ -25,7 +25,7 @@ end
 """
     s2t(s, fs)
 
-Convert sample number to time.
+Convert sample number to time in seconds.
 
 # Arguments
 
@@ -47,7 +47,7 @@ end
 """
     t2s(obj; t)
 
-Convert time in seconds to samples.
+Convert time in seconds to sample number.
 
 # Arguments
 

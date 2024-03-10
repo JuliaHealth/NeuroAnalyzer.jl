@@ -3,7 +3,7 @@ export view_header
 """
     header(obj)
 
-Show keys and values of OBJ header.
+Show keys and values of the object header.
 
 # Arguments
 

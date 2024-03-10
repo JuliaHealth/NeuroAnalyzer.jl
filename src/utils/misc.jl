@@ -91,6 +91,27 @@ function cmin(x::Vector{<:Complex})
 end
 
 """
+    cextrema(x)
+
+Return extreme values of the complex vector.
+
+# Arguments
+
+- `x::Vector{ComplexF64}`
+
+# Returns
+
+Tuple containing:
+- `cmax::ComplexF64`
+- `cmin::ComplexF64`
+"""
+function cextrema(x::Vector{<:Complex})
+
+    return (cmax(x), cmin(x))
+
+end
+
+"""
     tuple_order(t, rev)
 
 Order tuple elements in ascending or descending (`rev=true`) order.
@@ -108,6 +129,7 @@ function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
 
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
+
     return t
     
 end
@@ -115,7 +137,7 @@ end
 """
     cums(signal)
 
-Calculate cumulative sum.
+Calculate cumulative sum of a 3-dimensional array.
 
 # Arguments
 
@@ -143,12 +165,12 @@ end
 """
     f_nearest(m, pos)
 
-Find nearest position tuple `pos` in vector of positions `m`.
+Find nearest position tuple in a matrix of positions.
 
 # Arguments
 
-- `m::Matrix{Tuple{Float64, Float64}}`
-- `p::Tuple{Float64, Float64}`
+- `m::Matrix{Tuple{Float64, Float64}}`: matrix of positions
+- `p::Tuple{Float64, Float64}`: position tuple
 
 # Returns
 

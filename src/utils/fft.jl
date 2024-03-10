@@ -9,7 +9,7 @@ export fft_transform
 """
     fft0(x, n)
 
-Zeros-padded FFT.
+Perform zeros-padded FFT.
 
 # Arguments
 
@@ -47,7 +47,7 @@ end
 """
     ifft0(x, n)
 
-IFFT of zero-padded vector.
+Perform IFFT of zero-padded vector.
 
 # Arguments
 
@@ -77,7 +77,7 @@ end
 """
     fft2(x)
 
-Zeros-padded FFT, so the length of padded vector is a power of 2.
+Perform zeros-padded FFT, so the length of padded vector is a power of 2.
 
 # Arguments
 
@@ -98,7 +98,7 @@ end
 """
     nextpow2(x)
 
-Return the next power of 2 for given number `x`.
+Return the next power of 2 for a given number.
 
 # Argument
 
@@ -118,7 +118,7 @@ end
 """
     rfft0(x, n)
 
-Zeros-padded FFT.
+Perform zeros-padded single-sided FFT.
 
 # Arguments
 
@@ -156,7 +156,7 @@ end
 """
     rfft2(x)
 
-Zeros-padded FFT, so the length of padded vector is a power of 2.
+Perform zeros-padded single-sided FFT, so the length of padded vector is a power of 2.
 
 # Arguments
 

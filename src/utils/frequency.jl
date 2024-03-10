@@ -7,7 +7,7 @@ export freqs
 """
     hz2rads(f)
 
-Convert frequency `f` in Hz to rad/s.
+Convert frequency in Hz to rad/s.
 
 # Arguments
 
@@ -26,7 +26,7 @@ end
 """
     rads2hz(f)
 
-Convert frequency `f` in rad/s to Hz.
+Convert frequency in rad/s to Hz.
 
 # Arguments
 
@@ -66,7 +66,7 @@ end
 """
     f2t(f)
 
-Convert frequency to cycle length in ms.
+Convert frequency in Hz to cycle length in ms.
 
 # Arguments
 

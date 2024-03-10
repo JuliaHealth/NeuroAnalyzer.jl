@@ -4,7 +4,7 @@ export vsplit
 """
     vsearch(y, x; acc)
 
-Return the positions of the `y` value in the vector `x`.
+Return the positions of the value in the vector.
 
 # Arguments
 
@@ -28,7 +28,7 @@ end
 """
     vsearch(y, x; acc)
 
-Return the positions of the `y` vector in the vector `x`.
+Return the positions of the value in the vector.
 
 # Arguments
 
@@ -58,12 +58,12 @@ end
 """
     vsplit(x, n)
 
-Splits the vector `x` into `n`-long pieces.
+Splits vector into pieces.
 
 # Argument
 
 - `x::AbstractVector`
-- `n::Int64`
+- `n::Int64`: length of one piece
 
 # Returns
 

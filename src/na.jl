@@ -151,7 +151,7 @@ end
 """
     na_plugins_remove(plugin)
 
-Remove NeuroAnalyzer `plugin`.
+Remove NeuroAnalyzer plugin.
 
 # Arguments
 
@@ -179,7 +179,7 @@ end
 """
     na_plugins_install(plugin)
 
-Install NeuroAnalyzer `plugin`.
+Install NeuroAnalyzer plugin from remote Git repository.
 
 # Arguments
 
@@ -204,7 +204,7 @@ end
 """
     na_plugins_update(plugin)
 
-Install NeuroAnalyzer `plugin`.
+Install NeuroAnalyzer plugin.
 
 # Arguments
 
@@ -244,53 +244,34 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
 end
 
 """
-    na_set_use_cuda(use_cuda)
+    na_set_use_cuda(value)
 
 Change `use_cuda` preference.
 
 # Arguments
 
-- `use_cuda::Bool`: value
+- `value::Bool`: value
 """
-function na_set_use_cuda(use_cuda::Bool)
+function na_set_use_cuda(value::Bool)
 
-    @set_preferences!("use_cuda" => use_cuda)
+    @set_preferences!("use_cuda" => value)
     _info("New option value set, restart your Julia session for this change to take effect")
 
 end
 
 """
-    na_set_progress_bar(progress_bar)
+    na_set_progress_bar(value)
 
 Change `progress_bar` preference.
 
 # Arguments
 
-- `progress_bar::Bool`: value
+- `value::Bool`: value
 """
-function na_set_progress_bar(progress_bar::Bool)
+function na_set_progress_bar(value::Bool)
 
-    @set_preferences!("progress_bar" => progress_bar)
+    @set_preferences!("progress_bar" => value)
     _info("New option value set, restart your Julia session for this change to take effect")
-
-end
-
-"""
-    na_set_prefs(use_cuda, plugins_path, progress_bar, verbose)
-
-Save NeuroAnalyzer preferences.
-
-# Arguments
-
-- `use_cuda::Bool`
-- `progress_bar::Bool`
-- `verbose::Bool`
-"""
-function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)
-
-    @set_preferences!("use_cuda" => use_cuda)
-    @set_preferences!("progress_bar" => progress_bar)
-    @set_preferences!("verbose" => verbose)
 
 end
 
@@ -307,6 +288,25 @@ function na_set_verbose(verbose::Bool)
 
     @set_preferences!("verbose" => verbose)
     _info("New option value set, restart your Julia session for this change to take effect")
+
+end
+
+"""
+    na_set_prefs(use_cuda, progress_bar, verbose)
+
+Save NeuroAnalyzer preferences.
+
+# Arguments
+
+- `use_cuda::Bool`
+- `progress_bar::Bool`
+- `verbose::Bool`
+"""
+function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)
+
+    @set_preferences!("use_cuda" => use_cuda)
+    @set_preferences!("progress_bar" => progress_bar)
+    @set_preferences!("verbose" => verbose)
 
 end
 

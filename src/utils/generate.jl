@@ -26,7 +26,7 @@ Return the `n`-point long symmetric window `type`.
     - `:triangle`: symmetric triangle (left half ↑, right half ↓)
     - `:exp`: symmetric exponential (left half ↑, right half ↓)
 - `n::Int64`: window length
-- `even::Bool=false`: if true, make the window of even length (+1 for odd n)
+- `even::Bool=false`: if true, make the window of even length (increase length by 1 for odd value of `n`)
 
 # Returns
 
@@ -297,7 +297,7 @@ Generates square wave.
 
 # Returns
 
-- s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_square(t::Union{AbstractVector, AbstractRange}, p::Real, a::Real=1, offset::Real=0, w::Real=1)
 
@@ -318,7 +318,7 @@ Generates triangle wave.
 
 # Returns
 
-- s::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_triangle(t::Union{AbstractVector, AbstractRange}, a::Real=1)
 

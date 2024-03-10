@@ -1,7 +1,7 @@
 export phases
 
 """
-    phases(s; pad)
+    phases(s)
 
 Calculate phases.
 

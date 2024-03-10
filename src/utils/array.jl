@@ -52,7 +52,7 @@ end
 """
     perm_cmp(a1, a2; p, perm_n)
 
-Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using permutation based statistic.
+Compare two 3-dimensional arrays (e.g. two spectrograms), using permutation based statistic.
 
 # Arguments
 

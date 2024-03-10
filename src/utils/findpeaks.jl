@@ -13,7 +13,6 @@ Find peaks.
 # Returns
 
 - `p_idx::Vector{Int64}`
-
 """
 function findpeaks(signal::AbstractVector; d::Int64=32)
 

@@ -7,7 +7,7 @@ export delete_note!
 """
     view_note(obj)
 
-Return recording note.
+Return the object recording note.
 
 # Arguments
 
@@ -22,7 +22,7 @@ end
 """
     add_note(obj; note)
 
-Add recording note.
+Add recording note to the object header.
 
 # Arguments
 
@@ -45,7 +45,7 @@ end
 """
     add_note!(obj; note)
 
-Add recording note.
+Add recording note to the object header.
 
 # Arguments
 
@@ -63,7 +63,7 @@ end
 """
     delete_note(obj)
 
-Delete recording note.
+Delete recording note from the object header.
 
 # Arguments
 
@@ -85,7 +85,7 @@ end
 """
     delete_note!(obj)
 
-Delete recording note.
+Delete recording note from the object header.
 
 # Arguments
 
