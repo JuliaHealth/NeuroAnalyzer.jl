@@ -20,12 +20,13 @@ Plot weights at electrode positions.
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
+- `title::String=""`: plot title
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy)
+function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
     @assert length(weights) >= 1 "weights must contain at least one value."
@@ -38,9 +39,9 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
 
     if plane === :xy
         if large
-            img = FileIO.load(joinpath(res_path, "head_t_large.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_t_large.png"))
         else
-            img = FileIO.load(joinpath(res_path, "head_t_small.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
         if cart == false
             loc_x = zeros(nrow(locs))
@@ -54,9 +55,9 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         end
     elseif plane === :xz
         if large
-            img = FileIO.load(joinpath(res_path, "head_f_large.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_f_large.png"))
         else
-            img = FileIO.load(joinpath(res_path, "head_f_small.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
         if cart == false
             loc_x = zeros(nrow(locs))
@@ -70,9 +71,9 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         end
     elseif plane === :yz
         if large
-            img = FileIO.load(joinpath(res_path, "head_s_large.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_s_large.png"))
         else
-            img = FileIO.load(joinpath(res_path, "head_s_small.png"))
+            head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
         if cart == false
             loc_x = zeros(nrow(locs))
@@ -90,10 +91,10 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
     loc_y = _s2v(loc_y)
 
     if head
-        xt = (linspace(0, size(img, 1), 25), string.(-1.2:0.1:1.2))
-        yt = (linspace(0, size(img, 2), 25), string.(1.2:-0.1:-1.2))
-        xl = (0, size(img, 1))
-        yl = (0, size(img, 2))
+        xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))
+        yt = (linspace(0, size(head_shape, 2), 25), string.(1.2:-0.1:-1.2))
+        xl = (0, size(head_shape, 1))
+        yl = (0, size(head_shape, 2))
     else
         xt = (-1.2:0.1:1.2)
         yt = (1.2:-0.1:-1.2)
@@ -101,7 +102,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         yl = (-1.2, 1.2)
     end
 
-    origin = size(img) ./ 2
+    origin = size(head_shape) ./ 2
     if large
         marker_size = 10
         font_size = 6
@@ -119,24 +120,39 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
     ma = 1.0
     ch_labels == true && (ma = 0.75)
 
-    p = Plots.plot(grid=false,
-                   framestyle=:none,
-                   border=:none,
-                   palette=pal,
-                   aspect_ratio=1,
-                   size=size(img),
-                   right_margin=-30*Plots.px,
-                   bottom_margin=-100*Plots.px,
-                   top_margin=-30*Plots.px,
-                   left_margin=-40*Plots.px,
-                   titlefontsize=10,
-                   ticks_fontsize=font_size,
-                   xticks=xt,
-                   yticks=yt,
-                   xlims=xl,
-                   ylims=yl)
+    if large
+        p = Plots.plot(grid=false,
+                       framestyle=:none,
+                       border=:none,
+                       palette=pal,
+                       aspect_ratio=1,
+                       size=title == "" ? size(head_shape) .+ 95 : size(head_shape) .+ 75,
+                       right_margin=-50*Plots.px,
+                       bottom_margin=5*Plots.px,
+                       top_margin=title == "" ? 50*Plots.px : 10*Plots.px,
+                       left_margin=-50*Plots.px,
+                       titlefontsize=font_size,
+                       xlims=xl,
+                       ylims=yl,
+                       title=title)
+    else
+        p = Plots.plot(grid=false,
+                       framestyle=:none,
+                       border=:none,
+                       palette=pal,
+                       aspect_ratio=1,
+                       size=size(head_shape) .+ 2,
+                       right_margin=-50*Plots.px,
+                       bottom_margin=-50*Plots.px,
+                       top_margin=-50*Plots.px,
+                       left_margin=-100*Plots.px,
+                       titlefontsize=font_size,
+                       xlims=xl,
+                       ylims=yl,
+                       title=title)
+    end
 
-    head && (p = Plots.plot!(img))
+    head && (p = Plots.plot!(head_shape))
 
     for idx in eachindex(locs[!, :labels])
         if idx in ch
@@ -182,9 +198,23 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
     end
     for idx in eachindex(locs[ch, :labels])
         if idx in ch
-            Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), pointsize=font_size)))
+            if mono == true
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), pointsize=font_size)))
+            else
+                if weights[idx] >= 0
+                    Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), :red, pointsize=font_size)))
+                else
+                    Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), :blue, pointsize=font_size)))
+                end
+            end
         end
     end
+
+    large == false && (title = "")
+    Plots.plot!(p,
+                title=title,
+                titlefontsize=10)
+
 
     Plots.plot!(p)
 
@@ -224,12 +254,7 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Uni
 
     _check_channels(obj, ch)
 
-    p = plot_weights(obj.locs, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane)
-
-    large == false && (title = "")
-    Plots.plot!(p,
-                title=title,
-                titlefontsize=10)
+    p = plot_weights(obj.locs, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane, title=title)
 
     return p
     
