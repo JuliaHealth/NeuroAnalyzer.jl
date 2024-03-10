@@ -8,9 +8,14 @@ Plot connections between channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `connections::Matrix{<:Real}`: matrix of connections weights
-- `threshold::Real`: plot all connection above threshold
-- `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
+- `connections::Matrix{<:Real}`: matrix of connections weights (channels by channels)
+- `threshold::Real`: threshold for plotting, see below
+- `threshold_type::Symbol=:g`: rule for thresholding:
+    - `:eq`: plot if connection weight is equal to threshold
+    - `:geq`: plot if connection weight is ≥ to threshold
+    - `:leq`: plot if connection weight is ≤ to threshold
+    - `:g`: plot if connection weight is > to threshold
+    - `:l`: plot if connection weight is < to threshold
 - `weights::Bool=true`: weight line widths and alpha based on connection value
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `ch_labels::Bool=false`: plot channel labels

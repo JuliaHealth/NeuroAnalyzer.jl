@@ -276,17 +276,17 @@ function na_set_progress_bar(value::Bool)
 end
 
 """
-    na_set_verbose(verbose)
+    na_set_verbose(value)
 
 Change `verbose` preference.
 
 # Arguments
 
-- `verbose::Bool`: value
+- `value::Bool`: value
 """
-function na_set_verbose(verbose::Bool)
+function na_set_verbose(value::Bool)
 
-    @set_preferences!("verbose" => verbose)
+    @set_preferences!("verbose" => value)
     _info("New option value set, restart your Julia session for this change to take effect")
 
 end
