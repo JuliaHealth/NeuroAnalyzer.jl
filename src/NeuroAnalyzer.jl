@@ -405,6 +405,7 @@ include("plots/plot_dipole3d.jl")
 include("plots/plot_locs_nirs.jl")
 include("plots/cairo.jl")
 include("plots/plot_phsd.jl")
+include("plots/plot_coherence.jl")
 # gui
 include("gui/iview.jl")
 include("gui/iedit.jl")

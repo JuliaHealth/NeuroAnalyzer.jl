@@ -148,3 +148,5 @@ function _angle_quadrant(a::Real)
 end 
 
 _xyz2r(x, y, z) = sqrt(x^2 + y^2 + z^2)
+
+_midxy(x1, y1, x2, y2) = (x1 + ((x2 - x1) / 2), y1 + ((y2 - y1) / 2))

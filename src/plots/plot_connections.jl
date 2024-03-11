@@ -225,7 +225,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                             end
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                            l_pos = (loc_x[idx1] + ((loc_x[idx2] - loc_x[idx1]) ÷ 2), loc_y[idx1] + ((loc_y[idx2] - loc_y[idx1]) ÷ 2))
+                            l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono == true
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size)))
                             else
@@ -251,7 +251,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                             end
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                            l_pos = (loc_x[idx1] + ((loc_x[idx2] - loc_x[idx1]) ÷ 2), loc_y[idx1] + ((loc_y[idx2] - loc_y[idx1]) ÷ 2))
+                            l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono == true
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size)))
                             else
@@ -277,7 +277,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                             end
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                            l_pos = (loc_x[idx1] + ((loc_x[idx2] - loc_x[idx1]) ÷ 2), loc_y[idx1] + ((loc_y[idx2] - loc_y[idx1]) ÷ 2))
+                            l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono == true
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size)))
                             else
@@ -303,7 +303,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                             end
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                            l_pos = (loc_x[idx1] + ((loc_x[idx2] - loc_x[idx1]) ÷ 2), loc_y[idx1] + ((loc_y[idx2] - loc_y[idx1]) ÷ 2))
+                            l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono == true
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size)))
                             else
@@ -329,7 +329,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                             end
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                            l_pos = (loc_x[idx1] + ((loc_x[idx2] - loc_x[idx1]) ÷ 2), loc_y[idx1] + ((loc_y[idx2] - loc_y[idx1]) ÷ 2))
+                            l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono == true
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size)))
                             else
@@ -355,7 +355,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                             end
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                            l_pos = (loc_x[idx1] + ((loc_x[idx2] - loc_x[idx1]) ÷ 2), loc_y[idx1] + ((loc_y[idx2] - loc_y[idx1]) ÷ 2))
+                            l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
                             if mono == true
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size)))
                             else

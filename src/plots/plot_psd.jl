@@ -19,7 +19,11 @@ Plot PSD (power spectrum density).
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -111,7 +115,11 @@ Plot multi-channel PSD (power spectrum density).
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -138,9 +146,6 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
 
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
-
-    # get range of the original sp for the scale
-    range = _get_range(sp)
 
     # normalize and shift so all channels are visible
     # each channel is between -1.0 and +1.0
@@ -232,19 +237,23 @@ Plot PSD mean and ±95% CI of averaged channels.
 # Arguments
 
 - `sf::Vector{Float64}`: frequencies
-- `sp::Array{Float64, 3}`: powers
+- `sp::Matrix{Float64}`: powers
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
@@ -352,14 +361,18 @@ Butterfly PSD plot.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -455,7 +468,11 @@ Plot 3-d waterfall PSD plot.
 - `zlabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 - `kwargs`: optional arguments for plot() function
 
@@ -463,7 +480,7 @@ Plot 3-d waterfall PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
+function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -603,7 +620,11 @@ Plot topographical map PSDs.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
@@ -611,7 +632,7 @@ Plot topographical map PSDs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -756,7 +777,11 @@ Plot power spectrum density.
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
@@ -1062,7 +1087,11 @@ Plot power spectrum density of embedded or external component.
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
-- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]

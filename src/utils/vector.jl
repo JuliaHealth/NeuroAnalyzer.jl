@@ -1,5 +1,7 @@
 export vsearch
 export vsplit
+export minat
+export maxat
 
 """
     vsearch(y, x; acc)
@@ -81,4 +83,56 @@ function vsplit(x::AbstractVector, n::Int64=1)
     end
 
     return result
+end
+
+"""
+    minat(x, y)
+
+Find minimum value of one vector and return value at its index from another vector.
+
+# Argument
+
+- `x::AbstractVector`
+- `y::AbstractVector`
+
+# Returns
+
+- `value::eltype(y)`
+- `idx::Int64`
+"""
+function minat(x::AbstractVector, y::AbstractVector)
+
+    @assert length(x) == length(x) "x and y length must be equal."
+
+    idx = vsearch(minimum(x), x)
+    value = y[idx]
+
+    return value, idx
+
+end
+
+"""
+    maxat(x, y)
+
+Find maximum value of one vector and return value at its index from another vector.
+
+# Argument
+
+- `x::AbstractVector`
+- `y::AbstractVector`
+
+# Returns
+
+- `value::eltype(y)`
+- `idx::Int64`
+"""
+function maxat(x::AbstractVector, y::AbstractVector)
+
+    @assert length(x) == length(x) "x and y length must be equal."
+
+    idx = vsearch(maximum(x), x)
+    value = y[idx]
+
+    return value, idx
+
 end

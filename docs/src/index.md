@@ -18,7 +18,7 @@ NeuroAnalyzer.na_plugins_install(plugin::String)
 NeuroAnalyzer.na_plugins_update(plugin::Union{String, Nothing}=nothing)
 NeuroAnalyzer.na_set_use_cuda(value::Bool)
 NeuroAnalyzer.na_set_progress_bar(value::Bool)
-NeuroAnalyzer.na_set_verbose(verbose::Bool)
+NeuroAnalyzer.na_set_verbose(value::Bool)
 NeuroAnalyzer.na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)
 NeuroAnalyzer.na_version()
 ```
@@ -684,8 +684,8 @@ NeuroAnalyzer.add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoS
 NeuroAnalyzer.plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)
 NeuroAnalyzer.plot_empty()
 NeuroAnalyzer.add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")
-NeuroAnalyzer.plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy)
-NeuroAnalyzer.plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+NeuroAnalyzer.plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+NeuroAnalyzer.plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 NeuroAnalyzer.plot_dipole2d(d::NeuroAnalyzer.DIPOLE)
 NeuroAnalyzer.plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
 NeuroAnalyzer.plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
@@ -752,7 +752,7 @@ NeuroAnalyzer.plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="def
 NeuroAnalyzer.plot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), cb::Bool=false, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, kwargs...)
 NeuroAnalyzer.plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), cb::Bool=false, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, kwargs...)
 NeuroAnalyzer.plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-NeuroAnalyzer.plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy)
+NeuroAnalyzer.plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 NeuroAnalyzer.plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 ```
 
