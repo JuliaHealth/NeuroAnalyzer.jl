@@ -2,6 +2,7 @@ export vsearch
 export vsplit
 export minat
 export maxat
+export vreduce
 
 """
     vsearch(y, x; acc)
@@ -134,5 +135,39 @@ function maxat(x::AbstractVector, y::AbstractVector)
     value = y[idx]
 
     return value, idx
+
+end
+
+"""
+    vreduce(x, f; n)
+
+Reduce two vectors at indices of the second vector being multiplications of a constant. Useful e.g. for simplifying values across frequencies, when the number of frequencies (and thus values) is high.
+
+# Arguments
+
+- `x::AbstractVector`: e.g. signal data
+- `f::AbstractVector`: e.g. frequencies
+- `n::Float64=0.5`: reduce at multiplications of this value
+
+# Returns
+
+- `x_new::Vector{eltype(x)}`
+- `f_new::Vector{eltype(f)}`
+"""
+function vreduce(x::AbstractVector, f::AbstractVector, n::Float64=0.5)
+
+    f1_idx = vsearch(round(f[1]), f)
+    f2_idx = vsearch(round(f[end]), f)
+    f1 = round(f[f1_idx])
+    f2 = round(f[f2_idx])
+
+    f_new = collect(f1:n:f2)
+    x_new = zeros(length(f_new))
+    for idx in eachindex(f_new)
+        f_idx = vsearch(f_new[idx], f)
+        x_new[idx] = x[f_idx]
+    end
+
+    return x_new, f_new
 
 end

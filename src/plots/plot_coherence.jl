@@ -3,14 +3,14 @@ export plot_coherence_avg
 export plot_coherence_butterfly
 
 """
-    plot_coherence(f, coh; <keyword arguments>)
+    plot_coherence(coh, f; <keyword arguments>)
 
 Plot coherence.
 
 # Arguments
 
-- `f::Vector{Float64}`: frequencies
 - `coh::Vector{Float64}`: coherence
+- `f::Vector{Float64}`: frequencies
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Coherence"`: y-axis label
@@ -25,7 +25,7 @@ Plot coherence.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence(f::Vector{Float64}, coh::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -81,22 +81,22 @@ function plot_coherence(f::Vector{Float64}, coh::Vector{Float64}; frq_lim::Tuple
 
     max_coh = maxat(coh, f)
     min_coh = minat(coh, f)
-    _info("Minimum coherence: $(round(coh[min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-    _info("Maximum coherence: $(round(coh[max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+    _info("Minimum coherence $(round(coh[min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+    _info("Maximum coherence $(round(coh[max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
 
     return p
 
 end
 
 """
-    plot_coherence(f, coh; <keyword arguments>)
+    plot_coherence(coh, f; <keyword arguments>)
 
 Plot multi-channel coherence.
 
 # Arguments
 
-- `f::Vector{Float64}`: frequencies
 - `coh::Matrix{Float64}`: coherence
+- `f::Vector{Float64}`: frequencies
 - `clabels::Vector{String}=[""]`: channel pairs labels vector
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -112,7 +112,7 @@ Plot multi-channel coherence.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence(f::Vector{Float64}, coh::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ch_n = size(coh, 1)
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
@@ -120,6 +120,7 @@ function plot_coherence(f::Vector{Float64}, coh::Matrix{Float64}; clabels::Vecto
     _check_tuple(frq_lim, "frq_lim")
 
     # reverse so 1st channel is on top
+    coh_tmp = deepcopy(coh)
     coh = @views reverse(coh[:, eachindex(f)], dims = 1)
     # also, reverse colors if palette is not mono
     if mono == true
@@ -135,7 +136,6 @@ function plot_coherence(f::Vector{Float64}, coh::Matrix{Float64}; clabels::Vecto
 
     # normalize and shift so all channels are visible
     # each channel is between 0 and +1.0
-    coh_tmp = deepcopy(coh)
     for idx in 1:ch_n
         # scale by 0.5 so maxima do not overlap
         coh[idx, :] = @views normalize_n(coh[idx, :]) .+ (idx - 1)
@@ -219,12 +219,16 @@ function plot_coherence(f::Vector{Float64}, coh::Matrix{Float64}; clabels::Vecto
 
     # plot labels
     p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
-
-    for idx in 1:ch_n
+    for idx in 1:size(coh, 1)
         max_coh = maxat(coh_tmp[idx, :], f)
         min_coh = minat(coh_tmp[idx, :], f)
-        NeuroAnalyzer._info("Channel pair: $idx minimum coherence: $(round(coh_tmp[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-        NeuroAnalyzer._info("Channel pair: $idx maximum coherence: $(round(coh_tmp[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        if clabels == repeat([""], size(coh, 1))
+            _info("Channel pair $idx minimum coherence $(round(coh_tmp[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+            _info("Channel pair $idx maximum coherence $(round(coh_tmp[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        else
+            _info("Channel pair $(clabels[idx]) minimum coherence $(round(coh_tmp[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+            _info("Channel pair $(clabels[idx]) maximum coherence $(round(coh_tmp[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        end
     end
 
     return p
@@ -232,14 +236,16 @@ function plot_coherence(f::Vector{Float64}, coh::Matrix{Float64}; clabels::Vecto
 end
 
 """
-    plot_coherence_avg(f, coh; <keyword arguments>)
+    plot_coherence_avg(coh, f; <keyword arguments>)
 
 Plot coherence mean and ±95% CI of averaged channels.
 
 # Arguments
 
-- `f::Vector{Float64}`: frequencies
 - `coh::Matrix{Float64}`: coherence
+- `f::Vector{Float64}`: frequencies
+- `clabels::Vector{String}=[""]`: channel pairs labels vector
+- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Coherence"`: y-axis label
 - `title::String=""`: plot title
@@ -253,7 +259,7 @@ Plot coherence mean and ±95% CI of averaged channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence_avg(f::Vector{Float64}, coh::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin], "ax")
@@ -263,6 +269,9 @@ function plot_coherence_avg(f::Vector{Float64}, coh::Matrix{Float64}; frq_lim::T
 
     # get mean and 95%CI
     s_m, _, s_u, s_l = msci95(coh)
+
+    # channel labels
+    clabels == [""] && (clabels = repeat([""], size(coh, 1)))
 
     if ax === :linlin
         xt = _ticks(frq_lim)
@@ -328,19 +337,31 @@ function plot_coherence_avg(f::Vector{Float64}, coh::Matrix{Float64}; frq_lim::T
                     c=:black,
                     lw=0.5)
 
+    for idx in 1:size(coh, 1)
+        max_coh = maxat(coh[idx, :], f)
+        min_coh = minat(coh[idx, :], f)
+        if clabels == repeat([""], size(coh, 1))
+            _info("Channel pair $idx minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+            _info("Channel pair $idx maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        else
+            _info("Channel pair $(clabels[idx]) minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+            _info("Channel pair $(clabels[idx]) maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        end
+    end
+
     return p
 
 end
 
 """
-    plot_coherence_butterfly(f, coh; <keyword arguments>)
+    plot_coherence_butterfly(coh, f; <keyword arguments>)
 
 Butterfly PSD plot.
 
 # Arguments
 
-- `f::Vector{Float64}`: frequencies
 - `coh::Array{Float64, 3}`: coherence
+- `f::Vector{Float64}`: frequencies
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for the x-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -356,7 +377,7 @@ Butterfly PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence_butterfly(f::Vector{Float64}, coh::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -416,6 +437,18 @@ function plot_coherence_butterfly(f::Vector{Float64}, coh::Matrix{Float64}; clab
                         label=clabels[idx],
                         legend=true;
                         kwargs...)
+    end
+
+    for idx in 1:size(coh, 1)
+        max_coh = maxat(coh[idx, :], f)
+        min_coh = minat(coh[idx, :], f)
+        if clabels == repeat([""], size(coh, 1))
+            _info("Channel pair $idx minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+            _info("Channel pair $idx maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        else
+            _info("Channel pair $(clabels[idx]) minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
+            _info("Channel pair $(clabels[idx]) maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        end
     end
 
     return p

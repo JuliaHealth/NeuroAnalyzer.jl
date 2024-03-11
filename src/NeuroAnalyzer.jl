@@ -462,6 +462,7 @@ include("utils/time.jl")
 include("utils/vector.jl")
 include("utils/make_table.jl")
 include("utils/to_df.jl")
+include("utils/labels.jl")
 # study
 include("study/create.jl")
 include("study/info.jl")
