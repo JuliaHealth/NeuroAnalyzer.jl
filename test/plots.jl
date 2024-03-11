@@ -236,13 +236,13 @@ p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=1:10, type=:topo)
 
 @info "test 34/34: plot_coherence()"
 coh, mscoh, f = coherence(e10, e10, ch1=1:3, ch2=2:4, ep1=1, ep2=1, frq_lim=(45, 55))
-p = NeuroAnalyzer.plot_coherence(f, coh[1, :, 1])
+p = NeuroAnalyzer.plot_coherence(coh[1, :, 1], f)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_coherence(f, coh[:, :, 1])
+p = NeuroAnalyzer.plot_coherence(coh[:, :, 1], f)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_coherence_avg(f, coh[:, :, 1])
+p = NeuroAnalyzer.plot_coherence_avg(coh[:, :, 1], f)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_coherence_butterfly(f, coh[:, :, 1])
+p = NeuroAnalyzer.plot_coherence_butterfly(coh[:, :, 1], f)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 true
