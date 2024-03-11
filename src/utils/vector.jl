@@ -154,7 +154,9 @@ Reduce two vectors at indices of the second vector being multiplications of a co
 - `x_new::Vector{eltype(x)}`
 - `f_new::Vector{eltype(f)}`
 """
-function vreduce(x::AbstractVector, f::AbstractVector, n::Float64=0.5)
+function vreduce(x::AbstractVector, f::AbstractVector; n::Float64=0.5)
+
+    @assert length(x) == length(f) "Length of both vectors must be equal."
 
     f1_idx = vsearch(round(f[1]), f)
     f2_idx = vsearch(round(f[end]), f)
@@ -163,7 +165,7 @@ function vreduce(x::AbstractVector, f::AbstractVector, n::Float64=0.5)
 
     f_new = collect(f1:n:f2)
     x_new = zeros(length(f_new))
-    for idx in eachindex(f_new)
+    @inbounds for idx in eachindex(f_new)
         f_idx = vsearch(f_new[idx], f)
         x_new[idx] = x[f_idx]
     end

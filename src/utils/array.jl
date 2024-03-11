@@ -3,6 +3,7 @@ export l2
 export perm_cmp
 export tavg
 export delmean
+export areduce
 
 """
     l1(a1, a2)
@@ -147,5 +148,56 @@ function delmean(s::AbstractArray; dims::Union{Int64, Nothing}=nothing)
     end
 
     return s .- ms
+
+end
+
+"""
+    areduce(a, f; n)
+
+Reduce an array at indices of a vector being multiplications of a constant. Useful e.g. for simplifying values across frequencies, when the number of frequencies (and thus values) is high.
+
+# Arguments
+
+- `a::AbstractArray`: e.g. signal data
+- `f::AbstractVector`: e.g. frequencies
+- `n::Float64=0.5`: reduce at multiplications of this value
+
+# Returns
+
+- `a_new::Array{eltype(a), ndims(a)}`
+- `f_new::Vector{eltype(f)}`
+"""
+function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)
+
+    @assert ndims(a) <= 3 "areduce() only works for 2- and 3-dimensional arrays."
+    @assert size(a, 2) == length(f) "Length of both vectors must be equal."
+
+    f1_idx = vsearch(round(f[1]), f)
+    f2_idx = vsearch(round(f[end]), f)
+    f1 = round(f[f1_idx])
+    f2 = round(f[f2_idx])
+    f_new = collect(f1:n:f2)
+
+    if ndims(a) == 2
+        a_new = zeros(size(a, 1), length(f_new))
+        @inbounds for ch_idx in 1:size(a, 1)
+            for idx in eachindex(f_new)
+                f_idx = vsearch(f_new[idx], f)
+                a_new[ch_idx, idx] = a[ch_idx, f_idx]
+            end
+        end
+    else
+        a_new = zeros(size(a, 1), length(f_new), size(a, 3))
+        @inbounds for ep_idx in 1:size(a, 3)
+            for ch_idx in 1:size(a, 1)
+                for idx in eachindex(f_new)
+                    f_idx = vsearch(f_new[idx], f)
+                    a_new[ch_idx, idx, ep_idx] = a[ch_idx, f_idx, ep_idx]
+                end
+            end
+        end
+    end
+
+    return a_new, f_new
 
 end
