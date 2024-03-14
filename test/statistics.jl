@@ -220,6 +220,4 @@ f, p = NeuroAnalyzer.vartest(e10, e10)
 @test size(f) == (23, 23, 10)
 @test size(p) == (23, 23, 10)
 
-
-
 true
