@@ -1,5 +1,6 @@
 export rms
 export msa
+export amp
 
 """
     rms(s)
@@ -147,5 +148,91 @@ function msa(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     r = @views msa(obj.data[ch, :, :])
 
     return r
+
+end
+
+export amp
+
+"""
+    amp(s)
+
+Calculate amplitudes.
+
+# Arguments
+
+- `s::AbstractVector`
+
+# Returns
+ 
+Named tuple containing:
+- `p2p::Float64`: peak-to-peak amplitude
+- `rmsa::Float64`: root mean square amplitude
+"""
+function amp(s::AbstractVector)
+
+    p2p = abs(maximum(s)) + abs(minimum(s))
+    rmsa = p2p / sqrt(2) 
+
+    return (p2p=p2p, rmsa=rmsa)
+
+end
+
+"""
+    amp(s)
+
+Calculate amplitudes.
+
+# Arguments
+
+- `s::AbstractArray`
+
+# Returns
+ 
+Named tuple containing:
+- `p2p::Matrix{Float64}`: peak-to-peak amplitude
+- `rmsa::Matrix{Float64}`: root mean square amplitude
+"""
+function amp(s::AbstractArray)
+
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+
+    p2p = zeros(ch_n, ep_n)
+    rmsa = zeros(ch_n, ep_n)
+
+    @inbounds for ep_idx in 1:ep_n
+        for ch_idx in 1:ch_n
+            p2p[ch_idx, ep_idx], rmsa[ch_idx, ep_idx] = @views amp(s[ch_idx, :, ep_idx])
+        end
+    end
+
+    return (p2p=p2p, rmsa=rmsa)
+
+end
+
+"""
+    amp(obj; ch)
+
+Calculate amplitudes.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of reference channels, default is all signal channels except the analyzed one
+
+# Returns
+ 
+Named tuple containing:
+- `p2p::Matrix{Float64}`: peak-to-peak amplitude
+- `rmsa::Matrix{Float64}`: root mean square amplitude
+"""
+function amp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+
+    _check_channels(obj, ch)
+    length(ch) == 1 && (ch = [ch])
+
+    p2p, rmsa = @views amp(obj.data[ch, :, :])
+
+    return (p2p=p2p, rmsa=rmsa)
 
 end
