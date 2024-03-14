@@ -212,5 +212,4 @@ x = ones(100, 100)
 @info "test 59/59: mscr()"
 @test NeuroAnalyzer.mscr(tp=90, tn=90, fp=10, fn=10) == (mr = 0.1, acc = 0.9)
 
-
 true
