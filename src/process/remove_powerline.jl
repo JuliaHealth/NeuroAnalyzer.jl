@@ -1,5 +1,6 @@
 export remove_powerline
 export remove_powerline!
+export detect_powerline
 
 """
     remove_powerline(obj; <keyword arguments>)
@@ -46,7 +47,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 
     if method === :iir
 
-        _info("Removing power line noise at $pl_frq Hz and its peaks")
+        _info("Removing power line noise at $pl_frq Hz and its harmonics")
 
         bw_values = collect(0:q:20.0)[2:end]
 
@@ -62,10 +63,10 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             p_tmp = p[f_pl]
             f_tmp = f[f_pl]
             peaks, _ = findpeaks1d(p_tmp, prominence=pr)
-            @assert length(peaks) > 0 "No power line peak detected, check pl_frq value (perhaps the signal has already been filtered?)."
+            @assert length(peaks) > 0 "No power line noise peak detected, check pl_frq value (perhaps the signal has already been filtered?)."
             pl_amp = vsearch(maximum(p_tmp[peaks]), p_tmp)
             pl_frq_detected = f_tmp[vsearch(pl_amp, p_tmp)]
-            @assert !(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) "Channel $(ch[ch_idx]): power line peak detected at $pl_frq_detected, check pl_frq value."
+            @assert !(pl_frq_detected < pl_frq - d || pl_frq_detected > pl_frq + d) "Channel $(ch[ch_idx]): power line noise peak detected at $pl_frq_detected, check pl_frq value."
             # pl_wdth = peakwidths1d(p_tmp, peaks)[1][vsearch(pl_amp, peaks)]
 
             v = zeros(length(bw_values))
@@ -184,5 +185,75 @@ function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     obj.history = obj_new.history
 
     return df
+
+end
+
+"""
+    detect_powerline(s; fs)
+
+Detect power line noise frequency.
+
+# Arguments
+
+- `s::AbstractVector`
+- `fs::Int64`: sampling rate
+
+# Returns
+
+- `noise_frq::Float64`: peak noise frequency in Hz 
+"""
+function detect_powerline(s::AbstractVector; fs::Int64)
+
+    n = length(s)
+    t = linspace(0, n * 1/fs, n)
+    noise_power = zeros(fs ÷ 2)
+
+    for noise_idx in 1:(fs ÷ 2)
+        df = DataFrame(:signal=>s, :b0=>ones(n), :b1=>sin.(2 * pi * noise_idx .* t), :b2=>cos.(2 * pi * noise_idx .* t))
+        lr = GLM.lm(@formula(signal ~ b0 + b1 + b2), df)
+        b = coef(lr)
+        noise_power[noise_idx] = b[3]^2 + b[4]^2
+    end
+
+    # maximum noise frequency in Hz
+    noise_frq = vsearch(maximum(noise_power), noise_power)
+
+    return noise_frq
+
+end
+
+"""
+    detect_powerline(obj)
+
+Detect power line noise frequency.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `noise_frq::Array{Float64, 3}`: peak noise frequency in Hz 
+"""
+function detect_powerline(obj::NeuroAnalyzer.NEURO)
+
+    ch_n = size(obj, 1)
+    ep_n = size(obj, 3)
+    
+    noise_frq = zeros(ch_n, ep_n)
+
+    # initialize progress bar
+    progress_bar == true && (progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white))
+
+    @inbounds for ep_idx in 1:ep_n
+        @Threads.threads for ch_idx in 1:ch_n
+            noise_frq[ch_idx, ep_idx] = @views detect_powerline(obj.data[ch_n, :, ep_n], fs=sr(obj))
+        end
+
+        # update progress bar
+        progress_bar == true && next!(progbar)   
+    end
+
+    return noise_frq
 
 end
