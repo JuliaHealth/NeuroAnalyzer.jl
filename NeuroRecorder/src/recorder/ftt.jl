@@ -4,13 +4,13 @@ export ftt
 """
     iftt(; duration, trials, interval)
 
-Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACE key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded.
+Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded.
 
 # Arguments
 
-- `duration::Int64=10`: single trial duration in seconds
-- `trials::Int64=6`: number of trials
-- `interval::Int64=10`: interval between trials in seconds
+- `duration::Int64=5`: single trial duration in seconds
+- `trials::Int64=2`: number of trials
+- `interval::Int64=2`: interval between trials in seconds
 
 # Returns
 
@@ -22,7 +22,7 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [s] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [s] during intervals
 """
-function iftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10)
+function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
 
     img1 = read_from_png(joinpath(res_path, "finger_noclick.png"))
     img2 = read_from_png(joinpath(res_path, "finger_click.png"))
@@ -255,13 +255,13 @@ end
 """
     ftt(; duration, trials, interval, gpio)
 
-Perform Finger Tapping Test (FTT) in CLI mode. Switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded.
+Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded. When using computer keyboard, only the number of taps and their time points are recorded; tap durations are set to -1.
 
 # Arguments
 
-- `duration::Int64=10`: single trial duration in seconds
-- `trials::Int64=6`: number of trials
-- `interval::Int64=10`: interval between trials in seconds
+- `duration::Int64=5`: single trial duration in seconds
+- `trials::Int64=2`: number of trials
+- `interval::Int64=2`: interval between trials in seconds
 - `gpio::Int64=23`: Raspberry Pi GPIO to which the switch is connected (default is GPIO 23 = BOARD 16 pin)
 
 # Returns
@@ -274,17 +274,15 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [s] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [s] during intervals
 """
-function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::Int64=23)
-
-    _wip()
+function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int64=23)
 
     # check if running on RPi
-    rpi = _checkrpi()
+    rpi = _check_rpi()
     if rpi == true
         rpi = Pi()
         set_mode(rpi, gpio, PiGPIO.INPUT)
     else
-        @info "Could not detect pigpiod daemon, will use keyboard spacebar key"
+        @info "Could not detect pigpiod daemon, keyboard SPACEBAR key will be used"
     end
 
     println("NeuroRecorder: FTT")
@@ -298,29 +296,47 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
         println("  Button: SPACEBAR")
     end
 
-    println("")
-    println("Ready to start, press the BUTTON to begin the test")
-    
-    # while (rpi != false && PiGPIO.read(rpi, gpio) == false) && (_getch() != 32)
-    rpi_key = false
-    kbd_key = Channel(_getch, 10) # Start task, 10 is buffer size for channel
-    c = Char
-    while c != ' '
-        if rpi != false
-            rpi_key = PiGPIO.read(rpi, gpio)
-        end
-        rpi_key != false && break
-        while !isempty(kbd_key) # Process all keypresses
-            c = take!(kbd_key)
-            println(c)
-            if c == ' '
-                println("quitting")
-                close(channel)
+    println()
+    if rpi != false
+        println("Ready to start, press the BUTTON to begin the test")
+    else
+        println("Ready to start, press SPACEBAR to begin the test")
+    end
+    println()
+
+    if rpi == false
+        while true
+            ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, true)
+            ret == 0 || error("Unable to switch to raw mode.")
+            kbd_key = read(stdin, Char)
+            ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, false)
+            if kbd_key == ' '
                 break
+            else
+                continue
             end
         end
+        print("The test will start after a beep")
+        sleep(1)
+    else
+        # while (rpi != false && PiGPIO.read(rpi, gpio) == false) && (_getch() != 32)
+        rpi_key = false
+        while true
+            if rpi != false
+                rpi_key = PiGPIO.read(rpi, gpio)
+            end
+            rpi_key != false && break
+            kbd_key = _get_char()
+            if kbd_key == ' '
+                break
+            else
+                continue
+            end
+        end
+        print("The test will start after a beep")
+        sleep(1)
+        _beep()
     end
-    sleep(1)
 
     result = zeros(Int64, trials)
     int_result = zeros(Int64, trials)
@@ -329,82 +345,161 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
     d_kp = Vector{Float64}()
     int_t_kp = Vector{Float64}()
     int_d_kp = Vector{Float64}()
+
     key_pressed = false
     rpi_key = false
     kbd_key = nothing
 
-    t_s = time()
-    for idx in 1:trials
-        _beep()
-        @info "   Trial: $idx - press the button as quickly as possible"
-        t1 = time()
-        # sleep(duration)
-        while time() <= t1 + duration
-            sleep(0.1)
-            rpi != false && (rpi_key = PiGPIO.read(rpi, gpio))
-            kbd_key = _getch()
-            t2 = time()
-            if (rpi_key == true) || (kbd_key == 32)
-                if key_pressed == false
-                    print("_")
-                    # key is pressed                        
-                    push!(t_kp, t2)
-                    result[idx] += 1
-                    key_pressed = true
-                    continue
+    if rpi == false
+        # use computer keyboard
+        # calculate segments time points
+        t_segments = zeros(1 + 2 * trials)
+        l_seg = duration + interval
+        for idx in 1:trials
+            t_segments[(idx * 2) - 1] = l_seg * (idx - 1)
+        end
+        for idx in 1:trials
+            t_segments[idx * 2] = (l_seg * idx) - interval
+        end
+        t_s = time()
+        t_segments .+= t_s
+        t_e = (trials * duration) + (trials * interval)
+        t_segments[end] = t_s + t_e
+        channel = Channel(kbd_listener, 1024) # Start task, 10 is buffer size for channel
+        stop = false
+        r = 0
+        t = Float64[]
+        idx = 1
+        idx1 = 1
+        idx2 = 1
+        while !stop
+            sleep(0.001)
+            if time() >= t_segments[end]
+                stop = true
+                close(channel)
+                break
+            end
+            while !isempty(channel) # process all keypresses
+                c = take!(channel)
+                if c == ' '
+                    r += 1
+                    push!(t, time())
                 end
-            else
-                if key_pressed == true
-                    print("-")
-                    # key is released
-                    push!(d_kp, t2 - t_kp[end])
-                    key_pressed = false
-                    continue
+            end
+            if time() >= t_segments[idx]
+                _beep()
+                println()
+                if iseven(idx)
+                    print("\n")
+                    print("Interval $idx2: DO NOT press the SPACEBAR button")
+                    idx2 += 1
+                else
+                    print("\n")
+                    print("   Trial $idx1: press the SPACEBAR button as quickly as possible")
+                    idx1 += 1
+                end
+                idx += 1
+            end
+        end
+        # format time points
+        t .-= t_segments[1]
+        t = round.(t, digits=3)
+        t_segments .-= t_segments[1]
+        if r > 0
+            for idx1 in 1:r
+                for idx2 in 1:(2 * trials)
+                    if t[idx1] in t_segments[idx2]:0.001:t_segments[idx2 + 1]
+                        if iseven(idx2 + 1)
+                            idx3 = (idx2 + 1) ÷ 2
+                            result[idx3] += 1
+                            push!(t_kp, t[idx1])
+                            push!(d_kp, -1)
+                        end
+                        if isodd(idx2 + 1)
+                            idx3 = idx2 ÷ 2
+                            int_result[idx3] += 1
+                            push!(int_t_kp, t[idx1])
+                            push!(int_d_kp, -1)
+                        end
+                    end
                 end
             end
         end
-        _beep()
-        if length(d_kp) < sum(result)
-            pop!(t_kp)
-            result[idx] -= 1
-        end
-        @info "Interval: $idx - DO NOT press the button"
-        t1 = time()
-        while time() <= t1 + interval
-            rpi != false && (rpi_key = PiGPIO.read(rpi, gpio))
-            kbd_key = _getch()
-            t2 = time()
-            if (rpi_key == true) || (kbd_key == 32)
-                if key_pressed == false
-                    # key is pressed
-                    print("_")
-                    push!(int_t_kp, t2)
-                    int_result[idx] += 1
-                    key_pressed = true
-                    sleep(0.05)
-                    continue
-                end
-            else
-                if key_pressed == true
-                    # key is released
-                    print("-")
-                    push!(int_d_kp, t2 - int_t_kp[end])
-                    key_pressed = false
-                    sleep(0.05)
-                    continue
+        println()
+    else
+        # use RPi
+        for idx in 1:trials
+            _beep()
+            print("\n")
+            print("   Trial $idx: press the SPACEBAR button as quickly as possible")
+            t1 = time()
+            # sleep(duration)
+            while time() <= t1 + duration
+                sleep(0.1)
+                rpi != false && (rpi_key = PiGPIO.read(rpi, gpio))
+                t2 = time()
+                if rpi_key == true
+                    if key_pressed == false
+                        print("_")
+                        # key is pressed                        
+                        push!(t_kp, t2)
+                        result[idx] += 1
+                        key_pressed = true
+                        continue
+                    end
+                else
+                    if key_pressed == true
+                        print("-")
+                        # key is released
+                        push!(d_kp, t2 - t_kp[end])
+                        key_pressed = false
+                        continue
+                    end
                 end
             end
+            _beep()
+            if length(d_kp) < sum(result)
+                pop!(t_kp)
+                result[idx] -= 1
+            end
+            print("\n")
+            print("Interval $idx: DO NOT press the SPACEBAR button")
+            t1 = time()
+            while time() <= t1 + interval
+                rpi != false && (rpi_key = PiGPIO.read(rpi, gpio))
+                t2 = time()
+                if rpi_key == true
+                    if key_pressed == false
+                        # key is pressed
+                        push!(int_t_kp, t2)
+                        int_result[idx] += 1
+                        key_pressed = true
+                        sleep(0.05)
+                        continue
+                    end
+                else
+                    if key_pressed == true
+                        # key is released
+                        push!(int_d_kp, t2 - int_t_kp[end])
+                        key_pressed = false
+                        sleep(0.05)
+                        continue
+                    end
+                end
+            end
+            if length(int_d_kp) < sum(int_result)
+                pop!(int_t_kp)
+                int_result[idx] -= 1
+            end
         end
-        if length(int_d_kp) < sum(int_result)
-            pop!(int_t_kp)
-            int_result[idx] -= 1
-        end
+        # format time points
+        t_kp = t_kp .- t_s
+        int_t_kp = int_t_kp .- t_s
     end
 
+    println()
     println("Testing completed.")
-
-    # format time points
-    t_kp = t_kp .- t_s
+    
     t_keypressed = Vector{Vector{Float64}}()
     d_keypressed = Vector{Vector{Float64}}()
     for idx1 in trials:-1:1
@@ -417,14 +512,13 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
         reverse!(tk)
         reverse!(td)
         tk = tk .- ((idx1 - 1) * (duration + interval))
-        push!(t_keypressed, tk)
-        push!(d_keypressed, td)
+        push!(t_keypressed, round.(tk, digits=3))
+        push!(d_keypressed, round.(td, digits=3))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
 
     # format time points
-    int_t_kp = int_t_kp .- t_s
     int_t_keypressed = Vector{Vector{Float64}}()
     int_d_keypressed = Vector{Vector{Float64}}()
     for idx1 in trials:-1:1
@@ -437,8 +531,8 @@ function ftt(; duration::Int64=10, trials::Int64=6, interval::Int64=10, gpio::In
         reverse!(tk)
         reverse!(td)
         tk = tk .- ((idx1 * duration) + ((idx1 - 1) * interval))
-        push!(int_t_keypressed, tk)
-        push!(int_d_keypressed, td)
+        push!(int_t_keypressed, round.(tk, digits=3))
+        push!(int_d_keypressed, round.(td, digits=3))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
