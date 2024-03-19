@@ -1,1 +1,0 @@
-brain.stl object is based on [My Brain](https://www.thingiverse.com/thing:2852778/files) by [mluongo91](https://www.thingiverse.com/mluongo91), licensed under the [Creative Commons - Attribution](https://creativecommons.org/licenses/by/4.0/) license.
