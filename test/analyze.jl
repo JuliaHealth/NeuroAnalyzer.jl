@@ -643,9 +643,12 @@ r = NeuroAnalyzer.rms(e10)
 @test NeuroAnalyzer.msa(a1) == [1.0 1.0; 1.0 1.0]
 r = NeuroAnalyzer.msa(e10)
 @test size(r) == (23, 10)
-p, r = NeuroAnalyzer.amp(e10)
+p, r, p2p, semi_p2p, rmsa = NeuroAnalyzer.amp(e10)
 @test size(p) == (23, 10)
 @test size(r) == (23, 10)
+@test size(p2p) == (23, 10)
+@test size(semi_p2p) == (23, 10)
+@test size(rmsa) == (23, 10)
 
 @info "test 35/59: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 1.0

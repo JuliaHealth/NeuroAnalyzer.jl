@@ -316,27 +316,17 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 continue
             end
         end
-        print("The test will start after a beep")
-        sleep(1)
     else
-        # while (rpi != false && PiGPIO.read(rpi, gpio) == false) && (_getch() != 32)
         rpi_key = false
         while true
             if rpi != false
                 rpi_key = PiGPIO.read(rpi, gpio)
             end
             rpi_key != false && break
-            kbd_key = _get_char()
-            if kbd_key == ' '
-                break
-            else
-                continue
-            end
         end
-        print("The test will start after a beep")
-        sleep(1)
-        _beep()
     end
+    print("The test will start after a beep")
+    sleep(1)
 
     result = zeros(Int64, trials)
     int_result = zeros(Int64, trials)
