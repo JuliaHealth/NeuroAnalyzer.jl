@@ -7,10 +7,11 @@ end
 
 function _check_rpi()
     if Sys.which("pigpiod") === nothing
-        return false
+        rpi = false
     else
-        return true
+        rpi = Pi()
     end
+    return rpi
 end
 
 function kbd_listener(c::Channel)
