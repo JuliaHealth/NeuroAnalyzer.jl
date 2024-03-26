@@ -285,6 +285,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         end
     else
         rpi = false
+        @info "GPIO disabled, keyboard SPACEBAR key will be used"
     end
     
     println("NeuroRecorder: FTT")
@@ -547,6 +548,30 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 int_result[idx1] -= 1
             end
         end
+    end
+
+    # remove duplicates
+    d_idx = Vector{Vector{Int64}}()
+    for idx in 1:length(t_keypressed)
+        if length(unique(t_keypressed[idx])) != length(t_keypressed[idx])
+            push!(d_idx, unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx])))
+        else
+            push!(d_idx, eachindex(t_keypressed[idx]))
+        end
+        result[idx] = length(d_idx[idx])
+        t_keypressed[idx] = t_keypressed[idx][d_idx[idx]]
+        d_keypressed[idx] = d_keypressed[idx][d_idx[idx]]
+    end
+    d_idx = Vector{Vector{Int64}}()
+    for idx in 1:length(int_t_keypressed)
+        if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
+            push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
+        else
+            push!(d_idx, eachindex(int_t_keypressed[idx]))
+        end
+        int_result[idx] = length(d_idx[idx])
+        int_t_keypressed[idx] = int_t_keypressed[idx][d_idx[idx]]
+        int_d_keypressed[idx] = int_d_keypressed[idx][d_idx[idx]]
     end
 
     return (taps=result, tap_t=t_keypressed, tap_d=d_keypressed, taps_int=int_result, tap_t_int=int_t_keypressed, tap_d_int=int_d_keypressed)

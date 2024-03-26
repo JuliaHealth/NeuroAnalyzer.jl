@@ -1,3 +1,5 @@
+![NeuroAnalyzer.jl](neuroanalyzer.png)
+
 # NeuroRecorder.jl
 
 Available modules:

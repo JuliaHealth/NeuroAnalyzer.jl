@@ -1,3 +1,7 @@
+_info(s::String) = verbose == true && @info s
+_warn(s::String) = verbose == true && @warn s
+_deprecated(s::String) = verbose == true && @error "Function $s() is deprecated."
+_deprecated(s1::String, s2::String) = verbose == true && @error "Function $s1() is deprecated, please use $s2() instead."
 _wip() = allow_wip == true ? (@warn "This function has the WIP (Work In Progress) status and is not ready for production use.") : (@error "This function has the WIP (Work In Progress) status and is not ready for production use.")
 
 function _beep()
@@ -6,8 +10,9 @@ function _beep()
 end
 
 function _check_rpi()
+    # look for pigpiod
     if Sys.which("pigpiod") === nothing
-        rpi = false
+        rpi = false        
     else
         rpi = Pi()
     end
