@@ -147,7 +147,7 @@ Plots spectrogram.
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -340,7 +340,7 @@ Plots spectrogram of embedded or external component.
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="default"`: x-axis label, default is Time [s]

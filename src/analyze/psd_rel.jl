@@ -21,7 +21,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -63,7 +63,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -109,7 +109,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -159,7 +159,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns

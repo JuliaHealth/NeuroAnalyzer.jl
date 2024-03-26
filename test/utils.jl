@@ -261,7 +261,7 @@ delete_note!(e10)
 @test length(phases(e10.data[1, :, 1])) == 2560
 
 @info "test 60/77: pick()"
-@test NeuroAnalyzer.pick(e10, p=[:l, :f]) == [1, 3, 11]
+@test NeuroAnalyzer.channel_pick(e10, p=[:l, :f]) == [1, 3, 11]
 
 @info "test 61/77: t2s()"
 @test t2s(1.0, 256) == 256

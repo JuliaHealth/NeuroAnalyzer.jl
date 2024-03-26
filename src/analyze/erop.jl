@@ -22,7 +22,7 @@ Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `ero
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency limits
 - `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns

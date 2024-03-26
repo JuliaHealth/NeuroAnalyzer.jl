@@ -10,6 +10,7 @@ export source_labels
 export detector_labels
 export chtypes
 export info
+export channel_pick
 export channel_cluster
 export band_frq
 export describe
@@ -384,6 +385,115 @@ function info(obj::NeuroAnalyzer.NEURO)
 end
 
 """
+    channel_pick(obj; p)
+
+Return set of channel indices corresponding to a set of electrodes ("pick", e.g. left or frontal electrodes).
+
+# Arguments
+
+- `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
+    - `:list`
+    - `:central` (or `:c`)
+    - `:left` (or `:l`)
+    - `:right` (or `:r`)
+    - `:frontal` (or `:f`)
+    - `:temporal` (or `:t`)
+    - `:parietal` (or `:p`)
+    - `:occipital` (or `:o`)
+
+# Returns
+
+- `channels::Vector{Int64}`: channel numbers
+"""
+function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
+
+    _check_datatype(obj, "eeg")
+
+    @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
+
+    if p isa Vector{Symbol}
+        for idx in p
+            _check_var(idx, [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p")
+        end
+
+        # convert picks to channel labels
+        c = Vector{Char}()
+        for idx in p
+            (idx === :central || idx === :c) && push!(c, 'z')
+            (idx === :frontal || idx === :f) && push!(c, 'F')
+            (idx === :temporal || idx === :t) && push!(c, 'T')
+            (idx === :parietal || idx === :p) && push!(c, 'P')
+            (idx === :occipital || idx === :o) && push!(c, 'O')
+        end
+        
+        # check which channels are in the picks list
+        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
+        channels = Vector{Int64}()
+        for idx1 in eachindex(clabels)
+            for idx2 in eachindex(c)
+                in(c[idx2], clabels[idx1]) && push!(channels, idx1)
+            end
+        end
+
+        # check for both :l and :r
+        for idx1 in eachindex(p)
+            if (p[idx1] === :left || p[idx1] === :l)
+                for idx2 in eachindex(p)
+                    if (p[idx2] === :right || p[idx2] === :r)
+                        return channels
+                    end
+                end
+            end
+            if (p[idx1] === :right || p[idx1] === :r)
+                for idx2 in eachindex(p)
+                    if (p[idx2] === :left || p[idx2] === :l)
+                        return channels
+                    end
+                end
+            end
+        end
+
+        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
+        clabels = clabels[channels]
+        pat = nothing
+        for idx in p
+            # for :right remove lefts
+            (idx === :right || idx === :r) && (pat = r"[z13579]$")
+            # for :left remove rights
+            (idx === :left || idx === :l) && (pat = r"[z02468]$")
+        end
+        if typeof(pat) == Regex
+            for idx in length(clabels):-1:1
+                typeof(match(pat, clabels[idx])) == RegexMatch && deleteat!(channels, idx)
+            end
+        end
+
+        return channels
+    else
+        _check_var(p, [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p")
+
+        c = Vector{Char}()
+        (p === :central || p === :c) && (c = ['z'])
+        (p === :left || p === :l) && (c = ['1', '3', '5', '7', '9'])
+        (p === :right || p === :r) && (c = ['2', '4', '6', '8'])
+        (p === :frontal || p === :f) && (c = ['F'])
+        (p === :temporal || p === :t) && (c = ['T'])
+        (p === :parietal || p === :p) && (c = ['P'])
+        (p === :occipital || p === :o) && (c = ['O'])
+
+        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
+        channels = Vector{Int64}()
+        for idx1 in eachindex(c)
+            for idx2 in eachindex(clabels)
+                in(c[idx1], clabels[idx2]) && push!(channels, idx2)
+            end
+        end
+
+        return channels
+    end
+end
+
+"""
     channels_cluster(obj, cluster)
 
 Return channels belonging to a cluster of channels.
@@ -442,23 +552,26 @@ Return band frequency limits.
 - `band::Symbol`: band range name:
     - `:list`
     - `:total`
-    - `:delta`
-    - `:theta`
-    - `:alpha`
-    - `:beta`
-    - `:beta_high`
-    - `:gamma`
-    - `:gamma_1`
-    - `:gamma_2`
-    - `:gamma_lower`
-    - `:gamma_higher`.
+    - `:delta`: 0.1 - 4.0 Hz
+    - `:theta`: 4.0 - 8.0 Hz
+    - `:alpha`: 8.0 - 13.0 Hz
+    - `:alpha_lower`: 8.0 - 10.5 Hz
+    - `:alpha_higher`: 10.5 - 13.0 Hz
+    - `:beta`: 14.0 - 30.0 Hz
+    - `:beta_lower`: 14.0 - 25.0 Hz
+    - `:beta_higher`: 25.0 - 30.0 Hz
+    - `:gamma`: 30.0 - 150.0 Hz
+    - `:gamma_1`: 30.0 - 40.0 Hz
+    - `:gamma_2`: 40.0 - 50.0 Hz
+    - `:gamma_lower`: 30.0 - 80.0 Hz
+    - `:gamma_higher`: 80.0 - 150.0 Hz
 # Returns
 
 - `band_frequency::Tuple{Real, Real}`
 """
 function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
 
-    bands = [:list, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
+    bands = [:list, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
     _check_var(band, bands, "band")
     if band === :list
         print("Available band names: ")
@@ -471,11 +584,14 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
     band === :delta && (bf = (0.1, 4.0))
     band === :theta && (bf = (4.0, 8.0))
     band === :alpha && (bf = (8.0, 13.0))
+    band === :alpha_lower && (bf = (8.0, 10.5))
+    band === :alpha_higher && (bf = (10.5, 13.0))
     band === :beta && (bf = (14.0, 30.0))
-    band === :beta_high && (bf = (25.0, 30.0))
+    band === :beta_lower && (bf = (14.0, 25.0))
+    band === :beta_higher && (bf = (25.0, 30.0))
     band === :gamma && (bf = (30.0, 150.0))
-    band === :gamma_1 && (bf = (31.0, 40.0))
-    band === :gamma_2 && (bf = (41.0, 50.0))
+    band === :gamma_1 && (bf = (30.0, 40.0))
+    band === :gamma_2 && (bf = (40.0, 50.0))
     band === :gamma_lower && (bf = (30.0, 80.0))
     band === :gamma_higher && (bf = (80.0, 150.0))
     
@@ -502,16 +618,19 @@ Return band frequency limits.
 - `band::Symbol`: band range name:
     - `:list`
     - `:total`
-    - `:delta`
-    - `:theta`
-    - `:alpha`
-    - `:beta`
-    - `:beta_high`
-    - `:gamma`
-    - `:gamma_1`
-    - `:gamma_2`
-    - `:gamma_lower`
-    - `:gamma_higher`.
+    - `:delta`: 0.1 - 4.0 Hz
+    - `:theta`: 4.0 - 8.0 Hz
+    - `:alpha`: 8.0 - 13.0 Hz
+    - `:alpha_lower`: 8.0 - 10.5 Hz
+    - `:alpha_higher`: 10.5 - 13.0 Hz
+    - `:beta`: 14.0 - 30.0 Hz
+    - `:beta_lower`: 14.0 - 25.0 Hz
+    - `:beta_higher`: 25.0 - 30.0 Hz
+    - `:gamma`: 30.0 - 150.0 Hz
+    - `:gamma_1`: 30.0 - 40.0 Hz
+    - `:gamma_2`: 40.0 - 50.0 Hz
+    - `:gamma_lower`: 30.0 - 80.0 Hz
+    - `:gamma_higher`: 80.0 - 150.0 Hz
 
 # Returns
 
@@ -519,7 +638,7 @@ Return band frequency limits.
 """
 function band_frq(fs::Int64; band::Symbol)
 
-    bands = [:list, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
+    bands = [:list, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
     _check_var(band, bands, "band")
     if band === :list
         print("Available band names: ")
@@ -532,11 +651,14 @@ function band_frq(fs::Int64; band::Symbol)
     band === :delta && (bf = (0.1, 4.0))
     band === :theta && (bf = (4.0, 8.0))
     band === :alpha && (bf = (8.0, 13.0))
+    band === :alpha_lower && (bf = (8.0, 10.5))
+    band === :alpha_higher && (bf = (10.5, 13.0))
     band === :beta && (bf = (14.0, 30.0))
-    band === :beta_high && (bf = (25.0, 30.0))
+    band === :beta_lower && (bf = (14.0, 25.0))
+    band === :beta_higher && (bf = (25.0, 30.0))
     band === :gamma && (bf = (30.0, 150.0))
-    band === :gamma_1 && (bf = (31.0, 40.0))
-    band === :gamma_2 && (bf = (41.0, 50.0))
+    band === :gamma_1 && (bf = (30.0, 40.0))
+    band === :gamma_2 && (bf = (40.0, 50.0))
     band === :gamma_lower && (bf = (30.0, 80.0))
     band === :gamma_higher && (bf = (80.0, 150.0))
     

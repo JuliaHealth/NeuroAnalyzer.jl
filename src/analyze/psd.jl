@@ -21,7 +21,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -100,7 +100,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -144,7 +144,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -193,7 +193,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
@@ -225,7 +225,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -294,7 +294,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -331,7 +331,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `norm::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
 - `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -377,7 +377,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
 - `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `w::Bool=true`: if true, apply Hanning window
 

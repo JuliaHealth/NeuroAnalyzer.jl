@@ -148,7 +148,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 - `ch::Int64`
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns

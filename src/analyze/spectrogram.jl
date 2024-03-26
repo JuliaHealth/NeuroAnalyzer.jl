@@ -75,7 +75,7 @@ Calculate spectrogram using wavelet convolution.
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -158,7 +158,7 @@ Calculate spectrogram using Gaussian and Hilbert transform.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64_tlength(frq_lim)`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `gw::Real=5`: Gaussian width in Hz
 - `w::Bool=true`: if true, apply Hanning window
 
@@ -267,7 +267,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets

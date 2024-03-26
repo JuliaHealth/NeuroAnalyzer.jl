@@ -287,7 +287,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
             end
         end
     elseif type === :i
-        c_picks = pick(obj, p=:central)
+        c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
             if med == false
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
@@ -299,7 +299,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-A1A2"
             end
         end
-        l_picks = pick(obj, p=:left)
+        l_picks = channel_pick(obj, p=:left)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a1[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -307,7 +307,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-A1"
             end
         end
-        r_picks = pick(obj, p=:right)
+        r_picks = channel_pick(obj, p=:right)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a2[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks
@@ -316,7 +316,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
             end
         end
     elseif type === :c
-        c_picks = pick(obj, p=:central)
+        c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
             if med == false
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
@@ -328,7 +328,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-A1A2"
             end
         end
-        l_picks = pick(obj, p=:left)
+        l_picks = channel_pick(obj, p=:left)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a2[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -336,7 +336,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-A2"
             end
         end
-        r_picks = pick(obj, p=:right)
+        r_picks = channel_pick(obj, p=:right)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(a1[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks
@@ -442,7 +442,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
             end
         end
     elseif type === :i
-        c_picks = pick(obj, p=:central)
+        c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
             if med == false
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
@@ -454,7 +454,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-M1M2"
             end
         end
-        l_picks = pick(obj, p=:left)
+        l_picks = channel_pick(obj, p=:left)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m1[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -462,7 +462,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-M1"
             end
         end
-        r_picks = pick(obj, p=:right)
+        r_picks = channel_pick(obj, p=:right)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m2[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks
@@ -471,7 +471,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
             end
         end
     elseif type === :c
-        c_picks = pick(obj, p=:central)
+        c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
             if med == false
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
@@ -483,7 +483,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-M1M2"
             end
         end
-        l_picks = pick(obj, p=:left)
+        l_picks = channel_pick(obj, p=:left)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m2[:, :, ep_idx])
             Threads.@threads for ch_idx in l_picks
@@ -491,7 +491,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
                 ref_label[ch_idx] = "-M2"
             end
         end
-        r_picks = pick(obj, p=:right)
+        r_picks = channel_pick(obj, p=:right)
         @inbounds for ep_idx in 1:ep_n
             ref_ch = @views vec(m1[:, :, ep_idx])
             Threads.@threads for ch_idx in r_picks

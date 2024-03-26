@@ -114,7 +114,7 @@ NeuroAnalyzer.pad0(x::Union{AbstractVector, AbstractArray}, n::Int64)
 NeuroAnalyzer.pad2(x::Union{AbstractVector, AbstractArray})
 NeuroAnalyzer.padm(x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol=:all)
 NeuroAnalyzer.phases(s::AbstractVector)
-NeuroAnalyzer.pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
+NeuroAnalyzer.channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
 NeuroAnalyzer.t2s(t::T, fs::Int64) where {T<:Real}
 NeuroAnalyzer.s2t(s::Int64, fs::Int64)
 NeuroAnalyzer.t2s(obj::NeuroAnalyzer.NEURO; t::T) where {T<:Real}
