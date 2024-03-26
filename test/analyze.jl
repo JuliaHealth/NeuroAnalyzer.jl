@@ -903,6 +903,6 @@ ph, f = phsd(e10)
 @test length(f) == 1281
 
 @info "test 60/60: band_asymmetry()"
-@test band_asymmetry(e10, ch1=1, ch2=1, f=(0, 10)) == 0.0
+@test band_asymmetry(e10, ch1=1, ch2=1, f=(0, 10)) == (ba = 0.0, ba_norm = 0.0)
 
 true

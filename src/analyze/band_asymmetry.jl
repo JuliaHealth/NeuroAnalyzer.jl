@@ -26,7 +26,8 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 
 # Returns
 
-- `ba::Float64`: band assymetry
+- `ba::Float64`: band asymmetry
+- `ba_norm::Float64`: normalized band asymmetry
 """
 function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}, ch2::Union{Int64, Vector{Int64}, <:AbstractRange}, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true,  frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
@@ -39,7 +40,8 @@ function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64
     bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     ba = log(mean(bp1)) - log(mean(bp2))
+    ba_norm = (mean(bp1) - mean(bp2)) / (mean(bp1) + mean(bp2))
 
-    return ba
+    return (ba=ba, ba_norm=ba_norm)
 
 end
