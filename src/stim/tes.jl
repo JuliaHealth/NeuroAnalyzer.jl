@@ -2,7 +2,7 @@ export tes_dose
 export tes_protocol
 
 """
-    tes_dose(current, pad_area, duration)
+    tes_dose(; current, pad_area, duration)
 
 Convert `current`, `pad_area` and stimulation `duration` into `charge`, `current_density` and `charge_ density`.
 
@@ -23,7 +23,7 @@ Named tuple containing:
 
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
-function tes_dose(;current::Real, pad_area::Real, duration::Int64)
+function tes_dose(; current::Real, pad_area::Real, duration::Int64)
     
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)
@@ -57,7 +57,7 @@ Create TES (tDCS/tACS/tRNS/tPCS) protocol.
 
 - `protocol::Dict`
 """
-function tes_protocol(;type::Symbol, hd::Bool, current::Real, frequency::Real=0, anode_size::Tuple{Int64, Int64}, cathode_size::Tuple{Int64, Int64}, anode_loc::Symbol, cathode_loc::Symbol, duration::Real, ramp_in::Real, ramp_out::Real, sham::Bool)
+function tes_protocol(; type::Symbol, hd::Bool, current::Real, frequency::Real=0, anode_size::Tuple{Int64, Int64}, cathode_size::Tuple{Int64, Int64}, anode_loc::Symbol, cathode_loc::Symbol, duration::Real, ramp_in::Real, ramp_out::Real, sham::Bool)
 
     _check_var(type, [:tDCS, :tACS, :tRNS, :tPCS], "type")
     @assert current > 0 "current must be > 0 mA."
