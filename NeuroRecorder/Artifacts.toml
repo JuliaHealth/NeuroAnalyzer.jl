@@ -1,6 +1,0 @@
-[NeuroRecorder_resources]
-git-tree-sha1 = "aea18b390d6b54d482d84c6f58f8c7f5e79aaaa1"
-
-    [[NeuroRecorder_resources.download]]
-    url = "https://neuroanalyzer.org/artifacts/neurorecorder-resources.tar.gz"
-    sha256 = "13e7cae515f9463325ac570b1d3ea4b48cb331d0ae11cfb4f7e0f95ee9200c54"

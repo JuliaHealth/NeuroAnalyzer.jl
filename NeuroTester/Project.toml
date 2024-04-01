@@ -1,7 +1,0 @@
-name = "NeuroTester"
-uuid = "85ca5511-8440-4271-b57d-6b73a9046dbb"
-authors = ["Adam Wysokiński <adam.wysokinski@neuroanalyzer.org>"]
-version = "0.24.4"
-
-[compat]
-julia = "1.10"

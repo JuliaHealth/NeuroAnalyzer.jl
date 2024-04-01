@@ -103,6 +103,7 @@ using Loess
 using MAT
 using MultivariateStats
 using NPZ
+using PiGPIO
 using Pkg
 using Plots
 using Plots.PlotMeasures
@@ -111,7 +112,6 @@ using Preferences
 using PrettyTables
 using ProgressMeter
 using Random
-using Reexport
 using SavitzkyGolay
 using ScatteredInterpolation
 using Simpson
@@ -125,13 +125,6 @@ using WAV
 using Wavelets
 using WaveletsExt
 using XDF
-
-@info "Loading sub-module: NeuroRecorder"
-@reexport using NeuroRecorder
-@info "Loading sub-module: NeuroStim"
-@reexport using NeuroStim
-@info "Loading sub-module: NeuroTester"
-@reexport using NeuroTester
 
 # define structures
 
@@ -236,6 +229,9 @@ include("internal/time.jl")
 include("internal/wl2ext.jl")
 include("internal/gdf_etp.jl")
 include("internal/statistics.jl")
+include("internal/recorder.jl")                      
+include("internal/rt_plotter.jl")
+include("internal/tester.jl")
 # analyze
 include("analyze/acov.jl")
 include("analyze/acor.jl")
@@ -466,5 +462,11 @@ include("utils/labels.jl")
 # study
 include("study/create.jl")
 include("study/info.jl")
+# recorder
+include("recorder/ftt.jl")                                                                                              
+# stim
+include("stim/ect.jl")                                                                                              
+include("stim/tes.jl")                                                                                              
+include("stim/tes_model.jl")
 
 end # NeuroAnalyzer

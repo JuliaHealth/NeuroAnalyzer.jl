@@ -71,17 +71,17 @@ echo ""
 echo "## NeuroRecorder"
 echo ""
 echo "\`\`\`@docs"
-cat ../NeuroRecorder/src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroRecorder."/g
+cat ../src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## NeuroStim"
 echo ""
 echo "\`\`\`@docs"
-cat ../NeuroStim/src/stim/*.jl | grep ^function | sed s/"function "/"NeuroStim."/g
+cat ../src/stim/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
 echo ""
 echo "## NeuroTester"
 echo ""
 echo "\`\`\`@docs"
-cat ../NeuroTester/src/tester/*.jl | grep ^function | sed s/"function "/"NeuroTester."/g
+cat ../src/tester/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g
 echo "\`\`\`"
