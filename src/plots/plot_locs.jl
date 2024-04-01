@@ -174,7 +174,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                            xticks=xt,
                            yticks=yt,
                            xlims=xl,
-                           ylims=yl,                           background_color=transparent ? :transparent : :white,
+                           ylims=yl,                          background_color=transparent ? :transparent : :white,
                            foreground_color=:black)
         end
     end

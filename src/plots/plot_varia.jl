@@ -759,7 +759,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
     else
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "ERP spectrogram")
         p1 = Plots.heatmap(t,
-                           f,                           
+                           f,                          
                            s[:, :, 1],
                            title=tt,
                            xlabel=xl,
@@ -794,7 +794,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
 
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs")
         p2 = Plots.heatmap(t,
-                           f,                           
+                           f,                          
                            s[:, :, 2],
                            title=tt,
                            xlabel=xl,
