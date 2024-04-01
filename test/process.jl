@@ -125,9 +125,9 @@ e = erp(e10)
 
 @info "test 16/52: bpsplit()"
 s, bn, bf = bpsplit(e10)
-@test length(bn) == 10
-@test length(bf) == 10
-@test size(s) == (10, 23, 2560, 10)
+@test length(bn) == 13
+@test length(bf) == 13
+@test size(s) == (13, 23, 2560, 10)
 
 @info "test 17/52: fconv()"
 @test round.(fconv(v1, kernel=v2)) == [2.0, 2.0, 3.0, 3.0, 2.0]

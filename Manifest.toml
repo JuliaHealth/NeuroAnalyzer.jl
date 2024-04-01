@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "fb4f323bce1dc48d988ba6552210bb8c89d75394"
+project_hash = "f42ef25d25eaf2a5346862b4401e573f4abbbc18"
 
 [[deps.ATK_jll]]
 deps = ["Artifacts", "Glib_jll", "JLLWrappers", "Libdl"]
@@ -1370,6 +1370,12 @@ deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
 version = "1.11.0+1"
 
+[[deps.LibSerialPort]]
+deps = ["Libdl", "libserialport_jll"]
+git-tree-sha1 = "69403284a6217f6e60e76553032a103893b7d910"
+uuid = "a05a14c7-6e3b-5ba9-90a2-45558833e1df"
+version = "0.5.2"
+
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
@@ -1704,21 +1710,21 @@ uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
 
 [[deps.NeuroRecorder]]
-deps = ["Artifacts", "Cairo", "Dates", "Gtk", "PiGPIO", "REPL", "Reexport", "WAV"]
+deps = ["Artifacts", "Cairo", "DataFrames", "Dates", "Gtk", "LibSerialPort", "PiGPIO", "Plots", "REPL", "Reexport", "Statistics", "WAV"]
 path = "NeuroRecorder"
 uuid = "b6bea70e-5364-4141-b21b-0b3b04a52764"
-version = "0.24.4-dev"
+version = "0.24.4"
 
 [[deps.NeuroStim]]
 deps = ["Test"]
 path = "NeuroStim"
 uuid = "e023c5a6-369d-49ee-bc04-3b86d881f6f7"
-version = "0.24.4-dev"
+version = "0.24.4"
 
 [[deps.NeuroTester]]
 path = "NeuroTester"
 uuid = "85ca5511-8440-4271-b57d-6b73a9046dbb"
-version = "0.24.4-dev"
+version = "0.24.4"
 
 [[deps.Observables]]
 git-tree-sha1 = "7438a59546cf62428fc9d1bc94729146d37a7225"
@@ -2845,6 +2851,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
 git-tree-sha1 = "1ea2ebe8ffa31f9c324e8c1d6e86b4165b84a024"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
 version = "1.6.43+0"
+
+[[deps.libserialport_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "aacc5af8e8ba0b48a6feadac7afd4bca5d4e98d8"
+uuid = "220460dc-b50e-5ed0-8176-09b0fd261e90"
+version = "0.1.3+0"
 
 [[deps.libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Pkg", "libpng_jll"]
