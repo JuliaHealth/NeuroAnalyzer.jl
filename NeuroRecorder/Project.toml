@@ -1,16 +1,20 @@
 name = "NeuroRecorder"
 uuid = "b6bea70e-5364-4141-b21b-0b3b04a52764"
 authors = ["Adam Wysokiński <adam.wysokinski@neuroanalyzer.org>"]
-version = "0.24.4-dev"
+version = "0.24.4"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Gtk = "4c0ca9eb-093a-5379-98c5-f87ac0bbbf44"
+LibSerialPort = "a05a14c7-6e3b-5ba9-90a2-45558833e1df"
 PiGPIO = "bb151fc1-c6dc-5496-8ed6-07f94907e623"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 WAV = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"
 
 [compat]

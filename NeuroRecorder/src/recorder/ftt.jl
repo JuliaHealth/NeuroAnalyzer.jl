@@ -354,7 +354,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         t_segments .+= t_s
         t_e = (trials * duration) + (trials * interval)
         t_segments[end] = t_s + t_e
-        channel = Channel(kbd_listener, 1024) # Start task, 10 is buffer size for channel
+        channel = Channel(_kbd_listener, 1024) # Start task, 10 is buffer size for channel
         stop = false
         r = 0
         t = Float64[]

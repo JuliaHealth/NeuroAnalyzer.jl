@@ -9,7 +9,7 @@ module NeuroRecorder
 
 # set constants
 
-const VER = v"0.24.4-dev"
+const VER = v"0.24.4"
 const allow_wip = occursin("dev", string(VER))  # false for the stable branch, true for the devel branch
 
 # initialize preferences
@@ -20,11 +20,15 @@ verbose = true
 
 using Artifacts
 using Cairo
+using DataFrames
 using Dates
 using Gtk
-using WAV
+using LibSerialPort
 using PiGPIO
+using Plots
 using REPL
+using Statistics
+using WAV
 
 # initialize
 
@@ -38,6 +42,7 @@ end
 
 # internal functions
 include("internal/misc.jl")
+include("internal/rt_plotter.jl")
 # record
 include("recorder/ftt.jl")
 

@@ -1,7 +1,7 @@
 name = "NeuroStim"
 uuid = "e023c5a6-369d-49ee-bc04-3b86d881f6f7"
 authors = ["Adam Wysokiński <adam.wysokinski@neuroanalyzer.org>"]
-version = "0.24.4-dev"
+version = "0.24.4"
 
 [deps]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
