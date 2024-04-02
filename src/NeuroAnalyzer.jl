@@ -234,7 +234,7 @@ include("internal/rt_plotter.jl")
 include("internal/tester.jl")
 # analyze
 include("analyze/amplitude/ampdiff.jl")
-include("analyze/amplitude/rms.jl")
+include("analyze/amplitude/amp.jl")
 include("analyze/amplitude/rmse.jl")
 include("analyze/amplitude/snr.jl")
 include("analyze/erp/erp_peaks.jl")

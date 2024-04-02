@@ -632,23 +632,16 @@ lf, ls, pf = psd_slope(e10, method=:mw)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
 
-@info "test 34/60: rms(), msa(), amp()"
-@test NeuroAnalyzer.rms(v1) == 3.3166247903554
-@test NeuroAnalyzer.rms(m1) == [2.160246899469287; 5.066228051190222;;]
-@test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
-r = NeuroAnalyzer.rms(e10)
-@test size(r) == (23, 10)
-@test NeuroAnalyzer.msa(v1) == 11.0
-@test NeuroAnalyzer.msa(m1) == [4.666666666666666; 25.666666666666664;;]
-@test NeuroAnalyzer.msa(a1) == [1.0 1.0; 1.0 1.0]
-r = NeuroAnalyzer.msa(e10)
-@test size(r) == (23, 10)
-p, r, p2p, semi_p2p, rmsa = NeuroAnalyzer.amp(e10)
+@info "test 34/60: amp()"
+p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10)
 @test size(p) == (23, 10)
 @test size(r) == (23, 10)
 @test size(p2p) == (23, 10)
 @test size(semi_p2p) == (23, 10)
+@test size(msa) == (23, 10)
 @test size(rmsa) == (23, 10)
+@test size(nrg) == (23, 10)
+@test size(rms) == (23, 10)
 
 @info "test 35/60: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 1.0
