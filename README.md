@@ -60,20 +60,7 @@ If you would like to support the project financially, we have the Liberapay acco
 
 ## How to Cite
 
-If you use this package please acknowledge us by citing our paper. 
-
-DOIs for specific version numbers are provided by [Zenodo](https://zenodo.org/search?page=1&size=20&q=conceptrecid%3A%227372648%22&sort=-version&all_versions=True). To cite the current version, use:
-```bibtex
-@software{adam_wysokinski_7372648,
-  author       = {Adam Wysokiński},
-  title        = {NeuroAnalyzer},
-  year         = 2024,
-  publisher    = {Zenodo},
-  version      = {0.24.3},
-  doi          = {10.5281/zenodo.7372648},
-  url          = {https://doi.org/10.5281/zenodo.7372648}
-}
-```
+If you use this package please acknowledge us by citing our [paper](https://neuroanalyzer.org#how-to-cite).
 
 ## Contributors
 
