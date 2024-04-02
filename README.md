@@ -69,7 +69,7 @@ DOIs for specific version numbers are provided by [Zenodo](https://zenodo.org/se
   title        = {NeuroAnalyzer},
   year         = 2024,
   publisher    = {Zenodo},
-  version      = {0.24.3},
+  version      = {0.24.4},
   doi          = {10.5281/zenodo.7372648},
   url          = {https://doi.org/10.5281/zenodo.7372648}
 }
