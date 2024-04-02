@@ -3,7 +3,7 @@
 using Pkg
 Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
 Pkg.activate("..")
-Pkg.instantiate()
+# Pkg.instantiate()
 
 @info "Loading package: Documenter"
 using Documenter
