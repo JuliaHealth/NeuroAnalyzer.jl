@@ -11,7 +11,8 @@ echo ""
 echo "## Utils"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/utils/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sort -u
+cat ../src/utils/*.jl | grep ^function | grep Base. | sed s/"function Base."/"NeuroAnalyzer."/g
+cat ../src/utils/*.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "## IO"
