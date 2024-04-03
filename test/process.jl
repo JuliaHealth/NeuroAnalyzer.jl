@@ -414,7 +414,7 @@ eeg_tmp = ica_remove(eeg_tmp, ic_idx=1);
 @test size(eeg_tmp.data) == (24, 308480, 1)
 
 @info "test 51/52: normpower()"
-@test normpower(1:10) == 6.204836822995428:6.204836822995428:62.04836822995427
+@test round.(normpower(1:10)) == [6.0, 12.0, 19.0, 25.0, 31.0, 37.0, 43.0, 50.0, 56.0, 62.0]
 @test size(normpower(e10)) == (24, 2560, 10)
 
 @info "test 52/52: sort_epochs()"
