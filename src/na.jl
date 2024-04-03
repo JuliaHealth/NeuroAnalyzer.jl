@@ -180,11 +180,11 @@ end
 """
     na_plugins_install(plugin)
 
-Install NeuroAnalyzer plugin from remote Git repository.
+Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.ZIP archive.
 
 # Arguments
 
-- `plugin::String`: plugin Git repository URL
+- `plugin::String`: plugin Git repository URL or file name (with full path)
 """
 function na_plugins_install(plugin::String)
 
@@ -192,10 +192,34 @@ function na_plugins_install(plugin::String)
 
     path_tmp = pwd()
     cd(plugins_path)
-    try
-        run(`$(git()) clone $plugin`)
-    catch
-        @error "Cannot install $plugin."
+    if occursin(r"http.*", plugin)
+        # install from remote repository
+        try
+            run(`$(git()) clone $plugin`)
+        catch
+            @error "Cannot install $plugin."
+        end
+    else
+        # install from local archive
+        @assert isfile(plugin) "File $plugin cannot be opened."
+        @assert lowercase(splitext(plugin)[2]) in [".zip", ".gz"] "PLUGIN must specify .ZIP/.TAR.GZ file."
+        if lowercase(splitext(plugin)[2]) == ".zip"
+            Sys.which("unzip") === nothing && error("Unknown command: unzip")
+            _info("Installing from .ZIP archive")
+            try
+                run(`unzip -oq $plugin`);
+            catch
+                @error "Cannot install $plugin."
+            end
+        elseif lowercase(splitext(plugin)[2]) == ".gz" && lowercase(splitext(splitext(plugin)[1])[2]) == ".tar"
+            Sys.which("tar") === nothing && error("Unknown command: tar")
+            _info("Installing from .TAR.GZ archive")
+            try
+                run(`tar --overwrite  -xzf $plugin`);
+            catch
+                @error "Cannot install $plugin."
+            end
+        end
     end
     na_plugins_reload()
     cd(path_tmp)
