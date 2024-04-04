@@ -108,3 +108,26 @@ function _make_epochs_bymarkers(s::Array{<:Real, 3}; marker::String, markers::Da
     return epochs, mrk_tmp
 
 end
+
+function _epochs_tps(obj::NeuroAnalyzer.NEURO)
+    # return time borders of epochs
+    tps = zeros(2, nepochs(obj))
+    # epoch start
+    tps[1, :] = obj.time_pts[1:epoch_len(obj):(length(obj.time_pts) - epoch_len(obj) + 1)]
+    # epoch end
+    tps[2, :] = obj.time_pts[(epoch_len(obj)):epoch_len(obj):length(obj.time_pts)]
+    return tps
+end
+
+function _markers_epochs(obj::NeuroAnalyzer.NEURO)
+    # return epoch numbers of markers
+    mrk_start = obj.markers[!, :start]
+    mrk_epoch = zeros(Int64, length(mrk_start))
+    epochs_tps = NeuroAnalyzer._epochs_tps(obj)
+    for mrk_idx in eachindex(mrk_start)
+        for ep_idx in 1:nepochs(obj)
+            mrk_start[mrk_idx] >= epochs_tps[1, ep_idx] && mrk_start[mrk_idx] <= epochs_tps[2, ep_idx] && (mrk_epoch[mrk_idx] = ep_idx)
+        end
+    end
+    return mrk_epoch
+end

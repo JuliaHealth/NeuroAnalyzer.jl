@@ -93,12 +93,14 @@ bm, be = detect_bad(e10)
 @test sum(bm) == 240
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-@info "test 12/30: epoch()"
+@info "test 12/30: epoch(), subepoch()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
 @test epoch_len(e10) == 10*sr(eeg)
 e10 = epoch(eeg, ep_n=10)
 @test nepochs(e10) == 10
+e2 = subepoch(e10, ep_start=2, ep_end=8)
+@test nepochs(e2) == 10
 
 @info "test 13/30: epoch_time()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -173,6 +175,10 @@ channel2marker!(eeg_mrk, ch=28, id="mrk")
 @info "test 24/30: epoch()"
 eeg_mrk2 = epoch(eeg_mrk, marker="Mark2", offset=0.2, ep_len=1.2)
 @test size(eeg_mrk2) == (29, 240, 1049)
+e10 = epoch(eeg, ep_len=10)
+@test size(e10) = (24, 2560, 120)
+e2 = subepoch(e10, ep_start=2.0, ep_end=3.996)
+@test size(e2) = (24, 512, 120)
 
 @info "test 25/30: join()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))

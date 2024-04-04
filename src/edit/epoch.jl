@@ -2,6 +2,8 @@ export epoch
 export epoch!
 export epoch_ts
 export epoch_ts!
+export subepoch
+export subepoch!
 
 """
     epoch(obj; marker, offset, ep_n, ep_len)
@@ -165,4 +167,92 @@ function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)
 
     return nothing
     
+end
+
+"""
+    subepoch(obj; ep_start, ep_end)
+
+Extract sub-epochs with a reduced time range.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ep_start::Real`: sub-epoch start
+- `ep_end::Real`: sub-epoch end
+
+# Returns
+
+- `obj::NeuroAnalyzer.NEURO`
+"""
+function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
+
+    obj_new = deepcopy(obj)
+    ep_time = obj.epoch_time
+
+    @assert ep_start >= ep_time[1] "ep_start must be ≥ $(ep_time[1])."
+    @assert ep_end <= ep_time[end] "ep_end must be ≤ $(ep_time[end])."
+
+    ep_start_idx = vsearch(ep_start, ep_time)
+    ep_end_idx = vsearch(ep_end, ep_time)
+
+    # update signal
+    obj_new.data = obj.data[:, ep_start_idx:ep_end_idx, :]
+
+    # update time points
+    obj_new.epoch_time = ep_time[ep_start_idx:ep_end_idx]
+    obj_new.time_pts, _ = NeuroAnalyzer._get_t(obj_new)
+
+    # delete markers outside epochs
+    ep_tps = NeuroAnalyzer._epochs_tps(obj)
+    ep_tps[2, :] = ep_tps[1, :] .+ ep_end
+    ep_tps[1, :] .+= ep_start
+    mrk_start = obj.markers[!, :start]
+    mrk_epoch = NeuroAnalyzer._markers_epochs(obj)
+    for mrk_idx in length(mrk_start):-1:1
+        if mrk_start[mrk_idx] < ep_tps[1, mrk_epoch[mrk_idx]] || mrk_start[mrk_idx] > ep_tps[2, mrk_epoch[mrk_idx]]
+            deleteat!(obj_new.markers, mrk_idx)
+            deleteat!(mrk_epoch, mrk_idx)
+        end
+    end
+
+    # shift markers time points
+    mrk_start = deepcopy(obj_new.markers[!, :start])
+    for mrk_idx in eachindex(mrk_start)
+        mrk_start[mrk_idx] -= (ep_start + ((mrk_epoch[mrk_idx] - 1) * (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))))
+    end
+    mrk_start = round.(mrk_start, digits=3)
+
+    obj_new.markers[!, :start] = mrk_start 
+    
+    reset_components!(obj_new)
+    push!(obj_new.history, "subepoch(OBJ, ep_start=$ep_start, ep_start=$ep_end)")
+
+    return obj_new
+
+end
+
+
+"""
+    subepoch!(obj; ep_start, ep_end)
+
+Extract sub-epochs with a reduced time range.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ep_start::Real`: sub-epoch start
+- `ep_end::Real`: sub-epoch end
+"""
+function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
+
+    obj_new = subepoch(obj, ep_start=ep_start, ep_end=ep_end)
+    obj.header = obj_new.header
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
+
+    return nothing
+
 end
