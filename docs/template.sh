@@ -41,8 +41,6 @@ echo "\`\`\`"
 echo ""
 echo "## Analyze"
 echo ""
-echo "### Analyze"
-echo ""
 echo "\`\`\`@docs"
 cat ../src/analyze/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sort -u
 echo "\`\`\`"
