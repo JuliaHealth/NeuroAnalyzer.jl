@@ -1,6 +1,9 @@
 steps:
   docs:
     image: julia
+    when:
+      - event: manual           # workflow should run if you execute it manual
+      - event: push             # workflow should run on each push ( = on each commit)
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
     commands:
       - mkdir ~/NeuroAnalyzer
