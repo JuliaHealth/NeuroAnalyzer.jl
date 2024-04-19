@@ -72,6 +72,7 @@ function na_info()
             "LibSerialPort",
             "Loess",
             "MAT",
+            "MLJ",
             "MultivariateStats",
             "NPZ",
             "PiGPIO",

@@ -55,9 +55,9 @@ s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
 @test names(df) == ["id", "start", "length", "description", "channel"]
 @test NeuroAnalyzer._sort_channels(["emg", "eeg"]) == [2, 1]
-lm = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
-@test lm == Dict("a"=>[1.0])
-@test NeuroAnalyzer._dict2labeled_matrix(lm) == (["a"], [[1.0]])
+lmt = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
+@test lmt == Dict("a"=>[1.0])
+@test NeuroAnalyzer._dict2labeled_matrix(lmt) == (["a"], [[1.0]])
 @test NeuroAnalyzer._clean_labels(["eeg fp1"]) == ["fp1"]
 add_component!(e10, c=:x, v=rand(4, 100))
 l = NeuroAnalyzer._gen_clabels(e10, :x)

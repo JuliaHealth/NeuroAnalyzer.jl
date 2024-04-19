@@ -16,7 +16,8 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 """
 function normpower(s::AbstractVector)
 
-    return s .* rms(s)
+    _, _, _, _, _, _, _, rms = amp(s)
+    return s .* rms
 
 end
 

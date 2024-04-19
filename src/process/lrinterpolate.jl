@@ -9,17 +9,19 @@ Interpolate channel using linear regression.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
+- `ch::Int64`: channel number to interpolate
+- `ep::Int64`: epoch number(s) within to interpolate
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange})
+function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64)
 
     channels = get_channel_bytype(obj, type=obj.header.recording[:data_type])
-    @assert ch in channels "channel must be signal channel; cannot interpolate non-signal channels."
+    @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
+    @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
+    @assert nepochs(obj) > 1 "OBJ must have > 1 epoch to train the model."
 
     bad_signal = obj.data[:, :, ep]
     good_eps = setdiff(1:nepochs(obj), ep)
@@ -39,17 +41,16 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
     acc_mae = mean(abs.(accuracy_testdf.error))
     aic, bic = infcrit(linear_regressor)
 
-    _info("R² for the linear regressor: $(round(acc_r2, digits=3))")
-    _info("MAE (test dataset): $(round(acc_mae, digits=3))")
-    _info("AIC: $(round(aic, digits=3))")
-    _info("BIC: $(round(bic, digits=3))")
+    _info("Accuracy report:")
+    _info(" R²: $(round(acc_r2, digits=3))")
+    _info(" MAE: $(round(acc_mae, digits=3))")
+    _info(" AIC: $(round(aic, digits=3))")
+    _info(" BIC: $(round(bic, digits=3))")
 
     # predict
-    obj_new = deepcopy(obj) 
-    @inbounds for ep_idx in ep
-        df = @views DataFrame(hcat(bad_signal[ch, :, ep_idx], bad_signal[good_chs, :, ep_idx]'), :auto)
-        obj_new.data[ch, :, ep_idx] = GLM.predict(linear_regressor, df)
-    end
+    obj_new = deepcopy(obj)
+    df = @views DataFrame(hcat(bad_signal[ch, :, ep], bad_signal[good_chs, :, ep]'), :auto)
+    obj_new.data[ch, :, ep] = GLM.predict(linear_regressor, df)
 
     reset_components!(obj_new)
     push!(obj_new.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep)")

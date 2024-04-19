@@ -101,6 +101,7 @@ using JSON
 using LinearAlgebra
 using Loess
 using MAT
+using MLJ
 using MultivariateStats
 using NPZ
 using PiGPIO
@@ -362,6 +363,7 @@ include("process/ica.jl")
 include("process/intensity2od.jl")
 include("process/invert.jl")
 include("process/lrinterpolate.jl")
+include("process/mlinterpolate.jl")
 include("process/normalize.jl")
 include("process/normpower.jl")
 include("process/npl.jl")
