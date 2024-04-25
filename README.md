@@ -60,7 +60,7 @@ If you would like to support the project financially, we have the Liberapay acco
 
 ## How to Cite
 
-If you use this package please acknowledge us by citing our [paper](https://neuroanalyzer.org#how-to-cite).
+If you use this toolbox, please acknowledge us by citing our [paper](https://neuroanalyzer.org#how-to-cite).
 
 ## Contributors
 
