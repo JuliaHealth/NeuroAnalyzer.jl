@@ -434,7 +434,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         push!(t_kp, t2)
                         result[idx] += 1
                         key_pressed = true
-                        sleep(0.1)
+                        sleep(0.15)
                         continue
                     end
                 else
@@ -442,7 +442,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         # key is released
                         push!(d_kp, t2 - t_kp[end])
                         key_pressed = false
-                        sleep(0.1)
+                        sleep(0.15)
                         continue
                     end
                 end
@@ -466,7 +466,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         push!(int_t_kp, t2)
                         int_result[idx] += 1
                         key_pressed = true
-                        sleep(0.1)
+                        sleep(0.15)
                         continue
                     end
                 else
@@ -474,7 +474,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         # key is released
                         push!(int_d_kp, t2 - int_t_kp[end])
                         key_pressed = false
-                        sleep(0.1)
+                        sleep(0.15)
                         continue
                     end
                 end
