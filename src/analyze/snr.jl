@@ -39,7 +39,8 @@ Calculate RMS-based SNR.
 """
 function snr2(s::AbstractVector)
     
-    return (maximum(s) - minimum(s)) / rms(s)
+    _, _, _, _, _, _, _, r = amp(s)
+    return (maximum(s) - minimum(s)) / r
 
 end
 
