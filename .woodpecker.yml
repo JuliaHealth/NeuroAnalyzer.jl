@@ -32,10 +32,7 @@ steps:
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer-docs.git
       - git add --all
       - git commit -m "Woodpecker CI Documentation Build"
-      - GIT_STATUS=`git status | awk 'FNR==2'`
-      - if [ "$GIT_STATUS" != "Your branch is up to date with 'origin/main'." ];
-      - git push -f origin main
-      - fi
+      - ./ci/push_docs.sh
 
   test:
     image: julia
