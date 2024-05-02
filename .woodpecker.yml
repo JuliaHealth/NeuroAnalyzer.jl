@@ -31,8 +31,7 @@ steps:
       - git config --global init.defaultBranch main
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer-docs.git
       - git add --all
-      - git commit -m "Woodpecker CI Documentation Build"
-      - ./ci/push_docs.sh
+      - ./docs/push_docs.sh
 
   test:
     image: julia
