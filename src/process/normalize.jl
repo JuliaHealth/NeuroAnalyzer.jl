@@ -12,6 +12,7 @@ export normalize_pos
 export normalize_perc
 export normalize_invroot
 export normalize_softmax
+export normalize_sigmoid
 
 """
     normalize(s, n; method)
@@ -21,7 +22,6 @@ Normalize.
 # Arguments
 
 - `s::AbstractArray`
-- `m::Real=0.0`
 - `n::Real=1.0`
 - `method::Symbol`:
     - `:zscore`: by z-score
@@ -34,18 +34,19 @@ Normalize.
     - `:pos`: in [0, +∞]
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
-    - `:invroot`: in inverse root (1/sqrt(x))
-    - `:softmax`: exp(x_i) / sum(exp(x))
+    - `:invroot`: to inverse root: 1/sqrt(x)
     - `:n`: in [0, n], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
+    - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
+    - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:none`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
+function normalize(s::AbstractArray, n::Float64=1.0; method::Symbol)
 
-    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :mn, :softmax, :none], "method")
+    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :none], "method")
 
     if method === :zscore
         return normalize_zscore(s)
@@ -69,10 +70,12 @@ function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
         return normalize_gauss(s)
     elseif method === :invroot
         return normalize_invroot(s)
-    elseif method === :softmax
-        return normalize_softmax(s)
     elseif method === :n
         return normalize_n(s, n)
+    elseif method === :softmax
+        return normalize_softmax(s)
+    elseif method === :sigmoid
+        return normalize_sigmoid(s)
     elseif method === :none
         return s
     end
@@ -365,6 +368,25 @@ Softmax normalize: `exp(x_i) / sum(exp(x))`
 function normalize_softmax(s::AbstractArray)
 
     return exp.(s) ./ sum(exp.(s))
+
+end
+
+"""
+    normalize_sigmoid(s)
+
+Normalize using sigmoid function: `1 / (1 + e^-x_i)`
+
+# Arguments
+
+- `s::AbstractArray`
+
+# Returns
+
+- `normalize_sigmoid::Vector{Float64}`
+"""
+function normalize_softmax(s::AbstractArray)
+
+    return @. 1 / (1 + exp(-s))
 
 end
 
