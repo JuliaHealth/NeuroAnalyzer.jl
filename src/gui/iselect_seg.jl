@@ -107,7 +107,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""

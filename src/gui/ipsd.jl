@@ -553,7 +553,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1110,7 +1110,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h

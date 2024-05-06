@@ -334,7 +334,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             end

@@ -63,7 +63,7 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 116 # t
                 camera_pos = (0, 90)
                 draw(can)
@@ -149,7 +149,7 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 116 # t
                 camera_pos = (0, 90)
                 draw(can)

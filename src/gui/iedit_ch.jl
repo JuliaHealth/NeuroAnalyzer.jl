@@ -715,7 +715,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
         end
     end
 

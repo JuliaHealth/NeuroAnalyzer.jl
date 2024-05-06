@@ -285,7 +285,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -443,8 +443,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_delete = GtkButton("DEL")
-    set_gtk_property!(bt_delete, :tooltip_text, "Delete epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
     lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
@@ -460,10 +458,8 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     g[8, 2] = bt_next
     g[9, 2] = bt_end
     g[10, 2] = GtkLabel("")
-    g[11, 2] = bt_delete
-    g[12, 2] = GtkLabel("")
-    g[13, 2] = bt_help
-    g[14, 2] = bt_close
+    g[11, 2] = bt_help
+    g[12, 2] = bt_close
     push!(win, g)
 
     showall(win)
@@ -549,7 +545,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     signal_connect(bt_prev, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep >= 2
+        if ep > 1
             ep -= 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -579,19 +575,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
     end
 
-    signal_connect(bt_delete, "clicked") do widget
-        ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-            delete_epoch!(obj, ep=ep)
-            _info("Deleted epoch: $ep")
-            ep = ep > 1 ? ep -= 1 : ep = 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, ep)
-                GAccessor.range(entry_epoch, 1, nepochs(obj))
-            end
-        end
-    end
-
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
     end
@@ -603,7 +586,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -640,7 +623,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 end
             elseif k == 122 # z
                 ep = get_gtk_property(entry_epoch, :value, Int64)
-                if ep >= 2
+                if ep > 1
                     ep -= 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_epoch, :value, ep)
@@ -652,17 +635,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                     ep += 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_epoch, :value, ep)
-                    end
-                end
-            elseif k == 100 # d
-                ep = get_gtk_property(entry_epoch, :value, Int64)
-                if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-                    delete_epoch!(obj, ep=ep)
-                    _info("Deleted epoch: $ep")
-                    ep = ep > 1 ? ep -= 1 : ep = 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_epoch, :value, ep)
-                        GAccessor.range(entry_epoch, 1, nepochs(obj))
                     end
                 end
             end
@@ -951,7 +923,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1113,8 +1085,6 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_delete = GtkButton("DEL")
-    set_gtk_property!(bt_delete, :tooltip_text, "Delete epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
     lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
@@ -1130,10 +1100,8 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     g[8, 2] = bt_next
     g[9, 2] = bt_end
     g[10, 2] = GtkLabel("")
-    g[11, 2] = bt_delete
-    g[12, 2] = GtkLabel("")
-    g[13, 2] = bt_help
-    g[14, 2] = bt_close
+    g[11, 2] = bt_help
+    g[12, 2] = bt_close
     push!(win, g)
 
     showall(win)
@@ -1217,7 +1185,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
 
     signal_connect(bt_prev, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep >= 2
+        if ep > 1
             ep -= 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -1247,19 +1215,6 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
         end
     end
 
-    signal_connect(bt_delete, "clicked") do widget
-        ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-            delete_epoch!(obj1, ep=ep)
-            _info("Deleted epoch: $ep")
-            ep = ep > 1 ? ep -= 1 : ep = 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, ep)
-                GAccessor.range(entry_epoch, 1, nepochs(obj1))
-            end
-        end
-    end
-
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
     end
@@ -1271,7 +1226,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1308,7 +1263,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                 end
             elseif k == 122 # z
                 ep = get_gtk_property(entry_epoch, :value, Int64)
-                if ep >= 2
+                if ep > 1
                     ep -= 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_epoch, :value, ep)
@@ -1320,17 +1275,6 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                     ep += 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_epoch, :value, ep)
-                    end
-                end
-            elseif k == 100 # d
-                ep = get_gtk_property(entry_epoch, :value, Int64)
-                if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-                    delete_epoch!(obj1, ep=ep)
-                    _info("Deleted epoch: $ep")
-                    ep = ep > 1 ? ep -= 1 : ep = 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_epoch, :value, ep)
-                        GAccessor.range(entry_epoch, 1, nepochs(obj1))
                     end
                 end
             end
@@ -1605,7 +1549,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1760,8 +1704,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
-    bt_delete = GtkButton("DEL")
-    set_gtk_property!(bt_delete, :tooltip_text, "Delete epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
     lab_ch = GtkLabel("$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
@@ -1777,10 +1719,8 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     g[8, 2] = bt_next
     g[9, 2] = bt_end
     g[10, 2] = GtkLabel("")
-    g[11, 2] = bt_delete
-    g[12, 2] = GtkLabel("")
-    g[13, 2] = bt_help
-    g[14, 2] = bt_close
+    g[11, 2] = bt_help
+    g[12, 2] = bt_close
     push!(win, g)
 
     showall(win)
@@ -1857,7 +1797,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
 
     signal_connect(bt_prev, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep >= 2
+        if ep > 1
             ep -= 1
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, ep)
@@ -1887,19 +1827,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         end
     end
 
-    signal_connect(bt_delete, "clicked") do widget
-        ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-            delete_epoch!(obj, ep=ep)
-            _info("Deleted epoch: $ep")
-            ep = ep > 1 ? ep -= 1 : ep = 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, ep)
-                GAccessor.range(entry_epoch, 1, nepochs(obj))
-            end
-        end
-    end
-
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
     end
@@ -1911,7 +1838,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1948,7 +1875,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                 end
             elseif k == 122 # z
                 ep = get_gtk_property(entry_epoch, :value, Int64)
-                if ep >= 2
+                if ep > 1
                     ep -= 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_epoch, :value, ep)
@@ -1960,17 +1887,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                     ep += 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_epoch, :value, ep)
-                    end
-                end
-            elseif k == 100 # d
-                ep = get_gtk_property(entry_epoch, :value, Int64)
-                if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-                    delete_epoch!(obj, ep=ep)
-                    _info("Deleted epoch: $ep")
-                    ep = ep > 1 ? ep -= 1 : ep = 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_epoch, :value, ep)
-                        GAccessor.range(entry_epoch, 1, nepochs(obj))
                     end
                 end
             end

@@ -288,7 +288,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -542,17 +542,17 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        info_dialog("Keyboard shortcuts:\n\nctrl-b\tslide channels up\nctrl-n\tslide channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-d\tdelete current epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 20
+        if s == 4
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
-                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-d\tdelete current epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+                info_dialog("Keyboard shortcuts:\n\nctrl-b\tslide channels up\nctrl-n\tslide channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-d\tdelete current epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
             elseif k == 97 # a
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, 1)
