@@ -384,7 +384,7 @@ Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 
 - `normalize_sigmoid::Vector{Float64}`
 """
-function normalize_softmax(s::AbstractArray)
+function normalize_sigmoid(s::AbstractArray)
 
     return @. 1 / (1 + exp(-s))
 
