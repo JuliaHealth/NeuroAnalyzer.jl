@@ -51,7 +51,7 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::Int64=1, ep::Int64=1, mono::Bool=tr
     bt_help = GtkButton("🛈")
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_play = GtkButton("▷")
-    set_gtk_property!(bt_play, :tooltip_text, "Play the signal")
+    set_gtk_property!(bt_play, :tooltip_text, "Play current epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
     lab_ch = GtkLabel("$(string(ch))")

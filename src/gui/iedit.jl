@@ -525,15 +525,19 @@ function iedit_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     signal_connect(bt_delete, "clicked") do widget
-        ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ask_dialog("Delete epoch $ep ?", "No", "Yes")
-            delete_epoch!(obj, ep=ep)
-            _info("Deleted epoch: $ep")
-            ep = ep > 1 ? ep -= 1 : ep = 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, ep)
-                GAccessor.range(entry_epoch, 1, nepochs(obj))
+        if nepochs(obj) > 1
+            ep = get_gtk_property(entry_epoch, :value, Int64)
+            if ask_dialog("Delete epoch $ep ?", "No", "Yes")
+                delete_epoch!(obj, ep=ep)
+                _info("Deleted epoch: $ep")
+                Gtk.@sigatom begin
+                    set_gtk_property!(entry_epoch, :value, ep)
+                    GAccessor.range(entry_epoch, 1, nepochs(obj))
+                end
             end
+            draw(can)
+        else
+            error_dialog("You cannot delete the last epoch.")
         end
     end
 
