@@ -195,10 +195,15 @@ function __init__()
     global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
 
     # load plugins
-    _info("Loading plugins:")
     global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-    isdir(plugins_path) || mkpath(plugins_path)
-    na_plugins_reload()
+    if isdir(plugins_path)
+        if length(readdir(plugins_path)) > 0
+            _info("Loading plugins:")
+            na_plugins_reload()
+        end
+    else
+        mkpath(plugins_path)
+    end
 
 end
 
