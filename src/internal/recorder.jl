@@ -24,7 +24,7 @@ function _kbd_listener(c::Channel)
     end
 end
 
-function _serial_open(port_name::String="/dev/ttyS0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)
+function _serial_open(port_name::String="/dev/ttyACM0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)
 
     @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
     
@@ -65,7 +65,7 @@ function _serial_close(port_name::String)
     return nothing
 end
 
-function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, m::Int64=SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)
+function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)
 
     # `blocks`: number of data blocks to record
     # `n`: number of records per block

@@ -262,7 +262,7 @@ Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR k
 - `trials::Int64=2`: number of trials
 - `interval::Int64=2`: interval between trials in seconds
 - `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
-- `port_name::String=""`: serial port to which the switch is connected (e.g. `/dev/ttyUSB0`); set to "" to disable using serial port
+- `port_name::String=""`: serial port to which the switch is connected (e.g. `/dev/ttyACM0`); set to "" to disable using serial port
 
 # Returns
 
@@ -516,6 +516,9 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         int_t_kp = int_t_kp .- t_s
     elseif rpi !== false
         # use RPi
+
+        debounce_delay = 50
+
         println()
         t_s = time()
         for idx in 1:trials
@@ -523,13 +526,32 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             println()
             print("   Trial $idx: press the BUTTON button as quickly as possible")
             t1 = time()
+            key_state = false
+            key_last_state = false
             key_pressed = false
+            last_debounce_time = 0
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
+                rpi_key != key_last_state && (last_debounce_time = time())
+                if ((time() - last_debounce_time) > debounce_delay)
+                    if rpi_key != key_state
+                        key_state = rpi_key
+                        if key_state == true
+                            # key is pressed
+                            push!(t_kp, time())
+                            result[idx] += 1
+                        else
+                            # key is released
+                            push!(d_kp, time() - t_kp[end])
+                        end
+                    end
+                end
+                key_last_state = rpi_key;
+    #=
                 t2 = time()
                 if rpi_key == true
                     if key_pressed == false
-                        # key is pressed            
+                        # key is pressed
                         push!(t_kp, t2)
                         result[idx] += 1
                         key_pressed = true
@@ -545,7 +567,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         continue
                     end
                 end
+=#
             end
+            @show result
+            @show t_kp
+            @show d_kp
+            return nothing
             _beep()
             if length(d_kp) < sum(result)
                 pop!(t_kp)
