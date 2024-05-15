@@ -278,6 +278,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
+    sp = nothing
+
     if gpio != -1 && port_name == ""
         # check if running on RPi
         rpi = _check_rpi()
@@ -516,9 +518,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         int_t_kp = int_t_kp .- t_s
     elseif rpi !== false
         # use RPi
-
-        debounce_delay = 50
-
+        debounce_delay = 50 # ms
         println()
         t_s = time()
         for idx in 1:trials
@@ -538,10 +538,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         key_state = rpi_key
                         if key_state == true
                             # key is pressed
+                            print("_")
                             push!(t_kp, time())
                             result[idx] += 1
                         else
                             # key is released
+                            print("-")
                             push!(d_kp, time() - t_kp[end])
                         end
                     end
