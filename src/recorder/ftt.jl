@@ -518,30 +518,30 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         # use RPi
         debounce_delay = 100 # ms
         println()
-        t_s = time() * 1000
+        t_s = time()
         for idx in 1:trials
             _beep()
             println()
             print("   Trial $idx: press the BUTTON button as quickly as possible")
-            t1 = time() * 1000
+            t1 = time()
             key_pressed = 0    
             key_state = 0
             key_last_state = 0
             last_debounce_time = 0     
-            while time() * 1000 <= t1 + duration
+            while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
-                if (time() * 1000 - last_debounce_time) > debounce_delay                        
+                rpi_key != key_last_state && (last_debounce_time = time())                             
+                if (time() - last_debounce_time) > debounce_delay                        
                     if rpi_key != key_state                         
                         key_state = rpi_key 
                         if key_state == 1
                             # key is pressed        
-                            push!(t_kp, time() * 1000)
+                            push!(t_kp, time())
                             result[idx] += 1
                             sleep(0.01)
                         else
                             # key is released
-                            push!(d_kp, time() * 1000 - t_kp[end])
+                            push!(d_kp, time() - t_kp[end])
                             sleep(0.01)
                         end
                     end
@@ -556,25 +556,25 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             println()
             println()
             print("Interval $idx: DO NOT press the BUTTON button")
-            t1 = time() * 1000
+            t1 = time()
             key_pressed = 0    
             key_state = 0
             key_last_state = 0
             last_debounce_time = 0     
-            while time() * 1000 <= t1 + duration
+            while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
-                if (time() * 1000 - last_debounce_time) > debounce_delay                        
+                rpi_key != key_last_state && (last_debounce_time = time())                             
+                if (time() - last_debounce_time) > debounce_delay                        
                     if rpi_key != key_state                         
                         key_state = rpi_key 
                         if key_state == 1
                             # key is pressed        
-                            push!(int_t_kp, time() * 1000)
+                            push!(int_t_kp, time())
                             int_result[idx] += 1
                             sleep(0.01)
                         else
                             # key is released
-                            push!(int_d_kp, time() * 1000 - int_t_kp[end])
+                            push!(int_d_kp, time() - int_t_kp[end])
                             sleep(0.01)
                         end
                     end
