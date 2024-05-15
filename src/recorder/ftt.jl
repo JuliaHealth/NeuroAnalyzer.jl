@@ -528,11 +528,14 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             last_debounce_time = 0
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
+                @show rpi_key
                 rpi_key != key_pressed && (last_debounce_time = time())
                 if ((time() - last_debounce_time) > debounce_delay)
+                    println("*")
                     if rpi_key == 1
                         if !key_pressed
                             # key is pressed
+                            println("_")
                             push!(t_kp, time())
                             result[idx] += 1
                             key_pressed = true
@@ -541,6 +544,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                     else
                         if key_pressed
                             # key is released
+                            println("-")
                             push!(d_kp, time() - t_kp[end])
                             key_pressed = false
                             sleep(0.01)
