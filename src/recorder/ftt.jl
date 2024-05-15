@@ -595,13 +595,6 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     println()
     println("Testing completed.")
 
-    @show result
-    @show t_kp
-    @show d_kp
-    @show int_result
-    @show int_t_kp
-    @show int_d_kp
-
     t_keypressed = Vector{Vector{Float64}}()
     d_keypressed = Vector{Vector{Float64}}()
     for idx1 in trials:-1:1
@@ -614,8 +607,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         reverse!(tk)
         reverse!(td)
         tk = tk .- ((idx1 - 1) * (duration + interval))
-        push!(t_keypressed, round.(tk, digits=4))
-        push!(d_keypressed, round.(td, digits=4))
+        push!(t_keypressed, round.(tk, digits=3))
+        push!(d_keypressed, round.(td, digits=3))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
@@ -642,7 +635,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     # remove out of time boundary taps
     for idx1 in 1:trials
         for idx2 in length(t_keypressed[idx1]):-1:1
-            if t_keypressed[idx1][idx2] > duration
+            if t_keypressed[idx1][idx2] > (duration * idx1)
                 deleteat!(t_keypressed[idx1], idx2)
                 deleteat!(d_keypressed[idx1], idx2)
                 result[idx1] -= 1
@@ -651,7 +644,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     end
     for idx1 in 1:trials
         for idx2 in length(int_t_keypressed[idx1]):-1:1
-            if int_t_keypressed[idx1][idx2] > interval
+            if int_t_keypressed[idx1][idx2] > (interval * idx1)
                 deleteat!(int_t_keypressed[idx1], idx2)
                 deleteat!(int_d_keypressed[idx1], idx2)
                 int_result[idx1] -= 1
