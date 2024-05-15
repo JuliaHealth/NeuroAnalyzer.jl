@@ -549,10 +549,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 key_last_state = rpi_key
             end            
             _beep()
-            # if length(d_kp) < sum(result)
-            #     pop!(t_kp)
-            #     result[idx] -= 1
-            # end
+            if length(d_kp) < sum(result)
+                pop!(t_kp)
+                result[idx] -= 1
+            end
             println()
             println()
             print("Interval $idx: DO NOT press the BUTTON button")
@@ -581,10 +581,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 end    
                 key_last_state = rpi_key
             end
-            # if length(int_d_kp) < sum(int_result)
-            #     pop!(int_t_kp)
-            #     int_result[idx] -= 1
-            # end
+            if length(int_d_kp) < sum(int_result)
+                pop!(int_t_kp)
+                int_result[idx] -= 1
+            end
             println()
         end
         # format time points
