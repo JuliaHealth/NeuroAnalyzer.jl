@@ -524,40 +524,32 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             println()
             print("   Trial $idx: press the BUTTON button as quickly as possible")
             t1 = time()
-            key_pressed = false
-            last_debounce_time = 0
+            key_pressed = 0    
+            key_state = 0
+            key_last_state = 0
+            last_debounce_time = 0     
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                @show rpi_key
-                @show key_pressed
-                rpi_key != key_pressed && (last_debounce_time = time())
-                if ((time() - last_debounce_time) > debounce_delay)
-                    println("*")
-                    if rpi_key == 1
-                        if !key_pressed
-                            # key is pressed
+                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
+                if (time() * 1000 - last_debounce_time) > debounce_delay                        
+                    if rpi_key != key_state                         
+                        key_state = rpi_key 
+                        if key_state == 1
+                            # key is pressed        
                             println("_")
                             push!(t_kp, time())
                             result[idx] += 1
-                            key_pressed = true
                             sleep(0.01)
-                        end
-                    else
-                        if key_pressed
+                        else
                             # key is released
                             println("-")
                             push!(d_kp, time() - t_kp[end])
-                            key_pressed = false
                             sleep(0.01)
                         end
                     end
-                end
-                sleep(0.1)
-            end
-            @show result
-            @show t_kp
-            @show d_kp
-            return nothing
+                end    
+                key_last_state = rpi_key
+            end            
             _beep()
             if length(d_kp) < sum(result)
                 pop!(t_kp)
@@ -567,31 +559,31 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             println()
             print("Interval $idx: DO NOT press the BUTTON button")
             t1 = time()
-            key_pressed = false
-            last_debounce_time = 0
-            while time() <= t1 + interval
+            key_pressed = 0    
+            key_state = 0
+            key_last_state = 0
+            last_debounce_time = 0     
+            while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_pressed && (last_debounce_time = time())
-                if ((time() - last_debounce_time) > debounce_delay)
-                    if rpi_key == 1
-                        if !key_pressed
-                            # key is pressed
+                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
+                if (time() * 1000 - last_debounce_time) > debounce_delay                        
+                    if rpi_key != key_state                         
+                        key_state = rpi_key 
+                        if key_state == 1
+                            # key is pressed        
+                            println("_")
                             push!(int_t_kp, time())
                             int_result[idx] += 1
-                            key_pressed = true
                             sleep(0.01)
-                            continue
-                        end
-                    else
-                        if key_pressed
+                        else
                             # key is released
+                            println("-")
                             push!(int_d_kp, time() - int_t_kp[end])
-                            key_pressed = false
                             sleep(0.01)
-                            continue
                         end
                     end
-                end
+                end    
+                key_last_state = rpi_key
             end
             if length(int_d_kp) < sum(int_result)
                 pop!(int_t_kp)
