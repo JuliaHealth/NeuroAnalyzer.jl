@@ -31,7 +31,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
     @assert size(sp, 1) == length(sf) "Size of powers $(size(sp, 1)) and frequencies vector $(length(sf)) do not match."
 
     pal = mono ? :grays : :darktest
-    cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
+    cb_title = norm ? "[dB/Hz]" : "[$units^2/Hz]"
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
@@ -93,7 +93,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
     @assert size(sp, 2) == length(sf) "Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."
 
     pal = mono ? :grays : :darktest
-    cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
+    cb_title = norm ? "[dB/Hz]" : "[$units^2/Hz]"
     
     ch = collect(eachindex(sch)) .- 0.5
     p = Plots.heatmap(sf,
@@ -246,7 +246,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
-        norm == true && (sp = pow2db.(sp))
+        norm && (sp = pow2db.(sp))
 
         st .+= t[1]
 
@@ -254,7 +254,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
 
         # plot markers if available
         # TODO: draw markers length
-        if markers == true && _has_markers(obj) == true
+        if markers && _has_markers(obj)
             markerspos = obj.markers[!, :start] ./ sr(obj)
             markers_desc = obj.markers[!, :description]
             p = Plots.vline!(markerspos,
@@ -303,7 +303,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
-        norm == true && (sp = pow2db.(sp))
+        norm && (sp = pow2db.(sp))
 
         p = plot_spectrogram(clabels, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end
@@ -439,7 +439,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
-        norm == true && (sp = pow2db.(sp))
+        norm && (sp = pow2db.(sp))
 
         st .+= t[1]
 
@@ -447,7 +447,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         # plot markers if available
         # TODO: draw markers length
-        if markers == true && _has_markers(obj) == true
+        if markers && _has_markers(obj)
             markerspos = obj.markers[!, :start] ./ sr(obj)
             markers_desc = obj.markers[!, :description]
             p = Plots.vline!(markerspos,
@@ -491,7 +491,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
-        norm == true && (sp = pow2db.(sp))
+        norm && (sp = pow2db.(sp))
         
         p = plot_spectrogram(clabels, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end

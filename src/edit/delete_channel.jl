@@ -60,7 +60,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
             deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
             deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
         elseif obj_new.header.recording[:data_type] == "nirs"
-            if del_opt == false && idx in 1:length(obj_new.header.recording[:optode_labels])
+            if !del_opt && idx in 1:length(obj_new.header.recording[:optode_labels])
                 @warn "NIRS signal channels must be deleted using delete_optode()."
                 return nothing
             end

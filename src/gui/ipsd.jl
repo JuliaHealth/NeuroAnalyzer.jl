@@ -358,7 +358,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
                 warn_dialog("For w3d plot, the signal must contain ≥ 2 channels.")
             elseif length(ch) < 2 && type === :s3d
                 warn_dialog("For s3d plot, the signal must contain ≥ 2 channels.")
-            elseif _has_locs(obj) == false && type === :topo
+            elseif !_has_locs(obj) && type === :topo
                 warn_dialog("Electrode locations not available.")
             elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type in [:butterfly, :mean, :w3d, :s3d, :topo]
                 warn_dialog("For $(string(type)) plot\nall channels should be of the same type.")
@@ -882,7 +882,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -948,7 +948,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                 warn_dialog("For w3d plot, the signal must contain ≥ 2 channels.")
             elseif length(ch) < 2 && type === :s3d
                 warn_dialog("For s3d plot, the signal must contain ≥ 2 channels.")
-            elseif _has_locs(obj) == false && type === :topo
+            elseif !_has_locs(obj) && type === :topo
                 warn_dialog("Electrode locations not available.")
             elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type in [:butterfly, :mean, :w3d, :s3d, :topo]
                 warn_dialog("For $(string(type)) plot\nall channels should be of the same type.")

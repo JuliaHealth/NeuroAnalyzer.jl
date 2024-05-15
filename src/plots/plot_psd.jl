@@ -56,7 +56,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -67,7 +67,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     end
 
     # prepare plot
@@ -136,7 +136,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     # reverse so 1st channel is on top
     sp = @views reverse(sp[:, eachindex(sf)], dims = 1)
     # also, reverse colors if palette is not mono
-    if mono == true
+    if mono
         pal = :grays
         channel_color = repeat([:black], ch_n)
     else
@@ -282,7 +282,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true,
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -293,7 +293,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true,
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     end
 
     # prepare plot
@@ -401,7 +401,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -412,7 +412,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     end
 
     # prepare plot
@@ -512,7 +512,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        zsc = norm == false ? :log10 : :identity
+        zsc = !norm ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -523,7 +523,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        zsc = norm == false ? :log10 : :identity
+        zsc = !norm ? :log10 : :identity
     end
 
     # prepare plot
@@ -662,7 +662,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -673,7 +673,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = norm == false ? :log10 : :identity
+        ysc = !norm ? :log10 : :identity
     end
 
     # plot parameters
@@ -681,7 +681,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     marker_size = (120, 80)
     
     # get locations
-    if cart == false
+    if !cart
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in 1:size(locs, 1)
@@ -913,7 +913,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if ref !== :abs
             ylabel == "default" && (ylabel = "Power ratio")
         end
-        if norm == true
+        if norm
             ylabel == "default" && (ylabel = "Power [dB]")
         else
             ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
@@ -991,7 +991,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1013,7 +1013,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1216,7 +1216,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     # set labels
     if type !== :w3d && type !== :s3d
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        if norm == true
+        if norm
             ylabel == "default" && (ylabel = "Power [dB]")
         else
             ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
@@ -1267,7 +1267,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1286,7 +1286,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,

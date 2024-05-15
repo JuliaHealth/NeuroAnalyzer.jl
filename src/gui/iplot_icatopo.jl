@@ -215,7 +215,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
         Gtk.@sigatom begin
             set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
             set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
-            if ic_available_for_removal_idx[current_ic] == false
+            if !ic_available_for_removal_idx[current_ic]
                 set_gtk_property!(cb_mark, :opacity, 0.2)
             else
                 set_gtk_property!(cb_mark, :opacity, 1)
@@ -233,7 +233,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                 Gtk.@sigatom begin
                     set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
-                    if ic_available_for_removal_idx[current_ic] == false
+                    if !ic_available_for_removal_idx[current_ic]
                         set_gtk_property!(cb_mark, :opacity, 0.2)
                     else
                         set_gtk_property!(cb_mark, :opacity, 1)
@@ -259,7 +259,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                 Gtk.@sigatom begin
                     set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
-                    if ic_available_for_removal_idx[current_ic] == false
+                    if !ic_available_for_removal_idx[current_ic]
                         set_gtk_property!(cb_mark, :opacity, 0.2)
                     else
                         set_gtk_property!(cb_mark, :opacity, 1)

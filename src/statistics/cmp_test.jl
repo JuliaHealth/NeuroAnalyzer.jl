@@ -32,13 +32,13 @@ Named tuple containing for type === `:perm`:
 function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000)
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
-    paired == true && length(s1) != length(s2) && @error "For paired test both segments must have the same size."
+    paired && length(s1) != length(s2) && @error "For paired test both segments must have the same size."
 
     ks = ApproximateTwoSampleKSTest(s1, s2)
     pks = pvalue(ks)
     if type !== :perm
         if (pks < alpha && type === :auto) || type === :p
-            if paired == true
+            if paired
                 _info("Using one sample T-test")
                 t = OneSampleTTest(s1, s2)
             else
@@ -56,8 +56,8 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             tc = confint(t, level=(1 - alpha))
             tn = "t"
         elseif (pks >= alpha && type === :auto) || type === :np
-            if paired == true
-                if exact == true
+            if paired
+                if exact
                     _info("Using exact signed rank (Wilcoxon) test")
                     t = ExactSignedRankTest(s1, s2)
                 else
@@ -91,7 +91,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         perm_diff = zeros(nperm)
 
         # initialize progress bar
-        progress_bar == true && (progbar = Progress(nperm, dt=1, barlen=20, color=:white))
+        progress_bar && (progbar = Progress(nperm, dt=1, barlen=20, color=:white))
 
         @inbounds for idx in 1:nperm
             f_idx = randperm(n1 + n2)
@@ -100,7 +100,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             perm_diff[idx] = mean(g[f_idx .== 0]) - mean(g[f_idx .== 1])
 
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
         end
         observed_difference = mean(g[g_idx .== 0]) - mean(g[g_idx .== 1])
         observed_difference = round(observed_difference, digits=3)

@@ -39,12 +39,12 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
 
     if marker != ""
         # split by markers
-        @assert _has_markers(obj) == true "OBJ does not contain markers."
+        @assert _has_markers(obj) "OBJ does not contain markers."
         @assert ep_len !== nothing "ep_len must be specified."
         _check_markers(obj, marker)
 
         # get marker positions
-        @assert any(obj_new.markers[!, :description] .== marker) == true "OBJ does not contain marker $marker."
+        @assert any(obj_new.markers[!, :description] .== marker) "OBJ does not contain marker $marker."
         mrk_idx = getindex.(findall(obj_new.markers[!, :description] .== marker))
         mrk_start = obj_new.markers[mrk_idx, :start]
         mrk_len = obj_new.markers[mrk_idx, :length]

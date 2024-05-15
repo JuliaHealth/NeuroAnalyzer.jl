@@ -25,7 +25,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, ci::Flo
     @assert ci < 1.0 "ci must be < 1.0."
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(n1, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(n1, dt=1, barlen=20, color=:white))
 
     s_avg = zeros(n1, size(s, 1))
     @inbounds for idx1 in 1:n1
@@ -37,7 +37,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, ci::Flo
         s_avg[idx1, :] = vec(mean(s_tmp, dims=2))
 
         # update progress bar
-        progress_bar == true && next!(progbar)
+        progress_bar && next!(progbar)
     end
 
     s_ci_l = zeros(size(s_avg, 2))
@@ -88,7 +88,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::St
     out = zeros(typeof(out_tmp), n1)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(n1, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(n1, dt=1, barlen=20, color=:white))
 
     s_avg = zeros(n1, size(s, 1))
     @inbounds for idx1 in 1:n1
@@ -102,7 +102,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::St
         out[idx1] = eval(Meta.parse(f_tmp))
 
         # update progress bar
-        progress_bar == true && next!(progbar)
+        progress_bar && next!(progbar)
     end
 
     return out

@@ -354,7 +354,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
             img = read_from_png(io)
             ctx = getgc(can1)
-            if already_scaled1 == false
+            if !already_scaled1
                 Cairo.scale(ctx, 0.70, 0.70)
                 already_scaled1 = true
             end
@@ -380,7 +380,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
             img = read_from_png(io)
             ctx = getgc(can2)
-            if already_scaled2 == false
+            if !already_scaled2
                 Cairo.scale(ctx, 0.70, 0.70)
                 already_scaled2 = true
             end
@@ -406,7 +406,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             p = NeuroAnalyzer.plot_locs(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
             img = read_from_png(io)
             ctx = getgc(can3)
-            if already_scaled3 == false
+            if !already_scaled3
                 Cairo.scale(ctx, 0.70, 0.70)
                 already_scaled3 = true
             end
@@ -432,7 +432,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             p = NeuroAnalyzer.plot_locs3d(locs, ch=ch_signal, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart);
             img = read_from_png(io)
             ctx = getgc(can4)
-            if already_scaled4 == false
+            if !already_scaled4
                 Cairo.scale(ctx, 0.70, 0.70)
                 already_scaled4 = true
             end

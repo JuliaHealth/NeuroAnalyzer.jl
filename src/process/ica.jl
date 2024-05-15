@@ -46,7 +46,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     final_tol = nothing
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white))
 
     @inbounds for tol_idx in eachindex(tol)
         for _ in 1:iter
@@ -63,7 +63,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
             end
 
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
 
         end
         final_tol !== nothing && break
@@ -166,7 +166,7 @@ function ica_reconstruct(; ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::
         @assert !(ic_idx < 1 || ic_idx > size(ic_mw, 2)) "ic_idx must be in [1, $(size(ic_mw, 2))]."
     end
 
-    if keep == false
+    if !keep
         ic_idx = setdiff(1:size(ic_mw, 2), ic_idx)
         s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]
     else

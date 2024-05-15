@@ -84,7 +84,7 @@ function _make_epochs_bymarkers(s::Array{<:Real, 3}; marker::String, markers::Da
         for ep_idx in 1:mrk_n
             markers[mrk_idx, :start] * fs in ep_start[ep_idx]:ep_end[ep_idx] && (within_epoch = true)
         end
-        within_epoch == false && deleteat!(markers, mrk_idx)
+        !within_epoch && deleteat!(markers, mrk_idx)
     end
 
     # keep only markers of the given type and shift their offsets

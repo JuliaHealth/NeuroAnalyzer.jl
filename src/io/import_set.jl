@@ -75,7 +75,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     end
     # dataset["chaninfo"]
     clabels = _clean_labels(clabels)
-    if detect_type == true
+    if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
         units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
     else

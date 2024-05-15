@@ -24,7 +24,7 @@ function vsearch(y::T, x::AbstractVector; acc::Bool=false) where {T<:Real}
 
     d, idx = findmin(abs.(x .- y))
 
-    return acc == true ? (idx, d) : idx
+    return acc ? (idx, d) : idx
 
 end
 
@@ -55,7 +55,7 @@ function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
         d[y_idx], idx[y_idx] = findmin(abs.(x .- y[y_idx]))
     end
 
-    return acc == true ? (convert.(Int64, idx), d) : idx
+    return acc ? (convert.(Int64, idx), d) : idx
 end
 
 """

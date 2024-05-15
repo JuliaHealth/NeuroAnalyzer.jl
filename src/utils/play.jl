@@ -20,7 +20,7 @@ function play(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, mono::Bool=true, m
     s = @views obj.data[ch, :, ep]
     fs = sr(obj)
 
-    mono == false && (s = [s s])
+    !mono && (s = [s s])
     
     wavplay(s, fs)
 

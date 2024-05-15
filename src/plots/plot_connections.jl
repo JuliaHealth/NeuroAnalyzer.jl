@@ -52,7 +52,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         else
             head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -68,7 +68,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         else
             head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -84,7 +84,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         else
             head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -127,7 +127,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
     end
 
     ma = 1.0
-    ch_labels == true && (ma = 0.75)
+    ch_labels && (ma = 0.75)
 
     if large
         p = Plots.plot(grid=false,
@@ -213,15 +213,15 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
             if idx1 != idx2
                 if threshold_type === :g
                     if connections[idx1, idx2] > threshold
-                        if weights == true
+                        if weights
                             if connections[idx1, idx2] > 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
                                 end
                             elseif connections[idx1, idx2] < 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
@@ -230,7 +230,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
                             l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono == true
+                            if mono
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
                             else
                                 if connections[idx1, idx2] >= 0
@@ -243,15 +243,15 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                     end
                 elseif threshold_type === :l
                     if connections[idx1, idx2] < threshold
-                        if weights == true
+                        if weights
                             if connections[idx1, idx2] > 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
                                 end
                             elseif connections[idx1, idx2] < 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
@@ -260,7 +260,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
                             l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono == true
+                            if mono
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
                             else
                                 if connections[idx1, idx2] >= 0
@@ -273,15 +273,15 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                     end
                 elseif threshold_type === :eq
                     if connections[idx1, idx2] == threshold
-                        if weights == true
+                        if weights
                             if connections[idx1, idx2] > 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
                                 end
                             elseif connections[idx1, idx2] < 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
@@ -290,7 +290,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
                             l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono == true
+                            if mono
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
                             else
                                 if connections[idx1, idx2] >= 0
@@ -303,15 +303,15 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                     end
                 elseif threshold_type === :neq
                     if connections[idx1, idx2] != threshold
-                        if weights == true
+                        if weights
                             if connections[idx1, idx2] > 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
                                 end
                             elseif connections[idx1, idx2] < 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
@@ -320,7 +320,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
                             l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono == true
+                            if mono
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
                             else
                                 if connections[idx1, idx2] >= 0
@@ -333,15 +333,15 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                     end
                 elseif threshold_type === :leq
                     if connections[idx1, idx2] <= threshold
-                        if weights == true
+                        if weights
                             if connections[idx1, idx2] > 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
                                 end
                             elseif connections[idx1, idx2] < 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
@@ -350,7 +350,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
                             l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono == true
+                            if mono
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
                             else
                                 if connections[idx1, idx2] >= 0
@@ -363,15 +363,15 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                     end
                 elseif threshold_type === :geq
                     if connections[idx1, idx2] >= threshold
-                        if weights == true
+                        if weights
                             if connections[idx1, idx2] > 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
                                 end
                             elseif connections[idx1, idx2] < 0
-                                if mono == true
+                                if mono
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
                                 else
                                     p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
@@ -380,7 +380,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
                         else
                             p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
                             l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
-                            if mono == true
+                            if mono
                                 p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
                             else
                                 if connections[idx1, idx2] >= 0
@@ -396,7 +396,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         end
     end
 
-    large == false && (title = "")
+    !large && (title = "")
     Plots.plot!(p,
                 title=title,
                 titlefontsize=10)

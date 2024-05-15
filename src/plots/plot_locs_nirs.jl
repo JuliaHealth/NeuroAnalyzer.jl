@@ -93,7 +93,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         xd = x[src_n + opt_pairs[idx, 2]]
         ys = y[opt_pairs[idx, 1]]
         yd = y[src_n + opt_pairs[idx, 2]]
-        if mono == true
+        if mono
             p = Plots.plot!([xs, xd], [ys, yd], lc=:gray, lw=1, alpha=0.5)
         else
             p = Plots.plot!([xs, xd], [ys, yd], lc=:blue, lw=1, alpha=0.5)
@@ -104,8 +104,8 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         for idx in 1:src_n
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
-    elseif opt_labels == false
-        if mono == true
+    elseif !opt_labels
+        if mono
             p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:black, msc=:black, ms=marker_size, msa=1)
         else
             p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:red, msc=:red, ms=marker_size, msa=1)
@@ -116,8 +116,8 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         for idx in (src_n + 1):(src_n + det_n)
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
-    elseif opt_labels == false
-        if mono == true
+    elseif !opt_labels
+        if mono
             p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:white, msc=:black, ms=marker_size, msa=1)
         else
             p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:green, msc=:green, ms=marker_size, msa=1)
@@ -134,7 +134,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         end
     end
 
-    if head == true
+    if head
         _warn("TO DO: add head outline.")
     end
 

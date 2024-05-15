@@ -24,7 +24,7 @@ function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true, pad::
     half_k = floor(Int64, n_k / 2)
     s_fft = fft0(s, pad + n_k - 1)
     kernel_fft = fft0(kernel, pad + n_s - 1)
-    norm == true && (kernel_fft ./= cmax(kernel_fft))
+    norm && (kernel_fft ./= cmax(kernel_fft))
     s_conv = real.(ifft0(s_fft .* kernel_fft, pad))
 
     # remove in- and out- edges
@@ -62,14 +62,14 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true, pad::I
     s_new = similar(s)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
         end
     end
 

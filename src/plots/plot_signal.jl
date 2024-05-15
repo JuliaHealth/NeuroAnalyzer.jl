@@ -35,7 +35,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     # reverse so 1st channel is on top
     s = @views reverse(s[:, eachindex(t)], dims = 1)
     # also, reverse colors if palette is not mono
-    if mono == true
+    if mono
         pal = :grays
         channel_color = repeat([:black], ch_n)
     else
@@ -43,7 +43,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
         channel_color = ch_n:-1:1
     end
 
-    if scale == true
+    if scale
         # get range of the original signal for the scale
         range = _get_range(s)
         # normalize and shift so all channels are visible
@@ -104,7 +104,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
 
     # draw scale
-    if scale == true
+    if scale
         p = Plots.plot!([_xlims(t)[1], _xlims(t)[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
         p = Plots.plot!(annotations=(_xlims(t)[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
@@ -149,7 +149,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
 
     pal = :darktest
 
-    if scale == true
+    if scale
         # get range of the original signal for the scale
         range = _get_range(s)
         # normalize and shift so all channels are visible
@@ -196,7 +196,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
 
     # plot channels
     for idx in 1:ch_n
-        if bad[idx] == true
+        if bad[idx]
             p = @views Plots.plot!(t,
                                    s[idx, :],
                                    linewidth=1,
@@ -215,7 +215,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
 
     # draw scale
-    if scale == true
+    if scale
         p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=5, label="")
         p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
@@ -311,7 +311,7 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArr
                     lw=0.5)
 
     # draw scale
-    if norm == true && scale == true
+    if norm && scale
         p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
         p = Plots.plot!(annotations=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
@@ -394,7 +394,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
     end
     
     # draw scale
-    if norm == true && scale == true
+    if norm && scale
         p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
         p = Plots.plot!(annotations=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
@@ -499,7 +499,7 @@ function plot_2signals(t::Union{AbstractVector, AbstractRange}, s1::Union{Abstra
     p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
 
     # draw scale
-    if scale == true
+    if scale
         p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=2, label="")
         p = Plots.plot!(annotations=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
@@ -571,7 +571,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     # do not show epoch markers if there are no epochs
     nepochs(obj) == 1 && (emarkers = false)
-    if emarkers == true
+    if emarkers
         epoch_markers = _get_epoch_markers(obj)
     end
 
@@ -619,7 +619,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     p = Plots.Plot[]
 
     if type === :normal
-        if bad == false
+        if !bad
             if length(ch_tmp) > 1
                 for cht_idx in eachindex(ch_t_uni)
                     units = _ch_units(obj, ch_tmp[cht_idx][1])
@@ -759,7 +759,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     # add epochs markers
     # TODO: draw epoch numbers
-    if emarkers == true
+    if emarkers
         if length(p) > 1
             for p_idx in eachindex(p)
                 p[p_idx] = Plots.vline!(p[p_idx],
@@ -780,7 +780,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     # plot markers if available
     # TODO: draw markers length
-    if markers == true && _has_markers(obj) == true
+    if markers && _has_markers(obj)
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :description]
@@ -923,7 +923,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
 
     # do not show epoch markers if there are no epochs
     nepochs(obj) == 1 && (emarkers = false)
-    if emarkers == true
+    if emarkers
         epoch_markers = _get_epoch_markers(obj)
     end
 
@@ -999,7 +999,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
 
     # add epochs markers
     # TODO: draw epoch numbers
-    if emarkers == true
+    if emarkers
         p = Plots.vline!(epoch_markers,
                          linestyle=:dash,
                          linewidth=0.5,
@@ -1009,7 +1009,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
 
     # plot markers if available
     # TODO: draw markers length
-    if markers == true && _has_markers(obj) == true
+    if markers && _has_markers(obj)
         markers_pos = obj.markers[!, :start]
         markers_desc = obj.markers[!, :description]
         p = Plots.vline!(markers_pos,
@@ -1082,7 +1082,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     # do not show epoch markers if there are no epochs
     nepochs(obj1) == 1 && (emarkers = false)
-    if emarkers == true
+    if emarkers
         epoch_markers = _get_epoch_markers(obj1)
     end
 
@@ -1196,7 +1196,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     # add epochs markers
     # TODO: draw epoch numbers
-    if emarkers == true
+    if emarkers
         if length(p) > 1
             for p_idx in eachindex(p)
                 p[p_idx] = Plots.vline!(p[p_idx],

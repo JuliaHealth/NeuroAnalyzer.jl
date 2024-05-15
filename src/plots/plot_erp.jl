@@ -52,7 +52,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
                    ytickfontsize=6;
                    kwargs...)
     # reverse Y axis
-    yrev == true && yflip!(true)
+    yrev && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -75,7 +75,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
                      label=false)
 
     # plot RT v-line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.vline!([rt],
                          linewidth=1.0,
                          linecolor=:red,
@@ -139,7 +139,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                    kwargs...)
 
     # reverse Y axis
-    yrev == true && yflip!(true)
+    yrev && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -179,7 +179,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
     end
 
     # plot averaged ERP
-    if avg == true
+    if avg
         if ch_n == 1
             s = mean(s, dims=2)[:]
         else
@@ -200,7 +200,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                      label=false)
 
     # plot RT v-line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.vline!([rt],
                          linewidth=1.0,
                          linecolor=:red,
@@ -263,7 +263,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                    kwargs...)
 
     # reverse Y axis
-    yrev == true && yflip!(true)
+    yrev && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -303,7 +303,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                      label=false)
 
     # plot RT v-line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.vline!([rt],
                          linewidth=1.0,
                          linecolor=:red,
@@ -357,7 +357,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     marker_size = (120, 80)
     
     # get locations
-    if cart == false
+    if !cart
         loc_x = zeros(nrow(locs))
         loc_y = zeros(nrow(locs))
         for idx in 1:nrow(locs)
@@ -403,7 +403,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
                        ytickfontsize=6;
                        kwargs...)
         # reverse Y axis
-        yrev == true && yflip!(true)
+        yrev && yflip!(true)
 
         # plot 0 h-line
         p = Plots.hline!([0],
@@ -477,7 +477,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
 
-    if isnothing(rt) == false
+    if !isnothing(rt)
         @assert length(rt) == size(s, 1) "Length of the rt vector must be the same as the number of ERP epochs ($(size(s, 1)))."
     end
 
@@ -523,7 +523,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
                      label=false)
 
     # plot RT line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.plot!(rt, 1:length(rt),
                         linewidth=1,
                         linecolor=:black,
@@ -621,7 +621,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                      kwargs...)
     elseif type === :butterfly
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        if channel_labels == true
+        if channel_labels
             clabels = labels(obj)[ch]
         else
             clabels = repeat([""], length(ch))
@@ -676,14 +676,14 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Channels", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         end
 
-        if channel_labels == true
+        if channel_labels
             clabels = labels(obj)[ch]
         else
             clabels = repeat([""], length(ch))
         end
 
         if ch isa Int64
-            if sort_epochs == true
+            if sort_epochs
                 rt_idx = sortperm(rt)
                 rt = rt[rt_idx]
                 s = s[rt_idx, :]
@@ -719,10 +719,10 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     # draw peaks
-    if peaks == true
+    if peaks
         if ch isa Int64
             pp = erp_peaks(obj)
-            if mono == false
+            if !mono
                 Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                 Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
@@ -733,12 +733,12 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1]], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[ch, 2]] * 1000, digits=0)) ms")
             _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2]], digits=2)) $units")
-        elseif (type === :butterfly && avg == true) || type === :mean
+        elseif (type === :butterfly && avg) || type === :mean
             erp_tmp = mean(mean(obj.data[ch, :, 2:end], dims=1), dims=3)
             obj_tmp = keep_channel(obj, ch=1)
             obj_tmp.data = erp_tmp
             pp = erp_peaks(obj_tmp)
-            if mono == false
+            if !mono
                 Plots.scatter!((t[pp[1, 1]], erp_tmp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp_tmp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else

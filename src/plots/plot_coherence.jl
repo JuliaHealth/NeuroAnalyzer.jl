@@ -123,7 +123,7 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
     coh_tmp = deepcopy(coh)
     coh = @views reverse(coh[:, eachindex(f)], dims = 1)
     # also, reverse colors if palette is not mono
-    if mono == true
+    if mono
         pal = :grays
         channel_color = repeat([:black], ch_n)
     else

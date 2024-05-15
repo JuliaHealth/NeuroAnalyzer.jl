@@ -292,7 +292,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     (ftype === :hp && ep_n > 1) && _warn("HP filter should be applied to a continuous signal.")
     _info("Signal should be tapered prior to filtering to reduce edge artifacts")
 
-    if preview == true
+    if preview
         _info("When `preview=true`, signal is not being filtered")
         fprototype === :iirnotch && (ftype = :bs)    
         p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
@@ -308,13 +308,13 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     end
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
         end
     end
 
@@ -365,7 +365,7 @@ For `:poly` filter `order` and `window` have to be set experimentally, recommend
 """
 function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
-    if preview == true
+    if preview
         _warn("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)

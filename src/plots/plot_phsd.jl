@@ -111,7 +111,7 @@ function plot_phsd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
     # reverse so 1st channel is on top
     sp = @views reverse(sp[:, eachindex(sf)], dims = 1)
     # also, reverse colors if palette is not mono
-    if mono == true
+    if mono
         pal = :grays
         channel_color = repeat([:black], ch_n)
     else
@@ -562,7 +562,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     marker_size = (120, 80)
     
     # get locations
-    if cart == false
+    if !cart
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in 1:size(locs, 1)

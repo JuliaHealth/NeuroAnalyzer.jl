@@ -37,7 +37,7 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
     @assert n >= 1 "n must be ≥ 1."
 
-    even == true && mod(n, 2) != 0 && (n += 1)
+    even && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)
 
     if type === :hann
@@ -145,7 +145,7 @@ Generate sinc function.
 """
 function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
 
-    s = norm == true ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
+    s = norm ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(s)
     sum(nan_idx) != 0 && (s[findall(isnan, s)[1]] = (s[findall(isnan, s)[1] - 1] + s[findall(isnan, s)[1] + 1]) / 2)
     
@@ -177,7 +177,7 @@ function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::
     @assert t > 0 "t must be > 0."
 
     t = -t:1/fs:t
-    sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
+    sin_wave = complex ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
     mw = sin_wave .* g
 

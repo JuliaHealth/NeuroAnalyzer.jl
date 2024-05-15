@@ -41,7 +41,7 @@ function import_snirf(file_name::String; n::Int64=0)
     # check for multi-subject recordings
     n_id = "nirs"
     n != 0 && @assert !any(occursin.("nirs$n" , keys(nirs))) "No data for subject $n found in the recording."
-    if any(occursin.("nirs1" , keys(nirs))) == true
+    if any(occursin.("nirs1" , keys(nirs)))
         @assert n != 0 "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."
         n_id = "nirs$n"
     end

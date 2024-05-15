@@ -15,7 +15,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
     minx = minimum(x)
     miny = minimum(y)
     head = Plots.Shape(x, y)
-    if head_details == true
+    if head_details
         nose = Plots.Shape([(-0.2, maxy - 0.015),
                             (0, maxy + 0.08),
                             (0.2, maxy - 0.015),
@@ -52,14 +52,14 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
 
     p = Plots.plot!(p, head, fill=nothing, label="")
 
-    if head_labels == true
+    if head_labels
         p = Plots.plot!(annotations=(0, 1.05, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
         p = Plots.plot!(annotations=(0, -1.05, Plots.text("NAS", pointsize=4, halign=:center, valign=:center)))
         p = Plots.plot!(annotations=(-1.05, 0, Plots.text("LPA", pointsize=4, halign=:center, valign=:center, rotation=90)))
         p = Plots.plot!(annotations=(1.05, 0, Plots.text("RPA", pointsize=4, halign=:center, valign=:center, rotation=-90)))
     end
 
-    if topo == true
+    if topo
         pts = Plots.partialcircle(0, 2π, 100, 1.4)
         x, y = Plots.unzip(pts)
         for idx in 1:0.001:1.7

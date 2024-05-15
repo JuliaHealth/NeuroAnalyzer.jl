@@ -74,8 +74,8 @@ function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::
     @assert r2 <= size(m, 1) "c1 must be ≤ $(size(m, 1))."
     @assert c2 <= size(m, 2) "c2 must be ≤ $(size(m, 2))."
 
-    if c == false
-        return v == false ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
+    if !c
+        return !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
     else
         seg = zeros(Bool, size(m))
         seg_radius = distance((r1, c1), (r2, c2))

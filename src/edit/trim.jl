@@ -20,10 +20,10 @@ function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, inverse::Bool=false)
 
     _check_segment(v, seg[1], seg[2])
     
-    if inverse == false
-        return vcat(v[1:seg[1] - 1], v[(seg[2] + 1):end])
-    else
+    if inverse
         return v[seg[1]:seg[2]]
+    else
+        return vcat(v[1:seg[1] - 1], v[(seg[2] + 1):end])
     end
 
 end
@@ -47,10 +47,10 @@ function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)
     
     _check_segment(m[1, :], seg[1], seg[2])
 
-    if inverse == false
-        return hcat(m[:, 1:(seg[1] - 1)], m[:, (seg[2] + 1):end])
-    else
+    if inverse
         return m[:, seg[1]:seg[2]]
+    else
+        return hcat(m[:, 1:(seg[1] - 1)], m[:, (seg[2] + 1):end])
     end
 end
 
@@ -73,10 +73,10 @@ function trim(a::AbstractArray; seg::Tuple{Int64, Int64}, inverse::Bool=false)
 
     _check_segment(a[1, :, 1], seg[1], seg[2])
 
-    if inverse == false
-        return hcat(a[:, 1:(seg[1] - 1), :], a[:, (seg[2] + 1):end, :])
-    else
+    if inverse
         return a[:, seg[1]:seg[2], :]
+    else
+        return hcat(a[:, 1:(seg[1] - 1), :], a[:, (seg[2] + 1):end, :])
     end
 
 end
@@ -103,11 +103,11 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
 
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     
-    if remove_epochs == true
+    if remove_epochs
         @assert nepochs(obj) > 1 "OBJ has only one epoch, cannot use remove_epochs=true."
         # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
         eps = _s2epoch(obj, seg[1], seg[2])
-        if inverse == false
+        if !inverse
             _info("Removing epochs: $eps")
             obj_new = delete_epoch(obj, ep=eps)
         else

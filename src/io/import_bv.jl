@@ -143,7 +143,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
     
     clabels = _clean_labels(clabels)
     if ch_types == repeat([""], ch_n)
-        if detect_type == true
+        if detect_type
             ch_type = _set_channel_types(clabels, "eeg")
         else
             ch_type = repeat(["eeg"], ch_n)
@@ -216,7 +216,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         end
         # remove non-markers
         for idx in length(markers):-1:1
-            startswith(lowercase(markers[idx]), "mk") == false && deleteat!(markers, idx)
+            !startswith(lowercase(markers[idx]), "mk") && deleteat!(markers, idx)
         end
         m_id = repeat([""], length(markers))
         m_desc = repeat(["marker"], length(markers))

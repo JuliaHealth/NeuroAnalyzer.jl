@@ -34,7 +34,7 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
     anode_ch = findfirst(isequal(anode), labels)
     cathode_ch = findfirst(isequal(cathode), labe)
 
-    if cart == false
+    if !cart
         loc_x = zeros(nrow(locs))
         loc_y = zeros(nrow(locs))
         for idx in 1:nrow(locs)

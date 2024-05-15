@@ -71,13 +71,13 @@ function import_nirx(file_name::String)
     detectors = parse(Int64, detectors)
     shortbundles = split(hdr[startswith.(lowercase.(hdr), "shortbundles=")][1], '=')[2]
     shortbundles = parse(Int64, shortbundles)
-    if any(startswith.(lowercase.(hdr), "shortdetindex=")) == true
+    if any(startswith.(lowercase.(hdr), "shortdetindex="))
         shortdetindex = split(hdr[startswith.(lowercase.(hdr), "shortdetindex=")][1], '=')[2]
         shortdetindex = parse.(Int64, split(shortdetindex, '\t'))
     end
     any(startswith.(lowercase.(hdr), "steps=")) && (steps = split(hdr[startswith.(lowercase.(hdr), "steps=")][1], '=')[2])
     steps = parse(Int64, steps)
-    if any(startswith.(lowercase.(hdr), "wavelengths=")) == true
+    if any(startswith.(lowercase.(hdr), "wavelengths="))
         wavelengths = split(hdr[startswith.(lowercase.(hdr), "wavelengths=")][1], '=')[2]
         wavelengths = parse.(Float64, split(wavelengths, '\t'))
     end
@@ -89,11 +89,11 @@ function import_nirx(file_name::String)
     anins = parse(Int64, anins)
     any(startswith.(lowercase.(hdr), "samplingrate=")) && (sampling_rate = split(hdr[startswith.(lowercase.(hdr), "samplingrate=")][1], '=')[2])
     sampling_rate = round(Int64, parse(Float64, sampling_rate))
-    if any(startswith.(lowercase.(hdr), "mod amp=")) == true
+    if any(startswith.(lowercase.(hdr), "mod amp="))
         modamp = split(hdr[startswith.(lowercase.(hdr), "mod amp=")][1], '=')[2]
         modamp = parse.(Float64, split(modamp, '\t'))
     end
-    if any(startswith.(lowercase.(hdr), "threshold=")) == true
+    if any(startswith.(lowercase.(hdr), "threshold="))
         threshold = split(hdr[startswith.(lowercase.(hdr), "threshold=")][1], '=')[2]
         threshold = parse.(Float64, split(threshold, '\t'))
     end
@@ -123,7 +123,7 @@ function import_nirx(file_name::String)
     end
 
     # parse gains if .set is not available
-    if isfile(splitext(file_name)[1] * ".set") == false
+    if !isfile(splitext(file_name)[1] * ".set")
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[gains_start + 1:gains_start + sources]
         gains = zeros(Int64, sources, detectors)
@@ -206,7 +206,7 @@ function import_nirx(file_name::String)
         end
         stim_onset = Int.(events[:, 3])
         stim_id = string.(Int.(events[:, 2]))
-    elseif isfile(splitext(file_name)[1] * ".evt") == true
+    elseif isfile(splitext(file_name)[1] * ".evt")
         buf = readlines(splitext(file_name)[1] * ".evt")
         buf = split.(buf, '\t')
         events = zeros(Int64, length(buf), length(buf[1]))
