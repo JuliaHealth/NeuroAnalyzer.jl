@@ -41,7 +41,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         else
             head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -57,7 +57,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         else
             head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -73,7 +73,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         else
             head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -283,7 +283,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
 
     pal = mono ? :grays : :darktest
 
-    if cart == false
+    if !cart
         loc_x = zeros(nrow(locs))
         loc_y = zeros(nrow(locs))
         loc_z = zeros(nrow(locs))
@@ -427,7 +427,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 
     if datatype(obj) == "ecog"
         @error "Use plot_locs_ecog() for ECoG data."
-    elseif threed == false
+    elseif !threed
         if datatype(obj) == "nirs"
             opt_pairs = obj.header.recording[:optode_pairs]
             src_n = length(source_labels(obj))

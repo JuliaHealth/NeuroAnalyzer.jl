@@ -498,7 +498,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         if peaks_detect
             if ch isa Int64
                 pp = mep_peaks(obj)
-                if mono == false
+                if !mono
                     Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1], 1]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                     Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2], 1]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
                 else
@@ -514,7 +514,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 obj_tmp = keep_channel(obj, ch=1)
                 obj_tmp.data = mep_tmp
                 pp = mep_peaks(obj_tmp)
-                if mono == false
+                if !mono
                     Plots.scatter!((t[pp[1, 1]], mep_tmp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                     Plots.scatter!((t[pp[1, 2]], mep_tmp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
                 else
@@ -530,7 +530,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             if ch isa Int64
                 pp = hcat(obj.header.recording[:markers_pos], obj.header.recording[:markers_neg])
                 if pp[ch, 1] != 0 && pp[ch, 2] != 0
-                    if mono == false
+                    if !mono
                         Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1], 1]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                         Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2], 1]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
                     else

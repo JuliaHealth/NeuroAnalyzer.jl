@@ -155,13 +155,13 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
 
     pal = mono ? :grays : :darktest
 
-    if isnothing(x) == false
+    if !isnothing(x)
         xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), round(x, digits=1), ceil(maximum(s), digits=1)]
     else
         xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), ceil(maximum(s), digits=1)]
     end
-    draw_median == false && deleteat!(xticks, 3)
-    draw_mean == false && deleteat!(xticks, 2)
+    !draw_median && deleteat!(xticks, 3)
+    !draw_mean && deleteat!(xticks, 2)
     sort!(xticks)
 
     p = Plots.plot(s,
@@ -513,7 +513,7 @@ function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xla
                    kwargs...)
     for idx1 in eachindex(glabels)
         for idx2 in eachindex(signal[idx1])
-            if mono == false
+            if !mono
                 p = Plots.scatter!((idx1, signal[idx1][idx2]),
                                    color=idx1)
             else
@@ -584,7 +584,7 @@ function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, x
     end
     for idx1 in eachindex(glabels)
         for idx2 in eachindex(signal[idx1])
-            if mono == false
+            if !mono
                 p = Plots.scatter!((idx1, signal[idx1][idx2]),
                                    color=idx1)
             else

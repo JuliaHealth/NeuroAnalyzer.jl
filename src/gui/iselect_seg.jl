@@ -145,11 +145,11 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
         c2 = div(x[2], size_x) .+ 1
         r1 = div(y[1], size_y) .+ 1
         r2 = div(y[2], size_y) .+ 1
-        if c == false
+        if !c
             r1 > r2 && ((r1, r2) = _swap(r1, r2))
             c1 > c2 && ((c1, c2) = _swap(c1, c2))
         end
-        return extract == false ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
+        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
     else
         return nothing
     end

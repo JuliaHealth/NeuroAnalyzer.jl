@@ -6,7 +6,7 @@ function _dict2labeled_matrix(d::Dict; rev::Bool=true)
         push!(v, vv)
     end
     rev && return reverse!(l), reverse!(v)
-    rev == false && return l, v
+    !rev && return l, v
 end
 
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})

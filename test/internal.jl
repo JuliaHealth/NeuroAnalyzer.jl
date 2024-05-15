@@ -50,7 +50,7 @@ s, x, y = NeuroAnalyzer._interpolate2d(rand(10), rand(10), rand(10))
 @test length(x) == 100
 @test length(y) == 100
 @test NeuroAnalyzer._has_markers(["eeg", "mrk"]) == (true, 2)
-@test NeuroAnalyzer._has_markers(e10) == false
+@test !NeuroAnalyzer._has_markers(e10)
 @test NeuroAnalyzer._set_channel_types(["fp1", "stim"]) == ["eeg", "mrk"]
 df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
 @test names(df) == ["id", "start", "length", "description", "channel"]
@@ -131,18 +131,18 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]
 @test NeuroAnalyzer._gdf_etp([0x01, 0x01]) == "artifact:EOG (blinks)"
 @test NeuroAnalyzer._check_svec("[1, 2]")
-@test NeuroAnalyzer._check_svec("[1, 2]]") == false
-@test NeuroAnalyzer._check_svec("1.2") == false
+@test !NeuroAnalyzer._check_svec("[1, 2]]")
+@test !NeuroAnalyzer._check_svec("1.2")
 @test NeuroAnalyzer._check_srange("1:2")
-@test NeuroAnalyzer._check_srange("1:2:3") == false
-@test NeuroAnalyzer._check_srange("1.2") == false
+@test !NeuroAnalyzer._check_srange("1:2:3")
+@test !NeuroAnalyzer._check_srange("1.2")
 @test NeuroAnalyzer._check_stuplei("(1, 2)")
-@test NeuroAnalyzer._check_stuplei("(1.1, 2)") == false
+@test !NeuroAnalyzer._check_stuplei("(1.1, 2)")
 @test NeuroAnalyzer._check_stuplef("(1, 2)")
 @test NeuroAnalyzer._check_stuplef("(1.1, 2.9)")
 @test NeuroAnalyzer._check_sfloat("2.9")
 @test NeuroAnalyzer._check_sfloat("2")
-@test NeuroAnalyzer._check_sint("2.9") == false
+@test !NeuroAnalyzer._check_sint("2.9")
 @test NeuroAnalyzer._check_sint("2")
 @test NeuroAnalyzer._s2i("1, 2, 3") == [1, 2, 3]
 @test NeuroAnalyzer._i2s([1, 2, 3]) == "1, 2, 3"

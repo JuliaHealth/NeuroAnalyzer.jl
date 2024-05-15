@@ -43,7 +43,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         else
             head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -59,7 +59,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         else
             head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -75,7 +75,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         else
             head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -210,7 +210,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
         end
     end
 
-    large == false && (title = "")
+    !large && (title = "")
     Plots.plot!(p,
                 title=title,
                 titlefontsize=10)

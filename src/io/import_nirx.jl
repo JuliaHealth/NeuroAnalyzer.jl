@@ -123,7 +123,7 @@ function import_nirx(file_name::String)
     end
 
     # parse gains if .set is not available
-    if isfile(splitext(file_name)[1] * ".set") == false
+    if !isfile(splitext(file_name)[1] * ".set")
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[gains_start + 1:gains_start + sources]
         gains = zeros(Int64, sources, detectors)

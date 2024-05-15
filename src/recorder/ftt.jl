@@ -96,7 +96,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
         if k == 32 && get_gtk_property(lb_status2, :label, String) == "TEST"
             t = parse(Int64, split(get_gtk_property(lb_trial2, :label, String), ' ')[1])
             kp = key_pressed
-            if kp == false
+            if !kp
                 push!(t_kp, time())
                 result[t] += 1
                 key_pressed = true
@@ -104,7 +104,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
         elseif k == 32 && get_gtk_property(lb_status2, :label, String) == "INTERVAL"
             t = parse(Int64, split(get_gtk_property(lb_interval2, :label, String), ' ')[1])
             kp = key_pressed
-            if kp == false
+            if !kp
                 push!(int_t_kp, time())
                 int_result[t] += 1
                 key_pressed = true
@@ -323,7 +323,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     end
     println()
 
-    if rpi == false && sp === nothing
+    if !rpi && sp === nothing
         while true
             ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, true)
             ret == 0 || error("Unable to switch to raw mode.")
@@ -363,7 +363,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     rpi_key = false
     kbd_key = nothing
 
-    if rpi == false && sp === nothing
+    if !rpi && sp === nothing
         # use computer keyboard
         t_s = time()
         # calculate segments time points
@@ -453,7 +453,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             while time() <= t1 + duration
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1"
-                    if key_pressed == false
+                    if !key_pressed
                         # key is pressed
                         push!(t_kp, time())
                         result[idx] += 1
@@ -486,7 +486,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             while time() <= t1 + interval
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1"
-                    if key_pressed == false
+                    if !key_pressed
                         # key is pressed
                         push!(int_t_kp, time())
                         int_result[idx] += 1
@@ -550,7 +550,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     #=
                 t2 = time()
                 if rpi_key
-                    if key_pressed == false
+                    if !key_pressed
                         # key is pressed
                         push!(t_kp, t2)
                         result[idx] += 1
@@ -587,7 +587,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 rpi_key = PiGPIO.read(rpi, gpio)
                 t2 = time()
                 if rpi_key
-                    if key_pressed == false
+                    if !key_pressed
                         # key is pressed
                         push!(int_t_kp, t2)
                         int_result[idx] += 1

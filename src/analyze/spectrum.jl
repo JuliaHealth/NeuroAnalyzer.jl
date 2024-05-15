@@ -142,7 +142,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     
-    if h == false
+    if !h
         fft_size = div(size(s, 2) + pad, 2) + 1
     else
         fft_size = size(s, 2) + pad

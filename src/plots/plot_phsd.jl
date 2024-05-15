@@ -562,7 +562,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     marker_size = (120, 80)
     
     # get locations
-    if cart == false
+    if !cart
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
         for idx in 1:size(locs, 1)

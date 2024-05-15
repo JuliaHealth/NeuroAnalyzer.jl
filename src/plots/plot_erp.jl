@@ -75,7 +75,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
                      label=false)
 
     # plot RT v-line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.vline!([rt],
                          linewidth=1.0,
                          linecolor=:red,
@@ -200,7 +200,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                      label=false)
 
     # plot RT v-line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.vline!([rt],
                          linewidth=1.0,
                          linecolor=:red,
@@ -303,7 +303,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                      label=false)
 
     # plot RT v-line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.vline!([rt],
                          linewidth=1.0,
                          linecolor=:red,
@@ -357,7 +357,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     marker_size = (120, 80)
     
     # get locations
-    if cart == false
+    if !cart
         loc_x = zeros(nrow(locs))
         loc_y = zeros(nrow(locs))
         for idx in 1:nrow(locs)
@@ -477,7 +477,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
 
-    if isnothing(rt) == false
+    if !isnothing(rt)
         @assert length(rt) == size(s, 1) "Length of the rt vector must be the same as the number of ERP epochs ($(size(s, 1)))."
     end
 
@@ -523,7 +523,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
                      label=false)
 
     # plot RT line
-    if isnothing(rt) == false
+    if !isnothing(rt)
         p = Plots.plot!(rt, 1:length(rt),
                         linewidth=1,
                         linecolor=:black,
@@ -722,7 +722,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     if peaks
         if ch isa Int64
             pp = erp_peaks(obj)
-            if mono == false
+            if !mono
                 Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                 Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
@@ -738,7 +738,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             obj_tmp = keep_channel(obj, ch=1)
             obj_tmp.data = erp_tmp
             pp = erp_peaks(obj_tmp)
-            if mono == false
+            if !mono
                 Plots.scatter!((t[pp[1, 1]], erp_tmp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp_tmp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else

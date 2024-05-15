@@ -52,7 +52,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         else
             head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -68,7 +68,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         else
             head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -84,7 +84,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         else
             head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
         end
-        if cart == false
+        if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
             for idx in 1:nrow(locs)
@@ -396,7 +396,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         end
     end
 
-    large == false && (title = "")
+    !large && (title = "")
     Plots.plot!(p,
                 title=title,
                 titlefontsize=10)

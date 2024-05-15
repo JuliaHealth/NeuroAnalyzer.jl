@@ -139,7 +139,7 @@ function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::
 
     locs = locs[ch, :]
 
-    if cart == false
+    if !cart
         loc_x = zeros(length(ch))
         loc_y = zeros(length(ch))
         for idx in eachindex(ch)

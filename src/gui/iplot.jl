@@ -212,7 +212,7 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -639,7 +639,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -1018,11 +1018,11 @@ function iplot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj1)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj1)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj2)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj2)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -1380,11 +1380,11 @@ function iplot_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj1)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj1)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif ch isa Int64 == false && intersect(ch, get_channel_bytype(obj2)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj2)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))

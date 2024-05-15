@@ -104,7 +104,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         for idx in 1:src_n
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
-    elseif opt_labels == false
+    elseif !opt_labels
         if mono
             p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:black, msc=:black, ms=marker_size, msa=1)
         else
@@ -116,7 +116,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
         for idx in (src_n + 1):(src_n + det_n)
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
         end
-    elseif opt_labels == false
+    elseif !opt_labels
         if mono
             p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:white, msc=:black, ms=marker_size, msa=1)
         else

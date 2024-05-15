@@ -216,7 +216,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         end
         # remove non-markers
         for idx in length(markers):-1:1
-            startswith(lowercase(markers[idx]), "mk") == false && deleteat!(markers, idx)
+            !startswith(lowercase(markers[idx]), "mk") && deleteat!(markers, idx)
         end
         m_id = repeat([""], length(markers))
         m_desc = repeat(["marker"], length(markers))

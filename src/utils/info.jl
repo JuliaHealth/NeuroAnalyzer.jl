@@ -316,15 +316,15 @@ function info(obj::NeuroAnalyzer.NEURO)
         println("                 Labels: yes")
     end
     if !(obj.header.recording[:data_type] in ["mep", "sensors", "eda"])
-        if _has_markers(obj) == false
-            println("                Markers: no")
-        else
+        if _has_markers(obj)
             println("                Markers: yes")
-        end
-        if _has_locs(obj) == false
-            println("      Channel locations: no")
         else
+            println("                Markers: no")
+        end
+        if _has_locs(obj)
             println("      Channel locations: yes")
+        else
+            println("      Channel locations: no")
         end
     end
     if length(keys(obj.components)) > 0

@@ -118,11 +118,11 @@ function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     _check_channels(obj, ch)
     _check_epochs(obj, ep)
 
-    if time == false && etime == false
+    if !time && !etime
         return obj.data[ch, :, ep][:, :, :]
-    elseif time && etime == false
+    elseif time && !etime
         return obj.data[ch, :, ep][:, :, :], obj.time_pts
-    elseif time == false && etime
+    elseif !time && etime
         return obj.data[ch, :, ep][:, :, :], obj.epoch_time
     else
         return obj.data[ch, :, ep][:, :, :], obj.time_pts, obj.epoch_time

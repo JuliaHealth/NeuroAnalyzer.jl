@@ -337,7 +337,7 @@ function iselect_ts(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
     @async Gtk.gtk_main()
     wait(cnd)
-    if quit == false
+    if !quit
         time_current = get_gtk_property(entry_time, :value, Float64)
         time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
         time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]

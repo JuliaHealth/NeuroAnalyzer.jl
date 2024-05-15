@@ -49,7 +49,7 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                     @views s[ch_idx, :, ep_idx] .-= ref_ch
                 end
             else
-                if med == false
+                if !med
                     ref_ch = @views vec(mean(s[ch, :, ep_idx], dims=1))
                 else
                     ref_ch = @views vec(median(s[ch, :, ep_idx], dims=1))
@@ -176,7 +176,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
             ref_chs = @view src[setdiff(1:ch_n, unique(chs2exclude)), :, ep_idx]
 
             if average
-                if med == false
+                if !med
                     ref_ch = vec(mean(ref_chs, dims=1))
                 else
                     ref_ch = vec(median(ref_chs, dims=1))
@@ -276,7 +276,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     if type === :l
         @inbounds for ep_idx in 1:ep_n
-            if med == false
+            if !med
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
             else
                 ref_ch = @views vec(median(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
@@ -289,7 +289,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     elseif type === :i
         c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
-            if med == false
+            if !med
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
             else
                 ref_ch = @views vec(median(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
@@ -318,7 +318,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     elseif type === :c
         c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
-            if med == false
+            if !med
                 ref_ch = @views vec(mean(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
             else
                 ref_ch = @views vec(median(vcat(a1[:, :, ep_idx], a2[:, :, ep_idx]), dims=1))
@@ -431,7 +431,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     if type === :l
         @inbounds for ep_idx in 1:ep_n
-            if med == false
+            if !med
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
             else
                 ref_ch = @views vec(median(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
@@ -444,7 +444,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     elseif type === :i
         c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
-            if med == false
+            if !med
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
             else
                 ref_ch = @views vec(median(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
@@ -473,7 +473,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     elseif type === :c
         c_picks = channel_pick(obj, p=:central)
         @inbounds for ep_idx in 1:ep_n
-            if med == false
+            if !med
                 ref_ch = @views vec(mean(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
             else
                 ref_ch = @views vec(median(vcat(m1[:, :, ep_idx], m2[:, :, ep_idx]), dims=1))
@@ -600,8 +600,8 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             ref_chs = @view s[nn_idx[ch_idx, :], :, ep_idx]
-            if weighted == false
-                if med == false
+            if !weighted
+                if !med
                     ref_ch = vec(mean(ref_chs, dims=1))
                 else
                     ref_ch = vec(median(ref_chs, dims=1))
@@ -612,7 +612,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
                     w[w_idx] = euclidean([loc_x[ch_idx], loc_y[ch_idx]], [loc_x[nn_idx[ch_idx, w_idx]], loc_y[nn_idx[ch_idx, w_idx]]])
                 end
                 w = 1 .- w
-                if med == false
+                if !med
                     ref_ch = vec(mean(w .* ref_chs, dims=1))
                 else
                     ref_ch = vec(median(w .* ref_chs, dims=1))

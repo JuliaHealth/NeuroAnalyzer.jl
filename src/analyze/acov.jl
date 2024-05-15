@@ -43,7 +43,7 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
         end
     elseif method === :cov
         for idx in 0:l
-            if biased == false
+            if !biased
                 ac[idx + 1] = @views cov(s_tmp[1:(end - idx)], s_tmp[(1 + idx):end], corrected=true)
             else
                 ac[idx + 1] = @views cov(s_tmp[1:(end - idx)], s_tmp[(1 + idx):end], corrected=false)
