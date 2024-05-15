@@ -10,8 +10,8 @@ _v2r(v::Int64) = return v
 
 function _ch_rename(ch_name::String)
     n = replace(uppercase(ch_name), "_"=>" ")
-    lowercase(ch_name) == "ecog" && return "ECoG"
     lowercase(ch_name) == "ieeg" && return "iEEG"
+    lowercase(ch_name) == "ecog" && return "ECoG"
     lowercase(ch_name) == "seeg" && return "sEEG"
     lowercase(ch_name) == "grad" && return "Gradiometer"
     lowercase(ch_name) == "mag" && return "Magnetometer"
@@ -43,9 +43,10 @@ end
 function _ch_units(ch_type::String)
     u = ""
     lowercase(ch_type) == "eeg" && return "μV"
+    lowercase(ch_type) == "ieeg" && return "μV"
     lowercase(ch_type) == "ecog" && return "μV"
     lowercase(ch_type) == "seeg" && return "μV"
-    lowercase(ch_type) == "ieeg" && return "mV"
+    lowercase(ch_type) == "cr" && return "mV"
     lowercase(ch_type) == "csd" && return "μV/m²"
     lowercase(ch_type) == "mag" && return "fT"
     lowercase(ch_type) == "grad" && return "fT/cm"
