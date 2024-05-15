@@ -528,7 +528,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             key_state = 0
             key_last_state = 0
             last_debounce_time = 0     
-            while time() <= t1 + duration
+            while time() * 1000 <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
                 rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
                 if (time() * 1000 - last_debounce_time) > debounce_delay                        
@@ -561,7 +561,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             key_state = 0
             key_last_state = 0
             last_debounce_time = 0     
-            while time() <= t1 + duration
+            while time() * 1000 <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
                 rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
                 if (time() * 1000 - last_debounce_time) > debounce_delay                        
@@ -594,6 +594,13 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
 
     println()
     println("Testing completed.")
+
+    @show result
+    @show t_kp
+    @show d_kp
+    @show int_result
+    @show int_t_kp
+    @show int_d_kp
 
     # format time points
     t_keypressed = Vector{Vector{Float64}}()
