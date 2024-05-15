@@ -518,12 +518,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         # use RPi
         debounce_delay = 100 # ms
         println()
-        t_s = time()
+        t_s = time() * 1000
         for idx in 1:trials
             _beep()
             println()
             print("   Trial $idx: press the BUTTON button as quickly as possible")
-            t1 = time()
+            t1 = time() * 1000
             key_pressed = 0    
             key_state = 0
             key_last_state = 0
@@ -536,12 +536,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         key_state = rpi_key 
                         if key_state == 1
                             # key is pressed        
-                            push!(t_kp, time())
+                            push!(t_kp, time() * 1000)
                             result[idx] += 1
                             sleep(0.01)
                         else
                             # key is released
-                            push!(d_kp, time() - t_kp[end])
+                            push!(d_kp, time() * 1000 - t_kp[end])
                             sleep(0.01)
                         end
                     end
@@ -556,7 +556,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             println()
             println()
             print("Interval $idx: DO NOT press the BUTTON button")
-            t1 = time()
+            t1 = time() * 1000
             key_pressed = 0    
             key_state = 0
             key_last_state = 0
@@ -569,12 +569,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         key_state = rpi_key 
                         if key_state == 1
                             # key is pressed        
-                            push!(int_t_kp, time())
+                            push!(int_t_kp, time() * 1000)
                             int_result[idx] += 1
                             sleep(0.01)
                         else
                             # key is released
-                            push!(int_d_kp, time() - int_t_kp[end])
+                            push!(int_d_kp, time() * 1000 - int_t_kp[end])
                             sleep(0.01)
                         end
                     end
@@ -595,6 +595,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     println()
     println("Testing completed.")
 
+    # format time points
     t_keypressed = Vector{Vector{Float64}}()
     d_keypressed = Vector{Vector{Float64}}()
     for idx1 in trials:-1:1
