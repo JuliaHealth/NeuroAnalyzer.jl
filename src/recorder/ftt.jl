@@ -452,11 +452,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             sp = _serial_open(port_name)
             while time() <= t1 + duration
                 serial_key = _serial_listener(sp)
-                t2 = time()
                 if serial_key == "$gpio:1"
                     if key_pressed == false
                         # key is pressed
-                        push!(t_kp, t2)
+                        push!(t_kp, time())
                         result[idx] += 1
                         key_pressed = true
                         sleep(0.05)
@@ -465,7 +464,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 elseif serial_key == "$gpio:0"
                     if key_pressed == true
                         # key is released
-                        push!(d_kp, t2 - t_kp[end])
+                        push!(d_kp, time() - t_kp[end])
                         key_pressed = false
                         sleep(0.05)
                         continue
@@ -486,11 +485,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             sp = _serial_open(port_name)
             while time() <= t1 + interval
                 serial_key = _serial_listener(sp)
-                t2 = time()
                 if serial_key == "$gpio:1"
                     if key_pressed == false
                         # key is pressed
-                        push!(int_t_kp, t2)
+                        push!(int_t_kp, time())
                         int_result[idx] += 1
                         key_pressed = true
                         sleep(0.01)
@@ -499,7 +497,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 elseif serial_key == "$gpio:0"
                     if key_pressed == true
                         # key is released
-                        push!(int_d_kp, t2 - int_t_kp[end])
+                        push!(int_d_kp, time() - int_t_kp[end])
                         key_pressed = false
                         sleep(0.01)
                         continue
