@@ -362,10 +362,11 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     key_pressed = false
     rpi_key = false
     kbd_key = nothing
+    
+    t_s = time()
 
     if !(rpi isa PiGPIO.Pi) && isnothing(sp)
         # use computer keyboard
-        t_s = time()
         # calculate segments time points
         t_segments = zeros(1 + 2 * trials)
         l_seg = duration + interval
@@ -378,7 +379,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         t_segments .+= t_s
         t_e = (trials * duration) + (trials * interval)
         t_segments[end] = t_s + t_e
-        channel = Channel(_kbd_listener, 1024) # Start task, 10 is buffer size for channel
+        channel = Channel(_kbd_listener, 10) # Start task, 10 is buffer size for channel
         stop = false
         r = 0
         t = Float64[]
@@ -386,7 +387,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         idx1 = 1
         idx2 = 1
         while !stop
-            sleep(0.001)
+            sleep(0.05)
             if time() >= t_segments[end]
                 stop = true
                 close(channel)
@@ -441,8 +442,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         println()
     elseif !isnothing(sp)
         # use serial port
-        println()
-        t_s = time()
+        println()        
         for idx in 1:trials
             _beep()
             println()
@@ -511,9 +511,6 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             end
             println()
         end
-        # format time points
-        t_kp = t_kp .- t_s
-        int_t_kp = int_t_kp .- t_s
     elseif rpi isa PiGPIO.Pi
         # use RPi
         debounce_delay = 100 # ms
@@ -587,14 +584,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             end
             println()
         end
-        # format time points
-        t_kp = t_kp .- t_s
-        int_t_kp = int_t_kp .- t_s
     end
 
     println()
     println("Testing completed.")
 
+    @show t_s
     @show result
     @show t_kp
     @show d_kp
@@ -602,6 +597,11 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     @show int_t_kp
     @show int_d_kp
 
+    # format time points
+    if !isnothing(sp) || rpi isa PiGPIO.Pi
+        t_kp = t_kp .- t_s
+        int_t_kp = int_t_kp .- t_s
+    end
 
     # format time points
     t_keypressed = Vector{Vector{Float64}}()
