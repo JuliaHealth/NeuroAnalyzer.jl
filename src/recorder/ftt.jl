@@ -530,8 +530,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             last_debounce_time = 0     
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time())                             
-                if (time() - last_debounce_time) > debounce_delay                        
+                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
+                if (time() * 1000 - last_debounce_time) > debounce_delay                        
                     if rpi_key != key_state                         
                         key_state = rpi_key 
                         if key_state == 1
@@ -563,8 +563,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             last_debounce_time = 0     
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time())                             
-                if (time() - last_debounce_time) > debounce_delay                        
+                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
+                if (time() * 1000 - last_debounce_time) > debounce_delay                        
                     if rpi_key != key_state                         
                         key_state = rpi_key 
                         if key_state == 1
@@ -601,6 +601,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     @show int_result
     @show int_t_kp
     @show int_d_kp
+
 
     # format time points
     t_keypressed = Vector{Vector{Float64}}()
