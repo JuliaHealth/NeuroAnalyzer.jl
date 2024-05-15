@@ -528,6 +528,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             last_debounce_time = 0
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
+                @show rpi_key
                 rpi_key != key_pressed && (last_debounce_time = time())
                 if ((time() - last_debounce_time) > debounce_delay)
                     if rpi_key
