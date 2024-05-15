@@ -24,7 +24,48 @@ function _kbd_listener(c::Channel)
     end
 end
 
-function _serial_listener(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, mode=SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)
+function _serial_open(port_name::String="/dev/ttyS0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)
+
+    @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
+    
+    if Sys.isunix()
+        @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
+    end
+
+    sp = nothing
+    try
+        sp = LibSerialPort.open(port_name, baudrate, mode=m)
+        sleep(1)
+    catch
+        error("Serial port $port_name cannot be opened.")
+    end
+
+    return sp
+
+end
+
+function _serial_listener(sp::LibSerialPort.SerialPort)
+    if isopen(sp)
+        if bytesavailable(sp) > 0
+            return String(readline(sp))
+        else
+            return nothing
+        end
+    end
+end
+
+function _serial_close(sp::LibSerialPort.SerialPort)
+    isopen(sp) && close(sp)
+    return nothing
+end
+
+function _serial_close(port_name::String)
+    sp = LibSerialPort.open(port_name)
+    isopen(sp) && close(sp)
+    return nothing
+end
+
+function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, m::Int64=SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)
 
     # `blocks`: number of data blocks to record
     # `n`: number of records per block
@@ -38,7 +79,7 @@ function _serial_listener(port_name::String="/dev/ttyUSB0"; baudrate::Int64=1152
 
     sp = nothing
     try
-        sp = LibSerialPort.open(port_name, baudrate, mode=mode)
+        sp = LibSerialPort.open(port_name, baudrate, mode=m)
         sleep(1)
     catch
         error("Serial port $port_name cannot be opened.")

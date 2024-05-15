@@ -98,6 +98,7 @@ using Interpolations
 using Jacobi
 using JLD2
 using JSON
+using LibSerialPort
 using LinearAlgebra
 using Loess
 using MAT
