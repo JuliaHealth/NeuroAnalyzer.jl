@@ -316,7 +316,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     end
 
     println()
-    if rpi || !isnothing(sp)
+    if rpi isa PiGPIO.Pi || !isnothing(sp)
         println("Ready to start, press the BUTTON to begin the test")
     else
         println("Ready to start, press SPACEBAR to begin the test")
