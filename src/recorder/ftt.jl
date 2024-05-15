@@ -316,14 +316,14 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     end
 
     println()
-    if rpi != false || sp !== nothing
+    if rpi || !isnothing(sp)
         println("Ready to start, press the BUTTON to begin the test")
     else
         println("Ready to start, press SPACEBAR to begin the test")
     end
     println()
 
-    if !rpi && sp === nothing
+    if !(rpi isa PiGPIO.Pi) && isnothing(sp)
         while true
             ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, true)
             ret == 0 || error("Unable to switch to raw mode.")
@@ -335,11 +335,11 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 continue
             end
         end
-    elseif rpi != false
+    elseif rpi isa PiGPIO.Pi
         while true
             PiGPIO.read(rpi, gpio) != false && break
         end
-    elseif sp !== nothing
+    elseif !isnothing(sp)
         sp = _serial_open(port_name)
         while true
             a = nothing
@@ -363,7 +363,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     rpi_key = false
     kbd_key = nothing
 
-    if !rpi && sp === nothing
+    if !(rpi isa PiGPIO.Pi) && isnothing(sp)
         # use computer keyboard
         t_s = time()
         # calculate segments time points
@@ -439,7 +439,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             end
         end
         println()
-    elseif sp !== nothing
+    elseif !isnothing(sp)
         # use serial port
         println()
         t_s = time()
@@ -514,7 +514,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         # format time points
         t_kp = t_kp .- t_s
         int_t_kp = int_t_kp .- t_s
-    elseif rpi !== false
+    elseif rpi isa PiGPIO.Pi
         # use RPi
         debounce_delay = 50 # ms
         println()
