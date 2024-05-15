@@ -536,13 +536,11 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         key_state = rpi_key 
                         if key_state == 1
                             # key is pressed        
-                            println("_")
                             push!(t_kp, time())
                             result[idx] += 1
                             sleep(0.01)
                         else
                             # key is released
-                            println("-")
                             push!(d_kp, time() - t_kp[end])
                             sleep(0.01)
                         end
@@ -571,13 +569,11 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         key_state = rpi_key 
                         if key_state == 1
                             # key is pressed        
-                            println("_")
                             push!(int_t_kp, time())
                             int_result[idx] += 1
                             sleep(0.01)
                         else
                             # key is released
-                            println("-")
                             push!(int_d_kp, time() - int_t_kp[end])
                             sleep(0.01)
                         end
