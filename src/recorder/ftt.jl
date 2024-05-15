@@ -524,50 +524,29 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             println()
             print("   Trial $idx: press the BUTTON button as quickly as possible")
             t1 = time()
-            key_state = false
-            key_last_state = false
             key_pressed = false
             last_debounce_time = 0
             while time() <= t1 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time())
+                rpi_key != key_pressed && (last_debounce_time = time())
                 if ((time() - last_debounce_time) > debounce_delay)
-                    if rpi_key != key_state
-                        key_state = rpi_key
-                        if key_state
+                    if rpi_key
+                        if !key_pressed
                             # key is pressed
-                            print("_")
                             push!(t_kp, time())
                             result[idx] += 1
-                        else
+                            key_pressed = true
+                            sleep(0.01)
+                        end
+                    else
+                        if key_pressed
                             # key is released
-                            print("-")
                             push!(d_kp, time() - t_kp[end])
+                            key_pressed = false
+                            sleep(0.01)
                         end
                     end
                 end
-                key_last_state = rpi_key;
-    #=
-                t2 = time()
-                if rpi_key
-                    if !key_pressed
-                        # key is pressed
-                        push!(t_kp, t2)
-                        result[idx] += 1
-                        key_pressed = true
-                        sleep(0.15)
-                        continue
-                    end
-                else
-                    if key_pressed
-                        # key is released
-                        push!(d_kp, t2 - t_kp[end])
-                        key_pressed = false
-                        sleep(0.15)
-                        continue
-                    end
-                end
-=#
             end
             @show result
             @show t_kp
@@ -583,25 +562,28 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             print("Interval $idx: DO NOT press the BUTTON button")
             t1 = time()
             key_pressed = false
+            last_debounce_time = 0
             while time() <= t1 + interval
                 rpi_key = PiGPIO.read(rpi, gpio)
-                t2 = time()
-                if rpi_key
-                    if !key_pressed
-                        # key is pressed
-                        push!(int_t_kp, t2)
-                        int_result[idx] += 1
-                        key_pressed = true
-                        sleep(0.15)
-                        continue
-                    end
-                else
-                    if key_pressed
-                        # key is released
-                        push!(int_d_kp, t2 - int_t_kp[end])
-                        key_pressed = false
-                        sleep(0.15)
-                        continue
+                rpi_key != key_pressed && (last_debounce_time = time())
+                if ((time() - last_debounce_time) > debounce_delay)
+                    if rpi_key
+                        if !key_pressed
+                            # key is pressed
+                            push!(int_t_kp, time())
+                            int_result[idx] += 1
+                            key_pressed = true
+                            sleep(0.01)
+                            continue
+                        end
+                    else
+                        if key_pressed
+                            # key is released
+                            push!(int_d_kp, time() - int_t_kp[end])
+                            key_pressed = false
+                            sleep(0.01)
+                            continue
+                        end
                     end
                 end
             end
