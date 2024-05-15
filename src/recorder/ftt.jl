@@ -595,6 +595,9 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     println()
     println("Testing completed.")
 
+    @show result
+    @show int_result
+
     t_keypressed = Vector{Vector{Float64}}()
     d_keypressed = Vector{Vector{Float64}}()
     for idx1 in trials:-1:1
