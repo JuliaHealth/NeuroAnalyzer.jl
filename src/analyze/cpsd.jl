@@ -61,7 +61,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         pxy = @views abs.(pxy[f1_idx:f2_idx])
     end
 
-    norm == true && (pxy = pow2db.(pxy))
+    norm && (pxy = pow2db.(pxy))
 
     return (pxy=pxy, f=f)
 

@@ -91,12 +91,12 @@ l = import_locs_mat(joinpath(testfiles_path, "locs.mat"))
 @info "test 18/37: load_locs()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
-@test NeuroAnalyzer._has_locs(eeg) == true
+@test NeuroAnalyzer._has_locs(eeg)
 
 @info "test 19/37: save()"
 isfile("test.hdf") && rm("test.hdf")
 NeuroAnalyzer.save(eeg, file_name="test.hdf")
-@test isfile("test.hdf") == true
+@test isfile("test.hdf")
 
 @info "test 20/37: load()"
 new = NeuroAnalyzer.load("test.hdf")
@@ -106,17 +106,17 @@ isfile("test.hdf") && rm("test.hdf")
 @info "test 21/37: export_csv()"
 isfile("eeg.csv") && rm("eeg.csv")
 export_csv(eeg, file_name="eeg.csv", header=false)
-@test isfile("eeg.csv") == true
+@test isfile("eeg.csv")
 isfile("eeg.csv") && rm("eeg.csv")
 
 @info "test 22/37: export_locs()"
 isfile("test_out.ced") && rm("test_out.ced")
 export_locs(eeg, file_name="test_out.ced")
-@test isfile("test_out.ced") == true
+@test isfile("test_out.ced")
 isfile("test_out.ced") && rm("test_out.ced")
 isfile("test_out.locs") && rm("test_out.locs")
 export_locs(eeg, file_name="test_out.locs")
-@test isfile("test_out.locs") == true
+@test isfile("test_out.locs")
 isfile("test_out.locs") && rm("test_out.locs")
 
 @info "test 23/37: import_snirf()"
@@ -141,7 +141,7 @@ n = import_nirx(joinpath(testfiles_path, "nirx", "NIRS-2020-08-18_001.hdr"))
 eeg = import_bdf(joinpath(testfiles_path, "eeg-test-bdfplus.bdf"))
 isfile("markers.csv") && rm("markers.csv")
 export_markers(eeg, file_name="markers.csv")
-@test isfile("markers.csv") == true
+@test isfile("markers.csv")
 isfile("markers.csv") && rm("markers.csv")
 
 @info "test 27/37: import_gdf()"

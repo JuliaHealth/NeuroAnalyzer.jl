@@ -78,7 +78,7 @@ function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBacken
         ext = lowercase(splitext(file_name)[2])
         @assert ext == ".png" "Filename extension must be .png"
 
-        (isfile(file_name) && verbose == true) && _warn("File $file_name will be overwritten.")
+        (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
     end
 
     p1_size = p1.attr[:size]

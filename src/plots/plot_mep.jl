@@ -50,7 +50,7 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xl
                    ytickfontsize=6;
                    kwargs...)
     # reverse Y axis
-    yrev == true && yflip!(true)
+    yrev && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -128,7 +128,7 @@ function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                    kwargs...)
 
     # reverse Y axis
-    yrev == true && yflip!(true)
+    yrev && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -168,7 +168,7 @@ function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
     end
 
     # plot averaged MEP
-    if avg == true
+    if avg
         if ch_n == 1
             s = mean(s, dims=2)[:]
         else
@@ -243,7 +243,7 @@ function plot_mep_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                    kwargs...)
 
     # reverse Y axis
-    yrev == true && yflip!(true)
+    yrev && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -435,7 +435,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     elseif type === :butterfly
         @assert !(ch isa Int64) "For :butterfly plot type, more than one channel must be specified."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude$(_pl(length(ch))) $(_channel2channel_name(ch))\n[time window: $t_s1:$t_s2]")
-        if channel_labels == true
+        if channel_labels
             clabels = labels(obj)[ch]
         else
             clabels = repeat([""], length(ch))
@@ -466,7 +466,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         peaks = false
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude$(_pl(length(ch))) $(_channel2channel_name(ch))\n[time window: $t_s1:$t_s2]")
-        if channel_labels == true
+        if channel_labels
             clabels = labels(obj)[ch]
         else
             clabels = repeat([""], length(ch))
@@ -494,8 +494,8 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     # draw peaks
-    if peaks == true
-        if peaks_detect == true
+    if peaks
+        if peaks_detect
             if ch isa Int64
                 pp = mep_peaks(obj)
                 if mono == false
@@ -509,7 +509,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1]], digits=2)) $units")
                 _info("Negative peak time: $(round(t[pp[ch, 2]] * 1000, digits=0)) ms")
                 _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2]], digits=2)) $units")
-            elseif (type === :butterfly && avg == true) || type === :mean
+            elseif (type === :butterfly && avg) || type === :mean
                 mep_tmp = mean(mean(obj.data[ch, :, :], dims=1), dims=3)
                 obj_tmp = keep_channel(obj, ch=1)
                 obj_tmp.data = mep_tmp

@@ -46,7 +46,7 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, out::B
         l *= obj.locs[ch, :labels][idx]
     end
 
-    if out == true
+    if out
         println("Channel: $ch")
         println("  Label: $l")
         println("  theta: $theta_pl (polar)")

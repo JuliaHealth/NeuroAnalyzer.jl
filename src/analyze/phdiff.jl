@@ -59,14 +59,14 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
     _check_channels(s, ch)
 
     ch_n = size(s, 1)
-    if h == true
+    if h
         ep_len = size(s, 2)
     else
         ep_len = div(size(s, 2) + pad, 2) + 1
     end
     ep_n = size(s, 3)
 
-    if h == true
+    if h
         phd = similar(s)
     else
         phd = zeros(ch_n, ep_len, ep_n)
@@ -79,7 +79,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
                 ph_ref = zeros(length(ref_channels), ep_len)
                 
                 for ref_idx in eachindex(ref_channels)
-                    if h == true
+                    if h
                         _, _, _, ph = @views hspectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     else
                         _, _, _, ph = @views spectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
@@ -89,7 +89,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
                 
                 ph_ref = vec(mean(ph_ref, dims=1))
                 
-                if h == true
+                if h
                     _, _, _, ph = @views hspectrum(s[ch[ch_idx], :, ep_idx], pad=pad)
                 else
                     _, _, _, ph = @views spectrum(s[ch[ch_idx], :, ep_idx], pad=pad)

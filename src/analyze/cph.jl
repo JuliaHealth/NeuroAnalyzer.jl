@@ -55,7 +55,7 @@ function cph(s::AbstractArray; fs::Int64)
     ph = zeros(ch_n, ch_n, length(f), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
@@ -64,7 +64,7 @@ function cph(s::AbstractArray; fs::Int64)
             end
 
         # update progress bar
-        progress_bar == true && next!(progbar)
+        progress_bar && next!(progbar)
         end
     end
 

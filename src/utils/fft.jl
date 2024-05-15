@@ -207,7 +207,7 @@ function fft_transform(x::AbstractVector; fs::Int64, wlen::Int64=fs, woverlap::I
     m = vec2mat(x, wlen=wlen, woverlap=woverlap)
 
     # remove mean by segments
-    demean == true && (m = delmean(m, dims=2))
+    demean && (m = delmean(m, dims=2))
 
     # pad each segment with zeros
     n = size(m, 2)

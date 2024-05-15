@@ -30,7 +30,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
     xc = zeros(l + 1)
     xc_neg = zeros(l + 1)
 
-    if demean == true
+    if demean
         s1_tmp = delmean(s1)
         s2_tmp = delmean(s2)
     else
@@ -41,7 +41,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
     if method === :sum
         for idx in 0:l
             xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
-            if biased == true 
+            if biased 
                 xc[idx + 1] /= length(s1)
             else
                 xc[idx + 1] /= (length(s1) - idx)
@@ -49,7 +49,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
         end
         for idx in 0:l
             xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
-            if biased == true 
+            if biased 
                 xc_neg[idx + 1] /= length(s1)
             else
                 xc_neg[idx + 1] /= (length(s1) - idx)

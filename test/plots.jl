@@ -78,7 +78,7 @@ p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:topo)
 @info "test 7/34: plot_save()"
 p = NeuroAnalyzer.plot(e10)
 plot_save(p, file_name="test.png")
-@test isfile("test.png") == true
+@test isfile("test.png")
 isfile("test.png") && rm("test.png")
 
 @info "test 8/34: plot()"

@@ -143,7 +143,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
     
     clabels = _clean_labels(clabels)
     if ch_types == repeat([""], ch_n)
-        if detect_type == true
+        if detect_type
             ch_type = _set_channel_types(clabels, "eeg")
         else
             ch_type = repeat(["eeg"], ch_n)

@@ -19,7 +19,7 @@ Show markers.
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)
 
-    @assert _has_markers(obj) == true "OBJ has no markers."
+    @assert _has_markers(obj) "OBJ has no markers."
     
     println(rpad("n", 5) * 
             rpad("ID", 24) * 
@@ -55,7 +55,7 @@ Delete marker.
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
 
-    @assert _has_markers(obj) == true "OBJ has no markers."
+    @assert _has_markers(obj) "OBJ has no markers."
 
     obj_new = deepcopy(obj)
     nn = nrow(obj_new.markers)
@@ -168,7 +168,7 @@ Edit marker.
 """
 function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, desc::String, ch::Int64)
 
-    @assert _has_markers(obj) == true "OBJ has no markers."
+    @assert _has_markers(obj) "OBJ has no markers."
     @assert start > 0 "start must be > 0."
     @assert len > 0 "len must be > 0."
     @assert start < signal_len(obj) / sr(obj) "start must be < $(signal_len(obj) / sr(obj))."

@@ -32,7 +32,7 @@ function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * 
     pac = zeros(l + 1)
     pac_neg = zeros(l + 1)
 
-    if demean == true
+    if demean
         s_tmp = delmean(s)
     else
         s_tmp = s

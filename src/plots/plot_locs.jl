@@ -116,7 +116,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
     end
 
     ma = 1.0
-    ch_labels == true && (ma = 0.75)
+    ch_labels && (ma = 0.75)
 
     if grid
         p = Plots.plot(grid=true,
@@ -335,7 +335,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
                          markerstrokealpha=0)
 
     if selected != 0
-        if mono == true
+        if mono
             p = Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]),
                                  markercolor=:gray,
                                  markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
@@ -356,7 +356,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
         end
     end
 
-    if ch_labels == true
+    if ch_labels
         for idx in eachindex(locs[!, :labels])
             if idx in ch
                 Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :labels][idx], font_size))
@@ -367,7 +367,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
         end
     end
 
-    if head_labels == true
+    if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
         for idx in 1:length(NeuroAnalyzer.fiducial_points)
             Plots.annotate!(NeuroAnalyzer.fiducial_points[idx][1],

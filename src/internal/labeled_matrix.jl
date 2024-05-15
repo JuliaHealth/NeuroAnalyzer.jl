@@ -5,7 +5,7 @@ function _dict2labeled_matrix(d::Dict; rev::Bool=true)
         push!(l, kk)
         push!(v, vv)
     end
-    rev == true && return reverse!(l), reverse!(v)
+    rev && return reverse!(l), reverse!(v)
     rev == false && return l, v
 end
 

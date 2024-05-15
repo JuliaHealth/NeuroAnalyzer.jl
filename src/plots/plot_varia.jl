@@ -190,8 +190,8 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
                    ytickfontsize=5;
                    kwargs...)
 
-    draw_mean == true && (p = Plots.vline!([round(mean(s), digits=1)], lw=1, ls=:dot, lc=:black, label="mean"))
-    draw_median == true && (p = Plots.vline!([round(median(s), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median"))
+    draw_mean && (p = Plots.vline!([round(mean(s), digits=1)], lw=1, ls=:dot, lc=:black, label="mean"))
+    draw_median && (p = Plots.vline!([round(median(s), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median"))
 
     if isnothing(x) != true
         pal === :darktest && (p = Plots.vline!([x], lw=2, lc=:red, label=nothing))
@@ -231,7 +231,7 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
     @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels length ($(length(xlabels)))."
 
     pal = mono ? :grays : :darktest
-    color = mono == true ? :lightgrey : :lightblue
+    color = mono ? :lightgrey : :lightblue
 
     p = Plots.plot(s,
                    seriestype=:bar,
@@ -282,7 +282,7 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
     @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels ($(length(xlabels)))."
 
     pal = mono ? :grays : :darktest
-    color = mono == true ? :lightgrey : :auto
+    color = mono ? :lightgrey : :auto
 
     p = Plots.plot(s,
                    seriestype=:line,
@@ -336,7 +336,7 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
     @assert size(s, 2) == length(xlabels) "Number of signal columns ($(size(s, 2))) must be equal to x-ticks length ($(length(xlabels)))."
 
     pal = mono ? :grays : :darktest
-    color = mono == true ? :lightgrey : :auto
+    color = mono ? :lightgrey : :auto
 
     p = Plots.plot(s[1, :],
                    seriestype=:line,
@@ -394,7 +394,7 @@ function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", 
     @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
 
     pal = mono ? :grays : :darktest
-    color = mono == true ? :lightgrey : :auto
+    color = mono ? :lightgrey : :auto
 
     p = Plots.plot(s',
                    seriestype=:box,
@@ -445,7 +445,7 @@ function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="
     @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
 
     pal = mono ? :grays : :darktest
-    color = mono == true ? :lightgrey : :auto
+    color = mono ? :lightgrey : :auto
 
     p = Plots.plot(s',
                    seriestype=:violin,

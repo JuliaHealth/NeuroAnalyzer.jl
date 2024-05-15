@@ -572,7 +572,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     end
 
     clabels = _clean_labels(clabels)
-    if detect_type == true
+    if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)

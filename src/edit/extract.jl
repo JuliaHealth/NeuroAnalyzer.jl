@@ -120,9 +120,9 @@ function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
     if time == false && etime == false
         return obj.data[ch, :, ep][:, :, :]
-    elseif time == true && etime == false
+    elseif time && etime == false
         return obj.data[ch, :, ep][:, :, :], obj.time_pts
-    elseif time == false && etime == true
+    elseif time == false && etime
         return obj.data[ch, :, ep][:, :, :], obj.epoch_time
     else
         return obj.data[ch, :, ep][:, :, :], obj.time_pts, obj.epoch_time

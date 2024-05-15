@@ -52,7 +52,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
         bw_values = collect(0:q:20.0)[2:end]
 
         # initialize progress bar
-        progress_bar == true && (progbar = Progress(length(ch), dt=1, barlen=20, color=:white))
+        progress_bar && (progbar = Progress(length(ch), dt=1, barlen=20, color=:white))
 
         # Threads.@threads for ch_idx in eachindex(ch)
         @inbounds for ch_idx in eachindex(ch)
@@ -124,7 +124,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             end
 
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
         end
 
         df = DataFrame("channel"=>ch, "power line bandwidth"=>pl_best_bw)
@@ -243,7 +243,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)
     noise_frq = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         @Threads.threads for ch_idx in 1:ch_n
@@ -251,7 +251,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)
         end
 
         # update progress bar
-        progress_bar == true && next!(progbar)   
+        progress_bar && next!(progbar)   
     end
 
     return noise_frq

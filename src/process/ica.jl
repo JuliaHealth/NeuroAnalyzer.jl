@@ -46,7 +46,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     final_tol = nothing
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white))
 
     @inbounds for tol_idx in eachindex(tol)
         for _ in 1:iter
@@ -63,7 +63,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
             end
 
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
 
         end
         final_tol !== nothing && break

@@ -34,7 +34,7 @@ function pca_decompose(s::AbstractArray; n::Int64)
         pc_tmp = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n)
         size(pc_tmp)[2] < n_tmp && (n_tmp = size(pc_tmp)[2])
     end
-    (n_tmp < n && verbose == true) && _warn("Only $n_tmp PCs were generated.")
+    (n_tmp < n && verbose) && _warn("Only $n_tmp PCs were generated.")
     n = n_tmp
     
     pc = zeros(n, size(s, 2), ep_n)

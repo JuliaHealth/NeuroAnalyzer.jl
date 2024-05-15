@@ -30,7 +30,7 @@ s = create_study([eeg1, eeg2], [:a, :b])
 @info "test 7/8: save_study()"
 isfile("test.hdf") && rm("test.hdf")
 NeuroAnalyzer.save_study(s, file_name="test.hdf")
-@test isfile("test.hdf") == true
+@test isfile("test.hdf")
 
 @info "test 8/8: load_study()"
 s = NeuroAnalyzer.load_study("test.hdf")

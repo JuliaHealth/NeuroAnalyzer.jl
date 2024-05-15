@@ -136,7 +136,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     # reverse so 1st channel is on top
     sp = @views reverse(sp[:, eachindex(sf)], dims = 1)
     # also, reverse colors if palette is not mono
-    if mono == true
+    if mono
         pal = :grays
         channel_color = repeat([:black], ch_n)
     else
@@ -913,7 +913,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if ref !== :abs
             ylabel == "default" && (ylabel = "Power ratio")
         end
-        if norm == true
+        if norm
             ylabel == "default" && (ylabel = "Power [dB]")
         else
             ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
@@ -991,7 +991,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1013,7 +1013,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1216,7 +1216,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     # set labels
     if type !== :w3d && type !== :s3d
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        if norm == true
+        if norm
             ylabel == "default" && (ylabel = "Power [dB]")
         else
             ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
@@ -1267,7 +1267,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1286,7 +1286,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,

@@ -73,7 +73,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
             Gtk.stroke(ctx)
             Gtk.reveal(widget)
         else length(x) == 2
-            if c == true
+            if c
                 Gtk.arc(ctx, x[1], y[1], distance((x[1], y[1]), (x[2], y[2])), 0, 2*pi)
             else
                 Gtk.rectangle(ctx, x[1], y[1], x[2] - x[1], y[2] - y[1])

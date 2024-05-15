@@ -130,7 +130,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
 
     @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
 
-    if weighted == true
+    if weighted
         @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
         loc_x = obj.locs[1:ch_n, :loc_x]
@@ -151,7 +151,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
 
-            if weighted == true
+            if weighted
                 src = @view deepcopy(obj).data[chs, :, :]
                 w = zeros(ch_n)
                 # calculate vector of weights - distances between the current electrode and each of the reference electrodes
@@ -165,17 +165,17 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
             end
 
             chs2exclude = Vector{Int64}()
-            if exclude_fpo == true
+            if exclude_fpo
                 l = lowercase.(labels(obj))
                 "fp1" in l && push!(chs2exclude, findfirst(isequal("fp1"), l))
                 "fp2" in l && push!(chs2exclude, findfirst(isequal("fp2"), l))
                 "o1" in l && push!(chs2exclude, findfirst(isequal("o1"), l))
                 "o2" in l && push!(chs2exclude, findfirst(isequal("o2"), l))
             end
-            exclude_current == true && push!(chs2exclude, ch_idx)
+            exclude_current && push!(chs2exclude, ch_idx)
             ref_chs = @view src[setdiff(1:ch_n, unique(chs2exclude)), :, ep_idx]
 
-            if average == true
+            if average
                 if med == false
                     ref_ch = vec(mean(ref_chs, dims=1))
                 else
@@ -188,17 +188,17 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
         end
     end
 
-    if average == true
-        obj_new.header.recording[:labels][chs] .*= weighted == true ? "-wavg" : "-avg"
+    if average
+        obj_new.header.recording[:labels][chs] .*= weighted ? "-wavg" : "-avg"
     else
-        obj_new.header.recording[:labels][chs] .*= weighted == true ? "-wsum" : "-sum"
+        obj_new.header.recording[:labels][chs] .*= weighted ? "-wsum" : "-sum"
     end                
 
     obj_new.data[chs, :, :] = dst
-    if average == true
-        obj_new.header.recording[:reference] = weighted == true ? "average (weighted)" : "average"
+    if average
+        obj_new.header.recording[:reference] = weighted ? "average (weighted)" : "average"
     else
-        obj_new.header.recording[:reference] = weighted == true ? "sum (weighted)" : "sum"
+        obj_new.header.recording[:reference] = weighted ? "sum (weighted)" : "sum"
     end
     reset_components!(obj_new)
     push!(obj_new.history, "reference_avg(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)")
@@ -623,9 +623,9 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     end
 
     obj_new = deepcopy(obj)
-    obj_new.header.recording[:labels][chs] .*= weighted == true ? "-wplap" : "-plap"
+    obj_new.header.recording[:labels][chs] .*= weighted ? "-wplap" : "-plap"
     obj_new.data[chs, :, :] = s_ref
-    obj_new.header.recording[:reference] = weighted == true ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
+    obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
     reset_components!(obj_new)
     push!(obj_new.history, "reference_plap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
 

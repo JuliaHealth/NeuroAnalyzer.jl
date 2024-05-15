@@ -79,7 +79,7 @@ Calculate circular mean.
 """
 function meanc(x::AbstractVector; rad::Bool=false)
 
-    if rad == true
+    if rad
         return atan(sum(sin.(x)), sum(cos.(x)))
     else
         return rad2deg(atan(sum(sind.(x)), sum(cosd.(x))))

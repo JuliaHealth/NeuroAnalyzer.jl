@@ -8,11 +8,11 @@ locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 
 @info "test 1/21: add_locs()"
 eeg_tmp = add_locs(eeg, locs=locs)
-@test NeuroAnalyzer._has_locs(eeg_tmp) == true
+@test NeuroAnalyzer._has_locs(eeg_tmp)
 @test nrow(eeg_tmp.locs) == 23
-@test NeuroAnalyzer._has_locs(eeg) == true
+@test NeuroAnalyzer._has_locs(eeg)
 add_locs!(eeg, locs=locs)
-@test NeuroAnalyzer._has_locs(eeg) == true
+@test NeuroAnalyzer._has_locs(eeg)
 @test nrow(eeg.locs) == 23
 
 @info "test 2/21: locs_details()"

@@ -414,7 +414,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
 
     close(fid)
 
-    if detect_type == true
+    if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)

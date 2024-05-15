@@ -213,8 +213,8 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
 
     # draw head
     if head
-        if large == true
-            cb == true ? head_mask = head_mask[158:end-140, 140:end-156] : head_mask = head_mask[158:end-140, 148:end-135]
+        if large
+            cb ? head_mask = head_mask[158:end-140, 140:end-156] : head_mask = head_mask[158:end-140, 148:end-135]
             p = Plots.plot!(head_shape)
             p = Plots.plot!(head_mask)
             p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)

@@ -118,7 +118,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
     end
 
     ma = 1.0
-    ch_labels == true && (ma = 0.75)
+    ch_labels && (ma = 0.75)
 
     if large
         p = Plots.plot(grid=false,
@@ -198,7 +198,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
     end
     for idx in eachindex(locs[ch, :labels])
         if idx in ch
-            if mono == true
+            if mono
                 Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), pointsize=font_size)))
             else
                 if weights[idx] >= 0

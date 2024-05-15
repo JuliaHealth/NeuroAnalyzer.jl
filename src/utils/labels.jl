@@ -16,7 +16,7 @@ Return paired labels.
 """
 function paired_labels(l::Vector{String}; unq::Bool=true)
 
-    if unq == true
+    if unq
         l_paired = repeat([""], length(l)^2 - length(l))
     else
         l_paired = repeat([""], length(l)^2)
@@ -24,7 +24,7 @@ function paired_labels(l::Vector{String}; unq::Bool=true)
 
     idx = 1
     for idx1 in 1:length(l), idx2 in 1:length(l)
-        if unq == true
+        if unq
             if idx1 != idx2
                 l_paired[idx] = l[idx1] * "-" * l[idx2]
                 idx += 1

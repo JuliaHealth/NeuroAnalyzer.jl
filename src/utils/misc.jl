@@ -128,7 +128,7 @@ Order tuple elements in ascending or descending (`rev=true`) order.
 function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
 
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
-    (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
+    (rev && t[1] < t[2]) && (t = (t[2], t[1]))
 
     return t
     

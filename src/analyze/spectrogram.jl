@@ -52,7 +52,7 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
     sp = sp.power
     sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    norm == true && (sp = pow2db.(sp))
+    norm && (sp = pow2db.(sp))
 
     t = 0:1/fs:(length(s) / fs)
     st = linspace(t[1], t[end], size(sp, 2))
@@ -140,7 +140,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int
 
     sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    norm == true && (sp = pow2db.(sp))
+    norm && (sp = pow2db.(sp))
 
     return (cs=cs, sp=sp, sph=sph, sf=sf)
     
@@ -197,7 +197,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
 
     sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    norm == true && (sp = pow2db.(sp))
+    norm && (sp = pow2db.(sp))
 
     return (sp=sp, sph=sph, sf=sf)
 
@@ -241,7 +241,7 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}
 
     sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    norm == true && (sp = pow2db.(sp))
+    norm && (sp = pow2db.(sp))
 
     return (sp=sp, sf=sf)
 
@@ -317,7 +317,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     sp = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
@@ -334,7 +334,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             end
 
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
         end
     end
 

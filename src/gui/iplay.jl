@@ -247,7 +247,7 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::Int64=1, ep::Int64=1, mono::Bool=tr
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 s = @views obj.data[ch, :, ep]
                 fs = sr(obj)
-                if maxvol == true
+                if maxvol
                     s = normalize_minmax(s)
                 end
                 if mono == false

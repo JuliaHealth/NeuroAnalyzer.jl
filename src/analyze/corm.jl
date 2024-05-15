@@ -24,7 +24,7 @@ function corm(s::AbstractVector; norm::Bool=false)
     end
 
     # normalize
-    norm == true && (cm = m_norm(cm))
+    norm && (cm = m_norm(cm))
 
     return cm
     
@@ -57,7 +57,7 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)
     end
 
     # normalize
-    norm == true && (cm = m_norm(cm))
+    norm && (cm = m_norm(cm))
 
     return cm
 
@@ -84,7 +84,7 @@ function corm(s::AbstractArray; norm::Bool=false)
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
 
     cm = zeros(ch_n, ch_n, ep_len, ep_n)
 
@@ -95,7 +95,7 @@ function corm(s::AbstractArray; norm::Bool=false)
                 @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
 
                 # update progress bar
-                progress_bar == true && next!(progbar)
+                progress_bar && next!(progbar)
             end
             CUDA.synchronize()
         else
@@ -103,7 +103,7 @@ function corm(s::AbstractArray; norm::Bool=false)
                 @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
 
                 # update progress bar
-                progress_bar == true && next!(progbar)
+                progress_bar && next!(progbar)
             end
         end
     end

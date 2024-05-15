@@ -56,7 +56,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
     s_interpolated = zeros(Float64, length(ch), ep_len, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (progbar = Progress(ep_n * ep_len, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_n * ep_len, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in eachindex(ep)
         Threads.@threads for length_idx in 1:ep_len
@@ -68,7 +68,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
             end
 
             # update progress bar
-            progress_bar == true && next!(progbar)
+            progress_bar && next!(progbar)
         end
     end
 

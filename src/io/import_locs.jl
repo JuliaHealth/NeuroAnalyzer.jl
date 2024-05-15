@@ -208,7 +208,7 @@ function import_locs_elc(file_name::String)
     locs_n = 0
     locs_l = 0
     for idx in eachindex(elc_file)
-        if occursin("NumberPositions", elc_file[idx]) == true
+        if occursin("NumberPositions", elc_file[idx])
             locs_n = parse(Int64, replace(elc_file[idx], "NumberPositions=" => ""))
             locs_l = idx + 2
         end

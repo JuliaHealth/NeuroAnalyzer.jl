@@ -90,7 +90,7 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
     @assert dims in [1, 2] "dims must be 1 or 2."
 
-    rev == true && reverse!(m_idx)
+    rev && reverse!(m_idx)
 
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1

@@ -117,14 +117,14 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
         if k == 32 && get_gtk_property(lb_status2, :label, String) == "TEST"
             t = parse(Int64, split(get_gtk_property(lb_trial2, :label, String), ' ')[1])
             kp = key_pressed
-            if kp == true
+            if kp
                 push!(d_kp, time() - t_kp[end])
                 key_pressed = false
             end
         elseif k == 32 && get_gtk_property(lb_status2, :label, String) == "INTERVAL"
             t = parse(Int64, split(get_gtk_property(lb_interval2, :label, String), ' ')[1])
             kp = key_pressed
-            if kp == true
+            if kp
                 push!(int_d_kp, time() - int_t_kp[end])
                 key_pressed = false
             end
@@ -462,7 +462,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         continue
                     end
                 elseif serial_key == "$gpio:0"
-                    if key_pressed == true
+                    if key_pressed
                         # key is released
                         push!(d_kp, time() - t_kp[end])
                         key_pressed = false
@@ -495,7 +495,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         continue
                     end
                 elseif serial_key == "$gpio:0"
-                    if key_pressed == true
+                    if key_pressed
                         # key is released
                         push!(int_d_kp, time() - int_t_kp[end])
                         key_pressed = false
@@ -534,7 +534,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 if ((time() - last_debounce_time) > debounce_delay)
                     if rpi_key != key_state
                         key_state = rpi_key
-                        if key_state == true
+                        if key_state
                             # key is pressed
                             print("_")
                             push!(t_kp, time())
@@ -549,7 +549,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 key_last_state = rpi_key;
     #=
                 t2 = time()
-                if rpi_key == true
+                if rpi_key
                     if key_pressed == false
                         # key is pressed
                         push!(t_kp, t2)
@@ -559,7 +559,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         continue
                     end
                 else
-                    if key_pressed == true
+                    if key_pressed
                         # key is released
                         push!(d_kp, t2 - t_kp[end])
                         key_pressed = false
@@ -586,7 +586,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             while time() <= t1 + interval
                 rpi_key = PiGPIO.read(rpi, gpio)
                 t2 = time()
-                if rpi_key == true
+                if rpi_key
                     if key_pressed == false
                         # key is pressed
                         push!(int_t_kp, t2)
@@ -596,7 +596,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                         continue
                     end
                 else
-                    if key_pressed == true
+                    if key_pressed
                         # key is released
                         push!(int_d_kp, t2 - int_t_kp[end])
                         key_pressed = false

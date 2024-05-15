@@ -44,7 +44,7 @@ function import_csv(file_name::String; detect_type::Bool=true)
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
     clabels = _clean_labels(clabels_tmp)
-    if detect_type == true
+    if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
     else
         ch_type = repeat(["eeg"], ch_n)
