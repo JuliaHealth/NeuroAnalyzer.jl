@@ -516,7 +516,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         int_t_kp = int_t_kp .- t_s
     elseif rpi isa PiGPIO.Pi
         # use RPi
-        debounce_delay = 50 # ms
+        debounce_delay = 100 # ms
         println()
         t_s = time()
         for idx in 1:trials
