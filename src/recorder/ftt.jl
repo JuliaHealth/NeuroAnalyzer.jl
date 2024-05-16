@@ -254,7 +254,7 @@ end
 """
     ftt(; duration, trials, interval, gpio)
 
-Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded. When using computer keyboard, only the number of taps and their time points are recorded; tap durations are set to -1.
+Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded. When using computer keyboard, only the number of taps and their time points are recorded; tap durations are set to 0.1.
 
 # Arguments
 
@@ -298,7 +298,6 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         end
         rpi = false
     else
-        @info "GPIO disabled, keyboard SPACEBAR key will be used"
         rpi = false
     end
     
@@ -379,7 +378,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         t_segments .+= t_s
         t_e = (trials * duration) + (trials * interval)
         t_segments[end] = t_s + t_e
-        channel = Channel(_kbd_listener, 10) # Start task, 10 is buffer size for channel
+        channel = Channel(_kbd_listener, 1024) # Start task, 1024 is buffer size for channel
         stop = false
         r = 0
         t = Float64[]
@@ -387,9 +386,9 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         idx1 = 1
         idx2 = 1
         while !stop
-            sleep(0.05)
+            sleep(0.001)
             if time() >= t_segments[end]
-                stop = true
+                global stop = true
                 close(channel)
                 break
             end
@@ -417,7 +416,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         end
         # format time points
         t .-= t_segments[1]
-        t = round.(t, digits=4)
+        t = round.(t, digits=3)
         t_segments .-= t_segments[1]
         if r > 0
             for idx1 in 1:r
@@ -427,13 +426,13 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                             idx3 = (idx2 + 1) ÷ 2
                             result[idx3] += 1
                             push!(t_kp, t[idx1])
-                            push!(d_kp, -1)
+                            push!(d_kp, 0.1)
                         end
                         if isodd(idx2 + 1)
                             idx3 = idx2 ÷ 2
                             int_result[idx3] += 1
                             push!(int_t_kp, t[idx1])
-                            push!(int_d_kp, -1)
+                            push!(int_d_kp, 0.1)
                         end
                     end
                 end
@@ -635,8 +634,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         reverse!(tk)
         reverse!(td)
         tk = tk .- ((idx1 * duration) + ((idx1 - 1) * interval))
-        push!(int_t_keypressed, round.(tk, digits=4))
-        push!(int_d_keypressed, round.(td, digits=4))
+        push!(int_t_keypressed, round.(tk, digits=3))
+        push!(int_d_keypressed, round.(td, digits=3))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)

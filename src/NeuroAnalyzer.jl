@@ -116,6 +116,7 @@ using Preferences
 using PrettyTables
 using ProgressMeter
 using Random
+using REPL
 using SavitzkyGolay
 using ScatteredInterpolation
 using Simpson
