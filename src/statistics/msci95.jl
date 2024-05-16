@@ -24,7 +24,7 @@ function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
 
-    if method === :normal    
+    if method === :normal
         sm = mean(s)
         ss = std(s) / sqrt(length(s))
         su = sm + 1.96 * ss
@@ -46,7 +46,7 @@ function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
         sl = ssorted[round(Int, 0.025 * length(s_tmp1)), :]
         su = ssorted[round(Int, 0.975 * length(s_tmp1)), :]
     end
-    
+
     return (sm=sm, ss=ss, su=su, sl=sl)
 
 end
@@ -127,7 +127,7 @@ function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)
 
     ep_len = size(s, 2)
     ep_n = size(s, 3)
-    
+
     sm = zeros(ep_n, ep_len)
     ss = zeros(ep_n, ep_len)
     su = zeros(ep_n, ep_len)
@@ -279,7 +279,7 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-    
+
     # check epochs
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

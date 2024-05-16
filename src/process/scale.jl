@@ -19,7 +19,7 @@ Multiply channel(s) by `factor`.
 function scale(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), factor::Real)
 
     _check_channels(obj, ch)
-    
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views obj_new.data[ch, :, :] .* factor
     reset_components!(obj_new)

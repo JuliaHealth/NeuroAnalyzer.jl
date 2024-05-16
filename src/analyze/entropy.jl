@@ -52,7 +52,7 @@ function entropy(s::AbstractArray)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    
+
     ent = zeros(ch_n, ep_n)
     sent = zeros(ch_n, ep_n)
     leent = zeros(ch_n, ep_n)
@@ -135,7 +135,7 @@ function negentropy(s::AbstractArray)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    
+
     ne = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n

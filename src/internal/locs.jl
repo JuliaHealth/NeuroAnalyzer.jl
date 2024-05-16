@@ -105,7 +105,7 @@ function _locs_norm(locs::DataFrame)
     x = xyz[:, 1]
     y = xyz[:, 2]
     z = xyz[:, 3]
-    locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = x, y, 
+    locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = x, y, z
     return locs_new
 end
 
@@ -144,8 +144,8 @@ function _angle_quadrant(a::Real)
         (a < -180 && a >= -270) && (q = 2)
         (a < -270 && a > -360) && (q = 1)
     end
-    return q    
-end 
+    return q
+end
 
 _xyz2r(x, y, z) = sqrt(x^2 + y^2 + z^2)
 

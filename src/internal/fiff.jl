@@ -50,7 +50,7 @@ function _read_fiff_data(fid::IOStream, fiff_blocks::Matrix{Int64}, id::Union{In
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
     readbytes!(fid, buf, tag[4])
-    
+
     if tag[3] == 0
         return nothing
     elseif tag[3] == 1

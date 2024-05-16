@@ -19,7 +19,7 @@ Remove segment from the signal.
 function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, inverse::Bool=false)
 
     _check_segment(v, seg[1], seg[2])
-    
+
     if inverse
         return v[seg[1]:seg[2]]
     else
@@ -44,7 +44,7 @@ Remove segment from the signal.
 - `trim::Array{Float64}`
 """
 function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)
-    
+
     _check_segment(m[1, :], seg[1], seg[2])
 
     if inverse
@@ -102,7 +102,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
     _check_segment(obj, seg)
 
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-    
+
     if remove_epochs
         @assert nepochs(obj) > 1 "OBJ has only one epoch, cannot use remove_epochs=true."
         # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
@@ -128,7 +128,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
                 _warn("Cannot apply original epoch length, returning single-epoch OBJ.")
             end
         end
-        
+
         obj_new.markers = _delete_markers(obj_new.markers, seg, sr(obj))
         obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]), sr(obj))
 

@@ -10,7 +10,7 @@ Show keys and values of the object header.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function view_header(obj::NeuroAnalyzer.NEURO)
-    
+
     f = string(fieldnames(typeof(obj.header)))
     f = replace(f, "("=>"", ")"=>"", ":"=>"")
     println("Header fields: $f")

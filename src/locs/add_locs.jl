@@ -4,7 +4,7 @@ export add_locs!
 """
     add_locs(obj; locs)
 
-Add electrode positions from `locs`. 
+Add electrode positions from `locs`.
 
 Electrode locations:
 
@@ -35,7 +35,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     no_match = setdiff(e_labels, f_labels)
 
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.")
-    
+
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
         for idx2 in eachindex(f_labels)
@@ -64,7 +64,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     push!(obj_new.history, "add_locs(OBJ, locs)")
 
     return obj_new
-    
+
 end
 
 """

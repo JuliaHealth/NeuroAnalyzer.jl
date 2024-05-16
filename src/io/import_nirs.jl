@@ -100,7 +100,7 @@ function import_nirs(file_name::String)
 
     # stimuli
     s = nirs["s"][:]
-    if s == zeros(length(time_pts))    
+    if s == zeros(length(time_pts))
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
@@ -161,7 +161,7 @@ function import_nirs(file_name::String)
     locs_cart2pol!(locs)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
+
     s = _create_subject(id="",
                         first_name="",
                         middle_name="",

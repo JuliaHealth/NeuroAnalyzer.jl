@@ -10,7 +10,7 @@ Calculate amplitudes.
 - `s::AbstractVector`
 
 # Returns
- 
+
 Named tuple containing:
 - `p::Float64`: peak amplitude
 - `r::Float64`: RMS amplitude
@@ -47,7 +47,7 @@ Calculate amplitudes.
 - `s::AbstractArray`
 
 # Returns
- 
+
 Named tuple containing:
 - `p::Matrix{Float64}`: peak amplitude
 - `r::Matrix{Float64}`: RMS amplitude
@@ -92,7 +92,7 @@ Calculate amplitudes.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of reference channels, default is all signal channels except the analyzed one
 
 # Returns
- 
+
 Named tuple containing:
 - `p::Matrix{Float64}`: peak amplitude
 - `r::Matrix{Float64}`: RMS amplitude

@@ -29,7 +29,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     if "EEG" in keys(dataset) && length(keys(dataset)) == 1
         dataset = dataset["EEG"]
     end
-    
+
     data_src = dataset["data"]
     ch_n = Int64(dataset["nbchan"])
     ep_n = 1
@@ -62,7 +62,7 @@ function import_set(file_name::String; detect_type::Bool=true)
 
     sampling_rate = round(Int64, dataset["srate"])
     gain = ones(ch_n)
-    
+
     # channels info
     # get channel labels
     if length(dataset["chanlocs"]) > 0 && length(dataset["chanlocs"]["labels"][:]) == ch_n
@@ -97,7 +97,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     # dataset["dipfit"]
     # dataset["group"]
     # dataset["datfile"]
-    # 
+    #
     # dataset["specdata"]
     # dataset["run"]
     # dataset["epochdescription"]
@@ -222,7 +222,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     else
         file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
     end
-    
+
     data_type = "eeg"
 
     s = _create_subject(id="",

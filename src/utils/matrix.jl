@@ -52,7 +52,7 @@ Generates matrix sorting index.
 function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
 
     @assert dims in [1, 2] "dims must be 1 or 2."
-    
+
     idx = zeros(Int, size(m))
     if dims == 1
         @inbounds for m_idx = 1:size(m, 2)
@@ -63,7 +63,7 @@ function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
         @inbounds for m_idx = 1:size(m, 1)
             # sort by rows
             idx[m_idx, :] = sortperm(m[m_idx, :], rev=rev)'
-        end     
+        end
     end
 
     return idx

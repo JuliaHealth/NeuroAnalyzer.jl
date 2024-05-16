@@ -175,7 +175,7 @@ function import_snirf(file_name::String; n::Int64=0)
     data_n > 1 && _warn("Multiple data SNIRF files are not supported yet.")
 
     d_id = "data1"
-    
+
     data = nirs["$n_id/$d_id/dataTimeSeries"]
 
     time_pts = nirs["$n_id/$d_id/time"]
@@ -186,7 +186,7 @@ function import_snirf(file_name::String; n::Int64=0)
         time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
     end
     epoch_time = time_pts
-    
+
     ch_n = size(data, 1)
 
     source_index = Int64[]
@@ -379,7 +379,7 @@ function import_snirf(file_name::String; n::Int64=0)
     stim_data = nothing
     stim_name = nothing
     stim_labels = nothing
-    
+
     # Name of the stimulus data
     k = "$n_id/$s_id/name"
     k in keys(nirs) && (stim_name = nirs[k][1])
@@ -443,7 +443,7 @@ function import_snirf(file_name::String; n::Int64=0)
     k = "$n_id/$a_id/dataUnit"
     k in keys(nirs) && (aux_unit = nirs[k])
 
-    # Time (in TimeUnit) for auxiliary data 
+    # Time (in TimeUnit) for auxiliary data
     k = "$n_id/$a_id/time"
     k in keys(nirs) && (aux_time = nirs[k])
 
@@ -479,7 +479,7 @@ function import_snirf(file_name::String; n::Int64=0)
         x = pos3d[1, :]
     end
     if src_pos3d === nothing
-        if src_pos2d === nothing            
+        if src_pos2d === nothing
             y = zeros(length(opt_labels))
         else
             y = pos2d[2, :]
@@ -518,7 +518,7 @@ function import_snirf(file_name::String; n::Int64=0)
     locs_cart2pol!(locs)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
+
     s = _create_subject(id=subject_id,
                         first_name="",
                         middle_name="",

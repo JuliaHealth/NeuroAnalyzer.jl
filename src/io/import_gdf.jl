@@ -581,9 +581,9 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     ch_order = _sort_channels(ch_type)
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
-    
+
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
+
     "eeg" in ch_type && (data_type = "eeg")
     "meg" in ch_type && (data_type = "meg")
     "mag" in ch_type && (data_type = "meg")
@@ -630,6 +630,6 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end
 

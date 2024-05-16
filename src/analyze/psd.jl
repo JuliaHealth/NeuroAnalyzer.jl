@@ -72,7 +72,7 @@ function psd(s::AbstractVector; fs::Int64, norm::Bool=false, method::Symbol=:wel
     # replace powers at extreme frequencies
     # pw[1] = pw[2]
     # pw[end] = pw[end - 1]
-    
+
     norm && (pw = pow2db.(pw))
 
     return (pw=pw, pf=pf)
@@ -119,7 +119,7 @@ function psd(s::AbstractMatrix; fs::Int64, norm::Bool=false, method::Symbol=:wel
     @inbounds for ch_idx in 1:ch_n
         pw[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
     end
-    
+
     return (pw=pw, pf=pf)
 
 end
@@ -167,7 +167,7 @@ function psd(s::AbstractArray; fs::Int64, norm::Bool=false, method::Symbol=:welc
             pw[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end
     end
-    
+
     return (pw=pw, pf=pf)
 
 end
@@ -275,7 +275,7 @@ function mwpsd(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
         w_conv = tconv(s .* w, kernel=kernel)
         pw[frq_idx] = mean(@. abs(w_conv)^2)
     end
-    
+
     norm && (pw = pow2db.(pw))
 
     return (pw=pw, pf=pf)

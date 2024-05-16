@@ -41,7 +41,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
             end
         end
     end
-    
+
     # update headers
     for idx in ch
         loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))

@@ -19,10 +19,10 @@ Detect outliers.
 - `o::Vector{Bool}`: index of outliers
 """
 function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
- 
+
     _check_var(method, [:iqr, :z, :g], "method")
     o = zeros(Bool, length(x))
-    
+
     if method === :iqr
         m1 = quantile(x, 0.25) - 1.5 * iqr(x)
         m2 = quantile(x, 0.75) + 1.5 * iqr(x)
@@ -51,7 +51,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
             end
         end
     end
-    
+
     return o
 
 end

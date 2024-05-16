@@ -103,7 +103,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     cb_norm = GtkCheckButton()
     set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
     set_gtk_property!(cb_norm, :active, true)
-    
+
     cb_hw = GtkCheckButton()
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
     set_gtk_property!(cb_hw, :active, true)
@@ -636,7 +636,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     cb_norm = GtkCheckButton()
     set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
     set_gtk_property!(cb_norm, :active, true)
-    
+
     cb_hw = GtkCheckButton()
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
     set_gtk_property!(cb_hw, :active, true)

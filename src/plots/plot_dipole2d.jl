@@ -45,7 +45,6 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)
     # YZ: z: 8..58
     # XZ: x: 14..98
     # XZ: z: 8..58
-    # 
     oxy = reverse(size(head_top_texture) .÷ 2 .+ 1)
     oxy = (oxy[1], oxy[2] + 3)
     oyz = reverse(size(head_side_texture) .÷ 2 .+ 1)

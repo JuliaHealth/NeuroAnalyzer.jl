@@ -16,11 +16,11 @@ Detect bad channels and epochs.
     - `:euclid`: Euclidean distance
     - `:var`: mean signal variance outside of 95%CI and variance inter-quartile outliers
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
-    - `:tkeo`: z-score TKEO value outside of 95%CI 
+    - `:tkeo`: z-score TKEO value outside of 95%CI
 - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
 - `ftol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
-- `p::Float64=0.99`: probability threshold (0.0 to 1.0) for marking channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326) 
+- `p::Float64=0.99`: probability threshold (0.0 to 1.0) for marking channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326)
 - `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 - `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
 
@@ -41,7 +41,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     _check_channels(obj, ch)
     ch_n = length(ch)
-    ep_n = nepochs(obj)    
+    ep_n = nepochs(obj)
 
     bm = zeros(Bool, ch_n, ep_n)
     be = Vector{Int64}()
@@ -68,7 +68,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
-    
+
     if :rmse in method
         _info("Using :rmse method")
         @inbounds for ep_idx in 1:ep_n
@@ -185,7 +185,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             end
             for ch_idx in 1:ch_n
                 bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true)
-            end 
+            end
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end

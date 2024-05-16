@@ -31,7 +31,7 @@ function wbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=
     kernel = generate_morlet(fs, frq, 1, ncyc=ncyc, complex=true)
 
     s_new = real.(fconv(s, kernel=kernel, norm=true))
-    
+
     return s_new
 
 end

@@ -49,7 +49,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 - `h::Bool=false`: use FFT or Hilbert transformation
 
 # Returns
- 
+
 - `phd::Array{Float64, 3}`
 """
 function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:size(s, 1), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
@@ -77,7 +77,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
             if avg === :phase
                 ref_channels = setdiff(ch, ch_idx)
                 ph_ref = zeros(length(ref_channels), ep_len)
-                
+
                 for ref_idx in eachindex(ref_channels)
                     if h
                         _, _, _, ph = @views hspectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
@@ -86,9 +86,9 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
                     end
                     ph_ref[ref_idx, :] = ph
                 end
-                
+
                 ph_ref = vec(mean(ph_ref, dims=1))
-                
+
                 if h
                     _, _, _, ph = @views hspectrum(s[ch[ch_idx], :, ep_idx], pad=pad)
                 else
@@ -99,9 +99,9 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
 
             else
                 ref_channels = setdiff(ch, ch_idx)
-                
+
                 signal_m = @views vec(mean(s[ref_channels, :, ep_idx], dims=1))
-                
+
                 phd[ch_idx, :, ep_idx] = @views phdiff(s[ch[ch_idx], :, ep_idx], signal_m)
             end
         end
@@ -127,7 +127,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 - `h::Bool=false`: use FFT or Hilbert transformation
 
 # Returns
- 
+
 - `phd::Array{Float64, 3}`
 """
 function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
@@ -138,5 +138,5 @@ function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     phd = @views phdiff(obj.data[ch, :, :], avg=avg, pad=pad, h=h)
 
     return phd
-    
+
 end

@@ -20,6 +20,6 @@ function jaccard_similarity(x::AbstractVector, y::AbstractVector)
     u = length(x) + length(y) - i
 
     return i / u
-    
+
 end
 

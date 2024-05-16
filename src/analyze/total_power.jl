@@ -73,7 +73,7 @@ function total_power(s::AbstractArray; fs::Int64, method::Symbol=:welch, nt::Int
     ep_n = size(s, 3)
 
     tp = zeros(ch_n, ep_n)
-    
+
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             tp[ch_idx, ep_idx] = @views total_power(s[ch_idx, :, ep_idx], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
@@ -107,7 +107,7 @@ Calculate total power.
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
- 
+
 - `tp::Matrix{Float64}`: total power
 """
 function total_power(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)

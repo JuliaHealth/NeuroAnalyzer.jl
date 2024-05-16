@@ -50,7 +50,7 @@ function iselect_ts(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, zoom)
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
-    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]") 
+    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
     set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
     set_gtk_property!(entry_ts1, :digits, 3)
@@ -232,7 +232,7 @@ function iselect_ts(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         Gtk.destroy(win)
     end
 
-    signal_connect(bt_close, "clicked") do widget        
+    signal_connect(bt_close, "clicked") do widget
         quit = true
         Gtk.destroy(win)
     end

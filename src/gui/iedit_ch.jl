@@ -493,7 +493,7 @@ function iedit_ch(obj::NeuroAnalyzer.NEURO)
             refresh = true
             _refresh_plots()
         end
-    end 
+    end
 
     signal_connect(entry_label, "changed") do widget
         ch_labels[current_channel] = get_gtk_property(entry_label, :text, String)

@@ -257,5 +257,5 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Uni
     p = plot_weights(obj.locs, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane, title=title)
 
     return p
-    
+
 end

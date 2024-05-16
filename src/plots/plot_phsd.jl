@@ -263,7 +263,7 @@ function plot_phsd_avg(sf::Vector{Float64}, sp::Array{Float64, 2}; frq_lim::Tupl
     p = Plots.plot!(sf,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,
@@ -316,7 +316,7 @@ function plot_phsd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
@@ -406,7 +406,7 @@ function plot_phsd_3d(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels::Vecto
     ch_n = size(sp, 1)
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], ch_n))
 
@@ -536,7 +536,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
@@ -560,7 +560,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     # plot parameters
     plot_size = 800
     marker_size = (120, 80)
-    
+
     # get locations
     if !cart
         loc_x = zeros(size(locs, 1))
@@ -885,7 +885,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
     _check_var(ax, [:linlin, :loglin], "ax")
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
-    
+
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
@@ -1017,5 +1017,5 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
     Plots.plot(p)
 
     return p
-    
+
 end

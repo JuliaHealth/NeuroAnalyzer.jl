@@ -170,5 +170,5 @@ function import_edf_annotations(file_name::String)
     end
 
     return markers
-    
+
 end

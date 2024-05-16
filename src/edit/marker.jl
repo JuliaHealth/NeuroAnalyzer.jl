@@ -20,20 +20,20 @@ Show markers.
 function view_marker(obj::NeuroAnalyzer.NEURO)
 
     @assert _has_markers(obj) "OBJ has no markers."
-    
-    println(rpad("n", 5) * 
-            rpad("ID", 24) * 
-            rpad("start [s]", 12) * 
-            rpad("length [s]", 12) * 
-            rpad("description", 24) * 
+
+    println(rpad("n", 5) *
+            rpad("ID", 24) *
+            rpad("start [s]", 12) *
+            rpad("length [s]", 12) *
+            rpad("description", 24) *
             rpad("channel", 1))
 
     for mrk_idx in 1:nrow(obj.markers)
-        println(rpad(string(mrk_idx), 5) * 
-                rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) * 
-                rpad(string(round(obj.markers[mrk_idx, :start], digits=3)), 12) * 
-                rpad(string(round(obj.markers[mrk_idx, :length], digits=3)), 12) * 
-                rpad("'" * obj.markers[mrk_idx, :description] * "'", 24) * 
+        println(rpad(string(mrk_idx), 5) *
+                rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
+                rpad(string(round(obj.markers[mrk_idx, :start], digits=3)), 12) *
+                rpad(string(round(obj.markers[mrk_idx, :length], digits=3)), 12) *
+                rpad("'" * obj.markers[mrk_idx, :description] * "'", 24) *
                 rpad(string(obj.markers[mrk_idx, :channel]), 1))
     end
 
@@ -63,7 +63,7 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
     deleteat!(obj_new.markers, n)
     reset_components!(obj_new)
     push!(obj_new.history, "delete_marker(OBJ; n=$n)")
-    
+
     return obj_new
 
 end
@@ -278,7 +278,7 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
     end
 
     ev_ch = zeros(Int64, length(ev_start))
-    
+
     _info("$(length(ev_start)) events added")
 
     obj_new = deepcopy(obj)

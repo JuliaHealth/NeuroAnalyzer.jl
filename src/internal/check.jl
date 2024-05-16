@@ -1,7 +1,7 @@
 function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."
-    if range !== nothing 
+    if range !== nothing
         @assert !(t[1] < range[1] || t[2] < range[1] || t[1] > range[2] || t[2] > range[2]) "$name must be in [$(range[1]), $(range[2])]."
     end
     return nothing

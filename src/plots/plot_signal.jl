@@ -187,7 +187,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
-    
+
     # plot zero line
     p = Plots.hline!(collect((ch_n - 1):-1:0),
                      color=:grey,
@@ -290,7 +290,7 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArr
     p = Plots.plot!(t,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,
@@ -365,7 +365,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
 
     # channel labels
     clabels == [""] && (clabels = repeat([""], ch_n))
-    
+
     # plot channels
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
@@ -392,7 +392,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
                         label=clabels[idx],
                         legend=true)
     end
-    
+
     # draw scale
     if norm && scale
         p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
@@ -699,7 +699,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                             kwargs...)
         end
     end
-    
+
     if type === :butterfly
         @assert length(ch_t_uni) == 1 "For plot type=:butterfly all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
@@ -728,7 +728,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                   mono=mono;
                                   kwargs...)
     end
-    
+
     if type === :mean
         @assert length(ch_t_uni) == 1 "For plot type=:mean all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
@@ -1025,7 +1025,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     Plots.plot(p)
 
     return p
-    
+
 end
 
 """

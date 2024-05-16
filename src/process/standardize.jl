@@ -16,14 +16,14 @@ Standardize channels.
 - `scaler::Vector{Any}`: standardizing matrix
 """
 function standardize(s::AbstractArray)
-    
+
     ep_n = size(s, 3)
 
     scaler = Vector{ZScoreTransform{Float64, Vector{Float64}}}()
 
     s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
-        @views push!(scaler, StatsBase.fit(ZScoreTransform, s[:, :, ep_idx], dims=2)) 
+        @views push!(scaler, StatsBase.fit(ZScoreTransform, s[:, :, ep_idx], dims=2))
         @views s_new[:, :, ep_idx] = StatsBase.transform(scaler[ep_idx], s[:, :, ep_idx])
     end
 
@@ -47,7 +47,7 @@ Standardize channels.
 - `scaler::Vector{Any}`: standardizing matrix
 """
 function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
-    
+
     _check_channels(obj, ch)
 
     obj_new = deepcopy(obj)

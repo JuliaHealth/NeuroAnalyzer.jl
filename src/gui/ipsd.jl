@@ -177,7 +177,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     cb_frq = GtkCheckButton()
     set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
     set_gtk_property!(cb_frq, :active, true)
-    
+
     entry_frq = GtkSpinButton(1, 2048, 1)
     set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
     set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")
@@ -756,7 +756,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     cb_frq = GtkCheckButton()
     set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
     set_gtk_property!(cb_frq, :active, true)
-    
+
     entry_frq = GtkSpinButton(1, 2048, 1)
     set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
     set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")

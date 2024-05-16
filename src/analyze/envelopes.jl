@@ -32,18 +32,18 @@ Calculate upper envelope.
 - `e::Vector{Float64}`: envelope
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)
-    
+
     e = similar(s)
 
     # find peaks
     p_idx = findpeaks(s, d=d)
-    
+
     # add first time-point
     p_idx[1] != 1 && pushfirst!(p_idx, 1)
-    
+
     # add last time-point
     p_idx[end] != length(s) && push!(p_idx, length(s))
-    
+
     # interpolate peaks using cubic spline or loess
     if length(p_idx) >= 5
         model = CubicSpline(x[p_idx], s[p_idx])
@@ -59,7 +59,7 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)
         model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
         e = Loess.predict(model, x)
     end
-    
+
     e[1] = e[2]
 
     length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
@@ -84,7 +84,7 @@ Calculate lower envelope.
 - `e::Vector{Float64}`: envelope
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)
-    
+
     e = similar(s)
 
     # find peaks
@@ -95,10 +95,10 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)
 
     # add first time-point
     p_idx[1] != 1 && pushfirst!(p_idx, 1)
-    
+
     # add last time-point
     p_idx[end] != length(s) && push!(p_idx, length(s))
-    
+
     # interpolate peaks using cubic spline or loess
     if length(p_idx) >= 5
         model = CubicSpline(x[p_idx], s[p_idx])
@@ -114,9 +114,9 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)
         model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
         e = Loess.predict(model, x)
     end
-    
+
     e[1] = e[2]
-    
+
     length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
 
     return e
@@ -137,7 +137,7 @@ Calculate upper envelope using Hilbert transform.
 - `e::Vector{Float64}`: envelope
 """
 function henv_up(s::AbstractVector)
-    
+
     _, e, _, _ = hspectrum(s)
 
     return e
@@ -158,7 +158,7 @@ Calculate lower envelope using Hilbert transform.
 - `e::Vector{Float64}`: envelope
 """
 function henv_lo(s::AbstractVector)
-    
+
     _, e, _, _ = hspectrum(-s)
 
     return -e
@@ -183,7 +183,7 @@ Named tuple containing:
 - `s_t::Vector{Float64}`: signal time
 """
 function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=32)
-    
+
     _check_channels(obj, ch)
 
     ch_n = length(ch)
@@ -197,7 +197,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
             t_env[ch_idx, :, ep_idx] = @views env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
         end
     end
-    
+
     return (t_env=t_env, s_t=s_t)
 
 end
@@ -223,7 +223,7 @@ Named tuple containing:
 - `s_t::Vector{Float64}`: signal time
 """
 function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
-    
+
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -303,7 +303,7 @@ Named tuple containing:
 - `s_t::Vector{Float64}`: signal time
 """
 function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
-    
+
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -391,7 +391,7 @@ Named tuple containing:
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
 function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=8, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
-    
+
     _check_channels(obj, ch)
 
     ch_n = length(ch)
@@ -498,7 +498,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         p_env_u = reshape(p_env_u, size(p_env_u, 1))
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
-    
+
     return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
 
 end
@@ -580,7 +580,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         end
     else
         # median over channels and epochs
-        
+
         p_env_m, p_env_u, p_env_l, _ = penv_median(obj, dims=1, d=d)
         p_env_m = median(p_env_m, dims=2)
         p_env_u = median(p_env_u, dims=2)
@@ -589,7 +589,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         p_env_u = reshape(p_env_u, size(p_env_u, 1))
         p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
-    
+
     return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=pf)
 
 end
@@ -631,7 +631,7 @@ Named tuple containing:
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
 function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), pad::Int64=0, method::Symbol=:stft, norm::Bool=true, nt::Int64=7, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
-    
+
     _check_channels(obj, ch)
 
     ch_n = length(ch)
@@ -675,7 +675,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
                 reverse!(sp)
                 reverse!(sf)
             end
-            
+
             f_idx = zeros(length(st))
             m = vec(maximum(sp, dims=1))
             for idx2 in eachindex(m)
@@ -684,7 +684,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
             s_env[ch_idx, :, ep_idx] = env_up(f_idx, st, d=d)
         end
     end
-    
+
     return (s_env=s_env, senv_t=st)
 
 end
@@ -781,7 +781,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
         s_env_u = reshape(s_env_u, size(s_env_u, 1))
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
-    
+
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
 
 end
@@ -878,7 +878,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         s_env_u = reshape(s_env_u, size(s_env_u, 1))
         s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
-    
+
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=st)
 
 end
@@ -920,7 +920,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
             h_env[ch_idx, :, ep_idx] = env_up(s, s_t, d=d)
         end
     end
-    
+
     return (h_env=h_env, s_t=s_t)
 end
 
@@ -1023,7 +1023,7 @@ Named tuple containing:
 - `s_t::Vector{Float64}`: signal time
 """
 function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
-    
+
     if dims == 1
         @assert nchannels(obj) >= 1 "Number of channels must be ≥ 2."
     elseif dims == 2
@@ -1111,5 +1111,5 @@ function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})
     end
 
     return (ec=ec, p=p)
-    
+
 end

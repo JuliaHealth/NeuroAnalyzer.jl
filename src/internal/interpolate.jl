@@ -1,6 +1,6 @@
 function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector{Float64}, ifactor::Int64=100, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
     # `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
-    
+
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     x_lim_int = (-1.2, 1.2)
@@ -36,7 +36,7 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
     end
 
     s_interpolated = rotl90(s_interpolated)
-    
+
     return normalize(s_interpolated, method=nmethod), interpolated_x, interpolated_y
 
 end

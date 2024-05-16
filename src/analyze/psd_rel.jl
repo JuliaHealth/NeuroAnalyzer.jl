@@ -35,7 +35,7 @@ function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, f::Union{Tuple{
     ref_pw = f === nothing ? total_power(s, fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w) : band_power(s, fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     pw, pf = psd(s, fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
-    
+
     pw = pw ./ ref_pw
 
     return (pw=pw, pf=pf)
@@ -83,7 +83,7 @@ function psd_rel(s::AbstractMatrix; fs::Int64, norm::Bool=false, f::Union{Tuple{
     @inbounds for ch_idx in 1:ch_n
         pw[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, norm=norm, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
     end
-    
+
     return (pw=pw, pf=pf)
 
 end
@@ -132,7 +132,7 @@ function psd_rel(s::AbstractArray; fs::Int64, norm::Bool=false, f::Union{Tuple{R
             pw[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, norm=norm, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end
     end
-    
+
     return (pw=pw, pf=pf)
 
 end

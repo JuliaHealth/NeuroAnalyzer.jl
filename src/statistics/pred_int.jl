@@ -18,7 +18,7 @@ function pred_int(n::Int64)
     @assert n >= 1 "n must be ≥ 1."
 
     n in 1:19 && return [NaN, 15.56, 4.97, 3.56, 3.04, 2.78, 2.62, 2.51, 2.43, 2.37, 2.33, 2.29, 2.26, 2.24, 2.22, 2.18, 2.17, 2.16, 2.10][n]
-    
+
     @warn "For n > 20 result may not be accurate."
     n in 20:25 && return 2.10
     n in 25:30 && return 2.08

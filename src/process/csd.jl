@@ -68,7 +68,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     push!(obj_new.history, "csd(OBJ, m=$m, n=$n, lambda=$lambda)")
 
     return obj_new
-    
+
 end
 
 """
@@ -176,5 +176,5 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)
     end
 
     return (G=G, H=H)
-    
+
 end

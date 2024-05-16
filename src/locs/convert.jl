@@ -59,15 +59,15 @@ Convert spherical coordinates to Cartesian.
 - `phi::Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
 function cart2sph(x::Real, y::Real, z::Real)
-    
-    # radius = sqrt(x^2 + y^2 + z^2)    
+
+    # radius = sqrt(x^2 + y^2 + z^2)
     radius = hypot(x, y, z)
     # theta = tan^-1(x, y)
     theta = atand(y, x)
     # phi = cos^-1(z / sqrt(x^2 + y^2 + z^2))
     # phi = round(acosd(z / radius), digits=2)
     phi = 90 - acosd(z / radius)
-    
+
     return round(radius, digits=2), round(theta, digits=2), round(phi, digits=2)
 
 end
@@ -88,7 +88,7 @@ Convert polar coordinates to Cartesian.
 - `y::Float64`
 """
 function pol2cart(radius::Real, theta::Real)
-    
+
     x = radius * cosd(theta)
     y = radius * sind(theta)
 
@@ -113,7 +113,7 @@ Convert polar coordinates to spherical.
 - `phi::Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
 function pol2sph(radius::Real, theta::Real)
-    
+
     return round(radius, digits=2), round(theta, digits=2), 0
 
 end
@@ -136,7 +136,7 @@ Convert spherical coordinates to Cartesian.
 - `z::Float64`
 """
 function sph2cart(radius::Real, theta::Real, phi::Real)
-    
+
     x = radius * sind(90 - phi) * cosd(theta)
     y = radius * sind(90 - phi) * sind(theta)
     z = radius * cosd(90 - phi)
@@ -197,7 +197,7 @@ function locs_pol2cart(locs::DataFrame)
     _locs_norm!(locs_new)
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
-    
+
     return locs_new
 
 end
@@ -402,7 +402,7 @@ function locs_cart2sph(locs::DataFrame)
     _locs_remove_nans!(locs_new)
 
     return locs_new
-    
+
 end
 
 """

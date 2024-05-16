@@ -59,7 +59,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     else
         p = NeuroAnalyzer.plot(obj, ch=ch, mono=true, title="")
     end
-    
+
     win = GtkWindow("NeuroAnalyzer: iview_cont()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -74,7 +74,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, zoom)
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
-    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]") 
+    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_chup = GtkButton("△")
     set_gtk_property!(bt_chup, :tooltip_text, "Slide channels up")
     length(ch) < 11 && set_gtk_property!(bt_chup, :sensitive, false)
@@ -731,7 +731,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     entry_time = GtkSpinButton(obj1.time_pts[1], obj1.time_pts[end] - zoom, zoom)
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj1.time_pts[1])
-    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]") 
+    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_chup = GtkButton("△")
     set_gtk_property!(bt_chup, :tooltip_text, "Slide channels up")
     length(ch) < 11 && set_gtk_property!(bt_chup, :sensitive, false)
@@ -1364,7 +1364,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
     entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, zoom)
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
-    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]") 
+    set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_chup = GtkButton("△")
     set_gtk_property!(bt_chup, :tooltip_text, "Slide channels up")
     length(c_idx) < 11 && set_gtk_property!(bt_chup, :sensitive, false)

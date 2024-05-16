@@ -255,7 +255,7 @@ function plot_mep_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     p = Plots.plot!(t,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,
@@ -364,12 +364,12 @@ Plot MEP.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
-- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
-- `ylabel::String="default"`: y-axis label, default is Amplitude [units] 
+- `ylabel::String="default"`: y-axis label, default is Amplitude [units]
 - `title::String="default"`: plot title, default is MEP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
-- `cb_title::String="default"`: color bar title, default is Amplitude [units] 
+- `cb_title::String="default"`: color bar title, default is Amplitude [units]
 - `mono::Bool=false`: use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `peaks_detect::Bool=true`: if true, detect MEP peaks, otherwise use embedded

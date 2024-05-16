@@ -19,11 +19,11 @@ function cw_trans(s::AbstractVector; wt::T) where {T<:CWT}
 
     cwt_coefs = abs.(ContinuousWavelets.cwt(s, wt))
     ct = zeros(size(cwt_coefs, 2), size(cwt_coefs, 1))
-    
+
     for idx in 1:size(cwt_coefs, 2)
         ct[idx, :] = @views cwt_coefs[:, idx]
     end
-    
+
     return ct
 
 end
@@ -73,7 +73,7 @@ Perform continuous wavelet transformation (CWT).
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
- 
+
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
 function cw_trans(s::AbstractArray; wt::T) where {T<:CWT}
@@ -105,13 +105,13 @@ Perform continuous wavelet transformation (CWT).
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
- 
+
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
 function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T) where {T<:CWT}
 
     _check_channels(obj, ch)
-    
+
     ct = @views cw_trans(obj.data[ch, :, :], wt=wt)
 
     return ct

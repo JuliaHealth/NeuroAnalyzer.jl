@@ -17,5 +17,5 @@ If H < 0.2 then the vector `x` is symmetrical.
 function hildebrand_rule(x::AbstractVector)
 
     return (mean(x) - median(x)) ./ std(x)
-    
+
 end

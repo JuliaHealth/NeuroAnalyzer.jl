@@ -71,7 +71,7 @@ end
 """
     average!(obj; ch)
 
-Return the average signal of channels.  
+Return the average signal of channels.
 
 # Arguments
 

@@ -21,7 +21,7 @@ function play(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, mono::Bool=true, m
     fs = sr(obj)
 
     !mono && (s = [s s])
-    
+
     wavplay(s, fs)
 
     return nothing

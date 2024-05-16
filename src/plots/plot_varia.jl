@@ -633,7 +633,7 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        bottom_margin=30Plots.px,
                        legend=false,
                        xticks=false,
-                       yticks=false, 
+                       yticks=false,
                        title=title,
                        color=:black,
                        palette=pal,
@@ -656,7 +656,7 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        bottom_margin=30Plots.px,
                        legend=false,
                        xticks=false,
-                       yticks=false, 
+                       yticks=false,
                        title=title,
                        color=:black,
                        palette=pal,
@@ -759,7 +759,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
     else
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "ERP spectrogram")
         p1 = Plots.heatmap(t,
-                           f,                          
+                           f,
                            s[:, :, 1],
                            title=tt,
                            xlabel=xl,
@@ -794,7 +794,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
 
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs")
         p2 = Plots.heatmap(t,
-                           f,                          
+                           f,
                            s[:, :, 2],
                            title=tt,
                            xlabel=xl,
@@ -960,7 +960,7 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int6
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
-    
+
     ic = obj.components[:ic]
     ic_mw = obj.components[:ic_mw]
 
@@ -975,7 +975,7 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int6
         p_tmp = plot_topo(obj_tmp, title="IC $(ic_idx[idx])", cb=cb, cb_label=cb_label, amethod=amethod, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, seg=seg, kwargs...)
         push!(p_topo, p_tmp)
     end
-    
+
     if length(ic_idx) <= 4
         p = plot_compose(p_topo, layout=(1, 4))
     elseif length(ic_idx) <= 8
@@ -1104,7 +1104,7 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
     p = Plots.plot!(t,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,

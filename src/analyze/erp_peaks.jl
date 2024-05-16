@@ -14,7 +14,7 @@ Detect a pair of positive and negative peaks of ERP.
 - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
- 
+
 - `p::Array{Int64, 2}`: peaks: channels × positive peak position, negative peak position
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)
@@ -30,7 +30,7 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)
     end
 
     return p
-    
+
 end
 
 """
@@ -44,7 +44,7 @@ Calculate amplitude at given time.
 - `t::Real`: time in seconds
 
 # Returns
- 
+
 - `p::Matrix{Float64, 2}`: amplitude for each channel per epoch
 """
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
@@ -60,7 +60,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
         ch_n = size(obj)[1]
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
-        
+
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = @views obj.data[ch_idx, t_idx, ep_idx]
@@ -74,14 +74,14 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
 
         ch_n = size(obj)[1]
         p = zeros(ch_n)
-    
+
         Threads.@threads for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = @views obj.data[ch_idx, t_idx, 1]
         end
-    end        
+    end
 
     return p
-    
+
 end
 
 """
@@ -95,7 +95,7 @@ Calculate average amplitude at given time segment.
 - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
- 
+
 - `p::Matrix{Float64, 2}`: mean amplitude for each channel per epoch
 """
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
@@ -106,14 +106,14 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
         @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
-        
+
         t_idx1 = vsearch(t[1], obj.epoch_time)
         t_idx2 = vsearch(t[2], obj.epoch_time)
 
         ch_n = size(obj)[1]
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
-        
+
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
@@ -123,20 +123,20 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         @assert t[1] >= obj.time_pts[1] "t[1] must be ≥ $(obj.time_pts[1])."
         @assert t[2] <= obj.time_pts[end] "t[2] must be ≤ $(obj.time_pts[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
-        
+
         t_idx1 = vsearch(t[1], obj.time_pts)
         t_idx2 = vsearch(t[2], obj.time_pts)
 
         ch_n = size(obj)[1]
         p = zeros(ch_n)
-        
+
         Threads.@threads for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
 
     return p
-    
+
 end
 
 """
@@ -150,7 +150,7 @@ Calculate maximum amplitude at given time segment.
 - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
- 
+
 - `p::Matrix{Float64, 2}`: maximum amplitude for each channel per epoch
 """
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
@@ -161,14 +161,14 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
         @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
-        
+
         t_idx1 = vsearch(t[1], obj.epoch_time)
         t_idx2 = vsearch(t[2], obj.epoch_time)
 
         ch_n = size(obj)[1]
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
-        
+
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
@@ -178,20 +178,20 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         @assert t[1] >= obj.time_pts[1] "t[1] must be ≥ $(obj.time_pts[1])."
         @assert t[2] <= obj.time_pts[end] "t[2] must be ≤ $(obj.time_pts[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
-        
+
         t_idx1 = vsearch(t[1], obj.time_pts)
         t_idx2 = vsearch(t[2], obj.time_pts)
 
         ch_n = size(obj)[1]
         p = zeros(ch_n)
-        
+
         Threads.@threads for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
 
     return p
-    
+
 end
 
 """
@@ -205,7 +205,7 @@ Calculate minimum amplitude at given time segment.
 - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
- 
+
 - `p::Matrix{Float64, 2}`: minimum amplitude for each channel per epoch
 """
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
@@ -216,14 +216,14 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
         @assert t[2] <= obj.epoch_time[end] "t[2] must be ≤ $(obj.epoch_time[end])."
         @assert t[1] <= t[2] "t[1] must be < t[2]."
-        
+
         t_idx1 = vsearch(t[1], obj.epoch_time)
         t_idx2 = vsearch(t[2], obj.epoch_time)
 
         ch_n = size(obj)[1]
         ep_n = size(obj)[3]
         p = zeros(ch_n, ep_n)
-        
+
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
@@ -244,7 +244,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
             @inbounds p[ch_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
-    
+
     return p
-    
+
 end

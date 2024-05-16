@@ -67,7 +67,7 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 - `stv::Vector{Float64}`
 """
 function stationarity_var(s::AbstractVector; window::Int64)
-    
+
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= length(s) "window must be ≤ $(length(s))."
 
@@ -76,7 +76,7 @@ function stationarity_var(s::AbstractVector; window::Int64)
 
     stv = var(s, dims=1)[:]
 
-    return stv 
+    return stv
 
 end
 
@@ -114,7 +114,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     if method === :mean
 
         s = zeros(ch_n, window, ep_n)
-        
+
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
                 s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
@@ -153,7 +153,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     if method === :cov
 
         @assert ch_n >= 2 "For :cov method, number of channels must be ≥ 2."
-        
+
         # number of time windows per epoch
         window_n = epoch_len(obj)
         cov_mat = zeros(ch_n, ch_n, window_n, ep_n)

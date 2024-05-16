@@ -53,7 +53,7 @@ function epoch_stats(obj::NeuroAnalyzer.NEURO)
     end
 
     return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_skew=e_skew, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_max_dif=e_max_dif, e_dev_mean=e_dev_mean)
-    
+
 end
 
 """
@@ -83,7 +83,7 @@ function channel_stats(obj::NeuroAnalyzer.NEURO)
 
     ch_n = nchannels(obj)
     ep_n = nepochs(obj)
-    
+
     c_mean = zeros(ch_n, ep_n)
     c_median = zeros(ch_n, ep_n)
     c_std = zeros(ch_n, ep_n)

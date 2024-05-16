@@ -75,7 +75,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
             round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
         end
     end
-    
+
     # update signal
     obj_new.data = epochs
 
@@ -166,7 +166,7 @@ function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)
     obj.epoch_time = obj_new.epoch_time
 
     return nothing
-    
+
 end
 
 """
@@ -222,8 +222,8 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
     end
     mrk_start = round.(mrk_start, digits=3)
 
-    obj_new.markers[!, :start] = mrk_start 
-    
+    obj_new.markers[!, :start] = mrk_start
+
     reset_components!(obj_new)
     push!(obj_new.history, "subepoch(OBJ, ep_start=$ep_start, ep_start=$ep_end)")
 

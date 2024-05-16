@@ -27,7 +27,7 @@ end
 function _serial_open(port_name::String="/dev/ttyACM0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)
 
     @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
-    
+
     if Sys.isunix()
         @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
     end
@@ -72,7 +72,7 @@ function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=1152
     # `t`: recording time in seconds; if t > 0, blocks ignored and calculated based on recorded data
 
     @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
-    
+
     if Sys.isunix()
         @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
     end

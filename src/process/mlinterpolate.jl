@@ -54,7 +54,7 @@ function mlinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, e
     push!(obj_new.history, "mlinterpolate_channel(OBJ, ch=$ch, ep=$ep, ep_ref=$ep_ref, model)")
 
     return obj_new
-    
+
 end
 
 """

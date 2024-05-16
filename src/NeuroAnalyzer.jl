@@ -239,7 +239,7 @@ include("internal/time.jl")
 include("internal/wl2ext.jl")
 include("internal/gdf_etp.jl")
 include("internal/statistics.jl")
-include("internal/recorder.jl")                      
+include("internal/recorder.jl")
 include("internal/rt_plotter.jl")
 include("internal/tester.jl")
 # analyze
@@ -476,10 +476,10 @@ include("utils/play.jl")
 include("study/create.jl")
 include("study/info.jl")
 # recorder
-include("recorder/ftt.jl")                                                                                              
+include("recorder/ftt.jl")
 # stim
-include("stim/ect.jl")                                                                                              
-include("stim/tes.jl")                                                                                              
+include("stim/ect.jl")
+include("stim/tes.jl")
 include("stim/tes_model.jl")
 
 end # NeuroAnalyzer

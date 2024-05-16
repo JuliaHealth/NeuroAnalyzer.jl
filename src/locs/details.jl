@@ -58,7 +58,7 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, out::B
         println("  theta: $theta_sph (spherical)")
         println("    phi: $phi_sph (spherical)")
     end
-    
+
     return (ch=ch, label=l, theta_pl=theta_pl, radius_pl=radius_pl, x=x, y=y, z=z, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph)
 
 end

@@ -4,7 +4,7 @@ export load_locs!
 """
     load_locs(obj; file_name)
 
-Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
+Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame.
 
 Accepted formats:
 - CED
@@ -84,7 +84,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
             (occursin("m", lowercase(ref_labels[idx])) && occursin("2", ref_labels[idx])) && push!(locs, [ref_labels[idx], 0.95, -6.07, 0.94, -0.1, -0.3, 0.99, -6.07, -17.61])
         end
     end
-    
+
     # add locations of EMG channels
     emg_idx = get_channel_bytype(obj, type="emg")
     emg_labels = labels(obj)[emg_idx]
@@ -109,7 +109,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
             if occursin("2", eog_labels[idx])
                 occursin("v", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.01, 30.38, 0.87, 0.51, -0.37, 1.07, 30.38, -20.15])
                 occursin("h", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.0, 50.0, 0.64, 0.77, -0.04, 1.00, 50.27, -2.29])
-            end                
+            end
             # if no numbers, assume that EOG channels are on the right side
             if !occursin("1", eog_labels[idx]) && !occursin("2", eog_labels[idx])
                 occursin("v", lowercase(eog_labels[idx])) && push!(locs, [eog_labels[idx], 1.01, 30.38, 0.87, 0.51, -0.37, 1.07, 30.38, -20.15])
@@ -137,7 +137,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     loc_z = float.(locs[!, :loc_z])
 
     e_labels = lowercase.(obj.header.recording[:labels])
-    
+
     no_match = setdiff(e_labels, lowercase.(f_labels))
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name")
 
@@ -171,13 +171,13 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
 
     return obj_new
-    
+
 end
 
 """
     load_locs!(obj; file_name, normalize)
 
-Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
+Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame.
 
 Accepted formats:
 - CED

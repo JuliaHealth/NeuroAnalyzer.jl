@@ -97,7 +97,7 @@ Named tuple containing:
 function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    
+
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 

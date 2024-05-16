@@ -324,10 +324,10 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     size = _fread(fid, 1, :ui32)
     offset = _fread(fid, 1, :ui32)
 
-    sizeEvent1 = 8  # 8  bytes for Event1  
-    sizeEvent2 = 19 # 19 bytes for Event2 
-    sizeEvent3 = 19 # 19 bytes for Event3 
-   
+    sizeEvent1 = 8  # 8  bytes for Event1
+    sizeEvent2 = 19 # 19 bytes for Event2
+    sizeEvent3 = 19 # 19 bytes for Event3
+
     if teeg == 2
         nevents = size ÷ sizeEvent2
         stimtype = Int64[]
@@ -387,28 +387,28 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     end
 
     if nevents > 0
-        # initial offset : header + electrodes desc 
+        # initial offset : header + electrodes desc
         initial_offset = 900 + (ch_n * 75)
         if data_format === :i16
             if teeg == 3
-                for idx in 1:nevents 
+                for idx in 1:nevents
                     offset[idx] = offset[idx] ÷ (2 * ch_n)
                 end
             else
-                for idx in 1:nevents 
+                for idx in 1:nevents
                     offset[idx] = (offset[idx] - initial_offset) ÷ (2 * ch_n)
                 end
-            end   
+            end
         else
             if teeg == 3
-                for idx in 1:nevents 
+                for idx in 1:nevents
                     offset[idx] = offset[idx] ÷ (4 * ch_n)
                 end
             else
-                for idx in 1:nevents 
+                for idx in 1:nevents
                     offset[idx] = (offset[idx] - initial_offset) ÷ (4 * ch_n)
                 end
-            end   
+            end
         end
     end
 
@@ -432,7 +432,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     ep_time = round.((collect(0:1/sampling_rate:nums / sampling_rate))[1:end-1], digits=3)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
+
     data_type = "eeg"
 
     s = _create_subject(id="",
@@ -472,7 +472,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
     _initialize_locs!(obj)
-    
+
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj

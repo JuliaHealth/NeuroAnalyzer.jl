@@ -10,7 +10,7 @@ Perform discrete wavelet transformation (DWT).
 
 - `s::AbstractVector`
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: 
+- `type::Symbol`: transformation type:
     - `:sdwt`: Stationary Wavelet Transforms
     - `:acdwt`: Autocorrelation Wavelet Transforms
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
@@ -53,13 +53,13 @@ Perform discrete wavelet transformation (DWT).
 
 - `s::AbstractArray`
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: 
+- `type::Symbol`: transformation type:
     - `:sdwt`: Stationary Wavelet Transforms
     - `:acdwt`: Autocorrelation Wavelet Transforms
 - `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
 
 # Returns
- 
+
 - `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
 function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
@@ -92,13 +92,13 @@ Perform discrete wavelet transformation (DWT).
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: 
+- `type::Symbol`: transformation type:
     - `:sdwt`: Stationary Wavelet Transforms
     - `:acdwt`: Autocorrelation Wavelet Transforms
 - `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
 
 # Returns
- 
+
 - `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
 function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
@@ -119,7 +119,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 
 - `dwt_coefs::AbstractArray`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: 
+- `type::Symbol`: transformation type:
     - `:sdwt`: Stationary Wavelet Transforms
     - `:acdwt`: Autocorrelation Wavelet Transforms
 
@@ -128,7 +128,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 - `s_new::Vector{Float64}`: reconstructed signal
 """
 function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
-    
+
     _check_var(type, [:sdwt, :acdwt], "type")
 
     # reconstruct array of DWT coefficients as returned by Wavelets.jl functions

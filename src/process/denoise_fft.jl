@@ -22,7 +22,7 @@ function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)
 
     s_fft = fft0(s, pad)
     s_pow = @. (abs(s_fft * conj(s_fft))) / length(s)
-    
+
     t == 0 && (t = mean(s_pow))
 
     # zero frequencies with power above threshold

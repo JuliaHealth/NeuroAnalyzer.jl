@@ -47,8 +47,8 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         dod = @views obj_new.data[ch, :, ep_idx]
 
         for idx=eachindex(lst)
-            
-            idx1 = lst[idx]            
+
+            idx1 = lst[idx]
             idx2 = findall(wl_idx .> 1 .&& chp[:, 1] .== chp[idx1, 1] .&& chp[:, 2] .== chp[idx1, 2])
 
             x = obj.locs[:, :loc_x]

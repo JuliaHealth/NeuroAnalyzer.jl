@@ -38,10 +38,10 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     #         # remove ignored tags from block tree
     #         block_current[block_idx2, 7] in [fiff_block_start, fiff_block_end, fiff_block_nop, fiff_block_root] && (block_current = block_current[1:end .!= block_idx2, :])
     #     end
-    #     
+    #
     #     # skip empty blocks
     #     size(block_current, 1) == 0 && continue
-    #     
+    #
     #     # continue with non-empty blocks
     #     for block_idx3 in size(block_current, 1)
     #         # current_block_type
@@ -172,7 +172,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    # which data buffer to choose? 
+    # which data buffer to choose?
     data = zeros(ch_n, 0)
     @inbounds for idx1 in eachindex(data_buffer)
         data = hcat(data, Float64.(reshape(data_buffer[idx1], ch_n, length(data_buffer[idx1]) ÷ ch_n)))
@@ -190,11 +190,11 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     # end
     data = reshape(data, size(data, 1), size(data, 2), 1)
     channel_order = 1:ch_n
-    
+
     # create signal details
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
-    
+
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     s = _create_subject(id="",
@@ -231,7 +231,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                          e)
 
     components = Dict()
-    
+
     history = String[]
 
     markers = DataFrame()
@@ -243,5 +243,5 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end

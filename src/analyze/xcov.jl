@@ -41,7 +41,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
     if method === :sum
         for idx in 0:l
             xc[idx + 1] = @views sum(s1_tmp[(1 + idx):end] .* s2_tmp[1:(end - idx)])
-            if biased 
+            if biased
                 xc[idx + 1] /= length(s1)
             else
                 xc[idx + 1] /= (length(s1) - idx)
@@ -49,7 +49,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
         end
         for idx in 0:l
             xc_neg[idx + 1] = @views sum(s1_tmp[1:(end - idx)] .* s2_tmp[(1 + idx):end])
-            if biased 
+            if biased
                 xc_neg[idx + 1] /= length(s1)
             else
                 xc_neg[idx + 1] /= (length(s1) - idx)
@@ -186,7 +186,7 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-    
+
     # check epochs
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

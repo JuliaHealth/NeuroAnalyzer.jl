@@ -166,7 +166,7 @@ Named tuple containing:
 function freqs(obj::NeuroAnalyzer.NEURO)
 
     hz, nf = freqs(obj.data[1, :, 1], sr(obj))
-    
+
     return (hz=hz, nf=nf)
 
 end

@@ -404,7 +404,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
     Plots.plot!(p)
 
     return p
-    
+
 end
 
 """

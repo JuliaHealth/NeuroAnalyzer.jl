@@ -99,7 +99,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
             p = Plots.plot!([xs, xd], [ys, yd], lc=:blue, lw=1, alpha=0.5)
         end
     end
-    
+
     if src_labels
         for idx in 1:src_n
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
@@ -111,7 +111,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
             p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:red, msc=:red, ms=marker_size, msa=1)
         end
     end
-    
+
     if det_labels
         for idx in (src_n + 1):(src_n + det_n)
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :labels][idx], pointsize=font_size)))
@@ -123,7 +123,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
             p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:green, msc=:green, ms=marker_size, msa=1)
         end
     end
-    
+
     if opt_labels
         for idx in 1:src_n
             p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text("S" * string(idx), pointsize=font_size)))

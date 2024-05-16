@@ -81,7 +81,7 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
         @assert (isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
         CSV.write(file_name, obj.locs)
     end
-    
+
     # HISTORY
     if history && length(obj.history) > 0
         file_name = replace(file_name, ".csv" => "_history.txt")

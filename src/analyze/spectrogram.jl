@@ -57,7 +57,7 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
     t = 0:1/fs:(length(s) / fs)
     st = linspace(t[1], t[end], size(sp, 2))
     sf = linspace(0, fs/2, size(sp, 1))
-    
+
     return (sp=sp, sf=sf, st=st)
 
 end
@@ -143,7 +143,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int
     norm && (sp = pow2db.(sp))
 
     return (cs=cs, sp=sp, sph=sph, sf=sf)
-    
+
 end
 
 """

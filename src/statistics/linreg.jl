@@ -61,7 +61,7 @@ function infcrit(m::T) where {T<:StatsModels.TableRegressionModel}
     n = length(MultivariateStats.predict(m))
     aic = 2 * k - 2 * log(r2(m))
     bic = k * log(n) - 2 * log(r2(m))
-    
+
     return (aic=aic, bic=bic)
-    
+
 end

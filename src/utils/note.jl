@@ -37,7 +37,7 @@ function add_note(obj::NeuroAnalyzer.NEURO; note::String)
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:recording_notes] = note
-    
+
     return obj_new
 
 end
@@ -55,7 +55,7 @@ Add recording note to the object header.
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)
 
     obj.header.recording[:recording_notes] = note
-    
+
     return nothing
 
 end

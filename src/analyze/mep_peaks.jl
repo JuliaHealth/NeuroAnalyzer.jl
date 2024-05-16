@@ -10,7 +10,7 @@ Detect a pair of positive and negative peaks of MEP.
 - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
- 
+
 - `p::Array{Int64, 2}`: peaks: channels × positive peak position, negative peak position
 """
 function mep_peaks(obj::NeuroAnalyzer.NEURO)
@@ -27,5 +27,5 @@ function mep_peaks(obj::NeuroAnalyzer.NEURO)
     end
 
     return p
-    
+
 end

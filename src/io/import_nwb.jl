@@ -87,7 +87,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
         recording_time = astimezone(ZonedDateTime(t, DateFormat("yyyy-mm-ddTHH:MM:SSzzzz")), tz"UTC")
         recording_time = lpad(string(Dates.hour(recording_time)), 2, '0') * ":" * lpad(string(Dates.minute(recording_time)), 2, '0') * ":" * lpad(string(Dates.second(recording_time)), 2, '0')
     end
-    
+
     subj_id = "identifier" in k ? dataset["identifier"] : ""
     exp_name = "session_description" in k ? dataset["session_description"] : ""
 
@@ -140,7 +140,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3) .+ t_start
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3) .+ t_start
-    
+
     # events
     "acquisition/Stimulus/data" in k && (stim = dataset["acquisition/Stimulus/data"])
     # dataset["acquisition/Stimulus/timestamps"]
@@ -208,7 +208,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     ch_order = _sort_channels(ch_type)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
+
     s = _create_subject(id=subj_id,
                         first_name="",
                         middle_name="",

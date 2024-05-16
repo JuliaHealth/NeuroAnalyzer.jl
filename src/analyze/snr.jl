@@ -38,7 +38,7 @@ Calculate RMS-based SNR.
 - `snr2::Float64`: SNR
 """
 function snr2(s::AbstractVector)
-    
+
     _, _, _, _, _, _, _, r = amp(s)
     return (maximum(s) - minimum(s)) / r
 
@@ -96,7 +96,7 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)
     end
 
     return (sn=sn, f=f)
-    
+
 end
 
 

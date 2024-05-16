@@ -73,9 +73,9 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
         _warn("The target sources could not be find.")
         return nothing
     end
-    
+
     _info("Converged at: $final_tol")
-    
+
     # inverse or pseudoinverse the weighting matrix
     ic_mw = n == size(s, 1) ? inv(M.W)' : pinv(M.W)'
 
@@ -252,7 +252,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::M
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[ch, :, :]
-    
+
     reset_components!(obj_new)
     push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
@@ -316,7 +316,7 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
             obj_new.data[ch[ch_idx], :, 1] = @views obj_new.data[ch[ch_idx], :, 1] - obj_tmp.data[ch[ch_idx], :, 1]
         end
     end
-    
+
     reset_components!(obj_new)
     push!(obj_new.history, "ica_remove(OBJ, ch=$ch, ic_idx=$ic_idx)")
 

@@ -28,7 +28,7 @@ function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true, pad::
     s_conv = real.(ifft0(s_fft .* kernel_fft, pad))
 
     # remove in- and out- edges
-    if mod(n_k, 2) == 0 
+    if mod(n_k, 2) == 0
         s_new = s_conv[half_k:(end - half_k)]
     else
         s_new = s_conv[(half_k + 1):(end - half_k)]
@@ -67,7 +67,7 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true, pad::I
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm, pad=pad)
-            
+
             # update progress bar
             progress_bar && next!(progbar)
         end

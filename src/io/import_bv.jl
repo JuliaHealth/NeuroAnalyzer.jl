@@ -140,7 +140,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
         end
         prefiltering = repeat(["LP: "], ch_n) .* string.(round.(soft_filt[!, :low_cutoff], digits=4)) .* repeat([" Hz, HP: "], ch_n) .* string.(round.(soft_filt[!, :high_cutoff], digits=4)) .* " Hz"
     end
-    
+
     clabels = _clean_labels(clabels)
     if ch_types == repeat([""], ch_n)
         if detect_type
@@ -231,26 +231,26 @@ function import_bv(file_name::String; detect_type::Bool=true)
             # 0 = marker is related to all channels
             m_ch[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[5])
         end
-        markers = DataFrame(:id=>m_id, 
-                            :start=>(m_pos ./ sampling_rate), 
-                            :length=>round.(m_len ./ sampling_rate), 
-                            :description=>m_desc, 
+        markers = DataFrame(:id=>m_id,
+                            :start=>(m_pos ./ sampling_rate),
+                            :length=>round.(m_len ./ sampling_rate),
+                            :description=>m_desc,
                             :channel=>m_ch)
         if markers[!, :id] == repeat([""], nrow(markers))
             markers[!, :id] == repeat(["mrk"], nrow(markers))
         end
     elseif isfile(replace(splitext(file_name)[1], "eeg"=>"events.tsv"))
         vmrk = CSV.read(replace(splitext(file_name)[1], "eeg"=>"events.tsv"), stringtype=String, DataFrame)
-        markers = DataFrame(:id=>repeat(["mrk"], nrow(vmrk)), 
-                            :start=>(vmrk[!, :sample] ./ sampling_rate), 
-                            :length=>round.(vmrk[!, :duration] ./ sampling_rate), 
-                            :description=>(vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])), 
+        markers = DataFrame(:id=>repeat(["mrk"], nrow(vmrk)),
+                            :start=>(vmrk[!, :sample] ./ sampling_rate),
+                            :length=>round.(vmrk[!, :duration] ./ sampling_rate),
+                            :description=>(vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])),
                             :channel=>m_ch)
     else
-        markers = DataFrame(:id=>String[], 
-                            :start=>Float64[], 
-                            :length=>Float64[], 
-                            :description=>String[], 
+        markers = DataFrame(:id=>String[],
+                            :start=>Float64[],
+                            :length=>Float64[],
+                            :description=>String[],
                             :channel=>Int64[])
     end
 
@@ -330,7 +330,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
-    
+
     file_size_mb = round(filesize(eeg_file) / 1024^2, digits=2)
 
     data_type = "eeg"
@@ -373,9 +373,9 @@ function import_bv(file_name::String; detect_type::Bool=true)
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[channel_order, :, :], components, markers, locs, history)
     nrow(locs) == 0 && _initialize_locs!(obj)
-    
+
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end

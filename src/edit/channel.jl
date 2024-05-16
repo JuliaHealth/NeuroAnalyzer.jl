@@ -26,7 +26,7 @@ Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_typ
 - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
- 
+
 - `chs::Vector{Int64}`
 """
 function signal_channels(obj::NeuroAnalyzer.NEURO)
@@ -64,7 +64,7 @@ Return all signal (e.g. EEG or MEG) channels for a given data type. For MEG data
 - `ct::Vector{String}`: list of channel types
 
 # Returns
- 
+
 - `chs::Vector{Int64}`
 """
 function signal_channels(dt::String, ct::Vector{String})
@@ -108,7 +108,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector
             _check_var(idx, NeuroAnalyzer.channel_types, "type")
         end
     end
-        
+
     if type == "all"
         ch_idx = _c(nchannels(obj))
     elseif type isa String
@@ -122,7 +122,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector
             for idx2 in type
                 lowercase(obj.header.recording[:channel_type][idx1]) == string(idx2) && push!(ch_idx, idx1)
             end
-        end        
+        end
     end
 
     return ch_idx
@@ -153,7 +153,7 @@ function get_channel_bytype(ct::Vector{String}; type::Union{String, Vector{Strin
             _check_var(idx, ct, "type")
         end
     end
-        
+
     if type == "all"
         ch_idx = _c(length(ct))
     elseif type isa String
@@ -167,7 +167,7 @@ function get_channel_bytype(ct::Vector{String}; type::Union{String, Vector{Strin
             for idx2 in eachindex(type)
                 lowercase(ct[idx]) == type[idx2] && (push!(ch_idx, idx1))
             end
-        end        
+        end
     end
 
     length(ch_idx) == 1 && (ch_idx = ch_idx[1])
@@ -223,7 +223,7 @@ function get_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
 
     # create new dataset
     types = obj.header.recording[:channel_type]
-    
+
     if ch isa String
         ch_found = nothing
         for idx in eachindex(clabels)
@@ -266,7 +266,7 @@ function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, ty
     # create new dataset
     obj_new = deepcopy(obj)
     types = obj_new.header.recording[:channel_type]
-    
+
     if ch isa String
         ch_found = nothing
         for idx in eachindex(clabels)
@@ -281,7 +281,7 @@ function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, ty
         types[ch] = type
     end
     obj_new.header.recording[:channel_type] = types
-    
+
     # add entry to :history field
     push!(obj_new.history, "set_channel_type(OBJ, ch=$ch, type=$type)")
 
@@ -383,7 +383,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
         _check_channels(obj, ch)
         clabels[ch] = name
     end
-    
+
     # rename channel locs label
     if ch isa String
         l_idx = _find_bylabel(obj_new.locs, ch)
@@ -442,16 +442,16 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function edit_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value::Any)
-    
+
     @assert value !== nothing "value cannot be empty."
     _check_channels(obj, ch)
-    _check_var(field, [:channel_type, :labels], "field")    
+    _check_var(field, [:channel_type, :labels], "field")
 
     obj_new = deepcopy(obj)
     @assert obj_new.header.recording[field][ch] isa typeof(value) "field type ($(eltype(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."
     obj_new.header.recording[field][ch] = value
 
-    push!(obj_new.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")   
+    push!(obj_new.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")
 
     return obj_new
 
@@ -470,7 +470,7 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 - `value::Any`
 """
 function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value::Any)
-    
+
     obj_new = edit_channel(obj, ch=ch, field=field, value=value)
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -563,14 +563,14 @@ Add channel labels.
 function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
     @assert length(clabels) == nchannels(obj) "clabels length must be $(nchannels(obj))."
-    
+
     obj_new = deepcopy(obj)
     obj_new.header.recording[:labels] = clabels
 
     push!(obj_new.history, "add_labels(OBJ, clabels=$clabels")
- 
+
     return obj_new
-    
+
 end
 
 """

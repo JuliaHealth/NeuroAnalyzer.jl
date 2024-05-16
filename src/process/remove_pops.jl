@@ -87,7 +87,7 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
         if s_pop_max < s_pop_min
             # /|
             #  |/
-            
+
             t = collect(eachindex(s_pop[1:p_idx]))
             df = DataFrame(:t=>t, :s=>s_pop[1:p_idx])
             lr = GLM.lm(@formula(s ~ t), df)
@@ -109,7 +109,7 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # s_pop[1:s_pop_max] -= ll1
             # s_pop[1:s_pop_max] -= lf
             # s_pop[s_pop_min:end] += ll2
-    
+
             # s_pop = filter_mavg(s_pop, k=12)
             s_pop = filter_mavg(s_pop, k=4)
 
@@ -151,7 +151,7 @@ function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)
             # s_pop[1:s_pop_max] -= ll1
             # s_pop[1:s_pop_max] -= lf
             # s_pop[s_pop_min:end] += ll2
-    
+
             # s_pop[(p_idx - 20):(p_idx + 20)] = filter_mavg(s_pop[(p_idx - 20):(p_idx + 20)], k=12)
             # s_pop_min = vsearch(minimum(s_pop), s_pop)
             # s_pop_max = vsearch(maximum(s_pop), s_pop)

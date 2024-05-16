@@ -75,7 +75,7 @@ Center locs at X=0.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_center!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
-    
+
     locs[!, :] = locs_center(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing

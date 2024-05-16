@@ -43,7 +43,7 @@ function derivative(s::AbstractArray)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    
+
     s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n

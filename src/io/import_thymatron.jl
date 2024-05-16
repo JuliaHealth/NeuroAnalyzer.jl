@@ -50,7 +50,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})
         dimy = size(img, 2)
 
         # adjust histogram
-        # in some cases modify the `nbins` parameter for better results 
+        # in some cases modify the `nbins` parameter for better results
         # alg = Equalization(nbins = 3)
         # img = adjust_histogram(img, alg)
 
@@ -107,7 +107,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})
             eeg_signal[idx] = px_uv * ((dimx ÷ 2) - findfirst(isequal(1), img_bin[:, idx]))
             eeg_time[idx] = idx * px_s
         end
-    
+
         eeg_signal = round.(eeg_signal, digits=3)
 
         push!(data_tmp, eeg_signal)
@@ -174,5 +174,5 @@ function import_thymatron(file_name::Union{String, Vector{String}})
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end

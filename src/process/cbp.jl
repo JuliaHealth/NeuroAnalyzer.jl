@@ -64,7 +64,7 @@ function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     push!(obj_new.history, "cbp(OBJ, ch=$ch, pad=$pad, frq=$frq)")
 
     return obj_new
-    
+
 end
 
 """

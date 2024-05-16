@@ -50,7 +50,7 @@ function cph(s::AbstractArray; fs::Int64)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    
+
     _, f = @views cph(s[1, :, 1], s[1, :, 1], fs=fs)
     ph = zeros(ch_n, ch_n, length(f), ep_n)
 
@@ -171,7 +171,7 @@ function cph(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-    
+
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
@@ -183,7 +183,7 @@ function cph(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     size(ep2) == () && (ep2 = [ep2])
 
     ph, f = @views cph(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], fs=sr(obj1))
-    
+
     return (ph=ph, f=f)
 
 end

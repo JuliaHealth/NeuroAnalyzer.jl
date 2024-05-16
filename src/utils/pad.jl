@@ -20,7 +20,7 @@ function pad0(x::Union{AbstractVector, AbstractArray}, n::Int64)
 
     @assert n >= 0 "n must be ≥ 0."
     @assert ndims(x) <= 3 "pad0() works only for 1-, 2- or 3-dimension array."
-    
+
     ndims(x) == 1 && return vcat(x, zeros(eltype(x), n))
     ndims(x) == 2 && return hcat(x, zeros(eltype(x), size(x, 1), n))
     ndims(x) == 3 && return hcat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)))
@@ -47,7 +47,7 @@ function pad2(x::Union{AbstractVector, AbstractArray})
     ndims(x) == 1 && return pad0(x, nextpow2(length(x)) - length(x))
     ndims(x) == 2 && return hcat(x, zeros(eltype(x), size(x, 1), nextpow2(size(x, 2)) - size(x, 2)))
     ndims(x) == 3 && return hcat(x, zeros(eltype(x), size(x, 1), nextpow2(size(x, 2)) - size(x, 2), size(x, 3)))
-    
+
 end
 
 """
@@ -72,7 +72,7 @@ function padm(x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol=:a
     _check_var(mode, [:all, :row], "mode")
     @assert n >= 0 "n must be ≥ 0."
     @assert ndims(x) <= 3 "padm() works only for 1-, 2- or 3-dimension array."
-    
+
     if ndims(x) == 1
         m = mean(x)
         return vcat(x, m .* ones(eltype(x), n))

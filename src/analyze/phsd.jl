@@ -52,7 +52,7 @@ function phsd(s::AbstractMatrix; fs::Int64)
     @inbounds for ch_idx in 1:ch_n
         ph[ch_idx, :], _ = phsd(s[ch_idx, :], fs=fs)
     end
-    
+
     return (ph=ph, f=f)
 
 end
@@ -86,7 +86,7 @@ function phsd(s::AbstractArray; fs::Int64)
             ph[ch_idx, :, ep_idx], _ = phsd(s[ch_idx, :, ep_idx], fs=fs)
         end
     end
-    
+
     return (ph=ph, f=f)
 
 end

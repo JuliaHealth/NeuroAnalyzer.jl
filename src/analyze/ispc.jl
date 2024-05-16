@@ -106,7 +106,7 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-    
+
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
@@ -129,5 +129,5 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     end
 
     return (ispc_value=ispc_value, ispc_angle=ispc_angle, s_diff=s_diff, ph_diff=ph_diff, s1_phase=s1_phase, s2_phase=s2_phase)
-    
+
 end

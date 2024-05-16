@@ -1,7 +1,7 @@
 export rt_plotter
 
 function rt_plotter(; fs::Int64, l::Int64=5, duration::Int64=20)
-    
+
     _wip()
 
     t = 0:1/fs:l

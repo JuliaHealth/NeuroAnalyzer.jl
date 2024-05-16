@@ -76,7 +76,7 @@ function locs_flipy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
     locs[!, :] = locs_flipy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
-    
+
 end
 
 """

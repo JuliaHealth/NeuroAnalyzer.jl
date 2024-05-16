@@ -41,7 +41,7 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Real=0)
     push!(obj_new.history, "erp(OBJ, bl=$bl)")
 
     return obj_new
-    
+
 end
 
 """
@@ -97,7 +97,7 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
     push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
 
     return obj_new
-    
+
 end
 
 """
@@ -129,5 +129,5 @@ function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
     push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
 
     return obj_new
-    
+
 end

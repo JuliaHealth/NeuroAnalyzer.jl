@@ -30,7 +30,7 @@ function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)
     # resample
     sr_ratio = new_sr / old_sr
     s_new = DSP.resample(s, sr_ratio)
-    
+
     return s_new
 
 end
@@ -57,7 +57,7 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)
     ch_n, _, ep_n = size(s)
 
     s_new = NeuroAnalyzer.resample(s[1, :, 1], old_sr=old_sr, new_sr=new_sr)
-    s_new = zeros(ch_n, length(s_new), ep_n) 
+    s_new = zeros(ch_n, length(s_new), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
@@ -134,7 +134,7 @@ Upsample.
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
     new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn("New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
-    
+
     obj_new = deepcopy(obj)
 
     s_new = NeuroAnalyzer.resample(obj.data, old_sr=sr(obj), new_sr=new_sr)

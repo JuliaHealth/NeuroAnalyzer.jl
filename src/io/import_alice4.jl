@@ -179,12 +179,12 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         data = zeros(UInt8, data_size)
         readbytes!(fid, data, data_size, all=true)
         signal = map(ltoh, reinterpret(Int16, data))
-        data_records = length(signal) ÷ sum(sampling_rate)        
+        data_records = length(signal) ÷ sum(sampling_rate)
         data = zeros(ch_n, data_records * max_sampling_rate)
         data_segment = max_sampling_rate
         annotations = String[]
 
-        @inbounds for idx1 in 1:data_records            
+        @inbounds for idx1 in 1:data_records
             for idx2 in 1:ch_n
                 tmp = Vector{Float64}()
                 for idx3 in 1:sampling_rate[idx2]
@@ -288,5 +288,5 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end

@@ -27,7 +27,7 @@ function corm(s::AbstractVector; norm::Bool=false)
     norm && (cm = m_norm(cm))
 
     return cm
-    
+
 end
 
 """
@@ -107,9 +107,9 @@ function corm(s::AbstractArray; norm::Bool=false)
             end
         end
     end
-    
+
     return cm
-    
+
 end
 
 """
@@ -135,5 +135,5 @@ function corm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     cm = corm(obj.data[ch, :, :], norm=norm)
 
     return cm
-    
+
 end

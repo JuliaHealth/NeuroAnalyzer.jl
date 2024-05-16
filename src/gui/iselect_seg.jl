@@ -31,7 +31,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
                 fill=:darktest,
                 margins=-100Plots.px,
                 legend=false)
-    
+
     dim_x = size(m, 2)
     dim_y = size(m, 1)
     size_x = p.attr[:size][1] ÷ dim_x
@@ -136,7 +136,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
     @async Gtk.gtk_main()
     wait(cnd)
 
-    if x !== nothing && y !== nothing && length(x) > 0 && length(y) > 0 
+    if x !== nothing && y !== nothing && length(x) > 0 && length(y) > 0
         if length(x) > 1 && length(y) > 1 && x[end] == x[1] && y[end] == y[1]
             pop!(x)
             pop!(y)

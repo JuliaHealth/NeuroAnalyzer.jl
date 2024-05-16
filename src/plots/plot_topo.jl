@@ -34,7 +34,7 @@ Plot topographical view.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
-    
+
     pal = mono ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
@@ -132,7 +132,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            ylims=yl,
                            title=title;
                            kwargs...)
-        end            
+        end
     else
         if cb
             p = Plots.plot(grid=false,
@@ -312,7 +312,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     t = obj.time_pts[seg[1]:seg[2]]
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     ep = _s2epoch(obj, seg[1], seg[2])
-    
+
     # average signal and convert to vector
     if size(s, 2) > 1
         if amethod === :mean
@@ -402,7 +402,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
         c = reshape(c, length(c), 1, 1)
         time_segment = false
     end
-    
+
     if time_segment
         if ep != 0
             _check_epochs(obj, ep)
@@ -476,5 +476,5 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     Plots.plot(p)
 
     return p
-    
+
 end

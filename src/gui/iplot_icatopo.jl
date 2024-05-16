@@ -31,7 +31,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
-    
+
     ic = obj.components[:ic]
     ic_mw = obj.components[:ic_mw]
 
@@ -112,7 +112,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     entry_ic = GtkSpinButton(1, length(ic_idx), 1)
     set_gtk_property!(entry_ic, :tooltip_text, "ICA component")
     current_ic = ic_idx[1]
-    
+
     bt_details_amp = GtkButton("Show amplitude")
     set_gtk_property!(bt_details_amp, :tooltip_text, "Show component amplitude")
     bt_details_psd = GtkButton("Show PSD")
@@ -183,7 +183,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
         idx += 1
     end
     push!(win_view, g_cans)
-    
+
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g, :row_spacing, 10)
@@ -302,14 +302,14 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
         iview(obj, obj_new)
         obj_edited = true
     end
-    
+
     signal_connect(bt_signal_remove, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
         ica_remove!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic)
         iview(obj, obj_new)
         obj_edited = true
     end
-    
+
     signal_connect(bt_apply, "clicked") do widget
         if obj_edited
             if ask_dialog("This operation will apply all changes.\nPlease confirm.", "No", "Yes")

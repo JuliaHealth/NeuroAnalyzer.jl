@@ -42,7 +42,7 @@ function frqinst(s::AbstractArray)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
-    
+
     f = zeros(ch_n, ep_len, ep_n)
 
     @inbounds for ep_idx in 1:ep_n

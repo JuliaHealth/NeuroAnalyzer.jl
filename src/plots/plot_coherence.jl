@@ -317,7 +317,7 @@ function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::V
     p = Plots.plot!(f,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,
@@ -384,7 +384,7 @@ function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clab
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(coh, 1)))
 

@@ -87,11 +87,11 @@ function locs_generate(locs::DataFrame)
     x[lab .== "fc2"] .= sph2cart(cosd(22.5), 0, 67.5)[1]
     y[lab .== "fc2"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 67.5)[2]
     z[lab .== "fc2"] .= sph2cart(cosd(22.5), 0, 67.5)[3]
-    
+
     x[lab .== "fc4"] .= sph2cart(cosd(22.5), 0, 45)[1]
     y[lab .== "fc4"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 45)[2]
     z[lab .== "fc4"] .= sph2cart(cosd(22.5), 0, 45)[3]
-    
+
     x[lab .== "fc6"] .= sph2cart(cosd(22.5), 0, 22.5)[1]
     y[lab .== "fc6"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 22.5)[2]
     z[lab .== "fc6"] .= sph2cart(cosd(22.5), 0, 22.5)[3]
@@ -107,11 +107,11 @@ function locs_generate(locs::DataFrame)
     x[lab .== "fc1"] .= sph2cart(cosd(22.5), 0, 112.5)[1]
     y[lab .== "fc1"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 112.5)[2]
     z[lab .== "fc1"] .= sph2cart(cosd(22.5), 0, 112.5)[3]
-    
+
     x[lab .== "fc3"] .= sph2cart(cosd(22.5), 0, 135)[1]
     y[lab .== "fc3"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 135)[2]
     z[lab .== "fc3"] .= sph2cart(cosd(22.5), 0, 135)[3]
-    
+
     x[lab .== "fc5"] .= sph2cart(cosd(22.5), 0, 157.5)[1]
     y[lab .== "fc5"] .= cosd(22.5) + sph2cart(cosd(22.5), 0, 157.5)[2]
     z[lab .== "fc5"] .= sph2cart(cosd(22.5), 0, 157.5)[3]
@@ -127,19 +127,19 @@ function locs_generate(locs::DataFrame)
     x[lab .== "fz"] .= sph2cart(1.0, 90, 45)[1]
     y[lab .== "fz"] .= sph2cart(1.0, 90, 45)[2]
     z[lab .== "fz"] .= sph2cart(1.0, 90, 45)[3]
-    
+
     x[lab .== "f2"] .= sph2cart(cosd(45), 0, 67.5)[1]
     y[lab .== "f2"] .= cosd(45) + sph2cart(cosd(45), 0, 67.5)[2]
     z[lab .== "f2"] .= sph2cart(cosd(45), 0, 67.5)[3]
-    
+
     x[lab .== "f4"] .= sph2cart(cosd(45), 0, 45)[1]
     y[lab .== "f4"] .= cosd(45) + sph2cart(cosd(45), 0, 45)[2]
     z[lab .== "f4"] .= sph2cart(cosd(45), 0, 45)[3]
-    
+
     x[lab .== "f6"] .= sph2cart(cosd(45), 0, 22.5)[1]
     y[lab .== "f6"] .= cosd(45) + sph2cart(cosd(45), 0, 22.5)[2]
     z[lab .== "f6"] .= sph2cart(cosd(45), 0, 22.5)[3]
-    
+
     x[lab .== "f8"] .= sph2cart(cosd(45), 0, 0)[1]
     y[lab .== "f8"] .= cosd(45) + sph2cart(cosd(45), 0, 0)[2]
     z[lab .== "f8"] .= sph2cart(cosd(45), 0, 0)[3]
@@ -151,47 +151,47 @@ function locs_generate(locs::DataFrame)
     x[lab .== "f1"] .= sph2cart(cosd(45), 0, 112.5)[1]
     y[lab .== "f1"] .= cosd(45) + sph2cart(cosd(45), 0, 112.5)[2]
     z[lab .== "f1"] .= sph2cart(cosd(45), 0, 112.5)[3]
-    
+
     x[lab .== "f3"] .= sph2cart(cosd(45), 0, 135)[1]
     y[lab .== "f3"] .= cosd(45) + sph2cart(cosd(45), 0, 135)[2]
     z[lab .== "f3"] .= sph2cart(cosd(45), 0, 135)[3]
-    
+
     x[lab .== "f5"] .= sph2cart(cosd(45), 0, 157.5)[1]
     y[lab .== "f5"] .= cosd(45) + sph2cart(cosd(45), 0, 157.5)[2]
     z[lab .== "f5"] .= sph2cart(cosd(45), 0, 157.5)[3]
-    
+
     x[lab .== "f7"] .= sph2cart(cosd(45), 0, 180)[1]
     y[lab .== "f7"] .= cosd(45) + sph2cart(cosd(45), 0, 180)[2]
     z[lab .== "f7"] .= sph2cart(cosd(45), 0, 180)[3]
-    
+
     x[lab .== "f9"] .= sph2cart(cosd(45), -22.5, 180)[1]
     y[lab .== "f9"] .= cosd(45) + sph2cart(cosd(45), -22.5, 180)[2]
     z[lab .== "f9"] .= sph2cart(cosd(45), -22.5, 180)[3]
-    
+
     x[lab .== "afz"] .= sph2cart(1.0, 90, 67.5)[1]
     y[lab .== "afz"] .= sph2cart(1.0, 90, 67.5)[2]
     z[lab .== "afz"] .= sph2cart(1.0, 90, 67.5)[3]
-        
+
     x[lab .== "af2"] .= sph2cart(cosd(67.5), 0, 67.5)[1]
     y[lab .== "af2"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 67.5)[2]
     z[lab .== "af2"] .= sph2cart(cosd(67.5), 0, 67.5)[3]
-    
+
     x[lab .== "af4"] .= sph2cart(cosd(67.5), 0, 45)[1]
     y[lab .== "af4"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 45)[2]
     z[lab .== "af4"] .= sph2cart(cosd(67.5), 0, 45)[3]
-    
+
     x[lab .== "af6"] .= sph2cart(cosd(67.5), 0, 22.5)[1]
     y[lab .== "af6"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 22.5)[2]
     z[lab .== "af6"] .= sph2cart(cosd(67.5), 0, 22.5)[3]
-    
+
     x[lab .== "af1"] .= sph2cart(cosd(67.5), 0, 112.5)[1]
     y[lab .== "af1"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 112.5)[2]
     z[lab .== "af1"] .= sph2cart(cosd(67.5), 0, 112.5)[3]
-    
+
     x[lab .== "af3"] .= sph2cart(cosd(67.5), 0, 135)[1]
     y[lab .== "af3"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 135)[2]
     z[lab .== "af3"] .= sph2cart(cosd(67.5), 0, 135)[3]
-    
+
     x[lab .== "af7"] .= sph2cart(cosd(67.5), 0, 157.5)[1]
     y[lab .== "af7"] .= cosd(67.5) + sph2cart(cosd(67.5), 0, 157.5)[2]
     z[lab .== "af7"] .= sph2cart(cosd(67.5), 0, 157.5)[3]
@@ -199,11 +199,11 @@ function locs_generate(locs::DataFrame)
     x[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[1]
     y[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[2]
     z[lab .== "fpz"] .= sph2cart(1.0, 90, 0)[3]
-        
+
     x[lab .== "fp2"] .= sph2cart(1.0, 67.5, 0)[1]
     y[lab .== "fp2"] .= sph2cart(1.0, 67.5, 0)[2]
     z[lab .== "fp2"] .= sph2cart(1.0, 67.5, 0)[3]
-        
+
     x[lab .== "fp1"] .= sph2cart(1.0, 112.5, 0)[1]
     y[lab .== "fp1"] .= sph2cart(1.0, 112.5, 0)[2]
     z[lab .== "fp1"] .= sph2cart(1.0, 112.5, 0)[3]
@@ -215,15 +215,15 @@ function locs_generate(locs::DataFrame)
     x[lab .== "cp2"] .= sph2cart(cosd(22.5), 0, 67.5)[1]
     y[lab .== "cp2"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 67.5)[2]
     z[lab .== "cp2"] .= sph2cart(cosd(22.5), 0, 67.5)[3]
-    
+
     x[lab .== "cp4"] .= sph2cart(cosd(22.5), 0, 45)[1]
     y[lab .== "cp4"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 45)[2]
     z[lab .== "cp4"] .= sph2cart(cosd(22.5), 0, 45)[3]
-    
+
     x[lab .== "cp6"] .= sph2cart(cosd(22.5), 0, 22.5)[1]
     y[lab .== "cp6"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 22.5)[2]
     z[lab .== "cp6"] .= sph2cart(cosd(22.5), 0, 22.5)[3]
-    
+
     x[lab .== "cp8" .|| lab .== "tp8"] .= sph2cart(cosd(22.5), 0, 0)[1]
     y[lab .== "cp8" .|| lab .== "tp8"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 0)[2]
     z[lab .== "cp8" .|| lab .== "tp8"] .= sph2cart(cosd(22.5), 0, 0)[3]
@@ -239,19 +239,19 @@ function locs_generate(locs::DataFrame)
     x[lab .== "cp1"] .= sph2cart(cosd(22.5), 0, 112.5)[1]
     y[lab .== "cp1"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 112.5)[2]
     z[lab .== "cp1"] .= sph2cart(cosd(22.5), 0, 112.5)[3]
-    
+
     x[lab .== "cp3"] .= sph2cart(cosd(22.5), 0, 135)[1]
     y[lab .== "cp3"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 135)[2]
     z[lab .== "cp3"] .= sph2cart(cosd(22.5), 0, 135)[3]
-    
+
     x[lab .== "cp5"] .= sph2cart(cosd(22.5), 0, 157.5)[1]
     y[lab .== "cp5"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 157.5)[2]
     z[lab .== "cp5"] .= sph2cart(cosd(22.5), 0, 157.5)[3]
-    
+
     x[lab .== "cp7" .|| lab .== "tp7"] .= sph2cart(cosd(22.5), 0, 180)[1]
     y[lab .== "cp7" .|| lab .== "tp7"] .= -cosd(67.5) + sph2cart(cosd(22.5), 0, 180)[2]
     z[lab .== "cp7" .|| lab .== "tp7"] .= sph2cart(cosd(22.5), 0, 180)[3]
- 
+
     x[lab .== "pz"] .= sph2cart(1.0, 270, 45)[1]
     y[lab .== "pz"] .= sph2cart(1.0, 270, 45)[2]
     z[lab .== "pz"] .= sph2cart(1.0, 270, 45)[3]
@@ -259,15 +259,15 @@ function locs_generate(locs::DataFrame)
     x[lab .== "p2"] .= sph2cart(cosd(45), 0, 67.5)[1]
     y[lab .== "p2"] .= -cosd(45) + sph2cart(cosd(45), 0, 67.5)[2]
     z[lab .== "p2"] .= sph2cart(cosd(45), 0, 67.5)[3]
-    
+
     x[lab .== "p4"] .= sph2cart(cosd(45), 0, 45)[1]
     y[lab .== "p4"] .= -cosd(45) + sph2cart(cosd(45), 0, 45)[2]
     z[lab .== "p4"] .= sph2cart(cosd(45), 0, 45)[3]
-    
+
     x[lab .== "p6"] .= sph2cart(cosd(45), 0, 22.5)[1]
     y[lab .== "p6"] .= -cosd(45) + sph2cart(cosd(45), 0, 22.5)[2]
     z[lab .== "p6"] .= sph2cart(cosd(45), 0, 22.5)[3]
-    
+
     x[lab .== "p8" .|| lab .== "t6"] .= sph2cart(cosd(45), 0, 0)[1]
     y[lab .== "p8" .|| lab .== "t6"] .= -cosd(45) + sph2cart(cosd(45), 0, 0)[2]
     z[lab .== "p8" .|| lab .== "t6"] .= sph2cart(cosd(45), 0, 0)[3]
@@ -279,15 +279,15 @@ function locs_generate(locs::DataFrame)
     x[lab .== "p1"] .= sph2cart(cosd(45), 0, 112.5)[1]
     y[lab .== "p1"] .= -cosd(45) + sph2cart(cosd(45), 0, 112.5)[2]
     z[lab .== "p1"] .= sph2cart(cosd(45), 0, 112.5)[3]
-    
+
     x[lab .== "p3"] .= sph2cart(cosd(45), 0, 135)[1]
     y[lab .== "p3"] .= -cosd(45) + sph2cart(cosd(45), 0, 135)[2]
     z[lab .== "p3"] .= sph2cart(cosd(45), 0, 135)[3]
-    
+
     x[lab .== "p5"] .= sph2cart(cosd(45), 0, 157.5)[1]
     y[lab .== "p5"] .= -cosd(45) + sph2cart(cosd(45), 0, 157.5)[2]
     z[lab .== "p5"] .= sph2cart(cosd(45), 0, 157.5)[3]
-    
+
     x[lab .== "p7" .|| lab .== "t5"] .= sph2cart(cosd(45), 0, 180)[1]
     y[lab .== "p7" .|| lab .== "t5"] .= -cosd(45) + sph2cart(cosd(45), 0, 180)[2]
     z[lab .== "p7" .|| lab .== "t5"] .= sph2cart(cosd(45), 0, 180)[3]
@@ -295,7 +295,7 @@ function locs_generate(locs::DataFrame)
     x[lab .== "p9"] .= sph2cart(cosd(45), -22.5, 180)[1]
     y[lab .== "p9"] .= -cosd(45) + sph2cart(cosd(45), -22.5, 180)[2]
     z[lab .== "p9"] .= sph2cart(cosd(45), -22.5, 180)[3]
- 
+
     x[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[1]
     y[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[2]
     z[lab .== "poz"] .= sph2cart(1.0, 270, 22.5)[3]
@@ -303,27 +303,27 @@ function locs_generate(locs::DataFrame)
     x[lab .== "po2"] .= sph2cart(cosd(67.5), 0, 67.5)[1]
     y[lab .== "po2"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 67.5)[2]
     z[lab .== "po2"] .= sph2cart(cosd(67.5), 0, 67.5)[3]
-    
+
     x[lab .== "po4"] .= sph2cart(cosd(67.5), 0, 45)[1]
     y[lab .== "po4"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 45)[2]
     z[lab .== "po4"] .= sph2cart(cosd(67.5), 0, 45)[3]
-    
+
     x[lab .== "po6"] .= sph2cart(cosd(67.5), 0, 22.5)[1]
     y[lab .== "po6"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 22.5)[2]
     z[lab .== "po6"] .= sph2cart(cosd(67.5), 0, 22.5)[3]
-    
+
     x[lab .== "po8"] .= sph2cart(cosd(67.5), 0, 0)[1]
     y[lab .== "po8"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 0)[2]
     z[lab .== "po8"] .= sph2cart(cosd(67.5), 0, 0)[3]
-    
+
     x[lab .== "po1"] .= sph2cart(cosd(67.5), 0, 112.5)[1]
     y[lab .== "po1"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 112.5)[2]
     z[lab .== "po1"] .= sph2cart(cosd(67.5), 0, 112.5)[3]
-    
+
     x[lab .== "po3"] .= sph2cart(cosd(67.5), 0, 135)[1]
     y[lab .== "po3"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 135)[2]
     z[lab .== "po3"] .= sph2cart(cosd(67.5), 0, 135)[3]
-    
+
     x[lab .== "po5"] .= sph2cart(cosd(67.5), 0, 157.5)[1]
     y[lab .== "po5"] .= -cosd(67.5) + sph2cart(cosd(67.5), 0, 157.5)[2]
     z[lab .== "po5"] .= sph2cart(cosd(67.5), 0, 157.5)[3]
@@ -339,7 +339,7 @@ function locs_generate(locs::DataFrame)
     x[lab .== "o2"] .= sph2cart(1.0, 292.5, 0)[1]
     y[lab .== "o2"] .= sph2cart(1.0, 292.5, 0)[2]
     z[lab .== "o2"] .= sph2cart(1.0, 292.5, 0)[3]
-        
+
     x[lab .== "o1"] .= sph2cart(1.0, 247.5, 0)[1]
     y[lab .== "o1"] .= sph2cart(1.0, 247.5, 0)[2]
     z[lab .== "o1"] .= sph2cart(1.0, 247.5, 0)[3]
@@ -347,7 +347,7 @@ function locs_generate(locs::DataFrame)
     x[lab .== "a1"] .= -0.92
     y[lab .== "a1"] .= -0.23
     z[lab .== "a1"] .= -0.55
-    
+
     x[lab .== "a2"] .= 0.92
     y[lab .== "a2"] .= -0.23
     z[lab .== "a2"] .= -0.55
@@ -416,8 +416,8 @@ function locs_generate(locs::DataFrame)
     locs_new[:, :loc_y] = y
     locs_new[:, :loc_z] = z
 
-    locs_cart2sph!(locs_new) 
-    locs_sph2pol!(locs_new) 
+    locs_cart2sph!(locs_new)
+    locs_sph2pol!(locs_new)
 
     no_match = setdiff(lab, e_labels)
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be generated.")

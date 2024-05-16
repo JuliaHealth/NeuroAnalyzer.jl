@@ -41,7 +41,7 @@ end
 """
     plot_empty()
 
-Return an empty plot, useful for filling matrices of plots. 
+Return an empty plot, useful for filling matrices of plots.
 
 # Returns
 
@@ -53,7 +53,7 @@ function plot_empty()
                       framestyle=:none,
                       border=:none,
                       margins=0Plots.px)
-    
+
 end
 
 """

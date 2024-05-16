@@ -22,5 +22,5 @@ function effsize(x1::AbstractVector, x2::AbstractVector)
     g = (mean(x2) - mean(x1)) / sqrt((((length(x1) - 1) * (std(x1)^2)) + ((length(x2) - 1) * (std(x2)^2))) / (length(x1) + length(x2) - 2))
 
     return (cohen=d, hedges=g)
-    
+
 end

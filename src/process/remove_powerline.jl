@@ -26,7 +26,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 
     @assert nepochs(obj) == 1 "remove_powerline() should be applied to a continuous signal."
 
-    _check_channels(obj, ch)    
+    _check_channels(obj, ch)
     _check_var(method, [:iir], "method")
 
     obj_new = deepcopy(obj)
@@ -99,7 +99,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
                     pks_wdth = peakwidths1d(p_tmp, peaks)[1]
                 end
             end
-            
+
             n = length(pks_frq)
             bw_values = collect(0:q:5.0)[2:end]
             if n > 0
@@ -200,7 +200,7 @@ Detect power line noise frequency.
 
 # Returns
 
-- `noise_frq::Float64`: peak noise frequency in Hz 
+- `noise_frq::Float64`: peak noise frequency in Hz
 """
 function detect_powerline(s::AbstractVector; fs::Int64)
 
@@ -233,13 +233,13 @@ Detect power line noise frequency.
 
 # Returns
 
-- `noise_frq::Array{Float64, 3}`: peak noise frequency in Hz 
+- `noise_frq::Array{Float64, 3}`: peak noise frequency in Hz
 """
 function detect_powerline(obj::NeuroAnalyzer.NEURO)
 
     ch_n = size(obj, 1)
     ep_n = size(obj, 3)
-    
+
     noise_frq = zeros(ch_n, ep_n)
 
     # initialize progress bar
@@ -251,7 +251,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)
         end
 
         # update progress bar
-        progress_bar && next!(progbar)   
+        progress_bar && next!(progbar)
     end
 
     return noise_frq

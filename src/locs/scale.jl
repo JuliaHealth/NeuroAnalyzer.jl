@@ -133,5 +133,5 @@ function locs_normalize!(locs::DataFrame; polar::Bool=true, cart::Bool=true, sph
     locs[!, :] = locs_normalize(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
-    
+
 end

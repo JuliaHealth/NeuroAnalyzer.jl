@@ -79,7 +79,7 @@ function create_object(; data_type::String)
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
 
     return obj
-    
+
 end
 
 """

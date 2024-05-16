@@ -76,7 +76,7 @@ function import_ncs(file_name::String)
     dwChannelNumber = zeros(Int64, n_blocks)
     dwSampleFreq = zeros(Int64, n_blocks)
     dwNumValidSamples = zeros(Int64, n_blocks)
-    
+
     # gain = ADBitVolts * ADGain * AmpGain * 10^6 # μV
     gain = ADBitVolts * 10^3 # mV
 
@@ -108,7 +108,7 @@ function import_ncs(file_name::String)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=6)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
-    
+
     data_type = "ieeg"
 
     s = _create_subject(id="",
@@ -148,7 +148,7 @@ function import_ncs(file_name::String)
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
     _initialize_locs!(obj)
-    
+
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj

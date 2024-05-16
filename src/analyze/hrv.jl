@@ -25,7 +25,7 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)
 
     # convert to ms
     nn_seg = diff(r_idx) ./ sr(eeg) * 1000
-    
+
     _info("Detected NN segments: $(length(nn_seg))")
 
     return nn_seg, r_idx

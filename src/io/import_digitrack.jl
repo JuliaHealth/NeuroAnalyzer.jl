@@ -15,7 +15,7 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function import_digitrack(file_name::String; detect_type::Bool=true)
- 
+
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
     fid = nothing
@@ -61,7 +61,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     transducers = repeat([""], ch_n)
     units = repeat([""], ch_n)
     gain = repeat([-1.0], ch_n)
-    
+
     clabels = _clean_labels(clabels)
     if detect_type
         ch_type = _set_channel_types(clabels, "eeg")
@@ -91,7 +91,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
-    
+
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     data_type = "eeg"
@@ -125,7 +125,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     hdr = _create_header(s,
                          r,
                          e)
-    
+
     components = Dict()
 
     history = String[]
@@ -137,5 +137,5 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end

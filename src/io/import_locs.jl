@@ -71,7 +71,7 @@ function import_locs(file_name::String)
     end
 
     _locs_round!(locs)
-    
+
     return locs
 
 end
@@ -287,7 +287,7 @@ function import_locs_tsv(file_name::String)
     radius_sph = zeros(length(clabels))
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
-    
+
     "x" in colnames && (x = Float64.(locs[!, "x"]))
     "y" in colnames && (y = Float64.(locs[!, "y"]))
     "z" in colnames && (z = Float64.(locs[!, "z"]))
@@ -329,7 +329,7 @@ function import_locs_sfp(file_name::String)
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".sfp" "This is not SFP file."
-    
+
     locs = CSV.read(file_name, header=false, stringtype=String, DataFrame)
     _info("Checking TAB as delimeter")
     size(locs, 2) != 4 && (locs = CSV.read(file_name, header=false, delim="/t", ignorerepeated=true, stringtype=String, DataFrame))
@@ -532,7 +532,7 @@ function import_locs_mat(file_name::String)
     _locs_round!(locs)
 
     return locs
-    
+
 end
 
 """
@@ -575,10 +575,10 @@ function import_locs_txt(file_name::String)
     locs_swapxy!(locs, polar=false, cart=true, spherical=false)
     locs_rotx!(locs, a=90, polar=false, cart=true, spherical=false)
 
-    q1_idx = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .>= 0 
-    q2_idx = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .>= 0 
-    q3_idx = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .< 0 
-    q4_idx = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .< 0 
+    q1_idx = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .>= 0
+    q2_idx = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .>= 0
+    q3_idx = locs[!, :loc_x] .< 0 .&& locs[!, :loc_y] .< 0
+    q4_idx = locs[!, :loc_x] .>= 0 .&& locs[!, :loc_y] .< 0
 
     x = locs[!, :loc_x]
     y = locs[!, :loc_y]

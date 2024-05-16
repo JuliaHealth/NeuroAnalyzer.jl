@@ -239,7 +239,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
-    
+
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     data_type = "eeg"
@@ -285,6 +285,6 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
-    
+
 end
 

@@ -24,7 +24,7 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
 
     groups = sort(unique(g))
 
-    if length(groups) > 1   
+    if length(groups) > 1
         adt_p = zeros(length(groups) + 1)
         ks_p = zeros(length(groups) + 1)
     else
@@ -32,8 +32,8 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
         ks_p = zeros(1)
     end
 
-    if length(groups) > 1   
-        # check residuals normality per groups 
+    if length(groups) > 1
+        # check residuals normality per groups
         for group_idx in eachindex(groups)
             m = mean(x[g .== groups[group_idx]])
             res = x[g .== groups[group_idx]] .- m

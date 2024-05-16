@@ -19,6 +19,6 @@ Calculate charge administered during ECT.
 function ect_charge(; pw::Real, pint::Real, pf::Real, duration::Real)
 
     return pw * pint * pf * duration
-    
+
 end
 

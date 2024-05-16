@@ -1,7 +1,7 @@
 using NeuroAnalyzer
 using Plots
 using Test
- 
+
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)

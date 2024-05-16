@@ -96,5 +96,5 @@ Return sampling rate of NeuroAnalyzer NEURO objects in the study.
 function sr(study::NeuroAnalyzer.STUDY)
 
     return sr(study.objects[1])
-    
+
 end

@@ -29,7 +29,7 @@ function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
 
     for window_idx in 1:(window_n - 1)
         s_tmp = @views s[((window_idx - 1) * window + 1):window_idx * window]
-        t = eachindex(s_tmp)       
+        t = eachindex(s_tmp)
         p = Polynomials.fit(t, s_tmp, order)
         @inbounds for idx in eachindex(s_tmp)
             s_tmp[idx] = p(t[idx])
@@ -55,7 +55,7 @@ function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
         s_smoothed[end] = s_tmp[end]
         @inbounds s_filtered[window_idx - window ÷ 4:window_idx + window ÷ 4 - 1] = s_smoothed
     end
-    
+
     # smooth peaks using median/mean
     # for window_idx in window:window:window * (window_n - 1)
     #     s_filtered[window_idx-2] = mean(s_filtered[window_idx-3:window_idx])
@@ -64,7 +64,7 @@ function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
     #     s_filtered[window_idx+1] = mean(s_filtered[window_idx:window_idx+2])
     #     s_filtered[window_idx+2] = mean(s_filtered[window_idx:window_idx+3])
     # end
-    
+
     return s_filtered
 
 end

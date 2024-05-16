@@ -155,8 +155,8 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._xlims(1:10) == (1.0, 10.0)
 @test NeuroAnalyzer._ticks(1:10) == 1.0:0.9:10.0
 @test NeuroAnalyzer._ticks((1, 10)) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-@test NeuroAnalyzer._erpticks(1:10) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0] 
-@test NeuroAnalyzer._erpticks((1, 10)) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0] 
+@test NeuroAnalyzer._erpticks(1:10) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
+@test NeuroAnalyzer._erpticks((1, 10)) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
 @test NeuroAnalyzer._set_defaults("a", "b", "c", "d", "e", "f") == ("a", "b", "c")
 @test NeuroAnalyzer._set_defaults("default", "default", "default", "d", "e", "f") == ("d", "e", "f")
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)

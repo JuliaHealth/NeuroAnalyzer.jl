@@ -90,16 +90,16 @@ ph, f = NeuroAnalyzer.cph(rand(10), rand(10), fs=1)
 @test length(ph) == 9
 @test length(f) == 9
 ph, f = NeuroAnalyzer.cph(rand(10, 10, 2), fs=1)
-@test size(ph) == (10, 10, 9, 2) 
+@test size(ph) == (10, 10, 9, 2)
 @test length(f) == 9
 ph, f = NeuroAnalyzer.cph(e10)
-@test size(ph) == (23, 23, 2049, 10) 
+@test size(ph) == (23, 23, 2049, 10)
 @test length(f) == 2049
 ph, f = NeuroAnalyzer.cph(rand(10, 10, 2), rand(10, 10, 2), fs=1)
-@test size(ph) == (10, 9, 2) 
+@test size(ph) == (10, 9, 2)
 @test length(f) == 9
 ph, f = NeuroAnalyzer.cph(e10, e10, ch1=1:2, ch2=2:3, ep1=1, ep2=1)
-@test size(ph) == (2, 2049, 1) 
+@test size(ph) == (2, 2049, 1)
 @test length(f) == 2049
 
 @info "Test 8/60: diss()"
@@ -442,9 +442,9 @@ st, sts, p = NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
 @info "Test 25/60: mutual_information()"
 @test NeuroAnalyzer.mutual_information(v1, v2) ≈ 0.4199730940219748
 @test NeuroAnalyzer.mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
-@test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0] 
+@test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0]
 m = NeuroAnalyzer.mutual_information(e10)
-@test size(m) == (23, 23, 10) 
+@test size(m) == (23, 23, 10)
 m = NeuroAnalyzer.mutual_information(e10, e10, ch1=1, ch2=2)
 @test size(m) == (1, 10)
 

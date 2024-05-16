@@ -192,7 +192,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
         obj_new.header.recording[:labels][chs] .*= weighted ? "-wavg" : "-avg"
     else
         obj_new.header.recording[:labels][chs] .*= weighted ? "-wsum" : "-sum"
-    end                
+    end
 
     obj_new.data[chs, :, :] = dst
     if average
@@ -574,7 +574,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     @assert nn >= 1 "nn must be ≥ 1"
     @assert nn < ch_n - 1 "nn must be < $(ch_n - 1)"
     ep_n = size(s, 3)
-    
+
     loc_x = obj.locs[1:ch_n, :loc_x]
     loc_y = obj.locs[1:ch_n, :loc_y]
 

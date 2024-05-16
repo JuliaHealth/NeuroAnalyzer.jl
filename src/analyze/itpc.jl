@@ -32,12 +32,12 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
     @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
-    
+
     s_phase = zeros(size(s, 2), ep_n)
     @inbounds for ep_idx in 1:ep_n
         _, _, _, s_phase[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
- 
+
     itpc_phases = @view s_phase[t, :]
     itpc_value = abs.(mean(exp.(1im .* itpc_phases .* w)))
     itpc_angle = angle.(mean(exp.(1im .* itpc_phases .* w)))
@@ -117,7 +117,7 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
     @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
-    
+
     itpc_phases = zeros(size(s, 2), ep_n)
     itpc_values = zeros(size(s, 2))
     itpc_angles = zeros(size(s, 2))

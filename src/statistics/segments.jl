@@ -39,7 +39,7 @@ Named tuple containing:
 function seg_mean(seg1::AbstractArray, seg2::AbstractArray)
 
     return (seg1=seg_mean(seg1), seg2=seg_mean(seg2))
-    
+
 end
 
 """

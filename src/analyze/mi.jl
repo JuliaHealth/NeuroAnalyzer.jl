@@ -69,7 +69,7 @@ function mutual_information(s::AbstractArray)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    
+
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
@@ -157,7 +157,7 @@ function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-    
+
     # check epochs
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)

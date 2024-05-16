@@ -321,7 +321,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true,
     p = Plots.plot!(sf,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,
@@ -379,7 +379,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
@@ -490,7 +490,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
     ch_n = size(sp, 1)
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], ch_n))
 
@@ -640,7 +640,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
@@ -679,7 +679,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     # plot parameters
     plot_size = 800
     marker_size = (120, 80)
-    
+
     # get locations
     if !cart
         loc_x = zeros(size(locs, 1))
@@ -776,7 +776,7 @@ Plot power spectrum density.
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
-- `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
+- `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
@@ -1085,7 +1085,7 @@ Plot power spectrum density of embedded or external component.
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
-- `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
+- `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
@@ -1113,7 +1113,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
-    
+
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
@@ -1306,5 +1306,5 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     Plots.plot(p)
 
     return p
-    
+
 end

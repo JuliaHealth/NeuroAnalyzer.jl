@@ -275,7 +275,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     p = Plots.plot!(t,
                     s_u,
                     fillrange=s_l,
-                    fillalpha=0.35, 
+                    fillalpha=0.35,
                     label=false,
                     t=:line,
                     c=:grey,
@@ -344,7 +344,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
-    
+
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(s, 1)))
 
@@ -355,7 +355,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     # plot parameters
     plot_size = 800
     marker_size = (120, 80)
-    
+
     # get locations
     if !cart
         loc_x = zeros(nrow(locs))
@@ -545,12 +545,12 @@ Plot ERP.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
-- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
-- `ylabel::String="default"`: y-axis label, default is Amplitude [units] 
+- `ylabel::String="default"`: y-axis label, default is Amplitude [units]
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
-- `cb_title::String="default"`: color bar title, default is Amplitude [units] 
+- `cb_title::String="default"`: color bar title, default is Amplitude [units]
 - `mono::Bool=false`: use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot

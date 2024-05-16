@@ -30,7 +30,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
     channels = get_channel_bytype(obj, type=obj.header.recording[:data_type])
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
-    
+
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
@@ -44,7 +44,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
 
     locs_x1 = obj_tmp.locs[!, :loc_x]
     locs_y1 = obj_tmp.locs[!, :loc_y]
-    
+
     delete_channel!(obj_tmp, ch=ch)
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
@@ -102,7 +102,7 @@ function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{I
     obj.components = obj_new.components
 
     return nothing
-    
+
 end
 
 """
@@ -133,7 +133,7 @@ Interpolate channel using planar interpolation.
 - `int_y::Vector{Float64}`: Y-axis coordinates
 """
 function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)
-    
+
     @assert ch in 1:size(s, 1) "ch must be in [1, $(size(s, 1))"
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 

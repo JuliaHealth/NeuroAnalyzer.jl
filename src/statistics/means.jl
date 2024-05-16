@@ -60,7 +60,7 @@ function meanw(x::AbstractVector, w::AbstractVector)
     @assert length(x) == length(w) "Weights and values vectors must have the same length."
 
     return length(x) / sum(1 ./ x)
-    
+
 end
 
 """
@@ -84,5 +84,5 @@ function meanc(x::AbstractVector; rad::Bool=false)
     else
         return rad2deg(atan(sum(sind.(x)), sum(cosd.(x))))
     end
-    
+
 end

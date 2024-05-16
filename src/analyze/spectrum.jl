@@ -72,7 +72,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
     sph = angle.(hc)
 
     return (hc=hc, sa=sa, sp=sp, sph=sph)
-    
+
 end
 
 """
@@ -109,10 +109,10 @@ function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
         Threads.@threads for ch_idx in 1:ch_n
             hc[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
         end
-    end  
+    end
 
     return (hc=hc, sa=sa, sp=sp, sph=sph)
-    
+
 end
 
 """
@@ -141,7 +141,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-    
+
     if !h
         fft_size = div(size(s, 2) + pad, 2) + 1
     else
@@ -161,7 +161,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
                 c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views spectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
             end
         end
-    end  
+    end
 
     return (c=c, sa=sa, sp=sp, sph=sph)
 end

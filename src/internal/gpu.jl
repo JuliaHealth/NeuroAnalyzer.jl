@@ -6,4 +6,4 @@ function _free_gpumem(threshold::Real=0.95)
         # CUDA.reclaim()
         GC.gc(true)
     end
-end 
+end

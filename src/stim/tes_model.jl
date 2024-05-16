@@ -2,7 +2,7 @@ export tes_model
 
 """
     tes_model(; anode, cathode, anode_curr, cathode_curr)
-    
+
 Create model of TES stimulation.
 
 # Arguments
@@ -82,7 +82,7 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
     p = plot_topo(obj_tmp, seg=(0, 1), title="", nmethod=:none)
 
     return p
-    
+
     # Plots.plot(E, xticks=(1:nrow(locs), locs[!, :labels]), xtickfontsize=3)
 
 end

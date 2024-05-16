@@ -75,7 +75,7 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
             w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
         end
     end
-    
+
     return w
 
 end
@@ -97,9 +97,9 @@ Generates sine wave.
 - s::Vector{Float64}`
 """
 function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
-    
+
     s = @. a * sin(2 * pi * f * t + p)
-    
+
     return s
 
 end
@@ -122,7 +122,7 @@ Generates complex sine wave.
 function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
 
     cs = @. a * exp(1im * 2 * pi * f * t)
-    
+
     return cs
 
 end
@@ -148,7 +148,7 @@ function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm
     s = norm ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(s)
     sum(nan_idx) != 0 && (s[findall(isnan, s)[1]] = (s[findall(isnan, s)[1] - 1] + s[findall(isnan, s)[1] + 1]) / 2)
-    
+
     return s
 
 end
@@ -271,15 +271,15 @@ Generate Morlet wavelet using Mike X Cohen formula.
 
 # Source
 
-Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
+Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
 """
 function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
-    
+
     t = -t:1/fs:t
     mw = @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
-    
+
     return mw
-    
+
 end
 
 """

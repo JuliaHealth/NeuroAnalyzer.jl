@@ -36,11 +36,11 @@ function pca_decompose(s::AbstractArray; n::Int64)
     end
     (n_tmp < n && verbose) && _warn("Only $n_tmp PCs were generated.")
     n = n_tmp
-    
+
     pc = zeros(n, size(s, 2), ep_n)
     pcv = zeros(n, ep_n)
     pc_model = nothing
-    
+
     @inbounds for ep_idx in 1:ep_n
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)

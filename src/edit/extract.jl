@@ -146,7 +146,7 @@ Extract time.
 function extract_time(obj::NeuroAnalyzer.NEURO)
 
     tpts = obj.time_pts
-    
+
     return tpts
 
 end

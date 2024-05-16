@@ -35,7 +35,7 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
     if method === :sum
         for idx in 0:l
             ac[idx + 1] = @views sum(s_tmp[1:(end - idx)] .* s_tmp[(1 + idx):end])
-            if biased 
+            if biased
                 ac[idx + 1] /= length(s)
             else
                 ac[idx + 1] /= (length(s) - idx)

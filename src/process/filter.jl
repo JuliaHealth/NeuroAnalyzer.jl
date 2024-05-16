@@ -54,7 +54,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     window !== nothing && @assert length(window) <= n "window must be ≤ signal length ($n)."
 
     fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez] && @assert cutoff != 0 "cutoff must be specified."
-    
+
     fprototype in [:iirnotch, :remez] && @assert bw != -1 "bw must be specified."
 
     if fprototype === :iirnotch
@@ -78,7 +78,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 f2_stop = cutoff[2] + ((cutoff[2] - cutoff[1]) / fs) / 2
                 f2_pass = cutoff[2]
                 trans_bandwidth = (f2_stop - f1_stop) / fs
-                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))   
+                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))
             elseif ftype === :bs
                 # TO DO: CHECK
                 f1_pass = cutoff[1]
@@ -86,7 +86,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 f2_stop = cutoff[2] - ((cutoff[2] - cutoff[1]) / fs) / 2
                 f2_pass = cutoff[2]
                 trans_bandwidth = (f2_stop - f1_stop) / fs
-                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))   
+                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))
             elseif ftype === :lp
                 f_pass = cutoff[1]
                 f_stop = cutoff[1] + minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
@@ -156,7 +156,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
             rp = 2
         end
     end
-    
+
     if rs == -1
         if fprototype === :elliptic
             rp = 40
@@ -294,7 +294,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
 
     if preview
         _info("When `preview=true`, signal is not being filtered")
-        fprototype === :iirnotch && (ftype = :bs)    
+        fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
         return p

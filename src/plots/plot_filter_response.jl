@@ -52,7 +52,7 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
         w = w .* fs / 2 / pi
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
-        
+
         if fprototype !== :iirnotch
             fname = titlecase(String(fprototype))
             title = "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\n\nFrequency response"
@@ -285,5 +285,5 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
     end
 
     return p
-    
+
 end

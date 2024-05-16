@@ -287,7 +287,7 @@ function import_nirx(file_name::String)
         x = pos3d[1, :]
     end
     if src_pos3d === nothing
-        if src_pos2d === nothing            
+        if src_pos2d === nothing
             y = zeros(length(opt_labels))
         else
             y = pos2d[2, :]

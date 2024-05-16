@@ -24,7 +24,7 @@ function summary(x::AbstractVector; g::String="")
     s = std(x)
     me = median(x)
     mo = mode(x)
-    
+
     if verbose
         make_table(header=["" g];
                    data=["N" length(x);
@@ -75,7 +75,7 @@ function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::Strin
     s2 = std(y)
     me2 = median(y)
     mo2 = mode(y)
-    
+
     if verbose
         make_table(header=["Group" g1 g2];
                    data=["N" length(x) length(y);

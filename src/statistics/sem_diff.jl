@@ -19,5 +19,5 @@ function sem_diff(x::AbstractVector, y::AbstractVector)
     @assert length(x) == length(y) "Both vectors must have the same length."
 
     return sqrt((std(x)^2 / sqrt(length(x))) + (std(y)^2 / sqrt(length(y))))
-    
+
 end

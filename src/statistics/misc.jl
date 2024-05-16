@@ -261,7 +261,7 @@ Calculate coefficient of variation for a median.
 function cvar_median(x::AbstractVector)
 
     return ((quantile(x, 0.75) - quantile(x, 0.25)) / 2) / median(x)
-    
+
 end
 
 """
@@ -539,7 +539,7 @@ Calculate proportion of elements below or above a given statistic value.
 
 - `stat_dist::AbstractVector`: statistic values distribution
 - `stat_value::Real`: statistic value
-- `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `stat_value` 
+- `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `stat_value`
 
 # Returns
 

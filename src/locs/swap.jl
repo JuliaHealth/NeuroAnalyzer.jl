@@ -59,7 +59,7 @@ Swap channel locations x and y axes.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_swapxy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
-    
+
     locs[!, :] = locs_swapxy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing

@@ -131,7 +131,7 @@ function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
     (rev && t[1] < t[2]) && (t = (t[2], t[1]))
 
     return t
-    
+
 end
 
 """
@@ -148,7 +148,7 @@ Calculate cumulative sum of a 3-dimensional array.
 - `signal_cs::Array{Float64, 3}`
 """
 function cums(signal::Array{<:Real, 3})
-    
+
     ch_n, _, ep_n = size(signal)
     signal_cs = similar(signal)
 

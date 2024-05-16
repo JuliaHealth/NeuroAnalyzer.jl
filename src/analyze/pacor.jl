@@ -138,7 +138,7 @@ Named tuple containing:
 """
 function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), l::Real=1, demean::Bool=true, method::Symbol=:yw)
 
-    @assert (l > 1 && method === :yw) "For :yw method, l must be > 1." 
+    @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
     _check_channels(obj, ch)
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."

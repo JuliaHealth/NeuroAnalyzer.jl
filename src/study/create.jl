@@ -30,5 +30,5 @@ function create_study(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})
     end
 
     return NeuroAnalyzer.STUDY(Dict{Symbol, Any}(), obj, group)
-    
+
 end

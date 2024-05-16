@@ -22,7 +22,7 @@ function tconv(s::AbstractVector; kernel::AbstractVector)
     half_kernel = floor(Int, length(kernel) / 2)
 
     # remove in- and out- edges
-    if mod(length(kernel), 2) == 0 
+    if mod(length(kernel), 2) == 0
         return real.(s_new)[half_kernel:(end - half_kernel)]
     else
         return real.(s_new)[(half_kernel + 1):(end - half_kernel)]
@@ -57,7 +57,7 @@ function tconv(s::AbstractArray; kernel::AbstractVector)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views tconv(s[ch_idx, :, ep_idx], kernel=kernel)
-            
+
             # update progress bar
             progress_bar && next!(progbar)
         end

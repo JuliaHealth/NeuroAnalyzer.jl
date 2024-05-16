@@ -30,9 +30,9 @@ function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method:
         @inbounds for idx in 2:(length(s) - 1)
             tk[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
         end
-        
+
         return tk
-    
+
     elseif method === :der
 
         d1 = derivative(s)

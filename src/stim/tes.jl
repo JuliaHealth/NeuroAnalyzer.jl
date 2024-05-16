@@ -24,11 +24,11 @@ Named tuple containing:
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
 function tes_dose(; current::Real, pad_area::Real, duration::Int64)
-    
+
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)
     charge_density = (charge / 1_000) / (pad_area / 1_000)
-    
+
     return (charge=charge, current_density=current_density, charge_density=charge_density)
 
 end
@@ -71,7 +71,7 @@ function tes_protocol(; type::Symbol, hd::Bool, current::Real, frequency::Real=0
     @assert ramp_out >= 0 "ramp_out must be ≥ 0 s."
 
     protocol = Dict(:type=>type, :hd=>hd, :current=>current, :frequency=>frequency, :cathode_size=>cathode_size, :cathode_size=>cathode_size, :anode_loc=>anode_loc, :cathode_loc=>cathode_loc, :duration=>duration, :ramp_in=>ramp_in, :ramp_out=>ramp_out, :sham=>sham, )
-    
+
     return protocol
-    
+
 end

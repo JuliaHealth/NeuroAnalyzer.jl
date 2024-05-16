@@ -171,5 +171,5 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     wait(cnd)
 
     return nothing
-    
+
 end

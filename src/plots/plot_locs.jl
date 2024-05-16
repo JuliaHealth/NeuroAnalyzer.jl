@@ -136,7 +136,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                        ylims=yl,
                        background_color=transparent ? :transparent : :white,
                        foreground_color=:black)
-    else        
+    else
         if large
             p = Plots.plot(grid=false,
                            framestyle=:none,
@@ -376,7 +376,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstract
                             Plots.text(fid_names[idx], font_size))
         end
     end
-    
+
     p = Plots.plot!(p)
 
     return p
@@ -446,5 +446,5 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     end
 
     return p
-    
+
 end

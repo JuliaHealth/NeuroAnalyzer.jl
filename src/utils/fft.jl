@@ -88,9 +88,9 @@ Perform zeros-padded FFT, so the length of padded vector is a power of 2.
 - `fft2::Vector{ComplexF64}`
 """
 function fft2(x::AbstractVector)
-    
+
     n = nextpow2(length(x)) - length(x)
-    
+
     return fft0(x, n)
 
 end
@@ -167,9 +167,9 @@ Perform zeros-padded single-sided FFT, so the length of padded vector is a power
 - `rfft2::Vector{ComplexF64}`
 """
 function rfft2(x::AbstractVector)
-    
+
     n = nextpow2(length(x)) - length(x)
-    
+
     return rfft0(x, n)
 
 end
@@ -184,7 +184,7 @@ Perform FFT transformation.
 - `x::AbstractVector`
 - `fs::Int64`: sampling rate
 - `wlen::Int64=fs`: window length
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: 
+- `woverlap::Int64=round(Int64, wlen * 0.97)`:
 - `w::Bool=false`: if true, apply Hanning window per segment
 - `demean::Bool=false`: if true, demean each segment
 - `nfft::Int64=0`: length of input vector to the FFT; if nfft > n_samples, then the input signal will be zero-padded until it is of length nfft

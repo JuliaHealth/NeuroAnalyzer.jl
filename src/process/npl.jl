@@ -26,7 +26,7 @@ function npl(obj::NeuroAnalyzer.NEURO)
     push!(obj_new.history, "npl(OBJ)")
 
     return obj_new
-    
+
 end
 
 """

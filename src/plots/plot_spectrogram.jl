@@ -61,7 +61,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
                       kwargs...)
 
     return p
-    
+
 end
 
 """
@@ -94,7 +94,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
 
     pal = mono ? :grays : :darktest
     cb_title = norm ? "[dB/Hz]" : "[$units^2/Hz]"
-    
+
     ch = collect(eachindex(sch)) .- 0.5
     p = Plots.heatmap(sf,
                       ch,
@@ -492,7 +492,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
         norm && (sp = pow2db.(sp))
-        
+
         p = plot_spectrogram(clabels, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end
 

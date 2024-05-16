@@ -149,13 +149,13 @@ e10_tmp = NeuroAnalyzer.trim(e10, seg=(0, 21), remove_epochs=false)
 
 @info "Test 20/30: delete_marker()"
 eeg_mrk = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
-@test nrow(eeg_mrk.markers) == 45 
+@test nrow(eeg_mrk.markers) == 45
 delete_marker!(eeg_mrk, n=40)
 @test nrow(eeg_mrk.markers) == 44
 
 @info "Test 21/30: add_marker()"
 add_marker!(eeg_mrk, id="test", start=1988, len=1, desc="test", ch=0)
-@test nrow(eeg_mrk.markers) == 45 
+@test nrow(eeg_mrk.markers) == 45
 
 @info "Test 22/30: edit_marker()"
 @test eeg_mrk.markers[45, :id] == "test"

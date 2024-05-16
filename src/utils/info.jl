@@ -343,41 +343,41 @@ function info(obj::NeuroAnalyzer.NEURO)
     end
     println("Channels:")
     if obj.header.recording[:data_type] != "nirs"
-        println(rpad(" ch", 8) * 
-                rpad("label", 16) * 
-                rpad("type", 12) * 
+        println(rpad(" ch", 8) *
+                rpad("label", 16) *
+                rpad("type", 12) *
                 rpad("unit", 8))
-        println(" " * repeat("-", 6) * " " * 
-                repeat("-", 15) * " " * 
-                repeat("-", 11) * " " * 
+        println(" " * repeat("-", 6) * " " *
+                repeat("-", 15) * " " *
+                repeat("-", 11) * " " *
                 repeat("-", 7))
         for idx in eachindex(obj.header.recording[:labels])
-            println(rpad(" $idx", 8) * 
-                    rpad("$(obj.header.recording[:labels][idx])", 16) * 
-                    rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) * 
+            println(rpad(" $idx", 8) *
+                    rpad("$(obj.header.recording[:labels][idx])", 16) *
+                    rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
                     rpad("$(obj.header.recording[:units][idx])", 8))
         end
     else
         if obj.header.recording[:channel_type][idx] !== "nirs_aux"
-            println(rpad(" ch", 8) * 
-                    rpad("label", 16) * 
-                    rpad("type", 12) * 
-                    rpad("unit", 8) * 
+            println(rpad(" ch", 8) *
+                    rpad("label", 16) *
+                    rpad("type", 12) *
+                    rpad("unit", 8) *
                     rpad("wavelength", 8))
             for idx in eachindex(obj.header.recording[:labels])
-                println(rpad(" $idx", 8) * 
-                        rpad("$(obj.header.recording[:labels][idx])", 16) * 
-                        rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) * 
-                        rpad("$(obj.header.recording[:units][idx])", 8) * 
+                println(rpad(" $idx", 8) *
+                        rpad("$(obj.header.recording[:labels][idx])", 16) *
+                        rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
+                        rpad("$(obj.header.recording[:units][idx])", 8) *
                         rpad("$(obj.header.recording[:wavelength_index][idx])", 8))
             end
         else
-            println(rpad(" ch", 8) * 
-                    rpad("label", 16) * 
+            println(rpad(" ch", 8) *
+                    rpad("label", 16) *
                     rpad("type", 12))
             for idx in eachindex(obj.header.recording[:labels])
-                println(rpad(" $idx", 8) * 
-                        rpad("$(obj.header.recording[:labels][idx])", 16) * 
+                println(rpad(" $idx", 8) *
+                        rpad("$(obj.header.recording[:labels][idx])", 16) *
                         rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12))
             end
         end
@@ -425,7 +425,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             (idx === :parietal || idx === :p) && push!(c, 'P')
             (idx === :occipital || idx === :o) && push!(c, 'O')
         end
-        
+
         # check which channels are in the picks list
         clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
         channels = Vector{Int64}()
@@ -594,7 +594,7 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
     band === :gamma_2 && (bf = (40.0, 50.0))
     band === :gamma_lower && (bf = (30.0, 80.0))
     band === :gamma_higher && (bf = (80.0, 150.0))
-    
+
     if bf[1] > sr(obj) / 2
         _warn("Nyquist frequency based on sampling rate ($(sr(obj) / 2)) is lower than $band range: $bf, band frequency truncated to: ($(sr(obj) / 2 - 0.2), $(sr(obj) / 2 - 0.1)).")
         bf = (sr(obj) / 2 - 0.2, sr(obj) / 2 - 0.1)
@@ -661,7 +661,7 @@ function band_frq(fs::Int64; band::Symbol)
     band === :gamma_2 && (bf = (40.0, 50.0))
     band === :gamma_lower && (bf = (30.0, 80.0))
     band === :gamma_higher && (bf = (80.0, 150.0))
-    
+
     if bf[1] > fs / 2
         _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1)).")
         bf = (fs / 2 - 0.2, fs / 2 - 0.1)
@@ -685,30 +685,30 @@ Return basic descriptive statistics of the object data.
 """
 function describe(obj::NeuroAnalyzer.NEURO)
     println("< " * uppercase(obj.header.recording[:data_type]) * ", $(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) ($(signal_len(obj) / sr(obj)) s) >")
-    println(rpad("ch", 4) * 
-            rpad("label", 16) * 
-            rpad("type", 12) * 
-            rpad("unit", 8) * 
-            rpad("range", 10) * 
-            rpad("mean", 10) * 
-            rpad("sd", 10) * 
-            rpad("min", 10) * 
-            rpad("Q1", 10) * 
-            rpad("median", 10) * 
-            rpad("Q3", 10) * 
+    println(rpad("ch", 4) *
+            rpad("label", 16) *
+            rpad("type", 12) *
+            rpad("unit", 8) *
+            rpad("range", 10) *
+            rpad("mean", 10) *
+            rpad("sd", 10) *
+            rpad("min", 10) *
+            rpad("Q1", 10) *
+            rpad("median", 10) *
+            rpad("Q3", 10) *
             rpad("max", 10))
     for idx in 1:nchannels(obj)
-        println(rpad(string(idx), 4) * 
-                rpad(labels(obj)[idx], 16) * 
-                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) * 
-                rpad(obj.header.recording[:units][idx], 8) * 
-                rpad(round(rng(obj.data[idx, :, :]), digits=2), 10) * 
-                rpad(round(mean(obj.data[idx, :, :]), digits=2), 10) * 
-                rpad(round(std(obj.data[idx, :, :]), digits=2), 10) * 
-                rpad(round(minimum(obj.data[idx, :, :]), digits=2), 10) * 
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=2), 10) * 
-                rpad(round(median(obj.data[idx, :, :]), digits=2), 10) * 
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=2), 10) * 
+        println(rpad(string(idx), 4) *
+                rpad(labels(obj)[idx], 16) *
+                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
+                rpad(obj.header.recording[:units][idx], 8) *
+                rpad(round(rng(obj.data[idx, :, :]), digits=2), 10) *
+                rpad(round(mean(obj.data[idx, :, :]), digits=2), 10) *
+                rpad(round(std(obj.data[idx, :, :]), digits=2), 10) *
+                rpad(round(minimum(obj.data[idx, :, :]), digits=2), 10) *
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=2), 10) *
+                rpad(round(median(obj.data[idx, :, :]), digits=2), 10) *
+                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=2), 10) *
                 rpad(round(maximum(obj.data[idx, :, :]), digits=2), 10))
     end
 end
@@ -727,7 +727,7 @@ Return size of the object data.
 - `size::Tuple{Int64, Int64, Int64}`
 """
 function Base.size(obj::NeuroAnalyzer.NEURO)
-    
+
     return size(obj.data)
 
 end
@@ -746,7 +746,7 @@ Return size of the object data.
 - `size::Int64`
 """
 function Base.size(obj::NeuroAnalyzer.NEURO, n::Int64)
-    
+
     @assert n <= ndims(obj.data) "n must be ≤ $(ndims(obj.data))."
     return size(obj.data, n)
 
@@ -766,7 +766,7 @@ Return data type of the object.
 - `data_type::String`
 """
 function datatype(obj::NeuroAnalyzer.NEURO)
-    
+
     return obj.header.recording[:data_type]
 
 end

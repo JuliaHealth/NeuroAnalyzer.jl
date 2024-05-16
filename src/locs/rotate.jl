@@ -25,7 +25,7 @@ Rotate channel locations around the Z axis.
 function locs_rotz(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
-    
+
     if cart
         for idx in eachindex(locs[!, :labels])
             locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) - locs[idx, :loc_y] * sind(a)
@@ -73,7 +73,7 @@ function locs_rotz!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true,
     locs[!, :] = locs_rotz(locs, a=a, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
-    
+
 end
 
 """
@@ -144,7 +144,7 @@ function locs_roty!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true,
     locs[!, :] = locs_roty(locs, a=a, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
-    
+
 end
 
 """
@@ -215,5 +215,5 @@ function locs_rotx!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true,
     locs[!, :] = locs_rotx(locs, a=a, polar=polar, cart=cart, spherical=spherical)[!, :]
 
     return nothing
-    
+
 end

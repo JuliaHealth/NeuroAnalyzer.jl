@@ -64,7 +64,7 @@ function size_c1g(; m0::Real, s0::Real, m1::Real, alpha::Float64=0.05, power::Fl
     beta = 1 - power
 
     n = round(Int64, (s0^2 * (crit_z(1 - beta) + crit_z(1 - alpha / 2))^2) / ((m0 - m1)^2))
-    
+
     return n
 
 end
@@ -293,7 +293,7 @@ function size_c1diff(; s0::Real, s1::Real, two_sided::Bool=true, power::Float64=
 
     sdiff_idx = vsearch(sdiff, sdiff_values)
     power_idx = vsearch(power, power_values)
-    
+
     table = [3676 2600 2103 1571;
              920 651 527 394;
              410 290 235 176;
@@ -360,7 +360,7 @@ function size_p1diff(; p0::Real, p1::Real, power::Float64=0.8)
 
     sdiff_idx = vsearch(sdiff, sdiff_values)
     power_idx = vsearch(sdiff, sdiff_values)
-    
+
     table = [3676 2600 2103 1571;
              920 651 527 394;
              410 290 235 176;

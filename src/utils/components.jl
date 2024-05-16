@@ -59,7 +59,7 @@ function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol
     push!(obj_new.history, "rename_component(OBJ, c_old=$c_old, c_new=$c_new)")
 
     return obj_new
-    
+
 end
 
 """
@@ -105,7 +105,7 @@ function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
 
     # add component
     push!(obj_new.components, c=>v)
-    
+
     # update history
     push!(obj_new.history, "add_component(OBJ, c=$c, v=$v)")
 
@@ -179,7 +179,7 @@ end
 """
     delete_component(obj; c)
 
-Delete component. 
+Delete component.
 
 # Arguments
 
@@ -193,13 +193,13 @@ Delete component.
 function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
     @assert c in keys(obj.components) "Component $c does not exist. Use list_component() to view existing components."
-    
+
     # delete component values
     obj_new = deepcopy(obj)
     pop!(obj_new.components, c)
 
     push!(obj_new.history, "delete_component(OBJ, c=$c)")
-    
+
     return obj_new
 
 end

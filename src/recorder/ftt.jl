@@ -16,11 +16,11 @@ Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACEBAR k
 
 Named tuple containing:
 - `taps::Vector{Int64}`: number of taps per trial
-- `tap_t::Vector{Vector{Float64}}`: taps time point [s]
-- `tap_d::Vector{Vector{Float64}}`: taps duration [s]
+- `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
+- `tap_d::Vector{Vector{Float64}}`: taps duration [ms]
 - `taps_int::Vector{Int64}`: number of taps per trial during intervals
-- `tap_t_int::Vector{Vector{Float64}}`: taps time point [s] during intervals
-- `tap_d_int::Vector{Vector{Float64}}`: taps duration [s] during intervals
+- `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
+- `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
 
@@ -47,7 +47,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
 
     bt_start = GtkButton("START")
     set_gtk_property!(bt_start, :tooltip_text, "Start the test")
-    
+
     lb_status1 = GtkLabel("Status:")
     lb_status2 = GtkLabel("READY TO START")
     set_gtk_property!(lb_status1, :halign, 2)
@@ -118,14 +118,14 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
             t = parse(Int64, split(get_gtk_property(lb_trial2, :label, String), ' ')[1])
             kp = key_pressed
             if kp
-                push!(d_kp, time() - t_kp[end])
+                push!(d_kp, time())
                 key_pressed = false
             end
         elseif k == 32 && get_gtk_property(lb_status2, :label, String) == "INTERVAL"
             t = parse(Int64, split(get_gtk_property(lb_interval2, :label, String), ' ')[1])
             kp = key_pressed
             if kp
-                push!(int_d_kp, time() - int_t_kp[end])
+                push!(int_d_kp, time())
                 key_pressed = false
             end
         end
@@ -188,7 +188,21 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
     wait(cnd)
 
     # format time points
-    t_kp = t_kp .- t_s
+    # t_kp = t_kp .- t_s
+
+    @show t_s
+    @show result
+    @show int_result
+    @show t_kp
+    @show d_kp
+    @show int_t_kp
+    @show int_d_kp
+
+    t_kp = round.((t_kp .- t_s) .* 1000, digits=1)
+    d_kp = round.((d_kp .- t_kp) .* 1000, digits=1)
+
+    return nothing
+
     t_keypressed = Vector{Vector{Float64}}()
     d_keypressed = Vector{Vector{Float64}}()
     for idx1 in trials:-1:1
@@ -201,8 +215,8 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
         reverse!(tk)
         reverse!(td)
         tk = tk .- ((idx1 - 1) * (duration + interval))
-        push!(t_keypressed, tk)
-        push!(d_keypressed, td)
+        push!(t_keypressed, round.(tk .* 1000, digits=1))
+        push!(d_keypressed, round.(td .* 1000, digits=1))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
@@ -221,8 +235,8 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2)
         reverse!(tk)
         reverse!(td)
         tk = tk .- ((idx1 * duration) + ((idx1 - 1) * interval))
-        push!(int_t_keypressed, tk)
-        push!(int_d_keypressed, td)
+        push!(int_t_keypressed, round.(tk .* 1000, digits=1))
+        push!(int_d_keypressed, round.(td .* 1000, digits=1))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
@@ -254,7 +268,7 @@ end
 """
     ftt(; duration, trials, interval, gpio)
 
-Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded. When using computer keyboard, only the number of taps and their time points are recorded; tap durations are set to 0.1.
+Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded. When using computer keyboard, only the number of taps and their time points are recorded; tap durations are set to 100 ms.
 
 # Arguments
 
@@ -268,11 +282,11 @@ Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR k
 
 Named tuple containing:
 - `taps::Vector{Int64}`: number of taps per trial
-- `tap_t::Vector{Vector{Float64}}`: taps time point [s]
-- `tap_d::Vector{Vector{Float64}}`: taps duration [s]
+- `tap_t::Vector{Vector{Float64}}`: taps time point [ms]
+- `tap_d::Vector{Vector{Float64}}`: taps duration [ms]
 - `taps_int::Vector{Int64}`: number of taps per trial during intervals
-- `tap_t_int::Vector{Vector{Float64}}`: taps time point [s] during intervals
-- `tap_d_int::Vector{Vector{Float64}}`: taps duration [s] during intervals
+- `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
+- `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
 function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")
 
@@ -300,7 +314,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     else
         rpi = false
     end
-    
+
     println("NeuroRecorder: FTT")
     println("==================")
     println("  Trials: $trials")
@@ -361,8 +375,9 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     key_pressed = false
     rpi_key = false
     kbd_key = nothing
-    
-    t_s = time()
+
+    t_s = nothing
+    t_idx = Vector{Float64}()
 
     if !(rpi isa PiGPIO.Pi) && isnothing(sp)
         # use computer keyboard
@@ -375,9 +390,9 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         for idx in 1:trials
             t_segments[idx * 2] = (l_seg * idx) - interval
         end
-        t_segments .+= t_s
-        t_e = (trials * duration) + (trials * interval)
-        t_segments[end] = t_s + t_e
+        t_segments .*= 1000
+        t_e = ((trials * duration) + (trials * interval)) * 1000
+        t_segments[end] = t_e
         channel = Channel(_kbd_listener, 1024) # Start task, 1024 is buffer size for channel
         stop = false
         r = 0
@@ -385,9 +400,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         idx = 1
         idx1 = 1
         idx2 = 1
+        t_s = time()
         while !stop
-            sleep(0.001)
-            if time() >= t_segments[end]
+            sleep(0.1)
+            if (time() - t_s) * 1000 >= t_segments[end]
                 global stop = true
                 close(channel)
                 break
@@ -396,10 +412,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 c = take!(channel)
                 if c == ' '
                     r += 1
-                    push!(t, time())
+                    push!(t, time() - t_s)
                 end
             end
-            if time() >= t_segments[idx]
+            if (time() - t_s) * 1000 >= t_segments[idx]
                 _beep()
                 println()
                 if iseven(idx)
@@ -414,10 +430,9 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                 idx += 1
             end
         end
+
         # format time points
-        t .-= t_segments[1]
-        t = round.(t, digits=3)
-        t_segments .-= t_segments[1]
+        t = round.(t .* 1000, digits=3)
         if r > 0
             for idx1 in 1:r
                 for idx2 in 1:(2 * trials)
@@ -426,13 +441,13 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                             idx3 = (idx2 + 1) ÷ 2
                             result[idx3] += 1
                             push!(t_kp, t[idx1])
-                            push!(d_kp, 0.1)
+                            push!(d_kp, 100.0)
                         end
                         if isodd(idx2 + 1)
                             idx3 = idx2 ÷ 2
                             int_result[idx3] += 1
                             push!(int_t_kp, t[idx1])
-                            push!(int_d_kp, 0.1)
+                            push!(int_d_kp, 100.0)
                         end
                     end
                 end
@@ -441,34 +456,32 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         println()
     elseif !isnothing(sp)
         # use serial port
-        println()        
+        println()
         for idx in 1:trials
             _beep()
             println()
-            print("   Trial $idx: press the BUTTON button as quickly as possible")
-            t1 = time()
+            print("   Trial $idx: press the BUTTON as quickly as possible")
             key_pressed = false
             sp = _serial_open(port_name)
-            while time() <= t1 + duration
+            t_1 = time()
+            while time() - t_1 <= duration
+                t = time() - t_1
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1"
                     if !key_pressed
                         # key is pressed
-                        push!(t_kp, time())
+                        push!(t_kp, t)
                         result[idx] += 1
                         key_pressed = true
-                        sleep(0.05)
-                        continue
                     end
                 elseif serial_key == "$gpio:0"
                     if key_pressed
                         # key is released
-                        push!(d_kp, time() - t_kp[end])
+                        push!(d_kp, t)
                         key_pressed = false
-                        sleep(0.05)
-                        continue
                     end
                 end
+                sleep(0.1)
             end
             _serial_close(sp)
             _beep()
@@ -478,30 +491,28 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             end
             println()
             println()
-            print("Interval $idx: DO NOT press the BUTTON button")
-            t1 = time()
+            print("Interval $idx: DO NOT press the BUTTON")
             key_pressed = false
             sp = _serial_open(port_name)
-            while time() <= t1 + interval
+            t_2 = time()
+            while time() - t_2 <= interval
+                t = time() - t_2
                 serial_key = _serial_listener(sp)
                 if serial_key == "$gpio:1"
                     if !key_pressed
                         # key is pressed
-                        push!(int_t_kp, time())
+                        push!(int_t_kp, t)
                         int_result[idx] += 1
                         key_pressed = true
-                        sleep(0.01)
-                        continue
                     end
                 elseif serial_key == "$gpio:0"
                     if key_pressed
                         # key is released
-                        push!(int_d_kp, time() - int_t_kp[end])
+                        push!(int_d_kp, t)
                         key_pressed = false
-                        sleep(0.01)
-                        continue
                     end
                 end
+                sleep(0.1)
             end
             _serial_close(sp)
             if length(int_d_kp) < sum(int_result)
@@ -518,32 +529,32 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         for idx in 1:trials
             _beep()
             println()
-            print("   Trial $idx: press the BUTTON button as quickly as possible")
-            t1 = time()
-            key_pressed = 0    
+            print("   Trial $idx: press the BUTTON as quickly as possible")
+            key_pressed = 0
             key_state = 0
             key_last_state = 0
-            last_debounce_time = 0     
-            while time() <= t1 + duration
+            last_debounce_time = 0
+            t_1 = time()
+            while time() <= t_1 + duration
+                t = time() - t_1
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
-                if (time() * 1000 - last_debounce_time) > debounce_delay                        
-                    if rpi_key != key_state                         
-                        key_state = rpi_key 
+                rpi_key != key_last_state && (last_debounce_time = time() * 1000)
+                if (time() * 1000 - last_debounce_time) > debounce_delay
+                    if rpi_key != key_state
+                        key_state = rpi_key
                         if key_state == 1
-                            # key is pressed        
-                            push!(t_kp, time())
+                            # key is pressed
+                            push!(t_kp, t)
                             result[idx] += 1
-                            sleep(0.01)
                         else
                             # key is released
-                            push!(d_kp, time() - t_kp[end])
-                            sleep(0.01)
+                            push!(d_kp, t)
                         end
                     end
-                end    
+                end
                 key_last_state = rpi_key
-            end            
+                sleep(0.1)
+            end
             _beep()
             if length(d_kp) < sum(result)
                 pop!(t_kp)
@@ -551,31 +562,31 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             end
             println()
             println()
-            print("Interval $idx: DO NOT press the BUTTON button")
-            t1 = time()
-            key_pressed = 0    
+            print("Interval $idx: DO NOT press the BUTTON")
+            key_pressed = 0
             key_state = 0
             key_last_state = 0
-            last_debounce_time = 0     
-            while time() <= t1 + duration
+            last_debounce_time = 0
+            t_2 = time()
+            while time() <= t_2 + duration
                 rpi_key = PiGPIO.read(rpi, gpio)
-                rpi_key != key_last_state && (last_debounce_time = time() * 1000)                             
-                if (time() * 1000 - last_debounce_time) > debounce_delay                        
-                    if rpi_key != key_state                         
-                        key_state = rpi_key 
+                rpi_key != key_last_state && (last_debounce_time = time() * 1000)
+                if (time() * 1000 - last_debounce_time) > debounce_delay
+                    t = time() - t_2
+                    if rpi_key != key_state
+                        key_state = rpi_key
                         if key_state == 1
-                            # key is pressed        
-                            push!(int_t_kp, time())
+                            # key is pressed
+                            push!(int_t_kp, t)
                             int_result[idx] += 1
-                            sleep(0.01)
                         else
                             # key is released
-                            push!(int_d_kp, time() - int_t_kp[end])
-                            sleep(0.01)
+                            push!(int_d_kp, t)
                         end
                     end
-                end    
+                end
                 key_last_state = rpi_key
+                sleep(0.1)
             end
             if length(int_d_kp) < sum(int_result)
                 pop!(int_t_kp)
@@ -588,18 +599,12 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     println()
     println("Testing completed.")
 
-    @show t_s
-    @show result
-    @show t_kp
-    @show d_kp
-    @show int_result
-    @show int_t_kp
-    @show int_d_kp
-
     # format time points
-    if !isnothing(sp) || rpi isa PiGPIO.Pi
-        t_kp = t_kp .- t_s
-        int_t_kp = int_t_kp .- t_s
+    if rpi isa PiGPIO.Pi || !isnothing(sp)
+        d_kp = round.((d_kp .- t_kp) .* 1000, digits=1)
+        int_d_kp = round.((int_d_kp .- int_t_kp) .* 1000, digits=1)
+        t_kp = round.(t_kp .* 1000, digits=1)
+        int_t_kp = round.(int_t_kp .* 1000, digits=1)
     end
 
     # format time points
@@ -614,9 +619,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         end
         reverse!(tk)
         reverse!(td)
-        tk = tk .- ((idx1 - 1) * (duration + interval))
-        push!(t_keypressed, round.(tk, digits=3))
-        push!(d_keypressed, round.(td, digits=3))
+        push!(t_keypressed, round.(tk, digits=1))
+        push!(d_keypressed, round.(td, digits=1))
     end
     reverse!(t_keypressed)
     reverse!(d_keypressed)
@@ -633,17 +637,25 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         end
         reverse!(tk)
         reverse!(td)
-        tk = tk .- ((idx1 * duration) + ((idx1 - 1) * interval))
-        push!(int_t_keypressed, round.(tk, digits=3))
-        push!(int_d_keypressed, round.(td, digits=3))
+        push!(int_t_keypressed, round.(tk, digits=1))
+        push!(int_d_keypressed, round.(td, digits=1))
     end
     reverse!(int_t_keypressed)
     reverse!(int_d_keypressed)
 
+    if isnothing(sp) && !(rpi isa PiGPIO.Pi)
+        for idx in 1:length(t_keypressed)
+            t_keypressed[idx] = round.(t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000, digits=3)
+        end
+        for idx in 1:length(int_t_keypressed)
+            int_t_keypressed[idx] = round.(int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000), digits=1)
+        end
+    end
+
     # remove out of time boundary taps
     for idx1 in 1:trials
         for idx2 in length(t_keypressed[idx1]):-1:1
-            if t_keypressed[idx1][idx2] > (duration * idx1)
+            if t_keypressed[idx1][idx2] > (duration * idx1 * 1000)
                 deleteat!(t_keypressed[idx1], idx2)
                 deleteat!(d_keypressed[idx1], idx2)
                 result[idx1] -= 1
@@ -652,7 +664,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     end
     for idx1 in 1:trials
         for idx2 in length(int_t_keypressed[idx1]):-1:1
-            if int_t_keypressed[idx1][idx2] > (interval * idx1)
+            if int_t_keypressed[idx1][idx2] > (interval * idx1 * 1000)
                 deleteat!(int_t_keypressed[idx1], idx2)
                 deleteat!(int_d_keypressed[idx1], idx2)
                 int_result[idx1] -= 1
