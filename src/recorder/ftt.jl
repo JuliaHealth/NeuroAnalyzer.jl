@@ -692,7 +692,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         end
     elseif rpi isa PiGPIO.Pi
         # use RPi
-        debounce_delay = 100 # ms
+        debounce_delay = 50 # ms
         println()
         t_s = time()
         for idx in 1:trials
@@ -722,7 +722,6 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                     end
                 end
                 key_last_state = rpi_key
-                sleep(0.1)
             end
             _beep()
             if length(d_kp) < sum(result)
@@ -737,7 +736,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
             key_last_state = 0
             last_debounce_time = 0
             t_2 = time()
-            while time() <= t_2 + duration
+            while time() <= t_2 + interval
                 rpi_key = PiGPIO.read(rpi, gpio)
                 rpi_key != key_last_state && (last_debounce_time = time() * 1000)
                 if (time() * 1000 - last_debounce_time) > debounce_delay
@@ -755,7 +754,6 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
                     end
                 end
                 key_last_state = rpi_key
-                sleep(0.1)
             end
             if length(int_d_kp) < sum(int_result)
                 pop!(int_t_kp)
