@@ -687,6 +687,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                         (datatype(obj) == "eda" && ylabel == "default") && (yl = "impedance [μS]")
                         p = plot_eda(t,
                                      s[ch, :],
+                                     clabels=clabels[ch_tmp[1][:]],
                                      xlabel=xl,
                                      ylabel=yl,
                                      title=tt,

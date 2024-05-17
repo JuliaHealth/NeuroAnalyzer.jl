@@ -611,7 +611,10 @@ Add channel(s) data to empty `NeuroAnalyzer.NEURO` object.
 """
 function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::Union{String, Vector{String}}=string.(_c(size(data, 1))), type::Union{String, Vector{String}}, unit::Union{String, Vector{String}}=repeat([""], size(data, 1)))
 
-    @assert length(obj.data) == 0 "OBJ already contains data."
+    if length(obj.data) > 0
+        @assert signal_len(obj) == size(data, 2) "Epoch length of the new data and the object data must be equal."
+        @assert nepochs(obj) == size(data, 3) "Number of epochs of the new data and the object data must be equal."
+    end
     @assert length(label) == size(data, 1) "Number of labels and number of data channels must be equal."
     @assert length(type) == size(data, 1) "Number of channel types and number of data channels must be equal."
     @assert length(unit) == size(data, 1) "Number of channel units and number of data channels must be equal."
@@ -621,10 +624,10 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::
     end
 
     obj_new = deepcopy(obj)
-    obj_new.data = data
-    obj_new.header.recording[:labels] = label
-    obj_new.header.recording[:channel_type] = string.(type)
-    obj_new.header.recording[:units] = unit
+    obj_new.data = [obj.data; data]
+    obj_new.header.recording[:labels] = [obj.header.recording[:labels]; label]
+    obj_new.header.recording[:channel_type] = [obj.header.recording[:channel_type]; string.(type)]
+    obj_new.header.recording[:units] = [obj.header.recording[:units]; unit]
 
     push!(obj_new.history, "add_channel(OBJ, data, label=$label, type=$type, unit=$unit)")
 
