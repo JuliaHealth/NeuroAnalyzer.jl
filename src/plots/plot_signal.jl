@@ -614,6 +614,8 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         ch_tmp = [ch]
     end
 
+    (ch isa(Vector) && length(ch) == 1) && (ch = ch[1])
+
     xl, yl, tt = "", "", ""
 
     p = Plots.Plot[]
@@ -658,29 +660,50 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                            "Time [s]",
                                            "",
                                            "$ch_name ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-
                 if ch isa Int64
-                    p = plot_signal(t,
-                                    s[ch, :],
-                                    clabels=[clabels[ch_tmp[1][1]]],
-                                    xlabel=xl,
-                                    ylabel=yl,
-                                    title=tt,
-                                    scale=scale,
-                                    units=units,
-                                    mono=mono;
-                                    kwargs...)
+                    if datatype(obj) == "eda"
+                        (datatype(obj) == "eda" && ylabel == "default") && (yl = "impedance [μS]")
+                        p = plot_eda(t,
+                                     s[ch, :],
+                                     xlabel=xl,
+                                     ylabel=yl,
+                                     title=tt,
+                                     mono=mono;
+                                     kwargs...)
+                    else
+                        p = plot_signal(t,
+                                        s[ch, :],
+                                        clabels=[clabels[ch_tmp[1][1]]],
+                                        xlabel=xl,
+                                        ylabel=yl,
+                                        title=tt,
+                                        scale=scale,
+                                        units=units,
+                                        mono=mono;
+                                        kwargs...)
+                    end
                 else
-                    p = plot_signal(t,
-                                    s[ch, :],
-                                    clabels=clabels[ch_tmp[1][:]],
-                                    xlabel=xl,
-                                    ylabel=yl,
-                                    title=tt,
-                                    scale=scale,
-                                    units=units,
-                                    mono=mono;
-                                    kwargs...)
+                    if datatype(obj) == "eda"
+                        (datatype(obj) == "eda" && ylabel == "default") && (yl = "impedance [μS]")
+                        p = plot_eda(t,
+                                     s[ch, :],
+                                     xlabel=xl,
+                                     ylabel=yl,
+                                     title=tt,
+                                     mono=mono;
+                                     kwargs...)
+                    else
+                        p = plot_signal(t,
+                                        s[ch, :],
+                                        clabels=clabels[ch_tmp[1][:]],
+                                        xlabel=xl,
+                                        ylabel=yl,
+                                        title=tt,
+                                        scale=scale,
+                                        units=units,
+                                        mono=mono;
+                                        kwargs...)
+                    end
                 end
             end
         else
