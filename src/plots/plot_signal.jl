@@ -662,7 +662,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                            "$ch_name ($(_channel2channel_name(ch_tmp[1])))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
                 if ch isa Int64
                     if datatype(obj) == "eda"
-                        (datatype(obj) == "eda" && ylabel == "default") && (yl = "impedance [μS]")
+                        (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
                         p = plot_eda(t,
                                      s[ch, :],
                                      xlabel=xl,
@@ -684,9 +684,10 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                     end
                 else
                     if datatype(obj) == "eda"
-                        (datatype(obj) == "eda" && ylabel == "default") && (yl = "impedance [μS]")
+                        (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
                         p = plot_eda(t,
                                      s[ch, :],
+                                     clabels=clabels[ch_tmp[1][:]],
                                      xlabel=xl,
                                      ylabel=yl,
                                      title=tt,
@@ -738,18 +739,30 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                    "Time [s]",
                                    def_ylabel,
                                    "$ch_name $(_channel2channel_name(ch))\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-
-        p = plot_signal_butterfly(t,
-                                  s[ch, :],
-                                  clabels=clabels[ch],
-                                  xlabel=xl,
-                                  ylabel=yl,
-                                  title=tt,
-                                  scale=scale,
-                                  units=units,
-                                  norm=norm,
-                                  mono=mono;
-                                  kwargs...)
+        if datatype(obj) == "eda"
+            (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
+            p = plot_eda_butterfly(t,
+                                   s[ch, :],
+                                   clabels=clabels[ch],
+                                   xlabel=xl,
+                                   ylabel=yl,
+                                   title=tt,
+                                   norm=norm,
+                                   mono=mono;
+                                   kwargs...)
+        else
+            p = plot_signal_butterfly(t,
+                                      s[ch, :],
+                                      clabels=clabels[ch],
+                                      xlabel=xl,
+                                      ylabel=yl,
+                                      title=tt,
+                                      scale=scale,
+                                      units=units,
+                                      norm=norm,
+                                      mono=mono;
+                                      kwargs...)
+        end
     end
 
     if type === :mean
@@ -767,17 +780,29 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                    "Time [s]",
                                    def_ylabel,
                                    "Averaged $ch_name $(_channel2channel_name(ch)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
-
-        p = plot_signal_avg(t,
-                            s[ch, :],
-                            xlabel=xl,
-                            ylabel=yl,
-                            title=tt,
-                            scale=scale,
-                            units=units,
-                            norm=norm,
-                            mono=mono;
-                            kwargs...)
+        if datatype(obj) == "eda"
+            (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
+            p = plot_eda_avg(t,
+                             s[ch, :],
+                             clabels=clabels[ch],
+                             xlabel=xl,
+                             ylabel=yl,
+                             title=tt,
+                             norm=norm,
+                             mono=mono;
+                             kwargs...)
+        else
+            p = plot_signal_avg(t,
+                                s[ch, :],
+                                xlabel=xl,
+                                ylabel=yl,
+                                title=tt,
+                                scale=scale,
+                                units=units,
+                                norm=norm,
+                                mono=mono;
+                                kwargs...)
+        end
     end
 
     # add epochs markers

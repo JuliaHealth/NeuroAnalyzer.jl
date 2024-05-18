@@ -13,10 +13,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 # Returns
 
-Named tuple containing:
-- `eda::Vector{Int64}`: EDA signal, conductance in μS
-- `time::Vector{Int64}`: time points
-- `f::Int64`: sampling frequency
+- `obj::NeuroAnalyzer.NEURO`
 """
 function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
 
@@ -165,7 +162,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 # Arguments
 
 - `duration::Int64=20`: recording duration in seconds
-- `port_name::String="/dev/ttyUSB0"`: serial port to which the switch is connected
+- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
