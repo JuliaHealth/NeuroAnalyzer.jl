@@ -10,7 +10,7 @@ Calculate total power.
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -49,7 +49,7 @@ Calculate total power.
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -93,7 +93,7 @@ Calculate total power.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(record)`: index of channels, default is all signal channels
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

@@ -3,7 +3,7 @@ export psd_slope
 """
     psd_slope(s; fs, f, norm, method, nt, wlen, woverlap, w, frq_n, frq, ncyc)
 
-Calculate PSD linear fit and slope. Default method is Welch periodogram.
+Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Arguments
 
@@ -12,7 +12,7 @@ Calculate PSD linear fit and slope. Default method is Welch periodogram.
 - `f::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `f[1]` to `f[2]`
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -50,7 +50,7 @@ end
 """
     psd_slope(s; fs, f, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate PSD linear fit and slope. Default method is Welch periodogram.
+Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Arguments
 
@@ -59,7 +59,7 @@ Calculate PSD linear fit and slope. Default method is Welch periodogram.
 - `f::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `f[1]` to `f[2]`
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -102,7 +102,7 @@ end
 """
     psd_slope(obj; ch, f, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate PSD linear fit and slope. Default method is Welch periodogram.
+Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Arguments
 
@@ -111,7 +111,7 @@ Calculate PSD linear fit and slope. Default method is Welch periodogram.
 - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

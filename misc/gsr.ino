@@ -38,7 +38,7 @@ void loop(){
   Serial.print("gsr:");
   Serial.println(impedance, 4);
 
-  // wait with the next loop
+  // wait for the next loop
   t2 = millis();
   delay(fs - (t2 - t1));
 }

@@ -371,7 +371,7 @@ Calculate power (in dB) envelope.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -424,7 +424,7 @@ Calculate power (in dB) envelope: mean and 95% CI.
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -515,7 +515,7 @@ Calculate power (in dB) envelope: median and 95% CI.
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

@@ -11,7 +11,7 @@ Calculate mean and maximum band power and its frequency.
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -58,7 +58,7 @@ Calculate absolute band power between two frequencies.
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -107,7 +107,7 @@ Calculate mean and maximum band power and its frequency.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

@@ -12,7 +12,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -72,7 +72,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -117,7 +117,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 - `x::Float64=0.95`: threshold
 - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

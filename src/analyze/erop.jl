@@ -10,7 +10,7 @@ Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `ero
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Int64`: channel to analyze
 - `method::Symbol=:welch`: method of calculating power-spectrum:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:stft`: short time Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:fft`: Fast Fourier transform

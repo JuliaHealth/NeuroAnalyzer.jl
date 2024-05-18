@@ -4,14 +4,14 @@ export mwpsd
 """
     psd(s; fs, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum density. Default method is Welch periodogram.
+Calculate power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 - `s::Vector{Float64}`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -82,7 +82,7 @@ end
 """
     psd(s; fs, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum density. Default method is Welch periodogram.
+Calculate power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 
@@ -90,7 +90,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -127,14 +127,14 @@ end
 """
     psd(s; fs, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum density. Default method is Welch periodogram.
+Calculate power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -175,7 +175,7 @@ end
 """
     psd(obj; ch, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum density. Default method is Welch periodogram.
+Calculate power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 
@@ -183,7 +183,7 @@ Calculate power spectrum density. Default method is Welch periodogram.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

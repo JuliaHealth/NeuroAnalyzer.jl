@@ -3,7 +3,7 @@ export psd_rel
 """
     psd_rel(s; fs, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate relative power spectrum density. Default method is Welch periodogram.
+Calculate relative power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 - `s::AbstractVector`
@@ -11,7 +11,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -45,7 +45,7 @@ end
 """
     psd_rel(s; fs, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate relative power spectrum density. Default method is Welch periodogram.
+Calculate relative power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 - `s::AbstractMatrix`
@@ -53,7 +53,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -91,7 +91,7 @@ end
 """
     psd_rel(s; fs, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate relative power spectrum density. Default method is Welch periodogram.
+Calculate relative power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 - `s::AbstractArray`
@@ -99,7 +99,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
@@ -140,7 +140,7 @@ end
 """
     psd_rel(obj; ch, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
-Calculate relative power spectrum density. Default method is Welch periodogram.
+Calculate relative power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 
@@ -149,7 +149,7 @@ Calculate relative power spectrum density. Default method is Welch periodogram.
 - `norm::Bool=false`: normalize do dB
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch periodogram
+    - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform

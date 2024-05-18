@@ -23,19 +23,18 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
     t = collect(0:1/fs:duration)
-    eda_signal = zeros(length(t))
+    eda_signal = repeat([NaN], length(t))
 
-    p = Plots.scatter(ylims=(0, 10),
-                      xticks=[0, duration],
-                      yticks=[0, 10],
-                      legend=false,
-                      palette=:darktest,
-                      size=(800, 400),
-                      margins=20Plots.px,
-                      xlabelfontsize=8,
-                      ylabelfontsize=8,
-                      xtickfontsize=8,
-                      ytickfontsize=8)
+    p = Plots.plot(ylims=(0, 10),
+                   xlims=(t[1], t[end]),
+                   legend=false,
+                   palette=:darktest,
+                   size=(800, 400),
+                   margins=20Plots.px,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8)
 
     win = GtkWindow("NeuroRecorder: ieda()", p.attr[:size][1], p.attr[:size][2] + 40)
     set_gtk_property!(win, :border_width, 20)
@@ -68,13 +67,14 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
     showall(win)
 
     @guarded draw(can) do widget
-        p = Plots.scatter(t,
+        p = Plots.plot(t,
                           eda_signal,
                           mc=:black,
                           ms=0.5,
+                          lw=0.5,
+                          lc=:black,
                           ylims=(0, 10),
-                          xticks=[0, duration],
-                          yticks=[0, 10],
+                          xlims=(t[1], t[end]),
                           legend=false,
                           palette=:darktest,
                           size=(800, 400),
