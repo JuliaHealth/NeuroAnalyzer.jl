@@ -624,10 +624,17 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::
     end
 
     obj_new = deepcopy(obj)
-    obj_new.data = [obj.data; data]
-    obj_new.header.recording[:labels] = [obj.header.recording[:labels]; label]
-    obj_new.header.recording[:channel_type] = [obj.header.recording[:channel_type]; string.(type)]
-    obj_new.header.recording[:units] = [obj.header.recording[:units]; unit]
+    if length(obj.data) > 0
+        obj_new.data = [obj.data; data]
+        obj_new.header.recording[:labels] = [obj.header.recording[:labels]; label]
+        obj_new.header.recording[:channel_type] = [obj.header.recording[:channel_type]; string.(type)]
+        obj_new.header.recording[:units] = [obj.header.recording[:units]; unit]
+    else
+        obj_new.data = data
+        obj_new.header.recording[:labels] = label
+        obj_new.header.recording[:channel_type] = string.(type)
+        obj_new.header.recording[:units] = unit
+    end
 
     push!(obj_new.history, "add_channel(OBJ, data, label=$label, type=$type, unit=$unit)")
 

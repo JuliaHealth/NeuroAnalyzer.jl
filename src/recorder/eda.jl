@@ -100,7 +100,6 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
             end
             _beep()
             set_gtk_property!(lb_status2, :label, "RECORDING")
-            ts = time()
             t_refresh = time()
             idx = 1
             while idx <= length(eda_signal)
@@ -194,30 +193,35 @@ function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
     end
 
     println("The recording will start after a beep")
-    sleep(1)
+    ts = time()
+    while time() - ts <= 2
+        _serial_listener(sp)
+    end
     println()
     _beep()
-    print("Recording ")
+    print("Recording .")
 
-    eda_signal = Vector{Float64}()
+    # sampling rate is 50 Hz = 20 ms per loop
+    fs = 50
+    t = collect(0:1/fs:duration)
+    eda_signal = zeros(length(t))
 
+    idx = 1
     ts = time()
-    counter = 0
-    while time() - ts <= duration
+    while idx <= length(eda_signal)
         sp_signal = _serial_listener(sp)
         if !isnothing(sp_signal)
             m = match(r"(gsr\:)([0-9]+\.[0-9]+)", sp_signal)
             if !isnothing(m)
                 if length(m.captures) == 2
-                    push!(eda_signal, parse(Float64, m.captures[2]))
+                    eda_signal[idx] = parse(Float64, m.captures[2])
+                    idx += 1
                 end
             end
         end
-        sleep(0.01)
-        counter += 1
-        if counter == 100
+        if time() - ts >= 1.0
             print(".")
-            counter = 0
+            ts = time()
         end
     end
     _serial_close(sp)
@@ -226,14 +230,16 @@ function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
     println()
     println("Recording finished.")
 
-    t = round.(linspace(0, duration, length(eda_signal)), digits=3)
-    f = round(Int64, 1 / (t[2] - t[1]))
-
-    eda_signal = reshape(eda_signal, 1, :, 1)
-    obj = create_object(data_type="eda")
-    add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
-    create_time!(obj, fs=f)
-
-    return obj
+    if length(eda_signal) > 0
+        eda_signal = eda_signal[1:(end - 1)]
+        t = round.(t[1:(end - 1)], digits=3)
+        eda_signal = reshape(eda_signal, 1, :, 1)
+        obj = create_object(data_type="eda")
+        add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
+        create_time!(obj, fs=fs)
+        return obj
+    else
+        return nothing
+    end
 
 end
