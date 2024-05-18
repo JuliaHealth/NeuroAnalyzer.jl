@@ -3,6 +3,8 @@ export nchannels
 export nepochs
 export signal_len
 export epoch_len
+export signal_duration
+export epoch_duration
 export history
 export labels
 export optode_labels
@@ -140,6 +142,44 @@ function epoch_len(obj::NeuroAnalyzer.NEURO)
     ep_len = size(obj.data, 2)
 
     return ep_len
+
+end
+
+"""
+    signal_duration(obj)
+
+Return signal duration.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `s_dur::Float64`
+"""
+function signal_duration(obj::NeuroAnalyzer.NEURO)
+
+    return obj.time_pts[end]
+
+end
+
+"""
+    epoch_duration(obj)
+
+Return epoch length.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `e_dur::Float64`
+"""
+function epoch_duration(obj::NeuroAnalyzer.NEURO)
+
+    return obj.epoch_time[end]
 
 end
 
