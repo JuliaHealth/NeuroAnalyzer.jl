@@ -288,6 +288,7 @@ include("analyze/axc2frq.jl")
 include("analyze/pacor.jl")
 include("analyze/xcor.jl")
 include("analyze/xcov.jl")
+include("analyze/symmetry.jl")
 # edit
 include("edit/channel.jl")
 include("edit/create.jl")
