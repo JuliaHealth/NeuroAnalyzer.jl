@@ -56,7 +56,7 @@ function tconv(s::AbstractArray; kernel::AbstractVector)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views tconv(s[ch_idx, :, ep_idx], kernel=kernel)
+            s_new[ch_idx, :, ep_idx] = tconv(s[ch_idx, :, ep_idx], kernel=kernel)
 
             # update progress bar
             progress_bar && next!(progbar)
