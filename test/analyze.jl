@@ -42,31 +42,31 @@ ad = NeuroAnalyzer.ampdiff(e10)
 @test size(ad) == (23, 2560, 10)
 
 @info "Test 3/61: band_power()"
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20))) == (23, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:welch)) == (23, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:fft)) == (23, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:stft)) == (23, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:mt)) == (23, 10)
-@test size(NeuroAnalyzer.band_power(e10, f=(10, 20), method=:mw)) == (23, 10)
+@test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20))) == (23, 10)
+@test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:welch)) == (23, 10)
+@test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:fft)) == (23, 10)
+@test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:stft)) == (23, 10)
+@test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:mt)) == (23, 10)
+@test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:mw)) == (23, 10)
 
 @info "Test 4/61: band_mpower()"
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20))
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20))
 @test size(mbp) == (23, 10)
 @test size(maxf) == (23, 10)
 @test size(maxbp) == (23, 10)
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:mt)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20), method=:mt)
 @test size(mbp) == (23, 10)
 @test size(maxf) == (23, 10)
 @test size(maxbp) == (23, 10)
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:stft)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20), method=:stft)
 @test size(mbp) == (23, 10)
 @test size(maxf) == (23, 10)
 @test size(maxbp) == (23, 10)
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:fft)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20), method=:fft)
 @test size(mbp) == (23, 10)
 @test size(maxf) == (23, 10)
 @test size(maxbp) == (23, 10)
-mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, f=(10, 20), method=:mw)
+mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20), method=:mw)
 @test size(mbp) == (23, 10)
 @test size(maxf) == (23, 10)
 @test size(maxbp) == (23, 10)
@@ -561,37 +561,37 @@ p, f = NeuroAnalyzer.mwpsd(e10)
 @test length(f) == 129
 
 @info "Test 32/61: psd_rel()"
-p, f = psd_rel(rand(100), fs=10, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-p, f = psd_rel(rand(10, 100), fs=10, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 6)
-p, f = psd_rel(rand(10, 100, 10), fs=10, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100, 10), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 6, 10)
-p, f = psd_rel(rand(100), fs=10, method=:mt, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
-p, f = psd_rel(rand(10, 100), fs=10, method=:mt, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 51)
-p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, f=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test size(p) == (10, 51, 10)
-p, f = NeuroAnalyzer.psd_rel(e10, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, frq_lim=(0, 1))
 @test size(p) == (23, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = NeuroAnalyzer.psd_rel(e10, method=:mt, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, method=:mt, frq_lim=(0, 1))
 @test size(p) == (23, 1281, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = NeuroAnalyzer.psd_rel(e10, method=:fft, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, method=:fft, frq_lim=(0, 1))
 @test size(p) == (23, 1281, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = NeuroAnalyzer.psd_rel(e10, method=:stft, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, method=:stft, frq_lim=(0, 1))
 @test size(p) == (23, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = NeuroAnalyzer.psd_rel(e10, method=:mw, f=(0, 1))
+p, f = NeuroAnalyzer.psd_rel(e10, method=:mw, frq_lim=(0, 1))
 @test size(p) == (23, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
@@ -896,7 +896,7 @@ ph, f = phsd(e10)
 @test length(f) == 1281
 
 @info "Test 60/61: band_asymmetry()"
-@test band_asymmetry(e10, ch1=1, ch2=1, f=(0, 10)) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1=1, ch2=1, frq_lim=(0, 10)) == (ba = 0.0, ba_norm = 0.0)
 
 @info "Test 61/61: symmetry()"
 @test symmetry(v) == 5

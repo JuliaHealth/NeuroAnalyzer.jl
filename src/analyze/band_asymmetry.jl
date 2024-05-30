@@ -1,7 +1,7 @@
 export band_asymmetry
 
 """
-    band_asymmetry(obj; ch1, ch2, f, method, nt, wlen, woverlap)
+    band_asymmetry(obj; ch1, ch2, frq_lim, method, nt, wlen, woverlap)
 
 Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 
@@ -10,7 +10,7 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 - `obj::NeuroAnalyzer.NEURO`
 - `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels, e.g. left frontal channels
 - `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels, e.g. right frontal channels
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
+- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -29,15 +29,15 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 - `ba::Float64`: band asymmetry
 - `ba_norm::Float64`: normalized band asymmetry
 """
-function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}, ch2::Union{Int64, Vector{Int64}, <:AbstractRange}, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}, ch2::Union{Int64, Vector{Int64}, <:AbstractRange}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch1)
     _check_channels(obj, ch2)
     length(ch1) == 1 && (ch1 = [ch1])
     length(ch2) == 1 && (ch2 = [ch2])
 
-    bp1 = @views band_power(obj.data[ch1, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
-    bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    bp1 = @views band_power(obj.data[ch1, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     ba = log(mean(bp1)) - log(mean(bp2))
     ba_norm = (mean(bp1) - mean(bp2)) / (mean(bp1) + mean(bp2))

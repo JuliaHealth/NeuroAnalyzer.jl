@@ -1,7 +1,7 @@
 export band_mpower
 
 """
-    band_mpower(s; fs, f, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
+    band_mpower(s; fs, frq_lim, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
 Calculate mean and maximum band power and its frequency.
 
@@ -9,7 +9,7 @@ Calculate mean and maximum band power and its frequency.
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
+- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -31,15 +31,15 @@ Named tuple containing:
 - `maxfrq::Float64`: frequency of maximum band power
 - `maxbp::Float64`: power at maximum band frequency
 """
-function band_mpower(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength(0, fs / 2), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function band_mpower(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength(0, fs / 2), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     @assert fs >= 1 "fs must be ≥ 1."
-    _check_tuple(f, "f", (0, fs / 2))
+    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     pw, pf = psd(s, fs=fs, norm=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
-    f1_idx = vsearch(f[1], pf)
-    f2_idx = vsearch(f[2], pf)
+    f1_idx = vsearch(frq_lim[1], pf)
+    f2_idx = vsearch(frq_lim[2], pf)
     mbp = mean(pw[f1_idx:f2_idx])
     maxfrq = pf[f1_idx:f2_idx][findmax(pw[f1_idx:f2_idx])[2]]
     maxbp = pw[vsearch(maxfrq, pf)]
@@ -48,7 +48,7 @@ function band_mpower(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, method:
 end
 
 """
-    band_mpower(s; fs, f, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
+    band_mpower(s; fs, frq_lim, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
 Calculate absolute band power between two frequencies.
 
@@ -56,7 +56,7 @@ Calculate absolute band power between two frequencies.
 
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
+- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -78,7 +78,7 @@ Named tuple containing:
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
 """
-function band_mpower(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength(0, fs / 2), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function band_mpower(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength(0, fs / 2), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -88,7 +88,7 @@ function band_mpower(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end
     end
 
@@ -97,7 +97,7 @@ function band_mpower(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::
 end
 
 """
-    band_mpower(obj; ch, f, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
+    band_mpower(obj; ch, frq_lim, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
 
 Calculate mean and maximum band power and its frequency.
 
@@ -105,7 +105,7 @@ Calculate mean and maximum band power and its frequency.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
+- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -126,12 +126,12 @@ Named tuple containing:
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
 """
-function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
     length(ch) == 1 && (ch = [ch])
 
-    mbp, maxfrq, maxbp = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    mbp, maxfrq, maxbp = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
 

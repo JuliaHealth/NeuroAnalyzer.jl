@@ -1,7 +1,7 @@
 using Test
 
-@info "Test 1/3: tes_dose()"
-@test tes_dose(current=2.0, pad_area=35, duration=1200)[1] == 2.4
+@info "Test 1/3: tdcs_dose()"
+@test tdcs_dose(current=2.0, pad_area=35, duration=1200)[1] == 2.4
 
 @info "Test 2/3: ect_charge()"
 @test ect_charge(pw=0.5, pint=10, pf=10, duration=10) == 500.0

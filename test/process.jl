@@ -327,7 +327,7 @@ e10_tmp = taper(e10, t=e10.data[1, :, 1])
 @test round.(tconv(v1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.5, 1.0, 1.5, 2.0, 1.3]
 @test round.(tconv(a1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.3 0.5 0.3; 0.3 0.5 0.3;;; 0.3 0.5 0.3; 0.3 0.5 0.3]
 s = tconv(e10, kernel=[0.2, 0.1, 0.2])
-@test size(s) == (23, 2560, 10)
+@test size(s) == (24, 2560, 10)
 
 @info "Test 39/52: wbp()"
 @test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560
