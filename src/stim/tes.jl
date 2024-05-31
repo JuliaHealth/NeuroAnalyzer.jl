@@ -1,10 +1,11 @@
 export tdcs_dose
+export tacs_dose
 export tes_protocol
 
 """
     tdcs_dose(; current, pad_area, duration)
 
-Convert `current`, `pad_area` and stimulation `duration` into `charge`, `current_density` and `charge_ density`.
+Calculate `charge`, `current_density` and `charge_ density` for tDCS stimulation.
 
 # Arguments
 
@@ -24,6 +25,42 @@ Named tuple containing:
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
 function tdcs_dose(; current::Real, pad_area::Real, duration::Int64)
+
+    charge = (current / 1_000) * duration
+    current_density = (current / 1_000) / (pad_area / 1_000)
+    charge_density = (charge / 1_000) / (pad_area / 1_000)
+
+    return (charge=charge, current_density=current_density, charge_density=charge_density)
+
+end
+
+"""
+    tacs_dose(; current, pad_area, duration, offset, frequency, phase)
+
+Calculate `charge`, `current_density` and `charge_ density` for tACS stimulation.
+
+# Arguments
+
+- `current::Real`: stimulation current [mA] (peak to peak)
+- `pad_area::Real`: electrode pad area [cm²]
+- `duration::Int64`: stimulation duration [s]
+- `offset::Float64`: current offset [μA]
+- `frequency::Float64`: sinus frequency [Hz]
+- `phase::Float64`: phase shift [degree]
+
+# Returns
+
+Named tuple containing:
+- `charge::Float64`: charge [C]
+- `current_density::Float64`: current density [A/m²]
+- `charge_density::Float64`: delivered charge density [kC/m²]
+"""
+function tacs_dose(; current::Real, pad_area::Real, duration::Int64, offset::Real, frequency::Real, phase::Real)
+
+    # calculate sine current along one cycle
+    t = collect(0:0.001:1)
+    current = abs.(generate_sine(frequency, t, current / 2, phase) .+ offset)
+    current = simpson(current, t)
 
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)

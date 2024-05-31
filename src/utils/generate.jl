@@ -90,7 +90,7 @@ Generates sine wave.
 - `f::Real`: frequency [Hz]
 - `t::Union{AbstractVector, AbstractRange}`: time vector
 - `a::Real`: amplitude
-- `p::Real`: initial phase
+- `p::Real`: initial phase [degrees]
 
 # Returns
 
