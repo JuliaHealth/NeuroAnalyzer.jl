@@ -98,7 +98,7 @@ Generates sine wave.
 """
 function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
 
-    s = @. a * sin(2 * pi * f * t + p)
+    s = @. a * sin(2 * pi * f * t + deg2rad(p))
 
     return s
 
