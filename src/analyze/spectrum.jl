@@ -22,13 +22,18 @@ Named tuple containing:
 """
 function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
-    ft = rfft0(s, pad) / length(s)
+    ft = rfft0(s, pad)
+
+    # normalize
+    ft ./= length(s)
+    ft[2:end] .*= 2
 
     # amplitudes
-    sa = abs.(ft)                          # get real values
+    sa = abs.(ft)
 
     # power
-    sp = abs.(ft .* conj(ft))
+    sp = abs.(ft .* conj(ft))       # sp = sa .^ 2;
+
     norm && (sp = pow2db.(sp))
 
     # phases

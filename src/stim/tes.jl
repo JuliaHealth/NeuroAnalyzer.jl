@@ -60,7 +60,7 @@ function tacs_dose(; current::Real, pad_area::Real, duration::Int64, offset::Rea
 
     # calculate sine current along one cycle
     t = collect(0:0.001:1)
-    current = abs.(generate_sine(frequency, t, current / 2, phase) .+ offset)
+    current = abs.(generate_sine(frequency, t, current, phase) .+ offset)
     current = simpson(current, t)
     
     cycles = frequency * duration
@@ -96,6 +96,8 @@ Named tuple containing:
 - `charge_density::Float64`: delivered charge density [kC/m²]
 """
 function tpcs_dose(; current::Real, pad_area::Real, duration::Real, pw::Real, isi::Real)
+
+    @assert isi > pw "isi must be > pw."
 
     # convert to seconds
     pw = pw / 1000
