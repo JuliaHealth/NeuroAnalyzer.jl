@@ -289,7 +289,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abst
     ep_n = nepochs(obj)
     fs = sr(obj)
 
-    ep_n > 1 && _warn("filter() should be applied to a continuous signal")
+    ep_n > 1 && _warn("filter() should be applied to a continuous signal.")
     _info("Signal should be tapered prior to filtering to reduce edge artifacts")
 
     if preview

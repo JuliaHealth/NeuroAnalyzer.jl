@@ -5,6 +5,7 @@ export generate_sinc
 export generate_morlet
 export generate_gaussian
 export generate_noise
+export generate_signal
 export generate_morlet_fwhm
 export generate_square
 export generate_triangle
@@ -217,16 +218,15 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
 end
 
 """
-    generate_noise(n, amp; type)
-
+    generate_noise(n, a
 Generate noise.
 
 # Arguments
 
 - `n::Int64`: length (in samples)
-- `amp::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
+- `a::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
 - `type::Symbol=:whiten`: noise type:
-    - `:whiten`: normal distributed
+    - `:whiten`: normally distributed
     - `:whiteu`: uniformly distributed
     - `:pink`
 
@@ -234,7 +234,7 @@ Generate noise.
 
 - `s::Float64`
 """
-function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:whiten)
+function generate_noise(n::Int64, a::Real=1.0; type::Symbol=:whiten)
 
     _check_var(type, [:whiten, :whiteu, :pink], "type")
 
@@ -247,7 +247,31 @@ function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:whiten)
     end
 
     s = normalize_minmax(s)
-    s .*= amp
+    s .*= a
+
+    return s
+
+end
+
+"""
+    generate_signal(n, amp)
+
+Generate signal based on normally distributed random noise.
+
+# Arguments
+
+- `n::Int64`: length (in samples)
+- `a::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
+
+# Returns
+
+- `s::Float64`
+"""
+function generate_signal(n::Int64, a::Real=1.0)
+
+    s = randn(n)
+    s = cumsum(s)
+    s = normalize_minmax(s) .* a
 
     return s
 

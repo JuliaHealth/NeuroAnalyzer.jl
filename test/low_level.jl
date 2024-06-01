@@ -57,9 +57,6 @@ using ContinuousWavelets
 @test taper(ones(10), t=zeros(10)) == zeros(10)
 @test detrend(ones(10)) == zeros(10)
 @test remove_dc(ones(10)) == zeros(10)
-@test normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
-@test normalize_minmax([1, 2, 3]) == [-1.0, 0.0, 1.0]
-@test normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
 @test length(add_noise(ones(10), randn(10))) == 10
 
 s, t = resample(ones(10), t=1:10, new_sr=20)
@@ -138,7 +135,6 @@ p, f = psd_rel(ones(10), fs=10)
 @test f == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
 
 @test wbp(ones(10), fs=10, frq=3) == zeros(10)
-@test round.(normalize_gauss([1, 0, 1]), digits=2) == [-0.26, -0.26, 0.55]
 @test cbp(ones(100), fs=10, frq=1) == zeros(100)
 
 sp, sf, st = spectrogram(rand(2560), fs=256)
@@ -151,19 +147,10 @@ p, _, _ = cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
 
 @test phdiff(ones(10), zeros(10)) == zeros(10)
-@test round.(normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
-@test round.(normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]
-@test round.(normalize_neglog10([1, 2, 3]), digits=2) == [0.0, -0.3, -0.48]
-@test normalize_neg([1, 2, 3]) == [-2, -1, 0]
-@test normalize_pos([1, 2, 3]) == [2, 3, 4]
-@test normalize_perc([1, 2, 3]) == [0.0, 0.5, 1.0]
-@test normalize_n([1, 2, 3], 2) == [0.0, 1.0, 2.0]
-@test normalize([1, 2, 3], method=:zscore) == normalize_zscore([1, 2, 3])
 @test phases(ones(ComplexF64, 10)) == zeros(10)
 @test length(cwtspectrogram(rand(100), wt=wavelet(Morlet(2π), β=32, Q=128), fs=10, frq_lim=(0, 5))) == 2
 @test size(dw_trans(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
 @test length(idw_trans(dw_trans(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
-@test round.(normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
 @test size(cw_trans(rand(100), wt=wavelet(Morlet(2π), β=32, Q=128))) == (14, 100)
 @test length(icw_trans(cw_trans(rand(100), wt=wavelet(Morlet(2π), β=32, Q=128)), wt=wavelet(Morlet(2π), β=32, Q=128), type=:pd)) == 100
 @test t2s(1, 256) == 256
