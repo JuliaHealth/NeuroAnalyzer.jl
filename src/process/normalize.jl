@@ -224,7 +224,7 @@ end
 """
     normalize_minmax(s)
 
-Normalize in [-1, +1].
+Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0.
 
 # Arguments
 
@@ -237,7 +237,7 @@ Normalize in [-1, +1].
 function normalize_minmax(s::AbstractVector)
 
     if length(unique(s)) == 1
-        sn = zeros(length(s))
+        sn = ones(length(s))
     else
         mi = minimum(s)
         mx = maximum(s)
@@ -252,7 +252,7 @@ end
 """
     normalize_minmax(s; bych)
 
-Normalize in [-1, +1].
+Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0.
 
 # Arguments
 
@@ -265,7 +265,7 @@ Normalize in [-1, +1].
 """
 function normalize_minmax(s::AbstractArray; bych::Bool=false)
 
-    length(unique(s)) == 1 && return zeros(length(s))
+    length(unique(s)) == 1 && return ones(length(s))
 
     @assert ndims(s) <= 3 "normalize_minmax() only works for arrays of ≤ 3 dimensions."
 
