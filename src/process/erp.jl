@@ -29,7 +29,7 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bo
         if bl != (0, 0)
             _check_tuple(bl, "bl", (obj.epoch_time[1], obj.epoch_time[end]))
             bl = (vsearch(bl[1], obj.epoch_time), vsearch(bl[2], obj.epoch_time))
-            obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, 1], bl)
+            obj_new.data[:, :, :] = remove_dc(obj_new.data[:, :, :], bl)
         end
     end
 
