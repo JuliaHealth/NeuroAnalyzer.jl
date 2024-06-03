@@ -24,7 +24,7 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bo
 
     obj_new = keep_channel(obj, ch=signal_channels(obj))
 
-    # remove DC
+    # remove baseline prior to averaging
     if blfirst
         if bl != (0, 0)
             _check_tuple(bl, "bl", (obj.epoch_time[1], obj.epoch_time[end]))
@@ -37,7 +37,7 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bo
     obj_new.header.recording[:data_type] = "erp"
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
-    # remove DC
+    # remove baseline after to averaging
     if !blfirst
         if bl != (0, 0)
             _check_tuple(bl, "bl", (obj.epoch_time[1], obj.epoch_time[end]))
@@ -53,7 +53,7 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bo
     obj_new.markers[!, :start] .+= (obj_new.epoch_time[1] * sr(obj_new))
 
     reset_components!(obj_new)
-    push!(obj_new.history, "erp(OBJ, bl=$bl)")
+    push!(obj_new.history, "erp(OBJ, bl=$bl, blfirst=$blfirst)")
 
     return obj_new
 
@@ -102,11 +102,12 @@ Sort epochs.
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
 
     _check_datatype(obj, "erp")
-    @assert length(s) == nepochs(obj) - 1 "Length of the sorting vector must be equal to the number of epochs."
+    @assert length(s) == nepochs(obj) - 1 "Length of the sorting vector must be equal to $(nepochs(obj) - 1)."
 
     obj_new = deepcopy(obj)
     obj_new.data[:, :, 2:end] = obj.data[:, :, s]
 
+    # to do: markers should be sorted
     _warn("Markers are not sorted.")
 
     reset_components!(obj_new)
@@ -136,9 +137,6 @@ function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
     obj.data = obj_new.data
     obj.components = obj_new.components
     obj.history = obj_new.history
-
-    # to do: markers should be sorted
-    _warn("Markers are not sorted.")
     obj.markers = obj_new.markers
 
     reset_components!(obj_new)
