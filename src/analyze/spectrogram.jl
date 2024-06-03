@@ -55,7 +55,7 @@ function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, method::Symb
     norm && (sp = pow2db.(sp))
 
     t = 0:1/fs:(length(s) / fs)
-    st = linspace(t[1], t[end], size(sp, 2))
+    st = linspace(t[1], t[end - 1], size(sp, 2))
     sf = linspace(0, fs/2, size(sp, 1))
 
     return (sp=sp, sf=sf, st=st)
@@ -86,6 +86,7 @@ Named tuple containing:
 - `sp::Matrix{Float64}`: powers
 - `sph::Matrix{Float64}`: phases
 - `sf::Vector{Float64}`: frequencies
+- `st::Vector{Float64}`: time
 """
 function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
@@ -132,9 +133,9 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int
     @inbounds for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, sf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=false)
-        cs[frq_idx, :] = tconv(s .* w, kernel=kernel)
+        cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=true)
         # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(cs), imag.(cs), 2)
-        sp[frq_idx, :] = @views @. abs(cs[frq_idx, :])^2
+        sp[frq_idx, :] = @views @. (2 * abs(cs[frq_idx, :]))^2
         sph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
     end
 
@@ -142,7 +143,10 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
     norm && (sp = pow2db.(sp))
 
-    return (cs=cs, sp=sp, sph=sph, sf=sf)
+    t = 0:1/fs:(length(s) / fs)
+    st = linspace(t[1], t[end - 1], size(sp, 2))
+
+    return (cs=cs, sp=sp, sph=sph, sf=sf, st=st)
 
 end
 
@@ -168,6 +172,7 @@ Named tuple containing:
 - `sp::Matrix{Float64}`: powers
 - `sph::Matrix{Float64}`: phases
 - `sf::Vector{Float64}`: frequencies
+- `st::Vector{Float64}`: time
 """
 function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, gw::Real=5, w::Bool=true)
 
@@ -199,7 +204,10 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
     norm && (sp = pow2db.(sp))
 
-    return (sp=sp, sph=sph, sf=sf)
+    t = 0:1/fs:(length(s) / fs)
+    st = linspace(t[1], t[end - 1], size(sp, 2))
+
+    return (sp=sp, sph=sph, sf=sf, st=st)
 
 end
 
@@ -223,6 +231,7 @@ Calculate spectrogram using continuous wavelet transformation (CWT).
 Named tuple containing:
 - `sp::Matrix{Float64}`: powers
 - `sf::Vector{Float64}`: frequency indices
+- `st::Vector{Float64}`: time
 """
 function cwtspectrogram(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), wt::T=wavelet(Morlet(2π), β=32, Q=128), w::Bool=true, norm::Bool=true) where {T <: CWT}
 
@@ -243,7 +252,10 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}
     sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
     norm && (sp = pow2db.(sp))
 
-    return (sp=sp, sf=sf)
+    t = 0:1/fs:(length(s) / fs)
+    st = linspace(t[1], t[end - 1], size(sp, 2))
+
+    return (sp=sp, sf=sf, st=st)
 
 end
 
@@ -296,11 +308,11 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif method === :mt
         p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
-    _, p_tmp, _, sf = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
+    _, p_tmp, _, sf, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, w=w)
     elseif method === :gh
-        p_tmp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, w=w)
+        p_tmp, _, sf, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw, w=w)
     elseif method === :cwt
-        p_tmp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, norm=norm, wt=wt, w=w)
+        p_tmp, sf, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, norm=norm, wt=wt, w=w)
     end
 
     if frq_lim[1] < sf[1]

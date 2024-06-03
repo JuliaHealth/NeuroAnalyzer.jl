@@ -242,6 +242,8 @@ function mwpsd(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     @assert pad >= 0 "pad must be ≥ 0."
 
+    pad > 0 && (s = pad0(s, pad))
+
     w = w ? hanning(length(s)) : ones(length(s))
 
     frq_lim = (0, fs / 2)
@@ -267,13 +269,11 @@ function mwpsd(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_
     end
 
     pw = zeros(length(pf))
-
-    pad > 0 && (s = pad0(s, pad))
     @inbounds for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, pf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
-        # w_conv = fconv(s .* w, kernel=kernel, norm=true)
-        w_conv = tconv(s .* w, kernel=kernel)
-        pw[frq_idx] = mean(@. abs(w_conv)^2)
+        # w_conv = tconv(s .* w, kernel=kernel)
+        w_conv = fconv(s .* w, kernel=kernel, norm=true)
+        pw[frq_idx] = median((2 .* abs.(w_conv)).^2)
     end
 
     norm && (pw = pow2db.(pw))

@@ -67,7 +67,7 @@ Return maximum value of the complex vector.
 """
 function cmax(x::Vector{<:Complex})
 
-    return argmax(abs, x)
+    return argmax(abs2, x)
 
 end
 
@@ -86,7 +86,7 @@ Return minimum value of the complex vector.
 """
 function cmin(x::Vector{<:Complex})
 
-    return argmin(abs, x)
+    return argmin(abs2, x)
 
 end
 

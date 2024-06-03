@@ -117,7 +117,7 @@ function locs_roty(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    polar && _warn("This is lossy conversion for polar coordinates and will be ignored.")
+    polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
@@ -188,7 +188,7 @@ function locs_rotx(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    polar && _warn("This is lossy conversion for polar coordinates and will be ignored.")
+    polar && _warn("For polar coordinates this is a lossy conversion and will be ignored.")
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)

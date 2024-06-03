@@ -130,10 +130,10 @@ s, bn, bf = bpsplit(e10)
 @test size(s) == (13, 23, 2560, 10)
 
 @info "Test 17/52: fconv()"
-@test round.(fconv(v1, kernel=v2)) == [2.0, 2.0, 3.0, 3.0, 2.0]
-@test fconv(a1, kernel=[0.5, 1.0, 0.5]) == [0.75 1.0 0.75; 0.75 1.0 0.75;;; 0.75 1.0 0.75; 0.75 1.0 0.75]
-e10_tmp = fconv(e10, kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test fconv(v1, kernel=v2) == [0.8500000000000002 - 9.868649107779169e-17im, 1.5999999999999996 + 0.0im, 2.4999999999999996 + 0.0im, 3.499999999999999 - 3.61217627448181e-17im, 2.6999999999999997 - 3.204937810639273e-17im]
+@test fconv(a1, kernel=[0.5, 1.0, 0.5]) == [0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im;;; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im]
+s_conv = fconv(e10, kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
+@test size(s_conv) == (23, 2560, 10)
 
 @info "Test 18/52: filter_mavg()"
 @test filter_mavg(vcat(v1, v1), k=2) == [1, 2, 3, 3, 3, 3, 3, 3, 4, 5]
@@ -354,10 +354,10 @@ e10_tmp = taper(e10, t=e10.data[1, :, 1])
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "Test 38/52: tconv()"
-@test round.(tconv(v1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.5, 1.0, 1.5, 2.0, 1.3]
-@test round.(tconv(a1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.3 0.5 0.3; 0.3 0.5 0.3;;; 0.3 0.5 0.3; 0.3 0.5 0.3]
-s = tconv(e10, kernel=[0.2, 0.1, 0.2])
-@test size(s) == (24, 2560, 10)
+@test round.(tconv(v1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.2, 0.5, 1.0, 1.5, 2.0]
+@test round.(tconv(a1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.2 0.3 0.5; 0.2 0.3 0.5;;; 0.2 0.3 0.5; 0.2 0.3 0.5]
+e10_tmp = tconv(e10, kernel=[0.2, 0.1, 0.2])
+@test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "Test 39/52: wbp()"
 @test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560

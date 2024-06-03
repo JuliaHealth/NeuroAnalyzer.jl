@@ -13,7 +13,7 @@ Performs convolution in the time domain.
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `s_new::Vector{Float64}`: convoluted signal
 """
 function tconv(s::AbstractVector; kernel::AbstractVector)
 
@@ -23,9 +23,9 @@ function tconv(s::AbstractVector; kernel::AbstractVector)
 
     # remove in- and out- edges
     if mod(length(kernel), 2) == 0
-        return real.(s_new)[half_kernel:(end - half_kernel)]
+        return s_new[half_kernel:(end - half_kernel)]
     else
-        return real.(s_new)[(half_kernel + 1):(end - half_kernel)]
+        return s_new[half_kernel:(end - half_kernel - 1)]
     end
 
 end

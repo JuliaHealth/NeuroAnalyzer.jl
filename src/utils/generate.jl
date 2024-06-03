@@ -90,7 +90,7 @@ Generates sine wave.
 
 - `f::Real`: frequency [Hz]
 - `t::Union{AbstractVector, AbstractRange}`: time vector
-- `a::Real`: amplitude
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
 - `p::Real`: initial phase [degrees]
 
 # Returns
@@ -114,7 +114,7 @@ Generates complex sine wave.
 
 - `f::Real`: frequency [Hz]
 - `t::Union{AbstractVector, AbstractRange}`: time vector
-- `a::Real`: amplitude
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
 
 # Returns
 
@@ -136,7 +136,7 @@ Generate sinc function.
 # Arguments
 
 - `t::AbstractRange=-2:0.01:2`: time
-- `f::Real=10.0`: frequency
+- `f::Real=1.0: frequency
 - `peak::Real=0`: sinc peak time
 - `norm::Bool=true`: generate normalized function
 
@@ -144,7 +144,7 @@ Generate sinc function.
 
 - `s::Vector{Float64}`
 """
-function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
+function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1.0, peak::Real=0, norm::Bool=true)
 
     s = norm ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(s)

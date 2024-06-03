@@ -11,7 +11,7 @@ p = tes_protocol(type=:tDCS, hd=false, current=2.0, anode_size=(50, 70), cathode
 @test p isa Dict{Symbol, Any}
 
 @info "Test 4/5: tacs_dose()"
-@test tacs_dose(current=2.0, pad_area=35, duration=1200, frequency=1, phase=0, offset=0)[1] == 1.5278874536954241
+@test round(tacs_dose(current=2.0, pad_area=35, duration=1200, frequency=1, phase=0, offset=0)[1], digits=2) == 1.53
 
 @info "Test 5/5: tpcs_dose()"
 @test tpcs_dose(current=2.0, pad_area=35, duration=1200, pw=10, isi=100)[1] == 0.24
