@@ -11,13 +11,13 @@ Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_typ
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `bl` seconds and subtracted from the signal
+- `bl::Tuple{Real, Real}=(0, 0)`: baseline is from `b[1]` to `b[2]` seconds; if `bl` is greater than (0, 0), DC value is calculated as mean of the `b[1]` to `b[2]` seconds and subtracted from the signal
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function erp(obj::NeuroAnalyzer.NEURO; bl::Real=0)
+function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0))
 
     nchannels(obj) > length(signal_channels(obj)) && _warn("Non-signal channels will be removed.")
 
@@ -27,8 +27,10 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Real=0)
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     # remove DC
-    if bl != 0
-        obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, 1], round(Int64, bl * sr(obj)))
+    if bl != (0, 0)
+        _check_tuple(bl, "bl", (obj.epoch_time[1], obj.epoch_time[end]))
+        bl = (vsearch(bl[1], obj.epoch_time), vsearch(bl[2], obj.epoch_time))
+        obj_new.data[:, :, 1] = remove_dc(obj_new.data[:, :, 1], bl)
     end
 
     # remove markers of deleted epochs
@@ -52,9 +54,9 @@ Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_typ
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `bl::Real=0`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
+- `bl::Tuple{Real, Real}=(0, 0)`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
 """
-function erp!(obj::NeuroAnalyzer.NEURO; bl::Real=0)
+function erp!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0))
 
     obj_new = erp(obj, bl=bl)
     obj.data = obj_new.data
