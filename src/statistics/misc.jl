@@ -19,6 +19,7 @@ export count_thresh
 export crit_z
 export z2pow
 export cmp_stat
+export fwhm
 
 """
     z_score(x)
@@ -549,4 +550,34 @@ function cmp_stat(stat_dist::AbstractVector, stat_value::Real; type::Symbol=:g)
     _check_var(type, [:g, :l], "type")
     type === :g && return count(stat_dist .> stat_value) / length(stat_dist)
     type === :l && return count(stat_dist .< stat_value) / length(stat_dist)
+end
+
+"""
+    fwhm(s)
+
+Calculate indices of full-width half-maximum points of a Gaussian-like distribution.
+
+# Arguments
+
+- `s::AbstractVector`
+
+# Returns
+
+- `p1_idx::Int64`: pre-peak half-maximum point
+- `p_idx::Int64`: peak
+- `p2_idx::Int64`: post-peak half-maximum point
+"""
+function fwhm(s::AbstractVector)
+
+    s = normalize_n(s)
+
+    # peak
+    p_idx = vsearch(maximum(s), s)
+    # pre-peak half-maximum width
+    p1_idx = vsearch(0.5, s[1:p_idx])
+    # post-peak half-maximum width
+    p2_idx = p_idx + vsearch(0.5, s[p_idx:end]) - 1
+
+    return p1_idx, p_idx, p2_idx
+
 end

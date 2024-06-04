@@ -213,12 +213,16 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
     g = @. a * exp(-(t/s)^2 / 2)        # Gaussian
 
+    fwhm = 2 * s * sqrt(2 * log(ℯ, 2))
+    _info("FWHM: $fwhm")
+
     return g
 
 end
 
 """
-    generate_noise(n, a
+    generate_noise(n, a; type)
+
 Generate noise.
 
 # Arguments
@@ -280,7 +284,7 @@ end
 """
     generate_morlet_fwhm(fs, f, t; h)
 
-Generate Morlet wavelet using Mike X Cohen formula.
+Generate Morlet wavelet using FWHM (full width at half maximum) formula.
 
 # Arguments
 
