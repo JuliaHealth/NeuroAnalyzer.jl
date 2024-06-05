@@ -9,7 +9,7 @@ Detect bad channels and epochs.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
-- `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
+- `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
     - `:flat`: flat channel(s)
     - `:rmse`: RMSE vs average channel outside of 95%CI
     - `:rmsd`: RMSD
@@ -17,12 +17,14 @@ Detect bad channels and epochs.
     - `:var`: mean signal variance outside of 95%CI and variance inter-quartile outliers
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
     - `:tkeo`: z-score TKEO value outside of 95%CI
+    - `:kurt`: z-score kurtosis value
 - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
 - `ftol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
 - `p::Float64=0.99`: probability threshold (0.0 to 1.0) for marking channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326)
 - `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 - `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
+- `z::Int64=5`: threshold number of z-scores 
 
 # Returns
 
@@ -30,14 +32,15 @@ Named tuple containing:
 - `bm::Matrix{Bool}`: matrix of bad channels × epochs
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow)
+function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Int64=5)
 
+    typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo], "method")
+        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt], "method")
     end
 
-    @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]"
-    @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]"
+    @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
+    @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
 
     _check_channels(obj, ch)
     ch_n = length(ch)
@@ -48,7 +51,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
     if :flat in method
         _info("Using :flat method")
-        @assert w < size(obj.data, 2) "w must be < $(size(obj.data, 2))"
+        @assert w < size(obj.data, 2) "w must be < $(size(obj.data, 2))."
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
@@ -207,6 +210,32 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 end
                 # mark channel as bad if there is at least one bad window per epoch
                 if bad_windows > 1
+                    bad_chs_score += 1
+                    bad_chs[ch_idx] = true
+                end
+            end
+            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
+        end
+    end
+
+    if :kurt in method
+        _info("Using :kurt method")
+        @assert z > 0 "z must be > 0."
+        k = zeros(ch_n, ep_n)
+        @inbounds for ep_idx in 1:ep_n
+            for ch_idx in 1:ch_n
+                k[ch_idx, ep_idx] = @views kurtosis(obj.data[ch[ch_idx], :, ep_idx])
+            end
+        end
+        k = normalize_zscore(k)
+        bad_idx = k .> z
+        _info("$(count(bad_idx)) bad channels were detected")
+        @inbounds for ep_idx in 1:ep_n
+            bad_chs_score = 0
+            bad_chs = zeros(Bool, ch_n)
+            Threads.@threads for ch_idx in 1:ch_n
+                if bad_idx[ch_idx, ep_idx]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
                 end

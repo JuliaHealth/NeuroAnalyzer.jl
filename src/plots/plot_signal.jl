@@ -621,7 +621,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     p = Plots.Plot[]
 
     if type === :normal
-        if !bad
+        if bad == false
             if length(ch_tmp) > 1
                 for cht_idx in eachindex(ch_t_uni)
                     units = _ch_units(obj, ch_tmp[cht_idx][1])
