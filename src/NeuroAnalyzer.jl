@@ -172,7 +172,7 @@ else
 end
 
 FFTW.set_num_threads(Sys.CPU_THREADS)
-BLAS.set_num_threads(Sys.CPU_THREADS)
+BLAS.set_num_threads(1)
 
 # load NA functions
 
