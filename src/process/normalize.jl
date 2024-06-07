@@ -13,6 +13,9 @@ export normalize_perc
 export normalize_invroot
 export normalize_softmax
 export normalize_sigmoid
+export normalize_mad
+export normalize_rank
+export normalize_fisher
 
 """
     normalize(s, n; method)
@@ -38,6 +41,8 @@ Normalize.
     - `:n`: in [0, n], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
     - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
+    - `:mad`: by MAD
+    - `:rank`: using tiedranks
     - `:none`
 
 # Returns
@@ -46,7 +51,7 @@ Normalize.
 """
 function normalize(s::AbstractVector, n::Float64=1.0; method::Symbol)
 
-    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :none], "method")
+    _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :mad, :rank, :none], "method")
 
     if method === :zscore
         return normalize_zscore(s)
@@ -76,6 +81,10 @@ function normalize(s::AbstractVector, n::Float64=1.0; method::Symbol)
         return normalize_softmax(s)
     elseif method === :sigmoid
         return normalize_sigmoid(s)
+    elseif method === :mad
+        return normalize_mad(s)
+    elseif method === :rank
+        return normalize_rank(s)
     elseif method === :none
         return s
     end
@@ -171,6 +180,7 @@ function normalize_zscore(s::AbstractVector)
     if sd != 0
         sn = @. (s - m) / sd
     else
+        _warn("STD is 0, all values will be normalized to (x - x̄).")
         sn = @. (s - m)
     end
 
@@ -200,6 +210,7 @@ function normalize_zscore(s::AbstractArray; bych::Bool=false)
         if sd != 0
             sn = @. (s - m) / sd
         else
+            _warn("STD is 0, all values will be normalized to (x - x̄).")
             sn = @. (s - m)
         end
     else
@@ -239,8 +250,7 @@ function normalize_minmax(s::AbstractVector)
     if length(unique(s)) == 1
         sn = ones(length(s))
     else
-        mi = minimum(s)
-        mx = maximum(s)
+        mi, mx = extrema(s)
         mxi = mx - mi
         sn = @. (2 * (s - mi) / mxi) - 1
     end
@@ -263,6 +273,7 @@ Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0
 
 - `sn::AbstractArray`
 """
+
 function normalize_minmax(s::AbstractArray; bych::Bool=false)
 
     length(unique(s)) == 1 && return ones(length(s))
@@ -270,8 +281,7 @@ function normalize_minmax(s::AbstractArray; bych::Bool=false)
     @assert ndims(s) <= 3 "normalize_minmax() only works for arrays of ≤ 3 dimensions."
 
     if bych == false
-        mi = minimum(s)
-        mx = maximum(s)
+        mi, mx = extrema(s)
         mxi = mx - mi
         sn = @. (2 * (s - mi) / mxi) - 1
     else
@@ -447,6 +457,12 @@ function normalize_gauss(s::AbstractVector)
     l = length(s) + 1
     sn = (tiedrank(s) ./ l .- 0.5) .* 2
     sn = atanh.(sn)
+
+    # sn = tiedrank(s)
+    # sn = normalize_minmax(sn)
+    # sn[sn .== -1] .= -1 + eps()
+    # sn[sn .== 1] .= 1 - eps()
+    # sn = atanh.(sn)
 
     return sn
 
@@ -900,6 +916,191 @@ Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 function normalize_sigmoid(s::AbstractArray; bych::Bool=false)
 
     return @. 1 / (1 + exp(-s))
+
+end
+
+"""
+    normalize_mad(s)
+
+Normalize by MAD.
+
+# Arguments
+
+- `s::AbstractVector`
+
+# Returns
+
+- `sn::AbstractVector`
+"""
+function normalize_mad(s::AbstractVector)
+
+    m = median(s)
+    md = 1.4826 * mad(s)
+    if md != 0
+        sn = @. (s - m) / md
+    else
+        _warn("MAD is 0, all values will be normalized to (x - x̃).")
+        sn = @. (s - m)
+    end
+
+    return sn
+
+end
+
+"""
+    normalize_mad(s; bych)
+
+# Arguments
+
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
+
+# Returns
+
+- `sn::AbstractArray`
+"""
+function normalize_mad(s::AbstractArray; bych::Bool=false)
+
+    @assert ndims(s) <= 3 "normalize_mad() only works for arrays of ≤ 3 dimensions."
+
+    if bych == false
+        m = median(s)
+        md = mad(s)
+        if md != 0
+            sn = @. (s - m) / md
+        else
+            _warn("MAD is 0, all values will be normalized to (x - x̃).")
+            sn = @. (s - m)
+        end
+    else
+        sn = zeros(size(s))
+        if ndims(s) == 2
+            for idx in 1:size(s, 1)
+                sn[idx, :] = @views normalize_mad(s[idx, :])
+            end
+        elseif ndims(s) == 3
+            for idx1 in 1:size(s, 3)
+                for idx2 in 1:size(s, 1)
+                    sn[idx2, :, idx1] = @views normalize_mad(s[idx2, :, idx1])
+                end
+            end
+        end
+    end
+
+    return sn
+
+end
+
+"""
+    normalize_rank(s)
+
+Normalize using tiedranks.
+
+# Arguments
+
+- `s::AbstractVector`
+
+# Returns
+
+- `sn::AbstractVector`
+"""
+function normalize_rank(s::AbstractVector)
+
+    sn = tiedrank(s)
+
+    return sn
+
+end
+
+"""
+    normalize_rank(s; bych)
+
+Normalize using tiedranks.
+
+# Arguments
+
+- `s::AbstractArray`
+- `bych::Bool=false`: if true, normalize each channel separately
+
+# Returns
+
+- `sn::AbstractArray`
+"""
+
+function normalize_rank(s::AbstractArray; bych::Bool=false)
+
+    length(unique(s)) == 1 && return ones(length(s))
+
+    @assert ndims(s) <= 3 "normalize_rank() only works for arrays of ≤ 3 dimensions."
+
+    if bych == false
+        sn = tiedrank(s)
+    else
+        sn = zeros(size(s))
+        if ndims(s) == 2
+            for idx in 1:size(s, 1)
+                sn[idx, :] = @views normalize_rank(s[idx, :])
+            end
+        elseif ndims(s) == 3
+            for idx1 in 1:size(s, 3)
+                for idx2 in 1:size(s, 1)
+                    sn[idx2, :, idx1] = @views normalize_rank(s[idx2, :, idx1])
+                end
+            end
+        end
+    end
+
+    return sn
+
+end
+
+"""
+    normalize_fisher(s)
+
+Normalize using Fisher z-transform. Converts uniform distribution into normal distribution.
+
+# Arguments
+
+- `s::AbstractVector`
+
+# Returns
+
+- `sn::AbstractVector`
+"""
+function normalize_fisher(s::AbstractVector)
+
+    sn = normalize_minmax(s)
+    sn[sn .== -1] .= -1 + eps()
+    sn[sn .== 1] .= 1 - eps()
+    sn = @. 0.5 * log(ℯ, (1 + sn) / (1 - sn))
+
+    return sn
+
+end
+
+"""
+    normalize_fisher(s; bych)
+
+Normalize using Fisher z-transform. Converts uniform distribution into normal distribution.
+
+# Arguments
+
+- `s::AbstractArray`
+- `bych::Bool=false`: ignored
+
+# Returns
+
+- `sn::AbstractArray`
+"""
+
+function normalize_fisher(s::AbstractArray; bych::Bool=false)
+
+    sn = normalize_minmax(s)
+    sn[sn .== -1] .= -1 + eps()
+    sn[sn .== 1] .= 1 - eps()
+    sn = @. 0.5 * log(ℯ, (1 + sn) / (1 - sn))
+
+    return sn
 
 end
 
