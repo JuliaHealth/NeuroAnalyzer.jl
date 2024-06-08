@@ -3,7 +3,7 @@ export iview_ep
 export iview_cont
 
 """
-    iview(obj; ch, zoom)
+    iview(obj; ch, zoom, bad)
 
 Interactive view of continuous or epoched signal.
 
@@ -13,13 +13,14 @@ Interactive view of continuous or epoched signal.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `ep::Int64=1`: initial epoch to display
 - `zoom::Real=5`: how many seconds are displayed in one segment
+- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty -- plot bad channels using this list
 """
-function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), ep::Int64=1, zoom::Real=5)
+function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), ep::Int64=1, zoom::Real=5, bad::Union{Bool, Matrix{Bool}}=false)
 
     if nepochs(obj) == 1
-        iview_cont(obj, ch=ch, zoom=zoom)
+        iview_cont(obj, ch=ch, zoom=zoom, bad=bad)
     else
-        iview_ep(obj, ch=ch, ep=ep)
+        iview_ep(obj, ch=ch, ep=ep, bad=bad)
     end
 
     return nothing
@@ -27,7 +28,7 @@ function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    iview_cont(obj; ch, zoom)
+    iview_cont(obj; ch, zoom, bad)
 
 Interactive view of continuous signal.
 
@@ -36,8 +37,9 @@ Interactive view of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
+- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty -- plot bad channels using this list
 """
-function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), zoom::Real=5)
+function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), zoom::Real=5, bad::Union{Bool, Matrix{Bool}}=false)
 
     (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
@@ -55,9 +57,9 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
 
     if length(ch) > 1
-        p = NeuroAnalyzer.plot(obj, ch=ch[ch_first:ch_last], mono=true, title="")
+        p = NeuroAnalyzer.plot(obj, ch=ch[ch_first:ch_last], mono=true, title="", bad=bad)
     else
-        p = NeuroAnalyzer.plot(obj, ch=ch, mono=true, title="")
+        p = NeuroAnalyzer.plot(obj, ch=ch, mono=true, title="", bad=bad)
     end
 
     win = GtkWindow("NeuroAnalyzer: iview_cont()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 40)
@@ -130,13 +132,15 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                                                            ch=ch[ch_first]:ch[ch_last],
                                                            seg=(time1, time2),
                                                            mono=true,
-                                                           title=""))
+                                                           title="",
+                                                           bad=bad))
         else
             show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
                                                            ch=ch,
                                                            seg=(time1, time2),
                                                            mono=true,
-                                                           title=""))
+                                                           title="",
+                                                           bad=bad))
         end
 
         img = read_from_png(io)
@@ -392,8 +396,9 @@ Interactive view of epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
 - `ep::Int64=1`: initial epoch to display
+- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty -- plot bad channels using this list
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), ep::Int64=1)
+function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), ep::Int64=1, bad::Union{Bool, Matrix{Bool}}=false)
 
     @assert nepochs(obj) > 1 "iview_cont() should be used for continuous object."
     _check_channels(obj, ch)
@@ -408,9 +413,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     end
 
     if length(ch) > 1
-        p = NeuroAnalyzer.plot(obj, ch=ch[ch_first:ch_last], ep=ep, mono=true, title="")
+        p = NeuroAnalyzer.plot(obj, ch=ch[ch_first:ch_last], ep=ep, mono=true, title="", bad=bad)
     else
-        p = NeuroAnalyzer.plot(obj, ch=ch, ep=ep, mono=true, title="")
+        p = NeuroAnalyzer.plot(obj, ch=ch, ep=ep, mono=true, title="", bad=bad)
     end
     win = GtkWindow("NeuroAnalyzer: iview_ep()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
@@ -473,13 +478,15 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                                                            ch=ch[ch_first]:ch[ch_last],
                                                            ep=ep,
                                                            mono=true,
-                                                           title=""))
+                                                           title="",
+                                                           bad=bad))
         else
             show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
                                                            ch=ch,
                                                            ep=ep,
                                                            mono=true,
-                                                           title=""))
+                                                           title="",
+                                                           bad=bad))
         end
 
         img = read_from_png(io)
