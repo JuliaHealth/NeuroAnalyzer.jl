@@ -213,8 +213,8 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
     g = @. a * exp(-(t/s)^2 / 2)        # Gaussian
 
-    fwhm = 2 * s * sqrt(2 * log(ℯ, 2))
-    _info("FWHM: $fwhm")
+    # fwhm = 2 * s * sqrt(2 * log(ℯ, 2))
+    # _info("FWHM: $fwhm")
 
     return g
 
