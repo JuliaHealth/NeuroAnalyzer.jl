@@ -20,6 +20,7 @@ export crit_z
 export z2pow
 export cmp_stat
 export fwhm
+export cosine_similarity
 
 """
     z_score(x)
@@ -579,5 +580,29 @@ function fwhm(s::AbstractVector)
     p2_idx = p_idx + vsearch(0.5, s[p_idx:end]) - 1
 
     return p1_idx, p_idx, p2_idx
+
+end
+
+"""
+    cosine_similarity(s1, s2)
+
+Calculate cosine similarity.
+
+# Arguments
+
+- `s1::AbstractVector`
+- `s2::AbstractVector`
+
+# Returns
+
+- `cs::Float64`
+"""
+function cosine_similarity(s1::AbstractVector, s2::AbstractVector)
+
+    @assert length(s1) == length(s2) "Length of both vectors must be the same."
+
+    cs = sum(s1 .* s2) / (sqrt(sum(s1.^2)) * sqrt(sum(s2.^2)))
+
+    return cs
 
 end
