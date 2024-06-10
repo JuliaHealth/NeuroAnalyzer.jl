@@ -11,12 +11,12 @@ Detect bad channels and epochs.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z]`: detection method:
     - `:flat`: flat channel(s)
-    - `:rmse`: RMSE vs average channel outside of 95%CI
+    - `:rmse`: RMSE vs average channel outside of 95% CI
     - `:rmsd`: RMSD
     - `:euclid`: Euclidean distance
-    - `:var`: mean signal variance outside of 95%CI and variance inter-quartile outliers
+    - `:var`: mean signal variance outside of 95% CI and variance inter-quartile outliers
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
-    - `:tkeo`: z-score TKEO value outside of 95%CI
+    - `:tkeo`: z-score TKEO value outside of 95% CI
     - `:kurt`: z-scores of kurtosis values
     - `:z`: z-score of amplitude
 - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)

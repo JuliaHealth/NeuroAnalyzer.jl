@@ -151,8 +151,8 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test count_thresh(m, t=4, t_type=:l) == (x_t = [1 0 0; 1 0 0; 1 0 0], n = 3)
 @test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
 
-@info "Test 43/62: crit_z()"
-@test crit_z(1 - 0.05 / 2) == 1.9599639845400576
+@info "Test 43/62: crit_t()"
+@test crit_z(20, 0.95) == 2.093024054408309
 
 @info "Test 44/62: size_c2g()"
 @test size_c2g(m1=100, s1=10, m2=120) == (n1 = 4, n2 = 4)

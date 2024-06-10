@@ -34,7 +34,7 @@ function size_c2g(; m1::Real, s1::Real, m2::Real, r::Int64=1, alpha::Float64=0.0
     beta = 1 - power
     delta = abs(m2 - m1)
 
-    n1 = round(Int64, ((s1^2 + s1^2 / r) * (crit_z(1 - alpha / 2) + crit_z(1 - beta))^2) / delta^2)
+    n1 = round(Int64, ((s1^2 + s1^2 / r) * (ci2z(1 - alpha / 2) + ci2z(1 - beta))^2) / delta^2)
     n2 = n1 * r
 
     return (n1=n1, n2=n2)
@@ -63,7 +63,7 @@ function size_c1g(; m0::Real, s0::Real, m1::Real, alpha::Float64=0.05, power::Fl
 
     beta = 1 - power
 
-    n = round(Int64, (s0^2 * (crit_z(1 - beta) + crit_z(1 - alpha / 2))^2) / ((m0 - m1)^2))
+    n = round(Int64, (s0^2 * (ci2z(1 - beta) + ci2z(1 - alpha / 2))^2) / ((m0 - m1)^2))
 
     return n
 
@@ -97,7 +97,7 @@ function size_p2g(; p1::Float64, p2::Float64, r::Int64=1, alpha::Float64=0.05, p
     p_dash = (p1 + r * p2) / (1 + r)
     q_dash = 1 - p_dash
 
-    n1 = round(Int64, ((crit_z(1 - alpha / 2) * sqrt(p_dash * q_dash * (1 + 1 / r)) + crit_z(1 - beta) * sqrt(p1 * q1 + ((p2 * q2) / r))))^2 / delta^2)
+    n1 = round(Int64, ((ci2z(1 - alpha / 2) * sqrt(p_dash * q_dash * (1 + 1 / r)) + ci2z(1 - beta) * sqrt(p1 * q1 + ((p2 * q2) / r))))^2 / delta^2)
     n2 = n1 * r
 
     return (n1=n1, n2=n2)
@@ -126,7 +126,7 @@ function size_p1g(; p0::Float64, p1::Float64, r::Int64=1, alpha::Float64=0.05, p
     q0 = 1 - p0
     q1 = 1 - p1
 
-    n = round(Int64, (p0 * q0 * (crit_z(1 - alpha / 2) + crit_z(1 -beta) * sqrt((p1 * q1) / (p0 * q0)))^2) / (p1 - p0)^2)
+    n = round(Int64, (p0 * q0 * (ci2z(1 - alpha / 2) + ci2z(1 -beta) * sqrt((p1 * q1) / (p0 * q0)))^2) / (p1 - p0)^2)
 
     return n
 
@@ -155,7 +155,7 @@ function power_c2g(; m1::Real, s1::Real, m2::Real, s2::Real, n1::Int64, n2::Int6
 
     delta = abs(m2 - m1)
 
-    z = -crit_z(1 - alpha / 2) + (delta / sqrt((s1^2 / n1) + (s2^2 / n2)))
+    z = -ci2z(1 - alpha / 2) + (delta / sqrt((s1^2 / n1) + (s2^2 / n2)))
 
     return z2pow(z)
 
@@ -183,7 +183,7 @@ function power_c1g(; m0::Real, s0::Real, m1::Real, n1::Int64, alpha::Float64=0.0
 
     delta = abs(m0 - m1)
 
-    z = -crit_z(1 - alpha / 2) + (delta * sqrt(n1) / s0)
+    z = -ci2z(1 - alpha / 2) + (delta * sqrt(n1) / s0)
 
     return z2pow(z)
 
@@ -216,7 +216,7 @@ function power_p2g(; p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Floa
     p_dash = (p1 + r * p2) / (1 + r)
     q_dash = 1 - p_dash
 
-    z = (delta / (sqrt(((p1 * q1) / n1) + (p2 * q2) / n2))) - crit_z(1 - alpha / 2) * ((sqrt(p_dash * q_dash * ((1 / n1) + (1 / n2)))) / (sqrt(((p1 * q1)  / n1) + ((p2 * q2) / n2))))
+    z = (delta / (sqrt(((p1 * q1) / n1) + (p2 * q2) / n2))) - ci2z(1 - alpha / 2) * ((sqrt(p_dash * q_dash * ((1 / n1) + (1 / n2)))) / (sqrt(((p1 * q1)  / n1) + ((p2 * q2) / n2))))
 
     return z2pow(z)
 
@@ -243,7 +243,7 @@ function power_p1g(; p0::Float64, p1::Float64, n1::Int64, alpha::Float64=0.05)
     q0 = 1 - p0
     q1 = 1 - p1
 
-    z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - crit_z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
+    z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - ci2z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
 
     return z2pow(z)
 

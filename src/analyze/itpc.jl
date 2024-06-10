@@ -16,7 +16,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
 Named tuple containing:
 - `itpc_value::Float64`: ITPC value
-- `itpcz_value::Float64`: Rayleigh's ITPC Z value
+- `itpcz_value::Float64`: Rayleigh's ITPC z value
 - `itpc_angle::Float64`: ITPC angle
 - `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
@@ -63,7 +63,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
 Named tuple containing:
 - `itpc_value::Vector{Float64}`: ITPC or wITPC value
-- `itpcz_value::Vector{Float64}`: Rayleigh's ITPC Z value
+- `itpcz_value::Vector{Float64}`: Rayleigh's ITPC z value
 - `itpc_angle::Vector{Float64}`: ITPC angle
 - `itpc_phases::Array{Float64, 2}`: phase difference (channel2 - channel1)
 """
@@ -103,7 +103,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 Named tuple containing:
 - `itpc_values::Vector{Float64}`: ITPC values
-- `itpcz_values::Vector{Float64}`: Rayleigh's ITPC Z values
+- `itpcz_values::Vector{Float64}`: Rayleigh's ITPC z values
 - `itpc_angles::Vector{Float64}`: ITPC angles
 - `itpc_phases::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """

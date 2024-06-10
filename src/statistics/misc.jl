@@ -16,7 +16,7 @@ export r_test
 export slope
 export distance
 export count_thresh
-export crit_z
+export crit_t
 export z2pow
 export cmp_stat
 export fwhm
@@ -495,32 +495,33 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)
 end
 
 """
-    crit_z(ci_level)
+    crit_t(c, df)
 
-Calculate critical Z value.
+Calculate critical t value.
 
 # Arguments
 
 - `c::Float64=0.95`: confidence level
+- `df::Real`: degrees of freedom (usually df = n - 1)
 
 # Returns
 
-- `z_score::Float64`
+- `t::Float64`
 """
-function crit_z(c::Float64=0.95)
+function crit_t(df::Real, c::Float64=0.95)
 
-    return quantile(Distributions.Normal(0.0, 1.0), c)
+    return -quantile(TDist(df), (1 - c) / 2)
 
 end
 
 """
     z2pow(z)
 
-Calculate power for a given Z value.
+Calculate power for a given z value.
 
 # Arguments
 
-- `z::Real`: Z value
+- `z::Real`: z value
 
 # Returns
 
