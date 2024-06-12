@@ -413,7 +413,8 @@ Convert Confidence Interval level to z score.
 """
 function ci2z(ci_level::Float64=0.95)
 
-    return quantile(Distributions.Normal(0.0, 1.0), 1 - (1 - ci_level) / 2)
+#    return quantile(Distributions.Normal(0.0, 1.0), 1 - ((1 - ci_level) / 2))
+    return quantile(Distributions.Normal(0.0, 1.0), ci_level)
 
 end
 

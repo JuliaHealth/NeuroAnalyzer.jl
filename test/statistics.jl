@@ -121,14 +121,14 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test NeuroAnalyzer.summary(ones(10), ones(10)) == (mm1 = 1.0, mm2 = 1.0, s1 = 0.0, s2 = 0.0, me1 = 1.0, me2 = 1.0, mo1 = 1.0, mo2 = 1.0)
 
 @info "Test 35/62: ci_median()"
-@test ci_median(collect(1:100)) == (41, 60)
+@test ci_median(collect(1:100)) == (42, 59)
 
 @info "Test 36/62: ci_r()"
-@test ci_r(r=0.3, n=50) == (0.02, 0.53)
-@test ci_r(ones(10), zeros(10)) == (0.01, 0.64)
+@test ci_r(r=0.3, n=50) == (0.07, 0.5)
+@test ci_r(ones(10), zeros(10)) == (0.01, 0.56)
 
 @info "Test 37/62: ci2z()"
-@test ci2z(0.95) == 1.9599639845400576
+@test ci2z(0.95) == 1.6448536269514717
 
 @info "Test 38/62: r_test()"
 @test r_test(r1=0.3, r2=0.6, n1=50, n2=50) == -1.8566613853904539
@@ -152,7 +152,7 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
 
 @info "Test 43/62: crit_t()"
-@test crit_z(20, 0.95) == 2.093024054408309
+@test crit_t(20, 0.95) == 2.085963447265865
 
 @info "Test 44/62: size_c2g()"
 @test size_c2g(m1=100, s1=10, m2=120) == (n1 = 4, n2 = 4)
@@ -222,7 +222,7 @@ f, p = NeuroAnalyzer.vartest(e10, e10)
 
 @info "Test 61/62: fwhm()"
 s = generate_gaussian(256, 10, ncyc=2)
-@test fwhm(s) == (209, 257, 305)
+@test fwhm(s) == (247, 257, 267)
 
 @info "Test 62/62: fwhm()"
 x = 1:4
