@@ -10,13 +10,14 @@ export binom_stat
 export cvar_mean
 export cvar_median
 export ci_median
+export ci_prop
 export ci_r
-export ci2z
 export r_test
 export slope
 export distance
 export count_thresh
 export crit_t
+export crit_z
 export z2pow
 export cmp_stat
 export fwhm
@@ -33,11 +34,15 @@ Calculate Z-scores for each value of the vector `x`.
 
 # Returns
 
-- `z_score::Vector{Float64}`
+- `z::Vector{Float64}`
 """
 function z_score(x::AbstractVector)
 
-    return (x .- mean(x)) ./ std(x)
+    m = mean(x)
+    s = std(x)
+    z = (x .- m) ./ s
+
+    return z
 
 end
 
@@ -65,7 +70,7 @@ end
 """
     se(x)
 
-Calculate standard error.
+Calculate standard error of the mean.
 
 # Arguments
 
@@ -78,25 +83,6 @@ Calculate standard error.
 function se(x::AbstractVector)
 
     return std(x) / sqrt(length(x))
-
-end
-
-"""
-    rng(x)
-
-Calculate range.
-
-# Arguments
-
-- `x::AbstractVector`
-
-# Returns
-
-- `rng::Float64`
-"""
-function rng(x::AbstractVector)
-
-    return maximum(x) - minimum(x)
 
 end
 
@@ -195,11 +181,13 @@ Calculate probability of exactly `r` successes in `n` trials.
 
 # Returns
 
-- `binom_prob::Float64`: probability
+- `bp::Float64`: probability
 """
 function binom_prob(p::Float64, r::Int64, n::Int64)
 
-    return binomial(n, r) * (p^r) * (1 - p)^(n - r)
+    bp = binomial(n, r) * (p^r) * (1 - p)^(n - r)
+
+    return bp
 
 end
 
@@ -267,25 +255,25 @@ function cvar_median(x::AbstractVector)
 end
 
 """
-    ci_median(x; ci_level)
+    ci_median(x; ci)
 
 Calculate confidence interval for a median.
 
 # Arguments
 
 - `x::AbstractVector`
-- `ci_level::Float64=0.95`: confidence level
+- `ci::Float64=0.95`: confidence level
 
 # Returns
 
 - `ci_median::Tuple(Float64, Float64)`
 """
-function ci_median(x::AbstractVector; ci_level::Float64=0.95)
+function ci_median(x::AbstractVector; ci::Float64=0.95)
 
     x_new = sort(x)
     n = length(x)
     q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
-    z = ci2z(ci_level)
+    z = crit_z(ci)
 
     j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
     k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
@@ -294,27 +282,26 @@ function ci_median(x::AbstractVector; ci_level::Float64=0.95)
 
 end
 
-
 """
-    ci_median(x; ci_level)
+    ci_median(x; ci)
 
 Calculate confidence interval for a median.
 
 # Arguments
 
 - `x::AbstractArray`
-- `ci_level::Float64=0.95`: confidence level
+- `ci::Float64=0.95`: confidence level
 
 # Returns
 
 - `ci_median::Tuple(Float64, Float64)`
 """
-function ci_median(x::AbstractArray; ci_level::Float64=0.95)
+function ci_median(x::AbstractArray; ci::Float64=0.95)
 
     x_new = sort(vec(median(x, dims=1)))
     n = size(x, 2)
     q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
-    z = ci2z(ci_level)
+    z = crit_z(ci)
 
     j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
     k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
@@ -324,7 +311,33 @@ function ci_median(x::AbstractArray; ci_level::Float64=0.95)
 end
 
 """
-    ci_r(x, y; ci_level)
+    ci_prop(p; ci)
+
+Calculate confidence interval for a proportion.
+
+# Arguments
+
+- `p::Float64`: proportion
+- `n::Int64`: sample size
+- `ci::Float64=0.95`: confidence level
+
+# Returns
+
+- `ci_prop::Tuple(Float64, Float64)`
+"""
+function ci_prop(p::Float64, n::Int64; ci::Float64=0.95)
+
+    z = crit_z(ci)
+    q = 1 - p
+    ci_l = (p - z * sqrt((p * q) / n))
+    ci_u = (p + z * sqrt((p * q) / n))
+
+    return (ci_l, ci_u)
+
+end
+
+"""
+    ci_r(x, y; ci)
 
 Calculate confidence interval for a correlation coefficient.
 
@@ -332,13 +345,13 @@ Calculate confidence interval for a correlation coefficient.
 
 - `x::AbstractVector`
 - `y::AbstractVector`
-- `ci_level::Float64=0.95`: confidence level
+- `ci::Float64=0.95`: confidence level
 
 # Returns
 
 - `ci_r::Tuple(Float64, Float64)`
 """
-function ci_r(x::AbstractVector, y::AbstractVector; ci_level::Float64=0.95)
+function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)
 
     @assert length(x) == length(y) "Both vectors must have the same length."
 
@@ -353,8 +366,8 @@ function ci_r(x::AbstractVector, y::AbstractVector; ci_level::Float64=0.95)
     r_idx = vsearch(r, r_values)
     z_score = z_values[r_idx]
 
-    ci_h = z_score + z_r * ci2z(ci_level)
-    ci_l = z_score - z_r * ci2z(ci_level)
+    ci_h = z_score + z_r * crit_z(ci)
+    ci_l = z_score - z_r * crit_z(ci)
 
     ci_h_idx = vsearch(ci_h, z_values)
     ci_l_idx = vsearch(ci_l, z_values)
@@ -364,7 +377,7 @@ function ci_r(x::AbstractVector, y::AbstractVector; ci_level::Float64=0.95)
 end
 
 """
-    ci_r(; r, n, ci_level)
+    ci_r(; r, n, ci)
 
 Calculate confidence interval for a correlation coefficient.
 
@@ -372,13 +385,13 @@ Calculate confidence interval for a correlation coefficient.
 
 - `r::Float64`
 - `n::Int64`: number of observations
-- `ci_level::Float64=0.95`: confidence level
+- `ci::Float64=0.95`: confidence level
 
 # Returns
 
 - `ci_r::Tuple(Float64, Float64)`
 """
-function ci_r(; r::Float64, n::Int64, ci_level::Float64=0.95)
+function ci_r(; r::Float64, n::Int64, ci::Float64=0.95)
 
     z_r = 1 / sqrt(n - 3)
 
@@ -388,33 +401,13 @@ function ci_r(; r::Float64, n::Int64, ci_level::Float64=0.95)
     r_idx = vsearch(r, r_values)
     z_score = z_values[r_idx]
 
-    ci_h = z_score + z_r * ci2z(ci_level)
-    ci_l = z_score - z_r * ci2z(ci_level)
+    ci_h = z_score + z_r * crit_z(ci)
+    ci_l = z_score - z_r * crit_z(ci)
 
     ci_h_idx = vsearch(ci_h, z_values)
     ci_l_idx = vsearch(ci_l, z_values)
 
     return (r_values[ci_l_idx], r_values[ci_h_idx])
-
-end
-
-"""
-    ci2z(ci_level)
-
-Convert Confidence Interval level to z score.
-
-# Arguments
-
-- `ci_level::Float64=0.95`: confidence level
-
-# Returns
-
-- `z_score::Float64`
-"""
-function ci2z(ci_level::Float64=0.95)
-
-#    return quantile(Distributions.Normal(0.0, 1.0), 1 - ((1 - ci_level) / 2))
-    return quantile(Distributions.Normal(0.0, 1.0), ci_level)
 
 end
 
@@ -509,9 +502,32 @@ Calculate critical t value.
 
 - `t::Float64`
 """
-function crit_t(df::Real, c::Float64=0.95)
+function crit_t(c::Float64, df::Real)
 
-    return -quantile(TDist(df), (1 - c) / 2)
+    t = quantile(Distributions.TDist(df), 1 - (1 - c) / 2)
+
+    return t
+
+end
+
+"""
+    crit_z(c)
+
+Calculate critical z value.
+
+# Arguments
+
+- `c::Float64=0.95`: confidence level
+
+# Returns
+
+- `z::Float64`
+"""
+function crit_z(c::Float64=0.95; twosided::Bool=true)
+
+    z = quantile(Distributions.Normal(0.0, 1.0), 1 - (1 - c) / 2)
+
+    return z
 
 end
 

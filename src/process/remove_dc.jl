@@ -27,7 +27,7 @@ function remove_dc(s::AbstractVector, n::Int64=0)
 end
 
 """
-    remove_dc(s; n)
+    remove_dc(s, n)
 
 Remove mean value (DC offset). If `n` is greater than 0, mean value is calculated for the first `n` samples.
 

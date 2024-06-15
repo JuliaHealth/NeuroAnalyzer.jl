@@ -32,7 +32,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
         z = z_score(x)
         o[z .< -3] .= true
         o[z .> 3] .= true
-    else
+    elseif method === :g
         @assert length(x) > 6 "For :g method length(x) must be > 6."
         x_tmp = deepcopy(x)
         for _ in length(x_tmp):-1:6
