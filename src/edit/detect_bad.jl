@@ -231,7 +231,6 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
         k = normalize_zscore(k)
         bad_idx = abs.(k) .> z
-        _info("$(count(bad_idx)) bad channels were detected")
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
@@ -258,7 +257,6 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             end
         end
         bad_idx = k .> p
-        _info("$(count(bad_idx)) bad channels were detected")
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)

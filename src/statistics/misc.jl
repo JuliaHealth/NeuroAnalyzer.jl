@@ -496,22 +496,37 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)
 end
 
 """
-    crit_t(c, df)
+    crit_t(df, alpha; twosided)
 
 Calculate critical t value.
 
 # Arguments
 
-- `c::Float64=0.95`: confidence level
 - `df::Real`: degrees of freedom (usually df = n - 1)
+- `alpha::Float64=0.05`: alpha value
+- `twosided::Bool=false`: one or two tailed probability
 
 # Returns
 
 - `t::Float64`
-"""
-function crit_t(df::Real, c::Float64=0.95)
 
-    return -quantile(TDist(df), (1 - c) / 2)
+# Notes
+
+Critical region for one tailed probability: 
+- left: `(-∞ , -t]`
+- right: `[t , ∞)`
+
+Critical region for two tailed probability: `(-∞ , -t] ∪ [t, ∞)`  
+"""
+function crit_t(df::Real, alpha::Float64=0.05; twosided::Bool=false)
+
+    if twosided
+        t = quantile(TDist(df), 1 - (alpha / 2))
+    else
+        t = quantile(TDist(df), 1 - alpha)
+    end
+
+    return t
 
 end
 

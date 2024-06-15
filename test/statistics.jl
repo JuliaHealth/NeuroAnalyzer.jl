@@ -152,7 +152,8 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
 
 @info "Test 43/62: crit_t()"
-@test crit_t(20, 0.95) == 2.085963447265865
+@test crit_t(20, 0.05) == 1.7247182429207868
+@test crit_t(20, 0.05, twosided=true) == 2.085963447265865
 
 @info "Test 44/62: size_c2g()"
 @test size_c2g(m1=100, s1=10, m2=120) == (n1 = 4, n2 = 4)
@@ -171,7 +172,7 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test power_c2g(m1=100, s1=10, n1=40, m2=101, s2=10, n2=40) == 0.06517153743820353
 
 @info "Test 49/62: power_c1g()"
-@test power_c1g(m0=100, s0=10, m1=101, n1=40) == 0.09217027287864314
+@test power_c1g(m=0, s=2, xbar=1, n=42) == 0.8854398137187738
 
 @info "Test 50/62: power_p2g()"
 @test power_p2g(p1=0.10, p2=0.20, n1=15, n2=25) == 0.11073439642784569

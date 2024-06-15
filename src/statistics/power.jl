@@ -10,7 +10,7 @@ export size_c1diff
 export size_p1diff
 
 """
-    size_c2g(m1, s1, m2, r, alpha, power)
+    size_c2g(; m1, s1, m2, r, alpha, power)
 
 Calculate required sample size for a continuous variable (group 1 vs group 2).
 
@@ -42,35 +42,40 @@ function size_c2g(; m1::Real, s1::Real, m2::Real, r::Int64=1, alpha::Float64=0.0
 end
 
 """
-    size_c1g(m0, s0, m1, alpha, power)
+    size_c1g(; m, s, xbar, alpha, power, iter)
 
 Calculate required sample size for a continuous variable (group 1 vs population).
 
 # Arguments
 
-- `m0::Real`: population mean
-- `s0::Real`: population standard deviation
-- `m1::Real`: group 1 mean (expected)
+- `m::Real`: population mean
+- `s::Real`: population standard deviation
+- `xbar::Real`: expected group mean
 - `alpha::Float64=0.05`: the probability of type I error
 - `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
+- `iter::Bool=false`: use iterative method
 
 # Returns
 
-Named tuple containing:
-- `n::Int64`: group 1 sample size
+- `n::Int64`: group sample size
 """
-function size_c1g(; m0::Real, s0::Real, m1::Real, alpha::Float64=0.05, power::Float64=0.8)
+function size_c1g(; m::Real, s::Real, xbar::Real, alpha::Float64=0.05, power::Float64=0.8, iter::Bool=false)
 
-    beta = 1 - power
-
-    n = round(Int64, (s0^2 * (ci2z(1 - beta) + ci2z(1 - alpha / 2))^2) / ((m0 - m1)^2))
+    if iter
+        n = zeros(length(2:10_000))
+        n = [power_c1g(m=m, s=s, xbar=xbar, n=idx, alpha=alpha) for idx in 2:10_000]
+        n = vsearch(power,n)
+    else
+        beta = 1 - power
+        n = round(Int64, (s^2 * (ci2z(1 - beta) + ci2z(1 - alpha / 2))^2) / ((m - xbar)^2))
+    end
 
     return n
 
 end
 
 """
-    size_p2g(x)
+    size_p2g(; p1, p2, r, alpha, power)
 
 Calculate required sample size for a proportion (group 1 vs group 2).
 
@@ -105,7 +110,7 @@ function size_p2g(; p1::Float64, p2::Float64, r::Int64=1, alpha::Float64=0.05, p
 end
 
 """
-    size_p1g(x)
+    size_p1g(; p0, p1, alpha, power)
 
 Calculate required sample size for a proportion (group 1 vs population).
 
@@ -120,7 +125,7 @@ Calculate required sample size for a proportion (group 1 vs population).
 
 - `n::Int64`: group 1 sample size
 """
-function size_p1g(; p0::Float64, p1::Float64, r::Int64=1, alpha::Float64=0.05, power::Float64=0.8)
+function size_p1g(; p0::Float64, p1::Float64, alpha::Float64=0.05, power::Float64=0.8)
 
     beta = 1 - power
     q0 = 1 - p0
@@ -133,7 +138,7 @@ function size_p1g(; p0::Float64, p1::Float64, r::Int64=1, alpha::Float64=0.05, p
 end
 
 """
-    power_c2g(x)
+    power_c2g(; m1, s1, n1, m2, s2, n2, alpha)
 
 Calculate study power for a continuous variable (group 1 vs group 2).
 
@@ -156,41 +161,49 @@ function power_c2g(; m1::Real, s1::Real, m2::Real, s2::Real, n1::Int64, n2::Int6
     delta = abs(m2 - m1)
 
     z = -ci2z(1 - alpha / 2) + (delta / sqrt((s1^2 / n1) + (s2^2 / n2)))
+    p = z2pow(z)
 
-    return z2pow(z)
+    return p
 
 end
 
 
 """
-    power_c1g(x)
+    power_c1g(; m, s, xbar, n, alpha)
 
 Calculate study power for a continuous variable (group 1 vs population).
 
 # Arguments
 
-- `m0::Real`: population mean
-- `s0::Real`: population standard deviation
-- `m1::Real`: group 1 mean
-- `n1::Int64`: group 1 sample size
+- `m::Real`: population mean
+- `s::Real`: population standard deviation
+- `xbar::Real`: group mean
+- `n::Int64`: group sample size
 - `alpha::Float64=0.05`: the probability of type I error
 
 # Returns
 
 - `p::Float64`: study power
 """
-function power_c1g(; m0::Real, s0::Real, m1::Real, n1::Int64, alpha::Float64=0.05)
+function power_c1g(; m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64=0.05)
 
-    delta = abs(m0 - m1)
+    # delta = abs(m - xbar)
+    # z = -ci2z(1 - alpha / 2) + (delta * sqrt(n1) / s)
+    # return z2pow(z)
 
-    z = -ci2z(1 - alpha / 2) + (delta * sqrt(n1) / s0)
+    t_r = crit_t(n - 1, alpha, twosided=true)
+    t_l = -t_r
+    t = (xbar - m) / (s / sqrt(n))
+    power_l = cdf(TDist(n - 1), t_l + t)
+    power_r = 1 - cdf(TDist(n - 1), t_r + t)
+    p = power_l + power_r
 
-    return z2pow(z)
+    return p
 
 end
 
 """
-    power_p2g(x)
+    power_p2g(; p1, p2, n1, n2, alpha)
 
 Calculate required sample size for a proportion (group 1 vs group 2).
 
@@ -217,13 +230,14 @@ function power_p2g(; p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Floa
     q_dash = 1 - p_dash
 
     z = (delta / (sqrt(((p1 * q1) / n1) + (p2 * q2) / n2))) - ci2z(1 - alpha / 2) * ((sqrt(p_dash * q_dash * ((1 / n1) + (1 / n2)))) / (sqrt(((p1 * q1)  / n1) + ((p2 * q2) / n2))))
+    p = z2pow(z)
 
-    return z2pow(z)
+    return p
 
 end
 
 """
-    power_p1g(x)
+    power_p1g(; p0, p1, n1, alpha)
 
 Calculate required sample size for a proportion (group 1 vs population).
 
@@ -244,13 +258,14 @@ function power_p1g(; p0::Float64, p1::Float64, n1::Int64, alpha::Float64=0.05)
     q1 = 1 - p1
 
     z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - ci2z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
+    p = z2pow(z)
 
-    return z2pow(z)
+    return p
 
 end
 
 """
-    size_c1diff(s1, s2, alpha, power)
+    size_c1diff(; s1, s2, twosided, power)
 
 Calculate required sample size for detecting a difference in a continuous variable (group 1 vs population).
 
@@ -258,14 +273,14 @@ Calculate required sample size for detecting a difference in a continuous variab
 
 - `s0::Real`: population standard deviation
 - `s1::Real`: study standard deviation that we want to detect
-- `two_sided::Bool=true`: if true, the estimation is for two-sided difference
+- `twosided::Bool=true`: if true, the estimation is for two-sided difference
 - `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
 
 # Returns
 
 - `n::Int64`: study sample size
 """
-function size_c1diff(; s0::Real, s1::Real, two_sided::Bool=true, power::Float64=0.8)
+function size_c1diff(; s0::Real, s1::Real, twosided::Bool=true, power::Float64=0.8)
 
     sdiff = s1 / s0
 
@@ -312,12 +327,12 @@ function size_c1diff(; s0::Real, s1::Real, two_sided::Bool=true, power::Float64=
 
     n = table[sdiff_idx, power_idx]
 
-    return two_sided ? 2 * n : n
+    return twosided ? 2 * n : n
 
 end
 
 """
-    size_p1diff(p0, p1, power)
+    size_p1diff(; p0, p1, power)
 
 Calculate required sample size for detecting a difference in a proportion (group 1 vs population).
 
@@ -377,8 +392,8 @@ function size_p1diff(; p0::Real, p1::Real, power::Float64=0.8)
              20 15 12 9;
              18 13 11 8]
 
-    n = table[sdiff_idx, power_idx]
+    n = 2 * table[sdiff_idx, power_idx]
 
-    return 2 * n
+    return n
 
 end
