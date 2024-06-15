@@ -29,7 +29,8 @@ function pred_int(n::Int64)
     n in 61:70 && return 2.01
     n in 71:80 && return 2.00
     n in 81:90 && return 2.00
-    n in 91:100 && return 1.99
-    n > 100 && return 1.98
+    n in 91:199 && return 1.99
+    n in 200:200 && return 1.98
+    n > 200 && return 1.96
 
 end
