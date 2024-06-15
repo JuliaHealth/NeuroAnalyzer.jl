@@ -121,11 +121,11 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test NeuroAnalyzer.summary(ones(10), ones(10)) == (mm1 = 1.0, mm2 = 1.0, s1 = 0.0, s2 = 0.0, me1 = 1.0, me2 = 1.0, mo1 = 1.0, mo2 = 1.0)
 
 @info "Test 35/63: ci_median()"
-@test ci_median(collect(1:100)) == (42, 59)
+@test ci_median(collect(1:100)) == (41, 60)
 
 @info "Test 36/63: ci_r()"
-@test ci_r(r=0.3, n=50) == (0.07, 0.5)
-@test ci_r(ones(10), zeros(10)) == (0.01, 0.56)
+@test ci_r(r=0.3, n=50) == (0.02, 0.53)
+@test ci_r(ones(10), zeros(10)) == (0.01, 0.64)
 
 @info "Test 37/63: crit_z()"
 @test crit_z(0.95) == 1.9599639845400576
@@ -152,32 +152,32 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
 
 @info "Test 43/63: crit_t()"
-@test crit_t(0.95, 20) == 2.085963447265865
+@test crit_t(0.95, 20) == 2.0859634472658644
 
 @info "Test 44/63: size_c2g()"
-@test size_c2g(m1=100, s1=10, m2=120) == (n1 = 4, n2 = 4)
-@test size_c2g(m1=100, s1=10, m2=120, r=2) == (n1 = 3, n2 = 6)
+@test size_c2g(m1=100, s1=10, m2=120) == (n1 = 6, n2 = 6)
+@test size_c2g(m1=100, s1=10, m2=120, r=2) == (n1 = 5, n2 = 10)
 
 @info "Test 45/63: size_c1g()"
-@test size_c1g(m0=100, s0=10, m1=120) == 2
+@test size_c1g(m0=100, s0=10, m1=120) == 3
 
 @info "Test 46/63: size_p2g()"
-@test size_p2g(p1=0.40, p2=0.50) == (n1 = 387, n2 = 387)
+@test size_p2g(p1=0.40, p2=0.50) == (n1 = 612, n2 = 612)
 
 @info "Test 47/63: size_p1g()"
-@test size_p1g(p0=0.40, p1=0.50) == 191
+@test size_p1g(p0=0.40, p1=0.50) == 302
 
 @info "Test 48/63: power_c2g()"
-@test power_c2g(m1=100, s1=10, n1=40, m2=101, s2=10, n2=40) == 0.06517153743820353
+@test power_c2g(m1=100, s1=10, n1=40, m2=101, s2=10, n2=40) == 0.03639149309909239
 
 @info "Test 49/63: power_c1g()"
-@test power_c1g(m0=100, s0=10, m1=101, n1=40) == 0.09217027287864314
+@test power_c1g(m0=100, s0=10, m1=101, n1=40) == 0.05381394419726808
 
 @info "Test 50/63: power_p2g()"
-@test power_p2g(p1=0.10, p2=0.20, n1=15, n2=25) == 0.11073439642784569
+@test power_p2g(p1=0.10, p2=0.20, n1=15, n2=25) == 0.06336244618235812
 
 @info "Test 51/63: power_p1g()"
-@test power_p1g(p0=0.10, p1=0.20, n1=15) == 0.3079297312284095
+@test power_p1g(p0=0.10, p1=0.20, n1=15) == 0.23798284143729115
 
 @info "Test 52/63: z2pow()"
 @test z2pow(0.44) == 0.6700314463394064
