@@ -61,20 +61,14 @@ Calculate required sample size for a continuous variable (group 1 vs population)
 """
 function size_c1g(; m::Real, s::Real, xbar::Real, alpha::Float64=0.05, power::Float64=0.8, iter::Bool=false)
 
-<<<<<<< HEAD
     if iter
         n = zeros(length(2:10_000))
         n = [power_c1g(m=m, s=s, xbar=xbar, n=idx, alpha=alpha) for idx in 2:10_000]
-        n = vsearch(power,n)
+        n = vsearch(power, n)
     else
         beta = 1 - power
         n = round(Int64, (s^2 * (ci2z(1 - beta) + ci2z(1 - alpha / 2))^2) / ((m - xbar)^2))
     end
-=======
-    beta = 1 - power
-
-    n = round(Int64, (s0^2 * (crit_z(1 - beta) + crit_z(1 - alpha / 2))^2) / ((m0 - m1)^2))
->>>>>>> origin/main
 
     return n
 
@@ -166,12 +160,8 @@ function power_c2g(; m1::Real, s1::Real, m2::Real, s2::Real, n1::Int64, n2::Int6
 
     delta = abs(m2 - m1)
 
-<<<<<<< HEAD
-    z = -ci2z(1 - alpha / 2) + (delta / sqrt((s1^2 / n1) + (s2^2 / n2)))
-    p = z2pow(z)
-=======
     z = -crit_z(1 - alpha / 2) + (delta / sqrt((s1^2 / n1) + (s2^2 / n2)))
->>>>>>> origin/main
+    p = z2pow(z)
 
     return p
 
@@ -201,16 +191,12 @@ function power_c1g(; m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64=0.05
     # z = -ci2z(1 - alpha / 2) + (delta * sqrt(n1) / s)
     # return z2pow(z)
 
-<<<<<<< HEAD
     t_r = crit_t(n - 1, alpha, twosided=true)
     t_l = -t_r
     t = (xbar - m) / (s / sqrt(n))
     power_l = cdf(TDist(n - 1), t_l + t)
     power_r = 1 - cdf(TDist(n - 1), t_r + t)
     p = power_l + power_r
-=======
-    z = -crit_z(1 - alpha / 2) + (delta * sqrt(n1) / s0)
->>>>>>> origin/main
 
     return p
 
@@ -242,13 +228,8 @@ function power_p2g(; p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Floa
     r = n2 / n1
     p_dash = (p1 + r * p2) / (1 + r)
     q_dash = 1 - p_dash
-
-<<<<<<< HEAD
     z = (delta / (sqrt(((p1 * q1) / n1) + (p2 * q2) / n2))) - ci2z(1 - alpha / 2) * ((sqrt(p_dash * q_dash * ((1 / n1) + (1 / n2)))) / (sqrt(((p1 * q1)  / n1) + ((p2 * q2) / n2))))
     p = z2pow(z)
-=======
-    z = (delta / (sqrt(((p1 * q1) / n1) + (p2 * q2) / n2))) - crit_z(1 - alpha / 2) * ((sqrt(p_dash * q_dash * ((1 / n1) + (1 / n2)))) / (sqrt(((p1 * q1)  / n1) + ((p2 * q2) / n2))))
->>>>>>> origin/main
 
     return p
 
@@ -274,13 +255,8 @@ function power_p1g(; p0::Float64, p1::Float64, n1::Int64, alpha::Float64=0.05)
 
     q0 = 1 - p0
     q1 = 1 - p1
-
-<<<<<<< HEAD
     z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - ci2z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
     p = z2pow(z)
-=======
-    z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - crit_z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
->>>>>>> origin/main
 
     return p
 

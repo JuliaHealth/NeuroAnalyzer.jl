@@ -537,7 +537,7 @@ Calculate critical z value.
 
 - `z::Float64`
 """
-function crit_z(c::Float64=0.95; twosided::Bool=true)
+function crit_z(c::Float64=0.95)
 
     z = quantile(Distributions.Normal(0.0, 1.0), 1 - (1 - c) / 2)
 
