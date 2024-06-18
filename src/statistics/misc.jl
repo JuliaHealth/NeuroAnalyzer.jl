@@ -61,7 +61,10 @@ Named tuple containing:
 """
 function k_categories(n::Int64)
 
-    return (k1=sqrt(n), k2=(1 + 3.222 * log10(n)))
+    k1 = sqrt(n)
+    k2 = 1 + 3.222 * log10(n)
+
+    return (k1=k1, k2=k2)
 
 end
 
@@ -122,6 +125,28 @@ Calculate margin of error for given sample size `n`.
 """
 function moe(n::Int64)
 
+    m = 1 / sqrt(n)
+
+    return m
+
+end
+
+"""
+    moe(x)
+
+Calculate margin of error.
+
+# Arguments
+
+- `x::AbstractArray`
+
+# Returns
+
+- `m::Float64`
+"""
+function moe(x::AbstractArray)
+
+    n = length(x)
     m = 1 / sqrt(n)
 
     return m

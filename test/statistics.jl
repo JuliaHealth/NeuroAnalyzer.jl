@@ -77,6 +77,7 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 
 @info "Test 21/62: moe()"
 @test NeuroAnalyzer.moe(100) == 0.1
+@test NeuroAnalyzer.moe(rand(100)) == 0.1
 
 @info "Test 22/62: rng()"
 @test NeuroAnalyzer.rng(1:5) == 4
