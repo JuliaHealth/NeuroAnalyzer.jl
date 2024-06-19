@@ -28,7 +28,7 @@ Plot filter response.
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using fred harris' rule-of-thumb
+- `w::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `mono::Bool=false`: use color or gray palette
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
 - `kwargs`: optional arguments for plot() function
@@ -37,12 +37,12 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)
+function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)
 
     pal = mono ? :grays : :darktest
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
-    flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+    flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, w=w)
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
         H, w = freqresp(flt)
@@ -198,6 +198,8 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
         ftype === :hp && (x_max = cutoff * 10)
         if fprototype === :fir
             title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, taps: $(length(flt)), attenuation: $(order * 15) dB\nFrequency response"
+        elseif fprototype === :firls
+            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $(length(flt))\nFrequency response"
         elseif fprototype === :remez
             title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, taps: $(length(flt))\nFrequency response"
         end

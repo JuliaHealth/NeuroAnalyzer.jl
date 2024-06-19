@@ -85,6 +85,7 @@ using DSP
 using FFTW
 using FileIO
 using FindPeaks1D
+using FIRLSFilterDesign
 using FourierTools
 using GeometryBasics
 using Git
