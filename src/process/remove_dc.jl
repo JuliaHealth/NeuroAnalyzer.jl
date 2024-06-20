@@ -9,13 +9,13 @@ Remove mean value (DC offset). If `n` is greater than 0, mean value is calculate
 # Arguments
 
 - `s::AbstractVector`
-- `n::Int64=0`: baseline is the first `n` samples
+- `n::Int64`: baseline is the first `n` samples
 
 # Returns
 
 - `s_new::Vector{Float64}`
 """
-function remove_dc(s::AbstractVector, n::Int64=0)
+function remove_dc(s::AbstractVector, n::Int64)
 
     @assert n >=0 "n must be ≥ 0."
     @assert n <= length(s) "n must be ≤ $(length(s))."
@@ -34,13 +34,13 @@ Remove mean value (DC offset). If `n` is greater than 0, mean value is calculate
 # Arguments
 
 - `s::AbstractArray`
-- `n::Int64=0`: baseline is the first `n` samples
+- `n::Int64`: baseline is the first `n` samples
 
 # Returns
 
 - `s::Array{Float64, 3}`
 """
-function remove_dc(s::AbstractArray, n::Int64=0)
+function remove_dc(s::AbstractArray, n::Int64)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -114,13 +114,13 @@ Remove mean value (DC offset). If `n` is greater than (0, 0), mean value is calc
 # Arguments
 
 - `s::AbstractVector`
-- `n::Tuple{Int64, Int64}=(0, 0)`: baseline is the `n[1]` to `n[2]` samples
+- `n::Tuple{Int64, Int64}`: baseline is the `n[1]` to `n[2]` samples
 
 # Returns
 
 - `s_new::Vector{Float64}`
 """
-function remove_dc(s::AbstractVector, n::Tuple{Int64, Int64}=(0, 0))
+function remove_dc(s::AbstractVector, n::Tuple{Int64, Int64})
 
     n != (0, 0) && _check_tuple(n, "n", (1, length(s)))
 
@@ -138,13 +138,13 @@ Remove mean value (DC offset). If `n` is greater than 0, mean value is calculate
 # Arguments
 
 - `s::AbstractArray`
-- `n::Tuple{Int64, Int64}=(0, 0)`: baseline is the `n[1]` to `n[2]` samples
+- `n::Tuple{Int64, Int64}`: baseline is the `n[1]` to `n[2]` samples
 
 # Returns
 
 - `s::Array{Float64, 3}`
 """
-function remove_dc(s::AbstractArray, n::Tuple{Int64, Int64}=(0, 0))
+function remove_dc(s::AbstractArray, n::Tuple{Int64, Int64})
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)

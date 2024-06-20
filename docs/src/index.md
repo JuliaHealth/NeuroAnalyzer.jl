@@ -636,7 +636,7 @@ NeuroAnalyzer.cmp_stat
 NeuroAnalyzer.cmp_test
 NeuroAnalyzer.cor_test
 NeuroAnalyzer.count_thresh
-NeuroAnalyzer.crit_z
+NeuroAnalyzer.ci2z
 NeuroAnalyzer.cvar
 NeuroAnalyzer.cvar_mean
 NeuroAnalyzer.cvar_median
@@ -685,7 +685,7 @@ NeuroAnalyzer.size_p2g
 NeuroAnalyzer.spec_seg
 NeuroAnalyzer.summary
 NeuroAnalyzer.vartest
-NeuroAnalyzer.z2pow
+NeuroAnalyzer.z2p
 NeuroAnalyzer.z_score
 ```
 
