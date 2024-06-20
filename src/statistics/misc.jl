@@ -15,7 +15,8 @@ export slope
 export distance
 export count_thresh
 export crit_t
-export crit_z
+export ci2z
+export p2z
 export z2p
 export cmp_stat
 export fwhm
@@ -258,7 +259,7 @@ function ci_median(x::AbstractVector; ci::Float64=0.95)
     x_new = sort(x)
     n = length(x)
     q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
-    z = crit_z(ci)
+    z = ci2z(ci)
 
     j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
     k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
@@ -286,7 +287,7 @@ function ci_median(x::AbstractArray; ci::Float64=0.95)
     x_new = sort(vec(median(x, dims=1)))
     n = size(x, 2)
     q = 0.5 # the quantile of interest; for a median, we will use q = 0.5
-    z = crit_z(ci)
+    z = ci2z(ci)
 
     j = ceil(Int64, (n * q) - (z * sqrt((n * q) * (1 - q))))
     k = ceil(Int64, (n * q) + (z * sqrt((n * q) * (1 - q))))
@@ -312,7 +313,7 @@ Calculate confidence interval for a proportion.
 """
 function ci_prop(p::Float64, n::Int64; ci::Float64=0.95)
 
-    z = crit_z(ci)
+    z = ci2z(ci)
     q = 1 - p
     ci_l = (p - z * sqrt((p * q) / n))
     ci_u = (p + z * sqrt((p * q) / n))
@@ -351,8 +352,8 @@ function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)
     r_idx = vsearch(r, r_values)
     z_score = z_values[r_idx]
 
-    ci_h = z_score + z_r * crit_z(ci)
-    ci_l = z_score - z_r * crit_z(ci)
+    ci_h = z_score + z_r * ci2z(ci)
+    ci_l = z_score - z_r * ci2z(ci)
 
     ci_h_idx = vsearch(ci_h, z_values)
     ci_l_idx = vsearch(ci_l, z_values)
@@ -386,8 +387,8 @@ function ci_r(; r::Float64, n::Int64, ci::Float64=0.95)
     r_idx = vsearch(r, r_values)
     z_score = z_values[r_idx]
 
-    ci_h = z_score + z_r * crit_z(ci)
-    ci_l = z_score - z_r * crit_z(ci)
+    ci_h = z_score + z_r * ci2z(ci)
+    ci_l = z_score - z_r * ci2z(ci)
 
     ci_h_idx = vsearch(ci_h, z_values)
     ci_l_idx = vsearch(ci_l, z_values)
@@ -554,44 +555,74 @@ function crit_t(df::Real, alpha::Float64=0.05; twosided::Bool=false)
 
 end
 
-
 """
-    crit_z(c)
+    ci2z(ci)
 
-Calculate critical z value.
+Calculate critical z score.
 
 # Arguments
 
-- `c::Float64=0.95`: confidence level
+- `ci::Float64`: confidence level
 
 # Returns
 
 - `z::Float64`
 """
-function crit_z(c::Float64=0.95)
+function ci2z(ci::Float64)
 
-    z = quantile(Distributions.Normal(0.0, 1.0), 1 - (1 - c) / 2)
+    z = quantile(Distributions.Normal(0, 1), ci)
 
     return z
 
 end
 
 """
-    z2p(z)
+    p2z(p; twosided)
+
+Calculate z score for p value.
+
+# Arguments
+
+- `p::Float64=0.05`: confidence level
+- `twosided::Bool=false`: one or two tailed probability
+
+# Returns
+
+- `z::Float64`
+"""
+function p2z(p::Float64=0.05; twosided::Bool=false)
+
+    if twosided
+        z = quantile(Distributions.Normal(0.0, 1.0), 1 - p / 2)
+    else
+        z = quantile(Distributions.Normal(0.0, 1.0), 1 - p)
+    end
+
+    return z
+
+end
+
+"""
+    z2p(z; twosided)
 
 Calculate probability for a given z value.
 
 # Arguments
 
 - `z::Real`: z value
+- `twosided::Bool=false`: one or two tailed probability
 
 # Returns
 
 - `p::Float64`
 """
-function z2p(z::Real)
+function z2p(z::Real; twosided::Bool=false)
 
-    p = cdf(Distributions.Normal(0.0, 1.0), z)
+    if twosided
+        p = 2 * ccdf(Distributions.Normal(0.0, 1.0), z)
+    else
+        p = ccdf(Distributions.Normal(0.0, 1.0), z)
+    end
 
     return p
 

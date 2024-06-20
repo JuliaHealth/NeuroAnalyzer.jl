@@ -73,7 +73,7 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 @test meanw(ones(5), [1,2,3,4,5]) == 1.0
 
 @info "Test 20/62: effsize_p2g()"
-@test effsize_p2g(p1=0.5, p2=0.5) == 0.0
+@test effsize_p2g(0.5, 0.5) == 0.0
 
 @info "Test 21/62: moe()"
 @test NeuroAnalyzer.moe(100) == 0.1
@@ -128,8 +128,9 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test ci_r(r=0.3, n=50) == (0.02, 0.53)
 @test ci_r(ones(10), zeros(10)) == (0.01, 0.64)
 
-@info "Test 37/62: crit_z()"
-@test crit_z(0.95) == 1.9599639845400576
+@info "Test 37/62: p2z()"
+@test p2z(0.05) == 1.6448536269514717
+@test p2z(0.05, twosided=true) == 1.9599639845400576
 
 @info "Test 38/62: r1r2_test()"
 @test r1r2_test(r1=0.3, r2=0.6, n1=50, n2=50) == -1.8566613853904539
@@ -153,7 +154,8 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
 
 @info "Test 43/62: crit_t()"
-@test crit_t(0.95, 20) == 2.0859634472658644
+@test crit_t(20, 0.05) == 1.7247182429207868
+@test crit_t(20, 0.05, twosided=true) == 2.0859634472658644
 
 @info "Test 44/62: size_c2g()"
 @test size_c2g(m1=100, s1=10, m2=120) == (n1 = 6, n2 = 6)
@@ -230,7 +232,10 @@ x = 1:4
 y = 101:104
 @test cosine_similarity(x, y) == 0.9172693928327048
 
-@info "Test 63/63: ci_prop()"
+@info "Test 63/64: ci_prop()"
 @test ci_prop(0.2, 10) == (-0.0479180129218251, 0.4479180129218251)
+
+@info "Test 64/64: ci2z()"
+@test ci2z(0.95) == 1.6448536269514717
 
 true

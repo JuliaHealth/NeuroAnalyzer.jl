@@ -174,7 +174,7 @@ function import_duomag(file_name::String)
         # reduce stimulation amplitude
         data[idx, stim_sample[1]-10:stim_sample[1]+10, 1] .*= 0.05
         # remove DC offset
-        data[idx, :] = remove_dc(data[idx, :], stim_sample[idx]-10)
+        data[idx, :] = remove_dc(data[idx, :], n=stim_sample[idx]-10)
     end
     data .*= sensitivity
 
