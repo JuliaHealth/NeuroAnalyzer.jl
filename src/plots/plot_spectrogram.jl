@@ -11,7 +11,8 @@ Plot single-channel spectrogram.
 - `sf::Vector{<:Real}`: frequencies
 - `sp::Array{Float64, 2}`: powers
 - `norm::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for the Y-axis
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -25,16 +26,34 @@ Plot single-channel spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
+function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Float64, 2}; norm::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
 
     @assert size(sp, 2) == length(st) "Size of powers $(size(sp, 2)) and time vector $(length(st)) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers $(size(sp, 1)) and frequencies vector $(length(sf)) do not match."
+
+    _check_var(frq, [:lin, :log], "frq")
+    _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
     cb_title = norm ? "[dB/Hz]" : "[$units^2/Hz]"
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
+    end
+
+    if frq === :lin
+        ysc = :identity
+        yt = _ticks(frq_lim)
+    else
+        if frq_lim[1] == 0
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        end
+        ysc = :log10
     end
 
     p = Plots.heatmap(st,
@@ -44,7 +63,8 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
                       ylabel=ylabel,
                       ylims=frq_lim,
                       xticks=_ticks(st),
-                      yticks=_ticks(frq_lim),
+                      yticks=yt,
+                      yscale=ysc,
                       title=title,
                       size=(1200, 800),
                       margins=20Plots.px,
@@ -75,25 +95,48 @@ Plot multiple-channel spectrogram.
 - `sf::Vector{<:Real}`: frequencies
 - `sp::Array{Float64, 2}`: powers
 - `norm::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `units::String=""`
+- `smooth::Bool=false`: smooth the image using Gaussian blur
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Float64, 2}; norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", kwargs...)
+function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Float64, 2}; norm::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, kwargs...)
 
     @assert size(sp, 1) == length(sch) "Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."
+    _check_var(frq, [:lin, :log], "frq")
+    _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
     cb_title = norm ? "[dB/Hz]" : "[$units^2/Hz]"
+
+    if smooth
+        sp = imfilter(sp, Kernel.gaussian(n))
+    end
+
+    if frq === :lin
+        xsc = :identity
+        xt = _ticks(frq_lim)
+    else
+        if frq_lim[1] == 0
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        end
+        xsc = :log10
+    end
 
     ch = collect(eachindex(sch)) .- 0.5
     p = Plots.heatmap(sf,
@@ -101,6 +144,8 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
                       sp,
                       xlabel=xlabel,
                       xticks=_ticks(sf),
+                      xlims=xt,
+                      xscale=xsc,
                       ylabel=ylabel,
                       yticks=(ch, sch),
                       title=title,
@@ -147,7 +192,7 @@ Plots spectrogram.
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -163,7 +208,7 @@ Plots spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), frq::Symbol=:log, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, kwargs...) where {T <: CWT}
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, kwargs...) where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)
@@ -233,15 +278,15 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             sp = sp[f1:f2, :]
             title == "default" && (title = "Spectrogram (multi-tapered periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, norm=false, w=w)
+            _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, norm=false, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, frq=frq, frq_n=frq_n, gw=gw, w=w)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, norm=false, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, wt=wt, w=w, norm=false)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, w=w, norm=false)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
@@ -250,7 +295,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
 
         st .+= t[1]
 
-        p = plot_spectrogram(st, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, kwargs=kwargs)
+        p = plot_spectrogram(st, sf, sp, norm=norm, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, kwargs=kwargs)
 
         # plot markers if available
         # TODO: draw markers length
@@ -340,7 +385,7 @@ Plots spectrogram of embedded or external component.
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="default"`: x-axis label, default is Time [s]

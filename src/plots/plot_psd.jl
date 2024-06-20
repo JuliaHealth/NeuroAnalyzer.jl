@@ -39,7 +39,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
     pal = mono ? :grays : :darktest
 
     if ax === :linlin
-        xt = collect(_ticks(frq_lim))
+        xt = _ticks(frq_lim)
         xsc = :identity
         ysc = :identity
     elseif ax === :loglin
