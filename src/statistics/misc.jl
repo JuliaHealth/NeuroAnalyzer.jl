@@ -340,6 +340,7 @@ Calculate confidence interval for a correlation coefficient.
 function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)
 
     @assert length(x) == length(y) "Both vectors must have the same length."
+    @assert length(x) > 3 "Length of both vectors must be > 3."
 
     n = length(x)
     r = cor(x, y)
@@ -350,10 +351,10 @@ function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)
     z_values = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.121, 0.131, 0.141, 0.151, 0.161, 0.172, 0.182, 0.192, 0.203, 0.213, 0.224, 0.234, 0.245, 0.255, 0.266, 0.277, 0.288, 0.299, 0.31, 0.321, 0.332, 0.343, 0.354, 0.365, 0.377, 0.389, 0.4, 0.412, 0.424, 0.436, 0.448, 0.46, 0.472, 0.485, 0.497, 0.51, 0.523, 0.536, 0.549, 0.563, 0.577, 0.59, 0.604, 0.618, 0.633, 0.648, 0.663, 0.678, 0.693, 0.709, 0.725, 0.741, 0.758, 0.775, 0.793, 0.811, 0.829, 0.848, 0.867, 0.887, 0.908, 0.929, 0.95, 0.973, 0.996, 1.02, 1.045, 1.071, 1.099, 1.127, 1.157, 1.188, 1.221, 1.256, 1.293, 1.333, 1.376, 1.422, 1.472, 1.528, 1.589, 1.658, 1.738, 1.832, 1.946, 2.092, 2.298, 2.647]
 
     r_idx = vsearch(r, r_values)
-    z_score = z_values[r_idx]
+    z = z_values[r_idx]
 
-    ci_h = z_score + z_r * ci2z(ci)
-    ci_l = z_score - z_r * ci2z(ci)
+    ci_h = z + z_r * ci2z(ci)
+    ci_l = z - z_r * ci2z(ci)
 
     ci_h_idx = vsearch(ci_h, z_values)
     ci_l_idx = vsearch(ci_l, z_values)

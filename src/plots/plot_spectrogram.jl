@@ -103,13 +103,14 @@ Plot multiple-channel spectrogram.
 - `mono::Bool=false`: use color or gray palette
 - `units::String=""`
 - `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Float64, 2}; norm::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, kwargs...)
+function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Float64, 2}; norm::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
 
     @assert size(sp, 1) == length(sch) "Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."
@@ -143,8 +144,8 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
                       ch,
                       sp,
                       xlabel=xlabel,
-                      xticks=_ticks(sf),
-                      xlims=xt,
+                      xticks=xt,
+                      xlims=frq_lim,
                       xscale=xsc,
                       ylabel=ylabel,
                       yticks=(ch, sch),
@@ -194,7 +195,7 @@ Plots spectrogram.
 - `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
 - `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[channel: 1, epoch: 1, time window: 0 ms:10 s]
@@ -339,18 +340,18 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             sf = linspace(0, frq_lim[2], size(sp, 2))
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, gw=gw, frq=frq, frq_n=frq_n)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, norm=false, gw=gw, frq=frq, frq_n=frq_n)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, wt=wt, w=w, norm=false)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, w=w, norm=false)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
         norm && (sp = pow2db.(sp))
 
-        p = plot_spectrogram(clabels, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
+        p = plot_spectrogram(clabels, sf, sp, norm=norm, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end
 
     Plots.plot(p)
@@ -387,7 +388,7 @@ Plots spectrogram of embedded or external component.
 - `wt<:CWT=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, e.g. `wt = wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
 - `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[component: 1, epoch: 1, time window: 0 ms:10 s]
@@ -471,15 +472,15 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             sp = sp[f1:f2, :]
             title == "default" && (title = "Spectrogram (multi-tapered periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, norm=false, w=w)
+            _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, norm=false, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, frq=frq, frq_n=frq_n, gw=gw, w=w)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, norm=false, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_lim, wt=wt, w=w, norm=false)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, w=w, norm=false)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
@@ -488,7 +489,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         st .+= t[1]
 
-        p = plot_spectrogram(st, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
+        p = plot_spectrogram(st, sf, sp, norm=norm, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
 
         # plot markers if available
         # TODO: draw markers length
@@ -523,22 +524,22 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             sp = sp[:, f1:f2]
             title == "default" && (title = "Spectrogram (multi-tapered periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = mwpsd(signal, fs=fs, ncyc=ncyc, norm=false, frq=frq, frq_n=frq_n, w=w)
+            sp, sf = mwpsd(signal, fs=fs, ncyc=ncyc, norm=false, frq_n=frq_n, w=w)
             sf = linspace(0, frq_lim[2], size(sp, 2))
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, frq_lim=frq_lim, norm=false, gw=gw, frq=frq, frq_n=frq_n, w=w)
+            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, norm=false, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
-            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, frq_lim=frq_limwt=wt, w=w, norm=false)
+            sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, w=w, norm=false)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             frq_lim = (sf[1], sf[end])
             title == "default" && (title = "Spectrogram (continuous wavelet transformation) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
         norm && (sp = pow2db.(sp))
 
-        p = plot_spectrogram(clabels, sf, sp, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
+        p = plot_spectrogram(clabels, sf, sp, norm=norm, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end
 
     Plots.plot(p)

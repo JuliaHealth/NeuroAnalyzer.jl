@@ -110,14 +110,14 @@ function size_p2g(; p1::Float64, p2::Float64, r::Int64=1, alpha::Float64=0.05, p
 end
 
 """
-    size_p1g(; p0, p1, alpha, power)
+    size_p1g(; p1, p2, alpha, power)
 
 Calculate required sample size for a proportion (group 1 vs population).
 
 # Arguments
 
-- `p0::Float64`: population incidence
-- `p1::Float64`: group anticipated incidence
+- `p1::Float64`: population incidence
+- `p2::Float64`: group anticipated incidence
 - `alpha::Float64=0.05`: the probability of type I error
 - `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
 
@@ -125,13 +125,13 @@ Calculate required sample size for a proportion (group 1 vs population).
 
 - `n::Int64`: group 1 sample size
 """
-function size_p1g(; p0::Float64, p1::Float64, alpha::Float64=0.05, power::Float64=0.8)
+function size_p1g(; p1::Float64, p2::Float64, alpha::Float64=0.05, power::Float64=0.8)
 
     beta = 1 - power
-    q0 = 1 - p0
-    q1 = 1 - p1
+    q0 = 1 - p1
+    q1 = 1 - p2
 
-    n = round(Int64, (p0 * q0 * (ci2z(1 - alpha / 2) + ci2z(1 -beta) * sqrt((p1 * q1) / (p0 * q0)))^2) / (p1 - p0)^2)
+    n = round(Int64, (p1 * q0 * (ci2z(1 - alpha / 2) + ci2z(1 -beta) * sqrt((p2 * q1) / (p1 * q0)))^2) / (p2 - p1)^2)
 
     return n
 
@@ -156,7 +156,7 @@ Calculate study power for a continuous variable (group 1 vs group 2).
 
 - `p::Float64`: study power
 """
-function power_c2g(; m1::Real, s1::Real, m2::Real, s2::Real, n1::Int64, n2::Int64, alpha::Float64=0.05)
+function power_c2g(; m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int64, alpha::Float64=0.05)
 
     delta = abs(m2 - m1)
 
@@ -236,14 +236,14 @@ function power_p2g(; p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Floa
 end
 
 """
-    power_p1g(; p0, p1, n1, alpha)
+    power_p1g(; p1, p2, n1, alpha)
 
 Calculate required sample size for a proportion (group 1 vs population).
 
 # Arguments
 
-- `p0::Float64`: population incidence
-- `p1::Float64`: group 1 anticipated incidence
+- `p1::Float64`: population incidence
+- `p2::Float64`: group 1 anticipated incidence
 - `n1::Int64`: group 1 sample size
 - `alpha::Float64=0.05`: the probability of type I error
 
@@ -251,11 +251,11 @@ Calculate required sample size for a proportion (group 1 vs population).
 
 - `p::Float64`: study power
 """
-function power_p1g(; p0::Float64, p1::Float64, n1::Int64, alpha::Float64=0.05)
+function power_p1g(; p1::Float64, p2::Float64, n1::Int64, alpha::Float64=0.05)
 
-    q0 = 1 - p0
-    q1 = 1 - p1
-    z = (sqrt(n1 * ((p1 - p0)^2 / (p0 * q0))) - ci2z(1 - alpha / 2)) / (sqrt((p1 * q1)/(p0 * q0)))
+    q0 = 1 - p1
+    q1 = 1 - p2
+    z = (sqrt(n1 * ((p2 - p1)^2 / (p1 * q0))) - ci2z(1 - alpha / 2)) / (sqrt((p2 * q1)/(p1 * q0)))
     p = z2p(z)
 
     return p
@@ -269,8 +269,8 @@ Calculate required sample size for detecting a difference in a continuous variab
 
 # Arguments
 
-- `s0::Real`: population standard deviation
-- `s1::Real`: study standard deviation that we want to detect
+- `s1::Real`: population standard deviation
+- `s2::Real`: study standard deviation that we want to detect
 - `twosided::Bool=true`: if true, the estimation is for two-sided difference
 - `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
 
@@ -278,9 +278,9 @@ Calculate required sample size for detecting a difference in a continuous variab
 
 - `n::Int64`: study sample size
 """
-function size_c1diff(; s0::Real, s1::Real, twosided::Bool=true, power::Float64=0.8)
+function size_c1diff(; s1::Real, s2::Real, twosided::Bool=true, power::Float64=0.8)
 
-    sdiff = s1 / s0
+    sdiff = s2 / s1
 
     sdiff_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
     power_values = [0.99, 0.95, 0.9, 0.8]
@@ -330,24 +330,24 @@ function size_c1diff(; s0::Real, s1::Real, twosided::Bool=true, power::Float64=0
 end
 
 """
-    size_p1diff(; p0, p1, power)
+    size_p1diff(; p1, p2, power)
 
 Calculate required sample size for detecting a difference in a proportion (group 1 vs population).
 
 # Arguments
 
-- `p0::Real`: population proportion
-- `p1::Real`: study proportion that we want to detect
+- `p1::Real`: population proportion
+- `p2::Real`: study proportion that we want to detect
 - `power::Float64=0.8`: the ability to detect a difference between groups (power = 1 - beta, where beta is the probability of type II error)
 
 # Returns
 
 - `n::Int64`: study sample size (for both study groups)
 """
-function size_p1diff(; p0::Real, p1::Real, power::Float64=0.8)
+function size_p1diff(; p1::Real, p2::Real, power::Float64=0.8)
 
-    p = (p0 + p1) / 2
-    sdiff = round((p0 - p1) / sqrt(p * (1 - p)), digits=1)
+    p = (p1 + p2) / 2
+    sdiff = round((p1 - p2) / sqrt(p * (1 - p)), digits=1)
 
     sdiff_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
     power_values = [0.99, 0.95, 0.9, 0.8]
