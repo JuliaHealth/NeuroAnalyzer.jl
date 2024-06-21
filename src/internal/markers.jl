@@ -87,7 +87,14 @@ function _a2df(annotations::Vector{String})
                 push!(a_event, strip(s[2]))
             end
         end
+        evnts = unique(a_event)
+        id = zeros(Int64, length(a_event))
+        for idx1 in eachindex(a_event)
+            for idx2 in eachindex(unique(a_event))
+                id[idx1] = findfirst(a_event[idx1] .== unique(a_event) )
+            end
+        end
         !all(isascii.(a_event)) && _warn("Unicode labels were not converted.")
-        return DataFrame(:id=>string.(collect(eachindex(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+        return DataFrame(:id=>string.(id), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
     end
 end

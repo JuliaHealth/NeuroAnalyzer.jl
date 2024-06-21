@@ -812,14 +812,14 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             for p_idx in eachindex(p)
                 p[p_idx] = Plots.vline!(p[p_idx],
                                         epoch_markers,
-                                        linestyle=:dash,
+                                        linestyle=:dot,
                                         linewidth=0.5,
                                         linecolor=:blue,
                                         label="")
             end
         else
             p = Plots.vline!(epoch_markers,
-                             linestyle=:dash,
+                             linestyle=:dot,
                              linewidth=0.5,
                              linecolor=:blue,
                              label="")
@@ -837,22 +837,22 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                 p[p_idx] = Plots.vline!(p[p_idx],
                                         markers_pos,
                                         linestyle=:dash,
-                                        linewidth=0.5,
+                                        linewidth=1,
                                         linecolor=:black,
                                         label=false)
                 for idx in eachindex(markers_desc)
-                    p[p_idx] = Plots.plot!(p[p_idx], annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                    p[p_idx] = Plots.plot!(p[p_idx], annotations=(markers_pos[idx] + 0.1, -0.92, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
                 end
             end
         else
             p = Plots.vline!(p,
                              markers_pos,
                              linestyle=:dash,
-                             linewidth=0.5,
+                             linewidth=1,
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(p, annotations=(markers_pos[idx], -0.92, Plots.text("$(markers_id[idx])/$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(p, annotations=(markers_pos[idx] + 0.1, -0.92, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
     end
