@@ -1,5 +1,6 @@
 export effsize
 export effsize_p2g
+export pooledstd
 
 """
     effsize(x1, x2)
@@ -15,14 +16,16 @@ Calculate Cohen's d and Hedges g effect sizes.
 
 Named tuple containing:
 - `d::Float64`: Cohen's d
-- `g::Float64`: Hedges g
+- `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin
+- `Δ::Float64`: Glass' Δ
 """
 function effsize(x1::AbstractVector, x2::AbstractVector)
 
-    d = (mean(x2) - mean(x1)) / sqrt((std(x1)^2 + std(x2)^2) / 2)
-    g = (mean(x2) - mean(x1)) / sqrt((((length(x1) - 1) * (std(x1)^2)) + ((length(x2) - 1) * (std(x2)^2))) / (length(x1) + length(x2) - 2))
+    d = (mean(x2) - mean(x1)) / pooledstd(x1, x2, type=:cohen)
+    g = (mean(x2) - mean(x1)) / pooledstd(x1, x2, type=:hedges)
+    Δ = (mean(x2) - mean(x1)) / std(x2)
 
-    return (cohen=d, hedges=g)
+    return (d=d, g=g, Δ=Δ)
 
 end
 
@@ -50,3 +53,36 @@ function effsize_p2g(p1::Float64, p2::Float64)
 
 end
 
+"""
+    pooledstd(x1, x2; type)
+
+Calculate pooled standard deviation
+
+# Arguments
+
+- `x1::AbstractVector`
+- `x2::AbstractVector`
+- `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
+
+# Returns
+
+- `ps::Float64`
+"""
+function pooledstd(x1::AbstractVector, x2::AbstractVector; type::Symbol=:cohen)
+
+    _check_var(type, [:cohen, :hedges], "type")
+
+    v1 = var(x1)
+    v2 = var(x2)
+    n1 = length(x1)
+    n2 = length(x2)
+    
+    if type === :cohen
+        ps = sqrt((((n1 - 1) * v1) + ((n2 - 1) * v2))/(n1 + n2 - 2))
+    else
+        ps = sqrt((((n1 - 1) * v1) + ((n2 - 1) * v2))/(n1 + n2))
+    end
+
+    return ps
+
+end

@@ -20,7 +20,7 @@ keep_epoch!(e10, ep=1:10)
 @test round(k_categories(10)[1]) == 3.0
 
 @info "Test 5/62: effsize()"
-@test effsize([1,2,3], [2,3,4]) == (cohen = 1.0, hedges = 1.0)
+@test effsize([1, 2, 3], [2, 3, 4]) == (d = 1.0, g = 1.224744871391589, Δ = 1.0)
 
 @info "Test 6/62: infcrit()"
 x = 1:10
@@ -236,10 +236,14 @@ x = 1:4
 y = 101:104
 @test cosine_similarity(x, y) == 0.9172693928327048
 
-@info "Test 63/64: ci_prop()"
+@info "Test 63/65: ci_prop()"
 @test ci_prop(0.5, 10) == (0.23992580606222136, 0.7600741939377786)
 
-@info "Test 64/64: ci2z()"
+@info "Test 64/65: ci2z()"
 @test ci2z(0.95) == 1.6448536269514717
+
+@info "Test 65/65: pooledstd()"
+@test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:cohen) == 1.2909944487358056
+@test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:hedges) == 1.118033988749895
 
 true
