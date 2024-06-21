@@ -99,7 +99,9 @@ function import_locs_ced(file_name::String)
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
 
-    clabels = string.(lstrip.(locs[!, "labels"]))
+    "labels" in colnames && (clabels = string.(lstrip.(locs[!, "labels"])))
+    "label" in colnames && (clabels = string.(lstrip.(locs[!, "label"])))
+    "name" in colnames && (clabels = string.(lstrip.(locs[!, "name"])))
 
     x = zeros(length(clabels))
     y = zeros(length(clabels))
@@ -152,7 +154,8 @@ function import_locs_locs(file_name::String)
     locs = CSV.read(file_name, header=false, delim="\t", stringtype=String, DataFrame)
 
     DataFrames.rename!(locs, [:number, :theta, :radius, :labels])
-    clabels = lstrip.(locs[!, "labels"])
+
+    clabels = string.(lstrip.(locs[!, "labels"]))
 
     x = zeros(length(clabels))
     y = zeros(length(clabels))
@@ -275,9 +278,10 @@ function import_locs_tsv(file_name::String)
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
 
-    "labels" in colnames && (clabels = lstrip.(locs[!, "labels"]))
-    "label" in colnames && (clabels = lstrip.(locs[!, "label"]))
-    "site" in colnames && (clabels = lstrip.(locs[!, "site"]))
+    "labels" in colnames && (clabels = string.(lstrip.(locs[!, "labels"])))
+    "label" in colnames && (clabels = string.(lstrip.(locs[!, "label"])))
+    "name" in colnames && (clabels = string.(lstrip.(locs[!, "name"])))
+    "site" in colnames && (clabels = string.(lstrip.(locs[!, "site"])))
 
     x = zeros(length(clabels))
     y = zeros(length(clabels))
@@ -339,7 +343,7 @@ function import_locs_sfp(file_name::String)
 
     DataFrames.rename!(locs, [:label, :x, :y, :z])
 
-    clabels = lstrip.(locs[!, "label"])
+    clabels = string.(lstrip.(locs[!, "label"]))
 
     x = Float64.(locs[!, :x])
     y = Float64.(locs[!, :y])
@@ -395,7 +399,7 @@ function import_locs_csd(file_name::String)
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, stringtype=String, DataFrame)
 
     DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
-    clabels = lstrip.(locs[!, "labels"])
+    clabels = string.(lstrip.(locs[!, "labels"]))
 
     x = Float64.(locs[!, "x"])
     y = Float64.(locs[!, "y"])
