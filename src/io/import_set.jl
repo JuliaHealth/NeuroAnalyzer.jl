@@ -30,7 +30,7 @@ function import_set(file_name::String; detect_type::Bool=true)
         dataset = dataset["EEG"]
     end
 
-    data_src = dataset["data"]
+    data_src = joinpath(dirname(file_name), dataset["data"])
     ch_n = Int64(dataset["nbchan"])
     ep_n = 1
     # data in .FTD file
@@ -43,11 +43,15 @@ function import_set(file_name::String; detect_type::Bool=true)
         end
         samples_per_channel = length(dataset["times"])
         @assert filesize(data_src) == ch_n * samples_per_channel * 4 "Incorrect file size."
-        data = zeros(ch_n, samples_per_channel)
+        data_tmp = Float64[]
         for ch_idx in 1:ch_n
             buf = UInt8[]
             readbytes!(fid, buf, samples_per_channel * 4)
-            data[ch_idx, :] = Float64.(reinterpret(Float32, buf))
+            append!(data_tmp, Float64.(reinterpret(Float32, buf)))
+        end
+        data = zeros(ch_n, samples_per_channel)
+        for idx in 1:samples_per_channel
+            data[:, idx] = @views data_tmp[(idx * ch_n - ch_n + 1):(idx * ch_n)]
         end
     else
         data = dataset["data"]
