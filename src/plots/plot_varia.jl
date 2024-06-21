@@ -331,9 +331,9 @@ Line plot.
 """
 function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    @assert ndims(s) == 2 "signal must have 2-dimensions."
-    @assert size(s, 1) == length(rlabels) "Number of signal columns ($(size(s, 1))) must be equal to labels length ($(length(rlabels)))."
-    @assert size(s, 2) == length(xlabels) "Number of signal columns ($(size(s, 2))) must be equal to x-ticks length ($(length(xlabels)))."
+    @assert ndims(s) == 2 "s must have 2-dimensions."
+    @assert size(s, 1) == length(rlabels) "Number of s columns ($(size(s, 1))) must be equal to rlabels length ($(length(rlabels)))."
+    @assert size(s, 2) == length(xlabels) "Number of s columns ($(size(s, 2))) must be equal to xlabels length ($(length(xlabels)))."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :auto
@@ -441,8 +441,8 @@ Violin plot.
 """
 function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    @assert ndims(s) == 2 "signal must have 2-dimensions."
-    @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
+    @assert ndims(s) == 2 "s must have 2-dimensions."
+    @assert size(s, 1) == length(glabels) "Number of s columns ($(size(s, 1))) must be equal to glabels length ($(length(glabels)))."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :auto

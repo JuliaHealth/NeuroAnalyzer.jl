@@ -474,8 +474,8 @@ Plot EPRs stacked by channels or by epochs.
 """
 function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, AbstractVector}=nothing; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3, kwargs...)
 
-    @assert ndims(s) == 2 "signal must have 2 dimensions."
-    @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
+    @assert ndims(s) == 2 "s must have 2 dimensions."
+    @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must be equal to length of t ($(length(t)))."
 
     if !isnothing(rt)
         @assert length(rt) == size(s, 1) "Length of the rt vector must be the same as the number of ERP epochs ($(size(s, 1)))."

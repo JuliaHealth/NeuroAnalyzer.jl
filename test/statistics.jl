@@ -236,14 +236,26 @@ x = 1:4
 y = 101:104
 @test cosine_similarity(x, y) == 0.9172693928327048
 
-@info "Test 63/65: ci_prop()"
+@info "Test 63/67: ci_prop()"
 @test ci_prop(0.5, 10) == (0.23992580606222136, 0.7600741939377786)
 
-@info "Test 64/65: ci2z()"
+@info "Test 64/67: ci2z()"
 @test ci2z(0.95) == 1.6448536269514717
 
-@info "Test 65/65: pooledstd()"
+@info "Test 65/67: pooledstd()"
 @test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:cohen) == 1.2909944487358056
 @test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:hedges) == 1.118033988749895
+
+@info "Test 66/67: std()"
+s = std(e10)
+@test size(s) == (24, 2560)
+
+@info "Test 67/67: permute()"
+s = permute(rand(5), 10)
+@test size(s) == (10, 5)
+s = permute(rand(4, 8), 10)
+@test size(s) == (10, 4, 8)
+s = permute(rand(2, 4, 8), 10)
+@test size(s) == (10, 2, 4, 8)
 
 true

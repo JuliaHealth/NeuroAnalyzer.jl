@@ -21,6 +21,8 @@ export z2p
 export cmp_stat
 export fwhm
 export cosine_similarity
+export std
+export permute
 
 """
     z_score(x)
@@ -704,5 +706,110 @@ function cosine_similarity(s1::AbstractVector, s2::AbstractVector)
     cs = sum(s1 .* s2) / (sqrt(sum(s1.^2)) * sqrt(sum(s2.^2)))
 
     return cs
+
+end
+
+"""
+    std(obj)
+
+Calculate standard deviation of the signal data (along epochs).
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `s::Matrix{Float64}`
+"""
+function Statistics.std(obj::NeuroAnalyzer.NEURO)
+
+    @assert nepochs(obj) > 1 "OBJ must have > 1 epoch."
+    
+    if datatype(obj) == "erp"
+        s = @views std(obj.data[:, :, 2:end], dims=3)
+    else
+        s = @views std(obj.data[:, :, :], dims=3)
+    end
+    s = reshape(s, size(s, 1), size(s, 2))
+
+    return s
+
+end
+
+"""
+    permute(s, n)
+
+Permute signal data.
+
+# Arguments
+
+- `s::AbstractVector`
+- `n::Int64`: number of permutations
+
+# Returns
+
+- `s_new::Matrix{Float64}`
+"""
+function permute(s::AbstractVector, n::Int64)
+
+    @assert n > 0 "n must have > 0 epoch."
+    
+    s_new = zeros(n, length(s))
+    for idx in 1:n
+        x = rand(2:length(s))
+        s1 = s[x:end]
+        s2 = s[1:(x - 1)]
+        s_new[idx, :] = @views vcat(s1, s2)
+    end
+
+    return s_new
+
+end
+
+"""
+    permute(s, n)
+
+Permute signal data.
+
+# Arguments
+
+- `s::AbstractArray`
+- `n::Int64`: number of permutations
+
+# Returns
+
+- `s_new::Matrix{Float64}`
+"""
+function permute(s::AbstractArray, n::Int64)
+
+    @assert n > 0 "n must have > 0 epoch."
+    @assert ndims(s) <= 3 "permute() only works for arrays of ≤ 3 dimensions."
+    
+    if ndims(s) == 2
+        s_new = zeros(n, size(s,1 ), size(s,2 ))
+        @inbounds for idx1 in 1:n
+            Threads.@threads for idx2 in 1:size(s, 1)
+                x = rand(2:size(s, 2))
+                s1 = s[idx2, x:end]
+                s2 = s[idx2, 1:(x - 1)]
+                s_new[idx1, idx2, :] = @views vcat(s1, s2)
+            end
+        end
+    else
+        s_new = zeros(n, size(s, 1), size(s, 2), size(s, 3))
+        for idx1 in 1:n
+            @inbounds for idx2 in 1:size(s, 1)
+                Threads.@threads for idx3 in 1:size(s, 3)
+                    x = rand(2:size(s, 2))
+                    s1 = s[idx2, x:end, idx3]
+                    s2 = s[idx2, 1:(x - 1), idx3]
+                    s_new[idx1, idx2, :, idx3] = @views vcat(s1, s2)
+                end
+            end
+        end
+    end
+
+    return s_new
 
 end
