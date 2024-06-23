@@ -1,7 +1,7 @@
 export fconv
 
 """
-    fconv(s; kernel, norm, pad)
+    fconv(s; kernel, norm)
 
 Perform convolution in the frequency domain.
 
@@ -10,27 +10,26 @@ Perform convolution in the frequency domain.
 - `s::AbstractVector`
 - `kernel::AbstractVector`
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
-- `pad::Int64=0`: number of zeros to add to the signal for FFT
 
 # Returns
 
 - `s_new::Vector{ComplexF64}`: convoluted signal
 """
-function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true, pad::Int64=0)
+function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true)
 
     n_s = length(s)
-    n_k = length(kernel)
-    half_k = floor(Int64, n_k / 2)
-    s_fft = fft0(s, pad + n_k - 1)
-    kernel_fft = fft0(kernel, pad + n_s - 1)
+    n_kernel = length(kernel)
+    half_kernel = floor(Int64, n_kernel / 2)
+    s_fft = fft0(s, n_kernel - 1)
+    kernel_fft = fft0(kernel, n_s - 1)
     norm && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = ifft0(s_fft .* kernel_fft, pad)
+    s_conv = ifft0(s_fft .* kernel_fft)
 
     # remove in- and out- edges
-    if mod(n_k, 2) == 0
-        s_new = s_conv[half_k:(end - half_k)]
+    if mod(n_kernel, 2) == 0
+        s_new = s_conv[half_kernel:(end - half_kernel)]
     else
-        s_new = s_conv[half_k:(end - half_k - 1)]
+        s_new = s_conv[half_kernel:(end - half_kernel - 1)]
     end
 
     return s_new
@@ -38,7 +37,7 @@ function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true, pad::
 end
 
 """
-    fconv(s; kernel, norm, pad)
+    fconv(s; kernel, norm)
 
 Perform convolution in the frequency domain.
 
@@ -47,13 +46,12 @@ Perform convolution in the frequency domain.
 - `s::AbstractArray`
 - `kernel::AbstractVector`: convolution kernel
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
-- `pad::Int64=0`: number of zeros to add to the signal for FFT
 
 # Returns
 
 - `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
-function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true, pad::Int64=0)
+function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -65,7 +63,7 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true, pad::I
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm, pad=pad)
+            s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm)
 
             # update progress bar
             progress_bar && next!(progbar)
@@ -77,7 +75,7 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true, pad::I
 end
 
 """
-    fconv(obj; ch, kernel, norm, pad)
+    fconv(obj; ch, kernel, norm)
 
 Perform convolution in the frequency domain.
 
@@ -87,17 +85,16 @@ Perform convolution in the frequency domain.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `kernel::AbstractVector`: convolution kernel
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
-- `pad::Int64=0`: number of zeros to add to the signal for FFT
 
 # Returns
 
 - `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
-function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::AbstractVector, norm::Bool=true, pad::Int64=0)
+function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::AbstractVector, norm::Bool=true)
 
     _check_channels(obj, ch)
 
-    s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm, pad=pad)
+    s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm)
     
     return s_new
 

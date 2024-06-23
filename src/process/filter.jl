@@ -11,13 +11,13 @@ Create IIR or FIR filter.
 # Arguments
 
 - `fprototype::Symbol`: filter prototype:
-    - `:butterworth`
-    - `:chebyshev1`
-    - `:chebyshev2`
-    - `:elliptic`
-    - `:fir`
-    - `:firls`: weighted least-squares FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
     - `:iirnotch`: second-order IIR notch filter
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
     - `:remez`: Remez FIR filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
@@ -348,13 +348,13 @@ Apply filtering.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
-    - `:butterworth`
-    - `:chebyshev1`
-    - `:chebyshev2`
-    - `:elliptic`
-    - `:fir`
-    - `:firls`: weighted least-squares FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
     - `:iirnotch`: second-order IIR notch filter
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
     - `:remez`: Remez FIR filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
@@ -431,13 +431,13 @@ Apply filtering.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
-    - `:butterworth`
-    - `:chebyshev1`
-    - `:chebyshev2`
-    - `:elliptic`
-    - `:fir`
-    - `:firls`: weighted least-squares FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
     - `:iirnotch`: second-order IIR notch filter
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
     - `:remez`: Remez FIR filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
