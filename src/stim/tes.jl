@@ -42,7 +42,7 @@ Calculate `charge`, `current_density` and `charge_ density` for tACS stimulation
 
 # Arguments
 
-- `current::Real`: stimulation current [mA] (peak to peak)
+- `current::Real`: stimulation current (peak to peak) [mA]
 - `pad_area::Real`: electrode pad area [cm²]
 - `duration::Real`: stimulation duration [s]
 - `offset::Real`: current offset [μA]
@@ -82,7 +82,7 @@ Calculate `charge`, `current_density` and `charge_ density` for tPCS stimulation
 
 # Arguments
 
-- `current::Real`: stimulation current [mA] (peak to peak)
+- `current::Real`: stimulation current (peak to peak) [mA]
 - `pad_area::Real`: electrode pad area [cm²]
 - `duration::Real`: stimulation duration [s]
 - `pw::Real`: pulse width [ms]
