@@ -30,11 +30,12 @@ function import_set(file_name::String; detect_type::Bool=true)
         dataset = dataset["EEG"]
     end
 
-    data_src = joinpath(dirname(file_name), dataset["data"])
     ch_n = Int64(dataset["nbchan"])
     ep_n = 1
+    data_src = nothing
     # data in .FTD file
-    if data_src isa String
+    if dataset isa String
+        data_src = joinpath(dirname(file_name), dataset["data"])
         fid = nothing
         try
             fid = open(data_src, "r")

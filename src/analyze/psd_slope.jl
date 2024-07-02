@@ -1,7 +1,7 @@
 export psd_slope
 
 """
-    psd_slope(s; fs, frq_lim, norm, method, nt, wlen, woverlap, w, frq_n, frq, ncyc)
+    psd_slope(s; fs, frq_lim, db, method, nt, wlen, woverlap, w, ncyc)
 
 Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
@@ -10,7 +10,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `frq_lim[1]` to `frq_lim[2]`
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -21,9 +21,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 
 # Returns
 
@@ -32,11 +30,11 @@ Named tuple containing:
 - `ls::Float64`: slopes of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), norm::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, fs / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function psd_slope(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
-    pw, pf = psd(s, fs=fs, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw, pf = psd(s, fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     f1_idx = vsearch(frq_lim[1], pf)
     f2_idx = vsearch(frq_lim[2], pf)
@@ -48,7 +46,7 @@ function psd_slope(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, 
 end
 
 """
-    psd_slope(s; fs, frq_lim, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
+    psd_slope(s; fs, frq_lim, db, method, nt, wlen, woverlap, w, ncyc)
 
 Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
@@ -57,7 +55,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `frq_lim[1]` to `frq_lim[2]`
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -68,9 +66,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `frq_n::Int64=_tlength((0, fs / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 
 # Returns
 
@@ -79,19 +75,19 @@ Named tuple containing:
 - `s::Vector{Float64}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), norm::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, fs / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function psd_slope(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    lf, ls, pf = psd_slope(s[1, :, 1], fs=fs, frq_lim=frq_lim, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    lf, ls, pf = psd_slope(s[1, :, 1], fs=fs, frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     lf = zeros(ch_n, length(lf), ep_n)
     ls = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            lf[ch_idx, :, ep_idx], ls[ch_idx, ep_idx], _ = psd_slope(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            lf[ch_idx, :, ep_idx], ls[ch_idx, ep_idx], _ = psd_slope(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end
 
@@ -100,7 +96,7 @@ function psd_slope(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}=(0, f
 end
 
 """
-    psd_slope(obj; ch, frq_lim, norm, method, nt, wlen, woverlap, w, frq_n, frq, fs, ncyc)
+    psd_slope(obj; ch, frq_lim, db, method, nt, wlen, woverlap, w, ncyc)
 
 Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
@@ -109,7 +105,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range frq_lim[1] to frq_lim[2]
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -119,10 +115,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `frq_n::Int64=_tlength((0, sr(obj) / 2))`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 
 # Returns
 
@@ -131,12 +124,12 @@ Named tuple containing:
 - `ls::Array{Float64, 2}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), norm::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_n::Int64=_tlength((0, sr(obj) / 2)), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
     length(ch) == 1 && (ch = [ch])
 
-    lf, ls, pf = psd_slope(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, norm=norm, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    lf, ls, pf = psd_slope(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     return (lf=lf, ls=ls, pf=pf)
 

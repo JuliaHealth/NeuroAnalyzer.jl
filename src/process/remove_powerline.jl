@@ -57,7 +57,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
         # Threads.@threads for ch_idx in eachindex(ch)
         @inbounds for ch_idx in eachindex(ch)
             # detect power line peak
-            p, f = psd(obj_new, ch=ch[ch_idx], norm=true)
+            p, f = psd(obj_new, ch=ch[ch_idx], db=true)
             p = p[:]
             f_pl = vsearch(pl_frq - d, f):vsearch(pl_frq + d, f)
             p_tmp = p[f_pl]
@@ -72,7 +72,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             v = zeros(length(bw_values))
             Threads.@threads for bw_idx in eachindex(bw_values)
                 obj_tmp = NeuroAnalyzer.filter(obj_new, ch=ch[ch_idx], fprototype=:iirnotch, cutoff=pl_frq, bw=bw_values[bw_idx])
-                p, f = psd(obj_tmp, ch=ch[ch_idx], norm=true)
+                p, f = psd(obj_tmp, ch=ch[ch_idx], db=true)
                 f1 = vsearch(pl_frq - d, f)
                 f2 = vsearch(pl_frq + d, f)
                 seg = p[f1:f2]
@@ -83,7 +83,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
             NeuroAnalyzer.filter!(obj_new, ch=ch[ch_idx], fprototype=:iirnotch, cutoff=pl_frq, bw=pl_best_bw[ch_idx])
 
             # detect peaks
-            p, f = psd(obj_new, ch=ch[ch_idx], norm=true)
+            p, f = psd(obj_new, ch=ch[ch_idx], db=true)
             p = p[:]
             f_pl = vsearch(2 * pl_frq - 2 * d, f)
             p_tmp = p[f_pl:end]
@@ -108,7 +108,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
                     v = zeros(length(bw_values))
                     Threads.@threads for bw_idx in eachindex(bw_values)
                         obj_tmp = NeuroAnalyzer.filter(obj_new, ch=ch[ch_idx], fprototype=:iirnotch, cutoff=pks_frq[peak_idx], bw=bw_values[bw_idx])
-                        p, f = psd(obj_tmp, ch=ch[ch_idx], norm=true)
+                        p, f = psd(obj_tmp, ch=ch[ch_idx], db=true)
                         f1 = vsearch(pks_frq[peak_idx] - d / 2, f)
                         f2 = vsearch(pks_frq[peak_idx] + d / 2, f)
                         seg = p[f1:f2]

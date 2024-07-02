@@ -54,25 +54,25 @@ p = NeuroAnalyzer.plot_locs(e10, threed=true, interactive=false)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 6/34: plot_psd()"
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:mw)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:mw)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:mt)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:stft)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:stft)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, method=:fft)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:fft)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1, ref=:delta)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, ref=:delta)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:mean)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1:10, type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:butterfly)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1:10, type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:w3d)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1:10, type=:w3d)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, norm=true, ep=1, ch=1:10, type=:topo)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1:10, type=:topo)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 7/34: plot_save()"
@@ -90,19 +90,19 @@ p = NeuroAnalyzer.plot(e10, ch=1:19, type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 9/34: plot_spectrogram()"
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:stft)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:stft)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:mt)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:mw)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:mw)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:gh)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:gh)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1, method=:cwt)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, norm=true, ep=1, ch=1:10)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1:10)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 10/34: plot_topo()"

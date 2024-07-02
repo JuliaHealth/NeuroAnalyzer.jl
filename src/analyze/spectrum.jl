@@ -2,7 +2,7 @@ export spectrum
 export hspectrum
 
 """
-    spectrum(s; pad, norm)
+    spectrum(s; pad, db)
 
 Calculate FFT, amplitudes, powers and phases.
 
@@ -10,7 +10,7 @@ Calculate FFT, amplitudes, powers and phases.
 
 - `s::AbstractVector`
 - `pad::Int64=0`: number of zeros to add at the end of the signal
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize powers to dB
 
 # Returns
 
@@ -20,7 +20,7 @@ Named tuple containing:
 - `sp::Vector{Float64}`: powers
 - `sph::Vector{Float64}`: phases
 """
-function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
+function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)
 
     ft = rfft0(s, pad)
 
@@ -34,7 +34,7 @@ function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
     # power
     sp = abs.(ft .* conj(ft))       # sp = sa .^ 2;
 
-    norm && (sp = pow2db.(sp))
+    db && (sp = pow2db.(sp))
 
     # phases
     sph = angle.(ft)
@@ -52,7 +52,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 - `s::AbstractVector`
 - `pad::Int64`: number of zeros to add at the end of the signal
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize powers to dB
 
 # Returns
 
@@ -62,7 +62,7 @@ Named tuple containing:
 - `sp::Vector{Float64}`: powers
 - `sph::Vector{Float64}`: phases
 """
-function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
+function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)
 
     hc = hilbert(pad0(s, pad))
 
@@ -71,7 +71,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
     # powers
     sp = sa.^2
-    norm && (sp = pow2db.(sp))
+    db && (sp = pow2db.(sp))
 
     # phases
     sph = angle.(hc)
@@ -81,7 +81,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 end
 
 """
-    hspectrum(s; pad, norm)
+    hspectrum(s; pad, db)
 
 Calculate amplitudes, powers and phases using Hilbert transform.
 
@@ -89,7 +89,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 - `s::AbstractArray`
 - `pad::Int64`: number of zeros to add at the end of the signal
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize powers to dB
 
 # Returns
 
@@ -99,7 +99,7 @@ Named tuple containing:
 - `sp::Array{Float64, 3}`: powers
 - `sph::Array{Float64, 3}`: phases
 """
-function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
+function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)
 
     ch_n = size(s, 1)
     ep_len = size(s, 2)
@@ -112,7 +112,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            hc[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
+            hc[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
 
@@ -121,7 +121,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
 end
 
 """
-    spectrum(s; pad, h, norm)
+    spectrum(s; pad, h, db)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
@@ -130,7 +130,7 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 - `s::AbstractArray`
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize powers to dB
 
 # Returns
 
@@ -140,7 +140,7 @@ Named tuple containing:
 - `sp::Array{Float64, 3}`: powers
 - `sph::Array{Float64, 3}: phase angles
 """
-function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=false)
+function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)
 
     h && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
 
@@ -161,9 +161,9 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if h
-                c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
+                c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
             else
-                c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views spectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
+                c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views spectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
             end
         end
     end
@@ -172,7 +172,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=fals
 end
 
 """
-    spectrum(obj; ch, pad, h, norm)
+    spectrum(obj; ch, pad, h, db)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
@@ -182,7 +182,7 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize powers to dB
 
 # Returns
 
@@ -192,12 +192,12 @@ Named tuple containing:
 - `sp::Array{Float64, 3}`: powers
 - `sph::Array{Float64, 3}: phase angles
 """
-function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
+function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, db::Bool=false)
 
     _check_channels(obj, ch)
     length(ch) == 1 && (ch = [ch])
 
-    c, sa, sp, sph = spectrum(obj.data[ch, :, :], pad=pad, h=h, norm=norm)
+    c, sa, sp, sph = spectrum(obj.data[ch, :, :], pad=pad, h=h, db=db)
 
     return (c=c, sa=sa, sp=sp, sph=sph)
 

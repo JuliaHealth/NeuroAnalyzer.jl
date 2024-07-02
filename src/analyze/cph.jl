@@ -146,7 +146,7 @@ function cph(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 end
 
 """
-    cph(obj1, obj2; ch1, ch2, ep1, ep2, norm)
+    cph(obj1, obj2; ch1, ch2, ep1, ep2)
 
 Calculate cross-phases.
 
