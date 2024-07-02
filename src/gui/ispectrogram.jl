@@ -100,9 +100,9 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     cb_mono = GtkCheckButton()
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
 
-    cb_norm = GtkCheckButton()
-    set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
-    set_gtk_property!(cb_norm, :active, true)
+    cb_db = GtkCheckButton()
+    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB")
+    set_gtk_property!(cb_db, :active, true)
 
     cb_hw = GtkCheckButton()
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
@@ -236,7 +236,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     g_opts[2, 12] = entry_gw
     g_opts[2, 13] = entry_frq
     g_opts[2, 14] = entry_wt
-    g_opts[2, 15] = cb_norm
+    g_opts[2, 15] = cb_db
     g_opts[2, 16] = cb_hw
     g_opts[2, 17] = cb_frq
     g_opts[2, 18] = cb_mono
@@ -284,7 +284,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             xlab = get_gtk_property(entry_xlab, :text, String)
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
-            norm = get_gtk_property(cb_norm, :active, Bool)
+            db = get_gtk_property(cb_db, :active, Bool)
             frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             hw = get_gtk_property(cb_hw, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
@@ -325,7 +325,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
                                                    title=title,
                                                    xlabel=xlab,
                                                    ylabel=ylab,
-                                                   norm=norm,
+                                                   db=db,
                                                    method=method,
                                                    frq_lim=(frq1, frq2),
                                                    ncyc=ncyc,
@@ -383,7 +383,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     signal_connect(entry_frq, "value-changed") do widget
         draw(can)
     end
-    signal_connect(cb_norm, "clicked") do widget
+    signal_connect(cb_db, "clicked") do widget
         draw(can)
     end
     signal_connect(cb_mono, "clicked") do widget
@@ -633,9 +633,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     cb_mono = GtkCheckButton()
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
 
-    cb_norm = GtkCheckButton()
-    set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
-    set_gtk_property!(cb_norm, :active, true)
+    cb_db = GtkCheckButton()
+    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB")
+    set_gtk_property!(cb_db, :active, true)
 
     cb_hw = GtkCheckButton()
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
@@ -769,7 +769,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     g_opts[2, 12] = entry_gw
     g_opts[2, 13] = entry_frq
     g_opts[2, 14] = entry_wt
-    g_opts[2, 15] = cb_norm
+    g_opts[2, 15] = cb_db
     g_opts[2, 16] = cb_hw
     g_opts[2, 17] = cb_frq
     g_opts[2, 18] = cb_mono
@@ -815,7 +815,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             xlab = get_gtk_property(entry_xlab, :text, String)
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
-            norm = get_gtk_property(cb_norm, :active, Bool)
+            db = get_gtk_property(cb_db, :active, Bool)
             frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             hw = get_gtk_property(cb_hw, :active, Bool)
             method = get_gtk_property(combo_method, :active, String)
@@ -854,7 +854,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                                                    title=title,
                                                    xlabel=xlab,
                                                    ylabel=ylab,
-                                                   norm=norm,
+                                                   db=db,
                                                    method=method,
                                                    frq_lim=(frq1, frq2),
                                                    ncyc=ncyc,
@@ -912,7 +912,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     signal_connect(entry_frq, "value-changed") do widget
         draw(can)
     end
-    signal_connect(cb_norm, "clicked") do widget
+    signal_connect(cb_db, "clicked") do widget
         draw(can)
     end
     signal_connect(cb_mono, "clicked") do widget

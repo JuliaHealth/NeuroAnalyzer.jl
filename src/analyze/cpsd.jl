@@ -1,7 +1,7 @@
 export cpsd
 
 """
-   cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
+   cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, db)
 
 Calculate cross power spectral density (CPSD).
 
@@ -19,14 +19,14 @@ Calculate cross power spectral density (CPSD).
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize do dB
 
 # Returns
 
 - `pxy::Vector{Float64}`: cross-power spectrum
 - `p::Vector{Float64}`: frequencies
 """
-function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
+function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)
 
     _check_var(method, [:mt, :fft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -61,14 +61,14 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         pxy = @views abs.(pxy[f1_idx:f2_idx])
     end
 
-    norm && (pxy = pow2db.(pxy))
+    db && (pxy = pow2db.(pxy))
 
     return (pxy=pxy, f=f)
 
 end
 
 """
-    cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, norm)
+    cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, db)
 
 Calculate cross power spectral density (CPSD).
 
@@ -86,7 +86,7 @@ Calculate cross power spectral density (CPSD).
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize do dB
 
 # Returns
 
@@ -94,14 +94,14 @@ Named tuple containing:
 - `pxy::Array{Float64, 3}`: cross-power spectrum
 - `f::Vector{Float64}`: frequencies
 """
-function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
+function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 
-    _, f = cpsd(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, norm=norm)
+    _, f = cpsd(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
     if frq_lim !== nothing
         _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
@@ -113,7 +113,7 @@ function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int6
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pxy[ch_idx, :, ep_idx], _ = @views cpsd(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, norm=norm)
+            pxy[ch_idx, :, ep_idx], _ = @views cpsd(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
         end
     end
 
@@ -121,7 +121,7 @@ function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int6
 end
 
 """
-    cpsd(obj1, obj2; ch1, ch2, ep1, ep2, method, frq_lim, demean, nt, wlen, woverlap, w, norm)
+    cpsd(obj1, obj2; ch1, ch2, ep1, ep2, method, frq_lim, demean, nt, wlen, woverlap, w, db)
 
 Calculate cross power spectral density (CPSD).
 
@@ -142,7 +142,7 @@ Calculate cross power spectral density (CPSD).
 - `wlen::Int64=sr(obj1)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `norm::Bool=false`: normalize do dB
+- `db::Bool=false`: normalize do dB
 
 # Returns
 
@@ -150,7 +150,7 @@ Named tuple containing:
 - `pxy::Array{Float64, 3}`: cross-power spectrum
 - `f::Vector{Float64}`: frequencies
 """
-function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), method::Symbol=:mt, frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=sr(obj1), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, norm::Bool=false)
+function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), method::Symbol=:mt, frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=sr(obj1), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)
@@ -168,7 +168,7 @@ function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     size(ep1) == () && (ep1 = [ep1])
     size(ep2) == () && (ep2 = [ep2])
 
-    pxy, f = @views cpsd(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, norm=norm)
+    pxy, f = @views cpsd(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
 
     return (pxy=pxy, f=f)
 

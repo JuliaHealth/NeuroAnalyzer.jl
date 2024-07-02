@@ -13,7 +13,7 @@ Plot PSD (power spectrum density).
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Vector{Float64}`: powers
-- `norm::Bool=true`: whether powers are normalized to dB
+- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -30,7 +30,7 @@ Plot PSD (power spectrum density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -56,7 +56,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -67,7 +67,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; norm::Bool=true, frq
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -109,7 +109,7 @@ Plot multi-channel PSD (power spectrum density).
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `norm::Bool=true`: whether powers are normalized to dB
+- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -126,7 +126,7 @@ Plot multi-channel PSD (power spectrum density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -238,6 +238,8 @@ Plot PSD mean and ±95% CI of averaged channels.
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
+- `db::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -253,7 +255,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
@@ -282,7 +284,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true,
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -293,7 +295,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; norm::Bool=true,
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -355,7 +357,7 @@ Butterfly PSD plot.
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `norm::Bool=true`: whether powers are normalized to dB
+- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -372,7 +374,7 @@ Butterfly PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -401,7 +403,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -412,7 +414,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -461,7 +463,7 @@ Plot 3-d waterfall PSD plot.
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `norm::Bool=true`: whether powers are normalized to dB
+- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -480,7 +482,7 @@ Plot 3-d waterfall PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
+function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -512,7 +514,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        zsc = !norm ? :log10 : :identity
+        zsc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -523,7 +525,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        zsc = !norm ? :log10 : :identity
+        zsc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -614,7 +616,7 @@ Plot topographical map PSDs.
 - `sp::Array{Float64, 3}`: powers
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `norm::Bool=true`: whether powers are normalized to dB
+- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -632,7 +634,7 @@ Plot topographical map PSDs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -662,7 +664,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     elseif ax === :linlog
         xt = _ticks(frq_lim)
         xsc = :identity
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
@@ -673,7 +675,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
-        ysc = !norm ? :log10 : :identity
+        ysc = !db ? :log10 : :identity
     end
 
     # plot parameters
@@ -761,7 +763,7 @@ Plot power spectrum density.
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
-- `norm::Bool=true`: normalize powers to dB
+- `db::Bool=true`: normalize powers to dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -773,9 +775,7 @@ Plot power spectrum density.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
-- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
@@ -794,7 +794,7 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw], "method")
@@ -856,53 +856,53 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
 
     if ref === :abs
         if method === :welch
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:welch, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:welch, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:fft, w=w)
             title == "default" && (title = "Absolute PSD (fast Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (short-time Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:fft, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, frq_lim=frq_lim, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:fft, frq_lim=frq_lim, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:stft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mt, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, frq_lim=frq_lim, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
@@ -913,7 +913,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if ref !== :abs
             ylabel == "default" && (ylabel = "Power ratio")
         end
-        if norm
+        if db
             ylabel == "default" && (ylabel = "Power [dB]")
         else
             ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
@@ -932,7 +932,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         norm=norm,
+                         db=db,
                          frq_lim=frq_lim,
                          ax=ax,
                          mono=mono;
@@ -944,7 +944,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          ylabel=ylabel,
                          clabels=clabels,
                          title=title,
-                         norm=norm,
+                         db=db,
                          frq_lim=frq_lim,
                          ax=ax,
                          mono=mono;
@@ -962,7 +962,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                                xlabel=xlabel,
                                ylabel=ylabel,
                                title=title,
-                               norm=norm,
+                               db=db,
                                frq_lim=frq_lim,
                                ax=ax,
                                mono=mono;
@@ -979,7 +979,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         norm=norm,
+                         db=db,
                          frq_lim=frq_lim,
                          ax=ax,
                          mono=mono;
@@ -991,7 +991,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1000,7 +1000,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        norm=norm,
+                        db=db,
                         frq_lim=frq_lim,
                         ax=ax,
                         mono=mono,
@@ -1013,7 +1013,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1022,7 +1022,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        norm=norm,
+                        db=db,
                         frq_lim=frq_lim,
                         ax=ax,
                         mono=mono,
@@ -1045,7 +1045,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,
-                          norm=norm,
+                          db=db,
                           frq_lim=frq_lim,
                           ax=ax,
                           mono=mono;
@@ -1070,7 +1070,7 @@ Plot power spectrum density of embedded or external component.
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
-- `norm::Bool=true`: normalize powers to dB
+- `db::Bool=true`: normalize powers to dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -1082,9 +1082,7 @@ Plot power spectrum density of embedded or external component.
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
-- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `ax::Symbol=:linlin`: type of axes scaling:
@@ -1105,7 +1103,7 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw], "method")
@@ -1162,53 +1160,53 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
 
     if ref === :abs
         if method === :welch
-            sp, sf = psd(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:fft, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:fft, w=w)
             title == "default" && (title = "Absolute PSD (fast Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (short-time Fourier transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:fft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:fft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:fft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:stft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:stft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mt, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mt, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
             title == "default" && (title = "Absolute PSD (multi-tapered) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, norm=norm, method=:mw, frq_lim=frq_lim, frq=frq, frq_n=frq_n, ncyc=ncyc, w=w)
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, frq_lim=frq_lim, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
@@ -1216,7 +1214,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     # set labels
     if type !== :w3d && type !== :s3d
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        if norm
+        if db
             ylabel == "default" && (ylabel = "Power [dB]")
         else
             ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
@@ -1230,7 +1228,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     norm=norm,
+                     db=db,
                      frq_lim=frq_lim,
                      ax=ax,
                      mono=mono;
@@ -1244,7 +1242,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                                xlabel=xlabel,
                                ylabel=ylabel,
                                title=title,
-                               norm=norm,
+                               db=db,
                                frq_lim=frq_lim,
                                ax=ax,
                                mono=mono;
@@ -1258,7 +1256,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         norm=norm,
+                         db=db,
                          frq_lim=frq_lim,
                          ax=ax,
                          mono=mono;
@@ -1267,7 +1265,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1276,7 +1274,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        norm=norm,
+                        db=db,
                         frq_lim=frq_lim,
                         ax=ax,
                         mono=mono,
@@ -1286,7 +1284,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = norm ? "Power [dB]" : "Power [$units^2/Hz]")
+        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1295,7 +1293,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        norm=norm,
+                        db=db,
                         frq_lim=frq_lim,
                         ax=ax,
                         mono=mono,

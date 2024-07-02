@@ -694,20 +694,25 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `s::AbstractArray`: ERO spectrogram
 - `f::AbstractVector`: ERO frequencies
 - `t::AbstractVector`: ERO time
-- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
+- `db::Bool=true`: whether ERO powers are normalized to dB
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
 - `cb::Bool=true`: draw color bar
-- `cb_title::String="Power [dB]"`: color bar title
 - `mono::Bool=false`: use color or gray palette
+- `units::String="μV"`
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="Power [dB]", mono::Bool=false, kwargs...)
+function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(f[1], f[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3, kwargs...)
 
     @assert size(s, 1) == length(f) "f vector length does not match spectrogram."
     @assert size(s, 2) == length(t) "t vector length does not match spectrogram."
@@ -715,6 +720,29 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
     @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
 
     pal = mono ? :grays : :darktest
+    cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
+
+    _check_var(frq, [:lin, :log], "frq")
+    _check_tuple(frq_lim, "frq_lim")
+
+    if frq === :lin
+        ysc = :identity
+        yt = _ticks(frq_lim)
+    else
+        if frq_lim[1] == 0
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        end
+        ysc = :log10
+    end
+
+    if smooth
+        s = imfilter(s, Kernel.gaussian(n))
+    end
 
     # set time markers
     if tm != 0
@@ -735,7 +763,12 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
                           title=tt,
                           xlabel=xl,
                           ylabel=yl,
+                          ylims=frq_lim,
+                          xticks=_ticks(t),
+                          yticks=yt,
+                          yscale=ysc,
                           seriescolor=pal,
+                          cb=cb,
                           colorbar_title=cb_title,
                           size=(1200, 800),
                           left_margin=20*Plots.px,
@@ -764,7 +797,12 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
                            title=tt,
                            xlabel=xl,
                            ylabel=yl,
+                           ylims=frq_lim,
+                           xticks=_ticks(t),
+                           yticks=yt,
+                           yscale=ysc,
                            seriescolor=pal,
+                           cb=cb,
                            colorbar_title=cb_title,
                            size=(1200, 800),
                            left_margin=20*Plots.px,
@@ -799,9 +837,14 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; tm::U
                            title=tt,
                            xlabel=xl,
                            ylabel=yl,
+                           ylims=frq_lim,
+                           xticks=_ticks(t),
+                           yticks=yt,
+                           yscale=ysc,
                            seriescolor=pal,
                            colorbar_title=cb_title,
                            size=(1200, 800),
+                           cb=cb,
                            left_margin=20*Plots.px,
                            bottom_margin=20*Plots.px,
                            titlefontsize=8,
@@ -844,9 +887,17 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 - `p::AbstractArray`: ERO powers
 - `f::AbstractVector`: ERO frequencies
+- `db::Bool=true`: whether ERO powers are normalized to dB
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
+- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y-axis
+- `ax::Symbol=:linlin`: type of axes scaling:
+    - `:linlin`: linear-linear
+    - `:loglin`: log10-linear
+    - `:linlog`: linear-log10
+    - `:loglog`: log10-log10
+- `units::String="μV"`
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
@@ -854,21 +905,63 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)
+function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(f[1], f[end]), ax::Symbol=:linlin, units::String="μV", mono::Bool=false, kwargs...)
 
     @assert size(p, 1) == length(f) "f vector length does not match powers."
     @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
+    _check_tuple(frq_lim, "frq_lim")
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     pal = mono ? :grays : :darktest
 
+    if ax === :linlin
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = :identity
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        end
+        xsc = :log10
+        ysc = :identity
+    elseif ax === :linlog
+        xt = _ticks(frq_lim)
+        xsc = :identity
+        ysc = !db ? :log10 : :identity
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (0.001, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.001 Hz")
+            sf[1] == 0 && (sf[1] = 0.001)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        else
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+        end
+        xsc = :log10
+        ysc = !db ? :log10 : :identity
+    end
+
     if size(p, 2) == 1
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "Averaged power-spectra of epochs")
+        if db
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB/Hz]", "Averaged power-spectra of epochs")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [$units^2/Hz]", "Averaged power-spectra of epochs")
+        end
         p = Plots.plot(f,
                        p[:, 1],
                        title=tt,
                        xlabel=xl,
                        ylabel=yl,
+                       ylims=frq_lim,
+                       xticks=xt,
+                       xscale=xsc,
+                       yscale=ysc,
                        seriescolor=pal,
                        size=(1200, 800),
                        left_margin=20*Plots.px,
@@ -881,12 +974,20 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                        label=false;
                        kwargs...)
     else
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "ERP power-spectrum")
+        if db
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB/Hz]", "ERP power-spectrum")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [$units^2/Hz]", "ERP power-spectrum")
+        end
         p1 = Plots.plot(f,
                         p[:, 1],
                         title=tt,
                         xlabel=xl,
                         ylabel=yl,
+                        ylims=frq_lim,
+                        xticks=xt,
+                        xscale=xsc,
+                        yscale=ysc,
                         seriescolor=pal,
                         size=(1200, 800),
                         left_margin=20*Plots.px,
@@ -899,12 +1000,20 @@ function plot_erop(p::AbstractArray, f::AbstractVector; xlabel::String="default"
                         label=false;
                         kwargs...)
 
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB]", "Averaged power-spectra of epochs")
+        if db
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB/Hz]", "Averaged power-spectra of epochs")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [$units^2/Hz]", "Averaged power-spectra of epochs")
+        end
         p2 = Plots.plot(f,
                         p[:, 2],
                         title=tt,
                         xlabel=xl,
                         ylabel=yl,
+                        ylims=frq_lim,
+                        xticks=xt,
+                        xscale=xsc,
+                        yscale=ysc,
                         seriescolor=pal,
                         size=(1200, 800),
                         left_margin=20*Plots.px,

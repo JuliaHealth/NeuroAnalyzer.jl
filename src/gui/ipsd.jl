@@ -99,9 +99,9 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     cb_mono = GtkCheckButton()
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
 
-    cb_norm = GtkCheckButton()
-    set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
-    set_gtk_property!(cb_norm, :active, true)
+    cb_db = GtkCheckButton()
+    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB")
+    set_gtk_property!(cb_db, :active, true)
 
     cb_hw = GtkCheckButton()
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
@@ -255,7 +255,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     g_opts[2, 13] = entry_wlen
     g_opts[2, 14] = entry_woverlap
     g_opts[2, 15] = entry_frq
-    g_opts[2, 16] = cb_norm
+    g_opts[2, 16] = cb_db
     g_opts[2, 17] = cb_mono
     g_opts[2, 18] = cb_hw
     g_opts[2, 19] = cb_frq
@@ -303,7 +303,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
             xlab = get_gtk_property(entry_xlab, :text, String)
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
-            norm = get_gtk_property(cb_norm, :active, Bool)
+            db = get_gtk_property(cb_db, :active, Bool)
             hw = get_gtk_property(cb_hw, :active, Bool)
             f = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             method = get_gtk_property(combo_method, :active, String)
@@ -374,7 +374,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
                                            title=title,
                                            xlabel=xlab,
                                            ylabel=ylab,
-                                           norm=norm,
+                                           db=db,
                                            method=method,
                                            type=type,
                                            ax=ax,
@@ -439,7 +439,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     signal_connect(entry_frq, "value-changed") do widget
         draw(can)
     end
-    signal_connect(cb_norm, "clicked") do widget
+    signal_connect(cb_db, "clicked") do widget
         draw(can)
     end
     signal_connect(cb_mono, "clicked") do widget
@@ -693,9 +693,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     set_gtk_property!(cb_hw, :tooltip_text, "Apply Hanning window")
     set_gtk_property!(cb_hw, :active, true)
 
-    cb_norm = GtkCheckButton()
-    set_gtk_property!(cb_norm, :tooltip_text, "Normalize powers to dB")
-    set_gtk_property!(cb_norm, :active, true)
+    cb_db = GtkCheckButton()
+    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB")
+    set_gtk_property!(cb_db, :active, true)
 
     combo_method = GtkComboBoxText()
     psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet"]
@@ -845,7 +845,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     g_opts[2, 13] = entry_wlen
     g_opts[2, 14] = entry_woverlap
     g_opts[2, 15] = entry_frq
-    g_opts[2, 16] = cb_norm
+    g_opts[2, 16] = cb_db
     g_opts[2, 17] = cb_mono
     g_opts[2, 18] = cb_hw
     g_opts[2, 19] = cb_frq
@@ -891,7 +891,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
             xlab = get_gtk_property(entry_xlab, :text, String)
             ylab = get_gtk_property(entry_ylab, :text, String)
             mono = get_gtk_property(cb_mono, :active, Bool)
-            norm = get_gtk_property(cb_norm, :active, Bool)
+            db = get_gtk_property(cb_db, :active, Bool)
             hw = get_gtk_property(cb_hw, :active, Bool)
             f = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             method = get_gtk_property(combo_method, :active, String)
@@ -962,7 +962,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
                                            title=title,
                                            xlabel=xlab,
                                            ylabel=ylab,
-                                           norm=norm,
+                                           db=db,
                                            method=method,
                                            type=type,
                                            ax=ax,
@@ -1027,7 +1027,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     signal_connect(entry_frq, "value-changed") do widget
         draw(can)
     end
-    signal_connect(cb_norm, "clicked") do widget
+    signal_connect(cb_db, "clicked") do widget
         draw(can)
     end
     signal_connect(cb_mono, "clicked") do widget
