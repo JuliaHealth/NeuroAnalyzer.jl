@@ -115,9 +115,10 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
 
     @assert size(sp, 1) == length(sch) "Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."
+    @assert n > 0 "n must be ≥ 1."
+
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
-    @assert n > 0 "n must be ≥ 1."
 
     pal = mono ? :grays : :darktest
     cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
@@ -212,9 +213,10 @@ Plots spectrogram.
 """
 function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, kwargs...) where {T <: CWT}
 
+    @assert seg[1] != seg[2] "Signal is too short for analysis."
+
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)
-    @assert seg[1] != seg[2] "Signal is too short for analysis."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -405,10 +407,10 @@ Plots spectrogram of embedded or external component.
 """
 function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", smooth::Bool=false, n::Int64=3, kwargs...) where {T <: CWT}
 
-    _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
-
     @assert seg[1] != seg[2] "Signal is too short for analysis."
     @assert n > 0 "n must be ≥ 1."
+
+    _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])

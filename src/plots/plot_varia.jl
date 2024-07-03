@@ -720,11 +720,11 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
     @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
     @assert n > 0 "n must be ≥ 1."
 
-    pal = mono ? :grays : :darktest
-    cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
-
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
+
+    pal = mono ? :grays : :darktest
+    cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
 
     if frq === :lin
         ysc = :identity
@@ -913,6 +913,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
     @assert size(p, 1) == length(f) "f vector length does not match powers."
     @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
+    
     _check_tuple(frq_lim, "frq_lim")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
