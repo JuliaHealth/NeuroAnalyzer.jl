@@ -799,7 +799,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     g_opts[2, 18] = cb_smooth
     g_opts[2, 19] = entry_n
     g_opts[2, 20] = combo_save
-    g_opts[1:2, 20] = bt_refresh
+    g_opts[1:2, 21] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
