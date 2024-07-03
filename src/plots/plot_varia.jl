@@ -696,7 +696,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `t::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y-axis
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`
 - `ylabel::String="default"`
@@ -718,6 +718,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
     @assert size(s, 2) == length(t) "t vector length does not match spectrogram."
     @assert ndims(s) == 3 "s must have 3 dimensions."
     @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
+    @assert n > 0 "n must be ≥ 1."
 
     pal = mono ? :grays : :darktest
     cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
@@ -732,7 +733,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
+            f[1] == 0 && (f[1] = 0.001)
             yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
             yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
@@ -741,7 +742,9 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
     end
 
     if smooth
-        s = imfilter(s, Kernel.gaussian(n))
+        for idx in 1:size(s, 3)
+            s[:, :, idx] = @views imfilter(s[:, :, idx], Kernel.gaussian(n))
+        end
     end
 
     # set time markers
@@ -923,7 +926,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
+            f[1] == 0 && (f[1] = 0.001)
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
@@ -938,7 +941,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
         if frq_lim[1] == 0
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
+            f[1] == 0 && (f[1] = 0.001)
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
             xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
@@ -958,14 +961,13 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
                        title=tt,
                        xlabel=xl,
                        ylabel=yl,
-                       ylims=frq_lim,
+                       xlims=frq_lim,
                        xticks=xt,
                        xscale=xsc,
                        yscale=ysc,
                        seriescolor=pal,
                        size=(1200, 800),
-                       left_margin=20*Plots.px,
-                       bottom_margin=20*Plots.px,
+                       margins=20Plots.px,
                        titlefontsize=8,
                        xlabelfontsize=8,
                        ylabelfontsize=8,
@@ -984,14 +986,13 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
                         title=tt,
                         xlabel=xl,
                         ylabel=yl,
-                        ylims=frq_lim,
+                        xlims=frq_lim,
                         xticks=xt,
                         xscale=xsc,
                         yscale=ysc,
                         seriescolor=pal,
                         size=(1200, 800),
-                        left_margin=20*Plots.px,
-                        bottom_margin=20*Plots.px,
+                        margins=20Plots.px,
                         titlefontsize=8,
                         xlabelfontsize=8,
                         ylabelfontsize=8,
