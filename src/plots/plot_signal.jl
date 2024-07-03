@@ -65,7 +65,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractV
     # prepare plot
     ch_n in 1:2 && (plot_size = (1200, 400))
     ch_n in 3:15 && (plot_size = (1200, 800))
-    ch_n >= 16 && (plot_size = (1200, 80 * ch_n))
+    ch_n >= 16 && (plot_size = (1200, 50 * ch_n))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
