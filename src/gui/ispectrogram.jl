@@ -112,6 +112,10 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
     set_gtk_property!(cb_frq, :active, true)
 
+    cb_smooth = GtkCheckButton()
+    set_gtk_property!(cb_smooth, :tooltip_text, "Smooth the spectrogram image")
+    set_gtk_property!(cb_smooth, :active, true)
+
     combo_method = GtkComboBoxText()
     spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "continuous wavelet transformation"]
     for idx in spectrogram_methods
@@ -152,9 +156,9 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(entry_gw, :value, 6)
     set_gtk_property!(entry_gw, :tooltip_text, "Gaussian width in Hz")
 
-    entry_frq = GtkSpinButton(1, 2048, 1)
-    set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
-    set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")
+    entry_n = GtkSpinButton(1, 64, 1)
+    set_gtk_property!(entry_n, :value, 3)
+    set_gtk_property!(entry_n, :tooltip_text, "Gaussian smoothing filter kernel size")
 
     combo_save = GtkComboBoxText()
     file_types = ["PNG", "PDF"]
@@ -203,6 +207,10 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     set_gtk_property!(lab_frq, :halign, 2)
     lab_frqn = GtkLabel("Frequencies:")
     set_gtk_property!(lab_frqn, :halign, 2)
+    lab_smooth = GtkLabel("Smooth:")
+    set_gtk_property!(lab_smooth, :halign, 2)
+    lab_n = GtkLabel("Kernel size:")
+    set_gtk_property!(lab_n, :halign, 2)
     g_opts[1, 1] = lab_method
     g_opts[1, 2] = lab_ch
     g_opts[1, 3] = lab_t
@@ -215,13 +223,14 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     g_opts[1, 10] = lab_wlen
     g_opts[1, 11] = lab_woverlap
     g_opts[1, 12] = lab_gw
-    g_opts[1, 13] = lab_frqn
-    g_opts[1, 14] = lab_wt
-    g_opts[1, 15] = lab_norm
-    g_opts[1, 16] = lab_hw
-    g_opts[1, 17] = lab_frq
-    g_opts[1, 18] = lab_mono
-    g_opts[1, 19] = bt_save
+    g_opts[1, 13] = lab_wt
+    g_opts[1, 14] = lab_norm
+    g_opts[1, 15] = lab_hw
+    g_opts[1, 16] = lab_frq
+    g_opts[1, 17] = lab_mono
+    g_opts[1, 18] = lab_smooth
+    g_opts[1, 19] = lab_n
+    g_opts[1, 20] = bt_save
     g_opts[2, 1] = combo_method
     g_opts[2, 2] = entry_ch
     g_opts[2, 3] = entry_title
@@ -234,14 +243,15 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     g_opts[2, 10] = entry_wlen
     g_opts[2, 11] = entry_woverlap
     g_opts[2, 12] = entry_gw
-    g_opts[2, 13] = entry_frq
-    g_opts[2, 14] = entry_wt
-    g_opts[2, 15] = cb_db
-    g_opts[2, 16] = cb_hw
-    g_opts[2, 17] = cb_frq
-    g_opts[2, 18] = cb_mono
-    g_opts[2, 19] = combo_save
-    g_opts[1:2, 20] = bt_refresh
+    g_opts[2, 13] = entry_wt
+    g_opts[2, 14] = cb_db
+    g_opts[2, 15] = cb_hw
+    g_opts[2, 16] = cb_frq
+    g_opts[2, 17] = cb_mono
+    g_opts[2, 18] = cb_smooth
+    g_opts[2, 19] = entry_n
+    g_opts[2, 20] = combo_save
+    g_opts[1:2, 21] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -287,6 +297,8 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             db = get_gtk_property(cb_db, :active, Bool)
             frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             hw = get_gtk_property(cb_hw, :active, Bool)
+            smooth = get_gtk_property(cb_smooth, :active, Bool)
+            n = get_gtk_property(entry_n, :value, Int64)
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :stft)
             method == "1" && (method = :mt)
@@ -305,7 +317,6 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
             wlen = get_gtk_property(entry_wlen, :value, Int64)
             woverlap = get_gtk_property(entry_woverlap, :value, Int64)
             gw = get_gtk_property(entry_gw, :value, Int64)
-            frq_n = get_gtk_property(entry_frq, :value, Int64)
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif wt === nothing
@@ -336,7 +347,8 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
                                                    wt=wt,
                                                    gw=gw,
                                                    frq=frq,
-                                                   frq_n=frq_n)
+                                                   smooth=smooth,
+                                                   n=n)
                 img = read_from_png(io)
                 Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
                 set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
@@ -380,9 +392,6 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
     signal_connect(entry_woverlap, "value-changed") do widget
         draw(can)
     end
-    signal_connect(entry_frq, "value-changed") do widget
-        draw(can)
-    end
     signal_connect(cb_db, "clicked") do widget
         draw(can)
     end
@@ -393,6 +402,12 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
         draw(can)
     end
     signal_connect(cb_frq, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(cb_smooth, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(entry_n, "value-changed") do widget
         draw(can)
     end
 
@@ -645,6 +660,10 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
     set_gtk_property!(cb_frq, :active, true)
 
+    cb_smooth = GtkCheckButton()
+    set_gtk_property!(cb_smooth, :tooltip_text, "Smooth the spectrogram image")
+    set_gtk_property!(cb_smooth, :active, true)
+
     combo_method = GtkComboBoxText()
     spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "continuous wavelet transformation"]
     for idx in spectrogram_methods
@@ -685,9 +704,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(entry_gw, :value, 6)
     set_gtk_property!(entry_gw, :tooltip_text, "Gaussian width in Hz")
 
-    entry_frq = GtkSpinButton(1, 2048, 1)
-    set_gtk_property!(entry_frq, :value, _tlength((0.0, sr(obj) / 2)))
-    set_gtk_property!(entry_frq, :tooltip_text, "Number of frequencies")
+    entry_n = GtkSpinButton(1, 64, 1)
+    set_gtk_property!(entry_n, :value, 3)
+    set_gtk_property!(entry_n, :tooltip_text, "Gaussian smoothing filter kernel size")
 
     combo_save = GtkComboBoxText()
     file_types = ["PNG", "PDF"]
@@ -736,6 +755,10 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     set_gtk_property!(lab_frq, :halign, 2)
     lab_frqn = GtkLabel("Frequencies:")
     set_gtk_property!(lab_frqn, :halign, 2)
+    lab_smooth = GtkLabel("Smooth:")
+    set_gtk_property!(lab_smooth, :halign, 2)
+    lab_n = GtkLabel("Kernel size:")
+    set_gtk_property!(lab_n, :halign, 2)
     g_opts[1, 1] = lab_method
     g_opts[1, 2] = lab_ch
     g_opts[1, 3] = lab_t
@@ -748,13 +771,14 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     g_opts[1, 10] = lab_wlen
     g_opts[1, 11] = lab_woverlap
     g_opts[1, 12] = lab_gw
-    g_opts[1, 13] = lab_frqn
-    g_opts[1, 14] = lab_wt
-    g_opts[1, 15] = lab_norm
-    g_opts[1, 16] = lab_hw
-    g_opts[1, 17] = lab_frq
-    g_opts[1, 18] = lab_mono
-    g_opts[1, 19] = bt_save
+    g_opts[1, 13] = lab_wt
+    g_opts[1, 14] = lab_norm
+    g_opts[1, 15] = lab_hw
+    g_opts[1, 16] = lab_frq
+    g_opts[1, 17] = lab_mono
+    g_opts[1, 18] = lab_smooth
+    g_opts[1, 19] = lab_n
+    g_opts[1, 20] = bt_save
     g_opts[2, 1] = combo_method
     g_opts[2, 2] = entry_ch
     g_opts[2, 3] = entry_title
@@ -767,13 +791,14 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     g_opts[2, 10] = entry_wlen
     g_opts[2, 11] = entry_woverlap
     g_opts[2, 12] = entry_gw
-    g_opts[2, 13] = entry_frq
-    g_opts[2, 14] = entry_wt
-    g_opts[2, 15] = cb_db
-    g_opts[2, 16] = cb_hw
-    g_opts[2, 17] = cb_frq
-    g_opts[2, 18] = cb_mono
-    g_opts[2, 19] = combo_save
+    g_opts[2, 13] = entry_wt
+    g_opts[2, 14] = cb_db
+    g_opts[2, 15] = cb_hw
+    g_opts[2, 16] = cb_frq
+    g_opts[2, 17] = cb_mono
+    g_opts[2, 18] = cb_smooth
+    g_opts[2, 19] = entry_n
+    g_opts[2, 20] = combo_save
     g_opts[1:2, 20] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
@@ -818,6 +843,8 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             db = get_gtk_property(cb_db, :active, Bool)
             frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
             hw = get_gtk_property(cb_hw, :active, Bool)
+            smooth = get_gtk_property(cb_smooth, :active, Bool)
+            n = get_gtk_property(entry_n, :value, Int64)
             method = get_gtk_property(combo_method, :active, String)
             method == "0" && (method = :stft)
             method == "1" && (method = :mt)
@@ -836,7 +863,6 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
             wlen = get_gtk_property(entry_wlen, :value, Int64)
             woverlap = get_gtk_property(entry_woverlap, :value, Int64)
             gw = get_gtk_property(entry_gw, :value, Int64)
-            frq_n = get_gtk_property(entry_frq, :value, Int64)
             if frq1 == frq2
                 warn_dialog("Start and end frequencies must be different.")
             elseif wt === nothing
@@ -865,7 +891,8 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
                                                    wt=wt,
                                                    gw=gw,
                                                    frq=frq,
-                                                   frq_n=frq_n)
+                                                   smooth=smooth,
+                                                   n=n)
                 img = read_from_png(io)
                 Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
                 set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
@@ -909,9 +936,6 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     signal_connect(entry_woverlap, "value-changed") do widget
         draw(can)
     end
-    signal_connect(entry_frq, "value-changed") do widget
-        draw(can)
-    end
     signal_connect(cb_db, "clicked") do widget
         draw(can)
     end
@@ -922,6 +946,12 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
         draw(can)
     end
     signal_connect(cb_frq, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(cb_smooth, "clicked") do widget
+        draw(can)
+    end
+    signal_connect(entry_n, "value-changed") do widget
         draw(can)
     end
 
