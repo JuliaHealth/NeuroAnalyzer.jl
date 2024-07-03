@@ -12,7 +12,7 @@ authors:
     orcid: 'https://orcid.org/0000-0002-6159-6579'
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.10718848
+    value: 10.5281/zenodo.7372648
 repository-code: 'https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl'
 url: 'https://neuroanalyzer.org'
 repository: 'https://github.com/JuliaHealth/NeuroAnalyzer.jl'
