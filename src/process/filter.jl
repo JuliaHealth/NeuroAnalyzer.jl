@@ -380,6 +380,7 @@ Apply filtering.
 function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
 
     ep_n = nepochs(obj)

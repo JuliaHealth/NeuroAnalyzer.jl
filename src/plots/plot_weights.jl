@@ -215,7 +215,6 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int
                 title=title,
                 titlefontsize=10)
 
-
     Plots.plot!(p)
 
     return p

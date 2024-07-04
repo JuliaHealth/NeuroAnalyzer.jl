@@ -8,11 +8,11 @@ Interactive play channel signal as audio
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64=1`: channel number
-- `ep::Int64=1`: epoch number
+- `ch::Int64`: channel number
+- `ep::Int64`: epoch number
 - `mono::Bool=true`: play mono or stereo
 """
-function iplay(obj::NeuroAnalyzer.NEURO; ch::Int64=1, ep::Int64=1, mono::Bool=true, maxvol::Bool=false)
+function iplay(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, mono::Bool=true, maxvol::Bool=false)
 
     _check_channels(obj, ch)
     _check_epochs(obj, ep)

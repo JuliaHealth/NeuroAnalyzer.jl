@@ -49,6 +49,7 @@ Standardize channels.
 function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data, scaler = standardize(obj.data[ch, :, :])

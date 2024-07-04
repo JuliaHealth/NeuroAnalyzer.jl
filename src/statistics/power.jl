@@ -167,7 +167,6 @@ function power_c2g(; m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int6
 
 end
 
-
 """
     power_c1g(; m, s, xbar, n, alpha)
 

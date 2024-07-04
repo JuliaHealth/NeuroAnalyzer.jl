@@ -215,15 +215,12 @@ Detect and repair electrode pops (rapid amplitude change). Signal is recovered w
 function remove_pops(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), repair::Bool=true, window::Real=10.0, r::Int64=sr(obj)÷2)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     @assert nepochs(obj) == 1 "pop() should be applied to continuous (non-epoched) signal."
 
     obj_new = deepcopy(obj)
 
-    if ch isa Int64
-        s = @views reshape(obj_new.data[ch, :, 1], 1, :, size(obj_new.data[ch, :, 1], 2))
-    else
-        s = @views obj_new.data[ch, :, :]
-    end
+    s = @views obj_new.data[ch, :, :]
 
     pop_loc = Vector{Vector{Int64}}()
     l_seg = Vector{Int64}()

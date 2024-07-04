@@ -163,10 +163,10 @@ function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
 
-    size(ch1) == () && (ch1 = [ch1])
-    size(ch2) == () && (ch2 = [ch2])
-    size(ep1) == () && (ep1 = [ep1])
-    size(ep2) == () && (ep2 = [ep2])
+    isa(ch1, Int64) && (ch1 = [ch1])
+    isa(ch2, Int64) && (ch2 = [ch2])
+    length(ep1) == 1 && (ep1 = [ep1])
+    length(ep2) == 1 && (ep2 = [ep2])
 
     pxy, f = @views cpsd(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
 

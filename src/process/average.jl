@@ -56,6 +56,7 @@ Return the average signal of channels.
 function average(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     keep_channel!(obj_new, ch=1)

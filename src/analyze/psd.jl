@@ -197,7 +197,7 @@ Named tuple containing:
 function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
@@ -363,7 +363,7 @@ Named tuple containing:
 function mwpsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, db::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     pw, pf = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), db=db, ncyc=ncyc, w=w)
 

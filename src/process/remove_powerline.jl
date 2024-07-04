@@ -27,6 +27,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
     @assert nepochs(obj) == 1 "remove_powerline() should be applied to a continuous signal."
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     _check_var(method, [:iir], "method")
 
     obj_new = deepcopy(obj)

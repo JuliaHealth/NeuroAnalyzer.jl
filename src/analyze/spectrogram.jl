@@ -119,7 +119,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
         kernel = generate_morlet(fs, f[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # cs[frq_idx, :] = fconv(s .* w, kernel=kernel, db=false)
         cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=true)
-        # alternative: w_amp[frq_idx, :] = LinearAlgebra.db.(real.(cs), imag.(cs), 2)
+        # alternative: a[frq_idx, :] = LinearAlgebra.norm.(real.(cs[frq_idx, :]), imag.(cs[frq_idx]))
         p[frq_idx, :] = @views @. (2 * abs(cs[frq_idx, :]))^2
         ph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
     end
@@ -195,7 +195,7 @@ Calculate spectrogram using continuous wavelet transformation (CWT).
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `w::Bool=true`: if true, apply Hanning window
 - `db::Bool=true`: normalize powers to dB
 
@@ -206,14 +206,12 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequency indices
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), w::Bool=true, db::Bool=true) where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(π), β=32, Q=128), w::Bool=true, db::Bool=true) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    frq_lim = (0, fs / 2)
-
     w = w ? hanning(length(s)) : ones(length(s))
-
+    
     p = abs.(ContinuousWavelets.cwt(s .* w, wt)') .^ 2
     f = round.(ContinuousWavelets.getMeanFreq(s .* w, wt, fs), digits=2)
     f_idx = sortperm(f)
@@ -250,7 +248,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 - `nt::Int64=7`: number of Slepian tapers
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
@@ -262,10 +260,11 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies (frequency indices for continuous wavelet transformation)
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     ch_n = length(ch)
     ep_n = nepochs(obj)

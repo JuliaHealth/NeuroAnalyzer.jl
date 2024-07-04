@@ -41,6 +41,7 @@ Add signal.
 function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), s::AbstractVector)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     ch_n = length(ch)
     ep_n = nepochs(obj)

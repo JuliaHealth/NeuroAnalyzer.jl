@@ -69,6 +69,11 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
+    isa(ch1, Int64) && (ch1 = [ch1])
+    isa(ch2, Int64) && (ch2 = [ch2])
+    length(ep1) == 1 && (ep1 = [ep1])
+    length(ep2) == 1 && (ep2 = [ep2])
+
     ep_n = length(ep1)
     ch_n = length(ch1)
 
@@ -105,9 +110,10 @@ Calculate PLIs (Phase Lag Index).
 function pli(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     ch_n = length(ch)
     ep_n = nepochs(obj)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     pv = zeros(ch_n, ch_n, ep_n)
 

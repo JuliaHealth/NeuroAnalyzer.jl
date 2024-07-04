@@ -85,6 +85,7 @@ Perform convolution in the time domain.
 function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::AbstractVector)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)

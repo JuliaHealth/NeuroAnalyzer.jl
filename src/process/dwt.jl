@@ -42,6 +42,7 @@ function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <
     end
 
     return dwt_c
+
 end
 
 """
@@ -104,6 +105,8 @@ Perform discrete wavelet transformation (DWT).
 function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
+
     dt = @views dw_trans(obj.data[ch, :, :], wt=wt, type=type, l=l)
 
     return dt

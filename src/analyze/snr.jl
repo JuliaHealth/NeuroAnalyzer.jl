@@ -99,7 +99,6 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)
 
 end
 
-
 """
     snr(obj; ch, type)
 
@@ -122,6 +121,7 @@ Named tuple containing:
 function snr(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), type::Symbol=:rms)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     sn, f = @views snr(obj.data[ch, :, :], t=obj.epoch_time, type=type)
 

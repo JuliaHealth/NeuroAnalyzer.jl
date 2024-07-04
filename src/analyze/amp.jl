@@ -105,7 +105,7 @@ Named tuple containing:
 function amp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = @views amp(obj.data[ch, :, :])
 

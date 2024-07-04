@@ -48,6 +48,7 @@ Perform Wiener deconvolution denoising.
 function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = denoise_wien(obj_new.data[ch, :, :])

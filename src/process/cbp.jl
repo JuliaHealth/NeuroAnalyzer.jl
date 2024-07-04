@@ -49,6 +49,7 @@ Perform convolution bandpass filtering.
 function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, frq::Real)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     ep_n = nepochs(obj)
     fs = sr(obj)

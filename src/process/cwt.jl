@@ -17,12 +17,7 @@ Perform continuous wavelet transformation (CWT).
 """
 function cw_trans(s::AbstractVector; wt::T) where {T<:CWT}
 
-    cwt_coefs = abs.(ContinuousWavelets.cwt(s, wt))
-    ct = zeros(size(cwt_coefs, 2), size(cwt_coefs, 1))
-
-    for idx in 1:size(cwt_coefs, 2)
-        ct[idx, :] = @views cwt_coefs[:, idx]
-    end
+    ct = Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
     return ct
 
@@ -37,28 +32,25 @@ Perform inverse continuous wavelet transformation (iCWT).
 
 - `ct::AbstractArray`: CWT coefficients (by rows)
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `type::Symbol=df`: inverse style type:
-    - `:nd`: NaiveDelta
+- `type::Symbol=:pd`: inverse style type:
     - `:pd`: PenroseDelta
+    - `:nd`: NaiveDelta
     - `:df`: DualFrames
 
 # Returns
 
 - `s::Vector{Float64}`: reconstructed signal
 """
-function icw_trans(ct::AbstractArray; wt::T, type::Symbol) where {T<:CWT}
+function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd) where {T<:CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 
     # reconstruct array of CWT coefficients as returned by ContinuousWavelets.jl functions
-    cwt_c = zeros(size(ct, 2), size(ct, 1))
-    for idx in 1:size(ct, 2)
-        cwt_c[idx, :] = @views ct[:, idx]
-    end
+    ct = Matrix(ct')
 
-    type === :nd && return ContinuousWavelets.icwt(cwt_c, wt, NaiveDelta())
-    type === :pd && return ContinuousWavelets.icwt(cwt_c, wt, PenroseDelta())
-    type === :df && return ContinuousWavelets.icwt(cwt_c, wt, DualFrames())
+    type === :pd && return ContinuousWavelets.icwt(ct, wt, PenroseDelta())
+    type === :nd && return ContinuousWavelets.icwt(ct, wt, NaiveDelta())
+    type === :df && return ContinuousWavelets.icwt(ct, wt, DualFrames())
 
 end
 
@@ -111,6 +103,7 @@ Perform continuous wavelet transformation (CWT).
 function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T) where {T<:CWT}
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     ct = @views cw_trans(obj.data[ch, :, :], wt=wt)
 

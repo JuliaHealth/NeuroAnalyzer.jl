@@ -91,6 +91,7 @@ Perform FFT denoising.
 function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, t::Int64=100)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_fft(obj.data[ch, :, :], pad=pad, t=t)

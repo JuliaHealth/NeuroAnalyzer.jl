@@ -195,7 +195,7 @@ Named tuple containing:
 function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, db::Bool=false)
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     c, a, p, ph = spectrum(obj.data[ch, :, :], pad=pad, h=h, db=db)
 

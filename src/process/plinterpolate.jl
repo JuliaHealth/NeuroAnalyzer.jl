@@ -36,6 +36,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
 
     _check_channels(obj, ch)
     _check_epochs(obj, ep)
+    isa(ep, Int64) && (ep = [ep])
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)

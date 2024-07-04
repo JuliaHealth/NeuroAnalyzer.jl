@@ -24,6 +24,7 @@ function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     bn = [:delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

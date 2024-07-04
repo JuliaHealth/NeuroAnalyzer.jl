@@ -31,8 +31,8 @@ function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64
 
     _check_channels(obj, ch1)
     _check_channels(obj, ch2)
-    length(ch1) == 1 && (ch1 = [ch1])
-    length(ch2) == 1 && (ch2 = [ch2])
+    isa(ch1, Int64) && (ch1 = [ch1])
+    isa(ch2, Int64) && (ch2 = [ch2])
 
     bp1 = @views band_power(obj.data[ch1, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
     bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)

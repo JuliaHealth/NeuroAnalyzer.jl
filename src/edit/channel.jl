@@ -145,7 +145,6 @@ Return channel number(s) for channel of `type` type.
 """
 function get_channel_bytype(ct::Vector{String}; type::Union{String, Vector{String}}="all")
 
-
     if type isa String
         _check_var(type, ct, "type")
     else

@@ -18,6 +18,7 @@ Apply custom function.
 function apply(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::String)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

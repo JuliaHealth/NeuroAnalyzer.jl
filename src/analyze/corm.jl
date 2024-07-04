@@ -130,7 +130,7 @@ Calculate correlation matrix.
 function corm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false)
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     cm = corm(obj.data[ch, :, :], norm=norm)
 

@@ -92,6 +92,8 @@ Filter using Gaussian in the frequency domain.
 function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, f::Real, gw::Real=5)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
+
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs=sr(obj), pad=pad, f=f, gw=gw)
     reset_components!(obj_new)

@@ -141,6 +141,7 @@ function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 

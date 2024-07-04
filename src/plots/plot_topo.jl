@@ -210,7 +210,6 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                             markerstrokealpha=0)
     end
 
-
     # draw head
     if head
         if large

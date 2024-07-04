@@ -1162,7 +1162,6 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matr
 
 end
 
-
 """
     plot_ci(s, s_ci_l, s_ci_h; <keyword arguments>)
 

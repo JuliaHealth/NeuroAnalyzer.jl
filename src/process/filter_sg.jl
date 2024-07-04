@@ -80,6 +80,7 @@ Filter using Savitzky-Golay filter.
 function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=6, window::Int64=11)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :], order=order, window=window)

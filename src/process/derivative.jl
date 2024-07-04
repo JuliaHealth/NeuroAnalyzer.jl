@@ -72,6 +72,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])

@@ -48,6 +48,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iedit_ep() should be used for epoched object."
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     p = NeuroAnalyzer.plot(obj, ch=ch, mono=mono, title="")
     win = GtkWindow("NeuroAnalyzer: iedit_cont()", 1200, 800)

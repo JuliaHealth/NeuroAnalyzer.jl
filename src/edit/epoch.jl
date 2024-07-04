@@ -231,7 +231,6 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
 
 end
 
-
 """
     subepoch!(obj; ep_start, ep_end)
 

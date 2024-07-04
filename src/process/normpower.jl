@@ -68,6 +68,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = normpower(obj.data[ch, :, :])

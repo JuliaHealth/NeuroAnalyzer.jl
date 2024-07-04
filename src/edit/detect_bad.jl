@@ -44,6 +44,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

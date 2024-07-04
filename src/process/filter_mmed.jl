@@ -94,6 +94,7 @@ Filter using moving median filter (with threshold).
 function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     _info("Window length: $(2 * k + 1) samples")
 

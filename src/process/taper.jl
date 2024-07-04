@@ -72,6 +72,7 @@ Taper the signal.
 function taper(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), t::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = taper(obj.data[ch, :, :], t=t)

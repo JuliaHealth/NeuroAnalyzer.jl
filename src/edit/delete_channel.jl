@@ -28,6 +28,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
 
@@ -127,6 +128,7 @@ function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 
     typeof(ch) <: AbstractRange && (ch = collect(ch))
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
 
     ch_n = nchannels(obj)
     chs_to_remove = setdiff(_c(ch_n), ch)

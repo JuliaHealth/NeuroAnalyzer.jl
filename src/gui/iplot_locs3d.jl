@@ -81,7 +81,6 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:Abstrac
 
 end
 
-
 """
     iplot_locs3d(obj; <keyword arguments>)
 

@@ -66,7 +66,6 @@ function import_csv(file_name::String; detect_type::Bool=true)
                         :description=>String[],
                         :channel=>Int64[])
 
-
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
     epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
 

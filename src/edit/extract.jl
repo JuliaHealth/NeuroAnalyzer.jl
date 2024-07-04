@@ -116,7 +116,9 @@ Extract data.
 function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     _check_epochs(obj, ep)
+    isa(ep, Int64) && (ep = [ep])
 
     if !time && !etime
         return obj.data[ch, :, ep][:, :, :]

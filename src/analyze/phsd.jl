@@ -110,7 +110,7 @@ Named tuple containing:
 function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     ph, f = phsd(obj.data[ch, :, :], fs=sr(obj))
 

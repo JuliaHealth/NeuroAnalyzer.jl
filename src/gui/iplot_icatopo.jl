@@ -22,7 +22,6 @@ Interactive topographical plot of embedded ("ic" and "ic_mw") ICA components.
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 
-
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`

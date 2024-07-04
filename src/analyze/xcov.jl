@@ -200,10 +200,10 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
         xc = @views xcov(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased, method=method)
         xc = cat(mean(xc, dims=3), xc, dims=3)
     else
-        size(ch1) == () && (ch1 = [ch1])
-        size(ch2) == () && (ch2 = [ch2])
-        size(ep1) == () && (ep1 = [ep1])
-        size(ep2) == () && (ep2 = [ep2])
+        isa(ch1, Int64) && (ch1 = [ch1])
+        isa(ch2, Int64) && (ch2 = [ch2])
+        length(ep1) == 1 && (ep1 = [ep1])
+        length(ep2) == 1 && (ep2 = [ep2])
         xc = @views xcov(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased, method=method)
     end
 

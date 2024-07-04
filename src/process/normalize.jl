@@ -1123,6 +1123,7 @@ Normalize channel(s).
 function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Symbol, bych::Bool=false)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

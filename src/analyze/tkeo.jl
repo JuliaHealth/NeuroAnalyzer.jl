@@ -86,7 +86,6 @@ function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::
 
 end
 
-
 """
     tkeo(obj; channel, method)
 
@@ -108,7 +107,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), method::Symbol=:pow)
 
     _check_channels(obj, ch)
-    length(ch) == 1 && (ch = [ch])
+    isa(ch, Int64) && (ch = [ch])
 
     tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method=method)
 

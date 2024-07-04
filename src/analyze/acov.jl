@@ -87,7 +87,7 @@ function acov(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1,
     ac = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        ac[1, :, ep_idx] = @views reshape(acov(s[:, ep_idx], l=l, demean=demean, biased=biased), 1, :, ep_n)
+        ac[1, :, ep_idx] = @views reshape(acov(s[:, ep_idx], l=l, demean=demean, biased=biased, method=method), 1, :, ep_n)
     end
 
     return ac
@@ -123,7 +123,7 @@ function acov(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ac[ch_idx, :, ep_idx] = @views acov(s[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased)
+            ac[ch_idx, :, ep_idx] = @views acov(s[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end
 
@@ -157,14 +157,16 @@ Named tuple containing:
 function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
+
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
     if datatype(obj) == "erp"
-        ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased)
+        ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased, method=method)
         ac = cat(mean(ac, dims=3), ac, dims=3)
     else
-        ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased)
+        ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased, method=method)
     end
 
     return (ac=ac, l=collect(-l:l) .* 1/sr(obj))

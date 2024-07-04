@@ -90,7 +90,7 @@ keep_epoch!(e10_tmp, ep=1:2)
 
 @info "Test 11/30: detect_bad()"
 bm, be = detect_bad(e10)
-@test sum(bm) == 239
+@test sum(bm) == 240
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "Test 12/30: epoch(), subepoch()"

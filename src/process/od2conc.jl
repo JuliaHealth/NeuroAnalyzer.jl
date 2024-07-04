@@ -19,6 +19,7 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))
 
     _check_channels(obj, ch)
+    isa(ch, Int64) && (ch = [ch])
     _check_datatype(obj, "nirs")
     @assert length(get_channel_bytype(obj, type="nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     _check_channels(get_channel_bytype(obj, type="nirs_od"), ch)
