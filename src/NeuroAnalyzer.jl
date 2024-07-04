@@ -1,5 +1,5 @@
 """
-Neurophysiological data analysis with Julia.
+Julia toolbox for analyzing neurophysiological data.
 
 https://neuroanalyzer.org
 """

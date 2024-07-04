@@ -24,9 +24,9 @@ Calculate spectrogram. Default method is short time Fourier transform.
 # Returns
 
 Named tuple containing:
-- `sp::Matrix{Float64}`: powers
-- `sf::Vector{Float64}`: frequencies
-- `st::Vector{Float64}`: time
+- `p::Matrix{Float64}`: powers
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
 """
 function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
@@ -43,22 +43,22 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
             wlen = div(wlen, 2)
             woverlap = div(woverlap, 2)
         end
-        sp = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
+        p = DSP.spectrogram(s, wlen, woverlap, fs=fs, window=w)
     elseif method === :mt
         w = w ? hanning(length(s)) : ones(length(s))
-        sp = DSP.mt_spectrogram(s .* w, fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
+        p = DSP.mt_spectrogram(s .* w, fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
     end
 
-    sp = sp.power
-    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
-    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    db && (sp = pow2db.(sp))
+    p = p.power
+    p[p .== -Inf] .= minimum(p[p .!== -Inf])
+    p[p .== +Inf] .= maximum(p[p .!== +Inf])
+    db && (p = pow2db.(p))
 
     t = 0:1/fs:(length(s) / fs)
-    st = linspace(t[1], t[end - 1], size(sp, 2))
-    sf = linspace(0, fs/2, size(sp, 1))
+    t = linspace(t[1], t[end - 1], size(p, 2))
+    f = linspace(0, fs/2, size(p, 1))
 
-    return (sp=sp, sf=sf, st=st)
+    return (p=p, f=f, t=t)
 
 end
 
@@ -80,10 +80,10 @@ Calculate spectrogram using wavelet convolution.
 
 Named tuple containing:
 - `cs::Matrix(ComplexF64}`: convoluted signal
-- `sp::Matrix{Float64}`: powers
-- `sph::Matrix{Float64}`: phases
-- `sf::Vector{Float64}`: frequencies
-- `st::Vector{Float64}`: time
+- `p::Matrix{Float64}`: powers
+- `ph::Matrix{Float64}`: phases
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
 """
 function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
@@ -103,11 +103,11 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     # get frequency range
     frq_lim = (0, fs / 2)
     frq_n = _tlength(frq_lim)
-    sf = linspace(frq_lim[1], frq_lim[2], frq_n)
+    f = linspace(frq_lim[1], frq_lim[2], frq_n)
 
-    cs = zeros(ComplexF64, length(sf), length(s))
-    sp = zeros(length(sf), length(s))
-    sph = zeros(length(sf), length(s))
+    cs = zeros(ComplexF64, length(f), length(s))
+    p = zeros(length(f), length(s))
+    ph = zeros(length(f), length(s))
 
     if ncyc isa Int64
         ncyc = repeat([ncyc], frq_n)
@@ -116,22 +116,22 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     end
 
     @inbounds for frq_idx in 1:frq_n
-        kernel = generate_morlet(fs, sf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
+        kernel = generate_morlet(fs, f[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # cs[frq_idx, :] = fconv(s .* w, kernel=kernel, db=false)
         cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=true)
         # alternative: w_amp[frq_idx, :] = LinearAlgebra.db.(real.(cs), imag.(cs), 2)
-        sp[frq_idx, :] = @views @. (2 * abs(cs[frq_idx, :]))^2
-        sph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
+        p[frq_idx, :] = @views @. (2 * abs(cs[frq_idx, :]))^2
+        ph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
     end
 
-    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
-    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    db && (sp = pow2db.(sp))
+    p[p .== -Inf] .= minimum(p[p .!== -Inf])
+    p[p .== +Inf] .= maximum(p[p .!== +Inf])
+    db && (p = pow2db.(p))
 
     t = 0:1/fs:(length(s) / fs)
-    st = linspace(t[1], t[end - 1], size(sp, 2))
+    t = linspace(t[1], t[end - 1], size(p, 2))
 
-    return (cs=cs, sp=sp, sph=sph, sf=sf, st=st)
+    return (cs=cs, p=p, ph=ph, f=f, t=t)
 
 end
 
@@ -151,10 +151,10 @@ Calculate spectrogram using Gaussian and Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `sp::Matrix{Float64}`: powers
-- `sph::Matrix{Float64}`: phases
-- `sf::Vector{Float64}`: frequencies
-- `st::Vector{Float64}`: time
+- `p::Matrix{Float64}`: powers
+- `ph::Matrix{Float64}`: phases
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
 """
 function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)
 
@@ -165,24 +165,24 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
 
     w = w ? hanning(length(s)) : ones(length(s))
 
-    sf = linspace(frq_lim[1], frq_lim[2], frq_n)
-    sp = zeros(length(sf), length(s))
-    sph = zeros(length(sf), length(s))
+    f = linspace(frq_lim[1], frq_lim[2], frq_n)
+    p = zeros(length(f), length(s))
+    ph = zeros(length(f), length(s))
 
-    @inbounds for frq_idx in eachindex(sf)
-        s_tmp = filter_g(s .* w, fs=fs, f=sf[frq_idx], gw=gw)
-        sp[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
-        sph[frq_idx, :] = angle.(hilbert(s_tmp))
+    @inbounds for frq_idx in eachindex(f)
+        s_tmp = filter_g(s .* w, fs=fs, f=f[frq_idx], gw=gw)
+        p[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
+        ph[frq_idx, :] = angle.(hilbert(s_tmp))
     end
 
-    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
-    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    db && (sp = pow2db.(sp))
+    p[p .== -Inf] .= minimum(p[p .!== -Inf])
+    p[p .== +Inf] .= maximum(p[p .!== +Inf])
+    db && (p = pow2db.(p))
 
     t = 0:1/fs:(length(s) / fs)
-    st = linspace(t[1], t[end - 1], size(sp, 2))
+    t = linspace(t[1], t[end - 1], size(p, 2))
 
-    return (sp=sp, sph=sph, sf=sf, st=st)
+    return (p=p, ph=ph, f=f, t=t)
 
 end
 
@@ -202,9 +202,9 @@ Calculate spectrogram using continuous wavelet transformation (CWT).
 # Returns
 
 Named tuple containing:
-- `sp::Matrix{Float64}`: powers
-- `sf::Vector{Float64}`: frequency indices
-- `st::Vector{Float64}`: time
+- `p::Matrix{Float64}`: powers
+- `f::Vector{Float64}`: frequency indices
+- `t::Vector{Float64}`: time
 """
 function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), w::Bool=true, db::Bool=true) where {T <: CWT}
 
@@ -214,21 +214,19 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
 
     w = w ? hanning(length(s)) : ones(length(s))
 
-    sp = abs.(ContinuousWavelets.cwt(s .* w, wt)') .^ 2
-    sf = round.(ContinuousWavelets.getMeanFreq(s .* w, wt, fs), digits=2)
-    sf_idx = sortperm(sf)
-    sf = sf[sf_idx]
-    sp = sp[sf_idx, :]
-    sf = sf[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf)]
-    sp = sp[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf), :]
-    sp[sp .== -Inf] .= minimum(sp[sp .!== -Inf])
-    sp[sp .== +Inf] .= maximum(sp[sp .!== +Inf])
-    db && (sp = pow2db.(sp))
+    p = abs.(ContinuousWavelets.cwt(s .* w, wt)') .^ 2
+    f = round.(ContinuousWavelets.getMeanFreq(s .* w, wt, fs), digits=2)
+    f_idx = sortperm(f)
+    f = f[f_idx]
+    p = p[f_idx, :]
+    p[p .== -Inf] .= minimum(p[p .!== -Inf])
+    p[p .== +Inf] .= maximum(p[p .!== +Inf])
+    db && (p = pow2db.(p))
 
     t = 0:1/fs:(length(s) / fs)
-    st = linspace(t[1], t[end - 1], size(sp, 2))
+    t = linspace(t[1], t[end - 1], size(p, 2))
 
-    return (sp=sp, sf=sf, st=st)
+    return (p=p, f=f, t=t)
 
 end
 
@@ -260,9 +258,9 @@ Calculate spectrogram. Default method is short time Fourier transform.
 # Returns
 
 Named tuple containing:
-- `sp::Array{Float64, 3}`: powers
-- `sf::Vector{Float64}`: frequencies (frequency indices for continuous wavelet transformation)
-- `st::Vector{Float64}`: time points
+- `p::Array{Float64, 3}`: powers
+- `f::Vector{Float64}`: frequencies (frequency indices for continuous wavelet transformation)
+- `t::Vector{Float64}`: time points
 """
 function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
@@ -274,19 +272,19 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     fs = sr(obj)
 
     if method === :stft
-        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mt
-        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
-    _, p_tmp, _, sf, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+    _, p_tmp, _, f, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
     elseif method === :gh
-        p_tmp, _, sf, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        p_tmp, _, f, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
-        p_tmp, sf, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, db=db, wt=wt, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, db=db, wt=wt, w=w)
     end
 
-    st = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
-    sp = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
+    t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
+    p = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
@@ -294,15 +292,15 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if method === :stft
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mt
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mw
-                _, sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+                _, p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
             elseif method === :gh
-                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
-                sp[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, wt=wt, w=w)
+                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, wt=wt, w=w)
             end
 
             # update progress bar
@@ -310,10 +308,10 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
         end
     end
 
-    sf = round.(sf, digits=2)
-    st = round.(st, digits=2)
-    st .+= obj.epoch_time[1]
+    f = round.(f, digits=2)
+    t = round.(t, digits=2)
+    t .+= obj.epoch_time[1]
 
-    return (sp=sp, sf=sf, st=st)
+    return (p=p, f=f, t=t)
 
 end

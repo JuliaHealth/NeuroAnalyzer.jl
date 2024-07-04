@@ -82,7 +82,7 @@ end
 """
     flim(p, f; frq_lim)
 
-Limits power spectrum or spectrogram array to a range of frequencies.
+Trim power spectrum or spectrogram array to a range of frequencies.
 
 # Arguments
 
@@ -119,9 +119,9 @@ function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})
 end
 
 """
-    flim(p, f; frq_lim)
+    tlim(p, f; frq_lim)
 
-Limits spectrogram array to a range of time points.
+Trim spectrogram array to a range of time points.
 
 # Arguments
 

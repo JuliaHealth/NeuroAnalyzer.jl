@@ -3,7 +3,7 @@ export pred_int
 """
     pred_int(n)
 
-Calculates the prediction interval (95% CI adjusted for sample size)
+Calculate the prediction interval (95% CI adjusted for sample size)
 
 # Arguments
 

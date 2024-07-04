@@ -61,7 +61,6 @@ Calculate total power.
 # Returns
 
 - `tp::Matrix{Float64}`: total power
-
 """
 function total_power(s::AbstractArray; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 

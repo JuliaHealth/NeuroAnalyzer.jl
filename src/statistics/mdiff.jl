@@ -116,7 +116,7 @@ end
 """
     mdiff(obj1, obj2; ch1, ch2, ep1, ep2, n, method)
 
-Calculates mean difference and 95% confidence interval for two channels.
+Calculate mean difference and 95% confidence interval for two channels.
 
 # Arguments
 
