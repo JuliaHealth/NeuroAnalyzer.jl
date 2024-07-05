@@ -354,10 +354,8 @@ function normalize_n(s::AbstractArray, n::Real=1.0; bych::Bool=false)
     else
         sn = zeros(size(s))
         if bych == false
-            mi = minimum(s)
-            mx = maximum(s)
-            mxi = mx - mi
-            sn = @. (2 * (s - mi) / mxi) - 1
+            smin, smax = extrema(s)
+            sn = @. n * (s - smin) / (smax - smin)
         else
             if ndims(s) == 2
                 for idx in 1:size(s, 1)

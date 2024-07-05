@@ -4,7 +4,7 @@ export denoise_dwt
 export denoise_dwt!
 
 """
-    denoise_cwt(ct; wt, type)
+    denoise_cwt(s; fs, wt, nf, w, type)
 
 Perform denoising using continuous wavelet transformation (iCWT).
 
@@ -12,8 +12,9 @@ Perform denoising using continuous wavelet transformation (iCWT).
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency [Hz]
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `nf::Real`: noise frequency in Hz
+- `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
 - `type::Symbol=:nd`: inverse style type:
     - `:pd`: PenroseDelta
     - `:nd`: NaiveDelta
@@ -23,7 +24,7 @@ Perform denoising using continuous wavelet transformation (iCWT).
 
 - `s_new::Vector{Float64}`: denoised signal
 """
-function denoise_cwt(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
+function denoise_cwt(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert nf >= 1 "nf must be ≥ 1."
@@ -32,10 +33,9 @@ function denoise_cwt(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(π), β=
     # perform continuous wavelet transformation
     s_new = cw_trans(s, wt=wt)
 
-    f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits=2)
-
-    f_idx1 = vsearch(nf - 10, f)
-    f_idx2 = vsearch(nf + 10, f)
+    f = cwtfrq(s, fs=fs, wt=wt)
+    f_idx1 = vsearch(nf - w, f)
+    f_idx2 = vsearch(nf + w, f)
     s_new[f_idx1:f_idx2, :] .= 0
 
     # reconstruct
@@ -46,7 +46,7 @@ function denoise_cwt(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(π), β=
 end
 
 """
-    denoise_cwt(s; wt)
+    denoise_cwt(s; fs, wt, nf, w, type)
 
 Perform denoising using continuous wavelet transformation (CWT).
 
@@ -54,8 +54,9 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency [Hz]
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `nf::Real`: noise frequency in Hz
+- `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
 - `type::Symbol=:nd`: inverse style type:
     - `:pd`: PenroseDelta
     - `:nd`: NaiveDelta
@@ -65,19 +66,26 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
+function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd) where {T <: CWT}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
     s_new = similar(s)
 
+    f = cwtfrq(s, fs=fs, wt=wt)
+    f_idx = vsearch(nf, f)
+    f_idx1 = vsearch(nf - w, f)
+    f_idx2 = vsearch(nf + w, f)
+    _info("Noise at: $(f[f_idx]) Hz")
+    _info("Noise width: $(f[f_idx1]) to $(f[f_idx2]) Hz")
+
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views denoise_cwt(s[ch_idx, :, ep_idx], fs=fs, wt=wt, nf=nf, type=type)
+            s_new[ch_idx, :, ep_idx] = @views denoise_cwt(s[ch_idx, :, ep_idx], fs=fs, wt=wt, nf=nf, w=w, type=type)
             # update progress bar
             progress_bar && next!(progbar)
         end
@@ -88,7 +96,7 @@ function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(π), β=3
 end
 
 """
-    denoise_cwt(obj; ch, wt)
+    denoise_cwt(obj; ch, wt, nf, w, type)
 
 Perform denoising using continuous wavelet transformation (CWT).
 
@@ -96,8 +104,9 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
-- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency [Hz]
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `nf::Real`: noise frequency in Hz
+- `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
 - `type::Symbol=:nd`: inverse style type:
     - `:pd`: PenroseDelta
     - `:nd`: NaiveDelta
@@ -107,22 +116,22 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T=wavelet(Morlet(π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
+function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd) where {T <: CWT}
 
     _check_channels(obj, ch)
     isa(ch, Int64) && (ch = [ch])
 
     obj_new = deepcopy(obj)
-    obj_new.data = @views denoise_cwt(obj.data[ch, :, :], fs=sr(obj), wt=wt, nf=nf, type=type)
+    obj_new.data = @views denoise_cwt(obj.data[ch, :, :], fs=sr(obj), wt=wt, nf=nf, w=w, type=type)
     reset_components!(obj_new)
-    push!(obj_new.history, "denoise_cwt(OBJ, ch=$ch, wt=$wt, nf=$nf, type=$type)")
+    push!(obj_new.history, "denoise_cwt(OBJ, ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
 
     return obj_new
 
 end
 
 """
-    denoise_cwt!(obj; ch, wt)
+    denoise_cwt!(obj; ch, wt, nf, w, type)
 
 Perform denoising using continuous wavelet transformation (CWT).
 
@@ -130,14 +139,15 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
-- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `nf::Real`: noise frequency [Hz]
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `nf::Real`: noise frequency in Hz
+- `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
 - `type::Symbol=:nd`: inverse style type:
     - `:pd`: PenroseDelta
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 """
-function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T=wavelet(Morlet(π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
+function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
 
     obj_new = denoise_cwt(obj, ch=ch, wt=wt, nf=nf, type=type)
     obj.data = obj_new.data
@@ -151,7 +161,7 @@ end
 """
     denoise_dwt(s; wt)
 
-Perform wavelet denoising.
+Perform denoising using discrete wavelet transformation (DWT).
 
 # Arguments
 
@@ -173,7 +183,7 @@ end
 """
     denoise_dwt(s; wt)
 
-Perform wavelet denoising.
+Perform denoising using discrete wavelet transformation (DWT).
 
 # Arguments
 
@@ -204,7 +214,7 @@ end
 """
     denoise_dwt(obj; ch, wt)
 
-Perform wavelet denoising.
+Perform denoising using discrete wavelet transformation (DWT).
 
 # Arguments
 
@@ -233,7 +243,7 @@ end
 """
     denoise_dwt!(obj; ch, wt)
 
-Perform wavelet denoising.
+Perform denoising using discrete wavelet transformation (DWT).
 
 # Arguments
 

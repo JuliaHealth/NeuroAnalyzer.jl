@@ -187,17 +187,16 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
 end
 
 """
-    cwtspectrogram(s; fs, wt, w, db)
+    cwtspectrogram(s; fs, wt, norm)
 
-Calculate spectrogram using continuous wavelet transformation (CWT).
+Calculate scaleogram using continuous wavelet transformation (CWT).
 
 # Arguments
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `w::Bool=true`: if true, apply Hanning window
-- `db::Bool=true`: normalize powers to dB
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `norm::Bool=true`: normalize scaleogram to the signal scale
 
 # Returns
 
@@ -206,20 +205,30 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequency indices
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(π), β=32, Q=128), w::Bool=true, db::Bool=true) where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    w = w ? hanning(length(s)) : ones(length(s))
+    # w = w ? hanning(length(s)) : ones(length(s))
     
-    p = abs.(ContinuousWavelets.cwt(s .* w, wt)') .^ 2
-    f = round.(ContinuousWavelets.getMeanFreq(s .* w, wt, fs), digits=2)
+    p = abs.(ContinuousWavelets.cwt(s, wt)')
+
+    # scale
+    if norm
+        a = amp(s)[1]
+        p = normalize_n(p, a)
+    end
+
+    f = cwtfrq(s, fs=fs, wt=wt)
+    
+    # reverse order
     f_idx = sortperm(f)
     f = f[f_idx]
     p = p[f_idx, :]
-    p[p .== -Inf] .= minimum(p[p .!== -Inf])
-    p[p .== +Inf] .= maximum(p[p .!== +Inf])
-    db && (p = pow2db.(p))
+
+    # p[p .== -Inf] .= minimum(p[p .!== -Inf])
+    # p[p .== +Inf] .= maximum(p[p .!== +Inf])
+    # db && (p = pow2db.(p))
 
     t = 0:1/fs:(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
@@ -244,11 +253,11 @@ Calculate spectrogram. Default method is short time Fourier transform.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
-- `db::Bool=true`: normalize powers to dB
+- `db::Bool=true`: normalize powers to dB; for CWT scaleogram normalize to the signal scale
 - `nt::Int64=7`: number of Slepian tapers
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
-- `wt::T where {T <: CWT}=wavelet(Morlet(π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
@@ -260,7 +269,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies (frequency indices for continuous wavelet transformation)
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)
@@ -279,7 +288,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     elseif method === :gh
         p_tmp, _, f, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
-        p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, db=db, wt=wt, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt, norm=db)
     end
 
     t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
@@ -299,7 +308,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
             elseif method === :gh
                 p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
-                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, wt=wt, w=w)
+                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt, norm=db)
             end
 
             # update progress bar
