@@ -162,6 +162,17 @@ mutable struct DIPOLE
     mag::Tuple{Real, Real, Real}
 end
 
+mutable struct SPECTROGRAM
+    p::Array{Float64}
+    f::Vector{Float64}
+    t::Vector{Float64}
+end
+
+mutable struct POWERSPECTRUM
+    p::Array{Float64}
+    f::Vector{Float64}
+end
+
 # set package options
 
 Plots.gr_cbar_width[] = 0.01

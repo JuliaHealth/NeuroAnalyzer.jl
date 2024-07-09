@@ -163,7 +163,7 @@ Generate Morlet wavelet.
 
 - `fs::Int64`: sampling rate
 - `f::Real`: frequency
-- `t::Real=1`: length = -t:1/fs:t
+- `t::Real=1`: wavelet length is `-t:1/fs:t`
 - `ncyc::Int64=5`: number of cycles
 - `complex::Bool=false`: generate complex Morlet
 
@@ -178,9 +178,9 @@ function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::
     @assert t > 0 "t must be > 0."
 
     t = -t:1/fs:t
-    sin_wave = complex ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
+    sin_wave = @. exp(im * 2 * pi * f * t)
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
-    mw = sin_wave .* g
+    mw = @. complex ? sin_wave * g : real(sin_wave) * g
 
     return mw
 
@@ -211,7 +211,7 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
 
     t = -t:1/fs:t
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
-    g = @. a * exp(-(t/s)^2 / 2)        # Gaussian
+    g = @. a * exp(-0.5 * (t/s)^2)      # Gaussian
 
     # fwhm = 2 * s * sqrt(2 * log(ℯ, 2))
     # _info("FWHM: $fwhm")

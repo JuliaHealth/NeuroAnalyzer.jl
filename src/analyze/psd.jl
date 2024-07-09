@@ -25,8 +25,8 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Returns
 
 Named tuple containing:
-- `pw::Vector{Float64}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Vector{Float64}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
@@ -42,38 +42,38 @@ function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch
         w = w ? hanning(length(s)) : ones(length(s))
         p = mt_pgram(s .* w, fs=fs, nw=((nt + 1) ÷ 2), ntapers=nt)
         pw = power(p)
-        pf = Vector(freq(p))
-        pw = pw[1:length(pf)]
+        f = Vector(freq(p))
+        p = pw[1:length(f)]
     elseif method === :stft
         w = w ? DSP.hanning : nothing
         p = abs.(DSP.stft(s, wlen, woverlap, fs=fs, window=w))
         # average STFT segments along time
-        pw = vec(mean(p, dims=2))
+        p = vec(mean(p, dims=2))
         # create frequencies vector
-        pf = linspace(0, fs / 2, length(pw))
+        f = linspace(0, fs / 2, length(pw))
     elseif method === :welch
         w = w ? DSP.hanning : nothing
         p = DSP.welch_pgram(s, wlen, woverlap, fs=fs, window=w)
         pw = power(p)
-        pf = Vector(freq(p))
-        pw = pw[1:length(pf)]
+        f = Vector(freq(p))
+        p = pw[1:length(f)]
     elseif method === :fft
         w = w ? DSP.hanning : nothing
         p = DSP.periodogram(s, fs=fs, window=w)
         pw = power(p)
-        pf = Vector(freq(p))
-        pw = pw[1:length(pf)]
+        f = Vector(freq(p))
+        p = pw[1:length(f)]
     elseif method === :mw
-        pw, pf = mwpsd(s, db=false, fs=fs, ncyc=ncyc, w=w)
+        p, f = mwpsd(s, db=false, fs=fs, ncyc=ncyc, w=w)
     end
 
     # replace powers at extreme frequencies
     # pw[1] = pw[2]
     # pw[end] = pw[end - 1]
 
-    db && (pw = pow2db.(pw))
+    db && (p = pow2db.(p))
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -102,21 +102,21 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Returns
 
 Named tuple containing:
-- `pw::Array{Float64, 2}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Array{Float64, 2}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     ch_n = size(s, 1)
-    _, pf = psd(s[1, :], fs=fs, db=db, method=method, ncyc=ncyc, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    _, f = psd(s[1, :], fs=fs, db=db, method=method, ncyc=ncyc, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
-    pw = zeros(ch_n, length(pf))
+    p = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
-        pw[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+        p[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
     end
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -144,25 +144,25 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Returns
 
 Named tuple containing:
-- `pw::Array{Float64, 3}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Array{Float64, 3}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, pf = psd(s[1, :, 1], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    _, f = psd(s[1, :, 1], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
-    pw = zeros(ch_n, length(pf), ep_n)
+    p = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pw[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            p[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -191,17 +191,17 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Returns
 
 Named tuple containing:
-- `pw::Array{Float64, 3}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Array{Float64, 3}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
     _check_channels(obj, ch)
     isa(ch, Int64) && (ch = [ch])
 
-    pw, pf = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    p, f = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -222,8 +222,8 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Returns
 
 Named tuple containing:
-- `pw::Matrix{Float64}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Matrix{Float64}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
@@ -236,7 +236,7 @@ function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::
 
     frq_lim = (0, fs / 2)
     frq_n = _tlength(frq_lim)
-    pf = linspace(frq_lim[1], frq_lim[2], frq_n)
+    f = linspace(frq_lim[1], frq_lim[2], frq_n)
 
     if ncyc isa Int64
         @assert ncyc >= 1 "ncyc must be ≥ 1"
@@ -244,20 +244,20 @@ function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::
     else
         @assert ncyc[1] >= 1 "ncyc[1] must be ≥ 1"
         @assert ncyc[2] >= 1 "ncyc[2] must be ≥ 1"
-        ncyc = round.(Int64, linspace(ncyc[1], ncyc[2], frq_n))
+        ncyc = round.(Int64, logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n))
     end
 
-    pw = zeros(length(pf))
+    p = zeros(length(f))
     @inbounds for frq_idx in 1:frq_n
-        kernel = generate_morlet(fs, pf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
+        kernel = generate_morlet(fs, f[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         # w_conv = tconv(s .* w, kernel=kernel)
         w_conv = fconv(s .* w, kernel=kernel, norm=true)
-        pw[frq_idx] = median((2 .* abs.(w_conv)).^2)
+        p[frq_idx] = median((abs.(w_conv)).^2)
     end
 
-    db && (pw = pow2db.(pw))
+    db && (p = pow2db.(p))
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -278,21 +278,21 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Returns
 
 Named tuple containing:
-- `pw::Array{Float64, 2}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Array{Float64, 2}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function mwpsd(s::AbstractMatrix; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
     ch_n = size(s, 1)
 
-    _, pf = mwpsd(s[1, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
-    pw = zeros(ch_n, length(pf))
+    _, f = mwpsd(s[1, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+    p = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
-        pw[ch_idx, :], _ = @views mwpsd(s[ch_idx, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+        p[ch_idx, :], _ = @views mwpsd(s[ch_idx, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
     end
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -313,30 +313,30 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Returns
 
 Named tuple containing:
-- `pw::Array{Float64, 3}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::Array{Float64, 3}`: powers
+- `f::Vector{Float64}`: frequencies
 """
 function mwpsd(s::AbstractArray; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, pf = mwpsd(s[1, :, 1], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
-    pw = zeros(ch_n, length(pf), ep_n)
+    _, f = mwpsd(s[1, :, 1], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+    p = zeros(ch_n, length(f), ep_n)
 
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pw[ch_idx, :, ep_idx], _ = @views mwpsd(s[ch_idx, :, ep_idx], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+            p[ch_idx, :, ep_idx], _ = @views mwpsd(s[ch_idx, :, ep_idx], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
 
             # update progress bar
             progress_bar && next!(progbar)
         end
     end
 
-    return (pw=pw, pf=pf)
+    return (p=p, f=f)
 
 end
 
@@ -356,17 +356,15 @@ Calculate power spectrum using Morlet wavelet convolution.
 
 # Returns
 
-Named tuple containing:
-- `pw::Array{Float64, 3}`: powers
-- `pf::Vector{Float64}`: frequencies
+- `p::NeuroAnalyzer.POWERSPECTRUM`: power spectrum
 """
 function mwpsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, db::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)
 
     _check_channels(obj, ch)
     isa(ch, Int64) && (ch = [ch])
 
-    pw, pf = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), db=db, ncyc=ncyc, w=w)
+    p, f = @views mwpsd(obj.data[ch, :, :], pad=pad, fs=sr(obj), db=db, ncyc=ncyc, w=w)
 
-    return (pw=pw, pf=pf)
+    return NeuroAnalyzer.POWERSPECTRUM(p, f)
 
 end

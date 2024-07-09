@@ -112,7 +112,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     if ncyc isa Int64
         ncyc = repeat([ncyc], frq_n)
     else
-        ncyc = round.(Int64, linspace(ncyc[1], ncyc[2], frq_n))
+        ncyc = round.(Int64, logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n))
     end
 
     @inbounds for frq_idx in 1:frq_n
@@ -120,7 +120,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
         # cs[frq_idx, :] = fconv(s .* w, kernel=kernel, db=false)
         cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=true)
         # alternative: a[frq_idx, :] = LinearAlgebra.norm.(real.(cs[frq_idx, :]), imag.(cs[frq_idx]))
-        p[frq_idx, :] = @views @. (2 * abs(cs[frq_idx, :]))^2
+        p[frq_idx, :] = @views @. abs(cs[frq_idx, :])^2
         ph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
     end
 
@@ -196,7 +196,7 @@ Calculate scaleogram using continuous wavelet transformation (CWT).
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `norm::Bool=true`: normalize scaleogram to the signal scale
+- `norm::Bool=true`: normalize scaleogram to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
 
 # Returns
 
@@ -253,7 +253,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
-- `db::Bool=true`: normalize powers to dB; for CWT scaleogram normalize to the signal scale
+- `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
 - `nt::Int64=7`: number of Slepian tapers
 - `gw::Real=5`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
