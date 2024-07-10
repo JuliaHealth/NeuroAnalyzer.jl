@@ -11,7 +11,7 @@ export generate_square
 export generate_triangle
 
 """
-    generate_window(type, n; even)
+    generate_window(type, n; <keyword arguments>)
 
 Return the `n`-point long symmetric window `type`.
 
@@ -155,7 +155,7 @@ function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1.0, peak::Real=0, no
 end
 
 """
-    generate_morlet(fs, f, t; ncyc, complex)
+    generate_morlet(fs, f, t; <keyword arguments>)
 
 Generate Morlet wavelet.
 
@@ -187,7 +187,7 @@ function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::
 end
 
 """
-    generate_gaussian(fs, f, t; ncyc, a)
+    generate_gaussian(fs, f, t; <keyword arguments>)
 
 Generate Gaussian wave.
 
@@ -221,7 +221,7 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
 end
 
 """
-    generate_noise(n, a; type)
+    generate_noise(n, a; <keyword arguments>)
 
 Generate noise.
 
@@ -282,7 +282,7 @@ function generate_signal(n::Int64, a::Real=1.0)
 end
 
 """
-    generate_morlet_fwhm(fs, f, t; h)
+    generate_morlet_fwhm(fs, f, t; <keyword arguments>)
 
 Generate Morlet wavelet using FWHM (full width at half maximum) formula.
 

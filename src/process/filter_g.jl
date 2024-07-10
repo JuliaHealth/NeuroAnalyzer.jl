@@ -40,7 +40,7 @@ function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=
 end
 
 """
-    filter_g(s; pad, f, gw)
+    filter_g(s; <keyword arguments>)
 
 Filter using Gaussian in the frequency domain.
 
@@ -73,7 +73,7 @@ function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5
 end
 
 """
-    filter_g(obj; ch, pad, f, gw)
+    filter_g(obj; <keyword arguments>)
 
 Filter using Gaussian in the frequency domain.
 
@@ -104,7 +104,7 @@ function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 end
 
 """
-    filter_g!(obj; ch, pad, f, gw)
+    filter_g!(obj; <keyword arguments>)
 
 Filter using Gaussian in the frequency domain.
 

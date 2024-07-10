@@ -1,7 +1,7 @@
 export coherence
 
 """
-   coherence(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w)
+    coherence(s1, s2; <keyword arguments>)
 
 Calculate coherence and MSC (magnitude-squared coherence).
 
@@ -71,7 +71,7 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
 end
 
 """
-   coherence(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w)
+    coherence(s1, s2; <keyword arguments>)
 
 Calculate coherence and MSC (magnitude-squared coherence).
 
@@ -124,7 +124,7 @@ function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs:
 end
 
 """
-    coherence(obj1, obj2; ch1, ch2, ep1, ep2, method, fs, frq_lim, demean, nt, wlen, woverlap, w)
+    coherence(obj1, obj2; <keyword arguments>)
 
 Calculate coherence and MSC (magnitude-squared coherence).
 

@@ -2,7 +2,7 @@ export invert_polarity
 export invert_polarity!
 
 """
-    invert_polarity(obj; ch)
+    invert_polarity(obj; <keyword arguments>)
 
 Invert polarity.
 
@@ -30,7 +30,7 @@ function invert_polarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 end
 
 """
-    invert_polarity!(obj; ch)
+    invert_polarity!(obj; <keyword arguments>)
 
 Invert polarity.
 

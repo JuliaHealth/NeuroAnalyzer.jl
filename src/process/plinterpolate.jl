@@ -3,7 +3,7 @@ export plinterpolate_channel!
 export plinterpolate
 
 """
-    plinterpolate_channel(obj; ch, ep, m, q)
+    plinterpolate_channel(obj; <keyword arguments>)
 
 Interpolate channel using planar interpolation.
 
@@ -83,7 +83,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
 end
 
 """
-    plinterpolate_channel!(obj; ch, ep, imethod, ifactor)
+    plinterpolate_channel!(obj; <keyword arguments>)
 
 Interpolate channel using planar interpolation.
 
@@ -107,7 +107,7 @@ function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{I
 end
 
 """
-    plinterpolate(s; locs, ch, imethod, nmethod, cart)
+    plinterpolate(s; <keyword arguments>)
 
 Interpolate channel using planar interpolation.
 

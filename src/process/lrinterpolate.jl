@@ -2,7 +2,7 @@ export lrinterpolate_channel
 export lrinterpolate_channel!
 
 """
-    lrinterpolate_channel(obj; ch, ep, ep_ref)
+    lrinterpolate_channel(obj; <keyword arguments>)
 
 Interpolate channel using linear regression.
 
@@ -64,7 +64,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, e
 end
 
 """
-    lrinterpolate_channel!(obj; ch, ep, ep_ref)
+    lrinterpolate_channel!(obj; <keyword arguments>)
 
 Interpolate channel using linear regression.
 

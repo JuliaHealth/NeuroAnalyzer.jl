@@ -1,7 +1,7 @@
 export import_set
 
 """
-    import_set(file_name; detect_type)
+    import_set(file_name; <keyword arguments>)
 
 Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 

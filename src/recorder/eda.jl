@@ -2,7 +2,7 @@ export ieda
 export eda
 
 """
-    ieda(; duration, port_name)
+    ieda(; <keyword arguments>)
 
 Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or skin conductance, in GUI mode. EDA is recorded using Groove GSR sensor via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
 
@@ -154,7 +154,7 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
 end
 
 """
-    eda(; duration, port_name)
+    eda(; <keyword arguments>)
 
 Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or skin conductance, in CLI mode. EDA is recorded using Groove GSR sensor via Arduino attached to the PC via USB cable (virtual serial port).
 

@@ -1,7 +1,7 @@
 export tkeo
 
 """
-    tkeo(s, t; method)
+    tkeo(s, t; <keyword arguments>)
 
 Calculate Teager-Kaiser energy-tracking operator.
 
@@ -52,7 +52,7 @@ function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method:
 end
 
 """
-    tkeo(s, t; method)
+    tkeo(s, t; <keyword arguments>)
 
 Calculate Teager-Kaiser energy-tracking operator
 
@@ -87,7 +87,7 @@ function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::
 end
 
 """
-    tkeo(obj; channel, method)
+    tkeo(obj; <keyword arguments>)
 
 Calculate Teager-Kaiser energy-tracking operator.
 

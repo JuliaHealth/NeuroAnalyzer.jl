@@ -190,7 +190,7 @@ function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
 end
 
 """
-    detect_powerline(s; fs)
+    detect_powerline(s; <keyword arguments>)
 
 Detect power line noise frequency.
 

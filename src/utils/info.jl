@@ -39,7 +39,7 @@ function sr(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    nchannels(obj; type)
+    nchannels(obj; <keyword arguments>)
 
 Return number of channels of `type`.
 
@@ -425,7 +425,7 @@ function info(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    channel_pick(obj; p)
+    channel_pick(obj; <keyword arguments>)
 
 Return set of channel indices corresponding to a set of electrodes ("pick", e.g. left or frontal electrodes).
 

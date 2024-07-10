@@ -2,7 +2,7 @@ export load_locs
 export load_locs!
 
 """
-    load_locs(obj; file_name)
+    load_locs(obj; <keyword arguments>)
 
 Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame.
 
@@ -175,7 +175,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 end
 
 """
-    load_locs!(obj; file_name, normalize)
+    load_locs!(obj; <keyword arguments>)
 
 Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame.
 

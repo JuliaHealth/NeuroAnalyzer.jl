@@ -4,7 +4,7 @@ export denoise_dwt
 export denoise_dwt!
 
 """
-    denoise_cwt(s; fs, wt, nf, w, type)
+    denoise_cwt(s; <keyword arguments>)
 
 Perform denoising using continuous wavelet transformation (iCWT).
 
@@ -46,7 +46,7 @@ function denoise_cwt(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β
 end
 
 """
-    denoise_cwt(s; fs, wt, nf, w, type)
+    denoise_cwt(s; <keyword arguments>)
 
 Perform denoising using continuous wavelet transformation (CWT).
 
@@ -96,7 +96,7 @@ function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=
 end
 
 """
-    denoise_cwt(obj; ch, wt, nf, w, type)
+    denoise_cwt(obj; <keyword arguments>)
 
 Perform denoising using continuous wavelet transformation (CWT).
 
@@ -131,7 +131,7 @@ function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    denoise_cwt!(obj; ch, wt, nf, w, type)
+    denoise_cwt!(obj; <keyword arguments>)
 
 Perform denoising using continuous wavelet transformation (CWT).
 
@@ -159,7 +159,7 @@ function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    denoise_dwt(s; wt)
+    denoise_dwt(s; <keyword arguments>)
 
 Perform denoising using discrete wavelet transformation (DWT).
 
@@ -181,7 +181,7 @@ function denoise_dwt(s::AbstractVector; wt::T) where {T<:DiscreteWavelet}
 end
 
 """
-    denoise_dwt(s; wt)
+    denoise_dwt(s; <keyword arguments>)
 
 Perform denoising using discrete wavelet transformation (DWT).
 
@@ -212,7 +212,7 @@ function denoise_dwt(s::AbstractArray; wt::T) where {T<:DiscreteWavelet}
 end
 
 """
-    denoise_dwt(obj; ch, wt)
+    denoise_dwt(obj; <keyword arguments>)
 
 Perform denoising using discrete wavelet transformation (DWT).
 
@@ -241,7 +241,7 @@ function denoise_dwt(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    denoise_dwt!(obj; ch, wt)
+    denoise_dwt!(obj; <keyword arguments>)
 
 Perform denoising using discrete wavelet transformation (DWT).
 

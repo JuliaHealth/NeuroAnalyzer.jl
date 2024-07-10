@@ -4,7 +4,7 @@ export ghspectrogram
 export cwtspectrogram
 
 """
-    spectrogram(s; fs, db, method, nt, wlen, woverlap, w)
+    spectrogram(s; <keyword arguments>)
 
 Calculate spectrogram. Default method is short time Fourier transform.
 
@@ -63,7 +63,7 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
 end
 
 """
-    mwspectrogram(s; pad, db, fs, ncyc, w)
+    mwspectrogram(s; <keyword arguments>)
 
 Calculate spectrogram using wavelet convolution.
 
@@ -136,7 +136,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
 end
 
 """
-    ghspectrogram(s; fs, db, gw, w)
+    ghspectrogram(s; <keyword arguments>)
 
 Calculate spectrogram using Gaussian and Hilbert transform.
 
@@ -162,10 +162,10 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
 
     frq_lim = (0, fs / 2)
     frq_n = _tlength(frq_lim)
+    f = linspace(frq_lim[1], frq_lim[2], frq_n)
 
     w = w ? hanning(length(s)) : ones(length(s))
 
-    f = linspace(frq_lim[1], frq_lim[2], frq_n)
     p = zeros(length(f), length(s))
     ph = zeros(length(f), length(s))
 
@@ -182,12 +182,13 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
     t = 0:1/fs:(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
 
+
     return (p=p, ph=ph, f=f, t=t)
 
 end
 
 """
-    cwtspectrogram(s; fs, wt, norm)
+    cwtspectrogram(s; <keyword arguments>)
 
 Calculate scaleogram using continuous wavelet transformation (CWT).
 
@@ -202,7 +203,7 @@ Calculate scaleogram using continuous wavelet transformation (CWT).
 
 Named tuple containing:
 - `p::Matrix{Float64}`: powers
-- `f::Vector{Float64}`: frequency indices
+- `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
 function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true) where {T <: CWT}
@@ -238,7 +239,7 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
 end
 
 """
-    spectrogram(obj; ch, pad, method, db, nt, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
+    spectrogram(obj; <keyword arguments>)
 
 Calculate spectrogram. Default method is short time Fourier transform.
 
@@ -266,7 +267,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 
 Named tuple containing:
 - `p::Array{Float64, 3}`: powers
-- `f::Vector{Float64}`: frequencies (frequency indices for continuous wavelet transformation)
+- `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
 function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}

@@ -94,7 +94,7 @@ function mutual_information(s::AbstractArray)
 end
 
 """
-    mutual_information(obj; channel)
+    mutual_information(obj; <keyword arguments>)
 
 Calculate mutual information between channels.
 
@@ -135,7 +135,7 @@ function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{In
 end
 
 """
-    mutual_information(obj1, obj2; ch1, ch2, ep1, ep2)
+    mutual_information(obj1, obj2; <keyword arguments>)
 
 Calculate mutual information between two channels.
 

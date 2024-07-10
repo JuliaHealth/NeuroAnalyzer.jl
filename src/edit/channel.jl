@@ -86,7 +86,7 @@ function signal_channels(dt::String, ct::Vector{String})
 end
 
 """
-    get_channel_bytype(obj; type)
+    get_channel_bytype(obj; <keyword arguments>)
 
 Return channel number(s) for channel of `type` type.
 
@@ -130,7 +130,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector
 end
 
 """
-    get_channel_bytype(ct; type)
+    get_channel_bytype(ct; <keyword arguments>)
 
 Return channel number(s) for channel of `type` type.
 
@@ -176,7 +176,7 @@ function get_channel_bytype(ct::Vector{String}; type::Union{String, Vector{Strin
 end
 
 """
-    get_channel_bywl(obj; wl)
+    get_channel_bywl(obj; <keyword arguments>)
 
 Return NIRS channel number(s) for wavelength `wl`.
 
@@ -205,7 +205,7 @@ function get_channel_bywl(obj::NeuroAnalyzer.NEURO; wl::Real)
 end
 
 """
-    get_channel_type(obj; ch, type)
+    get_channel_type(obj; <keyword arguments>)
 
 Get channel type.
 
@@ -241,7 +241,7 @@ function get_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
 end
 
 """
-    set_channel_type(obj; ch, type)
+    set_channel_type(obj; <keyword arguments>)
 
 Set channel type.
 
@@ -289,7 +289,7 @@ function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, ty
 end
 
 """
-    set_channel_type!(obj; ch, new_name)
+    set_channel_type!(obj; <keyword arguments>)
 
 Set channel type.
 
@@ -310,7 +310,7 @@ function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, t
 end
 
 """
-    get_channel(obj; ch)
+    get_channel(obj; <keyword arguments>)
 
 Return channel number (if provided by name) or name (if provided by number).
 
@@ -346,7 +346,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
 end
 
 """
-    rename_channel(obj; ch, name)
+    rename_channel(obj; <keyword arguments>)
 
 Rename channel.
 
@@ -403,7 +403,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
 end
 
 """
-    rename_channel!(obj; ch, name)
+    rename_channel!(obj; <keyword arguments>)
 
 Rename channel.
 
@@ -425,7 +425,7 @@ function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, nam
 end
 
 """
-    edit_channel(obj; ch, field, value)
+    edit_channel(obj; <keyword arguments>)
 
 Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`.
 
@@ -457,7 +457,7 @@ function edit_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value:
 end
 
 """
-    edit_channel!(obj; ch, field, value)
+    edit_channel!(obj; <keyword arguments>)
 
 Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`.
 
@@ -479,7 +479,7 @@ function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value
 end
 
 """
-    replace_channel(obj; ch, s)
+    replace_channel(obj; <keyword arguments>)
 
 Replace channel.
 
@@ -523,7 +523,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s::
 end
 
 """
-    replace_channel!(obj; ch, s)
+    replace_channel!(obj; <keyword arguments>)
 
 Replace channel.
 
@@ -546,7 +546,7 @@ function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s:
 end
 
 """
-    add_labels(obj; labels)
+    add_labels(obj; <keyword arguments>)
 
 Add channel labels.
 
@@ -573,7 +573,7 @@ function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 end
 
 """
-    add_labels!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
+    add_labels!(obj::NeuroAnalyzer.NEURO; <keyword arguments>)
 
 Add OBJ channel labels.
 
@@ -593,7 +593,7 @@ function add_labels!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 end
 
 """
-    add_channel(obj; data, label, type)
+    add_channel(obj; <keyword arguments>)
 
 Add channel(s) data to empty `NeuroAnalyzer.NEURO` object.
 
@@ -642,7 +642,7 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::
 end
 
 """
-    add_channel!(obj; data, label, type)
+    add_channel!(obj; <keyword arguments>)
 
 Add channel(s) data to empty `NeuroAnalyzer.NEURO` object.
 

@@ -1,7 +1,7 @@
 export import_bdf
 
 """
-    import_bdf(file_name; default_type)
+    import_bdf(file_name; <keyword arguments>)
 
 Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 

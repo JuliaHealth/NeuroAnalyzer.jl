@@ -36,7 +36,7 @@ function pli(s1::AbstractVector, s2::AbstractVector)
 end
 
 """
-    pli(obj1, obj2; ch1, ch2, ep1, ep2)
+    pli(obj1, obj2; <keyword arguments>)
 
 Calculate PLI (Phase Lag Index).
 
@@ -94,7 +94,7 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
 end
 
 """
-    pli(obj; ch)
+    pli(obj; <keyword arguments>)
 
 Calculate PLIs (Phase Lag Index).
 

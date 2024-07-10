@@ -2,7 +2,7 @@ export spectrum
 export hspectrum
 
 """
-    spectrum(s; pad, db)
+    spectrum(s; <keyword arguments>)
 
 Calculate FFT, amplitudes, powers and phases.
 
@@ -44,7 +44,7 @@ function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)
 end
 
 """
-    hspectrum(s; pad=0)
+    hspectrum(s; <keyword arguments>)
 
 Calculate amplitudes, powers and phases using Hilbert transform.
 
@@ -81,7 +81,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)
 end
 
 """
-    hspectrum(s; pad, db)
+    hspectrum(s; <keyword arguments>)
 
 Calculate amplitudes, powers and phases using Hilbert transform.
 
@@ -121,7 +121,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)
 end
 
 """
-    spectrum(s; pad, h, db)
+    spectrum(s; <keyword arguments>)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
@@ -172,7 +172,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)
 end
 
 """
-    spectrum(obj; ch, pad, h, db)
+    spectrum(obj; <keyword arguments>)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 

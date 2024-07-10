@@ -43,7 +43,7 @@ function seg_mean(seg1::AbstractArray, seg2::AbstractArray)
 end
 
 """
-    seg_extract(m, r1, c1, r2, c2; v)
+    seg_extract(m, r1, c1, r2, c2; <keyword arguments>)
 
 Extract segment from a matrix.
 

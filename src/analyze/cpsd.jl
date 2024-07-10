@@ -1,7 +1,7 @@
 export cpsd
 
 """
-   cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, db)
+    cpsd(s1, s2; <keyword arguments>)
 
 Calculate cross power spectral density (CPSD).
 
@@ -68,7 +68,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
 end
 
 """
-    cpsd(s1, s2; method, fs, frq_lim, demean, nt, wlen, woverlap, w, db)
+    cpsd(s1, s2; <keyword arguments>)
 
 Calculate cross power spectral density (CPSD).
 
@@ -121,7 +121,7 @@ function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int6
 end
 
 """
-    cpsd(obj1, obj2; ch1, ch2, ep1, ep2, method, frq_lim, demean, nt, wlen, woverlap, w, db)
+    cpsd(obj1, obj2; <keyword arguments>)
 
 Calculate cross power spectral density (CPSD).
 

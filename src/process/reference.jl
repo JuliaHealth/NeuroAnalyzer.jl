@@ -12,7 +12,7 @@ export reference_custom
 export reference_custom!
 
 """
-    reference_ce(obj; ch, med)
+    reference_ce(obj; <keyword arguments>)
 
 Reference to common electrode(s). Only signal channels are processed.
 
@@ -74,7 +74,7 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    reference_ce!(obj; ch, med)
+    reference_ce!(obj; <keyword arguments>)
 
 Reference to common electrode(s). Only signal channels are processed.
 
@@ -97,7 +97,7 @@ function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
 end
 
 """
-    reference_avg(obj; exclude_fpo, exclude_current, average, med, weighted)
+    reference_avg(obj; <keyword arguments>)
 
 Reference to averaged reference. Only signal channels are processed.
 
@@ -208,7 +208,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
 end
 
 """
-    reference_avg!(obj; exclude_fpo, exclude_current, average, med, weighted)
+    reference_avg!(obj; <keyword arguments>)
 
 Reference to averaged reference. Only signal channels are processed.
 
@@ -234,7 +234,7 @@ function reference_avg!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclu
 end
 
 """
-    reference_a(obj; type, med)
+    reference_a(obj; <keyword arguments>)
 
 Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
@@ -363,7 +363,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 end
 
 """
-    reference_a!(obj; type, med)
+    reference_a!(obj; <keyword arguments>)
 
 Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
@@ -389,7 +389,7 @@ function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false
 end
 
 """
-    reference_m(obj; type, med)
+    reference_m(obj; <keyword arguments>)
 
 Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
@@ -518,7 +518,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 end
 
 """
-    reference_m!(obj; type, med)
+    reference_m!(obj; <keyword arguments>)
 
 Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
@@ -544,7 +544,7 @@ function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false
 end
 
 """
-    reference_plap(obj; nn, weights)
+    reference_plap(obj; <keyword arguments>)
 
 Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal channels are processed.
 
@@ -634,7 +634,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
 end
 
 """
-    reference_plap!(obj; nn, weights)
+    reference_plap!(obj; <keyword arguments>)
 
 Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal channels are processed.
 
@@ -658,7 +658,7 @@ function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=f
 end
 
 """
-    reference_custom(obj; ref_list, ref_name)
+    reference_custom(obj; <keyword arguments>)
 
 Reference using custom montage. Only signal channels are processed. Custom montage may be imported using `import_montage()`.
 
@@ -733,7 +733,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
 end
 
 """
-    reference_custom!(obj; ref_list, ref_name)
+    reference_custom!(obj; <keyword arguments>)
 
 Reference using custom montage. Only signal channels are processed. Custom montage may be imported using `import_montage()`.
 

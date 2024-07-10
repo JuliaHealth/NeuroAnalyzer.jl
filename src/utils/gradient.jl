@@ -1,7 +1,7 @@
 export gradient
 
 """
-   gradient(x; rev)
+    gradient(x; <keyword arguments>)
 
 Calculate gradient of a 1-dimensional scalar field.
 
@@ -30,7 +30,7 @@ function gradient(x::AbstractVector; rev::Bool=false)
 end
 
 """
-   gradient(x; rev)
+    gradient(x; <keyword arguments>)
 
 Calculate gradient of a 2-dimensional scalar field.
 
@@ -59,7 +59,7 @@ function gradient(x::AbstractMatrix; rev::Bool=false)
 end
 
 """
-   gradient(x; rev)
+    gradient(x; <keyword arguments>)
 
 Calculate gradient of a ≥3-dimensional scalar field.
 

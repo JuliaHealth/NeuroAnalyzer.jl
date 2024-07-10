@@ -42,7 +42,7 @@ function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractV
 end
 
 """
-    filter_mavg(s; k, t, window)
+    filter_mavg(s; <keyword arguments>)
 
 Filter using moving average filter (with threshold).
 
@@ -75,7 +75,7 @@ function filter_mavg(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVe
 end
 
 """
-    filter_mavg(obj; ch, k, t, window)
+    filter_mavg(obj; <keyword arguments>)
 
 Filter using moving average filter (with threshold).
 
@@ -113,7 +113,7 @@ function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    filter_mavg!(obj; ch, k, t, window)
+    filter_mavg!(obj; <keyword arguments>)
 
 Filter using moving average filter (with threshold).
 

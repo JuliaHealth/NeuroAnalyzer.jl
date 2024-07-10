@@ -17,7 +17,7 @@ export henv_median
 export env_cor
 
 """
-    env_up(s, x; d)
+    env_up(s, x; <keyword arguments>)
 
 Calculate upper envelope.
 
@@ -74,7 +74,7 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)
 end
 
 """
-    env_lo(s, x; d)
+    env_lo(s, x; <keyword arguments>)
 
 Calculate lower envelope.
 
@@ -176,7 +176,7 @@ function henv_lo(s::AbstractVector)
 end
 
 """
-    tenv(obj; ch, d)
+    tenv(obj; <keyword arguments>)
 
 Calculate temporal envelope (amplitude).
 
@@ -214,7 +214,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    tenv_mean(obj; ch, dims, d)
+    tenv_mean(obj; <keyword arguments>)
 
 Calculate temporal envelope (amplitude): mean and 95% CI.
 
@@ -294,7 +294,7 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    tenv_median(obj; ch, dims, d)
+    tenv_median(obj; <keyword arguments>)
 
 Calculate temporal envelope (amplitude): median and 95% CI.
 
@@ -372,7 +372,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    penv(obj; ch, d, method, nt, wlen, woverlap, w, frq_n, frq, ncyc)
+    penv(obj; <keyword arguments>)
 
 Calculate power (in dB) envelope.
 
@@ -423,7 +423,7 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    penv_mean(obj; ch, dims, d, method, nt, wlen, woverlap, w, ncyc)
+    penv_mean(obj; <keyword arguments>)
 
 Calculate power (in dB) envelope: mean and 95% CI.
 
@@ -512,7 +512,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    penv_median(obj; ch, dims, d, method, nt, wlen, woverlap, w, ncyc)
+    penv_median(obj; <keyword arguments>)
 
 Calculate power (in dB) envelope: median and 95% CI.
 
@@ -601,7 +601,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    senv(obj; ch, d, t, pad, method, db, nt, frq, gw, ncyc, wt, wlen, woverlap, w)
+    senv(obj; <keyword arguments>)
 
 Calculate spectral envelope.
 
@@ -694,7 +694,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    senv_mean(obj; ch, dims, d, t, pad, method, db, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
+    senv_mean(obj; <keyword arguments>)
 
 Calculate spectral envelope: mean and 95% CI.
 
@@ -788,7 +788,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    senv_median(obj; ch, dims, d, t, pad, method, db, nt, frq, gw, ncyc, wt, wlen, woverlap, w, wt, gw)
+    senv_median(obj; <keyword arguments>)
 
 Calculate spectral envelope: median and 95% CI.
 
@@ -882,7 +882,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    henv(obj; ch, d)
+    henv(obj; <keyword arguments>)
 
 Calculate Hilbert spectrum amplitude envelope.
 
@@ -924,7 +924,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    henv_mean(obj; ch, dims, d)
+    henv_mean(obj; <keyword arguments>)
 
 Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 
@@ -1002,7 +1002,7 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    henv_median(obj; ch, dims, d)
+    henv_median(obj; <keyword arguments>)
 
 Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
 

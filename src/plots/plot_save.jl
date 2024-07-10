@@ -1,7 +1,7 @@
 export plot_save
 
 """
-    plot_save(p; file_name::String)
+    plot_save(p; <keyword arguments>)
 
 Saves plot as file (PNG/PDF). File format is determined using `file_name` extension.
 

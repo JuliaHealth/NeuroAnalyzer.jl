@@ -63,7 +63,7 @@ function pca_decompose(s::AbstractArray; n::Int64)
 end
 
 """
-    pca_decompose(obj; ch, n)
+    pca_decompose(obj; <keyword arguments>)
 
 Calculate `n` first Primary Components (PCs).
 
@@ -119,7 +119,7 @@ function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::Multivar
 end
 
 """
-    pca_reconstruct(obj; ch)
+    pca_reconstruct(obj; <keyword arguments>)
 
 Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`).
 
@@ -152,7 +152,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 end
 
 """
-    pca_reconstruct!(obj; ch)
+    pca_reconstruct!(obj; <keyword arguments>)
 
 Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`).
 
@@ -173,7 +173,7 @@ function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 end
 
 """
-    pca_reconstruct(obj, pc, pc_model; ch)
+    pca_reconstruct(obj, pc, pc_model; <keyword arguments>)
 
 Reconstruct signal using external PCA components (`pc` and `pca`).
 
@@ -205,7 +205,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_mod
 end
 
 """
-    pca_reconstruct!(obj, pc, pc_model; ch)
+    pca_reconstruct!(obj, pc, pc_model; <keyword arguments>)
 
 Reconstruct signals using external PCA components (`pc` and `pc_model`).
 

@@ -18,7 +18,7 @@ export normalize_rank
 export normalize_fisher
 
 """
-    normalize(s, n; method)
+    normalize(s, n; <keyword arguments>)
 
 Normalize.
 
@@ -38,7 +38,7 @@ Normalize.
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
     - `:invroot`: to inverse root: 1/sqrt(x)
-    - `:n`: in [0, n], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
+    - `:n`: in [0, n], default is [0, 1]; <keyword arguments>) .+ n1`
     - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:mad`: by MAD
@@ -92,7 +92,7 @@ function normalize(s::AbstractVector, n::Float64=1.0; method::Symbol)
 end
 
 """
-    normalize(s, n; bych, method)
+    normalize(s, n; <keyword arguments>)
 
 Normalize.
 
@@ -113,7 +113,7 @@ Normalize.
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
     - `:invroot`: to inverse root: 1/sqrt(x)
-    - `:n`: in [0, n], default is [0, 1]; to normalize to [n1, n2], use `normalize_n(s) .* (n2 - n1) .+ n1`
+    - `:n`: in [0, n], default is [0, 1]; <keyword arguments>) .+ n1`
     - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:none`
@@ -189,7 +189,7 @@ function normalize_zscore(s::AbstractVector)
 end
 
 """
-    normalize_zscore(s; bych)
+    normalize_zscore(s; <keyword arguments>)
 
 # Arguments
 
@@ -260,7 +260,7 @@ function normalize_minmax(s::AbstractVector)
 end
 
 """
-    normalize_minmax(s; bych)
+    normalize_minmax(s; <keyword arguments>)
 
 Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0.
 
@@ -331,7 +331,7 @@ function normalize_n(s::AbstractVector, n::Real=1.0)
 end
 
 """
-    normalize_n(s, n; bych)
+    normalize_n(s, n; <keyword arguments>)
 
 Normalize in [0, n], default is [0, +1].
 
@@ -398,7 +398,7 @@ function normalize_log(s::AbstractVector)
 end
 
 """
-    normalize_log(s; bych)
+    normalize_log(s; <keyword arguments>)
 
 Normalize using log-transformation.
 
@@ -467,7 +467,7 @@ function normalize_gauss(s::AbstractVector)
 end
 
 """
-    normalize_gauss(s; bych)
+    normalize_gauss(s; <keyword arguments>)
 
 Normalize to Gaussian.
 
@@ -530,7 +530,7 @@ function normalize_log10(s::AbstractVector)
 end
 
 """
-    normalize_log10(s; bych)
+    normalize_log10(s; <keyword arguments>)
 
 Normalize using log10-transformation.
 
@@ -570,7 +570,7 @@ function normalize_log10(s::AbstractArray; bych::Bool=false)
 end
 
 """
-    normalize_neglog(s; bych)
+    normalize_neglog(s; <keyword arguments>)
 
 Normalize to using -log-transformation.
 
@@ -592,7 +592,7 @@ function normalize_neglog(s::AbstractArray; bych::Bool=false)
 end
 
 """
-    normalize_neglog10(s; bych)
+    normalize_neglog10(s; <keyword arguments>)
 
 Normalize using -log10-transformation.
 
@@ -698,7 +698,7 @@ function normalize_pos(s::AbstractVector)
 end
 
 """
-    normalize_pos(s; bych)
+    normalize_pos(s; <keyword arguments>)
 
 Normalize in [0, +∞].
 
@@ -767,7 +767,7 @@ function normalize_perc(s::AbstractVector)
 end
 
 """
-    normalize_perc(s; bych)
+    normalize_perc(s; <keyword arguments>)
 
 Normalize in percentages.
 
@@ -837,7 +837,7 @@ function normalize_invroot(s::AbstractVector)
 end
 
 """
-    normalize_invroot(s; bych)
+    normalize_invroot(s; <keyword arguments>)
 
 Normalize in inverse root (1/sqrt(x)).
 
@@ -878,7 +878,7 @@ function normalize_invroot(s::AbstractArray; bych::Bool=false)
 end
 
 """
-    normalize_softmax(s; bych)
+    normalize_softmax(s; <keyword arguments>)
 
 Softmax normalize: `exp(x_i) / sum(exp(x))`
 
@@ -898,7 +898,7 @@ function normalize_softmax(s::AbstractArray; bych::Bool=false)
 end
 
 """
-    normalize_sigmoid(s; bych)
+    normalize_sigmoid(s; <keyword arguments>)
 
 Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 
@@ -946,7 +946,7 @@ function normalize_mad(s::AbstractVector)
 end
 
 """
-    normalize_mad(s; bych)
+    normalize_mad(s; <keyword arguments>)
 
 # Arguments
 
@@ -1011,7 +1011,7 @@ function normalize_rank(s::AbstractVector)
 end
 
 """
-    normalize_rank(s; bych)
+    normalize_rank(s; <keyword arguments>)
 
 Normalize using tiedranks.
 
@@ -1077,7 +1077,7 @@ function normalize_fisher(s::AbstractVector)
 end
 
 """
-    normalize_fisher(s; bych)
+    normalize_fisher(s; <keyword arguments>)
 
 Normalize using Fisher z-transform. Converts uniform distribution into normal distribution.
 
@@ -1103,7 +1103,7 @@ function normalize_fisher(s::AbstractArray; bych::Bool=false)
 end
 
 """
-    normalize(obj; ch, method, bych)
+    normalize(obj; <keyword arguments>)
 
 Normalize channel(s).
 
@@ -1144,7 +1144,7 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    normalize!(obj; ch, method)
+    normalize!(obj; <keyword arguments>)
 
 Normalize channel(s).
 

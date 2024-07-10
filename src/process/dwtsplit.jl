@@ -1,7 +1,7 @@
 export dwtsplit
 
 """
-    dwtsplit(obj; ch, wt, type, n)
+    dwtsplit(obj; <keyword arguments>)
 
 Split into bands using discrete wavelet transformation (DWT).
 

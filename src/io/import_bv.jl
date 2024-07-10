@@ -1,6 +1,6 @@
 export import_bv
 """
-    import_bv(file_name; detect_type)
+    import_bv(file_name; <keyword arguments>)
 
 Load BrainVision BVCDF file and return `NeuroAnalyzer.NEURO` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
 

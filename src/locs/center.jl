@@ -2,7 +2,7 @@ export locs_center
 export locs_center!
 
 """
-    locs_center(locs; polar, cart, spherical)
+    locs_center(locs; <keyword arguments>)
 
 Center locs at (0, 0).
 
@@ -63,7 +63,7 @@ function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
 end
 
 """
-    locs_center!(locs; polar, cart, spherical)
+    locs_center!(locs; <keyword arguments>)
 
 Center locs at X=0.
 

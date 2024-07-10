@@ -1,7 +1,7 @@
 export findpeaks
 
 """
-    findpeaks(signal; d)
+    findpeaks(signal; <keyword arguments>)
 
 Find peaks.
 

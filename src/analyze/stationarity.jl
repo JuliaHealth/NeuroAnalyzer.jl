@@ -25,7 +25,7 @@ function stationarity_hilbert(s::AbstractVector)
 end
 
 """
-    stationarity_mean(s; window)
+    stationarity_mean(s; <keyword arguments>)
 
 Calculate mean stationarity. Signal is split into `window`-long windows and averaged across windows.
 
@@ -53,7 +53,7 @@ function stationarity_mean(s::AbstractVector; window::Int64)
 end
 
 """
-    stationarity_var(s; window)
+    stationarity_var(s; <keyword arguments>)
 
 Calculate variance stationarity. Signal is split into `window`-long windows and variance is calculated across windows.
 
@@ -81,7 +81,7 @@ function stationarity_var(s::AbstractVector; window::Int64)
 end
 
 """
-    stationarity(obj; ch, window, method)
+    stationarity(obj; <keyword arguments>)
 
 Calculate stationarity.
 

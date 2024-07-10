@@ -1,7 +1,7 @@
 export acor
 
 """
-   acor(s; l, demean, biased, method)
+    acor(s; <keyword arguments>)
 
 Calculate auto-correlation.
 
@@ -59,7 +59,7 @@ function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
 end
 
 """
-   acor(s; l, demean, biased, method)
+    acor(s; <keyword arguments>)
 
 Calculate auto-correlation.
 
@@ -93,7 +93,7 @@ function acor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1,
 end
 
 """
-   acor(s; l, demean, biased, method)
+    acor(s; <keyword arguments>)
 
 Calculate auto-correlation.
 
@@ -130,7 +130,7 @@ function acor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 
 end
 
 """
-   acor(obj; ch, lag, demean, biased, method)
+    acor(obj; <keyword arguments>)
 
 Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 

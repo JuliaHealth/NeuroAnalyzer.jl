@@ -138,7 +138,7 @@ function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
 end
 
 """
-    ica_reconstruct(; ic, ic_mw, ic_idx)
+    ica_reconstruct(; <keyword arguments>)
 
 Reconstruct signal using ICA components.
 
@@ -179,7 +179,7 @@ function ica_reconstruct(; ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::
 end
 
 """
-    ica_reconstruct(obj; ch, ic_idx, keep)
+    ica_reconstruct(obj; <keyword arguments>)
 
 Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 
@@ -206,7 +206,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 end
 
 """
-    ica_reconstruct!(obj; ch, ic_idx, keep)
+    ica_reconstruct!(obj; <keyword arguments>)
 
 Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 
@@ -229,7 +229,7 @@ function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int6
 end
 
 """
-    ica_reconstruct(obj, ic, ic_mw; ch, ic_idx, keep)
+    ica_reconstruct(obj, ic, ic_mw; <keyword arguments>)
 
 Reconstruct signals using external ICA components.
 
@@ -264,7 +264,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::M
 end
 
 """
-    ica_reconstruct!(obj, ic, ic_mw; ch, ic_idx, keep)
+    ica_reconstruct!(obj, ic, ic_mw; <keyword arguments>)
 
 Reconstruct signals using external ICA components.
 
@@ -289,7 +289,7 @@ function ica_reconstruct!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::
 end
 
 """
-    ica_remove(obj, ic, ic_mw; ch, ic_idx)
+    ica_remove(obj, ic, ic_mw; <keyword arguments>)
 
 Remove external ICA components from the signal.
 
@@ -329,7 +329,7 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
 end
 
 """
-    ica_remove!(obj, ic, ic_mw; ch, ic_idx)
+    ica_remove!(obj, ic, ic_mw; <keyword arguments>)
 
 Remove external ICA components from the signal.
 
@@ -353,7 +353,7 @@ function ica_remove!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matri
 end
 
 """
-    ica_remove(obj, ic; ch, ic_idx)
+    ica_remove(obj, ic; <keyword arguments>)
 
 Remove embedded ICA components (`:ic` and `:ic_mw`).
 
@@ -379,7 +379,7 @@ function ica_remove(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    ica_remove!(obj; ch, ic_idx)
+    ica_remove!(obj; <keyword arguments>)
 
 Remove embedded ICA components (`:ic` and `:ic_mw`).
 

@@ -1,7 +1,7 @@
 export import_gdf
 
 """
-    import_gdf(file_name; detect_type)
+    import_gdf(file_name; <keyword arguments>)
 
 Load GDF file and return `NeuroAnalyzer.NEURO` object.
 

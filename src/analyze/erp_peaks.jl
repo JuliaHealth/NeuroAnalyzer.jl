@@ -34,7 +34,7 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    amp_at(obj; t)
+    amp_at(obj; <keyword arguments>)
 
 Calculate amplitude at given time.
 
@@ -85,7 +85,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
 end
 
 """
-    avgamp_at(obj; t)
+    avgamp_at(obj; <keyword arguments>)
 
 Calculate average amplitude at given time segment.
 
@@ -140,7 +140,7 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 end
 
 """
-    maxamp_at(obj; t)
+    maxamp_at(obj; <keyword arguments>)
 
 Calculate maximum amplitude at given time segment.
 
@@ -195,7 +195,7 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
 end
 
 """
-    minamp_at(obj; t)
+    minamp_at(obj; <keyword arguments>)
 
 Calculate minimum amplitude at given time segment.
 

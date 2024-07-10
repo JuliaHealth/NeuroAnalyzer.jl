@@ -1,7 +1,7 @@
 export ampdiff
 
 """
-    ampdiff(s; ch)
+    ampdiff(s; <keyword arguments>)
 
 Calculate amplitude difference between each channel and mean amplitude of reference channels.
 
@@ -35,7 +35,7 @@ function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRan
 end
 
 """
-    ampdiff(obj; ch)
+    ampdiff(obj; <keyword arguments>)
 
 Calculate amplitude difference between each channel and mean amplitude of reference channels.
 

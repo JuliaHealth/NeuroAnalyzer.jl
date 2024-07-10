@@ -1,7 +1,7 @@
 export tes_model
 
 """
-    tes_model(; anode, cathode, anode_curr, cathode_curr)
+    tes_model(; <keyword arguments>)
 
 Create model of TES stimulation.
 

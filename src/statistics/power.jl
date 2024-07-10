@@ -10,7 +10,7 @@ export size_c1diff
 export size_p1diff
 
 """
-    size_c2g(; m1, s1, m2, r, alpha, power)
+    size_c2g(; <keyword arguments>)
 
 Calculate required sample size for a continuous variable (group 1 vs group 2).
 
@@ -42,7 +42,7 @@ function size_c2g(; m1::Real, s1::Real, m2::Real, r::Int64=1, alpha::Float64=0.0
 end
 
 """
-    size_c1g(; m, s, xbar, alpha, power, iter)
+    size_c1g(; <keyword arguments>)
 
 Calculate required sample size for a continuous variable (group 1 vs population).
 
@@ -75,7 +75,7 @@ function size_c1g(; m::Real, s::Real, xbar::Real, alpha::Float64=0.05, power::Fl
 end
 
 """
-    size_p2g(; p1, p2, r, alpha, power)
+    size_p2g(; <keyword arguments>)
 
 Calculate required sample size for a proportion (group 1 vs group 2).
 
@@ -110,7 +110,7 @@ function size_p2g(; p1::Float64, p2::Float64, r::Int64=1, alpha::Float64=0.05, p
 end
 
 """
-    size_p1g(; p1, p2, alpha, power)
+    size_p1g(; <keyword arguments>)
 
 Calculate required sample size for a proportion (group 1 vs population).
 
@@ -138,7 +138,7 @@ function size_p1g(; p1::Float64, p2::Float64, alpha::Float64=0.05, power::Float6
 end
 
 """
-    power_c2g(; m1, s1, n1, m2, s2, n2, alpha)
+    power_c2g(; <keyword arguments>)
 
 Calculate study power for a continuous variable (group 1 vs group 2).
 
@@ -168,7 +168,7 @@ function power_c2g(; m1::Real, s1::Real, n1::Int64, m2::Real, s2::Real, n2::Int6
 end
 
 """
-    power_c1g(; m, s, xbar, n, alpha)
+    power_c1g(; <keyword arguments>)
 
 Calculate study power for a continuous variable (group 1 vs population).
 
@@ -202,7 +202,7 @@ function power_c1g(; m::Real, s::Real, xbar::Real, n::Int64, alpha::Float64=0.05
 end
 
 """
-    power_p2g(; p1, p2, n1, n2, alpha)
+    power_p2g(; <keyword arguments>)
 
 Calculate required sample size for a proportion (group 1 vs group 2).
 
@@ -235,7 +235,7 @@ function power_p2g(; p1::Float64, p2::Float64, n1::Int64, n2::Int64, alpha::Floa
 end
 
 """
-    power_p1g(; p1, p2, n1, alpha)
+    power_p1g(; <keyword arguments>)
 
 Calculate required sample size for a proportion (group 1 vs population).
 
@@ -262,7 +262,7 @@ function power_p1g(; p1::Float64, p2::Float64, n1::Int64, alpha::Float64=0.05)
 end
 
 """
-    size_c1diff(; s1, s2, twosided, power)
+    size_c1diff(; <keyword arguments>)
 
 Calculate required sample size for detecting a difference in a continuous variable (group 1 vs population).
 
@@ -329,7 +329,7 @@ function size_c1diff(; s1::Real, s2::Real, twosided::Bool=true, power::Float64=0
 end
 
 """
-    size_p1diff(; p1, p2, power)
+    size_p1diff(; <keyword arguments>)
 
 Calculate required sample size for detecting a difference in a proportion (group 1 vs population).
 

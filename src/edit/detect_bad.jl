@@ -1,7 +1,7 @@
 export detect_bad
 
 """
-    detect_bad(obj; method, ch_t)
+    detect_bad(obj; <keyword arguments>)
 
 Detect bad channels and epochs.
 

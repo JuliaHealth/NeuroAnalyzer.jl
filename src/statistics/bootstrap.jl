@@ -2,7 +2,7 @@ export bootstrap_ci
 export bootstrap_stat
 
 """
-    bootstrap_ci(s; n1, n2, ci)
+    bootstrap_ci(s; <keyword arguments>)
 
 Calculate Confidence Interval using bootstrapping.
 
@@ -61,7 +61,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, ci::Flo
 end
 
 """
-    bootstrap_stat(s; n1, n2, f)
+    bootstrap_stat(s; <keyword arguments>)
 
 Calculate signal statistic using bootstrapping.
 

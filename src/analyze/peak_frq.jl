@@ -1,7 +1,7 @@
 export peak_frq
 
 """
-    peak_frq(s; fs, f, method, nt, wlen, woverlap, w, ncyc)
+    peak_frq(s; <keyword arguments>)
 
 Calculate peak frequency in a band.
 
@@ -45,7 +45,7 @@ function peak_frq(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, method::Sy
 end
 
 """
-    peak_frq(s; fs, f, method, nt, wlen, woverlap, w, ncyc)
+    peak_frq(s; <keyword arguments>)
 
 Calculate peak frequency in a band.
 
@@ -86,7 +86,7 @@ function peak_frq(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::Sym
 end
 
 """
-    peak_frq(obj; ch, f, method, nt, wlen, woverlap, w, ncyc)
+    peak_frq(obj; <keyword arguments>)
 
 Calculate peak frequency in a band.
 

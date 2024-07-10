@@ -1,7 +1,7 @@
 export pacor
 
 """
-   pacor(s; l, demean, method)
+    pacor(s; <keyword arguments>)
 
 Calculate partial auto-correlation.
 
@@ -49,7 +49,7 @@ function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * 
 end
 
 """
-   pacor(s; l, demean, method)
+    pacor(s; <keyword arguments>)
 
 Calculate partial auto-correlation.
 
@@ -81,7 +81,7 @@ function pacor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1
 end
 
 """
-   pacor(s; l, demean, method)
+    pacor(s; <keyword arguments>)
 
 Calculate partial auto-correlation.
 
@@ -116,7 +116,7 @@ function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) -
 end
 
 """
-   pacor(obj; ch, lag, demean, method)
+    pacor(obj; <keyword arguments>)
 
 Calculate partial auto-correlation. For ERP return trial-averaged auto-correlation.
 

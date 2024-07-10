@@ -112,13 +112,13 @@ x[10] *= 1000
 @test f2t(1.0) == 1000.0
 
 @info "Test 23/79: freqs()"
-f, nf = freqs(0:1/10:10)
+f, nf = NeuroAnalyzer.freqs(0:1/10:10)
 @test length(f) == 51
 @test nf == 5
-f, nf = freqs(rand(100), 10)
+f, nf = NeuroAnalyzer.freqs(rand(100), 10)
 @test length(f) == 51
 @test nf == 5
-f, nf = freqs(e10)
+f, nf = NeuroAnalyzer.freqs(e10)
 @test length(f) == 1281
 @test nf == 128
 

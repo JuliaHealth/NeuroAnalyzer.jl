@@ -2,7 +2,7 @@ export itpc
 export itpc_spec
 
 """
-    itpc(s; t, w)
+    itpc(s; <keyword arguments>)
 
 Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
@@ -91,7 +91,7 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    itpc_spec(s; w)
+    itpc_spec(s; <keyword arguments>)
 
 Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 

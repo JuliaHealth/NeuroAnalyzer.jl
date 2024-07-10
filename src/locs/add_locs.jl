@@ -2,7 +2,7 @@ export add_locs
 export add_locs!
 
 """
-    add_locs(obj; locs)
+    add_locs(obj; <keyword arguments>)
 
 Add electrode positions from `locs`.
 
@@ -68,7 +68,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 end
 
 """
-    add_locs!(obj; locs)
+    add_locs!(obj; <keyword arguments>)
 
 Load electrode positions from `locs` and return `NeuroAnalyzer.NEURO` object attached with channel locations data.
 

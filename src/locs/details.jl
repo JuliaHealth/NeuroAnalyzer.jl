@@ -1,7 +1,7 @@
 export locs_details
 
 """
-    locs_details(obj; ch, output)
+    locs_details(obj; <keyword arguments>)
 
 Return locations of OBJ ch electrode.
 

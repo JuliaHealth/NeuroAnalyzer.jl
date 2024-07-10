@@ -2,7 +2,7 @@ export remove_cwt
 export remove_cwt!
 
 """
-    remove_cwt(s, t; fs, wt, tseg, fseg, type)
+    remove_cwt(s, t; <keyword arguments>)
 
 Remove artifacts using continuous wavelet transformation (CWT).
 
@@ -51,7 +51,7 @@ function remove_cwt(s::AbstractVector, t::AbstractVector; fs::Int64, wt::T=wavel
 end
 
 """
-    remove_cwt(obj; ch, ep, wt, tseg, fseg, type)
+    remove_cwt(obj; <keyword arguments>)
 
 Remove artifacts using continuous wavelet transformation (CWT).
 
@@ -87,7 +87,7 @@ function remove_cwt(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, wt::T=wavele
 end
 
 """
-    remove_cwt!(obj; ch, wt, nf, w, type)
+    remove_cwt!(obj; <keyword arguments>)
 
 Remove artifacts using continuous wavelet transformation (CWT).
 

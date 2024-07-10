@@ -1,7 +1,7 @@
 export import_edf
 
 """
-    import_edf(file_name; detect_type)
+    import_edf(file_name; <keyword arguments>)
 
 Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 

@@ -2,7 +2,7 @@ export cw_trans
 export icw_trans
 
 """
-    cw_trans(s; wt, type, l)
+    cw_trans(s; <keyword arguments>)
 
 Perform continuous wavelet transformation (CWT).
 
@@ -24,7 +24,7 @@ function cw_trans(s::AbstractVector; wt::T) where {T<:CWT}
 end
 
 """
-    icw_trans(ct; wt, type)
+    icw_trans(ct; <keyword arguments>)
 
 Perform inverse continuous wavelet transformation (iCWT).
 
@@ -55,7 +55,7 @@ function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd) where {T<:CWT}
 end
 
 """
-    cw_trans(s; wt)
+    cw_trans(s; <keyword arguments>)
 
 Perform continuous wavelet transformation (CWT).
 
@@ -86,7 +86,7 @@ function cw_trans(s::AbstractArray; wt::T) where {T<:CWT}
 end
 
 """
-    cw_trans(obj; ch, wt)
+    cw_trans(obj; <keyword arguments>)
 
 Perform continuous wavelet transformation (CWT).
 

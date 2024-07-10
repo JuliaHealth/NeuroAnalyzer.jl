@@ -2,7 +2,7 @@ export iftt
 export ftt
 
 """
-    iftt(; duration, trials, interval, gpio, port_name)
+    iftt(; <keyword arguments>)
 
 Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin and to the PC via USB (virtual serial port). Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded.
 
@@ -436,7 +436,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
 end
 
 """
-    ftt(; duration, trials, interval, gpio, port_name)
+    ftt(; <keyword arguments>)
 
 Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR key) or switch panel attached to Raspberry Pi via a GPIO pin. Number of taps, time points and durations of taps are recorded. Also, taps during intervals (when the study subject should suppress tapping) are recorded. When using computer keyboard, only the number of taps and their time points are recorded; tap durations are set to 100 ms.
 

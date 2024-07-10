@@ -56,7 +56,7 @@ function derivative(s::AbstractArray)
 end
 
 """
-    derivative(obj; ch)
+    derivative(obj; <keyword arguments>)
 
 Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 
@@ -84,7 +84,7 @@ function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    derivative!(obj; ch)
+    derivative!(obj; <keyword arguments>)
 
 Return derivative (calculated using symmetric difference quotient) of a discrete signal of the same length.
 

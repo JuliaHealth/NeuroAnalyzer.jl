@@ -243,7 +243,7 @@ function cvar_median(x::AbstractVector)
 end
 
 """
-    ci_median(x; ci)
+    ci_median(x; <keyword arguments>)
 
 Calculate confidence interval for a median.
 
@@ -271,7 +271,7 @@ function ci_median(x::AbstractVector; ci::Float64=0.95)
 end
 
 """
-    ci_median(x; ci)
+    ci_median(x; <keyword arguments>)
 
 Calculate confidence interval for a median.
 
@@ -299,7 +299,7 @@ function ci_median(x::AbstractArray; ci::Float64=0.95)
 end
 
 """
-    ci_prop(p, n; ci)
+    ci_prop(p, n; <keyword arguments>)
 
 Calculate confidence interval for a proportion.
 
@@ -325,7 +325,7 @@ function ci_prop(p::Float64, n::Int64; ci::Float64=0.95)
 end
 
 """
-    ci_r(x, y; ci)
+    ci_r(x, y; <keyword arguments>)
 
 Calculate confidence interval for a correlation coefficient.
 
@@ -366,7 +366,7 @@ function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)
 end
 
 """
-    ci_r(; r, n, ci)
+    ci_r(; <keyword arguments>)
 
 Calculate confidence interval for a correlation coefficient.
 
@@ -401,7 +401,7 @@ function ci_r(; r::Float64, n::Int64, ci::Float64=0.95)
 end
 
 """
-    r1r2_test(; r1, r2, n1, n2)
+    r1r2_test(; <keyword arguments>)
 
 Test if two correlation coefficients are significantly different.
 
@@ -478,7 +478,7 @@ function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})
 end
 
 """
-    count_thresh(x; t, t_type)
+    count_thresh(x; <keyword arguments>)
 
 Collect thresholded elements, e.g. in a topographical map.
 
@@ -524,7 +524,7 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)
 end
 
 """
-    crit_t(df, alpha; twosided)
+    crit_t(df, alpha; <keyword arguments>)
 
 Calculate critical t value.
 
@@ -580,7 +580,7 @@ function ci2z(ci::Float64)
 end
 
 """
-    p2z(p; twosided)
+    p2z(p; <keyword arguments>)
 
 Calculate z score for p value.
 
@@ -606,7 +606,7 @@ function p2z(p::Float64=0.05; twosided::Bool=false)
 end
 
 """
-    z2p(z; twosided)
+    z2p(z; <keyword arguments>)
 
 Calculate probability for a given z value.
 

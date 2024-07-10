@@ -1,7 +1,7 @@
 export sef
 
 """
-    sef(s; x, fs, f, method, nt, wlen, woverlap, w, ncyc)
+    sef(s; <keyword arguments>)
 
 Calculate spectral edge frequency (SEF) -- the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
@@ -59,7 +59,7 @@ function sef(s::AbstractVector; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}
 end
 
 """
-    sef(s; x, fs, f, method, nt, wlen, woverlap, w, ncyc)
+    sef(s; <keyword arguments>)
 
 Calculate spectral edge frequency (SEF) -- the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
@@ -102,7 +102,7 @@ function sef(s::AbstractArray; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=
 end
 
 """
-    sef(obj; ch, x, f, method, nt, wlen, woverlap, w, ncyc)
+    sef(obj; <keyword arguments>)
 
 Calculate spectral edge frequency (SEF) -- the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 

@@ -24,7 +24,7 @@ function intensity2od(s::AbstractArray)
 end
 
 """
-    intensity2od(obj; ch)
+    intensity2od(obj; <keyword arguments>)
 
 Convert NIRS intensity (RAW data) to optical density (OD).
 
@@ -65,7 +65,7 @@ function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    intensity2od!(obj; ch)
+    intensity2od!(obj; <keyword arguments>)
 
 Convert NIRS intensity (RAW data) to optical density (OD).
 

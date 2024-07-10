@@ -2,7 +2,7 @@ export filter_poly
 export filter_poly!
 
 """
-    filter_poly(s; order, window)
+    filter_poly(s; <keyword arguments>)
 
 Filter using polynomial filter.
 
@@ -70,7 +70,7 @@ function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
 end
 
 """
-    filter_poly(s; order, window)
+    filter_poly(s; <keyword arguments>)
 
 Filter using polynomial filter.
 
@@ -102,7 +102,7 @@ function filter_poly(s::AbstractArray; order::Int64=8, window::Int64=10)
 end
 
 """
-    filter_poly(obj; ch, order, window)
+    filter_poly(obj; <keyword arguments>)
 
 Filter using polynomial filter.
 
@@ -132,7 +132,7 @@ function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    filter_poly!(obj; ch, order, window)
+    filter_poly!(obj; <keyword arguments>)
 
 Filter using polynomial filter.
 

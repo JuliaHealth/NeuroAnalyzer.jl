@@ -2,7 +2,7 @@ export scale
 export scale!
 
 """
-    scale(obj; ch, factor)
+    scale(obj; <keyword arguments>)
 
 Multiply channel(s) by `factor`.
 
@@ -31,7 +31,7 @@ function scale(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    scale!(obj; ch, factor)
+    scale!(obj; <keyword arguments>)
 
 Multiply channel(s) by `factor`.
 

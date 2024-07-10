@@ -2,7 +2,7 @@ export trim
 export trim!
 
 """
-    trim(s; seg, inverse)
+    trim(s; <keyword arguments>)
 
 Remove segment from the signal.
 
@@ -29,7 +29,7 @@ function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, inverse::Bool=false)
 end
 
 """
-    trim(m; seg, inverse)
+    trim(m; <keyword arguments>)
 
 Remove segment from the signal.
 
@@ -55,7 +55,7 @@ function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)
 end
 
 """
-    trim(a; seg, inverse)
+    trim(a; <keyword arguments>)
 
 Remove segment from the signal.
 
@@ -82,7 +82,7 @@ function trim(a::AbstractArray; seg::Tuple{Int64, Int64}, inverse::Bool=false)
 end
 
 """
-    trim(obj; seg, inverse, remove_epochs)
+    trim(obj; <keyword arguments>)
 
 Trim signal by removing parts of the signal.
 
@@ -141,7 +141,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
 end
 
 """
-    trim!(obj; seg, inverse, remove_epochs)
+    trim!(obj; <keyword arguments>)
 
 Trim signal by removing parts of the signal.
 

@@ -1,7 +1,7 @@
 export import_recording
 
 """
-    import_recording(file_name; detect_type)
+    import_recording(file_name; <keyword arguments>)
 
 Load recording file and return `NeuroAnalyzer.NEURO` object. Supported formats:
 - EDF/EDF+

@@ -57,7 +57,7 @@ function plot_empty()
 end
 
 """
-    add_locs(p1, p2; view, file_name)
+    add_locs(p1, p2; <keyword arguments>)
 
 Add locations to a plot. Locations are placed in the top right corner. If `file_name` is provided, the plot is saved as PNG file.
 

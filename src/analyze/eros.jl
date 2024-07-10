@@ -3,7 +3,7 @@ export eros
 """
     eros(obj; <keyword arguments>)
 
-Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP, `ero()` returns two epochs: ERP spectrogram (`ero_s[:, :, 1]`) and averaged spectrograms of all ERP epochs (`ero_s[:, :, 2]`). Otherwise, `ero()` returns averaged spectrograms of all `obj` epochs (`ero_s[:, :, 1]`)
+Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP, `eros()` returns two epochs: ERP spectrogram (`s[:, :, 1]`) and averaged spectrograms of all ERP epochs (`s[:, :, 2]`). Otherwise, `eros()` returns averaged spectrograms of all `obj` epochs (`s[:, :, 1]`)
 
 # Arguments
 
@@ -28,25 +28,25 @@ Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP, `ero()`
 # Returns
 
 Named tuple containing:
-- `ero_s::Array{Float64, 3}`: spectrogram(s)
-- `ero_f::Vector{Float64}`: frequencies
-- `ero_t::Vector{Float64}`: time
+- `s::Array{Float64, 3}`: spectrogram(s)
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
 """
 function eros(obj::NeuroAnalyzer.NEURO; ch::Int64, pad::Int64=0, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=true, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
     _check_channels(obj, ch)
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
-    ero_s, ero_f, ero_t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, db=db, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+    s, f, t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, db=db, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
 
-    ero_s = ero_s[:, :, 1, :]
+    s = s[:, :, 1, :]
 
     if datatype(obj) == "erp"
-        ero_s = cat(ero_s[:, :, 1], mean(ero_s, dims=3), dims=3)
+        s = cat(s[:, :, 1], mean(s, dims=3), dims=3)
     else
-        ero_s = mean(ero_s, dims=3)
+        s = mean(s, dims=3)
     end
 
-    return (ero_s=ero_s, ero_f=ero_f, ero_t=ero_t)
+    return (s=s, f=f, t=t)
 
 end

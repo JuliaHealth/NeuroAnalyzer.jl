@@ -2,7 +2,7 @@ export taper
 export taper!
 
 """
-    taper(s; taper)
+    taper(s; <keyword arguments>)
 
 Taper the signal.
 
@@ -24,7 +24,7 @@ function taper(s::AbstractVector; t::Union{AbstractVector, Vector{ComplexF64}})
 end
 
 """
-    taper(s; t)
+    taper(s; <keyword arguments>)
 
 Taper the signal.
 
@@ -55,7 +55,7 @@ function taper(s::AbstractArray; t::Union{Vector{<:Real}, Vector{ComplexF64}})
 end
 
 """
-    taper(obj; channel, t)
+    taper(obj; <keyword arguments>)
 
 Taper the signal.
 
@@ -84,7 +84,7 @@ function taper(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    taper!(obj; ch, t)
+    taper!(obj; <keyword arguments>)
 
 Taper the signal.
 

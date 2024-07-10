@@ -1,7 +1,7 @@
 export cwtfrq
 
 """
-    cwtfrq(s; fs, wt, type)
+    cwtfrq(s; <keyword arguments>)
 
 Return mean frequencies of a collection of analytic or real wavelets for a given signal.
 
@@ -26,7 +26,7 @@ function cwtfrq(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, 
 end
 
 """
-    cwtfrq(s; fs, wt)
+    cwtfrq(s; <keyword arguments>)
 
 Return mean frequencies of a collection of analytic or real wavelets for a given signal.
 
@@ -51,7 +51,7 @@ function cwtfrq(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q
 end
 
 """
-    cwtfrq(obj; wt, type)
+    cwtfrq(obj; <keyword arguments>)
 
 Return mean frequencies of a collection of analytic or real wavelets for a given signal.
 

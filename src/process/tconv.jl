@@ -2,7 +2,7 @@ export tconv
 export tconv!
 
 """
-    tconv(s; kernel)
+    tconv(s; <keyword arguments>)
 
 Performs convolution in the time domain.
 
@@ -31,7 +31,7 @@ function tconv(s::AbstractVector; kernel::AbstractVector)
 end
 
 """
-    tconv(s; kernel)
+    tconv(s; <keyword arguments>)
 
 Perform convolution in the time domain.
 
@@ -68,7 +68,7 @@ function tconv(s::AbstractArray; kernel::AbstractVector)
 end
 
 """
-    tconv(obj; ch, kernel)
+    tconv(obj; <keyword arguments>)
 
 Perform convolution in the time domain.
 
@@ -97,7 +97,7 @@ function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    tconv!(obj; ch, kernel)
+    tconv!(obj; <keyword arguments>)
 
 Perform convolution in the time domain.
 

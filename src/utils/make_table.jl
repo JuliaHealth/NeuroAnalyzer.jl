@@ -1,7 +1,7 @@
 export make_table
 
 """
-    make_table(; header, data)
+    make_table(; <keyword arguments>)
 
 Display data as a table.
 

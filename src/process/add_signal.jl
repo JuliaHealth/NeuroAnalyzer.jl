@@ -24,7 +24,7 @@ function add_signal(s1::AbstractVector, s2::AbstractVector)
 end
 
 """
-    add_signal(obj; ch, s)
+    add_signal(obj; <keyword arguments>)
 
 Add signal.
 
@@ -61,7 +61,7 @@ function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    add_signal!(obj; ch, n)
+    add_signal!(obj; <keyword arguments>)
 
 Add signal.
 

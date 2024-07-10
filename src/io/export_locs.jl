@@ -1,7 +1,7 @@
 export export_locs
 
 """
-    export_locs(obj; file_name, overwrite)
+    export_locs(obj; <keyword arguments>)
 
 Export channel locations data, format is based on `file_name` extension (.ced, .locs or .tsv)
 
@@ -41,7 +41,7 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
 end
 
 """
-    export_locs(locs; file_name, overwrite)
+    export_locs(locs; <keyword arguments>)
 
 Export channel locations, format is based on `file_name` extension (.ced, .locs, .tsv)
 

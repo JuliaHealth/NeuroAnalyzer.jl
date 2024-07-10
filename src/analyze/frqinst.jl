@@ -1,7 +1,7 @@
 export frqinst
 
 """
-    frqinst(s; fs)
+    frqinst(s; <keyword arguments>)
 
 Calculate instantaneous frequency.
 
@@ -23,7 +23,7 @@ function frqinst(s::AbstractVector)
 end
 
 """
-    frqinst(s; fs)
+    frqinst(s; <keyword arguments>)
 
 Calculate instantaneous frequency.
 
@@ -56,7 +56,7 @@ function frqinst(s::AbstractArray)
 end
 
 """
-    frqinst(obj; channel)
+    frqinst(obj; <keyword arguments>)
 
 Calculate instantaneous frequency.
 

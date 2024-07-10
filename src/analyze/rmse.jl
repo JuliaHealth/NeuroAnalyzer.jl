@@ -57,7 +57,7 @@ function rmse(s1::AbstractArray, s2::AbstractArray)
 end
 
 """
-    rmse(obj1, obj2; ch1, ch2, ep1, ep2)
+    rmse(obj1, obj2; <keyword arguments>)
 
 Calculate Root Mean Square Error (RMSE).
 

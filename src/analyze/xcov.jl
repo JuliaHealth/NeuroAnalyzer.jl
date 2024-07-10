@@ -1,7 +1,7 @@
 export xcov
 
 """
-   xcov(s1, s2; l, demean, biased, method)
+    xcov(s1, s2; <keyword arguments>)
 
 Calculate cross-covariance.
 
@@ -75,7 +75,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
 end
 
 """
-   xcov(s1, s2; l, demean, biased, method)
+    xcov(s1, s2; <keyword arguments>)
 
 Calculate cross-covariance.
 
@@ -112,7 +112,7 @@ function xcov(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 end
 
 """
-   xcov(s1, s2; l, demean, biased, method)
+    xcov(s1, s2; <keyword arguments>)
 
 Calculate cross-covariance.
 
@@ -152,7 +152,7 @@ function xcov(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
 end
 
 """
-    xcov(obj1, obj2; ch1, ch2, ep1, ep2, l, demean, biased, method)
+    xcov(obj1, obj2; <keyword arguments>)
 
 Calculate cross-covariance. For ERP return trial-averaged cross-covariance.
 

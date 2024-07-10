@@ -770,12 +770,16 @@ Plot power spectrum density.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
+- `gw::Real=5`: Gaussian width in Hz
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
@@ -794,10 +798,10 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
-    _check_var(method, [:welch, :fft, :stft, :mt, :mw], "method")
+    _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
@@ -870,6 +874,12 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         elseif method === :mw
             sp, sf = psd(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :gh
+            sp, sf = psd(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
+            title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :cwt
+            sp, sf = psd(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            title == "default" && (title = "Absolute PSD (CWT) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
@@ -887,6 +897,12 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         elseif method === :mw
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :gh
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
+            title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :cwt
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            title == "default" && (title = "PSD (CWT) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
@@ -904,6 +920,12 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         elseif method === :mw
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, frq_lim=frq_lim, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :gh
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
+            title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :cwt
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            title == "default" && (title = "PSD (CWT) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
 
@@ -913,10 +935,10 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if ref !== :abs
             ylabel == "default" && (ylabel = "Power ratio")
         end
-        if db
-            ylabel == "default" && (ylabel = "Power [dB]")
+        if method === :cwt
+            ylabel == "default" && (ylabel = "Magnitude")
         else
-            ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
+            ylabel == "default" && (ylabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
         end
     end
 
@@ -991,7 +1013,11 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        if method === :cwt
+            zlabel == "default" && (zlabel = "Magnitude")
+        else
+            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1013,7 +1039,11 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        if method === :cwt
+            zlabel == "default" && (zlabel = "Magnitude")
+        else
+            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1077,6 +1107,8 @@ Plot power spectrum density of embedded or external component.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -1103,10 +1135,10 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...) where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
-    _check_var(method, [:welch, :fft, :stft, :mt, :mw], "method")
+    _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
@@ -1174,6 +1206,12 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         elseif method === :mw
             sp, sf = psd(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :gh
+            sp, sf = psd(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
+            title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :cwt
+            sp, sf = psd(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            title == "default" && (title = "Absolute PSD (CWT) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
@@ -1191,6 +1229,12 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         elseif method === :mw
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :gh
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
+            title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :cwt
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            title == "default" && (title = "PSD (CWT) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
@@ -1208,16 +1252,25 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         elseif method === :mw
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, frq_lim=frq_lim, ncyc=ncyc, w=w)
             title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :gh
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
+            title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+        elseif method === :cwt
+            sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            title == "default" && (title = "PSD (CWT) relative to $(replace(string(ref), "_"=>" ")) power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
 
     # set labels
-    if type !== :w3d && type !== :s3d
+    if type !== :w3d && type !== :s3d && type !== :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        if db
-            ylabel == "default" && (ylabel = "Power [dB]")
+        if ref !== :abs
+            ylabel == "default" && (ylabel = "Power ratio")
+        end
+        if method === :cwt
+            ylabel == "default" && (ylabel = "Magnitude")
         else
-            ylabel == "default" && (ylabel = "Power [$units^2/Hz]")
+            ylabel == "default" && (ylabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
         end
     end
 
@@ -1265,7 +1318,11 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        if method === :cwt
+            zlabel == "default" && (zlabel = "Magnitude")
+        else
+            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
@@ -1284,7 +1341,11 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Channels")
-        zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        if method === :cwt
+            zlabel == "default" && (zlabel = "Magnitude")
+        else
+            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+        end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,

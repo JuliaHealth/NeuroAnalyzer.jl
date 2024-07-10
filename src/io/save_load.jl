@@ -4,7 +4,7 @@ export save_study
 export load_study
 
 """
-    save(obj; file_name, overwrite)
+    save(obj; <keyword arguments>)
 
 Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 
@@ -55,7 +55,7 @@ function load(file_name::String)
 end
 
 """
-    save_study(obj; file_name, overwrite)
+    save_study(obj; <keyword arguments>)
 
 Save `NeuroAnalyzer.STUDY` object to `file_name` file (HDF5-based).
 

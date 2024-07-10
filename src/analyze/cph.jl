@@ -1,7 +1,7 @@
 export cph
 
 """
-    cph(s1, s2; fs)
+    cph(s1, s2; <keyword arguments>)
 
 Calculate cross-phases.
 
@@ -31,7 +31,7 @@ function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)
 end
 
 """
-    cph(s; fs)
+    cph(s; <keyword arguments>)
 
 Calculate cross-phases.
 
@@ -83,7 +83,7 @@ function cph(s::AbstractArray; fs::Int64)
 end
 
 """
-    cph(s1, s2; fs)
+    cph(s1, s2; <keyword arguments>)
 
 Calculate cross-phases.
 
@@ -120,7 +120,7 @@ function cph(s1::AbstractArray, s2::AbstractArray; fs::Int64)
 end
 
 """
-    cph(obj; ch)
+    cph(obj; <keyword arguments>)
 
 Calculate cross-phases.
 
@@ -147,7 +147,7 @@ function cph(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 end
 
 """
-    cph(obj1, obj2; ch1, ch2, ep1, ep2)
+    cph(obj1, obj2; <keyword arguments>)
 
 Calculate cross-phases.
 

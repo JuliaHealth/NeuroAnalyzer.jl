@@ -54,7 +54,7 @@ function effsize_p2g(p1::Float64, p2::Float64)
 end
 
 """
-    pooledstd(x1, x2; type)
+    pooledstd(x1, x2; <keyword arguments>)
 
 Calculate pooled standard deviation
 

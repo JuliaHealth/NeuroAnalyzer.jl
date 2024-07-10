@@ -1,7 +1,7 @@
 export msci95
 
 """
-    msci95(s; n, method)
+    msci95(s; <keyword arguments>)
 
 Calculate mean, standard deviation and 95% confidence interval.
 
@@ -52,7 +52,7 @@ function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
 end
 
 """
-    msci95(s; n, method)
+    msci95(s; <keyword arguments>)
 
 Calculate mean, standard deviation and 95% confidence interval.
 
@@ -103,7 +103,7 @@ function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)
 end
 
 """
-    msci95(s; n, method)
+    msci95(s; <keyword arguments>)
 
 Calculate mean, standard deviation and 95% confidence interval.
 
@@ -142,7 +142,7 @@ function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)
 end
 
 """
-    msci95(obj; ch, n, method)
+    msci95(obj; <keyword arguments>)
 
 Calculate mean, standard deviation and 95% confidence interval.
 
@@ -253,7 +253,7 @@ function msci95(s1::AbstractArray, s2::AbstractArray)
 end
 
 """
-    msci95(obj1, obj2; ch1, ch2, ep1, ep2)
+    msci95(obj1, obj2; <keyword arguments>)
 
 Calculate mean difference, standard deviation and 95% confidence interval.
 

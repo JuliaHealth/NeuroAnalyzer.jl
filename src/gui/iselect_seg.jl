@@ -1,7 +1,7 @@
 export iselect_seg
 
 """
-    iselect_seg(m; c, extract, v)
+    iselect_seg(m; <keyword arguments>)
 
 Interactive selection of matrix area.
 

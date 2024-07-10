@@ -1,7 +1,7 @@
 export import_csv
 
 """
-    import_csv(file_name; detect_type)
+    import_csv(file_name; <keyword arguments>)
 
 Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 

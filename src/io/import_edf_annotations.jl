@@ -1,7 +1,7 @@
 export import_edf_annotations
 
 """
-    import_edf_annotations(file_name; detect_type)
+    import_edf_annotations(file_name; <keyword arguments>)
 
 Load annotations from EDF+ file and return `markers` DataFrame. This function is used for EDF+ files containing annotations only.
 

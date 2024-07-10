@@ -1,5 +1,6 @@
 using NeuroAnalyzer
 using Plots
+using Cairo
 using Test
 
 @info "Initializing"
@@ -63,6 +64,10 @@ p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:mt)
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:stft)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:fft)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:gh)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, ref=:delta)
 @test p isa Plots.Plot{Plots.GRBackend}

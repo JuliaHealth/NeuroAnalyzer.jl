@@ -3,7 +3,7 @@ export hjorth
 _h_mob(s::AbstractVector) = sqrt(var(derivative(s)) / var(s))
 
 """
-   hjorth(s)
+    hjorth(s)
 
 Calculate Hjorths parameters.
 
@@ -35,7 +35,7 @@ function hjorth(s::AbstractVector)
 end
 
 """
-   hjorth(s)
+    hjorth(s)
 
 Calculate Hjorths parameters.
 
@@ -76,7 +76,7 @@ function hjorth(s::AbstractArray)
 end
 
 """
-   hjorth(obj)
+    hjorth(obj)
 
 Calculate Hjorths parameters.
 

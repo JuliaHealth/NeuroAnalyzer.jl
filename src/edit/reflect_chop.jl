@@ -4,7 +4,7 @@ export chop
 export chop!
 
 """
-    reflect(obj; n)
+    reflect(obj; <keyword arguments>)
 
 Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
 
@@ -44,7 +44,7 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
 end
 
 """
-    reflect!(obj; n)
+    reflect!(obj; <keyword arguments>)
 
 Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
 
@@ -68,7 +68,7 @@ function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
 end
 
 """
-    chop(obj; n)
+    chop(obj; <keyword arguments>)
 
 Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
 
@@ -107,7 +107,7 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
 end
 
 """
-    chop!(obj; v)
+    chop!(obj; <keyword arguments>)
 
 Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
 

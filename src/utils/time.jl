@@ -45,7 +45,7 @@ function s2t(s::Int64, fs::Int64)
 end
 
 """
-    t2s(obj; t)
+    t2s(obj; <keyword arguments>)
 
 Convert time in seconds to sample number.
 
@@ -65,7 +65,7 @@ function t2s(obj::NeuroAnalyzer.NEURO; t::T) where {T<:Real}
 end
 
 """
-    s2t(obj; s)
+    s2t(obj; <keyword arguments>)
 
 Convert time in samples to seconds.
 

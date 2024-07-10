@@ -2,7 +2,7 @@ export outlier_detect
 export grubbs
 
 """
-    outlier_detect(x; method)
+    outlier_detect(x; <keyword arguments>)
 
 Detect outliers.
 
@@ -57,7 +57,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
 end
 
 """
-    grubbs(x; alpha, t)
+    grubbs(x; <keyword arguments>)
 
 Perform Grubbs test for outlier.
 

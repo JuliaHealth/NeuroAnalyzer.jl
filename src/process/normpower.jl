@@ -52,7 +52,7 @@ function normpower(s::AbstractArray)
 end
 
 """
-    normpower(obj; channel, t)
+    normpower(obj; <keyword arguments>)
 
 Return a signal with normalized power (amplitudes divided by the root-mean-squared value of the entire signal).
 
@@ -80,7 +80,7 @@ function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    normpower!(obj; ch)
+    normpower!(obj; <keyword arguments>)
 
 Return a signal with normalized power (amplitudes divided by the root-mean-squared value of the entire signal).
 

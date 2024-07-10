@@ -1,7 +1,7 @@
 export import_nwb
 
 """
-    import_nwb(file_name; detect_type)
+    import_nwb(file_name; <keyword arguments>)
 
 Load EEG data from Neurodata Without Borders (NWB) file and return `NeuroAnalyzer.NEURO` object.
 

@@ -5,7 +5,7 @@ export create_data
 export create_data!
 
 """
-    create_object(; data_type)
+    create_object(; <keyword arguments>)
 
 Create an empty `NeuroAnalyzer.NEURO` object.
 
@@ -83,7 +83,7 @@ function create_object(; data_type::String)
 end
 
 """
-    create_time(obj; fs)
+    create_time(obj; <keyword arguments>)
 
 Create time points vector for `NeuroAnalyzer.NEURO` object.
 
@@ -112,7 +112,7 @@ function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)
 end
 
 """
-    create_time!(obj; fs)
+    create_time!(obj; <keyword arguments>)
 
 Create time points vector for `NeuroAnalyzer.NEURO` object.
 
@@ -134,7 +134,7 @@ function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)
 end
 
 """
-    create_data(obj; data, fs)
+    create_data(obj; <keyword arguments>)
 
 Create data, channel labels, types and units and time points for `NeuroAnalyzer.NEURO` object.
 
@@ -172,7 +172,7 @@ function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int6
 end
 
 """
-    create_data!(obj; data, fs)
+    create_data!(obj; <keyword arguments>)
 
 Create data, channel labels, types and units and time points for `NeuroAnalyzer.NEURO` object.
 

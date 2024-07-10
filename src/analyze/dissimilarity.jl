@@ -153,7 +153,7 @@ function diss(s1::AbstractArray, s2::AbstractArray)
 end
 
 """
-    diss(obj; ch)
+    diss(obj; <keyword arguments>)
 
 Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels).
 
@@ -180,7 +180,7 @@ function diss(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    diss(obj1, obj2; ch1, ch2, ep1, ep2)
+    diss(obj1, obj2; <keyword arguments>)
 
 Calculate DISS (global dissimilarity) and spatial correlation (`ch1` of `obj1` vs `ch2` of `obj2`)..
 

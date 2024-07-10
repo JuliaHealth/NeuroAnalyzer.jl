@@ -4,7 +4,7 @@ export keep_epoch
 export keep_epoch!
 
 """
-    delete_epoch(obj; ep)
+    delete_epoch(obj; <keyword arguments>)
 
 Remove epoch(s).
 
@@ -48,7 +48,7 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, 
 end
 
 """
-    delete_epoch!(obj; ep)
+    delete_epoch!(obj; <keyword arguments>)
 
 Remove epoch(s).
 
@@ -71,7 +71,7 @@ function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64},
 end
 
 """
-    keep_epoch(obj; ep)
+    keep_epoch(obj; <keyword arguments>)
 
 Keep epoch(s).
 
@@ -105,7 +105,7 @@ function keep_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    keep_epoch!(obj; ep)
+    keep_epoch!(obj; <keyword arguments>)
 
 Keep OBJ epoch(s).
 

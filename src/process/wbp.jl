@@ -2,7 +2,7 @@ export wbp
 export wbp!
 
 """
-    wbp(s; pad, frq, fs, ncyc)
+    wbp(s; <keyword arguments>)
 
 Perform wavelet band-pass filtering.
 
@@ -37,7 +37,7 @@ function wbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=
 end
 
 """
-    wbp(s; ch, pad, frq, ncyc)
+    wbp(s; <keyword arguments>)
 
 Perform wavelet band-pass filtering.
 
@@ -70,7 +70,7 @@ function wbp(s::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6
 end
 
 """
-    wbp(obj; ch, pad, frq, ncyc)
+    wbp(obj; <keyword arguments>)
 
 Perform wavelet band-pass filtering.
 
@@ -101,7 +101,7 @@ function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 end
 
 """
-    wbp!(obj; ch, pad, frq, ncyc)
+    wbp!(obj; <keyword arguments>)
 
 Perform wavelet band-pass filtering.
 

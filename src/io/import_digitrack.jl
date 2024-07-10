@@ -1,7 +1,7 @@
 export import_digitrack
 
 """
-    import_digitrack(file_name; detect_type)
+    import_digitrack(file_name; <keyword arguments>)
 
 Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 

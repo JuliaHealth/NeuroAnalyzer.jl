@@ -2,7 +2,7 @@ export dw_trans
 export idw_trans
 
 """
-    dw_trans(s; wt, type, l)
+    dw_trans(s; <keyword arguments>)
 
 Perform discrete wavelet transformation (DWT).
 
@@ -46,7 +46,7 @@ function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <
 end
 
 """
-    dw_trans(s; wt, type, l)
+    dw_trans(s; <keyword arguments>)
 
 Perform discrete wavelet transformation (DWT).
 
@@ -84,7 +84,7 @@ function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0) where {T <:
 end
 
 """
-    dw_trans(obj; ch, wt, type, l)
+    dw_trans(obj; <keyword arguments>)
 
 Perform discrete wavelet transformation (DWT).
 
@@ -114,7 +114,7 @@ function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 end
 
 """
-    idw_trans(dwt_coefs; wt, type)
+    idw_trans(dwt_coefs; <keyword arguments>)
 
 Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 

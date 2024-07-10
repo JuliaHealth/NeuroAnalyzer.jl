@@ -3,7 +3,7 @@ export f1
 export mscr
 
 """
-    mcc(; tp, tn, fp, fn)
+    mcc(; <keyword arguments>)
 
 Assess performance of the classification model using Matthews correlation coefficient (MCC).
 
@@ -36,7 +36,7 @@ end
 export f1
 
 """
-    f1(; tp, tn, fp, fn)
+    f1(; <keyword arguments>)
 
 Assess performance of the classification model using F1-score. F1-score value ranges from 0 to 1.
 
@@ -69,7 +69,7 @@ function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)
 end
 
 """
-    mscr(; tp, tn, fp, fn)
+    mscr(; <keyword arguments>)
 
 Assess performance of the classification model using misclassification rate.
 

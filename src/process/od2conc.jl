@@ -2,7 +2,7 @@ export od2conc
 export od2conc!
 
 """
-    od2conc(obj; ch, ppf)
+    od2conc(obj; <keyword arguments>)
 
 Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
@@ -100,7 +100,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
 end
 
 """
-    od2conc(obj; ch, ppf)
+    od2conc(obj; <keyword arguments>)
 
 Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 

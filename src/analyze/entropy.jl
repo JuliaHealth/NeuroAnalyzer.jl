@@ -68,7 +68,7 @@ function entropy(s::AbstractArray)
 end
 
 """
-    entropy(obj; ch)
+    entropy(obj; <keyword arguments>)
 
 Calculate entropy.
 
@@ -149,7 +149,7 @@ function negentropy(s::AbstractArray)
 end
 
 """
-    negentropy(obj; ch)
+    negentropy(obj; <keyword arguments>)
 
 Calculate negentropy.
 

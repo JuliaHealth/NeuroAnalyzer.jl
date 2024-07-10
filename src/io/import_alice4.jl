@@ -1,7 +1,7 @@
 export import_alice4
 
 """
-    import_alice4(file_name; detect_type)
+    import_alice4(file_name; <keyword arguments>)
 
 Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.NEURO` object.
 

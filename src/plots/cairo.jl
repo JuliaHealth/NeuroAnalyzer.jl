@@ -31,7 +31,7 @@ function plot2canvas(p::Plots.Plot{Plots.GRBackend})
 end
 
 """
-    resize_canvas(c; r)
+    resize_canvas(c; <keyword arguments>)
 
 Resize CairoSurfaceBase by a factor.
 
@@ -88,7 +88,7 @@ function add_topmargin_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.Cair
 end
 
 """
-    add_to_canvas(c1, c2; x, y, title, view, file_name)
+    add_to_canvas(c1, c2; <keyword arguments>)
 
 Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, the plot is saved as PNG file.
 

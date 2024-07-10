@@ -2,7 +2,7 @@ export remove_pops
 export remove_pops!
 
 """
-    remove_pops(s; r, repair)
+    remove_pops(s; <keyword arguments>)
 
 Detect and repair electrode pops (rapid amplitude change). Signal is recovered within the segments starting and ending at zero-crossing. Only one pop is detected, signal length should be ≥2 seconds.
 

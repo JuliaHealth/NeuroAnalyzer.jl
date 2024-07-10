@@ -1,7 +1,7 @@
 export cbp
 
 """
-    cbp(s; pad, frq, fs)
+    cbp(s; <keyword arguments>)
 
 Perform convolution band-pass filtering.
 
@@ -31,7 +31,7 @@ function cbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64)
 end
 
 """
-    cbp(obj; ch, pad, frq)
+    cbp(obj; <keyword arguments>)
 
 Perform convolution bandpass filtering.
 
@@ -69,7 +69,7 @@ function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
 end
 
 """
-    cbp!(obj; ch, pad, frq)
+    cbp!(obj; <keyword arguments>)
 
 Perform convolution bandpass filtering.
 

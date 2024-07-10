@@ -1,7 +1,7 @@
 export corm
 
 """
-   corm(s; norm=true)
+    corm(s; <keyword arguments>)
 
 Calculate correlation matrix of `s * s'`.
 
@@ -31,7 +31,7 @@ function corm(s::AbstractVector; norm::Bool=false)
 end
 
 """
-   corm(s1, s2; norm=true)
+    corm(s1, s2; <keyword arguments>)
 
 Calculate correlation matrix of `s1 * s2'`.
 
@@ -64,7 +64,7 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)
 end
 
 """
-   corm(s; norm=true)
+    corm(s; <keyword arguments>)
 
 Calculate correlation matrix.
 
@@ -113,7 +113,7 @@ function corm(s::AbstractArray; norm::Bool=false)
 end
 
 """
-    corm(obj; ch, norm)
+     corm(obj; <keyword arguments>)
 
 Calculate correlation matrix.
 

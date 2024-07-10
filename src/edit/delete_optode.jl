@@ -2,7 +2,7 @@ export delete_optode
 export delete_optode!
 
 """
-    delete_optode(obj; opt, delete_channels)
+    delete_optode(obj; <keyword arguments>)
 
 Delete optode(s) and channels associated with removed optodes.
 
@@ -72,7 +72,7 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
 end
 
 """
-    delete_optode!(obj; opt)
+    delete_optode!(obj; <keyword arguments>)
 
 Delete optopode(s).
 

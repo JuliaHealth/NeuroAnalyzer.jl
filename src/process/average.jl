@@ -40,7 +40,7 @@ function average(s1::AbstractArray, s2::AbstractArray)
 end
 
 """
-    average(obj; ch)
+    average(obj; <keyword arguments>)
 
 Return the average signal of channels.
 
@@ -70,7 +70,7 @@ function average(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
 end
 
 """
-    average!(obj; ch)
+    average!(obj; <keyword arguments>)
 
 Return the average signal of channels.
 

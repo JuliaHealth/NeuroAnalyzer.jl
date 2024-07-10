@@ -32,7 +32,7 @@ function standardize(s::AbstractArray)
 end
 
 """
-    standardize(obj; ch)
+    standardize(obj; <keyword arguments>)
 
 Standardize channels.
 
@@ -61,7 +61,7 @@ function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    standardize!(obj; ch)
+    standardize!(obj; <keyword arguments>)
 
 Standardize channels.
 

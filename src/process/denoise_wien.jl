@@ -33,7 +33,7 @@ function denoise_wien(s::AbstractArray)
 end
 
 """
-    denoise_wien(obj; ch)
+    denoise_wien(obj; <keyword arguments>)
 
 Perform Wiener deconvolution denoising.
 
@@ -59,7 +59,7 @@ function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    denoise_wien!(obj; ch)
+    denoise_wien!(obj; <keyword arguments>)
 
 Perform Wiener deconvolution denoising.
 

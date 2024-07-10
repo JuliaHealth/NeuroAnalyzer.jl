@@ -4,7 +4,7 @@ export sort_epochs
 export sort_epochs!
 
 """
-    erp(obj; bl, blfirst)
+    erp(obj; <keyword arguments>)
 
 Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_type]` becomes `erp`. First epoch is the ERP.
 
@@ -60,7 +60,7 @@ function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bo
 end
 
 """
-    erp!(obj; bl, blfirst)
+    erp!(obj; <keyword arguments>)
 
 Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_type]` becomes `erp`. First epoch is the ERP.
 
@@ -86,7 +86,7 @@ function erp!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::B
 end
 
 """
-    sort_epochs(obj; s)
+    sort_epochs(obj; <keyword arguments>)
 
 Sort epochs.
 
@@ -118,7 +118,7 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
 end
 
 """
-    sort_epochs(obj; s)
+    sort_epochs(obj; <keyword arguments>)
 
 Sort epochs.
 

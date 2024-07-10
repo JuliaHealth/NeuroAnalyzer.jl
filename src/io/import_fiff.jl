@@ -1,7 +1,7 @@
 export import_fiff
 
 """
-    import_fiff(file_name; detect_type)
+    import_fiff(file_name; <keyword arguments>)
 
 Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.NEURO` object.
 

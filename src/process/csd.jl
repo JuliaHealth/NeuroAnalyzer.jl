@@ -2,7 +2,7 @@ export csd
 export gh
 
 """
-    csd(obj; m, n, lambda)
+    csd(obj; <keyword arguments>)
 
 Transform data using Current Source Density (CSD) transformation based on spherical spline surface Laplacian.
 
@@ -72,7 +72,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
 end
 
 """
-    csd!(obj; m, n, lambda)
+    csd!(obj; <keyword arguments>)
 
 Transform data using Current Source Density (CSD) transformation based on spherical spline surface Laplacian.
 
@@ -105,7 +105,7 @@ function csd!(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=
 end
 
 """
-    gh(locs; m, n)
+    gh(locs; <keyword arguments>)
 
 Generate G and H matrices.
 

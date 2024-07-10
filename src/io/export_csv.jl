@@ -1,7 +1,7 @@
 export export_csv
 
 """
-    export_csv(obj; file_name, header, components, markers, overwrite)
+    export_csv(obj; <keyword arguments>)
 
 Export `NeuroAnalyzer.NEURO` object to CSV.
 

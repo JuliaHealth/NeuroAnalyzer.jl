@@ -1,7 +1,7 @@
 export phsd
 
 """
-    phsd(s; fs)
+    phsd(s; <keyword arguments>)
 
 Calculate phase spectral density.
 
@@ -27,7 +27,7 @@ function phsd(s::AbstractVector; fs::Int64)
 end
 
 """
-    phsd(s; fs)
+    phsd(s; <keyword arguments>)
 
 Calculate phase spectral density.
 
@@ -58,7 +58,7 @@ function phsd(s::AbstractMatrix; fs::Int64)
 end
 
 """
-    phsd(s; fs)
+    phsd(s; <keyword arguments>)
 
 Calculate phase spectral density.
 
@@ -92,7 +92,7 @@ function phsd(s::AbstractArray; fs::Int64)
 end
 
 """
-    phsd(obj; ch)
+    phsd(obj; <keyword arguments>)
 
 Calculate phase spectral density.
 

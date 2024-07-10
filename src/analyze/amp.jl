@@ -82,7 +82,7 @@ function amp(s::AbstractArray)
 end
 
 """
-    amp(obj; ch)
+    amp(obj; <keyword arguments>)
 
 Calculate amplitudes.
 

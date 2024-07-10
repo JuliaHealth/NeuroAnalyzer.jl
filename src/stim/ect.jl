@@ -1,7 +1,7 @@
 export ect_charge
 
 """
-    ect_charge(; pw, pint, pf, duration)
+    ect_charge(; <keyword arguments>)
 
 Calculate charge administered during ECT.
 

@@ -2,7 +2,7 @@ export mlinterpolate_channel
 export mlinterpolate_channel!
 
 """
-    mlinterpolate_channel(obj; ch, ep, ep_ref, model)
+    mlinterpolate_channel(obj; <keyword arguments>)
 
 Interpolate channel using a machine-learning model.
 
@@ -58,7 +58,7 @@ function mlinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, e
 end
 
 """
-    mlinterpolate_channel!(obj; ch, ep, ep_ref, model)
+    mlinterpolate_channel!(obj; <keyword arguments>)
 
 Interpolate channel using linear regression.
 

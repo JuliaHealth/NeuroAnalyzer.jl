@@ -1,7 +1,7 @@
 export acov
 
 """
-   acov(s; l, demean, biased, method)
+    acov(s; <keyword arguments>)
 
 Calculate autocovariance.
 
@@ -61,7 +61,7 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
 end
 
 """
-   acov(s; l, demean, biased, method)
+    acov(s; <keyword arguments>)
 
 Calculate autocovariance.
 
@@ -95,7 +95,7 @@ function acov(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1,
 end
 
 """
-   acov(s; l, demean, biased, method)
+    acov(s; <keyword arguments>)
 
 Calculate autocovariance.
 
@@ -132,7 +132,7 @@ function acov(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 
 end
 
 """
-   acov(obj; ch, l, demean, biased, method)
+    acov(obj; <keyword arguments>)
 
 Calculate autocovariance. For ERP return trial-averaged autocovariance.
 

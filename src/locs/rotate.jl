@@ -6,7 +6,7 @@ export locs_rotx
 export locs_rotx!
 
 """
-    locs_rotz(locs; a, polar, cart, spherical)
+    locs_rotz(locs; <keyword arguments>)
 
 Rotate channel locations around the Z axis.
 
@@ -56,7 +56,7 @@ function locs_rotz(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
 end
 
 """
-    locs_rotz!(locs; a, polar, cart, spherical)
+    locs_rotz!(locs; <keyword arguments>)
 
 Rotate channel locations in the xy-plane.
 
@@ -77,7 +77,7 @@ function locs_rotz!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true,
 end
 
 """
-    locs_roty(locs; a, polar, cart, spherical)
+    locs_roty(locs; <keyword arguments>)
 
 Rotate channel locations around the Y axis (in the XZ-plane).
 
@@ -127,7 +127,7 @@ function locs_roty(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
 end
 
 """
-    locs_roty!(locs; a, polar, cart, spherical)
+    locs_roty!(locs; <keyword arguments>)
 
 Rotate channel locations around the Y axis (in the XZ-plane).
 
@@ -148,7 +148,7 @@ function locs_roty!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true,
 end
 
 """
-    locs_rotx(locs; a, polar, cart, spherical)
+    locs_rotx(locs; <keyword arguments>)
 
 Rotate channel locations around the X axis (in the YZ-plane).
 
@@ -198,7 +198,7 @@ function locs_rotx(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
 end
 
 """
-    locs_rotx!(locs; a, polar, cart, spherical)
+    locs_rotx!(locs; <keyword arguments>)
 
 Rotate channel locations around the X axis (in the YZ-plane).
 

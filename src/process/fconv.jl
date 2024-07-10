@@ -1,7 +1,7 @@
 export fconv
 
 """
-    fconv(s; kernel, norm)
+    fconv(s; <keyword arguments>)
 
 Perform convolution in the frequency domain.
 
@@ -37,7 +37,7 @@ function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true)
 end
 
 """
-    fconv(s; kernel, norm)
+    fconv(s; <keyword arguments>)
 
 Perform convolution in the frequency domain.
 
@@ -75,7 +75,7 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true)
 end
 
 """
-    fconv(obj; ch, kernel, norm)
+    fconv(obj; <keyword arguments>)
 
 Perform convolution in the frequency domain.
 

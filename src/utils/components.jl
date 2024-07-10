@@ -84,7 +84,7 @@ function rename_component!(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbo
 end
 
 """
-    add_component(obj; c, v)
+    add_component(obj; <keyword arguments>)
 
 Add component.
 
@@ -114,7 +114,7 @@ function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
 end
 
 """
-    add_component!(obj; c, v)
+    add_component!(obj; <keyword arguments>)
 
 Add component.
 
@@ -177,7 +177,7 @@ function extract_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 end
 
 """
-    delete_component(obj; c)
+    delete_component(obj; <keyword arguments>)
 
 Delete component.
 
@@ -205,7 +205,7 @@ function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 end
 
 """
-    delete_component!(obj; c)
+    delete_component!(obj; <keyword arguments>)
 
 Delete component.
 

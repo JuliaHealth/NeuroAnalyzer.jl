@@ -35,7 +35,7 @@ function m_pad0(m::Matrix{<:Number})
 end
 
 """
-    m_sortperm(m; rev, dims)
+    m_sortperm(m; <keyword arguments>)
 
 Generates matrix sorting index.
 
@@ -71,7 +71,7 @@ function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
 end
 
 """
-    m_sort(m, m_idx; rev, dims)
+    m_sort(m, m_idx; <keyword arguments>)
 
 Sorts matrix using sorting index.
 
@@ -129,7 +129,7 @@ function m_norm(m::AbstractArray)
 end
 
 """
-    vec2mat(x; wlen, woverlap)
+    vec2mat(x; <keyword arguments>)
 
 Reshape vector into matrix using fixed segment length and overlapping.
 

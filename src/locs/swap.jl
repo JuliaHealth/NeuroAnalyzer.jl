@@ -2,7 +2,7 @@ export locs_swapxy
 export locs_swapxy!
 
 """
-    locs_swapxy(locs; polar, cart, spherical)
+    locs_swapxy(locs; <keyword arguments>)
 
 Swap channel locations x and y axes.
 
@@ -47,7 +47,7 @@ function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
 end
 
 """
-    locs_swapxy!(locs; polar, cart, spherical)
+    locs_swapxy!(locs; <keyword arguments>)
 
 Swap channel locations x and y axes.
 

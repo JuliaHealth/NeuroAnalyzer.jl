@@ -1,7 +1,7 @@
 export import_snirf
 
 """
-    import_snirf(file_name; n)
+    import_snirf(file_name; <keyword arguments>)
 
 Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnalyzer.NEURO` object.
 

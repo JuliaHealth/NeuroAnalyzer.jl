@@ -63,7 +63,7 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)
 end
 
 """
-    remove_dc(obj; ch, n)
+    remove_dc(obj; <keyword arguments>)
 
 Remove mean value (DC offset).
 
@@ -92,7 +92,7 @@ function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    remove_dc!(obj; ch, n)
+    remove_dc!(obj; <keyword arguments>)
 
 Remove mean value (DC offset).
 

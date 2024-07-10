@@ -1,7 +1,7 @@
 export phdiff
 
 """
-    phdiff(s1, s2; pad, h)
+    phdiff(s1, s2; <keyword arguments>)
 
 Calculate phase difference between signals.
 
@@ -34,7 +34,7 @@ function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=fa
 end
 
 """
-    phdiff(s; ch, pad, h)
+    phdiff(s; <keyword arguments>)
 
 Calculate phase difference between channels and mean phase of reference `ch`.
 
@@ -112,7 +112,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
 end
 
 """
-    phdiff(obj; ch, pad, h)
+    phdiff(obj; <keyword arguments>)
 
 Calculate phase difference between channels and mean phase of reference `ch`.
 

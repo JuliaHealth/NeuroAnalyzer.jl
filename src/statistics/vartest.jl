@@ -1,7 +1,7 @@
 export vartest
 
 """
-    vartest(obj; ch)
+    vartest(obj; <keyword arguments>)
 
 Calculate variance F-test.
 
@@ -47,7 +47,7 @@ function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, Abstr
 end
 
 """
-    vartest(obj1, obj2; ch1, ch2, ep1, ep2)
+    vartest(obj1, obj2; <keyword arguments>)
 
 Calculate variance F-test.
 

@@ -6,7 +6,7 @@ export subepoch
 export subepoch!
 
 """
-    epoch(obj; marker, offset, ep_n, ep_len)
+    epoch(obj; <keyword arguments>)
 
 Split OBJ into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
@@ -94,7 +94,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
 end
 
 """
-    epoch!(obj; marker, offset, ep_n, ep_len)
+    epoch!(obj; <keyword arguments>)
 
 Split OBJ into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
@@ -121,7 +121,7 @@ function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_
 end
 
 """
-    epoch_ts(obj; ts)
+    epoch_ts(obj; <keyword arguments>)
 
 Edit epochs time start.
 
@@ -146,7 +146,7 @@ function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)
 end
 
 """
-    epoch_ts!(obj; ts)
+    epoch_ts!(obj; <keyword arguments>)
 
 Edit OBJ epochs time start.
 
@@ -170,7 +170,7 @@ function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)
 end
 
 """
-    subepoch(obj; ep_start, ep_end)
+    subepoch(obj; <keyword arguments>)
 
 Extract sub-epochs with a reduced time range.
 
@@ -232,7 +232,7 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
 end
 
 """
-    subepoch!(obj; ep_start, ep_end)
+    subepoch!(obj; <keyword arguments>)
 
 Extract sub-epochs with a reduced time range.
 

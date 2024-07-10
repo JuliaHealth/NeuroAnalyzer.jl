@@ -3,7 +3,7 @@ export flim
 export tlim
 
 """
-    spec_seg(sp, st, sf; t, f)
+    spec_seg(sp, st, sf; <keyword arguments>)
 
 Return spectrogram segment.
 
@@ -41,7 +41,7 @@ function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64};
 end
 
 """
-    spec_seg(sp, sf, st; ch, t, f)
+    spec_seg(sp, sf, st; <keyword arguments>)
 
 Return spectrogram segment.
 
@@ -80,7 +80,7 @@ function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch:
 end
 
 """
-    flim(p, f; frq_lim)
+    flim(p, f; <keyword arguments>)
 
 Trim power spectrum or spectrogram array to a range of frequencies.
 
@@ -119,7 +119,7 @@ function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})
 end
 
 """
-    tlim(p, f; frq_lim)
+    tlim(p, f; <keyword arguments>)
 
 Trim spectrogram array to a range of time points.
 

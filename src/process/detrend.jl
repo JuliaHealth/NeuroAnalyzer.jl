@@ -2,7 +2,7 @@ export detrend
 export detrend!
 
 """
-    detrend(s; type, offset, order, span, fs)
+    detrend(s; <keyword arguments>)
 
 Perform piecewise detrending.
 
@@ -74,7 +74,7 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
 end
 
 """
-    detrend(s; type, offset, order, f)
+    detrend(s; <keyword arguments>)
 
 Perform piecewise detrending.
 
@@ -113,7 +113,7 @@ function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::
 end
 
 """
-    detrend(obj; ch, type, offset, order, f)
+    detrend(obj; <keyword arguments>)
 
 Perform piecewise detrending.
 
@@ -148,7 +148,7 @@ function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
 end
 
 """
-    detrend!(obj; ch, type, offset, order, span)
+    detrend!(obj; <keyword arguments>)
 
 Perform piecewise detrending.
 

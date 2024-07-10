@@ -45,7 +45,7 @@ function snr2(s::AbstractVector)
 end
 
 """
-    snr(s; t, type)
+    snr(s; <keyword arguments>)
 
 Calculate SNR.
 
@@ -100,7 +100,7 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)
 end
 
 """
-    snr(obj; ch, type)
+    snr(obj; <keyword arguments>)
 
 Calculate SNR.
 

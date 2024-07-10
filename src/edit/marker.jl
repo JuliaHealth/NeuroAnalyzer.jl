@@ -40,7 +40,7 @@ function view_marker(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    delete_marker(obj; n)
+    delete_marker(obj; <keyword arguments>)
 
 Delete marker.
 
@@ -89,7 +89,7 @@ function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)
 end
 
 """
-    add_marker(obj; id, start, len, desc, ch)
+    add_marker(obj; <keyword arguments>)
 
 Add marker.
 
@@ -148,7 +148,7 @@ function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Rea
 end
 
 """
-    edit_marker(obj; n, id, start, len, desc, ch)
+    edit_marker(obj; <keyword arguments>)
 
 Edit marker.
 
@@ -212,7 +212,7 @@ function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Rea
 end
 
 """
-    channel2marker(obj; ch, v, id, desc)
+    channel2marker(obj; <keyword arguments>)
 
 Convert event channel to markers.
 
@@ -292,7 +292,7 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::Int64, v::Real=1.0, id::St
 end
 
 """
-    channel2marker!(obj; ch, v, id, desc)
+    channel2marker!(obj; <keyword arguments>)
 
 Convert event channel to markers.
 

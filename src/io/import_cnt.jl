@@ -1,7 +1,7 @@
 export import_cnt
 
 """
-    import_cnt(file_name; data_format, detect_type)
+    import_cnt(file_name; <keyword arguments>)
 
 Load Neuroscan continuous signal file and return `NeuroAnalyzer.NEURO` object.
 

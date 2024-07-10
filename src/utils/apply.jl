@@ -1,7 +1,7 @@
 export apply
 
 """
-    apply(obj; ch, f)
+    apply(obj; <keyword arguments>)
 
 Apply custom function.
 

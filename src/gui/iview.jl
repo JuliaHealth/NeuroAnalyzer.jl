@@ -3,7 +3,7 @@ export iview_ep
 export iview_cont
 
 """
-    iview(obj; ch, zoom, bad)
+    iview(obj; <keyword arguments>)
 
 Interactive view of continuous or epoched signal.
 
@@ -28,7 +28,7 @@ function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    iview_cont(obj; ch, zoom, bad)
+    iview_cont(obj; <keyword arguments>)
 
 Interactive view of continuous signal.
 
@@ -643,7 +643,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 end
 
 """
-    iview(obj1, obj2; ch, zoom)
+    iview(obj1, obj2; <keyword arguments>)
 
 Interactive view of continuous or epoched signal.
 
@@ -671,7 +671,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{I
 end
 
 """
-    iview_cont(obj1, obj2; ch, zoom)
+    iview_cont(obj1, obj2; <keyword arguments>)
 
 Interactive view of continuous signal.
 
@@ -1287,7 +1287,7 @@ export iview_ep
 export iview_cont
 
 """
-    iview(obj, c; c_idx, zoom)
+    iview(obj, c; <keyword arguments>)
 
 Interactive view of embedded or external component of continuous or epoched signal.
 
@@ -1312,7 +1312,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx:
 end
 
 """
-    iview_cont(obj, c; c_idx, zoom)
+    iview_cont(obj, c; <keyword arguments>)
 
 Interactive view of embedded or external component of continuous signal.
 
@@ -1637,7 +1637,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
 end
 
 """
-    iview_ep(obj, c; c_idx, mono)
+    iview_ep(obj, c; <keyword arguments>)
 
 Interactive view of embedded or external component of epoched signal.
 

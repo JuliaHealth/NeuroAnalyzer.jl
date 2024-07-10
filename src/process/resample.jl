@@ -6,7 +6,7 @@ export downsample
 export downsample!
 
 """
-    resample(s; t, new_sr)
+    resample(s; <keyword arguments>)
 
 Resample to `new_sr` sampling frequency.
 
@@ -36,7 +36,7 @@ function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)
 end
 
 """
-    resample(s; old_sr::Int64, new_sr::Int64)
+    resample(s; <keyword arguments>)
 
 Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
@@ -70,7 +70,7 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)
 end
 
 """
-    resample(obj; new_sr)
+    resample(obj; <keyword arguments>)
 
 Resample (up- or down-sample).
 
@@ -94,7 +94,7 @@ function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 end
 
 """
-    resample!(obj; new_sr)
+    resample!(obj; <keyword arguments>)
 
 Resample (up- or down-sample).
 
@@ -118,7 +118,7 @@ function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 end
 
 """
-    upsample(obj; new_sr)
+    upsample(obj; <keyword arguments>)
 
 Upsample.
 
@@ -152,7 +152,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 end
 
 """
-    upsample!(obj; new_sr)
+    upsample!(obj; <keyword arguments>)
 
 Upsample.
 
@@ -176,7 +176,7 @@ function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 end
 
 """
-    downsample(obj; new_sr)
+    downsample(obj; <keyword arguments>)
 
 Downsample.
 
@@ -212,7 +212,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 end
 
 """
-    downsample!(obj; new_sr)
+    downsample!(obj; <keyword arguments>)
 
 Downsample.
 

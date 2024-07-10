@@ -2,7 +2,7 @@ export filter_sg
 export filter_sg!
 
 """
-    filter_sg(s; order, window)
+    filter_sg(s; <keyword arguments>)
 
 Filter using Savitzky-Golay filter.
 
@@ -30,7 +30,7 @@ function filter_sg(s::AbstractVector; order::Int64=6, window::Int64=11)
 end
 
 """
-    filter_sg(s; order, window)
+    filter_sg(s; <keyword arguments>)
 
 Filter using Savitzky-Golay filter.
 
@@ -62,7 +62,7 @@ function filter_sg(s::AbstractArray; order::Int64=6, window::Int64=11)
 end
 
 """
-    filter_sg(obj; ch, order, window)
+    filter_sg(obj; <keyword arguments>)
 
 Filter using Savitzky-Golay filter.
 
@@ -92,7 +92,7 @@ function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
 end
 
 """
-    filter_sg!(obj; ch, order, window)
+    filter_sg!(obj; <keyword arguments>)
 
 Filter using Savitzky-Golay filter.
 

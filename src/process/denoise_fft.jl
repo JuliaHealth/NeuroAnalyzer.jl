@@ -2,7 +2,7 @@ export denoise_fft
 export denoise_fft!
 
 """
-   denoise_fft(s; pad, t)
+    denoise_fft(s; <keyword arguments>)
 
 Perform FFT denoising.
 
@@ -34,7 +34,7 @@ function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)
 end
 
 """
-    denoise_fft(s; pad, t)
+    denoise_fft(s; <keyword arguments>)
 
 Perform FFT denoising.
 
@@ -73,7 +73,7 @@ function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)
 end
 
 """
-    denoise_fft(obj; ch, pad, t)
+    denoise_fft(obj; <keyword arguments>)
 
 Perform FFT denoising.
 
@@ -103,7 +103,7 @@ function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    denoise_fft!(obj; ch, pad, t)
+    denoise_fft!(obj; <keyword arguments>)
 
 Perform FFT denoising.
 

@@ -1,7 +1,7 @@
 export vch
 
 """
-    vch(obj; f)
+    vch(obj; <keyword arguments>)
 
 Calculate virtual channel using formula `f`.
 

@@ -1,7 +1,7 @@
 export import_npy
 
 """
-    import_npy(file_name; sampling_rate)
+    import_npy(file_name; <keyword arguments>)
 
 Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data type and channel types are set as  is EEG.
 

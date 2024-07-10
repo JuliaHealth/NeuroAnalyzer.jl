@@ -1,7 +1,7 @@
 export export_markers
 
 """
-    export_markers(obj; file_name, overwrite)
+    export_markers(obj; <keyword arguments>)
 
 Export `NeuroAnalyzer.NEURO` object markers to CSV.
 

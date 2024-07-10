@@ -20,7 +20,7 @@ function view_note(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    add_note(obj; note)
+    add_note(obj; <keyword arguments>)
 
 Add recording note to the object header.
 
@@ -43,7 +43,7 @@ function add_note(obj::NeuroAnalyzer.NEURO; note::String)
 end
 
 """
-    add_note!(obj; note)
+    add_note!(obj; <keyword arguments>)
 
 Add recording note to the object header.
 

@@ -5,7 +5,7 @@ export maxat
 export vreduce
 
 """
-    vsearch(y, x; acc)
+    vsearch(y, x; <keyword arguments>)
 
 Return the positions of the value in the vector.
 
@@ -29,7 +29,7 @@ function vsearch(y::T, x::AbstractVector; acc::Bool=false) where {T<:Real}
 end
 
 """
-    vsearch(y, x; acc)
+    vsearch(y, x; <keyword arguments>)
 
 Return the positions of the value in the vector.
 
@@ -139,7 +139,7 @@ function maxat(x::AbstractVector, y::AbstractVector)
 end
 
 """
-    vreduce(x, f; n)
+    vreduce(x, f; <keyword arguments>)
 
 Reduce two vectors at indices of the second vector being multiplications of a constant. Useful e.g. for simplifying values across frequencies, when the number of frequencies (and thus values) is high.
 

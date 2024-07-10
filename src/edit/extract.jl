@@ -6,7 +6,7 @@ export extract_time
 export extract_eptime
 
 """
-    extract_channel(obj; ch)
+    extract_channel(obj; <keyword arguments>)
 
 Extract channel data.
 
@@ -41,7 +41,7 @@ function extract_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
 end
 
 """
-    extract_epoch(obj; ep)
+    extract_epoch(obj; <keyword arguments>)
 
 Extract epoch.
 
@@ -72,7 +72,7 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)
 end
 
 """
-    extract_epoch!(obj; ep)
+    extract_epoch!(obj; <keyword arguments>)
 
 Extract epoch.
 
@@ -95,7 +95,7 @@ function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)
 end
 
 """
-    extract_data(obj; ch)
+    extract_data(obj; <keyword arguments>)
 
 Extract data.
 

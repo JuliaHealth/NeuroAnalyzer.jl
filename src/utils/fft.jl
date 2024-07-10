@@ -175,7 +175,7 @@ function rfft2(x::AbstractVector)
 end
 
 """
-    fft_transform(x; fs, wlen, woverlap, w, demean, pad, mode)
+    fft_transform(x; <keyword arguments>)
 
 Perform FFT transformation.
 

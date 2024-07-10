@@ -1,7 +1,7 @@
 export xcor
 
 """
-   xcor(s1, s2; l, demean, biased, method)
+    xcor(s1, s2; <keyword arguments>)
 
 Calculate cross-correlation.
 
@@ -78,7 +78,7 @@ function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
 end
 
 """
-   xcor(s1, s2; l, demean, biased, method)
+    xcor(s1, s2; <keyword arguments>)
 
 Calculate cross-correlation.
 
@@ -118,7 +118,7 @@ function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 end
 
 """
-   xcor(s1, s2; l, demean, biased, method)
+    xcor(s1, s2; <keyword arguments>)
 
 Calculate cross-correlation.
 
@@ -158,7 +158,7 @@ function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
 end
 
 """
-    xcor(obj1, obj2; ch1, ch2, ep1, ep2, l, demean, biased, method)
+    xcor(obj1, obj2; <keyword arguments>)
 
 Calculate cross-correlation. For ERP return trial-averaged cross-correlation.
 

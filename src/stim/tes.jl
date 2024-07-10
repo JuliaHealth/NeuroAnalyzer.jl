@@ -4,7 +4,7 @@ export tpcs_dose
 export tes_protocol
 
 """
-    tdcs_dose(; current, pad_area, duration)
+    tdcs_dose(; <keyword arguments>)
 
 Calculate `charge`, `current_density` and `charge_ density` for tDCS stimulation.
 
@@ -36,7 +36,7 @@ function tdcs_dose(; current::Real, pad_area::Real, duration::Int64)
 end
 
 """
-    tacs_dose(; current, pad_area, duration, offset, frequency, phase)
+    tacs_dose(; <keyword arguments>)
 
 Calculate `charge`, `current_density` and `charge_ density` for tACS stimulation.
 
@@ -76,7 +76,7 @@ function tacs_dose(; current::Real, pad_area::Real, duration::Int64, offset::Rea
 end
 
 """
-    tpcs_dose(; current, pad_area, duration, offset, frequency, phase)
+    tpcs_dose(; <keyword arguments>)
 
 Calculate `charge`, `current_density` and `charge_ density` for tPCS stimulation.
 

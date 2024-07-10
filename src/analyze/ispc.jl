@@ -38,7 +38,7 @@ function ispc(s1::AbstractVector, s2::AbstractVector)
 end
 
 """
-    ispc(obj; ch)
+    ispc(obj; <keyword arguments>)
 
 Calculate ISPCs (Inter-Site-Phase Clustering).
 
@@ -79,7 +79,7 @@ function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    ispc(obj1, obj2; ch1, ch2, ep1, ep2)
+    ispc(obj1, obj2; <keyword arguments>)
 
 Calculate ISPC (Inter-Site-Phase Clustering).
 

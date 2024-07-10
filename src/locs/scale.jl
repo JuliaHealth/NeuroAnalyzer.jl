@@ -4,7 +4,7 @@ export locs_normalize
 export locs_normalize!
 
 """
-    locs_scale(locs; r, polar, cart, spherical)
+    locs_scale(locs; <keyword arguments>)
 
 Scale channel locations.
 
@@ -65,7 +65,7 @@ function locs_scale!(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true
 end
 
 """
-    locs_normalize(locs; polar, cart, spherical)
+    locs_normalize(locs; <keyword arguments>)
 
 Normalize channel locations to fit the unit sphere.
 
@@ -117,7 +117,7 @@ function locs_normalize(locs::DataFrame; polar::Bool=true, cart::Bool=true, sphe
 end
 
 """
-    locs_normalize!(locs; polar, cart, spherical)
+    locs_normalize!(locs; <keyword arguments>)
 
 Normalize channel locations to fit the unit sphere.
 

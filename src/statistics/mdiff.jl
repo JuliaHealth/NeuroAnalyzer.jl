@@ -1,7 +1,7 @@
 export mdiff
 
 """
-    mdiff(s1, s2; n, method)
+    mdiff(s1, s2; <keyword arguments>)
 
 Calculate mean difference and 95% confidence interval for 2 signals.
 
@@ -75,7 +75,7 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
 end
 
 """
-    mdiff(s1, s2; n, method)
+    mdiff(s1, s2; <keyword arguments>)
 
 Calculate mean difference and its 95% CI between channels.
 
@@ -114,7 +114,7 @@ function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=
 end
 
 """
-    mdiff(obj1, obj2; ch1, ch2, ep1, ep2, n, method)
+    mdiff(obj1, obj2; <keyword arguments>)
 
 Calculate mean difference and 95% confidence interval for two channels.
 

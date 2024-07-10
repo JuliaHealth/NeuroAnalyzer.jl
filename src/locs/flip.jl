@@ -6,7 +6,7 @@ export locs_flipz
 export locs_flipz!
 
 """
-    locs_flipy(locs; polar, cart, spherical)
+    locs_flipy(locs; <keyword arguments>)
 
 Flip channel locations along y axis.
 
@@ -60,7 +60,7 @@ function locs_flipy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
 end
 
 """
-    locs_flipy!(locs; polar, cart, spherical)
+    locs_flipy!(locs; <keyword arguments>)
 
 Flip channel locations along y axis.
 
@@ -80,7 +80,7 @@ function locs_flipy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
 end
 
 """
-    locs_flipx(locs; polar, cart, spherical)
+    locs_flipx(locs; <keyword arguments>)
 
 Flip channel locations along x axis.
 
@@ -131,7 +131,7 @@ function locs_flipx(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
 end
 
 """
-    locs_flipx!(locs; polar, cart, spherical)
+    locs_flipx!(locs; <keyword arguments>)
 
 Flip channel locations along x axis.
 
@@ -151,7 +151,7 @@ function locs_flipx!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
 end
 
 """
-    locs_flipz(locs; polar, cart, spherical)
+    locs_flipz(locs; <keyword arguments>)
 
 Flip channel locations along z axis.
 
@@ -194,7 +194,7 @@ function locs_flipz(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
 end
 
 """
-    locs_flipz!(locs; polar, cart, spherical)
+    locs_flipz!(locs; <keyword arguments>)
 
 Flip channel locations along z axis.
 

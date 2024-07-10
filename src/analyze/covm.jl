@@ -1,7 +1,7 @@
 export covm
 
 """
-   covm(s; norm=true)
+    covm(s; <keyword arguments>)
 
 Calculate covariance matrix of `s * s'`.
 
@@ -31,7 +31,7 @@ function covm(s::AbstractVector; norm::Bool=false)
 end
 
 """
-   covm(s1, s2; norm=true)
+    covm(s1, s2; <keyword arguments>)
 
 Calculate covariance matrix of `s1 * s2'`.
 
@@ -64,7 +64,7 @@ function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)
 end
 
 """
-   covm(s; norm=true)
+    covm(s; <keyword arguments>)
 
 Calculate covariance matrix.
 
@@ -112,7 +112,7 @@ function covm(s::AbstractArray; norm::Bool=false)
 end
 
 """
-    covm(obj; ch, norm)
+    covm(obj; <keyword arguments>)
 
 Calculate covariance matrix of `signal * signal'`.
 

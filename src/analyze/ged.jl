@@ -38,7 +38,7 @@ function ged(s1::AbstractArray, s2::AbstractArray)
 end
 
 """
-    ged(obj1, obj2; ch1, ch2, ep1, ep2)
+    ged(obj1, obj2; <keyword arguments>)
 
 Perform generalized eigendecomposition.
 

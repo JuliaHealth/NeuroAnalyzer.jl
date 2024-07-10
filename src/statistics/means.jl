@@ -64,7 +64,7 @@ function meanw(x::AbstractVector, w::AbstractVector)
 end
 
 """
-    meanc(x; rad)
+    meanc(x; <keyword arguments>)
 
 Calculate circular mean.
 

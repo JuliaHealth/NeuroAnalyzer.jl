@@ -1,7 +1,7 @@
 export axc2frq
 
 """
-   axc2frq(c, l)
+    axc2frq(c, l)
 
 Detect peaks in auto-/cross- correlation/covariance and transform them into frequencies.
 

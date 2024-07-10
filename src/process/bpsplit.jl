@@ -1,7 +1,7 @@
 export bpsplit
 
 """
-    bpsplit(obj; ch, order, window)
+    bpsplit(obj; <keyword arguments>)
 
 Split signal into frequency bands using a FIR band-pass filter.
 

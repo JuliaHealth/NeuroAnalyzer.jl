@@ -51,7 +51,7 @@ function l2(a1::AbstractArray, a2::AbstractArray)
 end
 
 """
-    perm_cmp(a1, a2; p, perm_n)
+    perm_cmp(a1, a2; <keyword arguments>)
 
 Compare two 3-dimensional arrays (e.g. two spectrograms), using permutation based statistic.
 
@@ -152,7 +152,7 @@ function delmean(s::AbstractArray; dims::Union{Int64, Nothing}=nothing)
 end
 
 """
-    areduce(a, f; n)
+    areduce(a, f; <keyword arguments>)
 
 Reduce an array at indices of a vector being multiplications of a constant. Useful e.g. for simplifying values across frequencies, when the number of frequencies (and thus values) is high.
 

@@ -54,7 +54,7 @@ function symmetry(s::AbstractArray)
 end
 
 """
-    symmetry(obj; ch)
+    symmetry(obj; <keyword arguments>)
 
 Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly symmetrical signal has symmetry of 1.0. Symmetry above 1.0 indicates there are more positive amplitudes.
 

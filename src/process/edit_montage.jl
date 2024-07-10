@@ -1,7 +1,7 @@
 export edit_montage
 
 """
-    edit_montage(file_name; data_format, detect_type)
+    edit_montage(file_name; <keyword arguments>)
 
 Edit montage file in the OS editor.
 

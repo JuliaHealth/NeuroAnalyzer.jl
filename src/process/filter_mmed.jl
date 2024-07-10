@@ -42,7 +42,7 @@ function filter_mmed(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractV
 end
 
 """
-    filter_mmed(s; k, t, window)
+    filter_mmed(s; <keyword arguments>)
 
 Filter using moving median filter (with threshold).
 
@@ -75,7 +75,7 @@ function filter_mmed(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVe
 end
 
 """
-    filter_mmed(obj; ch, k, t, window)
+    filter_mmed(obj; <keyword arguments>)
 
 Filter using moving median filter (with threshold).
 
@@ -108,7 +108,7 @@ function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
 end
 
 """
-    filter_mmed!(obj; ch, k, t, window)
+    filter_mmed!(obj; <keyword arguments>)
 
 Filter using moving median filter (with threshold).
 

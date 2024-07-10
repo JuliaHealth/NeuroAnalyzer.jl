@@ -1,7 +1,7 @@
 export paired_labels
 
 """
-    paired_labels(l; unq)
+    paired_labels(l; <keyword arguments>)
 
 Return paired labels.
 

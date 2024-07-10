@@ -6,7 +6,7 @@ export keep_channel_type
 export keep_channel_type!
 
 """
-    delete_channel(obj; ch)
+    delete_channel(obj; <keyword arguments>)
 
 Delete channel(s).
 
@@ -87,7 +87,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
 end
 
 """
-    delete_channel!(obj; ch)
+    delete_channel!(obj; <keyword arguments>)
 
 Delete channel(s).
 
@@ -111,7 +111,7 @@ function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 end
 
 """
-    keep_channel(obj; ch)
+    keep_channel(obj; <keyword arguments>)
 
 Keep channel(s).
 
@@ -141,7 +141,7 @@ function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    keep_channel!(obj; ch)
+    keep_channel!(obj; <keyword arguments>)
 
 Keep channel(s).
 
@@ -164,7 +164,7 @@ function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64},
 end
 
 """
-    keep_channel_type(obj; type)
+    keep_channel_type(obj; <keyword arguments>)
 
 Keep channel(s) of `type` type.
 
@@ -193,7 +193,7 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::String="eeg")
 end
 
 """
-    keep_channel_type!(obj; type)
+    keep_channel_type!(obj; <keyword arguments>)
 
 Keep OBJ channels of `type` type.
 
