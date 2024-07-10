@@ -3,7 +3,7 @@ export iedit_ep
 export iedit_cont
 
 """
-    iedit(obj, ch, mono, zoom, snap)
+    iedit(obj; <keyword arguments>)
 
 Interactive edit of continuous or epoched signal.
 
@@ -28,7 +28,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    iedit_cont(obj, ch, mono, zoom)
+    iedit_cont(obj; <keyword arguments>)
 
 Interactive edit of continuous signal.
 
@@ -414,7 +414,7 @@ function iedit_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    iedit_ep(obj, ch, mono)
+    iedit_ep(obj; <keyword arguments>)
 
 Interactive edit of epoched signal.
 

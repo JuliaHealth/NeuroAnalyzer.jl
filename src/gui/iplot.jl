@@ -3,7 +3,7 @@ export iplot_cont
 export iplot_ep
 
 """
-    iplot(obj, ch, zoom)
+    iplot(obj; <keyword arguments>)
 
 Interactive plot of continuous or epoched signal.
 
@@ -26,7 +26,7 @@ function iplot(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
 end
 
 """
-    iplot_cont(obj, ch, zoom)
+    iplot_cont(obj; <keyword arguments>)
 
 Interactive plot of continuous signal.
 
@@ -834,7 +834,7 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 end
 
 """
-    iplot(obj1, obj2, ch, zoom)
+    iplot(obj1, obj2; <keyword arguments>)
 
 Interactive plot of two continuous or epoched signals.
 
@@ -856,7 +856,7 @@ function iplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{I
 end
 
 """
-    iplot_cont(obj1, obj2, ch, zoom)
+    iplot_cont(obj1, obj2; <keyword arguments>)
 
 Interactive plot of two continuous signals.
 

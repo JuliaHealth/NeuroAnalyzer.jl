@@ -1,7 +1,7 @@
 export iselect_ts
 
 """
-    iselect_ts(obj, ch, mono, zoom, snap)
+    iselect_ts(obj; <keyword arguments>)
 
 Select time segment.
 

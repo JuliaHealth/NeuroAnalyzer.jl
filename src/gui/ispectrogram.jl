@@ -3,7 +3,7 @@ export ispectrogram_cont
 export ispectrogram_ep
 
 """
-    ispectrogram(obj, ch, zoom)
+    ispectrogram(obj; <keyword arguments>)
 
 Interactive spectrogram of continuous or epoched signal.
 
@@ -26,7 +26,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    ispectrogram_cont(obj, ch, zoom)
+    ispectrogram_cont(obj; <keyword arguments>)
 
 Interactive spectrogram of continuous signal.
 
@@ -584,7 +584,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
 end
 
 """
-    ispectrogram_ep(obj, ch)
+    ispectrogram_ep(obj; <keyword arguments>)
 
 Interactive spectrogram of epoched signal.
 

@@ -26,7 +26,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
 end
 
 """
-    ipsd_cont(obj, ch, zoom)
+    ipsd_cont(obj; <keyword arguments>)
 
 Interactive PSD of continuous signal.
 

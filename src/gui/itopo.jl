@@ -1,7 +1,7 @@
 export itopo
 
 """
-    itopo(obj, ch, seg)
+    itopo(obj; <keyword arguments>)
 
 Interactive topographical map.
 

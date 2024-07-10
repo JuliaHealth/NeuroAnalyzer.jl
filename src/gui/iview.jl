@@ -370,7 +370,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 end
 
 """
-    iview_ep(obj, ch, ep)
+    iview_ep(obj; <keyword arguments>)
 
 Interactive view of epoched signal.
 
@@ -1011,7 +1011,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
 end
 
 """
-    iview_ep(obj1, obj2, ch)
+    iview_ep(obj1, obj2; <keyword arguments>)
 
 Interactive view of epoched signal.
 
