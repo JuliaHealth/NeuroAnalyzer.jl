@@ -30,23 +30,25 @@ Return sampling rate.
 
 # Returns
 
-- `sr::Int64`
+- `fs::Int64`
 """
 function sr(obj::NeuroAnalyzer.NEURO)
 
-    return obj.header.recording[:sampling_rate]
+    fs = obj.header.recording[:sampling_rate]
+
+    return fs
 
 end
 
 """
     nchannels(obj; <keyword arguments>)
 
-Return number of channels of `type`.
+Return number `type` channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::String="all"`: channel type (stored in the global channel_types constant variable)
+- `type::String="all"`: channel type (stored in the global `channel_types` constant variable)
 
 # Returns
 
@@ -55,6 +57,7 @@ Return number of channels of `type`.
 function nchannels(obj::NeuroAnalyzer.NEURO; type::String="all")
 
     _check_var(type, channel_types, "type")
+    @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel types."
 
     if type == "all"
         if ndims(obj.data) == 1
@@ -63,7 +66,6 @@ function nchannels(obj::NeuroAnalyzer.NEURO; type::String="all")
             ch_n = size(obj.data, 1)
         end
     else
-        @assert length(obj.header.recording[:channel_type]) != 0 "OBJ has no defined channel chtypes."
         ch_n = 0
         for idx in 1:nchannels(obj)
             obj.header.recording[:channel_type][idx] == type && (ch_n += 1)
@@ -90,6 +92,7 @@ Return number of epochs.
 function nepochs(obj::NeuroAnalyzer.NEURO)
 
     @assert ndims(obj.data) == 3 "Record data is either a vector or a matrix."
+
     ep_n = size(obj.data, 3)
 
     return ep_n
@@ -107,19 +110,19 @@ Return signal length.
 
 # Returns
 
-- `s_len::Int64`
+- `sl::Int64`
 """
 function signal_len(obj::NeuroAnalyzer.NEURO)
 
     if ndims(obj.data) == 1
-        s_len = length(obj.data)
+        sl = length(obj.data)
     elseif ndims(obj.data) == 2
-        s_len = size(obj.data, 2)
+        sl = size(obj.data, 2)
     else
-        s_len = size(obj.data, 2) * size(obj.data, 3)
+        sl = size(obj.data, 2) * size(obj.data, 3)
     end
 
-    return s_len
+    return sl
 
 end
 
@@ -134,14 +137,15 @@ Return epoch length.
 
 # Returns
 
-- `ep_len::Int64`
+- `el::Int64`
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)
 
     @assert ndims(obj.data) == 3 "Record data is either a vector or a matrix."
-    ep_len = size(obj.data, 2)
 
-    return ep_len
+    el = size(obj.data, 2)
+
+    return el
 
 end
 
@@ -156,11 +160,13 @@ Return signal duration.
 
 # Returns
 
-- `s_dur::Float64`
+- `sd::Float64`
 """
 function signal_duration(obj::NeuroAnalyzer.NEURO)
 
-    return obj.time_pts[end]
+    sd = obj.time_pts[end]
+
+    return sd
 
 end
 
@@ -175,11 +181,13 @@ Return epoch length.
 
 # Returns
 
-- `e_dur::Float64`
+- `ed::Float64`
 """
 function epoch_duration(obj::NeuroAnalyzer.NEURO)
 
-    return obj.epoch_time[end]
+    ed = obj.epoch_time[end]
+
+    return ed
 
 end
 
@@ -194,11 +202,13 @@ Show processing history.
 
 # Returns
 
-- `history::Vector{String}`
+- `h::Vector{String}`
 """
 function history(obj::NeuroAnalyzer.NEURO)
 
-    return obj.history
+    h = obj.history
+
+    return h
 
 end
 
@@ -213,12 +223,15 @@ Return channel labels.
 
 # Returns
 
-- `labels::Vector{String}`
+- `l::Vector{String}`
 """
 function labels(obj::NeuroAnalyzer.NEURO)
 
     @assert length(obj.header.recording[:labels]) > 0 "OBJ has no channel labels."
-    return obj.header.recording[:labels]
+
+    l = obj.header.recording[:labels]
+
+    return l
 
 end
 
@@ -233,13 +246,16 @@ Return optode labels.
 
 # Returns
 
-- `labels::Vector{String}`
+- `l::Vector{String}`
 """
 function optode_labels(obj::NeuroAnalyzer.NEURO)
 
     _check_datatype(obj, "nirs")
     @assert length(obj.header.recording[:optode_labels]) > 0 "OBJ has no optode labels."
-    return obj.header.recording[:optode_labels]
+
+    l = obj.header.recording[:optode_labels]
+
+    return l
 
 end
 
@@ -254,13 +270,16 @@ Return NIRS source labels.
 
 # Returns
 
-- `labels::Vector{String}`
+- `l::Vector{String}`
 """
 function source_labels(obj::NeuroAnalyzer.NEURO)
 
     _check_datatype(obj, "nirs")
     @assert length(obj.header.recording[:src_labels]) > 0 "OBJ has no source labels."
-    return obj.header.recording[:src_labels]
+
+    l = obj.header.recording[:src_labels]
+
+    return l
 
 end
 
@@ -275,20 +294,23 @@ Return NIRS detector labels.
 
 # Returns
 
-- `labels::Vector{String}`
+- `l::Vector{String}`
 """
 function detector_labels(obj::NeuroAnalyzer.NEURO)
 
     _check_datatype(obj, "nirs")
     @assert length(obj.header.recording[:det_labels]) > 0 "OBJ has no detector labels."
-    return obj.header.recording[:det_labels]
+
+    l = obj.header.recording[:det_labels]
+
+    return l
 
 end
 
 """
     chtypes(obj)
 
-Return channel chtypes.
+Return channel types.
 
 # Arguments
 
@@ -296,12 +318,15 @@ Return channel chtypes.
 
 # Returns
 
-- `chtypes::Vector{String}`
+- `cht::Vector{String}`
 """
 function chtypes(obj::NeuroAnalyzer.NEURO)
 
     @assert length(obj.header.recording[:channel_type]) > 0 "OBJ has no channel chtypes."
-    return obj.header.recording[:channel_type]
+
+    cht = obj.header.recording[:channel_type]
+
+    return cht
 
 end
 
@@ -431,6 +456,7 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 # Arguments
 
+- `obj::NeuroAnalyzer.NEURO`
 - `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
     - `:list`
     - `:central` (or `:c`)
@@ -443,7 +469,7 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 # Returns
 
-- `channels::Vector{Int64}`: channel numbers
+- `chs::Vector{Int64}`: channel numbers
 """
 function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})
 
@@ -534,7 +560,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
 end
 
 """
-    channels_cluster(obj, cluster)
+    channels_cluster(obj; <keyword arguments>)
 
 Return channels belonging to a cluster of channels.
 
@@ -579,6 +605,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
     end
 
     return ch
+
 end
 
 """
@@ -607,7 +634,7 @@ Return band frequency limits.
     - `:gamma_higher`: 80.0 - 150.0 Hz
 # Returns
 
-- `band_frequency::Tuple{Real, Real}`
+- `bf::Tuple{Real, Real}`
 """
 function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
 
@@ -645,6 +672,7 @@ function band_frq(obj::NeuroAnalyzer.NEURO; band::Symbol)
     end
 
     return bf
+
 end
 
 """
@@ -674,7 +702,7 @@ Return band frequency limits.
 
 # Returns
 
-- `band_frq::Tuple{Real, Real}`
+- `bf::Tuple{Real, Real}`
 """
 function band_frq(fs::Int64; band::Symbol)
 
@@ -712,6 +740,7 @@ function band_frq(fs::Int64; band::Symbol)
     end
 
     return bf
+
 end
 
 """
@@ -764,11 +793,13 @@ Return size of the object data.
 
 # Returns
 
-- `size::Tuple{Int64, Int64, Int64}`
+- `s::Tuple{Int64, Int64, Int64}`
 """
 function Base.size(obj::NeuroAnalyzer.NEURO)
 
-    return size(obj.data)
+    s = size(obj.data)
+
+    return s
 
 end
 
@@ -780,16 +811,18 @@ Return size of the object data.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `n::Int64`: dimension to return the size of
+- `d::Int64`: compute size along dimension `d`
 
 # Returns
 
-- `size::Int64`
+- `s::Int64`
 """
-function Base.size(obj::NeuroAnalyzer.NEURO, n::Int64)
+function Base.size(obj::NeuroAnalyzer.NEURO, d::Int64)
 
-    @assert n <= ndims(obj.data) "n must be ≤ $(ndims(obj.data))."
-    return size(obj.data, n)
+    @assert d in 1:ndims(obj.data) "d must be in [1, $(ndims(obj.data))]."
+    s = size(obj.data, d)
+
+    return s
 
 end
 
@@ -804,10 +837,12 @@ Return data type of the object.
 
 # Returns
 
-- `data_type::String`
+- `dt::String`
 """
 function datatype(obj::NeuroAnalyzer.NEURO)
 
-    return obj.header.recording[:data_type]
+    dt = obj.header.recording[:data_type]
+
+    return dt
 
 end

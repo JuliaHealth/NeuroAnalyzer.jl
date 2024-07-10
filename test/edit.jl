@@ -89,8 +89,8 @@ keep_epoch!(e10_tmp, ep=1:2)
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
 @info "Test 11/30: detect_bad()"
-bm, be = detect_bad(e10)
-@test sum(bm) == 240
+bm, be = detect_bad(e10, ch=1:19)
+@test sum(bm) == 189
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "Test 12/30: epoch(), subepoch()"

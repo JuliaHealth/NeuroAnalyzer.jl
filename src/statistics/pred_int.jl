@@ -11,7 +11,7 @@ Calculate the prediction interval (95% CI adjusted for sample size)
 
 # Returns
 
-- `pred_int::Float64`
+- `pi::Float64`
 """
 function pred_int(n::Int64)
 

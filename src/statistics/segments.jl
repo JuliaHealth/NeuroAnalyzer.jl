@@ -12,11 +12,15 @@ Calculate mean of a segment (e.g. spectrogram).
 
 # Returns
 
-- `seg_mean::Vector{Float64}`: averaged segment
+- `sm::Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)
 
-    return reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
+    @assert ndims(seg) == 3 "seg must have 3 dimensions."
+
+    sm = reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
+
+    return sm
 
 end
 
@@ -38,12 +42,15 @@ Named tuple containing:
 """
 function seg_mean(seg1::AbstractArray, seg2::AbstractArray)
 
-    return (seg1=seg_mean(seg1), seg2=seg_mean(seg2))
+    seg1 = seg_mean(seg1)
+    seg2 = seg_mean(seg2)
+
+    return (seg1=seg1, seg2=seg2)
 
 end
 
 """
-    seg_extract(m, r1, c1, r2, c2; <keyword arguments>)
+    seg_extract(m, rc; <keyword arguments>)
 
 Extract segment from a matrix.
 
@@ -75,7 +82,7 @@ function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::
     @assert c2 <= size(m, 2) "c2 must be ≤ $(size(m, 2))."
 
     if !c
-        return !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
+        seg = !v ? m[r1:r2, c1:c2] : vec(m[r1:r2, c1:c2])
     else
         seg = zeros(Bool, size(m))
         seg_radius = distance((r1, c1), (r2, c2))
@@ -85,7 +92,9 @@ function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::
             end
         end
 
-        return m[seg .== true]
-
+        seg = m[seg .== true]
     end
+
+    return seg
+
 end

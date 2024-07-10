@@ -103,6 +103,7 @@ using JLD2
 using JSON
 using LibSerialPort
 using LinearAlgebra
+using LinRegOutliers
 using Loess
 using MAT
 using MLJ

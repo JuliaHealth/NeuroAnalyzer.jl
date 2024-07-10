@@ -71,6 +71,7 @@ function na_info()
             "JLD2",
             "JSON",
             "LibSerialPort",
+            "LinRegOutliers",
             "Loess",
             "MAT",
             "MLJ",
