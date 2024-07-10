@@ -13,7 +13,7 @@ Interactive selection of matrix area.
     - `:c`: circular
     - `:p`: point
 - `extract::Bool=false`: if true, return values of the matrix
-- `v::Bool=false`
+- `v::Bool=false`: if true, return as vector (matrix m by rows over columns)
 
 # Returns
 

@@ -213,7 +213,7 @@ s = bootstrap_stat(x, f="abs(maximum(OBJ))")
 x = ones(100, 100)
 @test seg_extract(x, (10, 10, 20, 20)) == ones(11, 11)
 @test seg_extract(x, (10, 10, 20, 20), v=true) == ones(11 * 11)
-@test seg_extract(x, (10, 10, 20, 20), c=true) == ones(496)
+@test seg_extract(x, (10, 10, 20, 20), shape=:c) == ones(496)
 
 @info "Test 58/68: f1()"
 @test NeuroAnalyzer.f1(tp=90, tn=90, fp=10, fn=10) == (f1 = 0.9, p = 0.9, r = 0.9)
