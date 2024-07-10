@@ -8,8 +8,11 @@ Interactive selection of matrix area.
 # Arguments
 
 - `m::AbstractMatrix`
-- `c::Bool=false`: if true, select circular segment
-- `extract::Bool=false`
+- `shape::Symbol=:r`: selection shape:
+    - `:r`: rectangular
+    - `:c`: circular
+    - `:p`: point
+- `extract::Bool=false`: if true, return values of the matrix
 - `v::Bool=false`
 
 # Returns
@@ -21,9 +24,11 @@ Interactive selection of matrix area.
 
 or
 
-- `seg::Union{AbstractMatrix, AbstractVector}`: extracted segment
+- `seg::Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}`: extracted segment
 """
-function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::Bool=false)
+function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)
+
+    _check_var(shape, [:r, :c, :p], "shape")
 
     p = heatmap(m,
                 framestyle=:none,
@@ -62,23 +67,26 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
         x_pos = round(event.x)
         y_pos = round(event.y)
         ctx = getgc(widget)
-        if length(x) >= 0 && length(x) < 2
+        if length(x) >= 0 && length(x) < 2 && shape in [:r, :c]
+            push!(x, x_pos)
+            push!(y, y_pos)
+        elseif shape === :p && length(x) == 0
             push!(x, x_pos)
             push!(y, y_pos)
         end
         if length(x) == 1
             Gtk.arc(ctx, x[1], y[1], 2, 0, 2*pi)
-            Gtk.set_source_rgb(ctx, 1, 0, 0)
+            Gtk.set_source_rgb(ctx, 0, 0, 0)
             Gtk.fill(ctx)
             Gtk.stroke(ctx)
             Gtk.reveal(widget)
         else length(x) == 2
-            if c
+            if shape === :c
                 Gtk.arc(ctx, x[1], y[1], distance((x[1], y[1]), (x[2], y[2])), 0, 2*pi)
-            else
+            elseif shape === :r
                 Gtk.rectangle(ctx, x[1], y[1], x[2] - x[1], y[2] - y[1])
             end
-            Gtk.set_source_rgb(ctx, 1, 0, 0)
+            Gtk.set_source_rgb(ctx, 0, 0, 0)
             Gtk.set_line_width(ctx, 4.0);
             Gtk.stroke(ctx)
             Gtk.reveal(widget)
@@ -97,7 +105,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
         end
         if length(x) == 1
             Gtk.arc(ctx, x[1], y[1], 2, 0, 2*pi)
-            Gtk.set_source_rgb(ctx, 1, 0, 0)
+            Gtk.set_source_rgb(ctx, 0, 0, 0)
             Gtk.fill(ctx)
             Gtk.stroke(ctx)
         end
@@ -107,8 +115,8 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
-            if k == 115 # s
+        if s == 0x00000014
+            if k == 0x00000073 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
                         if splitext(file_name)[2] in [".png"]
@@ -118,7 +126,7 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
                             warn_dialog("Incorrect filename!")
                         end
                     end
-            elseif k == 113 # q
+            elseif k == 0x00000071 # q
                 Gtk.destroy(win)
                 x = nothing
                 y = nothing
@@ -136,22 +144,31 @@ function iselect_seg(m::AbstractMatrix; c::Bool=false, extract::Bool=false, v::B
     @async Gtk.gtk_main()
     wait(cnd)
 
-    if x !== nothing && y !== nothing && length(x) > 0 && length(y) > 0
-        if length(x) > 1 && length(y) > 1 && x[end] == x[1] && y[end] == y[1]
-            pop!(x)
-            pop!(y)
-        end
-        c1 = div(x[1], size_x) .+ 1
-        c2 = div(x[2], size_x) .+ 1
-        r1 = div(y[1], size_y) .+ 1
-        r2 = div(y[2], size_y) .+ 1
-        if !c
-            r1 > r2 && ((r1, r2) = _swap(r1, r2))
-            c1 > c2 && ((c1, c2) = _swap(c1, c2))
-        end
-        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
-    else
+    if x == nothing && y == nothing
         return nothing
+    end
+
+    if shape in [:r, :c]
+        if x !== nothing && y !== nothing && length(x) > 0 && length(y) > 0
+            if length(x) > 1 && length(y) > 1 && x[end] == x[1] && y[end] == y[1]
+                pop!(x)
+                pop!(y)
+            end
+            c1 = div(x[1], size_x) .+ 1
+            c2 = div(x[2], size_x) .+ 1
+            r1 = div(y[1], size_y) .+ 1
+            r2 = div(y[2], size_y) .+ 1
+            if shape === :r
+                r1 > r2 && ((r1, r2) = _swap(r1, r2))
+                c1 > c2 && ((c1, c2) = _swap(c1, c2))
+            end
+            c = shape == :c
+            return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
+        end
+    else
+        c = div(x[1], size_x) .+ 1
+        r = div(y[1], size_y) .+ 1
+        return (m[r, :], m[:, c])
     end
 
 end
