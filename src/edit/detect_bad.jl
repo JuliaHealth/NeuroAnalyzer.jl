@@ -20,6 +20,7 @@ Detect bad channels and epochs.
     - `:kurt`: mark bad channels based on z-scores of kurtosis values
     - `:z`: mark bad channels based on their z-score of amplitude
     - `:ransac`: calculate each channel correlation to its nearest neighbor with outliers removed using random sample consensus (RANSAC) in successive 1-s segments; channel signals exhibiting low correlation to signals in neighboring scalp channels in individual windows (here, r < `ransac_r` at more than `ransac_tr` of the data points) are marked as bad
+    - `:amp`: mark bad channels based on their amplitude
 - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
 - `flat_tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `flat_fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
@@ -29,7 +30,8 @@ Detect bad channels and epochs.
 - `z::Real=3`: threshold number of z-scores 
 - `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
 - `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
-- `ransac_t::Float64=20.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
+- `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
+- `amp_t::Float64=400.0`: two-sided rejection amplitude threshold (± 400 μV)
 
 # Returns
 
@@ -37,11 +39,11 @@ Named tuple containing:
 - `bm::Matrix{Bool}`: matrix of bad channels × epochs
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=20.0)
+function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
 
     typeof(method) != Vector{Symbol} && (method = [method])
     for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac], "method")
+        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
     end
 
     @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
@@ -255,6 +257,8 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     if :z in method
         _info("Using :z method")
         @assert z > 0 "z must be > 0."
+
+        # by global-channel threshold
         k = zeros(ch_n, ep_n)
         s = @views normalize_zscore(obj.data[ch, :, :], bych=false)
         s = abs.(s) .> z
@@ -276,6 +280,30 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
+
+        # by individual-channel threshold
+        k = zeros(ch_n, ep_n)
+        s = @views normalize_zscore(obj.data[ch, :, :], bych=false)
+        s = abs.(s) .> (z + 1)
+        @inbounds for ep_idx in 1:ep_n
+            for ch_idx in 1:ch_n
+                k[ch_idx, ep_idx] = @views count(s[ch_idx, :, ep_idx]) / length(s[ch_idx, :, ep_idx])
+            end
+        end
+        bad_idx = k .> p
+        @inbounds for ep_idx in 1:ep_n
+            bad_chs_score = 0
+            bad_chs = zeros(Bool, ch_n)
+            Threads.@threads for ch_idx in 1:ch_n
+                if bad_idx[ch_idx, ep_idx]
+                    bad_chs_score += 1
+                    bad_chs[ch_idx] = true
+                end
+            end
+            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
+        end
+
     end
 
     if :ransac in method
@@ -292,8 +320,8 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         # scan in 1-second windows
         w = sr(obj)
 
-        loc_x = obj.locs[1:ch_n, :loc_x]
-        loc_y = obj.locs[1:ch_n, :loc_y]
+        loc_x = obj.locs[ch, :loc_x]
+        loc_y = obj.locs[ch, :loc_y]
 
         # Euclidean distance matrix
         d = zeros(ch_n, ch_n)
@@ -305,13 +333,15 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         # set weights not to reference to itself
         d[d .== 0] .= Inf
 
+        s = @views obj.data[ch, :, :]
+
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
             Threads.@threads for ch_idx in 1:ch_n
                 _, nearest_idx = findmin(d[ch_idx, :])
-                y = @views obj.data[ch[ch_idx], :, ep_idx]
-                x = @views obj.data[ch[nearest_idx], :, ep_idx]
+                y = @views s[ch_idx, :, ep_idx]
+                x = @views s[nearest_idx, :, ep_idx]
                 df = DataFrame(:y=>remove_dc(y), :x=>remove_dc(x))
                 reg = createRegressionSetting(@formula(y ~ x), df)
                 o = ransac(reg, t=ransac_t, k=128)["outliers"]
@@ -332,7 +362,28 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
+    end
 
+    if :amp in method
+        _info("Using :amp method")
+
+        ch_n = length(ch)
+        ep_n = nepochs(obj)
+        s = @views obj.data[ch, :, :]
+
+        @inbounds for ep_idx in 1:ep_n
+            bad_chs_score = 0
+            bad_chs = zeros(Bool, ch_n)
+            Threads.@threads for ch_idx in 1:ch_n
+                a = (amp(s[ch_idx, :, ep_idx])).p
+                if a > amp_t
+                    bad_chs_score += 1
+                    bad_chs[ch_idx] = true
+                end
+            end
+            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
+        end
     end
 
     return (bm=bm, be=sort(unique(be)))
