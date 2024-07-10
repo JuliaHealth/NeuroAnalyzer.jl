@@ -776,10 +776,11 @@ end
     size(obj, n)
 
 Return size of the object data.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `n::Int64`
+- `n::Int64`: dimension to return the size of
 
 # Returns
 
