@@ -50,7 +50,6 @@ function import_csv(file_name::String; detect_type::Bool=true)
         ch_type = repeat(["eeg"], ch_n)
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
-    ch_order = _sort_channels(ch_type)
 
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
@@ -90,9 +89,9 @@ function import_csv(file_name::String; detect_type::Bool=true)
                               recording_date="",
                               recording_time="",
                               recording_notes="",
-                              channel_type=ch_type[ch_order],
+                              channel_type=ch_type,
                               reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels[ch_order],
+                              clabels=clabels,
                               transducers=repeat([""], ch_n),
                               units=units,
                               prefiltering=repeat([""], ch_n),
@@ -110,7 +109,7 @@ function import_csv(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[ch_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

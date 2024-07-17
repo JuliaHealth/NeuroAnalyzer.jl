@@ -787,8 +787,8 @@ Plot power spectrum density.
     - `:linlog`: linear-log10
     - `:loglog`: log10-log10
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
-- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
+- `ylabel::String="default"`: y-axis label, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
@@ -938,7 +938,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if method === :cwt
             ylabel == "default" && (ylabel = "Magnitude")
         else
-            ylabel == "default" && (ylabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+            ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
     end
 
@@ -1016,7 +1016,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
@@ -1042,7 +1042,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
@@ -1123,8 +1123,8 @@ Plot power spectrum density of embedded or external component.
     - `:linlog`: linear-log10
     - `:loglog`: log10-log10
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [units^2/Hz]
-- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [units^2/Hz]
+- `ylabel::String="default"`: y-axis label, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
@@ -1270,7 +1270,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             ylabel == "default" && (ylabel = "Magnitude")
         else
-            ylabel == "default" && (ylabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+            ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
     end
 
@@ -1321,7 +1321,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
@@ -1344,7 +1344,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB]" : "Power [$units^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,

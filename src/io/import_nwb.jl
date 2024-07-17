@@ -205,7 +205,6 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     # dataset["specifications/hdmf-experimental/0.2.0/namespace"]
     # dataset["specifications/hdmf-experimental/0.2.0/resources"]
 
-    ch_order = _sort_channels(ch_type)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
@@ -225,14 +224,14 @@ function import_nwb(file_name::String; detect_type::Bool=true)
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes=recording_notes,
-                              channel_type=ch_type[ch_order],
+                              channel_type=ch_type,
                               reference=recording_reference,
-                              clabels=clabels[ch_order],
-                              transducers=transducers[ch_order],
-                              units=units[ch_order],
-                              prefiltering=prefiltering[ch_order],
+                              clabels=clabels,
+                              transducers=transducers,
+                              units=units,
+                              prefiltering=prefiltering,
                               sampling_rate=sampling_rate,
-                              gain=gain[ch_order])
+                              gain=gain)
     e = _create_experiment(name=exp_name, notes=exp_notes, design=exp_design)
 
     hdr = _create_header(s,
@@ -244,7 +243,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

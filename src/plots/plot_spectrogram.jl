@@ -36,7 +36,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
+    cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
@@ -121,7 +121,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
+    cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))

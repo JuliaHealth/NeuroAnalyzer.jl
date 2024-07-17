@@ -224,7 +224,7 @@ function plot_eda_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
         end
         p = Plots.plot!(t,
                         s,
-                        linewidth=1,
+                        linewidth=2,
                         linecolor=:black,
                         label=false)
     end
@@ -267,7 +267,7 @@ function plot_eda_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     s_m, _, s_u, s_l = msci95(s)
 
     # get limits
-    ylim = (0, ceil(maximum(s) * 1.1, digits=0))
+    ylim = (0, round(minimum(s) * 1.5, digits=-2))
     yticks = [0, ylim[2]]
 
     # prepare plot

@@ -420,7 +420,6 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
         ch_type = repeat(["eeg"], ch_n)
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
-    ch_order = _sort_channels(ch_type)
 
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
@@ -451,11 +450,11 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_type=ch_type[ch_order],
+                              channel_type=ch_type,
                               reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels[ch_order],
+                              clabels=clabels,
                               transducers=repeat([""], ch_n),
-                              units=units[ch_order],
+                              units=units,
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
                               gain=ones(ch_n))
@@ -470,7 +469,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[ch_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

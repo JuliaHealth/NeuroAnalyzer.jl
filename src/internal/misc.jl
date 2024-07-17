@@ -20,6 +20,14 @@ _tuple_max(t::Tuple{Real, Real}) = abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1]
 
 _s2v(s::Union{<:Number, Vector{<:Number}}) = typeof(s) <: Number ? [s] : s
 
+function _v2s(v::Vector{String})
+    s = ""
+    for idx in eachindex(v)
+        s *= v[idx]
+    end
+    return s
+end
+
 function _v2s(x::Vector{<:Number})
     s_tmp = string.(x)
     s = ""

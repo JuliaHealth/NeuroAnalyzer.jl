@@ -13,20 +13,20 @@ function _ch_rename(ch_name::String)
     lowercase(ch_name) == "ieeg" && return "iEEG"
     lowercase(ch_name) == "ecog" && return "ECoG"
     lowercase(ch_name) == "seeg" && return "sEEG"
-    lowercase(ch_name) == "grad" && return "Gradiometer"
-    lowercase(ch_name) == "mag" && return "Magnetometer"
+    lowercase(ch_name) == "grad" && return "gradiometer"
+    lowercase(ch_name) == "mag" && return "magnetometer"
     lowercase(ch_name) == "nirs_int" && return "NIRS intensity"
     lowercase(ch_name) == "nirs_od" && return "NIRS optical density"
     lowercase(ch_name) == "nirs_hbo" && return "NIRS HbO concentration"
     lowercase(ch_name) == "nirs_hbr" && return "NIRS HbR concentration"
     lowercase(ch_name) == "nirs_hbt" && return "NIRS HbT concentration"
-    lowercase(ch_name) == "ref" && return "Reference"
-    lowercase(ch_name) == "other" && return "Other"
-    lowercase(ch_name) == "mrk" && return "Marker"
-    lowercase(ch_name) == "accel" && return "Acceleration"
-    lowercase(ch_name) == "magfld" && return "Magnetic field"
-    lowercase(ch_name) == "orient" && return "Orientation"
-    lowercase(ch_name) == "angvel" && return "Angular velocity"
+    lowercase(ch_name) == "ref" && return "reference"
+    lowercase(ch_name) == "other" && return "other"
+    lowercase(ch_name) == "mrk" && return "marker"
+    lowercase(ch_name) == "accel" && return "acceleration"
+    lowercase(ch_name) == "magfld" && return "magnetic field"
+    lowercase(ch_name) == "orient" && return "orientation"
+    lowercase(ch_name) == "angvel" && return "angular velocity"
     return n
 end
 
@@ -190,14 +190,14 @@ end
 
 function _sort_channels(ch_t::Vector{String})
     ch_order = deepcopy(ch_t)
-    replace!(ch_order, "eeg" => "1")
-    replace!(ch_order, "seeg" => "1")
-    replace!(ch_order, "ecog" => "1")
-    replace!(ch_order, "ieeg" => "1")
-    replace!(ch_order, "meg" => "2")
+    replace!(ch_order, "eeg" => "3")
+    replace!(ch_order, "seeg" => "3")
+    replace!(ch_order, "ecog" => "3")
+    replace!(ch_order, "ieeg" => "3")
+    replace!(ch_order, "meg" => "1")
+    replace!(ch_order, "grad" => "1")
     replace!(ch_order, "mag" => "2")
-    replace!(ch_order, "grad" => "3")
-    replace!(ch_order, "csd" => "1")
+    replace!(ch_order, "csd" => "4")
     replace!(ch_order, "ref" => "4")
     replace!(ch_order, "eog" => "5")
     replace!(ch_order, "ecg" => "6")
@@ -230,5 +230,6 @@ function _sort_channels(ch_t::Vector{String})
     replace!(ch_order, "orient" => "3")
     replace!(ch_order, "angvel" => "4")
     replace!(ch_order, "mrk" => "9")
+    replace!(ch_order, "stim" => "9")
     return sortperm(ch_order)
 end

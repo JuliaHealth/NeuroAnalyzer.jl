@@ -73,7 +73,7 @@ function _create_recording_ecog(;data_type::String, file_name::String, file_size
                 :epoch_id=>"")
 end
 
-function _create_recording_meg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, gradiometers_planar::Vector{Int64}, gradiometers_axial::Vector{Int64}, coils::Vector{Int64})
+function _create_recording_meg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -91,9 +91,7 @@ function _create_recording_meg(;data_type::String, file_name::String, file_size_
                 :sampling_rate=>sampling_rate,
                 :magnetometers=>magnetometers,
                 :gradiometers=>gradiometers,
-                :gradiometers_planar=>gradiometers_planar,
-                :gradiometers_axial=>gradiometers_axial,
-                :coils=>coils,
+                :coil_type=>coil_type,
                 :epoch_id=>"")
 end
 
