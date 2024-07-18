@@ -144,7 +144,8 @@ function _create_recording_sensors(; data_type::String, file_name::String, file_
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :bad_channels=>bad_channels,
-                :sampling_rate=>sampling_rate)
+                :sampling_rate=>sampling_rate,
+                :epoch_id=>"")
 end
 
 function _create_experiment(; name::String, notes::String, design::String)
@@ -181,7 +182,8 @@ function _create_recording_mep(; data_type::String, file_name::String, file_size
                 :stimulation_sample=>stimulation_sample,
                 :markers_pos=>markers_pos,
                 :markers_neg=>markers_neg,
-                :bad_channels=>bad_channels)
+                :bad_channels=>bad_channels
+                :epoch_id=>"")
 end
 
 function _create_recording_eda(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
