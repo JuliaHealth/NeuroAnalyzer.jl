@@ -136,6 +136,8 @@ function import_nirs(file_name::String)
         end
     end
 
+    data = reshape(data, size(data, 1), size(data, 2), 1)
+
     # locations
     src_pos3d = Matrix(probes["SrcPos"]')
     detector_pos3d = Matrix(probes["DetPos"]')

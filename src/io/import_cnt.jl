@@ -299,9 +299,9 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
         nums = floor(Int64, (enddata - begdata) / ch_n / 4)
     end
 
-    data = zeros(ch_n, nums, 1)
+    data = zeros(ch_n, nums)
     for idx1 in 1:nums, idx2 in 1:ch_n
-        data[idx2, idx1, 1] = _fread(fid, 1, data_format)
+        data[idx2, idx1] = _fread(fid, 1, data_format)
     end
 
     # scaling to μV
@@ -310,8 +310,9 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
         sen = csenstivity[idx]
         cal = ccalib[idx]
         mf = sen * (cal / 204.8)
-        data[idx, :, 1] = (data[idx, :, 1] .- bas) .* mf
+        data[idx, :] = @views (data[idx, :] .- bas) .* mf
     end
+    data = reshape(data, size(data, 1), size(data, 2), 1)
 
     # events table
 
@@ -321,7 +322,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     seek(fid, et_offset)
 
     teeg = _fread(fid, 1, :ui8)
-    size = _fread(fid, 1, :ui32)
+    fsize = _fread(fid, 1, :ui32)
     offset = _fread(fid, 1, :ui32)
 
     sizeEvent1 = 8  # 8  bytes for Event1
@@ -329,7 +330,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     sizeEvent3 = 19 # 19 bytes for Event3
 
     if teeg == 2
-        nevents = size ÷ sizeEvent2
+        nevents = fsize ÷ sizeEvent2
         stimtype = Int64[]
         offset = Int64[]
         type = Int64[]
@@ -349,7 +350,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
             end
         end
     elseif teeg == 3 # type 3 is similar to type 2 except the offset field encodes the global sample frame
-        nevents = size ÷ sizeEvent3
+        nevents = fsize ÷ sizeEvent3
         stimtype = Int64[]
         offset = Int64[]
         type = Int64[]
@@ -371,7 +372,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
             end
         end
     elseif teeg == 1
-        nevents = size ÷ sizeEvent1
+        nevents = fsize ÷ sizeEvent1
         stimtype = Int64[]
         offset = Int64[]
         type = Int64[]
@@ -442,6 +443,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
                         handedness="",
                         weight=-1,
                         height=-1)
+
     r = _create_recording_eeg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,

@@ -103,7 +103,7 @@ function _create_recording_meg(; data_type::String, file_name::String, file_size
                 :epoch_id=>"")
 end
 
-function _create_recording_nirs(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, optode_pairs::Matrix{Bool}, channel_type::Vector{String}, channel_order::Vector{Int64}, clabels::Vector{String}, units::Vector{String}, src_labels::Vector{String}, det_labels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
+function _create_recording_nirs(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, optode_pairs::Matrix{Int64}, channel_type::Vector{String}, channel_order::Vector{Int64}, clabels::Vector{String}, units::Vector{String}, src_labels::Vector{String}, det_labels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,

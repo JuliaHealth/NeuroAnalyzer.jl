@@ -464,6 +464,8 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
 
+    data = reshape(data, size(data, 1), size(data, 2), 1)
+
     # locations
     pos2d = hcat(src_pos2d, detector_pos2d)
     pos3d = hcat(src_pos3d, detector_pos3d)
@@ -527,6 +529,7 @@ function import_snirf(file_name::String; n::Int64=0)
                         handedness="",
                         weight=-1,
                         height=-1)
+    @show size(data)
     r = _create_recording_nirs(data_type="nirs",
                                file_name=file_name,
                                file_size_mb=file_size_mb,
@@ -539,7 +542,7 @@ function import_snirf(file_name::String; n::Int64=0)
                                wavelength_index=wavelength_index,
                                optode_pairs=opt_pairs,
                                channel_type=data_type_label,
-                               channel_order=_sort_channels(ch_type),
+                               channel_order=_sort_channels(data_type_label),
                                clabels=clabels,
                                units=data_unit,
                                src_labels=src_labels,

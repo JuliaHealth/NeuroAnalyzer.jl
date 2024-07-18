@@ -235,6 +235,8 @@ function import_nirx(file_name::String)
         data[:, idx] = parse.(Float64, split(buf[idx], ' '))
     end
 
+    data = reshape(data, size(data, 1), size(data, 2), 1)
+
     # read probes data
     probes = matread(splitext(file_name)[1] * "_probeInfo.mat")
     # head_model = probes["probeInfo"]["headmodel"]
@@ -336,7 +338,7 @@ function import_nirx(file_name::String)
                                wavelength_index=wavelength_index,
                                optode_pairs=opt_pairs,
                                channel_type=data_type_label,
-                               channel_order=_sort_channels(ch_type),
+                               channel_order=_sort_channels(data_type_label),
                                clabels=clabels,
                                units=data_unit,
                                src_labels=string.(src_labels),
