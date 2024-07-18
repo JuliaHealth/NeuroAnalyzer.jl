@@ -10,7 +10,7 @@ function _create_subject(;id::String, first_name::String, middle_name::String, l
                 :height=>height)
 end
 
-function _create_recording_eeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
+function _create_recording_eeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -28,10 +28,11 @@ function _create_recording_eeg(;data_type::String, file_name::String, file_size_
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain,
+                :bad_channels=>bad_channels,
                 :epoch_id=>"")
 end
 
-function _create_recording_seeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
+function _create_recording_seeg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -49,10 +50,11 @@ function _create_recording_seeg(;data_type::String, file_name::String, file_size
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain,
+                :bad_channels=>bad_channels,
                 :epoch_id=>"")
 end
 
-function _create_recording_ecog(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
+function _create_recording_ecog(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -70,10 +72,11 @@ function _create_recording_ecog(;data_type::String, file_name::String, file_size
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain,
+                :bad_channels=>bad_channels,
                 :epoch_id=>"")
 end
 
-function _create_recording_meg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String})
+function _create_recording_meg(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -92,10 +95,11 @@ function _create_recording_meg(;data_type::String, file_name::String, file_size_
                 :magnetometers=>magnetometers,
                 :gradiometers=>gradiometers,
                 :coil_type=>coil_type,
+                :bad_channels=>bad_channels,
                 :epoch_id=>"")
 end
 
-function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, optode_pairs::Matrix{Int64}, ch_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, src_labels::Vector{String}, det_labels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64)
+function _create_recording_nirs(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, wavelengths::Vector{Float64}, wavelength_index::Vector{Int64}, optode_pairs::Matrix{Bool}, ch_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, src_labels::Vector{String}, det_labels::Vector{String}, opt_labels::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -115,10 +119,11 @@ function _create_recording_nirs(;data_type::String, file_name::String, file_size
                 :det_labels=>det_labels,
                 :optode_labels=>opt_labels,
                 :sampling_rate=>sampling_rate,
+                :bad_channels=>bad_channels,
                 :epoch_id=>"")
 end
 
-function _create_recording_sensors(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64)
+function _create_recording_sensors(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -132,6 +137,7 @@ function _create_recording_sensors(;data_type::String, file_name::String, file_s
                 :labels=>clabels,
                 :units=>units,
                 :prefiltering=>prefiltering,
+                :bad_channels=>bad_channels,
                 :sampling_rate=>sampling_rate)
 end
 
@@ -149,7 +155,7 @@ function _create_header(subject::Dict, recording::Dict, experiment::Dict)
                                 experiment)
 end
 
-function _create_recording_mep(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, sampling_rate::Int64, stimulation_intensity::Vector{Int64}, coil_type::Vector{String}, stimulation_sample::Vector{Int64}, markers_pos::Vector{Int64}, markers_neg::Vector{Int64})
+function _create_recording_mep(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, sampling_rate::Int64, stimulation_intensity::Vector{Int64}, coil_type::Vector{String}, stimulation_sample::Vector{Int64}, markers_pos::Vector{Int64}, markers_neg::Vector{Int64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -167,10 +173,11 @@ function _create_recording_mep(;data_type::String, file_name::String, file_size_
                 :coil_type=>coil_type,
                 :stimulation_sample=>stimulation_sample,
                 :markers_pos=>markers_pos,
-                :markers_neg=>markers_neg)
+                :markers_neg=>markers_neg,
+                :bad_channels=>bad_channels)
 end
 
-function _create_recording_eda(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64)
+function _create_recording_eda(;data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -185,5 +192,6 @@ function _create_recording_eda(;data_type::String, file_name::String, file_size_
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
-                :epoch_id=>"")
+                :epoch_id=>"",
+                :bad_channels=>bad_channels)
 end

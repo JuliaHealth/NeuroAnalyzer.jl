@@ -12,6 +12,7 @@ export source_labels
 export detector_labels
 export chtypes
 export info
+export channel_info
 export channel_pick
 export channel_cluster
 export band_frq
@@ -411,16 +412,19 @@ function info(obj::NeuroAnalyzer.NEURO)
         println(rpad(" ch", 8) *
                 rpad("label", 16) *
                 rpad("type", 12) *
-                rpad("unit", 8))
+                rpad("unit", 8) * 
+                rpad("bad", 8)) 
         println(" " * repeat("-", 6) * " " *
                 repeat("-", 15) * " " *
                 repeat("-", 11) * " " *
+                repeat("-", 7) * " " *
                 repeat("-", 7))
         for idx in eachindex(obj.header.recording[:labels])
             println(rpad(" $idx", 8) *
                     rpad("$(obj.header.recording[:labels][idx])", 16) *
                     rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
-                    rpad("$(obj.header.recording[:units][idx])", 8))
+                    rpad("$(obj.header.recording[:units][idx])", 8) * 
+                    rpad("$(obj.header.recording[:bad_channels][idx])", 8))
         end
     else
         if obj.header.recording[:channel_type][idx] !== "nirs_aux"
@@ -447,6 +451,60 @@ function info(obj::NeuroAnalyzer.NEURO)
             end
         end
     end
+end
+
+"""
+    channel_info(obj; <keyword arguments>)
+
+Show channel info.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Int64`
+"""
+function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64)
+
+    _check_channels(obj, ch)
+
+    if obj.header.recording[:data_type] != "nirs"
+        println(rpad(" ch", 8) *
+                rpad("label", 16) *
+                rpad("type", 12) *
+                rpad("unit", 8) * 
+                rpad("bad", 8)) 
+        println(" " * repeat("-", 6) * " " *
+                repeat("-", 15) * " " *
+                repeat("-", 11) * " " *
+                repeat("-", 7) * " " *
+                repeat("-", 7))
+        println(rpad(" $ch", 8) *
+                rpad("$(obj.header.recording[:labels][ch])", 16) *
+                rpad("$(uppercase(obj.header.recording[:channel_type][ch]))", 12) *
+                rpad("$(obj.header.recording[:units][ch])", 8) * 
+                rpad("$(obj.header.recording[:bad_channels][ch])", 8))
+    else
+        if obj.header.recording[:channel_type][ch] !== "nirs_aux"
+            println(rpad(" ch", 8) *
+                    rpad("label", 16) *
+                    rpad("type", 12) *
+                    rpad("unit", 8) *
+                    rpad("wavelength", 8))
+            println(rpad(" $ch", 8) *
+                    rpad("$(obj.header.recording[:labels][ch])", 16) *
+                    rpad("$(uppercase(obj.header.recording[:channel_type][ch]))", 12) *
+                    rpad("$(obj.header.recording[:units][ch])", 8) *
+                    rpad("$(obj.header.recording[:wavelength_index][ch])", 8))
+        else
+            println(rpad(" ch", 8) *
+                    rpad("label", 16) *
+                    rpad("type", 12))
+                println(rpad(" $ch", 8) *
+                        rpad("$(obj.header.recording[:labels][ch])", 16) *
+                        rpad("$(uppercase(obj.header.recording[:channel_type][ch]))", 12))
+        end
+    end
+    println()
 end
 
 """

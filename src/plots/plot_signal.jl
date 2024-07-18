@@ -16,13 +16,14 @@ Plot amplitude of single-channel signal.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
+- `bad::Bool=false`: is this a bad channel
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, kwargs...)
 
     # prepare plot
     plot_size = (1200, 400)
@@ -44,11 +45,21 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector;
                    kwargs...)
 
     # plot signal
-    p = Plots.plot!(t,
-                    s,
-                    linewidth=1,
-                    label="",
-                    color=:black)
+    if bad
+        p = Plots.plot!(t,
+                        s,
+                        linewidth=1,
+                        label="",
+                        alpha=0.2,
+                        color=:black)
+    else
+        p = Plots.plot!(t,
+                        s,
+                        linewidth=1,
+                        label="",
+                        alpha=0.2,
+                        color=:black)
+    end
 
     return p
 
@@ -71,13 +82,14 @@ Plot amplitude of multi-channel signal.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `scale::Bool=true`: draw scale
+- `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), kwargs...)
 
     ch_n = size(s, 1)
 
@@ -111,6 +123,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
     # reverse so 1st channel is on top
     s = @views reverse(s[:, eachindex(t)], dims = 1)
     channel_color = reverse(channel_color)
+    bad = reverse(bad)
     # each channel is between -1.0 and +1.0
     # scale by 0.5 so maxima do not overlap
     @inbounds for idx in 1:ch_n
@@ -142,11 +155,20 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
 
     # plot channels
     for idx in 1:ch_n
-        p = @views Plots.plot!(t,
-                               s[idx, :],
-                               linewidth=0.75,
-                               label="",
-                               color=channel_color[idx])
+        if !bad[idx]
+            p = @views Plots.plot!(t,
+                                   s[idx, :],
+                                   linewidth=0.75,
+                                   label="",
+                                   color=channel_color[idx])
+        else
+            p = @views Plots.plot!(t,
+                                   s[idx, :],
+                                   linewidth=0.75,
+                                   alpha=0.2,
+                                   label="",
+                                   color=channel_color[idx])
+        end
     end
 
     # draw labels
@@ -233,130 +255,6 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector
                     linewidth=1,
                     label="",
                     color=:black)
-
-    return p
-
-end
-
-"""
-    plot_signal(t, s, bad; <keyword arguments>)
-
-Plot amplitude of multi-channel signal and bad channel(s).
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-- `s::AbstractArray`: data to plot
-- `bad::Vector{Bool}`: list of bad channels
-- `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
-- `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
-- `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `scale::Bool=true`: draw scale
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray, bad::Vector{Bool}; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, kwargs...)
-
-    @assert length(bad) == size(s, 1) "Length of bad channels vector and number of channels must be equal."
-
-    ch_n = size(s, 1)
-
-    ctypes_uni = unique(ctypes)        
-    t_pos = zeros(Int64, length(ctypes_uni))
-    for idx in eachindex(ctypes_uni)
-         t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
-    end
-    ctypes_uni_pos = zeros(Int64, length(ctypes))
-    ctypes_uni_pos[t_pos] .= 1
-
-    # get ranges of the original signal for the scales
-    # normalize and shift so all channels are visible
-    r = Float64[]
-    @inbounds for ch_idx in eachindex(ctypes_uni)
-        push!(r, round(_get_range(s[ctypes .== ctypes_uni[ch_idx], :])))
-        s[ctypes .== ctypes_uni[ch_idx], :] = @views znormalize(s[ctypes .== ctypes_uni[ch_idx], :], method=:minmax)
-    end
-    # reverse so 1st channel is on top
-    s = @views reverse(s[:, eachindex(t)], dims = 1)
-    bad = @views reverse(bad)
-    # each channel is between -1.0 and +1.0
-    # scale by 0.5 so maxima do not overlap
-    @inbounds for idx in 1:ch_n
-        s[idx, :] = @views (s[idx, :] .* 0.5) .+ (idx - 1)
-    end
-
-    # prepare plot
-    plot_size = (1200, 100 + 40 * ch_n)
-    p = Plots.plot(ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=(_ticks(t), []),
-                   ylims=(-1, ch_n),
-                   yticks=((ch_n - 1):-1:0, []),
-                   ytick_direction=:none,
-                   xtick_direction=:out,
-                   title=title,
-                   palette=:darktest,
-                   size=plot_size,
-                   top_margin=10Plots.px,                   
-                   bottom_margin=40Plots.px,
-                   right_margin=20Plots.px,                   
-                   left_margin=60Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=8;
-                   kwargs...)
-
-    # plot channels
-    for idx in 1:ch_n
-        if bad[idx]
-            p = @views Plots.plot!(t,
-                                   s[idx, :],
-                                   linewidth=1,
-                                   label="",
-                                   color=:red)
-        else
-            p = @views Plots.plot!(t,
-                                   s[idx, :],
-                                   linewidth=1,
-                                   label="",
-                                   color=:black)
-        end
-    end
-
-    # draw labels
-    for idx1 in 1:ch_n
-        s_pos = ch_n - idx1
-        p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos), Plots.text("$(clabels[idx1])  ", pointsize=8, halign=:right, valign=:center)), label=false)
-    end
-
-    # draw ticks
-    xt = collect(_ticks(t))
-    xt_s = string.(xt)
-    for idx in eachindex(xt)
-        p = Plots.plot!(annotations=(xt[idx], (-1.5), Plots.text("$(xt_s[idx])", pointsize=6, halign=:center, valign=:center)), label=false)
-    end
-    p = Plots.plot!(annotations=(mean(xt), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
-
-    # draw scales
-    if scale
-        idx2 = 1
-        for idx1 in 1:ch_n
-            if ctypes_uni_pos[idx1] == 1
-                s_pos = ch_n - idx1 + 1
-                p = Plots.plot!([_xlims(t)[1], _xlims(t)[1]], [(s_pos - 1.5), (s_pos - 0.5)], color=:red, linewidth=5, label="")
-                p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos - 1.5), Plots.text("$(r[idx2]) $(cunits[idx1])  ", pointsize=5, halign=:right, valign=:bottom)), label=false)
-                idx2 += 1
-            end
-        end
-    end
 
     return p
 
@@ -757,13 +655,14 @@ Plot signal.
 - `avg::Bool=false`: plot average EDA
 - `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not false -- plot bad channels using this list
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
+- `bad::Bool=true`: show bad channels
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Union{Bool, Matrix{Bool}}=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
@@ -822,64 +721,56 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     xl, yl, tt = "", "", ""
 
     ch_init = ch
+    bm = obj.header.recording[:bad_channels]
+    ctypes = obj.header.recording[:channel_type]
     # sort channels by their type
     if !isa(ch, Int64)
         ch = collect(ch)
-        ctypes = obj.header.recording[:channel_type]
         ch_order = _sort_channels(ctypes)
         s = @views s[ch_order, :]
         s = @views s[ch, :]
         ctypes = ctypes[ch_order][ch]
         clabels = clabels[ch_order][ch]
         cunits = obj.header.recording[:units][ch_order][ch]
-        bad != false && (bad = bad[ch_order][ch])
+        if bad
+            bm = bm[ch_order][ch]
+        else
+            bm = zeros(Bool, length(ch))
+        end
+    else
+        if bad
+            bm = bm[ch]
+        else
+            bm = false
+        end
     end
 
     if type === :normal
-        if bad == false
-            if isa(ch, Int64)
-                ch_name = _ch_rename(ctypes[ch])
-                xl, yl, tt = _set_defaults(xlabel,
-                                           ylabel,
-                                           title,
-                                           "Time [s]",
-                                           "",
-                                           "Channel $ch: $(clabels[ch]) ($ch_name)")
-                if datatype(obj) == "eda"
-                    ylabel == "default" && (yl = "Impedance [μS]")
-                    p = plot_eda(t,
-                                 s[ch, :],
-                                 xlabel=xl,
-                                 ylabel=yl,
-                                 title=tt,
-                                 mono=mono;
-                                 kwargs...)
-                else
-                    ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, ch))]")
-                    p = plot_signal(t,
-                                    s[ch, :],
-                                    xlabel=xl,
-                                    ylabel=yl,
-                                    title=tt,
-                                    mono=mono;
-                                    kwargs...)
-                end
+        if isa(ch, Int64)
+            ch_name = _ch_rename(ctypes[ch])
+            xl, yl, tt = _set_defaults(xlabel,
+                                       ylabel,
+                                       title,
+                                       "Time [s]",
+                                       "",
+                                       "Channel $ch: $(clabels[ch]) ($ch_name)")
+            if datatype(obj) == "eda"
+                ylabel == "default" && (yl = "Impedance [μS]")
+                p = plot_eda(t,
+                             s[ch, :],
+                             xlabel=xl,
+                             ylabel=yl,
+                             title=tt,
+                             mono=mono;
+                             kwargs...)
             else
-                xl, yl, tt = _set_defaults(xlabel,
-                                           ylabel,
-                                           title,
-                                           "Time [s]",
-                                           "",
-                                           "")
+                ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, ch))]")
                 p = plot_signal(t,
-                                s,
-                                ctypes=ctypes,
-                                clabels=clabels,
-                                cunits=cunits,
+                                s[ch, :],
                                 xlabel=xl,
                                 ylabel=yl,
                                 title=tt,
-                                scale=scale,
+                                bad=bm,
                                 mono=mono;
                                 kwargs...)
             end
@@ -887,19 +778,20 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
                                        title,
-                                    "Time [s]",
-                                    "",
-                                    "")
+                                       "Time [s]",
+                                       "",
+                                       "")
             p = plot_signal(t,
                             s,
-                            bad,
                             ctypes=ctypes,
                             clabels=clabels,
                             cunits=cunits,
                             xlabel=xl,
                             ylabel=yl,
                             title=tt,
+                            bad=bm,
                             scale=scale,
+                            mono=mono;
                             kwargs...)
         end
     end

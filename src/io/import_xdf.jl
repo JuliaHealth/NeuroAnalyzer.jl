@@ -117,7 +117,8 @@ function import_xdf(file_name::String)
                               units=units,
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
-                              gain=ones(ch_n))
+                              gain=ones(ch_n),
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

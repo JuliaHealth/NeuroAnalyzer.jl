@@ -475,7 +475,8 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                               sampling_rate=sampling_rate,
                               magnetometers=magnetometers,
                               gradiometers=gradiometers,
-                              coil_type=coil_type)
+                              coil_type=coil_type,
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
@@ -490,7 +491,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
 
     locs = _initialize_locs()
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 

@@ -119,7 +119,8 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
                               units=units[channel_order],
                               prefiltering=prefiltering[channel_order],
                               sampling_rate=sampling_rate,
-                              gain=gain[channel_order])
+                              gain=gain[channel_order],
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

@@ -92,7 +92,6 @@ function import_set(file_name::String; detect_type::Bool=true)
             units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
         end
     end
-    channel_order = _sort_channels(ch_type)
     ref = dataset["ref"]
     ref == "common" && (ref = "CAR")
 
@@ -253,7 +252,8 @@ function import_set(file_name::String; detect_type::Bool=true)
                               units=repeat(["μV"], ch_n),
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
-                              gain=gain)
+                              gain=gain,
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="",
                            notes=note,
                            design="")
@@ -266,7 +266,7 @@ function import_set(file_name::String; detect_type::Bool=true)
 
     history = history
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
     nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

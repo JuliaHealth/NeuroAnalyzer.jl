@@ -53,7 +53,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     @assert data_records == -1 "This seems to be a regular EDF file, use import_edf()."
     # we get 1.0 here
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    ch_n  = parse(Int, strip(header[253:256]))
+    ch_n = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)
     transducers = Vector{String}(undef, ch_n)
@@ -268,7 +268,8 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               transducers=transducers,
                               prefiltering=prefiltering,
                               sampling_rate=max_sampling_rate,
-                              gain=gain)
+                              gain=gain,
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

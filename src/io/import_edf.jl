@@ -300,7 +300,8 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               units=units,
                               prefiltering=prefiltering,
                               sampling_rate=sampling_rate,
-                              gain=gain)
+                              gain=gain,
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
@@ -312,7 +313,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data[:, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

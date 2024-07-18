@@ -544,7 +544,8 @@ function import_snirf(file_name::String; n::Int64=0)
                                src_labels=src_labels,
                                det_labels=det_labels,
                                opt_labels=opt_labels,
-                               sampling_rate=round(Int64, sampling_rate))
+                               sampling_rate=round(Int64, sampling_rate),
+                               bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
@@ -555,7 +556,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     history = String[]
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 

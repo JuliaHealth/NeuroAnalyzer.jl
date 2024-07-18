@@ -231,7 +231,8 @@ function import_nwb(file_name::String; detect_type::Bool=true)
                               units=units,
                               prefiltering=prefiltering,
                               sampling_rate=sampling_rate,
-                              gain=gain)
+                              gain=gain,
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name=exp_name, notes=exp_notes, design=exp_design)
 
     hdr = _create_header(s,

@@ -341,7 +341,8 @@ function import_nirx(file_name::String)
                                src_labels=string.(src_labels),
                                det_labels=string.(det_labels),
                                opt_labels=opt_labels,
-                               sampling_rate=sampling_rate)
+                               sampling_rate=sampling_rate,
+                               bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name=string(study_type1), notes=string(study_type2), design=string(study_type3))
 
     hdr = _create_header(s,
@@ -352,7 +353,7 @@ function import_nirx(file_name::String)
 
     history = String[]
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[:, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 

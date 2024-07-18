@@ -266,7 +266,8 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                               units=units,
                               prefiltering=prefiltering,
                               sampling_rate=sampling_rate,
-                              gain=gain)
+                              gain=gain,
+                              bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
