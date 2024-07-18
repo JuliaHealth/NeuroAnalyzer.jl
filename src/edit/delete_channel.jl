@@ -45,9 +45,11 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
 
     # update headers
     for idx in ch
-        loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))
+        !isnothing(findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))) && deleteat!(obj_new.locs, findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels]))))
         deleteat!(obj_new.header.recording[:labels], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
+        deleteat!(obj_new.header.recording[:channel_order], findfirst(isequal(idx), obj_new.header.recording[:channel_order]))
+        obj_new.header.recording[:bad_channels] = obj_new.header.recording[:bad_channels][1:end .!= idx, :]
         deleteat!(obj_new.header.recording[:units], idx)
         if obj_new.header.recording[:data_type] == "eeg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
@@ -56,10 +58,9 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
         elseif obj_new.header.recording[:data_type] == "meg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
             deleteat!(obj_new.header.recording[:coils], idx)
-            deleteat!(obj_new.header.recording[:magnetometers], idx)
-            deleteat!(obj_new.header.recording[:gradiometers], idx)
-            deleteat!(obj_new.header.recording[:gradiometers_axial], idx)
-            deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
+            !isnothing(findfirst(isequal(idx), obj_new.header.recording[:gradiometers])) && deleteat!(obj_new.header.recording[:gradiometers], findfirst(isequal(idx), obj_new.header.recording[:gradiometers]))
+            !isnothing(findfirst(isequal(idx), obj_new.header.recording[:magnetometers])) && deleteat!(obj_new.header.recording[:magnetometers], findfirst(isequal(idx), obj_new.header.recording[:magnetometers]))
+            deleteat!(obj_new.header.recording[:coil_type], idx)
         elseif obj_new.header.recording[:data_type] == "nirs"
             if !del_opt && idx in 1:length(obj_new.header.recording[:optode_labels])
                 @warn "NIRS signal channels must be deleted using delete_optode()."
