@@ -451,6 +451,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
                               recording_time=recording_time,
                               recording_notes="",
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference=_detect_montage(clabels, ch_type, data_type),
                               clabels=clabels,
                               transducers=repeat([""], ch_n),

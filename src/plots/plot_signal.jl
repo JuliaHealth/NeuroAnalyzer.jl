@@ -392,7 +392,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
                         linecolor=idx,
                         linewidth=0.5,
                         label=clabels[idx],
-                        legend=true)
+                        legend=false)
     end
 
     # plot averaged channels
@@ -667,10 +667,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
 
-    if bad != false
-        @assert type === :normal "If bad channels are provided, plot type must be :normal."
-    end
-
     if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
         seg = (obj.time_pts[1], obj.time_pts[end])
     else
@@ -683,15 +679,13 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if ep != 0
         _check_epochs(obj, ep)
         if nepochs(obj) == 1
-            ep = 0
+            ep = 1
         else
-            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
             if ep isa Int64
-                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+                seg = (((ep - 1) * epoch_len(obj) + 1), (ep * epoch_len(obj)))
             else
-                seg = (seg[1], (ep[end] * epoch_len(obj)))
+                seg = (((ep[1] - 1) * epoch_len(obj) + 1), (ep[end] * epoch_len(obj)))
             end
-            ep = 0
         end
     end
 
@@ -714,7 +708,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     t = obj.time_pts[seg[1]:seg[2]]
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, seg[1], seg[2])
+    ep = NeuroAnalyzer._s2epoch(obj, seg[1], seg[2])
 
     (ch isa(Vector{Int64}) && length(ch) == 1) && (ch = ch[1])
 
@@ -733,9 +727,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         clabels = clabels[ch_order][ch]
         cunits = obj.header.recording[:units][ch_order][ch]
         if bad
-            bm = bm[ch_order][ch]
+            bm = bm[ch_order[ch], ep]
         else
-            bm = zeros(Bool, length(ch))
+            bm = zeros(Bool, length(ch), 1)
         end
     else
         if bad

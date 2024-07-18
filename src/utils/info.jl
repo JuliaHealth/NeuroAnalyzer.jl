@@ -468,43 +468,14 @@ function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64)
     _check_channels(obj, ch)
 
     if obj.header.recording[:data_type] != "nirs"
-        println(rpad(" ch", 8) *
-                rpad("label", 16) *
-                rpad("type", 12) *
-                rpad("unit", 8) * 
-                rpad("bad", 8)) 
-        println(" " * repeat("-", 6) * " " *
-                repeat("-", 15) * " " *
-                repeat("-", 11) * " " *
-                repeat("-", 7) * " " *
-                repeat("-", 7))
-        println(rpad(" $ch", 8) *
-                rpad("$(obj.header.recording[:labels][ch])", 16) *
-                rpad("$(uppercase(obj.header.recording[:channel_type][ch]))", 12) *
-                rpad("$(obj.header.recording[:units][ch])", 8) * 
-                rpad("$(obj.header.recording[:bad_channels][ch])", 8))
-    else
+        println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:units][ch], 8)) bad: $(obj.header.recording[:bad_channels][ch])")
+    else 
         if obj.header.recording[:channel_type][ch] !== "nirs_aux"
-            println(rpad(" ch", 8) *
-                    rpad("label", 16) *
-                    rpad("type", 12) *
-                    rpad("unit", 8) *
-                    rpad("wavelength", 8))
-            println(rpad(" $ch", 8) *
-                    rpad("$(obj.header.recording[:labels][ch])", 16) *
-                    rpad("$(uppercase(obj.header.recording[:channel_type][ch]))", 12) *
-                    rpad("$(obj.header.recording[:units][ch])", 8) *
-                    rpad("$(obj.header.recording[:wavelength_index][ch])", 8))
+            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:units][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))")
         else
-            println(rpad(" ch", 8) *
-                    rpad("label", 16) *
-                    rpad("type", 12))
-                println(rpad(" $ch", 8) *
-                        rpad("$(obj.header.recording[:labels][ch])", 16) *
-                        rpad("$(uppercase(obj.header.recording[:channel_type][ch]))", 12))
+            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))")
         end
     end
-    println()
 end
 
 """

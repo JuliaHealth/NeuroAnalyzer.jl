@@ -225,6 +225,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes=recording_notes,
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference=recording_reference,
                               clabels=clabels,
                               transducers=transducers,

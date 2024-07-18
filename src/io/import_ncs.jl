@@ -127,6 +127,7 @@ function import_ncs(file_name::String)
                               recording_time="",
                               recording_notes="filter: $filter",
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference="",
                               clabels=clabels,
                               transducers=repeat([""], ch_n),

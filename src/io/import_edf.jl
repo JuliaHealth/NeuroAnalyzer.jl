@@ -294,6 +294,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes="",
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference=_detect_montage(clabels, ch_type, data_type),
                               clabels=clabels,
                               transducers=transducers,

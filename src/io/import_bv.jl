@@ -351,6 +351,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes=r_notes,
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference=ref,
                               clabels=clabels,
                               transducers=transducers,

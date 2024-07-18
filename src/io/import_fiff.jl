@@ -381,12 +381,12 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     ch_n = meas_info[:nchan]
 
     units = repeat([""], ch_n)
-    channel_type = repeat([""], ch_n)
+    ch_type = repeat([""], ch_n)
     coil_type = repeat([""], ch_n)
     clabels = repeat([""], ch_n)
     for (k, v) in meas_info[:ch_info]
         ch = v[1]
-        channel_type[ch] = v[3]
+        ch_type[ch] = v[3]
         range = v[4]
         cal = v[5]
         coil_type[ch] = _find_fiff_coiltype(v[6])
@@ -406,7 +406,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
             raw_data[:raw_data][ch_idx, :, :] .*= (10^15 / 100)
             units[ch_idx] = "fT/cm"
         end
-        if units[ch_idx] == "V" && channel_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
+        if units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
             raw_data[:raw_data][ch_idx, :, :] .*= 10^6
             units[ch_idx] = "μV"
         end 
@@ -419,20 +419,20 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     for ch_idx in 1:ch_n
         if coil_type[ch_idx] in ["vv_planar_w", "vv_planar_t1", "vv_planar_t2", "vv_planar_t3"]
             coil_type[ch_idx] = "pgrad"
-            channel_type[ch_idx] = "grad"
+            ch_type[ch_idx] = "grad"
             push!(gradiometers, ch_idx)
         elseif coil_type[ch_idx] in ["magnes_grad"]
             coil_type[ch_idx] = "grad"
-            channel_type[ch_idx] = "grad"
+            ch_type[ch_idx] = "grad"
             push!(gradiometers, ch_idx)
         elseif coil_type[ch_idx] in ["axial_grad_5cm", "ctf_grad"]
             coil_type[ch_idx] = "agrad"
-            channel_type[ch_idx] = "grad"
+            ch_type[ch_idx] = "grad"
             push!(gradiometers, ch_idx)
         elseif coil_type[ch_idx] in ["point_magnetometer", "vv_mag_w", "vv_mag_t1", "vv_mag_t2", "vv_mag_t3", "magnes_mag"]
             coil_type[ch_idx] = "magn"
             push!(magnetometers, ch_idx)
-            channel_type[ch_idx] = "mag"
+            ch_type[ch_idx] = "mag"
         elseif coil_type[ch_idx] in ["eeg"]
             push!(eeg, ch_idx)
         end
@@ -467,7 +467,8 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                               recording_date=isnothing(meas_info[:meas_info][:meas_date]) ? "" : string(Dates.day(date)) * "-" * string(Dates.month(date)) * "-" * string(Dates.year(date)),
                               recording_time=isnothing(meas_info[:meas_info][:meas_date]) ? "" : string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date)),
                               recording_notes="",
-                              channel_type=channel_type,
+                              channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference="",
                               clabels=clabels,
                               units=units,

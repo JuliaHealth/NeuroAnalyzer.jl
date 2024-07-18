@@ -61,6 +61,7 @@ function import_npy(file_name::String; sampling_rate::Int64)
                               recording_time="",
                               recording_notes="",
                               channel_type=repeat(["eeg"], ch_n),
+                              channel_order=_sort_channels(repeat(["eeg"], ch_n)),
                               reference="",
                               clabels=clabels,
                               transducers=repeat([""], ch_n),

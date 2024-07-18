@@ -111,6 +111,7 @@ function import_xdf(file_name::String)
                               recording_time="",
                               recording_notes="",
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference="",
                               clabels=clabels,
                               transducers=repeat([""], ch_n),

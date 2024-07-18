@@ -226,6 +226,7 @@ function import_duomag(file_name::String)
                               recording_time=string(split(record_created, ' ')[2]),
                               recording_notes="",
                               channel_type=repeat(["mep"], ch_n),
+                              channel_order=_sort_channels(repeat(["mep"], ch_n)),
                               clabels=clabels,
                               units=repeat(["μV"], ch_n),
                               sampling_rate=sampling_rate,

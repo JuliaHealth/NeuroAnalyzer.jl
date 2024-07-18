@@ -69,7 +69,6 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
         ch_type = repeat(["eeg"], ch_n)
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
-    channel_order = _sort_channels(ch_type)
 
     buffer = readlines(fid)
 
@@ -112,14 +111,15 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
                               recording_date=string(recording_date),
                               recording_time=string(recording_time),
                               recording_notes="",
-                              channel_type=ch_type[channel_order],
+                              channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels[channel_order],
-                              transducers=transducers[channel_order],
-                              units=units[channel_order],
-                              prefiltering=prefiltering[channel_order],
+                              clabels=clabels,
+                              transducers=transducers,
+                              units=units,
+                              prefiltering=prefiltering,
                               sampling_rate=sampling_rate,
-                              gain=gain[channel_order],
+                              gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))
     e = _create_experiment(name="", notes="", design="")
 
@@ -132,7 +132,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

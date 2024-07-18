@@ -246,6 +246,7 @@ function import_set(file_name::String; detect_type::Bool=true)
                               recording_time="",
                               recording_notes=string(dataset["setname"]),
                               channel_type=ch_type,
+                              channel_order=_sort_channels(ch_type),
                               reference=ref,
                               clabels=clabels,
                               transducers=repeat([""], ch_n),

@@ -212,7 +212,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                     ch_idx = idx + ch_first - 1
                 end
             end
-            !isnothing(ch_idx) && channel_info(obj, ch=ch_idx)
+            !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
         else
             time_current = get_gtk_property(entry_time, :value, Float64)
             x_pos > 1172 && (x_pos = 1172)
@@ -262,7 +262,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 1
+            if s == 0x00000011
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += 1
@@ -272,7 +272,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            elseif s == 4
+            elseif s == 0x00000014
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -295,7 +295,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 end
             end
         elseif event.direction == 0 # up
-            if s == 1
+            if s == 0x00000011
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
@@ -303,7 +303,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif s == 4
+            elseif s == 0x00000014
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -526,7 +526,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 draw(can)
             end
         end
-        if s == 4
+        if s == 0x00000014
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
@@ -758,7 +758,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
-
         if length(ch) > 1
             show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
                                                            ch=ch[ch_first]:ch[ch_last],
@@ -786,32 +785,56 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     can.mouse.button1press = @guarded (widget, event) -> begin
         x_pos = event.x
-        x_pos < 82 && (x_pos = 82)
-        x_pos > 1172 && (x_pos = 1172)
-        ts1 = obj.epoch_time[1] + (x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
-        snap && (ts1 = round(ts1 * 4) / 4)
-        round(ts1, digits=3)
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts1, :value, ts1)
+        if x_pos < 82
+            y_pos = event.y
+            ch_y = collect(50:39:793)
+            ch_idx = nothing
+            for idx in eachindex(ch_y)
+                if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
+                    ch_idx = idx + ch_first - 1
+                end
+            end
+            !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
+        else
+            x_pos > 1172 && (x_pos = 1172)
+            ts1 = obj.epoch_time[1] + (x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
+            snap && (ts1 = round(ts1 * 4) / 4)
+            round(ts1, digits=3)
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_ts1, :value, ts1)
+            end
         end
     end
 
     can.mouse.button3press = @guarded (widget, event) -> begin
         x_pos = event.x
-        x_pos < 82 && (x_pos = 82)
-        x_pos > 1172 && (x_pos = 1172)
-        ts2 = obj.epoch_time[1] + ((x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
-        snap && (ts2 = round(ts2 * 4) / 4)
-        round(ts2, digits=3)
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ts2, :value, round(ts2, digits=3))
+        if x_pos < 82
+            ep = get_gtk_property(entry_epoch, :value, Int64)
+            y_pos = event.y
+            ch_y = collect(50:39:793)
+            ch_idx = nothing
+            for idx in eachindex(ch_y)
+                if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
+                    ch_idx = idx + ch_first - 1
+                end
+            end
+            !isnothing(ch_idx) && (obj.header.recording[:bad_channels][ch_idx, ep] = !obj.header.recording[:bad_channels][ch_idx, ep])
+            draw(can)
+        else
+            x_pos > 1172 && (x_pos = 1172)
+            ts2 = obj.epoch_time[1] + ((x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
+            snap && (ts2 = round(ts2 * 4) / 4)
+            round(ts2, digits=3)
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_ts2, :value, round(ts2, digits=3))
+            end
         end
     end
 
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 1
+            if s == 0x00000011
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1
@@ -832,7 +855,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 end
             end
         elseif event.direction == 0 # up
-            if s == 1
+            if s == 0x00000011
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep > 1
                     ep -= 1
@@ -996,7 +1019,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 draw(can)
             end
         end
-        if s == 4
+        if s == 0x00000014
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
@@ -1226,7 +1249,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            elseif s == 4
+            elseif s == 0x00000014
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj1.time_pts[end] - zoom
                     time_current += zoom
@@ -1257,7 +1280,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif s == 4
+            elseif s == 0x00000014
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj1.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -1403,7 +1426,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 draw(can)
             end
         end
-        if s == 4
+        if s == 0x00000014
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1730,7 +1753,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                 draw(can)
             end
         end
-        if s == 4
+        if s == 0x00000014
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -2054,7 +2077,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
                 draw(can)
             end
         end
-        if s == 4
+        if s == 0x00000014
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -2344,7 +2367,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                 draw(can)
             end
         end
-        if s == 4
+        if s == 0x00000014
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -2424,7 +2447,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
+        if s == 0x00000014
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
@@ -2490,7 +2513,7 @@ function iview(file_name::String)
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
+        if s == 0x00000014
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
@@ -2551,7 +2574,7 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
+        if s == 0x00000014
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
