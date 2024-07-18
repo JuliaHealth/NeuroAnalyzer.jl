@@ -791,7 +791,13 @@ Plot power spectrum density.
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
-- `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:butterfly`
+    - `:mean`
+    - `:w3d`: 3-d waterfall
+    - `:s3d`: 3-d surface
+    - `:topo`: topographical
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -1110,13 +1116,14 @@ Plot power spectrum density of embedded or external component.
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+- `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
+- `gw::Real=5`: Gaussian width in Hz
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
@@ -1127,15 +1134,20 @@ Plot power spectrum density of embedded or external component.
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
-- `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
-- `units::String=""`
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:butterfly`
+    - `:mean`
+    - `:w3d`: 3-d waterfall
+    - `:s3d`: 3-d surface
+    - `:topo`: topographical
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...) where {T <: CWT}
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")

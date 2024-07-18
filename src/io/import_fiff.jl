@@ -444,6 +444,9 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     sampling_rate = meas_info[:meas_info][:sfreq]
 
     # locs
+    # SSS, PCA
+    # events
+    # HPI
 
     # create signal details
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
