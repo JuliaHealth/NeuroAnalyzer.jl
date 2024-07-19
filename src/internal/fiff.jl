@@ -11,6 +11,8 @@ _find_fiff_dacq_system(n::Int64) = fiff_dacq_system[:dacq_system][findfirst(iseq
 _find_fiff_proj_item(n::Int64) = fiff_proj_item[:proj_item][findfirst(isequal(n), fiff_proj_item[:id])]
 _find_fiff_proj_by(n::Int64) = fiff_proj_by[:proj_by][findfirst(isequal(n), fiff_proj_by[:id])]
 _find_fiff_coiltype(n::Int64) = fiff_coil_type[:coil_type][findfirst(isequal(n), fiff_coil_type[:id])]
+_find_fiff_aspect(n::Int64) = fiff_aspect[:aspect][findfirst(isequal(n), fiff_aspect[:id])]
+_find_fiff_sss_job(n::Int64) = fiff_sss_job[:sss_job][findfirst(isequal(n), fiff_sss_job[:id])]
 
 # data type
 fiff_data_type= Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35],
@@ -57,6 +59,89 @@ fiff_proj_item = Dict(:id=>[0, 1, 2, 3, 4, 5, 10],
 # proj_bt
 fiff_proj_by = Dict(:id=>[0, 1],
                       :proj_by=>["complement", "space"])
+
+# aspect
+fiff_aspect = Dict(:id=>[100, 101, 102, 103, 104, 105, 106, 200, 1100, 1101, 1102],
+                      :aspect=>["average", "std_err", "single", "subaverage", "altaverage", "sample", "power_density", "dipole_wave", "ifii_low", "ifii_high", "gate"])
+# sss_job
+fiff_sss_job = Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                      :sss_job=>["sss_job_nothing", "sss_job_ctc", "sss_job_filter", "sss_job_virt", "sss_job_head_pos", "sss_job_movec_fit", "sss_job_movec_qua", "sss_job_rec_all", "sss_job_rec_in", "sss_job_rec_out", "sss_job_st"])
+
+function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
+    d = nothing
+    df = NeuroAnalyzer._find_fiff_dt(fb)
+    fs_mask = fb & 0xFF000000
+    if fs_mask == 0x00000000 # scalar
+        d = Float64[]
+        if df == "float"
+            for idx in 1:4:length(buf)
+                push!(d, Float64(ntoh.(reinterpret(Float16, buf[idx:(idx + 1)])[1])))
+            end
+        elseif df == "old_pack"
+            a = Float64(ntoh.(reinterpret(Float32, buf[1:4])[1]))
+            b = Float64(ntoh.(reinterpret(Float32, buf[5:8])[1]))
+            for idx in 9:2:length(buf)
+                push!(d, Float64(ntoh.(reinterpret(Int16, buf[idx:(idx + 1)])[1])))
+            end
+            d = a .* (d .+ b)
+        else
+            _warn("scalar of $df is not supported yet.")
+        end
+    elseif fs_mask == 0x40000000 # matrix
+        mc_mask = fb & 0x00FF0000
+        if mc_mask == 0x00000000 # dense
+            n = ntoh.(reinterpret(Int32, buf[(end - 3):end]))[1]
+            dim = Int64[]
+            dims = buf[(end - 5 * n - 1):(end - 4)]
+            for dim_idx in 1:4:length(dims)
+                push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1])
+            end
+            reverse!(dim)
+            tmp = buf[1:(end - length(dims) - 4)]
+            d = Float64[]
+            if df == "float"
+                for idx in 1:4:length(tmp)
+                    push!(d, Float64(ntoh.(reinterpret(Float32, tmp[idx:(idx + 3)])[1])))
+                end
+            elseif df == "int32"
+                for idx in 1:4:length(tmp)
+                    push!(d, Float64(ntoh.(reinterpret(Int32, tmp[idx:(idx + 3)])[1])))
+                end
+            elseif df == "old_pack"
+                a = Float64(ntoh.(reinterpret(Float32, tmp[1:4])[1]))
+                b = Float64(ntoh.(reinterpret(Float32, tmp[5:8])[1]))
+                for idx in 9:2:length(tmp)
+                    push!(d, Float64(ntoh.(reinterpret(Int16, tmp[idx:(idx + 1)])[1])))
+                end
+                d = a .* (d .+ b)
+            else
+                _warn("matrix of $df is not supported yet.")
+            end
+            d = reshape(d, dim[1], dim[2])
+        elseif mc_mask == 0x00100000 # sparse, column-compressed
+            n = ntoh.(reinterpret(Int32, buf[(end - 3):end]))[1]
+            dim = Int64[]
+            dims = buf[(end - 5 * n - 1):(end - 4)]
+            for dim_idx in 1:4:length(dims)
+                push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1])
+            end
+            reverse!(dim)
+            tmp = buf[1:(end - length(dims) - 4)]
+            nz = ntoh.(reinterpret(Int32, tmp[(end - 3):end]))[1]
+            tmp = buf[1:(end - length(dims) - 8)]
+            nz = ntoh.(reinterpret(Int32, tmp[(end - 3):end]))[1]
+            tmp = buf[1:(end - length(dims) - 12)]
+            col_start_idx = Int64[]
+            row_idx = Int64[]
+            m = zeros(dim[1], dim[2])
+
+            _warn("sparse, column-compressed is not supported yet.")
+        elseif mc_mask == 0x00200000 # sparse, row-compressed
+            _warn("sparse, row-compressed is not supported yet.")
+        end
+    end
+    return d
+end
 
 function _read_fiff_tag(fid::IOStream)
     tag = reinterpret(Int32, read(fid, 4 * sizeof(Int32)))
@@ -143,17 +228,11 @@ end
 function _get_blocks(b::Matrix{Int64})
     levels = unique(b[:, 5])
     bidx = Vector{Int64}[]
-    for idx in eachindex(levels)
-        push!(bidx, findall(isequal(levels[idx]), b[:, 5]))
-    end
+    [push!(bidx, findall(isequal(levels[idx]), b[:, 5])) for idx in eachindex(levels)]
     btmp = Int64[]
-    for idx in eachindex(bidx)
-        push!(btmp, length(bidx[idx]))
-    end
+    [push!(btmp, length(bidx[idx])) for idx in eachindex(bidx)]
     btypes = Int64[]
-    for idx in eachindex(btmp)
-        push!(btypes, unique(b[:, 6][bidx[idx][:]])[1])
-    end
+    [push!(btypes, unique(b[:, 6][bidx[idx][:]])[1]) for idx in eachindex(btmp)]
     return bidx, btypes
 end
 
@@ -165,9 +244,7 @@ function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vect
         if length(tmp) == 1
             push!(d, Symbol(f)=>tmp[1][4])
         elseif length(tmp) > 1
-            for n in eachindex(tmp)
-                push!(d, Symbol(f * "_$(lpad(n, length(string(length(tmp))), '0'))")=>tmp[n][4])
-            end
+            [push!(d, Symbol(f * "_$(lpad(n, length(string(length(tmp))), '0'))")=>tmp[n][4]) for n in eachindex(tmp)]
         else
             push!(d, Symbol(f)=>nothing)
         end

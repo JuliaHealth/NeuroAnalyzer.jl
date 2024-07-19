@@ -51,20 +51,65 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     close(fid)
 
     fiff_object = Any[]
-    for block_idx in eachindex(buf)
+    @inbounds for block_idx in eachindex(buf)
         tag_type = fiff_blocks[block_idx, 2]
         if tag_type in [107, 108]
             # void
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]),  nothing))
+            d = nothing
+        elseif tag_type in [210]
+            # aspect
+            d = _find_fiff_aspect(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
+        elseif tag_type in [264]
+            # sss_job
+            d = _find_fiff_sss_job(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
+        elseif tag_type in [270, 271, 302, 800]
+            # sss_cal_chans
+            # sss_cal_cors
+            # epoch
+            # decoupler_matrix
+            @show block_idx
+            d = NeuroAnalyzer._fiff_matrix(fiff_blocks[block_idx, 3], buf[block_idx])
+        elseif tag_type in [115]
+            # role
+            d = Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1]))
+            if d == 1
+                d = "prev_file"
+            else
+                d = "next_file"
+            end
+        elseif tag_type in [234]
+            # dig_string
+            kind = Int64(ntoh.(reinterpret(Int32, buf[block_idx][1:4])[1]))
+            ident = Int64(ntoh.(reinterpret(Int32, buf[block_idx][5:8])[1]))
+            np = Float64(ntoh.(reinterpret(Int32, buf[block_idx][9:12])[1]))
+            rr = Float64[]
+            for idx in 13:4:length(buf[block_idx])
+                push!(rr, Float64(ntoh.(reinterpret(Float32, buf[block_idx][idx:(idx + 3)])[1])))
+            end
+            d = (kind, ident, np, rr)
+        elseif tag_type in [255]
+            # ch_pos
+            coil_type = Int64(ntoh.(reinterpret(Int32, buf[block_idx][1:4])[1]))
+            r0_1 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][5:8])[1]))
+            r0_2 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][9:12])[1]))
+            r0_3 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][13:16])[1]))
+            ex_1 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][17:20])[1]))
+            ex_2 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][21:24])[1]))
+            ex_3 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][25:28])[1]))
+            ey_1 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][29:32])[1]))
+            ey_2 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][33:36])[1]))
+            ey_3 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][37:40])[1]))
+            ez_1 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][41:44])[1]))
+            ez_2 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][45:48])[1]))
+            ez_3 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][59:52])[1]))
+            d = (coil_type, r0_1, r0_2, r0_3, ex_1, ex_2, ex_3, ey_1, ey_2, ey_3, ez_1, ez_2, ez_3)
         elseif tag_type in [404, 405, 406]
             # dob, sex, handedness
             d = Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1]))
             tag_type == 404 && (d = unix2datetime(d))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [242]
             # hpi_mask
             d = ntoh.(reinterpret(UInt32, buf[block_idx])[1])
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [222]
             # coord_trans
             from = Int64(ntoh.(reinterpret(Int32, buf[block_idx][1:4])[1]))
@@ -94,55 +139,6 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                 push!(invmove, Float64(ntoh.(reinterpret(Int16, buf[block_idx][(92 + idx):(92 + idx + 3)])[1])))
             end
             d = (from, to, rot, move, invrot, invmove)
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
-        elseif tag_type in [302]
-            # epoch
-            df = _find_fiff_dt(fiff_blocks[block_idx, 3])
-            fs_mask = fiff_blocks[block_idx, 3] & 0xFF000000
-            if fs_mask == 0x00000000 # scalar
-                d = Float64[]
-                if df == "float"
-                    for idx in 1:4:length(buf[block_idx])
-                        push!(d, Float64(ntoh.(reinterpret(Float16, buf[block_idx][idx:(idx + 1)])[1])))
-                    end
-                elseif df == "old_pack"
-                    a = Float64(ntoh.(reinterpret(Float32, buf[block_idx][1:4])[1]))
-                    b = Float64(ntoh.(reinterpret(Float32, buf[block_idx][5:8])[1]))
-                    for idx in 9:2:length(buf[block_idx])
-                        push!(d, Float64(ntoh.(reinterpret(Int16, buf[block_idx][idx:(idx + 1)])[1])))
-                    end
-                    d = a .* (d .+ b)
-                end
-            elseif fs_mask == 0x40000000 # matrix
-                mc_mask = fiff_blocks[block_idx, 3] & 0x00FF0000
-                if mc_mask == 0x00000000 # dense
-                    n = ntoh.(reinterpret(Int32, buf[block_idx][(end - 3):end]))[1]
-                    dim = Int64[]
-                    dims = buf[block_idx][(end - 5 * n - 1):(end - 4)]
-                    for dim_idx in 1:4:length(dims)
-                        push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1])
-                    end
-                    reverse!(dim)
-                    tmp = buf[block_idx][1:(end - length(dims) - 4)]
-                    d = Float64[]
-                    if df == "float"
-                        for idx in 1:4:length(tmp)
-                            push!(d, Float64(ntoh.(reinterpret(Float16, tmp[idx:(idx + 1)])[1])))
-                        end
-                    elseif df == "old_pack"
-                        a = Float64(ntoh.(reinterpret(Float32, tmp[1:4])[1]))
-                        b = Float64(ntoh.(reinterpret(Float32, tmp[5:8])[1]))
-                        for idx in 9:2:length(tmp)
-                            push!(d, Float64(ntoh.(reinterpret(Int16, tmp[idx:(idx + 1)])[1])))
-                        end
-                        d = a .* (d .+ b)
-                    end
-                    d = reshape(d, dim[1], dim[2])
-                elseif mc_mask == 0x00100000 # sparse, column-compressed
-                elseif mc_mask == 0x00200000 # sparse, row-compressed
-                end
-            end
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [300]
             # data_buffer
             df = _find_fiff_dt(fiff_blocks[block_idx, 3])
@@ -164,7 +160,6 @@ function import_fiff(file_name::String; detect_type::Bool=true)
             else
                 _warn("Data type $df is not supported yet.")
             end
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [213]
             # dig_point
             kind = Int64(ntoh.(reinterpret(Int32, buf[block_idx][1:4])[1]))
@@ -173,23 +168,21 @@ function import_fiff(file_name::String; detect_type::Bool=true)
             r_2 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][13:16])[1]))
             r_3 = Float64(ntoh.(reinterpret(Float32, buf[block_idx][17:20])[1]))
             d = (kind, ident, r_1, r_2, r_3)
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [252]
             # ch_type
             d =  _find_fiff_chtype(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [256]
             # ch_unit
             d = _find_fiff_unit(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [3411]
             # proj_item
             d = _find_fiff_proj_item(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [3416]
             # proj_item
             d = _find_fiff_proj_by(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
+        elseif tag_type in [280]
+            # gantry_type
+            d = _find_fiff_gantry_type(Int64(ntoh.(reinterpret(Int32, buf[block_idx])[1])))
         elseif tag_type in [203]
             # ch_info
             scan_no = Int64(ntoh.(reinterpret(Int32, buf[block_idx][1:4])[1]))
@@ -213,47 +206,39 @@ function import_fiff(file_name::String; detect_type::Bool=true)
             unit = _find_fiff_unit(Int64(ntoh.(reinterpret(Int32, buf[block_idx][73:76])[1])))
             unit_mul = _find_fiff_mul(Int64(ntoh.(reinterpret(Int32, buf[block_idx][77:80])[1])))
             d = (scan_no, log_no, kind, range, cal, coil_type, r0_1, r0_2, r0_3, ex_1, ex_2, ex_3, ey_1, ey_2, ey_3, ez_1, ez_2, ez_3, unit, unit_mul)
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [214]
             # ch_pos_vec
-            # obsolete
+            d = nothing
         elseif tag_type in [111, 112, 113, 114, 118, 150, 151, 205, 206, 212, 227, 233, 237, 258, 281, 401, 402, 403, 409, 410, 501, 502, 503, 504, 602, 2020, 3102, 3300, 3406, 3407, 3417, 3501]
             # string
             d = _v2s(string.(Char.(buf[block_idx])))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [282]
             # int8
             d = ntoh.(reinterpret(Int8, buf[block_idx][1:4])[1])
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [101, 102, 104, 105, 106, 117, 200, 202, 204, 207, 208, 209, 211, 216, 217, 221, 228, 230, 231, 245, 250, 251, 257, 263, 266, 267, 268, 277, 278, 301, 303, 400, 500, 701, 702, 703, 2004, 2010, 2012, 2014, 2023, 2032, 3013, 3104, 3414]
             # int32
             d = Int64(ntoh.(reinterpret(Int32, buf[block_idx][1:4])[1]))
             if tag_type == 204
                 d = unix2datetime(d)
             end
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [220, 232, 225, 246, 247, 269, 304, 305, 600, 601, 603, 3413]
             # int32*
             d = Int64[]
-            for idx in 1:4:(length(buf[block_idx]) - 4)
+            for idx in 1:4:length(buf[block_idx])
                 push!(d, Int64(ntoh.(reinterpret(Int32, buf[block_idx][idx:(idx + 3)])[1])))
             end
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [276]
             # double
             d = Float64(ntoh.(reinterpret(Float64, buf[block_idx][1:4])[1]))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [201, 218, 219, 223, 229, 235, 236, 240, 241, 243, 244, 253, 254, 272, 279, 407, 408, 2005, 2009, 2011, 2013, 2015, 2016, 2018, 2019, 2024, 2040, 3109, 3113, 3405, 3412]
             # float
             d = Float64(ntoh.(reinterpret(Float32, buf[block_idx][1:4])[1]))
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [215, 224, 226, 265, 3415]
             # float*
             d = Float64[]
-            for idx in 1:4:(length(buf[block_idx]) - 4)
+            for idx in 1:4:length(buf[block_idx])
                 push!(d, Float64(ntoh.(reinterpret(Float32, buf[block_idx][idx:(idx + 3)])[1])))
             end
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         elseif tag_type in [100, 103, 109, 110, 116, 120]
             # id_t
             fiff_v_major = Int64(ntoh.(reinterpret(Int16, buf[block_idx][1:2])[1]))
@@ -264,11 +249,13 @@ function import_fiff(file_name::String; detect_type::Bool=true)
             id_creation_date = unix2datetime(time_sec)
             time_usec = Int64(ntoh.(reinterpret(Int32, buf[block_idx][17:20])[1]))
             d = (fiff_v_major, fiff_v_minor, mach_id1, mach_id2, id_creation_date, time_usec)
-            push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
         else
             _warn("$tag_type is not supported yet.")
+            d = nothing
         end
+        push!(fiff_object, (block_idx, _find_fiff_tag(fiff_blocks[block_idx, 2]), _find_fiff_block(fiff_blocks[block_idx, end]), d))
     end
+    return buf, fiff_blocks, fiff_object
 
     # process blocks
     bidx, btypes = _get_blocks(fiff_blocks)
@@ -392,7 +379,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
         coil_type[ch] = _find_fiff_coiltype(v[6])
         units[ch] = v[19]
         unit_mul = 10^v[20]
-        clabels[ch] = uppercase(v[3]) * "_" * string(v[2])
+        clabels[ch] = uppercase(v[3]) * " " * string(v[2])
         raw_data[:raw_data][ch, :] .*= (range * cal * unit_mul)
     end
 
@@ -430,7 +417,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
             ch_type[ch_idx] = "grad"
             push!(gradiometers, ch_idx)
         elseif coil_type[ch_idx] in ["point_magnetometer", "vv_mag_w", "vv_mag_t1", "vv_mag_t2", "vv_mag_t3", "magnes_mag"]
-            coil_type[ch_idx] = "magn"
+            coil_type[ch_idx] = "mag"
             push!(magnetometers, ch_idx)
             ch_type[ch_idx] = "mag"
         elseif coil_type[ch_idx] in ["eeg"]

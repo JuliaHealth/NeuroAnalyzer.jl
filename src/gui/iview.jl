@@ -116,7 +116,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
     set_gtk_property!(lab_ch, :halign, 0)
     set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
     set_gtk_property!(entry_ts1, :digits, 3)
@@ -287,7 +287,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                         ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                     end
@@ -316,7 +316,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                     ch_first -= 1
                     ch_last -= 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                         ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                     end
@@ -364,7 +364,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             ch_first += 1
             ch_last += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                 ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
             end
@@ -377,7 +377,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             ch_first -= 1
             ch_last -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                 ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
             end
@@ -469,7 +469,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nctrl-\\\ttoggle snapping\nshift-\\\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -478,18 +478,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 1
-            if k == 0x0000007c # |
-                scale = !scale
-                draw(can)
-            end
-        end
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
                 ch_last -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                     ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
@@ -500,20 +494,21 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                     ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
                 draw(can)
             end
-        elseif k == 0x0000005b # -
+        elseif k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
                 set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             end
-        elseif k == 0x0000005d # +
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
                 set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
@@ -525,8 +520,47 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             end
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        elseif k == 0x0000ff50 # home
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_time, :value, obj.time_pts[1])
+            end
+            draw(can)
+        elseif k == 0x0000ff57 # end
+            time_current = obj.time_pts[end] - zoom
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_time, :value, time_current)
+            end
+            draw(can)
         end
-        if s == 0x00000014
+        if s == 0x00000018 # alt
+            if k == 0x0000002c # ,
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+                draw(can)
+            elseif k == 0x0000002e # .
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            elseif k == 0x00000073 # s
+                snap = !snap
+            end
+        end
+        if s == 0x00000014 # ctrl
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
@@ -537,20 +571,10 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             elseif k == 0x0000006d # m
                 mono = !mono
                 draw(can)
-            elseif k == 92 # \
-                snap = !snap
-            elseif k == 97 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, obj.time_pts[1])
-                end
+            elseif k == 0x00000073 # s
+                scale = !scale
                 draw(can)
-            elseif k == 115 # s
-                time_current = obj.time_pts[end] - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-                draw(can)
-            elseif k == 122 # z
+            elseif k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
@@ -559,32 +583,10 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
                     end
                 end
                 draw(can)
-            elseif k == 99 # c
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                if time_current >= obj.time_pts[1] + zoom
-                    time_current = time_current - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
-                end
-                draw(can)
-            elseif k == 120 # x
+            elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
-                else
-                    time_current = obj.time_pts[end] - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
-                end
-            elseif k == 118 # v
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                if time_current < obj.time_pts[end] - zoom
-                    time_current += zoom
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_time, :value, time_current)
                     end
@@ -720,7 +722,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
     set_gtk_property!(lab_ch, :halign, 0)
     entry_ts1 = GtkSpinButton(obj.epoch_time[1], obj.epoch_time[end], 0.5)
     set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
@@ -847,7 +849,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                         ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                     end
@@ -868,7 +870,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                     ch_first -= 1
                     ch_last -= 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                         ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                     end
@@ -883,7 +885,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             ch_first += 1
             ch_last += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                 ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
             end
@@ -896,7 +898,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             ch_first -= 1
             ch_last -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                 ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
             end
@@ -981,7 +983,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete current epoch\n\nctrl-\\\ttoggle snapping\nshift-\\\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to first epoch\nEnd\tgo to last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete current epoch\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -990,18 +992,12 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 1
-            if k == 0x0000007c # |
-                scale = !scale
-                draw(can)
-            end
-        end
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
                 ch_last -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                     ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
@@ -1012,14 +1008,27 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                     ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
                 draw(can)
             end
+        elseif k == 0x0000ff50 # home
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_epoch, :value, 1)
+            end
+        elseif k == 0x0000ff57 # end
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_epoch, :value, nepochs(obj))
+            end
         end
-        if s == 0x00000014
+        if s == 0x00000018 # alt
+            if k == 0x00000073 # s
+                snap = !snap
+            end
+        end
+        if s == 0x00000014 # ctrl
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
@@ -1031,17 +1040,10 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             elseif k == 0x0000006d # m
                 mono = !mono
                 draw(can)
-            elseif k == 92 # \
-                snap = !snap
-            elseif k == 97 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, 1)
-                end
-            elseif k == 115 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, nepochs(obj))
-                end
-            elseif k == 122 # z
+            elseif k == 0x00000073 # s
+                scale = !scale
+                draw(can)
+            elseif k == 0x0000002c # ,
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep > 1
                     ep -= 1
@@ -1049,7 +1051,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                         set_gtk_property!(entry_epoch, :value, ep)
                     end
                 end
-            elseif k == 120 # x
+            elseif k == 0x0000002e # .
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1
@@ -1140,6 +1142,8 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     @assert nepochs(obj1) == 1 "iview_ep() should be used for epoched object."
     _check_channels(obj1, ch)
 
+    scale = true
+
     if length(ch) > 20
         ch_first = 1
         ch_last = 20
@@ -1192,7 +1196,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
     set_gtk_property!(lab_ch, :halign, 0)
     g[1:14, 1] = can
     g[1, 2] = bt_chup
@@ -1223,12 +1227,14 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
                                                            ch=ch[ch_first]:ch[ch_last],
                                                            seg=(time1, time2),
-                                                           title=""))
+                                                           title="",
+                                                           scale=scale))
         else
             show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
                                                            ch=ch,
                                                            seg=(time1, time2),
-                                                           title=""))
+                                                           title="",
+                                                           scale=scale))
         end
 
         img = read_from_png(io)
@@ -1239,7 +1245,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 1
+            if s == 0x00000011
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj1.time_pts[end] - zoom
                     time_current += 1
@@ -1264,7 +1270,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                         ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                     end
@@ -1272,7 +1278,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 end
             end
         elseif event.direction == 0 # up
-            if s == 1
+            if s == 0x00000011
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj1.time_pts[1] + 1
                     time_current -= 1
@@ -1293,7 +1299,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                     ch_first -= 1
                     ch_last -= 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                         ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                     end
@@ -1308,7 +1314,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             ch_first += 1
             ch_last += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                 ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
             end
@@ -1321,7 +1327,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
             ch_first -= 1
             ch_last -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                 ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
             end
@@ -1394,7 +1400,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -1403,55 +1409,63 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if k == 0x0000ff55 # b
+        if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
                 ch_last -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                     ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
                 draw(can)
             end
-        elseif k == 0x0000ff56 # n
+        elseif k == 0x0000ff56 # Page Up
             if ch_last < ch[end]
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                     ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
                 draw(can)
             end
+        elseif k == 0x0000005b # [
+            if zoom > 1
+                zoom -= 1
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                draw(can)
+            end
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        elseif k == 0x0000005d # ]
+            if zoom < 30 && zoom < obj1.time_pts[end] - 1
+                zoom += 1
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                draw(can)
+            else
+                zoom = obj1.time_pts[end]
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                draw(can)
+            end
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        elseif k == 0x0000ff50 # home
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_time, :value, obj1.time_pts[1])
+            end
+            draw(can)
+        elseif k == 0x0000ff57 # end
+            time_current = obj1.time_pts[end] - zoom
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_time, :value, time_current)
+            end
+            draw(can)
         end
-        if s == 0x00000014
-            if k == 113 # q
-                Gtk.destroy(win)
-            elseif k == 104 # h
-                info_dialog(help)
-            elseif k == 97 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, obj1.time_pts[1])
-                end
-                draw(can)
-            elseif k == 115 # s
-                time_current = obj1.time_pts[end] - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-                draw(can)
-            elseif k == 122 # z
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                if time_current >= obj1.time_pts[1] + 1
-                    time_current -= 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
-                end
-                draw(can)
-            elseif k == 99 # c
+        if s == 0x00000018 # alt
+            if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj1.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -1460,10 +1474,10 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                     end
                 end
                 draw(can)
-            elseif k == 120 # x
+            elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj1.time_pts[end] - zoom
-                    time_current += 1
+                    time_current += zoom
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_time, :value, time_current)
                     end
@@ -1473,10 +1487,29 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif k == 118 # v
+            end
+        end
+        if s == 0x00000014
+            if k == 113 # q
+                Gtk.destroy(win)
+            elseif k == 104 # h
+                info_dialog(help)
+            elseif k == 0x00000073 # s
+                scale = !scale
+                draw(can)
+            elseif k == 0x0000002c # ,
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj1.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+                draw(can)
+            elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj1.time_pts[end] - zoom
-                    time_current += zoom
+                    time_current += 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_time, :value, time_current)
                     end
@@ -1568,7 +1601,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+    lab_ch = GtkLabel("$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
     set_gtk_property!(lab_ch, :halign, 0)
     g[1:14, 1] = can
     g[1, 2] = bt_chup
@@ -1624,7 +1657,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                         ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                     end
@@ -1645,7 +1678,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                     ch_first -= 1
                     ch_last -= 1
                     Gtk.@sigatom begin
-                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                         ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                         ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                     end
@@ -1660,7 +1693,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
             ch_first += 1
             ch_last += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                 ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
             end
@@ -1673,7 +1706,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
             ch_first -= 1
             ch_last -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                 ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                 ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
             end
@@ -1735,7 +1768,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                 ch_first -= 1
                 ch_last -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                     ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
@@ -1746,7 +1779,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                     ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
@@ -1844,6 +1877,10 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iview_ep() should be used for epoched object."
 
+    mono = false
+    quit = false
+    scale = true
+
     if length(c_idx) > 10
         c_idx_first = 1
         c_idx_last = 10
@@ -1893,7 +1930,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
+    lab_ch = GtkLabel("$(lpad(string(c_idx[c_idx_first]), 3, '0')):$(lpad(string(c_idx[c_idx_last]), 3, '0'))")
     set_gtk_property!(lab_ch, :halign, 0)
     g[1:14, 1] = can
     g[1, 2] = bt_chup
@@ -1931,27 +1968,68 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
     end
 
     can.mouse.scroll = @guarded (widget, event) -> begin
+        s = event.state
         if event.direction == 1 # down
-            if ch_last < ch[end]
-                ch_first += 1
-                ch_last += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
-                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+            if s == 0x00000011
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += 1
+                else
+                    time_current = obj.time_pts[end] - zoom
                 end
-                draw(can)
+                Gtk.@sigatom begin
+                    set_gtk_property!(entry_time, :value, time_current)
+                end
+            elseif s == 0x00000014
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                else
+                    time_current = obj.time_pts[end] - zoom
+                end
+                Gtk.@sigatom begin
+                    set_gtk_property!(entry_time, :value, time_current)
+                end
+            else
+                if ch_last < c_idx[end]
+                    ch_first += 1
+                    ch_last += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
+                        c_idx[ch_first] != c_idx[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                        c_idx[ch_last] == c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                    end
+                    draw(can)
+                end
             end
         elseif event.direction == 0 # up
-            if ch_first > 1
-                ch_first -= 1
-                ch_last -= 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
-                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+            if s == 0x00000011
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
                 end
-                draw(can)
+            elseif s == 0x00000014
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            else
+                if ch_first > 1
+                    ch_first -= 1
+                    ch_last -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
+                        c_idx[ch_first] == c_idx[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                        c_idx[ch_last] != c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                    end
+                    draw(can)
+                end
             end
         end
     end
@@ -1961,7 +2039,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
             c_idx_first += 1
             c_idx_last += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 3, '0')):$(lpad(string(c_idx[c_idx_last]), 3, '0'))")
                 c_idx[c_idx_first] != c_idx[1] && set_gtk_property!(bt_chup, :sensitive, true)
                 c_idx[c_idx_last] == c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, false)
             end
@@ -1974,7 +2052,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
             c_idx_first -= 1
             c_idx_last -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 3, '0')):$(lpad(string(c_idx[c_idx_last]), 3, '0'))")
                 c_idx[c_idx_first] == c_idx[1] && set_gtk_property!(bt_chup, :sensitive, false)
                 c_idx[c_idx_last] != c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, true)
             end
@@ -2047,8 +2125,10 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
         Gtk.destroy(win)
     end
 
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        info_dialog()
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -2059,7 +2139,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
                 ch_first -= 1
                 ch_last -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
                     ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
@@ -2070,7 +2150,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
                     ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
                     ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
@@ -2081,7 +2161,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
-                info_dialog("Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
+                info_dialog(help)
             elseif k == 97 # a
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -2170,6 +2250,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
 
     _check_epochs(obj, ep)
 
+    mono = false
+    scale = true
+
     if length(c_idx) > 10
         c_idx_first = 1
         c_idx_last = 10
@@ -2178,7 +2261,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         c_idx_last = length(c_idx)
     end
 
-    p = NeuroAnalyzer.plot(obj, c, c_idx=c_idx[c_idx_first:c_idx_last], ep=ep, mono=mono, title="")
+    p = NeuroAnalyzer.plot(obj, c, c_idx=c_idx[c_idx_first:c_idx_last], ep=ep, mono=mono, scale=scale, title="")
     win = GtkWindow("NeuroAnalyzer: iview_ep()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -2212,7 +2295,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
+    lab_ch = GtkLabel("$(lpad(string(c_idx[c_idx_first]), 3, '0')):$(lpad(string(c_idx[c_idx_last]), 3, '0'))")
     set_gtk_property!(lab_ch, :halign, 0)
     g[1:14, 1] = can
     g[1, 2] = bt_chup
@@ -2239,6 +2322,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                                                        c_idx=c_idx[c_idx_first]:c_idx[c_idx_last],
                                                        ep=ep,
                                                        mono=mono,
+                                                       scale=scale,
                                                        title=""))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
@@ -2247,26 +2331,46 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
 
     can.mouse.scroll = @guarded (widget, event) -> begin
         if event.direction == 1 # down
-            if ch_last < ch[end]
-                ch_first += 1
-                ch_last += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
-                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+            if s == 0x00000011
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep < nepochs(obj)
+                    ep += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
                 end
-                draw(can)
+            else
+                if ch_last < c_idx[end]
+                    ch_first += 1
+                    ch_last += 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
+                        ch[ch_first] != c_idx[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                        ch[ch_last] == c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                    end
+                    draw(can)
+                end
             end
         elseif event.direction == 0 # up
-            if ch_first > 1
-                ch_first -= 1
-                ch_last -= 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
-                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+            if s == 0x00000011
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                if ep > 1
+                    ep -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_epoch, :value, ep)
+                    end
                 end
-                draw(can)
+            else
+                if ch_first > 1
+                    ch_first -= 1
+                    ch_last -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
+                        c_idx[ch_first] == c_idx[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                        c_idx[ch_last] != c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                    end
+                    draw(can)
+                end
             end
         end
     end
@@ -2276,7 +2380,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
             c_idx_first += 1
             c_idx_last += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 3, '0')):$(lpad(string(c_idx[c_idx_last]), 3, '0'))")
                 c_idx[c_idx_first] != c_idx[1] && set_gtk_property!(bt_chup, :sensitive, true)
                 c_idx[c_idx_last] == c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, false)
             end
@@ -2289,7 +2393,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
             c_idx_first -= 1
             c_idx_last -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 2, '0')):$(lpad(string(c_idx[c_idx_last]), 2, '0'))")
+                set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[c_idx_first]), 3, '0')):$(lpad(string(c_idx[c_idx_last]), 3, '0'))")
                 c_idx[c_idx_first] == c_idx[1] && set_gtk_property!(bt_chup, :sensitive, false)
                 c_idx[c_idx_last] != c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, true)
             end
@@ -2337,50 +2441,62 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         Gtk.destroy(win)
     end
 
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to first epoch\nEnd\tgo to last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        info_dialog(help)
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if k == 0x0000ff55 # b
+        if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
                 ch_last -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] == ch[1] && set_gtk_property!(bt_chup, :sensitive, false)
-                    ch[ch_last] != ch[end] && set_gtk_property!(bt_chdown, :sensitive, true)
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
+                    c_idx[ch_first] == c_idx[1] && set_gtk_property!(bt_chup, :sensitive, false)
+                    c_idx[ch_last] != c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
                 draw(can)
             end
-        elseif k == 0x0000ff56 # n
-            if ch_last < ch[end]
+        elseif k == 0x0000ff56 # Page Down
+            if ch_last < c_idx[end]
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(lpad(string(ch[ch_first]), 2, '0')):$(lpad(string(ch[ch_last]), 2, '0'))")
-                    ch[ch_first] != ch[1] && set_gtk_property!(bt_chup, :sensitive, true)
-                    ch[ch_last] == ch[end] && set_gtk_property!(bt_chdown, :sensitive, false)
+                    set_gtk_property!(lab_ch, :label, "$(lpad(string(c_idx[ch_first]), 3, '0')):$(lpad(string(ch[ch_last]), 3, '0'))")
+                    c_idx[ch_first] != c_idx[1] && set_gtk_property!(bt_chup, :sensitive, true)
+                    c_idx[ch_last] == c_idx[end] && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
                 draw(can)
+            end
+        elseif k == 0x0000ff50 # home
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_epoch, :value, 1)
+            end
+        elseif k == 0x0000ff57 # end
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         end
         if s == 0x00000014
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
-                info_dialog("Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+                info_dialog(help)
+            elseif k == 0x0000006d # m
+                mono = !mono
+                draw(can)
+            elseif k == 0x00000073 # s
+                scale = !scale
+                draw(can)
             elseif k == 97 # a
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_epoch, :value, 1)
                 end
-            elseif k == 115 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, nepochs(obj))
-                end
-            elseif k == 122 # z
+            elseif k == 0x0000002c # ,
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep > 1
                     ep -= 1
@@ -2388,7 +2504,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                         set_gtk_property!(entry_epoch, :value, ep)
                     end
                 end
-            elseif k == 120 # x
+            elseif k == 0x0000002e # .
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1
