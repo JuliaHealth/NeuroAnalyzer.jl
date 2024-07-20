@@ -228,12 +228,11 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
             type == "0" && (type = :normal)
             type == "1" && (type = :mean)
             type == "2" && (type = :butterfly)
-            if !isa(ch, Int64)
-                ch = collect(ch)
-                ctypes = obj.header.recording[:channel_type]
-                ch_order = _sort_channels(ctypes)
-                ctypes = ctypes[ch_order][ch]
-            end
+            !isa(ch, Int64) && (ch = collect(ch))
+            (ch isa(Vector{Int64}) && length(ch) == 1) && (ch = ch[1])
+            ctypes = obj.header.recording[:channel_type]
+            ch_order = obj.header.recording[:channel_order]
+            ctypes = ctypes[ch_order][ch]
             if length(unique(ctypes)) > 1 && type === :butterfly
                 warn_dialog("For plot type=:butterfly all channels should be of the same type.")
             elseif length(unique(ctypes)) > 1 && type === :mean
@@ -661,12 +660,11 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
             type == "0" && (type = :normal)
             type == "1" && (type = :mean)
             type == "2" && (type = :butterfly)
-            if !isa(ch, Int64)
-                ch = collect(ch)
-                ctypes = obj.header.recording[:channel_type]
-                ch_order = _sort_channels(ctypes)
-                ctypes = ctypes[ch_order][ch]
-            end
+            !isa(ch, Int64) && (ch = collect(ch))
+            (ch isa(Vector{Int64}) && length(ch) == 1) && (ch = ch[1])
+            ctypes = obj.header.recording[:channel_type]
+            ch_order = obj.header.recording[:channel_order]
+            ctypes = ctypes[ch_order][ch]
             if length(unique(ctypes)) > 1 && type === :butterfly
                 warn_dialog("For plot type=:butterfly all channels should be of the same type.")
             elseif length(unique(ctypes)) > 1 && type === :mean

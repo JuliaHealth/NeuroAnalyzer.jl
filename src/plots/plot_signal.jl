@@ -620,10 +620,10 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     ch_init = ch
     bm = obj.header.recording[:bad_channels]
     ctypes = obj.header.recording[:channel_type]
+    ch_order = obj.header.recording[:channel_order]
     # sort channels by their type
     if !isa(ch, Int64)
         ch = collect(ch)
-        ch_order = _sort_channels(ctypes)
         s = @views s[ch_order, :]
         s = @views s[ch, :]
         ctypes = ctypes[ch_order][ch]
@@ -644,7 +644,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     if type === :normal
         if isa(ch, Int64)
-            ch_name = _ch_rename(ctypes[ch])
+            ch_name = _ch_rename(ctypes[ch_order][ch])
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
                                        title,

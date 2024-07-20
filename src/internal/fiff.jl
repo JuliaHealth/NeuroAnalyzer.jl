@@ -186,35 +186,41 @@ function _create_fiff_block(fid::IOStream)
     tag_next = nothing
     while tag_next != -1
         current_position = position(fid)
-        tag_kind, tag_type, tag_size, data, tag_next = NeuroAnalyzer._read_fiff_tag(fid)
+        tag_kind, tag_type, tag_size, data, tag_next = _read_fiff_tag(fid)
         push!(tags, (current_position, tag_kind, tag_type, tag_size, data, tag_next))
     end
 
     seek(fid, 0)
 
     # create list of tag IDs
-    tag_pos = [tags[idx][1] for idx in eachindex(tags)]
-    tag_ids = [tags[idx][2] for idx in eachindex(tags)]
-    tag_type = [tags[idx][3] for idx in eachindex(tags)]
-    tag_size = [tags[idx][4] for idx in eachindex(tags)]
-
     # create block structure
+    tag_pos = zeros(Int64, length(tags))
+    tag_ids = zeros(Int64, length(tags))
+    tag_type = zeros(Int64, length(tags))
+    tag_size = zeros(Int64, length(tags))
     block_level = ones(Int64, length(tags))
     block_type = Vector{Int64}()
     block_type_current = 999
-    for tag_idx in eachindex(tags)
-        if tags[tag_idx][2] == _find_fiff_tag("block_start")
+    bs = _find_fiff_tag("block_start")
+    be = _find_fiff_tag("block_end")
+    d = Vector{Vector{UInt8}}()
+    @inbounds for tag_idx in eachindex(tags)
+        tag_pos[tag_idx] = tags[tag_idx][1]
+        tag_ids[tag_idx] = tags[tag_idx][2]
+        tag_type[tag_idx] = tags[tag_idx][3]
+        tag_size[tag_idx] = tags[tag_idx][4]
+        if tag_ids[tag_idx] == bs
             block_level[tag_idx:end] .+= 1
             block_type_current = _get_fiff_block_type(fid, tags[tag_idx])[]
             push!(block_type, block_type_current)
-        elseif tags[tag_idx][2] == _find_fiff_tag("block_end")
+        elseif tag_ids[tag_idx] == be
             push!(block_type, block_type_current)
             block_level[tag_idx:end] .-= 1
         else
             push!(block_type, block_type_current)
         end
+        push!(d, tags[tag_idx][5])
     end
-    d = [tags[idx][5] for idx in eachindex(tags)]
     return d, hcat(tag_pos, tag_ids, tag_type, tag_size, block_level, block_type)
 end
 
