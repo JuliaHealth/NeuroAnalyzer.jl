@@ -46,7 +46,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
-    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported."
+    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     reserved == "EDF+C" && (file_type = "EDF+")
     # we get -1 here
     data_records = parse(Int, strip(header[237:244]))
@@ -268,6 +268,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               units=units,
                               transducers=transducers,
                               prefiltering=prefiltering,
+                              line_frequency=50,
                               sampling_rate=max_sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

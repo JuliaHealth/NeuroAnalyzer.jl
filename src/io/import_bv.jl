@@ -357,6 +357,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
                               transducers=transducers,
                               units=units,
                               prefiltering=prefiltering,
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

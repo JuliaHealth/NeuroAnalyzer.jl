@@ -362,7 +362,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         tlv_val = UInt8[]
         readbytes!(fid, tlv_tag, 1)
         if tlv_tag != [0x00]
-            @error "TLV are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+            @error "TLV are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
             readbytes!(fid, tlv_len, 3)
             b1 = Int32(tlv_len[1]) << 8
             b2 = Int32(tlv_len[2]) << 16
@@ -612,6 +612,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
                               transducers=transducers,
                               units=units,
                               prefiltering=prefiltering,
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

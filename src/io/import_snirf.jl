@@ -172,7 +172,7 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     data_n -= 1
-    data_n > 1 && _warn("Multiple data SNIRF files are not supported yet.")
+    data_n > 1 && _warn("Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
     d_id = "data1"
 
@@ -373,7 +373,7 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     stim_n -= 1
-    stim_n > 1 && _warn("Multiple stimulus SNIRF files are not supported yet.")
+    stim_n > 1 && _warn("Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
     s_id = "stim1"
     stim_data = nothing
@@ -422,7 +422,7 @@ function import_snirf(file_name::String; n::Int64=0)
         end
     end
     aux_n -= 1
-    aux_n > 1 && _warn("Multiple aux SNIRF files are not supported yet.")
+    aux_n > 1 && _warn("Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
     a_id = "aux$aux_n"
     aux_data = nothing

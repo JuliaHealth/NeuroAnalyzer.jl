@@ -67,6 +67,7 @@ function import_npy(file_name::String; sampling_rate::Int64)
                               transducers=repeat([""], ch_n),
                               units=repeat(["μV"], ch_n),
                               prefiltering=repeat([""], ch_n),
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=repeat([1.0], ch_n),
                               bad_channels=zeros(Bool, size(data, 1), 1))

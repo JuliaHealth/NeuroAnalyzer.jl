@@ -52,7 +52,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     recording_time = header[178:185]
     data_offset = parse(Int, strip(header[186:192]))
     reserved  = strip(header[193:236])
-    @assert reserved != "BDF+D" "BDF+D format (interrupted recordings) is not supported yet."
+    @assert reserved != "BDF+D" "BDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     reserved == "BDF+C" && (file_type = "BDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
@@ -266,6 +266,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                               transducers=transducers,
                               units=units,
                               prefiltering=prefiltering,
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

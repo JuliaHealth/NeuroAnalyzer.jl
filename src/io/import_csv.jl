@@ -95,6 +95,7 @@ function import_csv(file_name::String; detect_type::Bool=true)
                               transducers=repeat([""], ch_n),
                               units=units,
                               prefiltering=repeat([""], ch_n),
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

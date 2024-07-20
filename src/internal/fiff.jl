@@ -74,18 +74,14 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
     if fs_mask == 0x00000000 # scalar
         d = Float64[]
         if df == "float"
-            for idx in 1:4:length(buf)
-                push!(d, Float64(ntoh.(reinterpret(Float16, buf[idx:(idx + 1)])[1])))
-            end
+            [push!(d, Float64(ntoh.(reinterpret(Float16, buf[idx:(idx + 1)])[1]))) for idx in 1:4:length(buf)]
         elseif df == "old_pack"
             a = Float64(ntoh.(reinterpret(Float32, buf[1:4])[1]))
             b = Float64(ntoh.(reinterpret(Float32, buf[5:8])[1]))
-            for idx in 9:2:length(buf)
-                push!(d, Float64(ntoh.(reinterpret(Int16, buf[idx:(idx + 1)])[1])))
-            end
+            [push!(d, Float64(ntoh.(reinterpret(Int16, buf[idx:(idx + 1)])[1]))) for idx in 9:2:length(buf)]
             d = a .* (d .+ b)
         else
-            _warn("scalar of $df is not supported yet.")
+            _warn("scalar of $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
         end
     elseif fs_mask == 0x40000000 # matrix
         mc_mask = fb & 0x00FF0000
@@ -93,51 +89,69 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
             n = ntoh.(reinterpret(Int32, buf[(end - 3):end]))[1]
             dim = Int64[]
             dims = buf[(end - 5 * n - 1):(end - 4)]
-            for dim_idx in 1:4:length(dims)
-                push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1])
-            end
+            [push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1]) for dim_idx in 1:4:length(dims)]
             reverse!(dim)
+            dim = ntuple(i -> dim[i], Val(length(dim)))
             tmp = buf[1:(end - length(dims) - 4)]
             d = Float64[]
             if df == "float"
-                for idx in 1:4:length(tmp)
-                    push!(d, Float64(ntoh.(reinterpret(Float32, tmp[idx:(idx + 3)])[1])))
-                end
+                [push!(d, Float64(ntoh.(reinterpret(Float32, tmp[idx:(idx + 3)])[1]))) for idx in 1:4:length(tmp)]
             elseif df == "int32"
-                for idx in 1:4:length(tmp)
-                    push!(d, Float64(ntoh.(reinterpret(Int32, tmp[idx:(idx + 3)])[1])))
-                end
+                [push!(d, Float64(ntoh.(reinterpret(Int32, tmp[idx:(idx + 3)])[1]))) for idx in 1:4:length(tmp)]
             elseif df == "old_pack"
                 a = Float64(ntoh.(reinterpret(Float32, tmp[1:4])[1]))
                 b = Float64(ntoh.(reinterpret(Float32, tmp[5:8])[1]))
-                for idx in 9:2:length(tmp)
-                    push!(d, Float64(ntoh.(reinterpret(Int16, tmp[idx:(idx + 1)])[1])))
-                end
+                [push!(d, Float64(ntoh.(reinterpret(Int16, tmp[idx:(idx + 1)])[1]))) for idx in 9:2:length(tmp)]
                 d = a .* (d .+ b)
             else
-                _warn("matrix of $df is not supported yet.")
+                _warn("matrix of $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
             end
             d = reshape(d, dim[1], dim[2])
         elseif mc_mask == 0x00100000 # sparse, column-compressed
             n = ntoh.(reinterpret(Int32, buf[(end - 3):end]))[1]
             dim = Int64[]
             dims = buf[(end - 5 * n - 1):(end - 4)]
-            for dim_idx in 1:4:length(dims)
-                push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1])
-            end
+            [push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1]) for dim_idx in 1:4:length(dims)]
             reverse!(dim)
+            dim = ntuple(i -> dim[i], Val(length(dim)))
             tmp = buf[1:(end - length(dims) - 4)]
             nz = ntoh.(reinterpret(Int32, tmp[(end - 3):end]))[1]
             tmp = buf[1:(end - length(dims) - 8)]
             nz = ntoh.(reinterpret(Int32, tmp[(end - 3):end]))[1]
             tmp = buf[1:(end - length(dims) - 12)]
             col_start_idx = Int64[]
+            l = length(tmp[(end + 1 - dim[2] * 4):end])
+            [push!(col_start_idx, ntoh.(reinterpret(Int32, tmp[(end - l + idx):(end - l + 3 + idx)]))[1]) for idx in 1:4:length(tmp[(end + 1 - dim[2] * 4):end])]
+            col_start_idx .+= 1
+            tmp = buf[1:(end - l - length(dims) - 12)]
             row_idx = Int64[]
-            m = zeros(dim[1], dim[2])
-
-            _warn("sparse, column-compressed is not supported yet.")
+            l = length(tmp[(end + 1 - nz * 4):end])
+            [push!(row_idx, ntoh.(reinterpret(Int32, tmp[(end - l + idx):(end - l + 3 + idx)]))[1]) for idx in 1:4:length(tmp[(end + 1 - nz * 4):end])]
+            row_idx .+= 1
+            tmp = tmp[1:(end - l)]
+            if df == "float"
+                m = Float64[]
+                [push!(m, Float64(ntoh.(reinterpret(Float32, tmp[idx:(idx + 3)]))[1])) for idx in 1:4:length(tmp)]
+            else
+                _warn("sparse, column-compressed of $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+            end
+            d = zeros(dim)
+            col = 1
+            rel = 0
+            nr = reverse(diff(col_start_idx))
+            @inbounds for idx in eachindex(m)
+                d[col, row_idx[idx]] = m[idx]
+                rel += 1
+                if length(nr) != 0
+                    if rel == nr[end]
+                        col += 1
+                        rel = 0
+                        pop!(nr)
+                    end
+                end
+            end
         elseif mc_mask == 0x00200000 # sparse, row-compressed
-            _warn("sparse, row-compressed is not supported yet.")
+            _warn("sparse, row-compressed is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
         end
     end
     return d
@@ -175,8 +189,6 @@ function _create_fiff_block(fid::IOStream)
         tag_kind, tag_type, tag_size, data, tag_next = NeuroAnalyzer._read_fiff_tag(fid)
         push!(tags, (current_position, tag_kind, tag_type, tag_size, data, tag_next))
     end
-
-    _info("Number of tags: $(length(tags))")
 
     seek(fid, 0)
 
@@ -250,4 +262,10 @@ function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vect
         end
     end
     return d
+end
+
+function _fiff_tree(fiff_object::Vector{Any})
+    for idx in eachindex(fiff_object)
+        println(fiff_object[idx][3] * " - " * fiff_object[idx][2])
+    end
 end

@@ -51,7 +51,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
         exp_name = "TaskName" in k ? header["TaskName"] : ""
         exp_design = "TaskDescription" in k ? header["TaskDescription"] : ""
         exp_notes = "Instructions" in k ? header["Instructions"] : ""
-        "RecordingType" in k && @assert header["RecordingType"] == "continuous" "Non-continuous recordings are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+        "RecordingType" in k && @assert header["RecordingType"] == "continuous" "Non-continuous recordings are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
 
         # what if the files contains mixed recordings (e.g. EEG + SEEG)
         if "EEGChannelCount" in k && header["EEGChannelCount"] > 0
@@ -231,6 +231,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)
                               transducers=transducers,
                               units=units,
                               prefiltering=prefiltering,
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

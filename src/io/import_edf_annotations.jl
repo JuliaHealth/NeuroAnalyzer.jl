@@ -43,7 +43,7 @@ function import_edf_annotations(file_name::String)
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
-    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet."
+    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))

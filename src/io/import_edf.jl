@@ -56,7 +56,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
-    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet."
+    @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
@@ -300,6 +300,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               transducers=transducers,
                               units=units,
                               prefiltering=prefiltering,
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
                               bad_channels=zeros(Bool, size(data, 1), 1))

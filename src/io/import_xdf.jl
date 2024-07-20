@@ -117,6 +117,7 @@ function import_xdf(file_name::String)
                               transducers=repeat([""], ch_n),
                               units=units,
                               prefiltering=repeat([""], ch_n),
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=ones(ch_n),
                               bad_channels=zeros(Bool, size(data, 1), 1))

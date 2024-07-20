@@ -373,6 +373,9 @@ function info(obj::NeuroAnalyzer.NEURO)
             println("         Reference type: $(obj.header.recording[:reference])")
         end
     end
+    if datatype(obj) in ["eeg", "meg", "ecog", "seeg"]
+        println("         Line frequency: $(obj.header.recording[:line_frequency]) Hz")
+    end
     if datatype(obj) == "nirs"
         println("        Wavelength [nm]: $(obj.header.recording[:wavelengths])")
     end
