@@ -312,7 +312,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
         _check_datatype(obj, "eeg")
         @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
-        chs = get_channel_bytype(obj, type="eeg")
+        chs = get_channel_bytype(obj, type=datatype(obj))
         [@assert ch[idx] in chs "ch must not contain non-signal channels." for idx in eachindex(ch)]
 
         ch_n = length(ch)

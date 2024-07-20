@@ -19,7 +19,8 @@ Interpolate channel using linear regression.
 """
 function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
 
-    channels = get_channel_bytype(obj, type=obj.header.recording[:data_type])
+    channels = get_channel_bytype(obj, type=datatype(obj))
+
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
     @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
@@ -27,9 +28,9 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, e
     _check_epochs(obj, ep_ref)
     @assert !(ep in ep_ref) "ep must not be in ep_rep."
 
-    signal_src = obj.data[channels, :, ep]
+    signal_src = @views obj.data[:, :, ep]
     ch_ref = setdiff(channels, ch)
-    signal_ref = _make_epochs(obj.data[channels, :, ep_ref], ep_n=1)
+    signal_ref = @views NeuroAnalyzer._make_epochs(obj.data[:, :, ep_ref], ep_n=1)
 
     # train
     df = @views DataFrame(hcat(signal_ref[ch, :, 1], signal_ref[ch_ref, :, 1]'), :auto)

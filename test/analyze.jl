@@ -3,6 +3,8 @@ using Test
 using Wavelets
 using ContinuousWavelets
 
+ntests = 61
+
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
@@ -18,7 +20,7 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
-@info "Test 1/61: acov()"
+@info "Test 1/$ntests: acov()"
 @test NeuroAnalyzer.acov(v) == [-0.8 -0.8 -0.2 0.8 2.0 0.8 -0.2 -0.8 -0.8;;;]
 ac, l = NeuroAnalyzer.acov(e10)
 @test size(ac) == (23, 3, 10)
@@ -36,12 +38,12 @@ ac, l = NeuroAnalyzer.acov(e10, method=:stat)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
 
-@info "Test 2/61: ampdiff()"
+@info "Test 2/$ntests: ampdiff()"
 @test size(NeuroAnalyzer.ampdiff(a1)) == (2, 3, 2)
 ad = NeuroAnalyzer.ampdiff(e10)
 @test size(ad) == (23, 2560, 10)
 
-@info "Test 3/61: band_power()"
+@info "Test 3/$ntests: band_power()"
 @test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20))) == (23, 10)
 @test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:welch)) == (23, 10)
 @test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:fft)) == (23, 10)
@@ -51,7 +53,7 @@ ad = NeuroAnalyzer.ampdiff(e10)
 @test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:gh)) == (23, 10)
 @test size(NeuroAnalyzer.band_power(e10, frq_lim=(10, 20), method=:cwt)) == (23, 10)
 
-@info "Test 4/61: band_mpower()"
+@info "Test 4/$ntests: band_mpower()"
 mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20))
 @test size(mbp) == (23, 10)
 @test size(maxf) == (23, 10)
@@ -81,12 +83,12 @@ mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20), method=:cwt)
 @test size(maxf) == (23, 10)
 @test size(maxbp) == (23, 10)
 
-@info "Test 5/61: corm()"
+@info "Test 5/$ntests: corm()"
 @test NeuroAnalyzer.corm(v) ≈ ones(5, 5)
 @test size(NeuroAnalyzer.corm(a1)) == (2, 2, 3, 2)
 @test size(NeuroAnalyzer.corm(e10)) == (23, 23, 2560, 10)
 
-@info "Test 6/61: covm()"
+@info "Test 6/$ntests: covm()"
 @test NeuroAnalyzer.covm(v) == [ 2.5  5.0  7.5 10.0 12.5;
                                  5.0 10.0 15.0 20.0 25.0;
                                  7.5 15.0 22.5 30.0 37.5;
@@ -95,7 +97,7 @@ mbp, maxf, maxbp = NeuroAnalyzer.band_mpower(e10, frq_lim=(10, 20), method=:cwt)
 @test size(NeuroAnalyzer.covm(a1)) == (2, 2, 3, 2)
 @test size(NeuroAnalyzer.covm(e10)) == (23, 23, 2560, 10)
 
-@info "Test 7/61: cph()"
+@info "Test 7/$ntests: cph()"
 ph, f = NeuroAnalyzer.cph(rand(10), rand(10), fs=1)
 @test length(ph) == 9
 @test length(f) == 9
@@ -112,7 +114,7 @@ ph, f = NeuroAnalyzer.cph(e10, e10, ch1=1:2, ch2=2:3, ep1=1, ep2=1)
 @test size(ph) == (2, 2049, 1)
 @test length(f) == 2049
 
-@info "Test 8/61: diss()"
+@info "Test 8/$ntests: diss()"
 @test NeuroAnalyzer.diss(v1, v2) == (gd = 0.21320071635561044, sc = 0.9772727272727273)
 @test NeuroAnalyzer.diss(a1) == (gd = [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0], sc = [1.0 1.0; 1.0 1.0;;; 1.0 1.0; 1.0 1.0])
 gd, sc = NeuroAnalyzer.diss(a1, a2)
@@ -122,7 +124,7 @@ gd, sc = NeuroAnalyzer.diss(e10)
 @test size(gd) == (23, 23, 10)
 @test size(sc) == (23, 23, 10)
 
-@info "Test 9/61: entropy()"
+@info "Test 9/$ntests: entropy()"
 e, s, l = NeuroAnalyzer.entropy(rand(10))
 @test e < l
 @test s < l
@@ -135,7 +137,7 @@ e, s, l = NeuroAnalyzer.entropy(e10)
 @test size(s) == (23, 10)
 @test size(l) == (23, 10)
 
-@info "Test 10/61: negentropy()"
+@info "Test 10/$ntests: negentropy()"
 n = NeuroAnalyzer.negentropy(rand(10))
 @test n < 0
 n = NeuroAnalyzer.negentropy(rand(10, 10))
@@ -143,7 +145,7 @@ n = NeuroAnalyzer.negentropy(rand(10, 10))
 n = NeuroAnalyzer.negentropy(eeg)
 @test size(n) == (23, 1)
 
-@info "Test 11/61: tenv()"
+@info "Test 11/$ntests: tenv()"
 e, t = NeuroAnalyzer.tenv(e10)
 @test size(e) == (23, 2560, 10)
 @test length(t) == 2560
@@ -178,7 +180,7 @@ em, eu, el, t = NeuroAnalyzer.tenv_median(e10, dims=3)
 @test size(el) == (2560,)
 @test length(t) == 2560
 
-@info "Test 12/61: senv()"
+@info "Test 12/$ntests: senv()"
 e, t = NeuroAnalyzer.senv(e10)
 @test size(e) == (23, 289, 10)
 @test length(t) == 289
@@ -225,7 +227,7 @@ em, eu, el, t = NeuroAnalyzer.senv_median(e10, dims=3)
 @test size(el) == (289,)
 @test length(t) == 289
 
-@info "Test 13/61: penv()"
+@info "Test 13/$ntests: penv()"
 e, t = NeuroAnalyzer.penv(e10, method=:welch)
 @test size(e) == (23, 129, 10)
 @test length(t) == 129
@@ -278,7 +280,7 @@ em, eu, el, t = NeuroAnalyzer.penv_median(e10, dims=3)
 @test size(el) == (129,)
 @test length(t) == 129
 
-@info "Test 14/61: henv()"
+@info "Test 14/$ntests: henv()"
 e, t = NeuroAnalyzer.henv(e10)
 @test size(e) == (23, 2560, 10)
 @test length(t) == 2560
@@ -313,12 +315,12 @@ em, eu, el, t = NeuroAnalyzer.henv_median(e10, dims=3)
 @test size(el) == (2560,)
 @test length(t) == 2560
 
-@info "Test 15/61: erp_peaks()"
+@info "Test 15/$ntests: erp_peaks()"
 e = NeuroAnalyzer.erp(e10)
 p = NeuroAnalyzer.erp_peaks(e)
 @test size(p) == (23, 2)
 
-@info "Test 16/61: coherence()"
+@info "Test 16/$ntests: coherence()"
 c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:mt)
 @test length(c) == 65
 @test length(msc) == 65
@@ -336,7 +338,7 @@ c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method
 @test size(msc) == (1, 2049, 1)
 @test length(f) == 2049
 
-@info "Test 17/61: frqinst()"
+@info "Test 17/$ntests: frqinst()"
 f = NeuroAnalyzer.frqinst(rand(100))
 @test length(f) == 100
 f = NeuroAnalyzer.frqinst(rand(10, 100, 10))
@@ -344,7 +346,7 @@ f = NeuroAnalyzer.frqinst(rand(10, 100, 10))
 f = NeuroAnalyzer.frqinst(e10)
 @test size(f) == (23, 2560, 10)
 
-@info "Test 18/61: ged()"
+@info "Test 18/$ntests: ged()"
 s, r, rn = NeuroAnalyzer.ged(rand(10, 10), rand(10, 10))
 @test length(s) == 100
 @test length(r) == 10
@@ -354,7 +356,7 @@ s, r, rn = NeuroAnalyzer.ged(e10, e10)
 @test length(r) == 230
 @test length(rn) == 230
 
-@info "Test 19/61: erop()"
+@info "Test 19/$ntests: erop()"
 p, f = erop(e10, ch=1, method=:welch)
 @test size(p) == (129, 1)
 @test length(f) == 129
@@ -377,7 +379,7 @@ p, f = erop(e10, ch=1, method=:cwt)
 @test size(p) == (131, 1)
 @test length(f) == 131
 
-@info "Test 20/61: acor()"
+@info "Test 20/$ntests: acor()"
 @test NeuroAnalyzer.acor(v) == [-0.32 -0.32 -0.08 0.32 0.8 0.32 -0.08 -0.32 -0.32;;;]
 ac, l = NeuroAnalyzer.acor(e10)
 @test size(ac) == (23, 3, 10)
@@ -392,7 +394,7 @@ ac, l = NeuroAnalyzer.acor(e10, method=:stat)
 @test size(ac) == (23, 3, 10)
 @test length(l) == 3
 
-@info "Test 21/61: ispc()"
+@info "Test 21/$ntests: ispc()"
 iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer.ispc(v1, v2)
 @test iv ≈ 0.6125992852305387
 @test ia ≈ -0.0017801930770334254
@@ -411,7 +413,7 @@ iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer.ispc(e10, e10, ch1=1, ch2=2, ep1=1, ep2
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 
-@info "Test 22/61: itpc()"
+@info "Test 22/$ntests: itpc()"
 iv, izv, ia, ip = NeuroAnalyzer.itpc(ones(1, 10, 10), t=1)
 @test iv == 1.0
 @test izv == 10.0
@@ -423,13 +425,13 @@ iv, izv, ia, ip = NeuroAnalyzer.itpc(e10, ch=1, t=256)
 @test ia ≈ [2.636121475719976]
 @test ip[1] ≈ 1.6921361543218993
 
-@info "Test 23/61: itpc_spec()"
+@info "Test 23/$ntests: itpc_spec()"
 iv, izv, f = NeuroAnalyzer.itpc_spec(e10, ch=1, frq_lim=(0, 4), frq_n=5)
 @test size(iv) == (5, 2560)
 @test size(izv) == (5, 2560)
 @test f == [0.01, 0.045, 0.2, 0.894, 4.0]
 
-@info "Test 24/61: mdiff()"
+@info "Test 24/$ntests: mdiff()"
 st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:absdiff)
 @test length(st) == 6
 @test sts == 3.0
@@ -455,7 +457,7 @@ st, sts, p = NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
 @test sts == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test p == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
-@info "Test 25/61: mutual_information()"
+@info "Test 25/$ntests: mutual_information()"
 @test NeuroAnalyzer.mutual_information(v1, v2) ≈ 0.4199730940219748
 @test NeuroAnalyzer.mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
 @test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0]
@@ -464,7 +466,7 @@ m = NeuroAnalyzer.mutual_information(e10)
 m = NeuroAnalyzer.mutual_information(e10, e10, ch1=1, ch2=2)
 @test size(m) == (1, 10)
 
-@info "Test 26/61: msci95()"
+@info "Test 26/$ntests: msci95()"
 @test NeuroAnalyzer.msci95(v1) == (sm = 3.0, ss = 0.7071067811865476, su = 4.385929291125633, sl = 1.6140707088743669)
 @test NeuroAnalyzer.msci95(v2) == (sm = 4.0, ss = 0.7071067811865476, su = 5.385929291125633, sl = 2.614070708874367)
 @test NeuroAnalyzer.msci95(m1) == (sm = [2.5, 3.5, 4.5], ss = [1.4999999999999998, 1.4999999999999998, 1.4999999999999998], su = [5.4399999999999995, 6.4399999999999995, 7.4399999999999995], sl = [-0.4399999999999995, 0.5600000000000005, 1.5600000000000005])
@@ -488,7 +490,7 @@ sm, ss, su, sl = NeuroAnalyzer.msci95(e10, e10)
 @test size(su) == (23, 10)
 @test size(sl) == (23, 10)
 
-@info "Test 27/61: eros()"
+@info "Test 27/$ntests: eros()"
 s, f, t = eros(e10, ch=1, method=:stft)
 @test size(s) == (129, 289, 1)
 @test length(f) == 129
@@ -510,7 +512,7 @@ s, f, t = eros(e10, ch=1, method=:cwt)
 @test length(f) == 131
 @test length(t) == 2560
 
-@info "Test 28/61: phdiff()"
+@info "Test 28/$ntests: phdiff()"
 @test NeuroAnalyzer.phdiff(a1, avg=:phase, h=true) == zeros(2, 3, 2)
 p = NeuroAnalyzer.phdiff(e10, avg=:phase)
 @test size(p) == (23, 1281, 10)
@@ -521,7 +523,7 @@ p = NeuroAnalyzer.phdiff(e10, avg=:phase, h=true)
 p = NeuroAnalyzer.phdiff(e10, avg=:phase, h=true)
 @test size(p) == (23, 2560, 10)
 
-@info "Test 29/61: pli()"
+@info "Test 29/$ntests: pli()"
 pv, phd, s1ph, s2ph = pli(v1, v2)
 @test pv == 0.2
 @test phd == [5, 3, 1, -1, -3]
@@ -536,7 +538,7 @@ pv, sd, phd, s1p, s2p = NeuroAnalyzer.pli(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 
-@info "Test 30/61: psd()"
+@info "Test 30/$ntests: psd()"
 p, f = psd(rand(100), fs=10, wlen=10, woverlap=0)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
@@ -573,14 +575,14 @@ p, f = NeuroAnalyzer.psd(e10, method=:cwt)
 @test size(p) == (23, 131, 10)
 @test length(f) == 131
 
-@info "Test 31/61: env_cor()"
+@info "Test 31/$ntests: env_cor()"
 e1, t = NeuroAnalyzer.tenv(e10)
 e2, t = NeuroAnalyzer.tenv(e10)
 ec, p = NeuroAnalyzer.env_cor(e1, e2)
 @test ec[1] <= 1.0
 @test p[1] <= 1.0
 
-@info "Test 32/61: psd_rel()"
+@info "Test 32/$ntests: psd_rel()"
 p, f = psd_rel(rand(100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
@@ -624,7 +626,7 @@ p, f = NeuroAnalyzer.psd_rel(e10, method=:cwt, frq_lim=(0, 1))
 @test f[1] == 0.0
 @test f[end] == 86.63
 
-@info "Test 33/61: psd_slope()"
+@info "Test 33/$ntests: psd_slope()"
 lf, ls, pf = psd_slope(rand(100), fs=10, wlen=10, woverlap=0)
 @test length(lf) == 6
 @test pf == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
@@ -670,7 +672,7 @@ lf, ls, pf = psd_slope(e10, method=:cwt)
 @test pf[1] == 0.0
 @test pf[end] == 86.63
 
-@info "Test 34/61: amp()"
+@info "Test 34/$ntests: amp()"
 p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10)
 @test size(p) == (23, 10)
 @test size(r) == (23, 10)
@@ -681,13 +683,13 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10)
 @test size(nrg) == (23, 10)
 @test size(rms) == (23, 10)
 
-@info "Test 35/61: rmse()"
+@info "Test 35/$ntests: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 1.0
 @test NeuroAnalyzer.rmse(m1, m2) == [0.0; 0.0;;]
 @test NeuroAnalyzer.rmse(a1, a2) == [0.0 0.0; 0.0 0.0]
 @test NeuroAnalyzer.rmse(e10, e10) == zeros(23, 10)
 
-@info "Test 36/61: snr()"
+@info "Test 36/$ntests: snr()"
 @test NeuroAnalyzer.snr(v1) == 1.8973665961010275
 @test NeuroAnalyzer.snr2(v1) == 1.2060453783110545
 sn, f = NeuroAnalyzer.snr(e10, type=:rms)
@@ -695,7 +697,7 @@ sn, f = NeuroAnalyzer.snr(e10, type=:mean)
 @test size(sn) == (23, 1281)
 @test length(f) == 1281
 
-@info "Test 37/61: spectrogram()"
+@info "Test 37/$ntests: spectrogram()"
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:stft)
 @test size(sp) == (129, 289, 23, 10)
 @test length(sf) == 129
@@ -717,14 +719,14 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10, method=:cwt)
 @test length(sf) == 131
 @test length(st) == 2560
 
-@info "Test 38/61: spec_seg()"
+@info "Test 38/$ntests: spec_seg()"
 sp, sf, st = NeuroAnalyzer.spectrogram(e10)
 sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
 @test size(sp) == (11, 30, 10)
 @test t == (1, 30)
 @test f == (1, 11)
 
-@info "Test 39/61: spectrum()"
+@info "Test 39/$ntests: spectrum()"
 c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(100))
 @test length(c) == 51
 @test length(sa) == 51
@@ -761,7 +763,7 @@ c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, h=true)
 @test size(sp) == (23, 2560, 10)
 @test size(sph) == (23, 2560, 10)
 
-@info "Test 40/61: stationarity()"
+@info "Test 40/$ntests: stationarity()"
 s = NeuroAnalyzer.stationarity(e10, method=:adf)
 @test size(s) == (23, 2, 10)
 s = NeuroAnalyzer.stationarity(e10, method=:cov)
@@ -773,19 +775,19 @@ s = NeuroAnalyzer.stationarity(e10, method=:mean)
 s = NeuroAnalyzer.stationarity(e10, method=:var)
 @test size(s) == (23, 10, 10)
 
-@info "Test 41/61: channel_stats()"
+@info "Test 41/$ntests: channel_stats()"
 c = NeuroAnalyzer.channel_stats(e10)
 for idx in 1:length(c)
     @test size(c[idx]) == (24, 10)
 end
 
-@info "Test 42/61: epoch_stats()"
+@info "Test 42/$ntests: epoch_stats()"
 e = NeuroAnalyzer.epoch_stats(e10)
 for idx in 1:length(e)
     @test length(e[idx]) == 10
 end
 
-@info "Test 43/61: cpsd()"
+@info "Test 43/$ntests: cpsd()"
 pxy, f = cpsd(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method=:mt)
 @test size(pxy) == (1, 2049, 1)
 @test length(f) == 2049
@@ -793,7 +795,7 @@ pxy, f = cpsd(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, method=:fft)
 @test size(pxy) == (1, 1290, 1)
 @test length(f) == 1290
 
-@info "Test 44/61: tkeo()"
+@info "Test 44/$ntests: tkeo()"
 @test NeuroAnalyzer.tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
 @test NeuroAnalyzer.tkeo(a1) == [1.0 0.0 1.0; 1.0 0.0 1.0;;; 1.0 0.0 1.0; 1.0 0.0 1.0]
 t = NeuroAnalyzer.tkeo(e10, method=:pow)
@@ -803,7 +805,7 @@ t = NeuroAnalyzer.tkeo(e10, method=:der)
 t = NeuroAnalyzer.tkeo(e10, method=:amp)
 @test size(t) == (23, 2560, 10)
 
-@info "Test 45/61: total_power()"
+@info "Test 45/$ntests: total_power()"
 tp = NeuroAnalyzer.total_power(e10)
 @test size(tp) == (23, 10)
 tp = NeuroAnalyzer.total_power(e10, method=:welch)
@@ -821,12 +823,12 @@ tp = NeuroAnalyzer.total_power(e10, method=:gh)
 tp = NeuroAnalyzer.total_power(e10, method=:cwt)
 @test size(tp) == (23, 10)
 
-@info "Test 46/61: pacor()"
+@info "Test 46/$ntests: pacor()"
 pac, l = pacor(e10, l=2)
 @test size(pac) == (23, 5, 10)
 @test length(l) == 5
 
-@info "Test 47/61: xcov()"
+@info "Test 47/$ntests: xcov()"
 xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
@@ -843,7 +845,7 @@ xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:stat)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
 
-@info "Test 48/61: xcor()"
+@info "Test 48/$ntests: xcor()"
 xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
@@ -857,38 +859,38 @@ xc, l = NeuroAnalyzer.xcor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, method=:stat)
 @test size(xc) == (1, 3, 1)
 @test length(l) == 3
 
-@info "Test 49/61: amp_at()"
+@info "Test 49/$ntests: amp_at()"
 e = NeuroAnalyzer.erp(e10)
 @test size(amp_at(e, t=2)) == (23, 11)
 
-@info "Test 50/61: avgamp_at()"
+@info "Test 50/$ntests: avgamp_at()"
 @test size(avgamp_at(e, t=(2, 2.5))) == (23, 11)
 
-@info "Test 51/61: maxamp_at()"
+@info "Test 51/$ntests: maxamp_at()"
 @test size(maxamp_at(e, t=(2, 2.5))) == (23, 11)
 
-@info "Test 52/61: minamp_at()"
+@info "Test 52/$ntests: minamp_at()"
 @test size(minamp_at(e, t=(2, 2.5))) == (23, 11)
 
-@info "Test 53/61: env_up()"
+@info "Test 53/$ntests: env_up()"
 x = rand(-10:0.1:10, 1000)
 t = linspace(0, 10, 1000)
 @test length(env_up(x, t)) == 1000
 
-@info "Test 54/61: env_lo()"
+@info "Test 54/$ntests: env_lo()"
 x = rand(-10:0.1:10, 1000)
 t = linspace(0, 10, 1000)
 @test length(env_lo(x, t)) == 1000
 
-@info "Test 55/61: henv_up()"
+@info "Test 55/$ntests: henv_up()"
 x = rand(-10:0.1:10, 1000)
 @test length(henv_up(x)) == 1000
 
-@info "Test 56/61: henv_lo()"
+@info "Test 56/$ntests: henv_lo()"
 x = rand(-10:0.1:10, 1000)
 @test length(henv_lo(x)) == 1000
 
-@info "Test 57/61: axc2frq()"
+@info "Test 57/$ntests: axc2frq()"
 x = [1, -2, 3, -4, 5]
 y = [-1, 2, -3, 4, -5]
 xc = xcor(x, y, l=4, demean=false)
@@ -896,7 +898,7 @@ l = collect(-4:4)
 f = axc2frq(xc[1, :, 1], l)
 @test length(f) == 1
 
-@info "Test 58/61: hjorth()"
+@info "Test 58/$ntests: hjorth()"
 h_act, h_mob, h_comp = hjorth(v1)
 @test h_act == 2.5
 @test h_mob == 0.0
@@ -908,19 +910,19 @@ h_act, h_mob, h_comp = hjorth(e10)
 @test size(h_mob) == (23, 10)
 @test size(h_comp) == (23, 10)
 
-@info "Test 58/61: hjorth()"
+@info "Test 58/$ntests: hjorth()"
 pf = peak_frq(e10, f=(8, 13))
 @test size(pf) == (23, 10)
 
-@info "Test 59/61: phsd()"
+@info "Test 59/$ntests: phsd()"
 ph, f = phsd(e10)
 @test size(ph) == (23, 1281, 10)
 @test length(f) == 1281
 
-@info "Test 60/61: band_asymmetry()"
+@info "Test 60/$ntests: band_asymmetry()"
 @test band_asymmetry(e10, ch1=1, ch2=1, frq_lim=(0, 10)) == (ba = 0.0, ba_norm = 0.0)
 
-@info "Test 61/61: symmetry()"
+@info "Test 61/$ntests: symmetry()"
 @test symmetry(v) == 5
 @test symmetry(m1) == [3.0; 3.0;;]
 @test symmetry(e10, ch=1) == [1.001563721657545 0.9527078565980168 1.0285261489698891 0.9452887537993921 1.0 0.970746728252502 0.9219219219219219 1.0496397117694156 1.0173364854215918 0.9393939393939394]

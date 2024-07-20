@@ -151,6 +151,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})
                               units=repeat(["μV"], ch_n),
                               transducers=repeat([""], ch_n),
                               prefiltering=repeat([""], ch_n),
+                              line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=ones(ch_n),
                               bad_channels=zeros(Bool, size(data, 1), 1))

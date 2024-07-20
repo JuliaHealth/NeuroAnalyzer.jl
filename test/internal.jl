@@ -20,7 +20,7 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._check_channels(a1, 1) === nothing
 @test NeuroAnalyzer._check_channels(a1, 2) === nothing
 @test NeuroAnalyzer._check_channels(e10, 1:24) === nothing
-@test NeuroAnalyzer._check_channels(e10, 1:19, "eeg") === nothing
+@test NeuroAnalyzer._check_channels(e10, e10.header.recording[:channel_order][1:19], "eeg") === nothing
 @test NeuroAnalyzer._check_channels(1:19, 2) === nothing
 @test NeuroAnalyzer._check_epochs(e10, 1:10) === nothing
 @test NeuroAnalyzer._check_cidx(a1, 1) === nothing
@@ -34,9 +34,9 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
 s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0])
+r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false;;])
 @test r isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], gradiometers_planar=[0], gradiometers_axial=[0], coils=[0])
+r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false;;])
 @test r isa Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
 @test e isa Dict{Symbol, String}
@@ -160,22 +160,5 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._set_defaults("a", "b", "c", "d", "e", "f") == ("a", "b", "c")
 @test NeuroAnalyzer._set_defaults("default", "default", "default", "d", "e", "f") == ("d", "e", "f")
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)
-
-# these function are still in work:
-## FIFF
-# NeuroAnalyzer._read_fiff_tag(fid::IOStream)
-# NeuroAnalyzer._get_fiff_block_type(fid::IOStream, tags::Vector{NTuple{5, Int64}}, id)
-# NeuroAnalyzer._read_fiff_tag(fid::IOStream, fiff_blocks::Matrix{Int64}, tag_id::Int64)
-# NeuroAnalyzer._read_fiff_data(fid::IOStream, fiff_blocks::Matrix{Int64}, id::Union{Int64, Nothing})
-# NeuroAnalyzer._find_fiff_tag(fiff_blocks::Matrix{Int64}, id::Int64)
-# NeuroAnalyzer._extract_struct(s, id::Int64)
-# NeuroAnalyzer._fiff_channel_type(channel_types::Vector{Int32})
-# NeuroAnalyzer._create_fiff_block(file_name="a")
-# NeuroAnalyzer._view_fiff_block(fiff_block::Matrix{Int64})
-## tester
-# NeuroAnalyzer._get_lag(n::Int64=10)
-# NeuroAnalyzer._mtime(f::String; n::Int64=10)
-# NeuroAnalyzer._delay(n::Real, l::Real)
-# NeuroAnalyzer._check_accuracy()
 
 true

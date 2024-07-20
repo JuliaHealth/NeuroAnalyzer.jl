@@ -19,6 +19,7 @@ export band_frq
 export describe
 export size
 export datatype
+export channel_order
 
 """
     sr(obj)
@@ -876,5 +877,26 @@ function datatype(obj::NeuroAnalyzer.NEURO)
     dt = obj.header.recording[:data_type]
 
     return dt
+
+end
+
+"""
+    channel_order(obj)
+
+Return channel order of the object.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+- `co::Vector{Int64}`
+"""
+function channel_order(obj::NeuroAnalyzer.NEURO)
+
+    co = obj.header.recording[:channel_order]
+
+    return co
 
 end

@@ -41,7 +41,7 @@ function import_locs(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
-    _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
+    _info("Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org")
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"

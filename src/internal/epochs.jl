@@ -1,4 +1,4 @@
-function _make_epochs(s::Matrix{<:Real}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
+function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
     ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
@@ -23,7 +23,7 @@ function _make_epochs(s::Matrix{<:Real}; ep_n::Union{Int64, Nothing}=nothing, ep
     return epochs
 end
 
-function _make_epochs(s::Array{<:Real, 3}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
+function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
     ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
@@ -44,7 +44,7 @@ function _make_epochs(s::Array{<:Real, 3}; ep_n::Union{Int64, Nothing}=nothing, 
     return epochs
 end
 
-function _make_epochs_bymarkers(s::Array{<:Real, 3}; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)
+function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)
 
     if size(s, 3) > 1
         _warn("Signal has already been epoched, parts of the signal might have been removed.")

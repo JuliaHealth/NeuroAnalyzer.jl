@@ -499,7 +499,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
                                linewidth=1,
                                label="",
                                color=:blue,
-                               alpha=0.75)
+                               alpha=0.5)
     end
 
     # draw labels
@@ -556,16 +556,15 @@ Plot signal.
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
 - `avg::Bool=false`: plot average EDA
-- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not false -- plot bad channels using this list
+- `bad::Bool=false`: plot bad channels
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
-- `bad::Bool=true`: show bad channels
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=false, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
@@ -632,7 +631,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         if bad
             bm = bm[ch_order[ch], ep]
         else
-            bm = zeros(Bool, length(ch), 1)
+            bm = zeros(Bool, length(ch))
         end
     else
         if bad

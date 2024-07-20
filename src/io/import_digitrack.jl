@@ -75,11 +75,11 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     close(fid)
 
     data = zeros(ch_n, length(buffer), 1)
-    Threads.@threads for idx in eachindex(buffer)
+    @inbounds for idx in eachindex(buffer)
         signals = split(buffer[idx], "\t")
         deleteat!(signals, length(signals))
         signals = replace.(signals, "," => ".")
-        @inbounds data[:, idx, 1] = parse.(Float64, signals)
+        data[:, idx, 1] = parse.(Float64, signals)
     end
 
     markers = DataFrame(:id=>String[],
