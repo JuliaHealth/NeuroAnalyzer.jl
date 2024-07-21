@@ -31,22 +31,16 @@ Return list of channel names.
 function get_channel(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector{String}}="all", wl::Real=0)
 
     ch = String[]
-
-    if type isa String
-        _check_var(type, channel_types, "type")
-    else
-        for idx in type
-            _check_var(idx, channel_types, "type")
-        end
+    isa(type, String) && (type = [type])
+    for idx in type
+        _check_var(idx, NeuroAnalyzer.channel_types, "type")
     end
 
     l = labels(obj)
-    if wl == 0
-        isa(type, String) && (type = [type])
+    if wl == 0        
         if type == ["all"]
             ch = l
         else
-            ch = String[]
             for type_idx in eachindex(type)
                 for ch_idx in eachindex(obj.header.recording[:channel_type])
                     obj.header.recording[:channel_type][ch_idx] == type[type_idx] && push!(ch, l[ch_idx])
@@ -57,7 +51,6 @@ function get_channel(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector{String
         _check_datatype(obj, ["nirs"])
         @assert wl in obj.header.recording[:wavelengths] "OBJ does not contain data for $wl wavelength. Available wavelengths: $(obj.header.recording[:wavelengths])."
         wl_idx = findfirst(isequal(wl), obj.header.recording[:wavelengths])
-        ch = String[]
         for ch_idx in eachindex(obj.header.recording[:wavelength_index])
             obj.header.recording[:wavelength_index][ch_idx] == wl_idx && push!(ch, l[ch_idx])
         end
@@ -224,7 +217,7 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 function edit_channel(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::Any)
 
     @assert value !== nothing "value cannot be empty."
-    ch = _ch_idx(obj, ch)
+    ch = NeuroAnalyzer._ch_idx(obj, ch)[1]
     _check_var(field, [:channel_type, :labels], "field")
 
     obj_new = deepcopy(obj)

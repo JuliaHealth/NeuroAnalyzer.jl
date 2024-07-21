@@ -31,8 +31,8 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     _check_datatype(obj, "eeg")
 
     # keep signal channels
-    _check_channels(obj, ch)
-    chs = get_channel(obj, type="eeg")
+    ch = _ch_idx(obj, ch)
+    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
 
     obj_new = deepcopy(obj)
 
@@ -119,7 +119,8 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     _check_datatype(obj, "eeg")
 
     # keep signal channels
-    chs = get_channel(obj, type="eeg")
+    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
+
     # source signals
     obj_new = deepcopy(obj)
     src = @view deepcopy(obj_new).data[chs, :, :]
@@ -128,20 +129,18 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     # destination signals
     dst = @view deepcopy(obj_new).data[chs, :, :]
 
-    @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
-
     if weighted
+        @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
         @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-        loc_x = obj.locs[1:ch_n, :loc_x]
-        loc_y = obj.locs[1:ch_n, :loc_y]
+        locs_idx = _find_bylabel(obj.locs, labels(obj)[chs])
+        loc_x = obj.locs[locs_idx, :loc_x]
+        loc_y = obj.locs[locs_idx, :loc_y]
 
         # Euclidean distance matrix
         d = zeros(ch_n, ch_n)
-        for idx1 in 1:ch_n
-            for idx2 in 1:ch_n
+        for idx1 in 1:ch_n, idx2 in 1:ch_n
                 d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
-            end
         end
         # set weights not to reference to itself
         d[d .== 0] .= Inf
@@ -255,16 +254,16 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
-    @assert !all(iszero, occursin.("a1", lowercase.(labels(obj)))) "OBJ does not contain A1 channel."
-    @assert !all(iszero, occursin.("a2", lowercase.(labels(obj)))) "OBJ does not contain A2 channel."
+    @assert "a1" in lowercase.(labels(obj)) "OBJ does not contain A1 channel."
+    @assert "a2" in lowercase.(labels(obj)) "OBJ does not contain A2 channel."
 
     # keep signal channels
-    chs = get_channel(obj, type="eeg")
+    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
     obj_new = deepcopy(obj)
     s = @view obj_new.data[chs, :, :]
 
-    a1_idx = findfirst(isequal("a1"), lowercase.(labels(obj)))
-    a2_idx = findfirst(isequal("a2"), lowercase.(labels(obj)))
+    a1_idx = labels(obj)[findfirst(isequal("a1"), lowercase.(labels(obj)))]
+    a2_idx = labels(obj)[findfirst(isequal("a2"), lowercase.(labels(obj)))]
     a1 = extract_channel(obj, ch=a1_idx)
     a2 = extract_channel(obj, ch=a2_idx)
 
@@ -410,16 +409,16 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
-    @assert !all(iszero, occursin.("m1", lowercase.(labels(obj)))) "OBJ does not contain M1 channel."
-    @assert !all(iszero, occursin.("m2", lowercase.(labels(obj)))) "OBJ does not contain M2 channel."
+    @assert "m1" in lowercase.(labels(obj)) "OBJ does not contain M1 channel."
+    @assert "m2" in lowercase.(labels(obj)) "OBJ does not contain M2 channel."
 
     # keep signal channels
-    chs = get_channel(obj, type="eeg")
+    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
     obj_new = deepcopy(obj)
     s = @view obj_new.data[chs, :, :]
 
-    m1_idx = findfirst(isequal("m1"), lowercase.(labels(obj)))
-    m2_idx = findfirst(isequal("m2"), lowercase.(labels(obj)))
+    m1_idx = labels(obj)[findfirst(isequal("m1"), lowercase.(labels(obj)))]
+    m2_idx = labels(obj)[findfirst(isequal("m2"), lowercase.(labels(obj)))]
     m1 = extract_channel(obj, ch=m1_idx)
     m2 = extract_channel(obj, ch=m2_idx)
 

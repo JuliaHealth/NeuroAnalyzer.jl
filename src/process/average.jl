@@ -92,7 +92,7 @@ end
 """
     average(obj1, obj2)
 
-Return the average signal of all `obj1` and `obj2` channels.
+Return the average signal of two objects.
 
 # Arguments
 

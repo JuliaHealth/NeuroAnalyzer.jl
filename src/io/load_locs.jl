@@ -74,8 +74,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of reference channels
-    ref_idx = get_channel(obj, type="ref")
-    ref_labels = labels(obj)[ref_idx]
+    ref_labels = get_channel(obj, type="ref")
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
             (occursin("a", lowercase(ref_labels[idx])) && occursin("1", ref_labels[idx])) && push!(locs, [ref_labels[idx], 1.0, 192.0, -0.92, -0.23, -0.55, 1.10, -165.96, -30.11])
@@ -86,8 +85,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of EMG channels
-    emg_idx = get_channel(obj, type="emg")
-    emg_labels = labels(obj)[emg_idx]
+    emg_labels = get_channel(obj, type="emg")
     if length(emg_labels) > 0
         for idx in eachindex(emg_labels)
             occursin("1", emg_labels[idx]) && push!(locs, [emg_labels[idx], 0.99, 135.0, -0.70, 0.70, -1.10, 1.48, 135.00, -48.01])
@@ -98,8 +96,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of EOG channels
-    eog_idx = get_channel(obj, type="eog")
-    eog_labels = labels(obj)[eog_idx]
+    eog_labels = get_channel(obj, type="eog")
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)
             if occursin("1", eog_labels[idx])

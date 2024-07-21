@@ -52,6 +52,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
     end
 
+    ch_list = ch
     ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
@@ -309,10 +310,10 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
     if :ransac in method
         _info("Using :ransac method")
 
-        _check_datatype(obj, "eeg")
+        _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
-        chs = get_channel(obj, type="eeg")
-        [@assert ch[idx] in chs "ch must not contain non-signal channels." for idx in eachindex(ch)]
+        chs = get_channel(obj, type=["eeg", "seeg", "ecog", "meg", "mag", "grad"])
+        [@assert ch_list[idx] in chs "ch must not contain non-signal channels." for idx in eachindex(ch)]
 
         ch_n = length(ch)
         ep_n = nepochs(obj)
@@ -320,8 +321,9 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         # scan in 1-second windows
         w = sr(obj)
 
-        loc_x = obj.locs[ch, :loc_x]
-        loc_y = obj.locs[ch, :loc_y]
+        locs_idx = _find_bylabel(obj.locs, ch_list)
+        loc_x = obj.locs[locs_idx, :loc_x]
+        loc_y = obj.locs[locs_idx, :loc_y]
 
         # Euclidean distance matrix
         d = zeros(ch_n, ch_n)

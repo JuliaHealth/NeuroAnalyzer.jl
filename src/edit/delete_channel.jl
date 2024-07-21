@@ -125,10 +125,8 @@ Keep channel(s).
 """
 function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    typeof(ch) <: AbstractRange && (ch = collect(ch))
-    ch = _ch_idx(obj, ch)
     ch_n = nchannels(obj)
-    chs_to_remove = setdiff(_c(ch_n), ch)
+    chs_to_remove = labels(obj)[setdiff(NeuroAnalyzer._c(ch_n), NeuroAnalyzer._ch_idx(obj, ch))]
     @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
 
     obj_new = delete_channel(obj, ch=chs_to_remove)

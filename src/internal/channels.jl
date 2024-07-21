@@ -73,6 +73,7 @@ end
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String) = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
 function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})
+    l == "all" && (l = cl)
     _check_channels(cl, l)
     ch = Int64[]
     isa(l, String) && (l = [l])

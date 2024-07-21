@@ -526,7 +526,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         end
 
         # check which channels are in the picks list
-        clabels = labels(obj)[get_channel(obj, type="eeg")]
+        clabels = get_channel(obj, type="eeg")
         channels = Vector{Int64}()
         for idx1 in eachindex(clabels)
             for idx2 in eachindex(c)
@@ -552,7 +552,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             end
         end
 
-        clabels = labels(obj)[get_channel(obj, type="eeg")]
+        clabels = get_channel(obj, type="eeg")
         clabels = clabels[channels]
         pat = nothing
         for idx in p
@@ -580,7 +580,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         (p === :parietal || p === :p) && (c = ['P'])
         (p === :occipital || p === :o) && (c = ['O'])
 
-        clabels = labels(obj)[get_channel(obj, type="eeg")]
+        clabels = get_channel(obj, type="eeg")
         channels = Vector{Int64}()
         for idx1 in eachindex(c)
             for idx2 in eachindex(clabels)
