@@ -8,7 +8,7 @@ function _select_channels(obj::NeuroAnalyzer.NEURO, channel::Union{Int64, Vector
     return channel
 end
 
-function _select_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{String, Vector{String}}, def_ep::Int64=0)
+function _select_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}}, def_ep::Int64=0)
     # select epochs, default is all or def_ep
     def_ep > nepochs(obj) && (def_ep = nepochs(obj))
     def_ep == 0 && (def_ep = nepochs(obj))

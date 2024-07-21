@@ -17,11 +17,11 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
-@test NeuroAnalyzer._check_channels(a1, 1) === nothing
-@test NeuroAnalyzer._check_channels(a1, 2) === nothing
-@test NeuroAnalyzer._check_channels(e10, 1:24) === nothing
-@test NeuroAnalyzer._check_channels(e10, e10.header.recording[:channel_order][1:19], "eeg") === nothing
-@test NeuroAnalyzer._check_channels(1:19, 2) === nothing
+@test NeuroAnalyzer._check_channels(a1, 1)[1] === nothing
+@test NeuroAnalyzer._check_channels(a1, 2)[1] === nothing
+@test NeuroAnalyzer._check_channels(e10, "F3") === nothing
+@test NeuroAnalyzer._check_channels(e10, ["F3", "F4"]) === nothing
+@test NeuroAnalyzer._check_channels(1:19, 2)[1] === nothing
 @test NeuroAnalyzer._check_epochs(e10, 1:10) === nothing
 @test NeuroAnalyzer._check_cidx(a1, 1) === nothing
 @test NeuroAnalyzer._check_segment(e10, 1, 256) === nothing
@@ -29,8 +29,6 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._check_var(:a, [:a], "a") === nothing
 @test NeuroAnalyzer._check_var("a", ["a"], "a") === nothing
 @test NeuroAnalyzer._check_markers(["aa", "bb"], "aa") === nothing
-@test NeuroAnalyzer._get_ch_idx(["aa", "bb"], "aa") == 1
-@test NeuroAnalyzer._get_ch_idx(["aa", "bb"], 1) == 1
 @test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
 s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
@@ -63,7 +61,6 @@ add_component!(e10, c=:x, v=rand(4, 100))
 l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test l == ["1", "2", "3", "4"]
 @test NeuroAnalyzer._gen_clabels(a1) == ["1", "2"]
-@test NeuroAnalyzer._channel2channel_name(1:10) == "1:10"
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test NeuroAnalyzer._has_locs(e10)
@@ -124,7 +121,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._s2epoch(e10, 256, 512) == 1
 @test NeuroAnalyzer._s2epoch(e10, 3256, 3512) == 2
 @test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
-@test NeuroAnalyzer._ch_units(e10, 1) == "μV"
+@test NeuroAnalyzer._ch_units(e10, "Pz") == "μV"
 @test NeuroAnalyzer._ch_rename("nirs_hbo") == "NIRS HbO concentration"
 @test NeuroAnalyzer._def_ylabel("eeg", "μV") == "Amplitude [μV]"
 @test NeuroAnalyzer._wl2ext(760) == [1486.5865, 3843.707]

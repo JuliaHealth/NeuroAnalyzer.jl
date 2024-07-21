@@ -224,12 +224,12 @@ x = ones(100, 100)
 @test NeuroAnalyzer.mscr(tp=90, tn=90, fp=10, fn=10) == (mr = 0.1, acc = 0.9)
 
 @info "Test 60/$ntests: vartest()"
-f, p = NeuroAnalyzer.vartest(e10)
-@test size(f) == (23, 23, 10)
-@test size(p) == (23, 23, 10)
-f, p = NeuroAnalyzer.vartest(e10, e10)
-@test size(f) == (23, 23, 10)
-@test size(p) == (23, 23, 10)
+f, p = NeuroAnalyzer.vartest(e10, ch="all")
+@test size(f) == (24, 24, 10)
+@test size(p) == (24, 24, 10)
+f, p = NeuroAnalyzer.vartest(e10, e10, ch1="all", ch2="all")
+@test size(f) == (24, 24, 10)
+@test size(p) == (24, 24, 10)
 
 @info "Test 61/$ntests: fwhm()"
 s = generate_gaussian(256, 10, ncyc=2)

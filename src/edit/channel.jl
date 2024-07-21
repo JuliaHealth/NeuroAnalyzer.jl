@@ -79,7 +79,7 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)
     ch = _ch_idx(obj, ch)
     cht = obj.header.recording[:channel_type][ch]
 
-    return cht
+    return cht[1]
 
 end
 

@@ -187,17 +187,16 @@ Named tuple containing:
 function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-
-    # check channels
-    _check_channels(obj1, ch1)
-    _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-
-    # check epochs
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
+
+    ch1 = _ch_idx(obj1, ch1)
+    ch2 = _ch_idx(obj2, ch2)
+    _check_epochs(obj1, ep1)
+    _check_epochs(obj2, ep2)
+    length(ep1) == 1 && (ep1 = [ep1])
+    length(ep2) == 1 && (ep2 = [ep2])
 
     @assert l <= size(obj1, 2) "l must be ≤ $(size(obj1, 2))."
     @assert l >= 0 "l must be ≥ 0."

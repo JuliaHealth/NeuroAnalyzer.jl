@@ -19,27 +19,26 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a0 = zeros(2, 3, 2)
 
-@info "Test 1/$ntests: get_channel_type() / set_channel_type()"
-@test get_channel_type(e10, ch=1) == "eeg"
-e10_tmp = set_channel_type(e10, ch=1, type="mrk")
-@test get_channel_type(e10_tmp, ch=1) == "mrk"
-set_channel_type!(e10_tmp, ch=1, type="eeg")
-@test get_channel_type(e10_tmp, ch=1) == "eeg"
+@info "Test 1/$ntests: channel_type() / set_channel_type()"
+@test channel_type(e10, ch="F3") == "eeg"
+e10_tmp = set_channel_type(e10, ch="F3", type="mrk")
+@test channel_type(e10_tmp, ch="F3") == "mrk"
+set_channel_type!(e10_tmp, ch="F3", type="eeg")
+@test channel_type(e10_tmp, ch="F3") == "eeg"
 
 @info "Test 2/$ntests: get_channel()"
-@test get_channel(e10, ch=1) == "Fp1"
-@test get_channel(e10, ch="Fp1") == 1
+@test get_channel(e10, type="eeg") == ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "P3", "P4", "O1", "O2", "F7", "F8", "T3", "T4", "T5", "T6", "Fz", "Cz", "Pz"]
 
 @info "Test 3/$ntests: rename_channel()"
-e10_tmp = rename_channel(e10, ch=1, name="FP1")
-@test get_channel(e10_tmp, ch=1) == "FP1"
-rename_channel!(e10_tmp, ch=1, name="Fp1")
-@test get_channel(e10_tmp, ch=1) == "Fp1"
+e10_tmp = rename_channel(e10, ch="F3", name="FP1")
+@test get_channel(e10_tmp, ch="F3") == "FP1"
+rename_channel!(e10_tmp, ch="F3", name="Fp1")
+@test get_channel(e10_tmp, ch="F3") == "Fp1"
 
 @info "Test 4/$ntests: replace_channel()"
-e10_tmp = replace_channel(e10, ch=1, s=ones(1, epoch_len(e10), nepochs(e10)));
+e10_tmp = replace_channel(e10, ch="F3", s=ones(1, epoch_len(e10), nepochs(e10)));
 @test e10_tmp.data[1, :, :] == ones(epoch_len(e10), nepochs(e10))
-replace_channel!(e10_tmp, ch=1, s=zeros(1, epoch_len(e10), nepochs(e10)));
+replace_channel!(e10_tmp, ch="F3", s=zeros(1, epoch_len(e10), nepochs(e10)));
 @test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), nepochs(e10))
 
 @info "Test 5/$ntests: add_labels()"
@@ -50,13 +49,13 @@ add_labels!(e10_tmp, clabels=l)
 @test labels(e10_tmp) == l
 
 @info "Test 6/$ntests: delete_channel()"
-e10_tmp = delete_channel(e10, ch=1)
+e10_tmp = delete_channel(e10, ch="F3")
 @test nchannels(e10_tmp) == 23
-delete_channel!(e10_tmp, ch=1)
+delete_channel!(e10_tmp, ch="F3")
 @test nchannels(e10_tmp) == 22
 
 @info "Test 7/$ntests: keep_channel()"
-e10_tmp = keep_channel(e10, ch=10:24)
+e10_tmp = keep_channel(e10, ch="F3"0:24)
 @test nchannels(e10_tmp) == 15
 keep_channel!(e10_tmp, ch=5:15)
 @test nchannels(e10_tmp) == 11
@@ -116,7 +115,7 @@ epoch_ts!(e10_tmp, ts=-2.0)
 @info "Test 14/$ntests: extract_channel()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
-s = extract_channel(e10, ch=1)
+s = extract_channel(e10, ch="F3")
 @test size(s) == (1, 2560, 120)
 
 @info "Test 15/$ntests: extract_epoch()"
