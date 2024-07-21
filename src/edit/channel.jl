@@ -93,7 +93,7 @@ Return channel number(s) for channel of `type` type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::Union{String, Vector{String}}="all"`: channel type
+- `type::Union{String, Vector{String}}="all"`: channel type, e.g. ["mag", "grad", "eeg"]
 
 # Returns
 
