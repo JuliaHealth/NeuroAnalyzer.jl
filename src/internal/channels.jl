@@ -46,7 +46,6 @@ function _ch_units(ch_type::String)
     lowercase(ch_type) == "ieeg" && return "μV"
     lowercase(ch_type) == "ecog" && return "μV"
     lowercase(ch_type) == "seeg" && return "μV"
-    lowercase(ch_type) == "cr" && return "mV"
     lowercase(ch_type) == "csd" && return "μV/m²"
     lowercase(ch_type) == "mag" && return "fT"
     lowercase(ch_type) == "grad" && return "fT/cm"

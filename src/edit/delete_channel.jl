@@ -44,7 +44,9 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
         !isnothing(findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))) && deleteat!(obj_new.locs, findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels]))))
         deleteat!(obj_new.header.recording[:labels], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
-        deleteat!(obj_new.header.recording[:channel_order], findfirst(isequal(idx), obj_new.header.recording[:channel_order]))
+        idx_tmp = findfirst(isequal(idx), obj_new.header.recording[:channel_order])
+        deleteat!(obj_new.header.recording[:channel_order], idx)
+        obj_new.header.recording[:channel_order][idx_tmp:end] .-= 1
         obj_new.header.recording[:bad_channels] = obj_new.header.recording[:bad_channels][1:end .!= idx, :]
         deleteat!(obj_new.header.recording[:units], idx)
         if obj_new.header.recording[:data_type] == "eeg"

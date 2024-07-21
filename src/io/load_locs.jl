@@ -44,7 +44,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_label() first."
 
-    _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
+    _info("Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org")
     _info("Nose direction is set at '+Y'")
 
     if splitext(file_name)[2] == ".ced"

@@ -499,7 +499,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
                                linewidth=1,
                                label="",
                                color=:blue,
-                               alpha=0.75)
+                               alpha=0.5)
     end
 
     # draw labels
@@ -556,9 +556,8 @@ Plot signal.
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
 - `avg::Bool=false`: plot average EDA
-- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not false -- plot bad channels using this list
+- `bad::Bool=false`: plot bad channels
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
-- `bad::Bool=true`: show bad channels
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -628,7 +627,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         if bad
             bm = bm[ch, ep]
         else
-            bm = zeros(Bool, length(ch), 1)
+            bm = zeros(Bool, length(ch))
         end
     else
         if bad

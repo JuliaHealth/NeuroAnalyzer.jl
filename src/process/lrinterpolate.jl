@@ -27,9 +27,9 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, e
     _check_epochs(obj, ep_ref)
     @assert !(ep in ep_ref) "ep must not be in ep_rep."
 
-    signal_src = obj.data[channels, :, ep]
+    signal_src = @views obj.data[:, :, ep]
     ch_ref = setdiff(channels, ch)
-    signal_ref = _make_epochs(obj.data[channels, :, ep_ref], ep_n=1)
+    signal_ref = @views NeuroAnalyzer._make_epochs(obj.data[:, :, ep_ref], ep_n=1)
 
     # train
     df = @views DataFrame(hcat(signal_ref[ch, :, 1], signal_ref[ch_ref, :, 1]'), :auto)

@@ -529,7 +529,6 @@ function import_snirf(file_name::String; n::Int64=0)
                         handedness="",
                         weight=-1,
                         height=-1)
-    @show size(data)
     r = _create_recording_nirs(data_type="nirs",
                                file_name=file_name,
                                file_size_mb=file_size_mb,

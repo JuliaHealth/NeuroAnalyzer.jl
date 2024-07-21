@@ -31,7 +31,7 @@ function linreg(x::AbstractVector, y::AbstractVector)
     df = DataFrame(:x=>x, :y=>y)
     lr = GLM.lm(@formula(y ~ x), df)
     radj = r2(lr)
-    c = coef(lr)
+    c = StatsKit.coef(lr)
     se = stderror(lr)
     aic, bic = infcrit(lr)
     lf = MultivariateStats.predict(lr)
@@ -57,7 +57,7 @@ Named tuple containing:
 """
 function infcrit(m::T) where {T<:StatsModels.TableRegressionModel}
 
-    k = length(coef(m)) - 1
+    k = length(StatsKit.coef(m)) - 1
     n = length(MultivariateStats.predict(m))
     aic = 2 * k - 2 * log(r2(m))
     bic = k * log(n) - 2 * log(r2(m))
