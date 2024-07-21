@@ -8,7 +8,7 @@ Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `ero
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`: channel to analyze
+- `ch::String`: channel to analyze
 - `method::Symbol=:welch`: method of calculating power-spectrum:
     - `:welch`: Welch's periodogram
     - `:stft`: short time Fourier transform
@@ -32,9 +32,9 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function erop(obj::NeuroAnalyzer.NEURO; ch::Int64, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, method::Symbol=:welch, db::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function erop(obj::NeuroAnalyzer.NEURO; ch::String, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, method::Symbol=:welch, db::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
 
     p, f = psd(obj, ch=ch, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
 

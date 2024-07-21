@@ -98,7 +98,7 @@ Set channel type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::String`
+- `ch::String`: channel name
 - `type::String`: new type
 
 # Returns
@@ -130,7 +130,7 @@ Set channel type.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::String`
+- `ch::String`: channel name
 - `type::String`
 """
 function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)
@@ -213,7 +213,7 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`
+- `ch::String`: channel name
 - `field::Symbol`
 - `value::Any`
 
@@ -221,10 +221,10 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function edit_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value::Any)
+function edit_channel(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::Any)
 
     @assert value !== nothing "value cannot be empty."
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     _check_var(field, [:channel_type, :labels], "field")
 
     obj_new = deepcopy(obj)
@@ -245,11 +245,11 @@ Edit channel properties (`:channel_type` or `:labels`) in `OBJ.header.recording`
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`
+- `ch::String`: channel name
 - `field::Symbol`
 - `value::Any`
 """
-function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value::Any)
+function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::Any)
 
     obj_new = edit_channel(obj, ch=ch, field=field, value=value)
     obj.header = obj_new.header

@@ -10,10 +10,10 @@ Interactive PSD of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
+- `ch::Union{String, Vector{String}}`: list of channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1, zoom::Real=5)
+function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
 
     if nepochs(obj) == 1
         ipsd_cont(obj, ch=ch, zoom=zoom)
@@ -33,15 +33,15 @@ Interactive PSD of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
+- `ch::Union{String, Vector{String}}`: list of channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1, zoom::Real=5)
+function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "ipsd_ep() should be used for epoched object."
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=ch)
     g = GtkGrid()
@@ -634,12 +634,12 @@ Interactive PSD of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
+- `ch::Union{String, Vector{String}}`: list of channels
 """
-function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1)
+function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert nepochs(obj) > 1 "ipsd_cont() should be used for continuous object."
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=ch)
     g = GtkGrid()

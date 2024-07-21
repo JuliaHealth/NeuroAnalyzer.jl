@@ -3,18 +3,18 @@ export locs_details
 """
     locs_details(obj; <keyword arguments>)
 
-Return locations of OBJ ch electrode.
+Return channel location details.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, String}`: channel number or name
-- `out::Bool=true`: print output if true
+- `ch::String`: channel name
+- `out::Bool=true`: if true, print details
 
 # Returns
 
 Named tuple containing:
-- `ch::Int64`: channel number
+- `ch::Int64`: channel name
 - `label::String`: location label
 - `theta::Float64`: polar angle
 - `radius::Float64`: polar radius
@@ -25,11 +25,12 @@ Named tuple containing:
 - `radius_sph::Float64`: spherical radius, the distance from the origin to the point
 - `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
-function locs_details(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, out::Bool=true)
+function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    ch = _get_ch_idx(labels(obj), ch)
+    _ = _ch_idx(obj, ch)
+    ch = _find_bylabel(obj.locs, ch)
 
     x = obj.locs[ch, :loc_x]
     y = obj.locs[ch, :loc_y]
@@ -47,7 +48,6 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, out::B
     end
 
     if out
-        println("Channel: $ch")
         println("  Label: $l")
         println("  theta: $theta_pl (polar)")
         println(" radius: $radius_pl (polar)")

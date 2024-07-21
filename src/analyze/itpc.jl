@@ -145,7 +145,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`
+- `ch::String`: channel to analyze
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
 - `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
@@ -158,7 +158,7 @@ Named tuple containing:
 - `itpcz_s::Array{Float64, 3}`: spectrogram itpcz_value values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
+function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
@@ -171,7 +171,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::Int64, frq_lim::Tuple{Real, Rea
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."

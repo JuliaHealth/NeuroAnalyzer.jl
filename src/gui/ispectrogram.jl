@@ -10,10 +10,10 @@ Interactive spectrogram of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
+- `ch::Union{String, Vector{String}}`: list of channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1, zoom::Real=5)
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
 
     if nepochs(obj) == 1
         ispectrogram_cont(obj, ch=ch, zoom=zoom)
@@ -33,15 +33,15 @@ Interactive spectrogram of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
+- `ch::Union{String, Vector{String}}`: list of channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1, zoom::Real=5)
+function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "ispectrogram_ep() should be used for epoched object."
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     ch_init = ch
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch)
@@ -591,12 +591,12 @@ Interactive spectrogram of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
+- `ch::Union{String, Vector{String}}`: list of channels
 """
-function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1)
+function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert nepochs(obj) > 1 "ispectrogram_cont() should be used for continuous object."
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch, ep=1)
     g = GtkGrid()

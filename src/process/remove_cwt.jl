@@ -58,7 +58,7 @@ Remove artifacts using continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`
+- `ch::String`: channel name
 - `ep::Int64`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `tseg::Tuple{Real, Real}`: artifact time location
@@ -72,9 +72,9 @@ Remove artifacts using continuous wavelet transformation (CWT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function remove_cwt(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), tseg::Tuple{Real, Real}, fseg::Tuple{Real, Real}, type::Symbol=:nd) where {T <: CWT}
+function remove_cwt(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), tseg::Tuple{Real, Real}, fseg::Tuple{Real, Real}, type::Symbol=:nd) where {T <: CWT}
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
@@ -94,7 +94,7 @@ Remove artifacts using continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`
+- `ch::String`: channel name
 - `ep::Int64`
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `tseg::Tuple{Real, Real}`: artifact time location
@@ -104,7 +104,7 @@ Remove artifacts using continuous wavelet transformation (CWT).
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 """
-function remove_cwt!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), tseg::Tuple{Real, Real}, fseg::Tuple{Real, Real}, type::Symbol=:nd) where {T <: CWT}
+function remove_cwt!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), tseg::Tuple{Real, Real}, fseg::Tuple{Real, Real}, type::Symbol=:nd) where {T <: CWT}
 
     obj_new = remove_cwt(obj, ch=ch, ep=ep, wt=wt, tseg=tseg, fseg=fseg, type=type)
     obj.data = obj_new.data

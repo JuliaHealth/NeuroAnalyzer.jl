@@ -8,7 +8,7 @@ Split into bands using discrete wavelet transformation (DWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64}`: channel number
+- `ch::String`: channel name
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
     - `:sdwt`: Stationary Wavelet Transforms
@@ -19,7 +19,7 @@ Split into bands using discrete wavelet transformation (DWT).
 
 - `b::Array{Float64, 4}`: bands from lowest to highest frequency (by rows)
 """
-function dwtsplit(obj::NeuroAnalyzer.NEURO; ch::Int64, wt::T, type::Symbol, n::Int64=0) where {T<:DiscreteWavelet}
+function dwtsplit(obj::NeuroAnalyzer.NEURO; ch::String, wt::T, type::Symbol, n::Int64=0) where {T<:DiscreteWavelet}
 
     n -= 1
     if n == -1
@@ -28,7 +28,7 @@ function dwtsplit(obj::NeuroAnalyzer.NEURO; ch::Int64, wt::T, type::Symbol, n::I
     end
     @assert n >= 2 "n must be ≥ 2."
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     ep_n = nepochs(obj)
 
     dt = zeros((n + 1), epoch_len(obj), ep_n)
