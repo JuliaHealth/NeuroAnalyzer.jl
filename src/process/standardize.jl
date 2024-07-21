@@ -39,20 +39,18 @@ Standardize channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 - `scaler::Vector{Any}`: standardizing matrix
 """
-function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
-    obj_new.data, scaler = standardize(obj.data[ch, :, :])
+    obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
     reset_components!(obj_new)
     push!(obj_new.history, "standardize(OBJ)")
 
@@ -68,7 +66,7 @@ Standardize channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 

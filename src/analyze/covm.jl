@@ -119,17 +119,16 @@ Calculate covariance matrix of `signal * signal'`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}: list of channels
 - `norm::Bool=false`: normalize matrix
 
 # Returns
 
 - `cm::Array{Float64, 3}`: covariance matrix for each epoch
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false)
+function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
 
     cm = covm(obj.data[ch, :, :], norm=norm)
 

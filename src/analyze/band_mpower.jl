@@ -104,7 +104,7 @@ Calculate mean and maximum band power and its frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -126,10 +126,9 @@ Named tuple containing:
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
 """
-function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
 
     mbp, maxfrq, maxbp = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
 

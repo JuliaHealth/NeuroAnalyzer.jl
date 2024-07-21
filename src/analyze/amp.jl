@@ -89,7 +89,7 @@ Calculate amplitudes.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
@@ -102,10 +102,9 @@ Named tuple containing:
 - `rmsa::Matrix{Float64}`: root mean square amplitude
 - `energy::Matrix{Float64}`: total signal energy
 """
-function amp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
 
     p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = @views amp(obj.data[ch, :, :])
 

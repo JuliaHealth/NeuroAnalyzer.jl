@@ -11,7 +11,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `opt_pairs::Matrix{Int64}`: pairs of source and detector
 - `src_n::Int64`: number of sources
 - `det_n::Int64`: number of detectors
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `ch::Union{String, Vector{String}}`: list of channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
@@ -25,7 +25,7 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, plot_size::Int64=400, large::Bool=true)
+function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, ch::Union{String, Vector{String}}=1, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, plot_size::Int64=400, large::Bool=true)
 
     # TO DO: plot channel numbers
 

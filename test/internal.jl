@@ -99,7 +99,6 @@ a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_len=100)
 a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_n=100)
 @test size(a) == (10, 20, 100)
 # NeuroAnalyzer._make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, ep_len::Int64)
-# NeuroAnalyzer._map_channels(channel::Union{Int64, Vector{Int64}, AbstractRange}, channels=Vector{Int64})
 # NeuroAnalyzer._delete_markers(markers::DataFrame, segment::Tuple{Int64, Int64})
 # NeuroAnalyzer._shift_markers(m::DataFrame, pos::Int64, offset::Int64)
 @test NeuroAnalyzer._get_epoch_markers(e10) == 0.0:10.0:90.0

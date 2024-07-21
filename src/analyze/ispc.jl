@@ -45,17 +45,16 @@ Calculate ISPCs (Inter-Site-Phase Clustering).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
 - `ispc_value::Array{Float64, 3}`: ISPC value matrices over epochs
 - `ispc_angle::Array{Float64, 3}`: ISPC angle matrices over epochs
 """
-function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -87,8 +86,8 @@ Calculate ISPC (Inter-Site-Phase Clustering).
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ch1::Union{String, Vector{String}}: list of channels
+- `ch2::Union{String, Vector{String}}: list of channels
 - `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
@@ -102,7 +101,7 @@ Named tuple containing:
 - `s1_phase::Array{Float64, 3}`: signal 1 phase
 - `s2_phase::Array{Float64, 3}`: signal 2 phase
 """
-function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)

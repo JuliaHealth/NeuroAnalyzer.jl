@@ -127,7 +127,7 @@ Calculate cross-phases.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
@@ -135,10 +135,9 @@ Named tuple containing:
 - `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64, 4}`: cross-power spectrum frequencies
 """
-function cph(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function cph(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
 
     ph, f = cph(obj.data[ch, :, :], fs=sr(obj))
 
@@ -154,8 +153,8 @@ Calculate cross-phases.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ch1::Union{String, Vector{String}}: list of channels
+- `ch2::Union{String, Vector{String}}: list of channels
 - `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
@@ -165,21 +164,17 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64, 3}`: cross-power spectrum frequencies
 """
-function cph(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function cph(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-
-    _check_channels(obj1, ch1)
-    _check_channels(obj2, ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    isa(ch1, Int64) && (ch1 = [ch1])
-    isa(ch2, Int64) && (ch2 = [ch2])
+    ch1 = _ch_idx(obj1, ch1)
+    ch2 = _ch_idx(obj2, ch2)
+    _check_epochs(obj1, ep1)
+    _check_epochs(obj2, ep2)
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 

@@ -103,7 +103,7 @@ Perform denoising using continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
 - `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
@@ -116,11 +116,9 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd) where {T <: CWT}
+function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd) where {T <: CWT}
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data = @views denoise_cwt(obj.data[ch, :, :], fs=sr(obj), wt=wt, nf=nf, w=w, type=type)
     reset_components!(obj_new)
@@ -138,7 +136,7 @@ Perform denoising using continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
 - `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
@@ -147,7 +145,7 @@ Perform denoising using continuous wavelet transformation (CWT).
     - `:nd`: NaiveDelta
     - `:df`: DualFrames
 """
-function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
+function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, type::Symbol=:nd) where {T <: CWT}
 
     obj_new = denoise_cwt(obj, ch=ch, wt=wt, nf=nf, type=type)
     obj.data = obj_new.data
@@ -219,18 +217,16 @@ Perform denoising using discrete wavelet transformation (DWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_dwt(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T) where {T<:DiscreteWavelet}
+function denoise_dwt(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T) where {T<:DiscreteWavelet}
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data = @views denoise_dwt(obj.data[ch, :, :], wt=wt)
     reset_components!(obj_new)
@@ -248,10 +244,10 @@ Perform denoising using discrete wavelet transformation (DWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 """
-function denoise_dwt!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), wt::T) where {T<:DiscreteWavelet}
+function denoise_dwt!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T) where {T<:DiscreteWavelet}
 
     obj_new = denoise_dwt(obj, ch=ch, wt=wt)
     obj.data = obj_new.data

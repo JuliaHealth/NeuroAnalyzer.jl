@@ -8,8 +8,8 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels, e.g. left frontal channels
-- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels, e.g. right frontal channels
+- `ch1::Union{String, Vector{String}}`: list of channels, e.g. left frontal channels
+- `ch2::Union{String, Vector{String}}`: list of channels, e.g. right frontal channels
 - `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -29,12 +29,10 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 - `ba::Float64`: band asymmetry
 - `ba_norm::Float64`: normalized band asymmetry
 """
-function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}, ch2::Union{Int64, Vector{Int64}, <:AbstractRange}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
-    _check_channels(obj, ch1)
-    _check_channels(obj, ch2)
-    isa(ch1, Int64) && (ch1 = [ch1])
-    isa(ch2, Int64) && (ch2 = [ch2])
+    ch1 = _ch_idx(obj, ch)
+    ch2 = _ch_idx(obj, ch2)
 
     bp1 = @views band_power(obj.data[ch1, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
     bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)

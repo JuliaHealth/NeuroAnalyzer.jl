@@ -10,10 +10,10 @@ Interactive plot of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}`: channel(s) to plot, default is all channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function iplot(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), zoom::Real=5)
+function iplot(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
 
     if nepochs(obj) == 1
         iplot_cont(obj, ch=ch, zoom=zoom)
@@ -33,17 +33,18 @@ Interactive plot of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}`: channel(s) to plot, default is all channels
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), zoom::Real=5)
-
-    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
+function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iplot_ep() should be used for epoched object."
-    _check_channels(obj, ch)
+
+    (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
+
+    ch = _ch_idx(obj, ch)
     ch_init = ch
 
     p = NeuroAnalyzer.plot(obj, ch=ch, seg=(0, zoom))
@@ -208,11 +209,11 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
         end
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
-            if ch isa Int64 && !in(ch, get_channel_bytype(obj))
+            if ch isa Int64 && !in(ch, get_channel(obj))
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -479,12 +480,12 @@ Interactive plot of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}`: channel(s) to plot, default is all channels
 """
-function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
+function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert nepochs(obj) > 1 "iplot_cont() should be used for continuous object."
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=1)
 
@@ -640,11 +641,11 @@ function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
-            if ch isa Int64 && !in(ch, get_channel_bytype(obj))
+            if ch isa Int64 && !in(ch, get_channel(obj))
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))

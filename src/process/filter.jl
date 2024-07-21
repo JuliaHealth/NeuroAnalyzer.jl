@@ -346,7 +346,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter
@@ -377,12 +377,11 @@ Apply filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
 
+    ch = _ch_idx(obj, ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
 
@@ -430,7 +429,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter
@@ -457,7 +456,7 @@ Apply filtering.
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
 
     if preview
         _warn("When `preview=true`, signal is not being filtered.")

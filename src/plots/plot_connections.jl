@@ -18,7 +18,7 @@ Plot connections between channels.
     - `:g`: plot if connection weight is > to threshold
     - `:l`: plot if connection weight is < to threshold
 - `weights::Bool=true`: weight line widths and alpha based on connection value, if false connections values will be drawn
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}=1:nrow(locs)`: list of channels, default is all channels
 - `ch_labels::Bool=false`: plot channel labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
@@ -35,7 +35,7 @@ Plot connections between channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Bool=true, ch::Union{String, Vector{String}}=1:nrow(locs), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
@@ -425,7 +425,7 @@ Plot weights at electrode positions.
     - `:g`: plot if connection weight is > to threshold
     - `:l`: plot if connection weight is < to threshold
 - `weights::Bool=true`: weight line widths and alpha based on connection value
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}=get_channel(obj, type=datatype(obj))`: list of channels, default is all channels
 - `ch_labels::Bool=false`: plot ch_labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
@@ -442,12 +442,13 @@ Plot weights at electrode positions.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Bool=true, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+function plot_connections(obj::NeuroAnalyzer.NEURO; connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Bool=true, ch::Union{String, Vector{String}}=get_channel(obj, type=datatype(obj)), ch_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
     _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
 
     _check_channels(obj, ch, datatype(obj))
+    ch = _ch_idx(obj, ch)
 
     p = plot_connections(obj.locs, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane, title=title)
 

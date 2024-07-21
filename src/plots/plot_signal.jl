@@ -542,7 +542,7 @@ Plot signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -565,7 +565,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
@@ -599,8 +599,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     # check channels
-    _check_channels(obj, ch)
-    clabels = labels(obj)
+    ch = _ch_idx(obj, ch)
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -611,26 +610,23 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     t = obj.time_pts[seg[1]:seg[2]]
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = NeuroAnalyzer._s2epoch(obj, seg[1], seg[2])
+    ep = _s2epoch(obj, seg[1], seg[2])
 
-    (ch isa(Vector{Int64}) && length(ch) == 1) && (ch = ch[1])
+    length(ch) == 1 && (ch = ch[1])
 
     xl, yl, tt = "", "", ""
 
     ch_init = ch
     bm = obj.header.recording[:bad_channels]
     ctypes = obj.header.recording[:channel_type]
-    ch_order = obj.header.recording[:channel_order]
+    clabels = labels(obj)
     # sort channels by their type
     if !isa(ch, Int64)
-        ch = collect(ch)
-        s = @views s[ch_order, :]
-        s = @views s[ch, :]
-        ctypes = ctypes[ch_order][ch]
-        clabels = clabels[ch_order][ch]
-        cunits = obj.header.recording[:units][ch_order][ch]
+        ctypes = ctypes[ch]
+        clabels = clabels[ch]
+        cunits = obj.header.recording[:units][ch]
         if bad
-            bm = bm[ch_order[ch], ep]
+            bm = bm[ch, ep]
         else
             bm = zeros(Bool, length(ch), 1)
         end
@@ -644,7 +640,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     if type === :normal
         if isa(ch, Int64)
-            ch_name = _ch_rename(ctypes[ch_order][ch])
+            ch_name = _ch_rename(ctypes[ch])
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
                                        title,
@@ -661,7 +657,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                              mono=mono;
                              kwargs...)
             else
-                ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, ch))]")
+                ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, clabels[ch]))]")
                 p = plot_signal(t,
                                 s[ch, :],
                                 xlabel=xl,
@@ -679,7 +675,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                        "",
                                        "")
             p = plot_signal(t,
-                            s,
+                            s[ch, :],
                             ctypes=ctypes,
                             clabels=clabels,
                             cunits=cunits,
@@ -697,21 +693,17 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         @assert length(unique(ctypes)) == 1 "For plot type=:butterfly all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
 
-        ch_name = _ch_rename(ctypes[ch[1]])
-        !(ctypes[ch[1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
-        def_ylabel = _def_ylabel(ctypes[ch[1]], cunits[ch[1]])
-        ch_name *= _pl(length(ch))
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
-                                   def_ylabel,
-                                   "Channels: $(_channel2channel_name(ch_init)) ($ch_name)\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                                   "Amplitude [$(cunits[ch[1]])]",
+                                   "")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
             p = plot_eda_butterfly(t,
                                    s[ch, :],
-                                   clabels=clabels[ch],
+                                   clabels=clabels,
                                    xlabel=xl,
                                    ylabel=yl,
                                    title=tt,
@@ -721,7 +713,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         else
             p = plot_signal_butterfly(t,
                                       s[ch, :],
-                                      clabels=clabels[ch],
+                                      clabels=clabels,
                                       xlabel=xl,
                                       ylabel=yl,
                                       title=tt,
@@ -735,16 +727,12 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         @assert length(unique(ctypes)) == 1 "For plot type=:mean all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
 
-        ch_name = _ch_rename(ctypes[ch[1]])
-        !(ctypes[ch[1]] in ["grad", "mag", "mrk"]) && (ch_name *= " channel")
-        def_ylabel = _def_ylabel(ctypes[ch[1]], cunits[ch[1]])
-        ch_name *= _pl(length(ch))
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
-                                   def_ylabel,
-                                   "Averaged $ch_name $(_channel2channel_name(ch_init)) [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                                   "Amplitude [$(cunits[ch[1]])]",
+                                   "")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
             p = plot_eda_avg(t,
@@ -990,7 +978,7 @@ Plot signal.
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1))`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -1002,7 +990,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj1)), seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)
+function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
@@ -1031,8 +1019,8 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # check channels
-    _check_channels(obj1, ch)
-    _check_channels(obj2, ch)
+    _ = _ch_idx(obj2, ch)
+    ch = _ch_idx(obj1, ch)
     clabels = labels(obj1)
 
     # get time vector
@@ -1054,16 +1042,12 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
 
     # sort channels by their type
     if !isa(ch, Int64)
-        ch = collect(ch)
         ctypes = obj1.header.recording[:channel_type]
-        ch_order = _sort_channels(ctypes)
-        s1 = @views s1[ch_order, :]
-        s2 = @views s2[ch_order, :]
         s1 = @views s1[ch, :]
         s2 = @views s2[ch, :]
-        ctypes = ctypes[ch_order][ch]
-        clabels = clabels[ch_order][ch]
-        cunits = obj1.header.recording[:units][ch_order][ch]
+        ctypes = ctypes[ch]
+        clabels = clabels[ch]
+        cunits = obj1.header.recording[:units][ch]
     end
 
     if isa(ch, Int64)
@@ -1073,7 +1057,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
                                    title,
                                    "Time [s]",
                                    "",
-                                   "Channel $ch: $(clabels[ch]) ($ch_name)")
+                                   "")
             ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj1, ch))]")
             p = plot_signal(t,
                             s1[ch, :],

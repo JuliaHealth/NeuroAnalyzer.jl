@@ -10,10 +10,10 @@ Interactive spectrogram of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is the first channel
+- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1, zoom::Real=5)
 
     if nepochs(obj) == 1
         ispectrogram_cont(obj, ch=ch, zoom=zoom)
@@ -33,10 +33,10 @@ Interactive spectrogram of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is the first channel
+- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
-function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1, zoom::Real=5)
+function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1, zoom::Real=5)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -281,11 +281,11 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int
         end
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
-            if ch isa Int64 && !in(ch, get_channel_bytype(obj))
+            if ch isa Int64 && !in(ch, get_channel(obj))
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
@@ -591,9 +591,9 @@ Interactive spectrogram of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1`: index of channels, default is the first channel
+- `ch::Union{String, Vector{String}}=1`: list of channels, default is the first channel
 """
-function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1)
+function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1)
 
     @assert nepochs(obj) > 1 "ispectrogram_cont() should be used for continuous object."
     _check_channels(obj, ch)
@@ -827,11 +827,11 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
         end
         if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
             ch = _s2i(ch)
-            if ch isa Int64 && !in(ch, get_channel_bytype(obj))
+            if ch isa Int64 && !in(ch, get_channel(obj))
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))
-            elseif !(ch isa Int64) && intersect(ch, get_channel_bytype(obj)) != ch
+            elseif !(ch isa Int64) && intersect(ch, get_channel(obj)) != ch
                 warn_dialog("Incorrect list of channels.")
                 ch = ch_init
                 set_gtk_property!(entry_ch, :text, string(ch))

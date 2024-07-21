@@ -31,18 +31,16 @@ Add signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `s::AbstractVector`: signal to be added to each channel
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), s::AbstractVector)
+function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -68,10 +66,10 @@ Add signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `s::AbstractVector`: signal to be added to each channel
 """
-function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), s::AbstractVector)
+function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)
 
     obj_new = add_signal(obj, ch=ch, s=s)
     obj.data = obj_new.data

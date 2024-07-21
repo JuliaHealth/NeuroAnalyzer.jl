@@ -55,7 +55,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -67,10 +67,9 @@ Named tuple containing:
 - `itpc_angle::Vector{Float64}`: ITPC angle
 - `itpc_phases::Array{Float64, 2}`: phase difference (channel2 - channel1)
 """
-function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
+function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
     @assert t >= 1 "t must be ≥ 1."

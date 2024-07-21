@@ -94,7 +94,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}: list of channels
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
     - `:der`: TKEO = f'(t) - f(t) × f''(t)
@@ -104,11 +104,9 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), method::Symbol=:pow)
+function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}, method::Symbol=:pow)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method=method)
 
     return tk

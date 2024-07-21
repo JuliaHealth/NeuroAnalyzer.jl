@@ -8,7 +8,7 @@ export iplot_locs3d
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -16,7 +16,7 @@ export iplot_locs3d
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 """
-function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function iplot_locs3d(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
     win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
@@ -89,7 +89,7 @@ end
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}=1:nrow(locs)`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -97,7 +97,7 @@ end
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
 """
-function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     # select channels, default is all channels
     _check_channels(obj, ch, obj.header.recording[:data_type])

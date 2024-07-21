@@ -99,7 +99,7 @@ Calculate phase spectral density.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
@@ -107,11 +107,9 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     ph, f = phsd(obj.data[ch, :, :], fs=sr(obj))
 
     return (ph=ph, f=f)

@@ -8,17 +8,16 @@ Apply custom function.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `f::String`: function to be applied, e.g. `f="mean(obj, dims=3)"`; OBJ signal is given using variable `obj` here.
 
 # Returns
 
 - `out::Array{Float64, 3}`
 """
-function apply(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::String)
+function apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, f::String)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

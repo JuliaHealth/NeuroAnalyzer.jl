@@ -149,7 +149,7 @@ Calculate mean, standard deviation and 95% confidence interval.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
@@ -161,11 +161,9 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI
 - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:normal)
+function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=3, method::Symbol=:normal)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     sm, ss, su, sl = @views msci95(obj.data[ch, :, :], n=n, method=method)
 
     return (sm=sm, ss=ss, su=su, sl=sl)
@@ -261,8 +259,8 @@ Calculate mean difference, standard deviation and 95% confidence interval.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2:NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ch1::Union{String, Vector{String}}`: list of channels
+- `ch2::Union{String, Vector{String}}`: list of channels
 - `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
@@ -274,7 +272,7 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI bound
 - `sl::Matrix{Float64}`: lower 95% CI bound
 """
-function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
 
     # check channels
     _check_channels(obj1, ch1)

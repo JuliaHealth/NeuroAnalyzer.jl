@@ -139,7 +139,7 @@ Calculate autocovariance. For ERP return trial-averaged autocovariance.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `l::Int64=1`: lags range is `0:lag` [samples]
 - `demean::Bool=true`: demean signal before computing autocovariance
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -154,13 +154,12 @@ Named tuple containing:
 - `ac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
-
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+function acov(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
+
+    ch = _ch_idx(obj, ch)
 
     if datatype(obj) == "erp"
         ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased, method=method)

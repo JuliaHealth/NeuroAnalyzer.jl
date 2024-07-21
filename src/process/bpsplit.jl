@@ -8,7 +8,7 @@ Split signal into frequency bands using a FIR band-pass filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `order::Int64=8`: number of taps for FIR band-pass filter
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb)
 
@@ -19,12 +19,11 @@ Named tuple containing:
 - `bn::Vector{Symbol}`: band names
 - `bf::Vector{Tuple{Real, Real}}`: band frequencies
 """
-function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=8, w::Union{Nothing, AbstractVector, <:Real}=nothing)
+function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, w::Union{Nothing, AbstractVector, <:Real}=nothing)
 
     bn = [:delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

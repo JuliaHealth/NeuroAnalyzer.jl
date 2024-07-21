@@ -762,7 +762,7 @@ Plot power spectrum density.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `ch::Union{String, Vector{String}}`: list of channels
 - `db::Bool=true`: normalize powers to dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -804,14 +804,14 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
+function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
@@ -849,11 +849,10 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     ep = _s2epoch(obj, seg[1], seg[2])
 
-    # set units
-    units = _ch_units(obj, ch[1])
+    clabels = labels(obj)
 
-    clabels = labels(obj)[ch]
-    ch isa Int64 && (clabels = [clabels])
+    # set units
+    units = _ch_units(obj, clabels[ch][1])
 
     ref !== :abs && (frq_lim = band_frq(obj, band=ref))
 
@@ -954,9 +953,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             ch_t_uni = unique(ch_t[ch])
             @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
         end
-        if ndims(sp) == 1
+        if size(sp, 1) == 1
             p = plot_psd(sf,
-                         sp,
+                         sp[1, :],
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
@@ -970,7 +969,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          sp,
                          xlabel=xlabel,
                          ylabel=ylabel,
-                         clabels=clabels,
+                         clabels=clabels[ch],
                          title=title,
                          db=db,
                          frq_lim=frq_lim,
@@ -986,7 +985,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         title = replace(title, "channel" => "channels")
         p = plot_psd_butterfly(sf,
                                sp,
-                               clabels=clabels,
+                               clabels=clabels[ch],
                                xlabel=xlabel,
                                ylabel=ylabel,
                                title=title,
@@ -1027,7 +1026,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
-                        clabels=clabels,
+                        clabels=clabels[ch],
                         xlabel=xlabel,
                         ylabel=ylabel,
                         zlabel=zlabel,
@@ -1053,7 +1052,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
                         sp,
-                        clabels=clabels,
+                        clabels=clabels[ch],
                         xlabel=xlabel,
                         ylabel=ylabel,
                         zlabel=zlabel,
@@ -1077,7 +1076,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                           sf,
                           sp,
                           ch=ch,
-                          clabels=clabels,
+                          clabels=clabels[ch],
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,

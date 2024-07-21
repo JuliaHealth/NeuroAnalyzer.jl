@@ -30,7 +30,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     @assert n >= 1 "n must be ≥ 1."
     @assert lambda > 0 "lambda must be > 0."
 
-    chs = signal_channels(obj)
+    chs = get_channel(obj, type=datatype(obj))
     locs = obj.locs
     ch_n = nrow(locs)
     ep_n = nepochs(obj)

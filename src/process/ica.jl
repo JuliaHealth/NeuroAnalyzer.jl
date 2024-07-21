@@ -93,7 +93,7 @@ Perform independent component analysis (ICA) using FastICA algorithm.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `n::Int64=length(ch)`: number of ICs, default is the number of channels
 - `iter::Int64=100`: maximum number of iterations
 - `f::Symbol=:tanh`: neg-entropy functor:
@@ -107,11 +107,11 @@ Named tuple containing:
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
 - `ic_var::Vector{Float64}`: variance of components
 """
-function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)
+function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
     @assert nepochs(obj) == 1 "ica_decompose() should be applied to a continuous signal."
+
+    ch = _ch_idx(obj, ch)
 
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
@@ -186,7 +186,7 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}`: list of ICs to remove or keep or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
@@ -194,12 +194,12 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
+function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
+    
+    ch = _ch_idx(obj, ch)
 
     return ica_reconstruct(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx, keep=keep)
 
@@ -213,11 +213,11 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels, default is all channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 """
-function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
+function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     obj_new = ica_reconstruct(obj, ch=ch, ic_idx=ic_idx, keep=keep)
     obj.data = obj_new.data
@@ -238,7 +238,7 @@ Reconstruct signals using external ICA components.
 - `obj::NeuroAnalyzer.NEURO`
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
@@ -246,12 +246,11 @@ Reconstruct signals using external ICA components.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
-
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     @assert nepochs(obj) == 1 "ica_reconstruct() should be applied to a continuous signal."
+    
+    ch = _ch_idx(obj, ch)
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[ch, :, :]
@@ -273,11 +272,11 @@ Reconstruct signals using external ICA components.
 - `obj::NeuroAnalyzer.NEURO`
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels, default is all channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 """
-function ica_reconstruct!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
+function ica_reconstruct!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     obj_new = ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=ic_idx, keep=keep)
     obj.data = obj_new.data
@@ -298,18 +297,16 @@ Remove external ICA components from the signal.
 - `obj::NeuroAnalyzer.NEURO`
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
+function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     @assert nepochs(obj) == 1 "ica_remove() should be applied to a continuous signal."
 
     obj_new = deepcopy(obj)
@@ -338,10 +335,10 @@ Remove external ICA components from the signal.
 - `obj::NeuroAnalyzer.NEURO`
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels, default is all channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove or keep
 """
-function ica_remove!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
+function ica_remove!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     obj_new = ica_remove(obj, ic, ic_mw, ch=ch, ic_idx=ic_idx)
     obj.data = obj_new.data
@@ -360,19 +357,19 @@ Remove embedded ICA components (`:ic` and `:ic_mw`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function ica_remove(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
+function ica_remove(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
+
+    ch = _ch_idx(obj, ch)
 
     return ica_remove(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx)
 
@@ -386,10 +383,10 @@ Remove embedded ICA components (`:ic` and `:ic_mw`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels, default is all channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove or keep
 """
-function ica_remove!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
+function ica_remove!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_new = ica_remove(obj, ch=ch, ic_idx=ic_idx)
     obj.data = obj_new.data

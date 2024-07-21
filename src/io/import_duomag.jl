@@ -223,7 +223,7 @@ function import_duomag(file_name::String)
                               file_type="DuoMAG",
                               recording="",
                               recording_date=string(split(record_created, ' ')[1]),
-                              recording_time=string(split(record_created, ' ')[2]),
+                              recording_time=replace(string(split(record_created, ' ')[2]), '.'=>':'),
                               recording_notes="",
                               channel_type=repeat(["mep"], ch_n),
                               channel_order=_sort_channels(repeat(["mep"], ch_n)),

@@ -109,7 +109,7 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
                               file_type=file_type,
                               recording=string(recording),
                               recording_date=string(recording_date),
-                              recording_time=string(recording_time),
+                              recording_time=replace(string(recording_time), '.'=>':'),
                               recording_notes="",
                               channel_type=ch_type,
                               channel_order=_sort_channels(ch_type),

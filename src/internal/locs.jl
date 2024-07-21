@@ -27,13 +27,13 @@ function _initialize_locs()
 end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
-    locs_ch = signal_channels(obj)
+    locs_ch = NeuroAnalyzer._ch_idx(obj, get_channel(obj, type=datatype(obj)))
     obj.locs = DataFrame(:labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
     return nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)
-    locs_ch = signal_channels(obj)
+    locs_ch = NeuroAnalyzer._ch_idx(obj, get_channel(obj, type=datatype(obj)))
     return DataFrame(:labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
 end
 

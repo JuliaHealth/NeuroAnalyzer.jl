@@ -132,8 +132,8 @@ Calculate coherence and MSC (magnitude-squared coherence).
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ch1::Union{String, Vector{String}}`: list of channels
+- `ch2::Union{String, Vector{String}}`: list of channels
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 - `method::Symbol=:mt`: method used to calculate CPSD:
@@ -153,21 +153,17 @@ Calculate coherence and MSC (magnitude-squared coherence).
 - `mscoh::Array{Float64, 3}`: magnitude-squared coherence
 - `p::Vector{Float64}`: frequencies
 """
-function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), method::Symbol=:mt, frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=sr(obj1), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
+function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), method::Symbol=:mt, frq_lim::Tuple{Real, Real}=(0, sr(obj1) / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=sr(obj1), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)
 
-    _check_channels(obj1, ch1)
-    _check_channels(obj2, ch2)
+    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-
-    isa(ch1, Int64) && (ch1 = [ch1])
-    isa(ch2, Int64) && (ch2 = [ch2])
+    ch1 = _ch_idx(obj1, ch1)
+    ch2 = _ch_idx(obj2, ch2)
+    _check_epochs(obj1, ep1)
+    _check_epochs(obj2, ep2)
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 

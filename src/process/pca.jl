@@ -70,7 +70,7 @@ Calculate `n` first Primary Components (PCs).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `n::Int64`: number of PCs to calculate
 
 # Returns
@@ -81,11 +81,9 @@ Named tuple containing:
 - `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64)
+function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n=n)
 
     return (pc=pc, pcv=pcv, pcm=pcm, pc_model=pc_model)
@@ -126,20 +124,18 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert :pc in keys(obj.components) "OBJ does not contain :pc component. Perform pca_decompose() first."
     @assert :pc_model in keys(obj.components) "OBJ does not contain :pc_model component. Perform pca_decompose() first."
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=obj_new.components[:pc], pc_model=obj_new.components[:pc_model])
@@ -159,9 +155,9 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 """
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     obj_new = pca_reconstruct(obj, ch=ch)
     obj.data = obj_new.data
@@ -182,17 +178,15 @@ Reconstruct signal using external PCA components (`pc` and `pca`).
 - `obj::NeuroAnalyzer.NEURO`
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=pc, pc_model=pc_model)
@@ -214,9 +208,9 @@ Reconstruct signals using external PCA components (`pc` and `pc_model`).
 - `obj::NeuroAnalyzer.NEURO`
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 """
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
+function pca_reconstruct!(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})
 
     obj_new = pca_reconstruct(obj, pc, pc_model, ch=ch)
     obj.data = obj_new.data

@@ -13,23 +13,19 @@ Delete channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
+- `ch::Union{String, Vector{String}}`: channel number(s) to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, del_opt::Bool=false)
+function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)
 
-    typeof(ch) <: AbstractRange && (ch = collect(ch))
     ch_n = nchannels(obj)
+    ch = _ch_idx(obj, ch)
     length(ch) > 1 && (ch = sort!(ch, rev=true))
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
-
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
     obj_new = deepcopy(obj)
 
     # remove channel locations
@@ -95,10 +91,10 @@ Delete channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
+- `ch::Union{String, Vector{String}}`: channel number(s) to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 """
-function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, del_opt::Bool=false)
+function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)
 
     obj_new = delete_channel(obj, ch=ch, del_opt=del_opt)
     obj.header = obj_new.header
@@ -119,18 +115,16 @@ Keep channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
+- `ch::Union{String, Vector{String}}`: channel number(s) to keep
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     typeof(ch) <: AbstractRange && (ch = collect(ch))
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     ch_n = nchannels(obj)
     chs_to_remove = setdiff(_c(ch_n), ch)
     @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
@@ -149,9 +143,9 @@ Keep channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
+- `ch::Union{String, Vector{String}}`: channel number(s) to keep
 """
-function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     obj_new = keep_channel(obj, ch=ch)
     obj.header = obj_new.header

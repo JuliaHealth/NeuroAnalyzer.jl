@@ -82,7 +82,7 @@ Perform convolution in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `kernel::AbstractVector`: convolution kernel
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 
@@ -90,11 +90,9 @@ Perform convolution in the frequency domain.
 
 - `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
-function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::AbstractVector, norm::Bool=true)
+function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector, norm::Bool=true)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm)
     
     return s_new

@@ -20,9 +20,9 @@ Average epochs. Non-signal channels are removed. `OBJ.header.recording[:data_typ
 """
 function erp(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)
 
-    nchannels(obj) > length(signal_channels(obj)) && _warn("Non-signal channels will be removed.")
+    nchannels(obj) > length(get_channel(obj, type=datatype(obj))) && _warn("Non-signal channels will be removed.")
 
-    obj_new = keep_channel(obj, ch=signal_channels(obj))
+    obj_new = keep_channel(obj, ch=get_channel(obj, type=datatype(obj)))
 
     # remove baseline prior to averaging
     if blfirst

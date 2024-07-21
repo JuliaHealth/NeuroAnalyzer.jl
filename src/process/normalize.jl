@@ -1110,7 +1110,7 @@ Normalize channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
 
@@ -1118,10 +1118,9 @@ Normalize channel(s).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Symbol, bych::Bool=false)
+function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -1151,11 +1150,11 @@ Normalize channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Symbol, bych::Bool=false)
+function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)
 
     obj_new = normalize(obj, ch=ch, method=method, bych=bych)
     obj.data = obj_new.data

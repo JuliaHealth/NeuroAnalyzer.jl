@@ -8,33 +8,27 @@ function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, 
 end
 
 function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
-    for idx in ch
-        @assert !(idx < 1 || idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]."
-    end
+    isa(ch, Int64) && (ch = [ch])
+    [@assert !(ch_idx < 1 || ch_idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]." for ch_idx in ch]
+end
+
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})
+    _check_channels(get_channel(obj, type="all"), ch)
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
-    for idx in ch
-        @assert !(idx < 1 || idx > nchannels(obj)) "ch must be in [1, $(nchannels(obj))]."
-    end
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}, type::String)
+    _check_channels(get_channel(obj, type=get_channel(obj, type=type)), ch)
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, type::String)
-    channels = get_channel_bytype(obj, type=type)
-    for idx in ch
-        @assert idx in channels "ch $idx does not match type: $(uppercase(string(type))) data channels."
-        @assert !(idx < 1 || idx > nchannels(obj)) "ch must be in [1, $(nchannels(obj))]."
-    end
+function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}})
+    isa(ch_ref, String) && (ch_ref = [ch_ref])
+    isa(ch, String) && (ch = [ch])
+    @assert length(ch) > 0 "ch is empty."
+    @assert length(ch_ref) > 0 "ch_ref is empty."
+    [@assert ch_idx in ch_ref "$ch_idx does not match labels." for ch_idx in ch]
     return nothing
-end
-
-function _check_channels(channels::Union{Int64, Vector{Int64}, <:AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
-    for idx in ch
-        @assert idx in channels "ch must be in $channels."
-        @assert !(idx < 1 || idx > sort(channels)[end]) "ch must be in [1, $(nchannels(obj))]."
-    end
 end
 
 function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})

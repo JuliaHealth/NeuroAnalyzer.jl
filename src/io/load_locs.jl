@@ -42,7 +42,7 @@ Channel locations:
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_labels() first."
+    @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_label() first."
 
     _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
     _info("Nose direction is set at '+Y'")
@@ -74,7 +74,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of reference channels
-    ref_idx = get_channel_bytype(obj, type="ref")
+    ref_idx = get_channel(obj, type="ref")
     ref_labels = labels(obj)[ref_idx]
     if length(ref_labels) > 0
         for idx in eachindex(ref_labels)
@@ -86,7 +86,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of EMG channels
-    emg_idx = get_channel_bytype(obj, type="emg")
+    emg_idx = get_channel(obj, type="emg")
     emg_labels = labels(obj)[emg_idx]
     if length(emg_labels) > 0
         for idx in eachindex(emg_labels)
@@ -98,7 +98,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     end
 
     # add locations of EOG channels
-    eog_idx = get_channel_bytype(obj, type="eog")
+    eog_idx = get_channel(obj, type="eog")
     eog_labels = labels(obj)[eog_idx]
     if length(eog_labels) > 0
         for idx in eachindex(eog_labels)

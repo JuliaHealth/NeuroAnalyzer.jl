@@ -47,17 +47,15 @@ Return the average signal of channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
+function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     keep_channel!(obj_new, ch=1)
     obj_new.data = @views average(obj.data[ch, :, :])
@@ -77,9 +75,9 @@ Return the average signal of channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 """
-function average!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)))
+function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     obj_new = average(obj, ch=ch)
     obj.header = obj_new.header

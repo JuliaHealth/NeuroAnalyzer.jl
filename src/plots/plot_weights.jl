@@ -9,7 +9,7 @@ Plot weights at electrode positions.
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `weights::Vector{<:Real}=[]`: weights vector
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: channel(s) to plot, default is all channels
+- `ch::Union{String, Vector{String}}=1:nrow(locs)`: list of channels, default is all channels
 - `ch_labels::Bool=true`: plot channel labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
@@ -26,7 +26,7 @@ Plot weights at electrode positions.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{String, Vector{String}}=1:nrow(locs), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
     @assert length(weights) >= 1 "weights must contain at least one value."
@@ -229,7 +229,7 @@ Plot weights at electrode positions.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `weights::Matrix{<:Real}`: matrix of weights
 - `ch_labels::Bool=false`: plot ch_labels
 - `head::Bool=true`: draw head
@@ -247,11 +247,11 @@ Plot weights at electrode positions.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
+function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Union{String, Vector{String}}=get_channel(obj, type=datatype(obj)), ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, title::String="")
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
 
     p = plot_weights(obj.locs, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane, title=title)
 

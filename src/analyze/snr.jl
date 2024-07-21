@@ -107,7 +107,7 @@ Calculate SNR.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `type::Symbol=:rms`: SNR type:
     - `:mean`: mean-based
     - `:rms`: RMS-based
@@ -118,11 +118,9 @@ Named tuple containing:
 - `sn::Matrix(Float64)`: SNR for each channel over frequencies 1:Nyquist
 - `f::Vector(Float64)`: frequencies
 """
-function snr(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), type::Symbol=:rms)
+function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:rms)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     sn, f = @views snr(obj.data[ch, :, :], t=obj.epoch_time, type=type)
 
     return (sn=sn, f=f)

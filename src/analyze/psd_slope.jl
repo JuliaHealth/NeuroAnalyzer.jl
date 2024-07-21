@@ -111,7 +111,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range frq_lim[1] to frq_lim[2]
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -136,11 +136,9 @@ Named tuple containing:
 - `ls::Array{Float64, 2}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     lf, ls, pf = psd_slope(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
 
     return (lf=lf, ls=ls, pf=pf)

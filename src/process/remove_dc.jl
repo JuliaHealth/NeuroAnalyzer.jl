@@ -70,18 +70,16 @@ Remove mean value (DC offset).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), n::Union{Int64, Tuple{Int64, Int64}}=0)
+function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
     reset_components!(obj_new)
@@ -99,10 +97,10 @@ Remove mean value (DC offset).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 """
-function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), n::Union{Int64, Tuple{Int64, Int64}}=0)
+function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)
 
     obj_new = remove_dc(obj, ch=ch, n=n)
     obj.data = obj_new.data

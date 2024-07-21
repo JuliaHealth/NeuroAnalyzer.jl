@@ -468,7 +468,7 @@ Show channel info.
 """
 function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64)
 
-    _check_channels(obj, ch)
+    _check_channels(obj, labels(obj)[ch])
 
     if obj.header.recording[:data_type] != "nirs"
         println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:units][ch], 8)) bad: $(obj.header.recording[:bad_channels][ch])")
@@ -525,7 +525,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         end
 
         # check which channels are in the picks list
-        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
+        clabels = labels(obj)[get_channel(obj, type="eeg")]
         channels = Vector{Int64}()
         for idx1 in eachindex(clabels)
             for idx2 in eachindex(c)
@@ -551,7 +551,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             end
         end
 
-        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
+        clabels = labels(obj)[get_channel(obj, type="eeg")]
         clabels = clabels[channels]
         pat = nothing
         for idx in p
@@ -579,7 +579,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
         (p === :parietal || p === :p) && (c = ['P'])
         (p === :occipital || p === :o) && (c = ['O'])
 
-        clabels = labels(obj)[get_channel_bytype(obj, type="eeg")]
+        clabels = labels(obj)[get_channel(obj, type="eeg")]
         channels = Vector{Int64}()
         for idx1 in eachindex(c)
             for idx2 in eachindex(clabels)
@@ -620,7 +620,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
 
     _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
     clabels = lowercase.(labels(obj))
-    ch = Int64[]
+    ch = String[]
 
     cluster === :f1 && (cluster = ["fp1", "f1", "f3", "f5", "f7", "f9", "af3", "af7"])
     cluster === :f2 && (cluster = ["fp2", "f2", "f4", "f6", "f8", "f10", "af4", "af8"])
@@ -633,7 +633,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
     cluster === :o && (cluster = ["o1", "o2", "poz", "po3", "po4", "po7", "po8", "po9", "po10"])
 
     for idx in cluster
-        idx in clabels && push!(ch, get_channel(obj, ch=idx))
+        idx in clabels && push!(ch, idx)
     end
 
     return ch

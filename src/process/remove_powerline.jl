@@ -10,7 +10,7 @@ Remove power line noise and its peaks above power line frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `pl_frq::Real=50`: power line frequency
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB
@@ -22,23 +22,21 @@ Remove power line noise and its peaks above power line frequency.
 - `obj_new::NeuroAnalyzer.NEURO`
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
+function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
     @assert nepochs(obj) == 1 "remove_powerline() should be applied to a continuous signal."
+    @assert pl_frq >= 0 "pl_freq must be ≥ 0."
+    @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
+    @assert q >= 0.01 "q must be ≥ 0.01."
+    @assert q < 5 "q must be < 5."
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     _check_var(method, [:iir], "method")
 
     obj_new = deepcopy(obj)
 
     verbose_tmp = NeuroAnalyzer.verbose
     NeuroAnalyzer.verbose = false
-
-    @assert pl_frq >= 0 "pl_freq must be ≥ 0."
-    @assert pl_frq <= sr(obj) / 2 "pl_freq must be ≤ $(sr(obj) / 2)."
-    @assert q >= 0.01 "q must be ≥ 0.01."
-    @assert q < 5 "q must be < 5."
 
     # number of peaks
     pl_best_bw = zeros(length(ch))
@@ -167,7 +165,7 @@ Remove power line noise and harmonics.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `pl_frq::Real=50`: power line frequency
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB
@@ -178,7 +176,7 @@ Remove power line noise and harmonics.
 
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
+function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=50, method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
 
     obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data

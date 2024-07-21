@@ -109,7 +109,7 @@ Filter using polynomial filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length
 
@@ -117,11 +117,9 @@ Filter using polynomial filter.
 
 - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
-function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=8, window::Int64=10)
+function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_poly(obj.data[ch, :, :], order=order, window=window)
     reset_components!(obj_new)
@@ -139,12 +137,12 @@ Filter using polynomial filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length
 
 """
-function filter_poly!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=8, window::Int64=10)
+function filter_poly!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)
 
     obj_new = filter_poly(obj, ch=ch, order=order, window=window)
     obj.data = obj_new.data

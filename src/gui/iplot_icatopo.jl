@@ -81,7 +81,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     _info("Preparing signal reconstructed from ICA components")
     cx_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     @inbounds for idx in ic_idx
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=idx, keep=true)
+        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=get_channel(obj, type=datatype(obj)), ic_idx=idx, keep=true)
         p_tmp = plot_topo(obj_tmp, seg=seg, amethod=amethod, imethod=imethod, nmethod=nmethod, cb=true, large=false)
         cx_tmp = _p2c(p_tmp)
         push!(cx_set, cx_tmp)
@@ -227,7 +227,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
             if ask_dialog("Reconstruct the signal without the ICA component$(_pl(ic_idx[ic_remove_idx])) $(_v2s(ic_idx[ic_remove_idx])) ?", "No", "Yes")
                 current_ic = get_gtk_property(entry_ic, :value, Int64)
                 _info("Reconstructing the signal without the ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                ica_reconstruct!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[ic_remove_idx])
+                ica_reconstruct!(obj_new, ic, ic_mw, ch=get_channel(obj_new, type=datatype(obj_new)), ic_idx=ic_idx[ic_remove_idx])
                 ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                 Gtk.@sigatom begin
@@ -253,7 +253,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
             if ask_dialog("Remove ICA component$(_pl(ic_idx[ic_remove_idx])) $(_v2s(ic_idx[ic_remove_idx])) ?", "No", "Yes")
                 current_ic = get_gtk_property(entry_ic, :value, Int64)
                 _info("Removing ICA component$(_pl(ic_idx[ic_remove_idx])): $(_v2s(ic_idx[ic_remove_idx]))")
-                ica_remove!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[ic_remove_idx])
+                ica_remove!(obj_new, ic, ic_mw, ch=get_channel(obj_new, type=datatype(obj_new)), ic_idx=ic_idx[ic_remove_idx])
                 ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
                 Gtk.@sigatom begin
@@ -291,20 +291,20 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     signal_connect(bt_details_topo, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
+        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=get_channel(obj, type=datatype(obj)), ic_idx=current_ic, keep=true)
         iview_plot(plot_topo(obj_tmp, cb=true, seg=seg, amethod=amethod, imethod=imethod, nmethod=nmethod, large=true))
     end
 
     signal_connect(bt_signal_reconstruct, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        ica_reconstruct!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic, keep=true)
+        ica_reconstruct!(obj_new, ic, ic_mw, ch=get_channel(obj, type=datatype(obj_new)), ic_idx=current_ic, keep=true)
         iview(obj, obj_new)
         obj_edited = true
     end
 
     signal_connect(bt_signal_remove, "clicked") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        ica_remove!(obj_new, ic, ic_mw, ch=signal_channels(obj), ic_idx=current_ic)
+        ica_remove!(obj_new, ic, ic_mw, ch=get_channel(obj_new, type=datatype(obj_new)), ic_idx=current_ic)
         iview(obj, obj_new)
         obj_edited = true
     end

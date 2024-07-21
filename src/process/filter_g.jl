@@ -80,7 +80,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
@@ -89,11 +89,9 @@ Filter using Gaussian in the frequency domain.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, f::Real, gw::Real=5)
+function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs=sr(obj), pad=pad, f=f, gw=gw)
     reset_components!(obj_new)
@@ -111,12 +109,12 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
 """
-function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, f::Real, gw::Real=5)
+function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)
 
     obj_new = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
     obj.data = obj_new.data

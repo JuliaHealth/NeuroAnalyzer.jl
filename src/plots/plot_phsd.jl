@@ -641,7 +641,7 @@ Plot phase spectral density.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `ch::Union{String, Vector{String}}`: list of channels
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
@@ -656,12 +656,12 @@ Plot phase spectral density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(ax, [:linlin, :loglin], "ax")
 
-    _check_channels(obj, ch)
+    ch = _ch_idx(obj, ch)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."

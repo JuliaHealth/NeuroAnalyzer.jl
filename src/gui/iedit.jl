@@ -81,7 +81,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:units]
     ch_labels = obj_new.header.recording[:labels]
-    ch_signal = signal_channels(obj_new)
+    ch_signal = get_channel(obj_new, type=datatype(obj_new))
 
     if _has_locs(obj_new)
         locs = obj_new.locs
@@ -501,7 +501,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
 
     signal_connect(combo_chtype, "changed") do widget
         ch_types[current_channel] = string(NeuroAnalyzer.channel_types[get_gtk_property(combo_chtype, :active, Int64) + 2])
-        ch_signal = signal_channels(obj_new)
+        ch_signal = get_channel(obj_new, type=datatype(obj_new))
         Gtk.@sigatom begin
             set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         end
@@ -566,8 +566,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     signal_connect(bt_flip, "clicked") do widget
         # do not modify "ref" and "eog" channels
         obj_tmp = deepcopy(obj_new)
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
         locs_tmp = obj_tmp.locs
         get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
@@ -582,8 +582,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     signal_connect(bt_ax_rot, "clicked") do widget
         # do not modify "ref" and "eog" channels
         obj_tmp = deepcopy(obj_new)
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         ax = get_gtk_property(combo_ax_rot, :active, Int64)
         if ax == 0
@@ -603,8 +603,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     signal_connect(bt_scale, "clicked") do widget
         # do not modify "ref" and "eog" channels
         obj_tmp = deepcopy(obj_new)
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         locs_scale!(locs_tmp, r=get_gtk_property(entry_scale, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
@@ -617,8 +617,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     signal_connect(bt_normalize, "clicked") do widget
         # do not modify "ref" and "eog" channels
         obj_tmp = deepcopy(obj_new)
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         locs_normalize!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
@@ -645,8 +645,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     signal_connect(bt_swapxy, "clicked") do widget
         # do not modify "ref" and "eog" channels
         obj_tmp = deepcopy(obj_new)
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-        delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
+        delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         locs_swapxy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp

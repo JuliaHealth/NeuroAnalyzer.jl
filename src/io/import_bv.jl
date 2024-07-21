@@ -348,7 +348,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
                               file_type=file_type,
                               recording=string(recording),
                               recording_date=recording_date,
-                              recording_time=recording_time,
+                              recording_time=replace(recording_time, '.'=>':'),
                               recording_notes=r_notes,
                               channel_type=ch_type,
                               channel_order=_sort_channels(ch_type),

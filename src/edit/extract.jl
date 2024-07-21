@@ -13,30 +13,18 @@ Extract channel data.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, String}`: channel number or name
+- `ch::String`: channel name
 
 # Returns
 
-- `extract_channel::Vector{Float64}`
+- `d::Vector{Float64}`
 """
-function extract_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String})
+function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)
 
-    clabels = labels(obj)
-    if ch isa String
-        # get ch by name
-        ch_idx = nothing
-        for idx in eachindex(clabels)
-            if ch == clabels[idx]
-                ch_idx = idx
-            end
-        end
-        @assert ch_idx !== nothing "Channel name ($ch) does not match channel labels."
-        return reshape(obj.data[ch_idx, :, :], 1, epoch_len(obj), nepochs(obj))
-    else
-        # get channel by number
-        _check_channels(obj, ch)
-        return reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
-    end
+    ch = _ch_idx(obj, ch)
+    d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
+
+    return d
 
 end
 
@@ -102,7 +90,7 @@ Extract data.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj)`: index of epochs, default is all epochs
 - `time::Bool=false`: return time vector
 - `etime::Bool=false`: return epoch time vector
@@ -113,10 +101,9 @@ Extract data.
 - `time::Vector{Float64}`
 - `etime::Vector{Float64}`
 """
-function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)
+function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 

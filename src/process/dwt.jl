@@ -91,7 +91,7 @@ Perform discrete wavelet transformation (DWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
     - `:sdwt`: Stationary Wavelet Transforms
@@ -102,11 +102,9 @@ Perform discrete wavelet transformation (DWT).
 
 - `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     dt = @views dw_trans(obj.data[ch, :, :], wt=wt, type=type, l=l)
 
     return dt

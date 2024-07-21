@@ -332,7 +332,7 @@ function import_nirx(file_name::String)
                                file_type=file_type,
                                recording=string(device[1]),
                                recording_date=string(recording_date[1]),
-                               recording_time=string(recording_time[1]),
+                               recording_time=replace(string(recording_time[1]), '.'=>':'),
                                recording_notes="NIRStar: $nirstar",
                                wavelengths=wavelengths,
                                wavelength_index=wavelength_index,

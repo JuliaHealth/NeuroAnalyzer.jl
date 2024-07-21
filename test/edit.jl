@@ -40,14 +40,14 @@ e10_tmp = replace_channel(e10, ch=1, s=ones(1, epoch_len(e10), nepochs(e10)));
 replace_channel!(e10_tmp, ch=1, s=zeros(1, epoch_len(e10), nepochs(e10)));
 @test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), nepochs(e10))
 
-@info "Test 5/30: add_labels()"
+@info "Test 5/30: add_label()"
 l = string.(1:24)
-e10_tmp = add_labels(e10, clabels=l)
+e10_tmp = add_label(e10, clabels=l)
 @test labels(e10_tmp) == l
 add_labels!(e10_tmp, clabels=l)
 @test labels(e10_tmp) == l
 
-@info "Test 6/30: add_labels()"
+@info "Test 6/30: add_label()"
 e10_tmp = delete_channel(e10, ch=1)
 @test nchannels(e10_tmp) == 23
 delete_channel!(e10_tmp, ch=1)

@@ -77,7 +77,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -86,11 +86,9 @@ Perform wavelet band-pass filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6)
+function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views wbp(obj.data[ch, :, :], pad=pad, frq=frq, fs=sr(obj), ncyc=ncyc)
     reset_components!(obj_new)
@@ -108,12 +106,12 @@ Perform wavelet band-pass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
 """
-function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6)
+function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)
 
     obj_new = wbp(obj, ch=ch, pad=pad, frq=frq, ncyc=ncyc)
     obj.data = obj_new.data

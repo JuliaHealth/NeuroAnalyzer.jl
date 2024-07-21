@@ -19,20 +19,20 @@ Reference to common electrode(s). Only signal channels are processed.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{String, Vector{String}}`: list of channels used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
+function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)
 
     _check_datatype(obj, "eeg")
 
     # keep signal channels
     _check_channels(obj, ch)
-    chs = get_channel_bytype(obj, type="eeg")
+    chs = get_channel(obj, type="eeg")
 
     obj_new = deepcopy(obj)
 
@@ -81,10 +81,10 @@ Reference to common electrode(s). Only signal channels are processed.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{String, Vector{String}}`: list of channels used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 """
-function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
+function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)
 
     obj_new = reference_ce(obj, ch=ch, med=med)
     obj.data = obj_new.data
@@ -119,7 +119,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     _check_datatype(obj, "eeg")
 
     # keep signal channels
-    chs = get_channel_bytype(obj, type="eeg")
+    chs = get_channel(obj, type="eeg")
     # source signals
     obj_new = deepcopy(obj)
     src = @view deepcopy(obj_new).data[chs, :, :]
@@ -259,7 +259,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     @assert !all(iszero, occursin.("a2", lowercase.(labels(obj)))) "OBJ does not contain A2 channel."
 
     # keep signal channels
-    chs = get_channel_bytype(obj, type="eeg")
+    chs = get_channel(obj, type="eeg")
     obj_new = deepcopy(obj)
     s = @view obj_new.data[chs, :, :]
 
@@ -414,7 +414,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     @assert !all(iszero, occursin.("m2", lowercase.(labels(obj)))) "OBJ does not contain M2 channel."
 
     # keep signal channels
-    chs = get_channel_bytype(obj, type="eeg")
+    chs = get_channel(obj, type="eeg")
     obj_new = deepcopy(obj)
     s = @view obj_new.data[chs, :, :]
 
@@ -565,7 +565,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     # keep signal channels
-    chs = get_channel_bytype(obj, type="eeg")
+    chs = get_channel(obj, type="eeg")
     s = obj.data[chs, :, :]
 
     @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
@@ -687,7 +687,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
 
     _check_datatype(obj, "eeg")
 
-    chs = get_channel_bytype(obj, type="eeg")
+    chs = get_channel(obj, type="eeg")
 
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]

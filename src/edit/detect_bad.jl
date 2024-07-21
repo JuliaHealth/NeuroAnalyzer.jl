@@ -9,7 +9,7 @@ Detect bad channels and epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
     - `:flat`: flat channel(s)
     - `:rmse`: RMSE vs average channel outside of 95% CI
@@ -40,20 +40,19 @@ Named tuple containing:
 - `bm::Matrix{Bool}`: matrix of bad channels × epochs
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
-
-    typeof(method) != Vector{Symbol} && (method = [method])
-    for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
-    end
+function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
 
     @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
     @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
     @assert !(ransac_r < 0 || ransac_r > 1) "ransac_r must in [0.0, 1.0]."
     @assert !(ransac_tr < 0 || ransac_tr > 1) "ransac_tr must in [0.0, 1.0]."
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    typeof(method) != Vector{Symbol} && (method = [method])
+    for idx in method
+        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
+    end
+
+    ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -312,7 +311,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
 
         _check_datatype(obj, "eeg")
         @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
-        chs = get_channel_bytype(obj, type="eeg")
+        chs = get_channel(obj, type="eeg")
         [@assert ch[idx] in chs "ch must not contain non-signal channels." for idx in eachindex(ch)]
 
         ch_n = length(ch)
@@ -399,7 +398,7 @@ Detect bad channels and epochs and update the `:bad_channels` field in the OBJ h
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
     - `:flat`: flat channel(s)
     - `:rmse`: RMSE vs average channel outside of 95% CI
@@ -424,7 +423,7 @@ Detect bad channels and epochs and update the `:bad_channels` field in the OBJ h
 - `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
 - `amp_t::Float64=400.0`: two-sided rejection amplitude threshold (± 400 μV)
 """
-function detect_bad!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj)), method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
+function detect_bad!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
 
     bm, _ = detect_bad(obj, ch=ch, method=method, w=w, flat_tol=flat_tol, flat_fr=flat_fr, p=p, tc=tc, tkeo_method=tkeo_method, z=z, ransac_r=ransac_r, ransac_tr=ransac_tr, ransac_t=ransac_t, amp_t=amp_t)
     obj.header.recording[:bad_channels] = bm

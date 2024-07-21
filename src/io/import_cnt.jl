@@ -450,7 +450,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
                               file_type=file_type,
                               recording="",
                               recording_date=recording_date,
-                              recording_time=recording_time,
+                              recording_time=replace(recording_time, '.'=>':'),
                               recording_notes="",
                               channel_type=ch_type,
                               channel_order=_sort_channels(ch_type),

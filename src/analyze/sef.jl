@@ -109,7 +109,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `x::Float64=0.95`: threshold
 - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -127,11 +127,9 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 
 - `sef_frq::Matrix{Float64}`: spectral edge frequency
 """
-function sef(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), x::Float64=0.95, f::Tuple{Real, Real}=(0, sr(obj) / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
+function sef(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, x::Float64=0.95, f::Tuple{Real, Real}=(0, sr(obj) / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     sef_frq = @views sef(obj.data[ch, :, :], x=x, fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     return sef_frq

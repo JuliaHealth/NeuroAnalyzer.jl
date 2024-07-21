@@ -82,7 +82,7 @@ Filter using moving median filter (with threshold).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `k::Int64=8`: window length is `2 × k + 1`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
@@ -91,11 +91,9 @@ Filter using moving median filter (with threshold).
 
 - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
-function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     _info("Window length: $(2 * k + 1) samples")
 
     obj_new = deepcopy(obj)
@@ -115,13 +113,13 @@ Filter using moving median filter (with threshold).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `k::Int64=8`: window length is `2 × k + 1`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
 """
-function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
     obj_new = filter_mmed(obj, ch=ch, k=k, t=t, window=window)
     obj.data = obj_new.data

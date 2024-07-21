@@ -75,18 +75,16 @@ Perform convolution in the time domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `kernel::AbstractVector`: convolution kernel
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
-function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::AbstractVector)
+function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)
     reset_components!(obj_new)
@@ -104,10 +102,10 @@ Perform convolution in the time domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nchannels(obj))`: index of channels, default is all channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `kernel::AbstractVector`: convolution kernel
 """
-function tconv!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::AbstractVector)
+function tconv!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector)
 
     obj_new = tconv(obj, ch=ch, kernel=kernel)
     obj.data = obj_new.data

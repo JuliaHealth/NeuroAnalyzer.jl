@@ -8,10 +8,10 @@ Interactive topographical map.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj))`: channel(s) to plot, default is EEG/MEG/ERP channels
+- `ch::Union{String, Vector{String}}=get_channel(obj, type=datatype(obj))`: channel(s) to plot, default is EEG/MEG/ERP channels
 - `seg::Tuple{Real, Real}=(0, 0)`: segment (from, to) in seconds to display
 """
-function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=datatype(obj)), seg::Tuple{Real, Real}=(0, 0))
+function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type=datatype(obj)), seg::Tuple{Real, Real}=(0, 0))
 
     redraw = true
 

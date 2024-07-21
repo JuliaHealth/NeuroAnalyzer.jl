@@ -1082,7 +1082,7 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO; ic_idx::Union{Int64, Vector{Int6
     p_topo = Vector{Plots.Plot{Plots.GRBackend}}()
 
     for idx in eachindex(ic_idx)
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[idx], keep=true)
+        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=get_channel(obj, type=datatype(obj)), ic_idx=ic_idx[idx], keep=true)
         p_tmp = plot_topo(obj_tmp, title="IC $(ic_idx[idx])", cb=cb, cb_label=cb_label, amethod=amethod, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, seg=seg, kwargs...)
         push!(p_topo, p_tmp)
     end
@@ -1143,7 +1143,7 @@ function plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matr
     p_topo = Vector{Plots.Plot{Plots.GRBackend}}()
 
     for idx in eachindex(ic_idx)
-        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=signal_channels(obj), ic_idx=ic_idx[idx], keep=true)
+        obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=get_channel(obj, type=datatype(obj)), ic_idx=ic_idx[idx], keep=true)
         p_tmp = plot_topo(obj_tmp, title="IC $(ic_idx[idx])", cb=cb, cb_label=cb_label, amethod=amethod, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, seg=seg, kwargs...)
         push!(p_topo, p_tmp)
     end

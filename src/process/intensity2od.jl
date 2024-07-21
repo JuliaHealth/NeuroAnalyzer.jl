@@ -31,19 +31,19 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type="nirs_int"))`: index of channels, default is NIRS intensity channels
+- `ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type="nirs_int"))
+function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    @assert length(get_channel(obj, type="nirs_int")) > 0 "OBJ does not contain NIRS intensity channels."
+
+    ch = _ch_idx(obj, ch)
     _check_datatype(obj, "nirs")
-    @assert length(get_channel_bytype(obj, type="nirs_int")) > 0 "OBJ does not contain NIRS intensity channels."
-    _check_channels(get_channel_bytype(obj, type="nirs_int"), ch)
+    _check_channels(get_channel(obj, type="nirs_int"), ch)
 
     obj_new = deepcopy(obj)
 
@@ -72,9 +72,9 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type="nirs_int"))`: index of channels, default is NIRS intensity channels
+- `ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
 """
-function intensity2od!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type="nirs_int"))
+function intensity2od!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))
 
     obj_new = intensity2od(obj, ch=ch)
     obj.data = obj_new.data

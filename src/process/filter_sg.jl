@@ -69,7 +69,7 @@ Filter using Savitzky-Golay filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
@@ -77,11 +77,9 @@ Filter using Savitzky-Golay filter.
 
 - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
-function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=6, window::Int64=11)
+function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
-
+    ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :], order=order, window=window)
     reset_components!(obj_new)
@@ -99,12 +97,12 @@ Filter using Savitzky-Golay filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
 """
-function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=6, window::Int64=11)
+function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)
 
     obj_new = filter_sg(obj, ch=ch, order=order, window=window)
     obj.data = obj_new.data

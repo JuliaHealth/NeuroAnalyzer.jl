@@ -8,35 +8,35 @@ end
 _v2r(v::AbstractRange) = return v
 _v2r(v::Int64) = return v
 
-function _ch_rename(ch_name::String)
-    n = replace(uppercase(ch_name), "_"=>" ")
-    lowercase(ch_name) == "ieeg" && return "iEEG"
-    lowercase(ch_name) == "ecog" && return "ECoG"
-    lowercase(ch_name) == "seeg" && return "sEEG"
-    lowercase(ch_name) == "grad" && return "gradiometer"
-    lowercase(ch_name) == "mag" && return "magnetometer"
-    lowercase(ch_name) == "nirs_int" && return "NIRS intensity"
-    lowercase(ch_name) == "nirs_od" && return "NIRS optical density"
-    lowercase(ch_name) == "nirs_hbo" && return "NIRS HbO concentration"
-    lowercase(ch_name) == "nirs_hbr" && return "NIRS HbR concentration"
-    lowercase(ch_name) == "nirs_hbt" && return "NIRS HbT concentration"
-    lowercase(ch_name) == "ref" && return "reference"
-    lowercase(ch_name) == "other" && return "other"
-    lowercase(ch_name) == "mrk" && return "marker"
-    lowercase(ch_name) == "accel" && return "acceleration"
-    lowercase(ch_name) == "magfld" && return "magnetic field"
-    lowercase(ch_name) == "orient" && return "orientation"
-    lowercase(ch_name) == "angvel" && return "angular velocity"
-    return n
+function _ch_rename(ch_type::String)
+    lowercase(ch_type) == "eeg" && return "EEG"
+    lowercase(ch_type) == "ecog" && return "ECoG"
+    lowercase(ch_type) == "ecog" && return "ECoG"
+    lowercase(ch_type) == "seeg" && return "sEEG"
+    lowercase(ch_type) == "grad" && return "MEG gradiometer"
+    lowercase(ch_type) == "mag" && return "MEG magnetometer"
+    lowercase(ch_type) == "nirs_int" && return "NIRS intensity"
+    lowercase(ch_type) == "nirs_od" && return "NIRS optical density"
+    lowercase(ch_type) == "nirs_hbo" && return "NIRS HbO concentration"
+    lowercase(ch_type) == "nirs_hbr" && return "NIRS HbR concentration"
+    lowercase(ch_type) == "nirs_hbt" && return "NIRS HbT concentration"
+    lowercase(ch_type) == "ref" && return "reference"
+    lowercase(ch_type) == "other" && return "other"
+    lowercase(ch_type) == "mrk" && return "marker"
+    lowercase(ch_type) == "accel" && return "acceleration"
+    lowercase(ch_type) == "magfld" && return "magnetic field"
+    lowercase(ch_type) == "orient" && return "orientation"
+    lowercase(ch_type) == "angvel" && return "angular velocity"
+    return ch_type
 end
 
-function _def_ylabel(ch_name::String, u::String)
+function _def_ylabel(ch_type::String, u::String)
     yl = "Amplitude [$u]"
-    lowercase(ch_name) == "nirs_int" && return "Intensity [$u]"
-    lowercase(ch_name) == "nirs_od" && return "OD [$u]"
-    lowercase(ch_name) == "nirs_hbo" && return "HbO concentration [$u]"
-    lowercase(ch_name) == "nirs_hbr" && return "HbR concentration [$u]"
-    lowercase(ch_name) == "nirs_hbt" && return "HbT concentration [$u]"
+    lowercase(ch_type) == "nirs_int" && return "Intensity [$u]"
+    lowercase(ch_type) == "nirs_od" && return "OD [$u]"
+    lowercase(ch_type) == "nirs_hbo" && return "HbO concentration [$u]"
+    lowercase(ch_type) == "nirs_hbr" && return "HbR concentration [$u]"
+    lowercase(ch_type) == "nirs_hbt" && return "HbT concentration [$u]"
     return yl
 end
 
@@ -71,57 +71,21 @@ function _ch_units(ch_type::String)
     return u
 end
 
-_ch_units(obj::NeuroAnalyzer.NEURO, ch::Int64) = _ch_units(obj.header.recording[:channel_type][ch])
+_ch_units(obj::NeuroAnalyzer.NEURO, ch::String) = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
-function _channel2channel_name(ch::Union{Int64, Vector{Int64}, <:AbstractRange})
-    if ch isa Int64
-        return ch
-    elseif length(ch) == 1
-        ch_name = string(ch)
-        ch_name = replace(ch_name, "["=>"", "]"=>"")
-    else
-        if collect(ch[1]:ch[end]) == ch
-            ch_name = string(ch[1]) * ":" * string(ch[end])
-        else
-            ch_name = ""
-            for idx in 1:(length(ch) - 1)
-                ch_name *= string(ch[idx])
-                ch_name *= ", "
-            end
-            ch_name *= string(ch[end])
-        end
+function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})
+    _check_channels(cl, l)
+    ch = Int64[]
+    isa(l, String) && (l = [l])
+    isa(cl, String) && (cl = [l])
+    for ch_idx in eachindex(l)
+        @assert l[ch_idx] in cl "$(l[ch_idx]) does not match signal labels."
+        push!(ch, findfirst(isequal(l[ch_idx]), cl))
     end
-    return ch_name
+    return ch
 end
 
-function _map_channels(channel::Union{Int64, Vector{Int64}, <:AbstractRange}, channels=Vector{Int64})
-    channel_orig = channel
-    if channel isa Int64
-        channel = vsearch(channel, channels)
-    else
-        for idx in eachindex(channel)
-            channel[idx] = vsearch(channel[idx], channels)
-        end
-    end
-    return channel, channel_orig
-end
-
-function _get_ch_idx(clabels::Vector{String}, ch::Union{String, Int64})
-    if typeof(ch) == String
-        ch_found = nothing
-        for idx in eachindex(clabels)
-            if ch == clabels[idx]
-                ch_found = idx
-            end
-        end
-        @assert ch_found !== nothing "ch name does not match signal labels."
-    else
-        @assert !(ch < 1 || ch > length(clabels)) "channel index does not match signal channels."
-        ch_found = ch
-    end
-
-    return ch_found
-end
+_ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}}) = _ch_idx(labels(obj), l)
 
 function _set_channel_types(clabels::Vector{String}, default::String="other")
     channel_names = ["af3", "af4", "af7", "af8", "afz", "c1", "c2", "c3", "c4", "c5", "c6", "cp1", "cp2", "cp3", "cp4", "cp5", "cp6", "cpz", "cz", "f1", "f10", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fc1", "fc2", "fc3", "fc4", "fc5", "fc6", "fcz", "fp1", "fp2", "fpz", "ft10", "ft7", "ft8", "ft9", "fz", "nz", "o1", "o2", "oz", "p1", "p10", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "po3", "po4", "po7", "po8", "poz", "pz", "t10", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "tp10", "tp7", "tp8", "tp9"]

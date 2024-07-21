@@ -27,7 +27,7 @@ Interpolate channel using planar interpolation.
 """
 function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)
 
-    channels = get_channel_bytype(obj, type=obj.header.recording[:data_type])
+    channels = get_channel(obj, type=obj.header.recording[:data_type])
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
 
@@ -40,8 +40,8 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
 
     obj_new = deepcopy(obj)
     obj_tmp = deepcopy(obj)
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="ref"))
-    delete_channel!(obj_tmp, ch=get_channel_bytype(obj_tmp, type="eog"))
+    delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="ref"))
+    delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
 
     locs_x1 = obj_tmp.locs[!, :loc_x]
     locs_y1 = obj_tmp.locs[!, :loc_y]
@@ -49,7 +49,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
     delete_channel!(obj_tmp, ch=ch)
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
-    chs = get_channel_bytype(obj_tmp, type=obj.header.recording[:data_type])
+    chs = get_channel(obj_tmp, type=obj.header.recording[:data_type])
 
     ep_n = length(ep)
     ep_len = epoch_len(obj_tmp)

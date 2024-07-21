@@ -123,7 +123,7 @@ Calculate partial auto-correlation. For ERP return trial-averaged auto-correlati
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `method::Symbol=:yw`: method of calculating auto-correlation:
@@ -136,12 +136,11 @@ Named tuple containing:
 - `pac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), l::Real=1, demean::Bool=true, method::Symbol=:yw)
+function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, method::Symbol=:yw)
 
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
-    _check_channels(obj, ch)
-    isa(ch, Int64) && (ch = [ch])
+    ch = _ch_idx(obj, ch)
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 

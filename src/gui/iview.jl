@@ -10,7 +10,6 @@ Interactive view of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj))`: channels to plot, default is all channels
 - `ep::Int64=1`: initial epoch to display
 - `zoom::Real=10`: how many seconds are displayed in one segment
 - `bad::Bool=true`: show bad channels
@@ -20,14 +19,13 @@ Interactive view of continuous or epoched signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj)), ep::Int64=1, zoom::Real=10, bad::Bool=true, snap::Bool=true)
+function iview(obj::NeuroAnalyzer.NEURO; ep::Int64=1, zoom::Real=10, bad::Bool=true, snap::Bool=true)
 
-    @assert length(ch) > 1 "iview() requires > 1 channels."
     seg = nothing
     if nepochs(obj) == 1
-        seg = iview_cont(obj, ch=ch, zoom=zoom, bad=bad, snap=snap)
+        seg = iview_cont(obj, zoom=zoom, bad=bad, snap=snap)
     else
-        seg = iview_ep(obj, ch=ch, ep=ep, bad=bad)
+        seg = iview_ep(obj, ep=ep, bad=bad)
     end
 
     return seg
@@ -42,7 +40,6 @@ Interactive view of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj))`: channels to plot, default is all channels
 - `zoom::Real=10`: how many seconds are displayed in one segment
 - `bad::Bool=true`: list of bad channels; if not false -- plot bad channels using this list
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
@@ -51,15 +48,17 @@ Interactive view of continuous signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj)), zoom::Real=10, bad::Bool=true, snap::Bool=true)
+function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, snap::Bool=true)
 
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
 
-    @assert length(ch) > 1 "iview() requires > 1 channels."
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "iview_ep() should be used for epoched object."
-    _check_channels(obj, ch)
+
+    ch_order = obj.header.recording[:channel_order]
+    cl = labels(obj)[ch_order]
+    ch = 1:nchannels(obj)
 
     mono = false
     quit = false
@@ -67,18 +66,13 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractR
 
     if length(ch) > 20
         ch_first = 1
-        ch_last = 20
+        ch_last = ch_first + 19
     else
         ch_first = 1
         ch_last = length(ch)
     end
 
-    if length(ch) > 1
-        p = NeuroAnalyzer.plot(obj, ch=ch[ch_first:ch_last], title="", bad=bad)
-    else
-        p = NeuroAnalyzer.plot(obj, ch=ch, title="", bad=bad)
-    end
-
+    p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], title="", bad=bad)
     win = GtkWindow("NeuroAnalyzer: iview_cont()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -152,27 +146,14 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractR
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
-
-        if length(ch) > 1
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=ch[ch_first]:ch[ch_last],
-                                                           seg=(time1, time2),
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="",
-                                                           scale=scale,
-                                                           bad=bad))
-        else
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=ch,
-                                                           seg=(time1, time2),
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="",
-                                                           scale=scale,
-                                                           bad=bad))
-        end
-
+        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
+                                                       ch=cl[ch_first:ch_last],
+                                                       seg=(time1, time2),
+                                                       s_pos=(ts1, ts2),
+                                                       mono=mono,
+                                                       title="",
+                                                       scale=scale,
+                                                       bad=bad))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -275,7 +256,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractR
                     set_gtk_property!(entry_time, :value, time_current)
                 end
             else
-                if ch_last < ch[end]
+                if ch_last < length(ch)
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
@@ -332,7 +313,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractR
                 if obj.time_pts[end] % zoom == 0
                     time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
                 else
-                    time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                    time_current >= (obj.time_pts[end] - (obj.time_pts[end] % zoom)) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
                 end
                 time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
             end
@@ -434,7 +415,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractR
                 draw(can)
             end
         elseif k == 0x0000ff56 # Page Down
-            if ch_last < ch[end]
+            if ch_last < length(ch)
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
@@ -598,7 +579,6 @@ Interactive view of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj))`: channels to plot, default is all channels
 - `ep::Int64=1`: initial epoch to display
 - `bad::Bool=true`: list of bad channels; if not false -- plot bad channels using this list
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
@@ -607,12 +587,14 @@ Interactive view of epoched signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj)), ep::Int64=1, bad::Bool=true, snap::Bool=true)
+function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::Bool=true)
 
-    @assert length(ch) > 1 "iview() requires > 1 channels."
     @assert nepochs(obj) > 1 "iview_cont() should be used for continuous object."
-    _check_channels(obj, ch)
     _check_epochs(obj, ep)
+
+    ch_order = obj.header.recording[:channel_order]
+    cl = labels(obj)[ch_order]
+    ch = 1:nchannels(obj)
 
     mono = false
     quit = false
@@ -621,17 +603,13 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRan
 
     if length(ch) > 20
         ch_first = 1
-        ch_last = 20
+        ch_last = ch_first + 19
     else
         ch_first = 1
         ch_last = length(ch)
     end
 
-    if length(ch) > 1
-        p = NeuroAnalyzer.plot(obj, ch=ch[ch_first:ch_last], ep=ep, title="", bad=bad)
-    else
-        p = NeuroAnalyzer.plot(obj, ch=ch, ep=ep, mono=mono, title="", bad=bad)
-    end
+    p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], ep=ep, title="", bad=bad)
     win = GtkWindow("NeuroAnalyzer: iview_ep()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -696,26 +674,14 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRan
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
-        if length(ch) > 1
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=ch[ch_first]:ch[ch_last],
-                                                           ep=ep,
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="",
-                                                           scale=scale,
-                                                           bad=bad))
-        else
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=ch,
-                                                           ep=ep,
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="",
-                                                           scale=scale,
-                                                           bad=bad))
-        end
-
+        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
+                                                       ch=cl[ch_first:ch_last],
+                                                       ep=ep,
+                                                       s_pos=(ts1, ts2),
+                                                       mono=mono,
+                                                       title="",
+                                                       scale=scale,
+                                                       bad=bad))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -781,7 +747,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRan
                     end
                 end
             else
-                if ch_last < ch[end]
+                if ch_last < length(ch)
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
@@ -894,7 +860,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRan
                 draw(can)
             end
         elseif k == 0x0000ff56 # Page Down
-            if ch_last < ch[end]
+            if ch_last < length(ch)
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
@@ -988,20 +954,18 @@ Interactive view of two continuous or epoched signals.
 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj1))`: channels to plot, default is all channels
 - `ep::Int64=1`: initial epoch to display
 - `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj1)), ep::Int64=1, zoom::Real=10)
+function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1, zoom::Real=10)
 
-    @assert length(ch) > 1 "iview() requires > 1 channels."
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."
 
     if nepochs(obj1) == 1
-        iview_cont(obj1, obj2, ch=ch, zoom=zoom)
+        iview_cont(obj1, obj2, zoom=zoom)
     else
-        iview_ep(obj1, obj2, ch=ch, ep=ep)
+        iview_ep(obj1, obj2, ep=ep)
     end
 
     return nothing
@@ -1017,37 +981,34 @@ Interactive view of two continuous signals.
 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj1))`: channels to plot, default is all channels
 - `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj1)), zoom::Real=10)
+function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)
 
     (signal_len(obj1) / sr(obj1)) < zoom && (zoom = obj1.time_pts[end])
 
-    @assert length(ch) > 1 "iview() requires > 1 channels."
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
+    @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj1) / sr(obj1) "zoom must be ≤ $(signal_len(obj1) / sr(obj1))."
     @assert nepochs(obj1) == 1 "iview_ep() should be used for epoched object."
-    _check_channels(obj1, ch)
+
+    ch_order = obj1.header.recording[:channel_order]
+    cl = labels(obj1)[ch_order]
+    ch = 1:nchannels(obj1)
 
     scale = true
 
     if length(ch) > 20
         ch_first = 1
-        ch_last = 20
+        ch_last = ch_first + 19
     else
         ch_first = 1
         ch_last = length(ch)
     end
 
-    if length(ch) > 1
-        p = NeuroAnalyzer.plot(obj1, obj2, ch=ch[ch_first]:ch[ch_last], title="")
-    else
-        p = NeuroAnalyzer.plot(obj1, obj2, ch=ch, title="")
-    end
-
+    p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], title="")
     win = GtkWindow("NeuroAnalyzer: iview_cont()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -1105,21 +1066,11 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
         time2 = time1 + zoom
         time2 > obj1.time_pts[end] && (time2 = obj1.time_pts[end])
         ctx = getgc(can)
-
-        if length(ch) > 1
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
-                                                           ch=ch[ch_first]:ch[ch_last],
-                                                           seg=(time1, time2),
-                                                           title="",
-                                                           scale=scale))
-        else
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
-                                                           ch=ch,
-                                                           seg=(time1, time2),
-                                                           title="",
-                                                           scale=scale))
-        end
-
+        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
+                                                       ch=cl[ch_first:ch_last],
+                                                       seg=(time1, time2),
+                                                       title="",
+                                                       scale=scale))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -1149,7 +1100,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                     set_gtk_property!(entry_time, :value, time_current)
                 end
             else
-                if ch_last < ch[end]
+                if ch_last < length(ch)
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
@@ -1256,7 +1207,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Un
                 draw(can)
             end
         elseif k == 0x0000ff56 # Page Down
-            if ch_last < ch[end]
+            if ch_last < length(ch)
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
@@ -1376,32 +1327,29 @@ Interactive view of two epoched signals.
 
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj1))`: channels to plot, default is all channels
 - `ep::Int64=1`: initial epoch to display
 """
-function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj1)), ep::Int64=1)
+function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)
 
-    @assert length(ch) > 1 "iview() requires > 1 channels."
+    @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."
     @assert nepochs(obj1) > 1 "iview_cont() should be used for continuous object."
-    _check_channels(obj1, ch)
+
+    ch_order = obj1.header.recording[:channel_order]
+    cl = labels(obj1)[ch_order]
+    ch = 1:nchannels(obj1)
     _check_epochs(obj1, ep)
 
     if length(ch) > 20
         ch_first = 1
-        ch_last = 20
+        ch_last = ch_first + 19
     else
         ch_first = 1
         ch_last = length(ch)
     end
 
-    if length(ch) > 1
-        p = NeuroAnalyzer.plot(obj1, obj2, ch=ch[ch_first]:ch[ch_last], ep=ep, title="")
-    else
-        p = NeuroAnalyzer.plot(obj1, obj2, ch=ch, ep=ep, title="")
-    end
-
+    p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], ep=ep, title="")
     win = GtkWindow("NeuroAnalyzer: iview_ep()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -1450,19 +1398,10 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
     @guarded draw(can) do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
         ctx = getgc(can)
-
-        if length(ch) > 1
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
-                                                           ch=ch[ch_first]:ch[ch_last],
-                                                           ep=ep,
-                                                           title=""))
-        else
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
-                                                           ch=ch,
-                                                           ep=ep,
-                                                           title=""))
-        end
-
+        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj1, obj2,
+                                                       ch=cl[ch_first:ch_last],
+                                                       ep=ep,
+                                                       title=""))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -1480,7 +1419,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                     end
                 end
             else
-                if ch_last < ch[end]
+                if ch_last < length(ch)
                     ch_first += 1
                     ch_last += 1
                     Gtk.@sigatom begin
@@ -1556,7 +1495,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Unio
                 draw(can)
             end
         elseif k == 0x0000ff56 # Page Down
-            if ch_last < ch[end]
+            if ch_last < length(ch)
                 ch_first += 1
                 ch_last += 1
                 Gtk.@sigatom begin
@@ -1626,11 +1565,11 @@ Interactive view of embedded or external component of continuous or epoched sign
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
-- `c_idx::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj))`: component channel to display, default is all component channels
+- `c_idx::Union{Vector{Int64}, AbstractRange}`: component channel to display, default is all component channels
 - `ep::Int64=1`: initial epoch to display
 - `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj)), ep::Int64=1, zoom::Real=10)
+function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Vector{Int64}, AbstractRange}, ep::Int64=1, zoom::Real=10)
 
     @assert length(c_idx) > 1 "iview() requires > 1 channels."
 
@@ -1653,10 +1592,10 @@ Interactive view of embedded or external component of continuous signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
-- `c_idx::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj))`: component channel to display, default is all component channels
+- `c_idx::Union{Vector{Int64}, AbstractRange}`: component channel to display, default is all component channels
 - `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj)), zoom::Real=10)
+function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Vector{Int64}, AbstractRange}, zoom::Real=10)
 
     @assert length(c_idx) > 1 "iview() requires > 1 component."
     @assert zoom > 0 "zoom must be > 0."
@@ -1997,10 +1936,10 @@ Interactive view of embedded or external component of epoched signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
-- `c_idx::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj))`: component channel to display, default is all component channels
+- `c_idx::Union{Vector{Int64}, AbstractRange}`: component channel to display, default is all component channels
 - `ep::Int64=1`: initial epoch to display
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Vector{Int64}, AbstractRange}=_c(nchannels(obj)), ep::Int64=1)
+function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Vector{Int64}, AbstractRange}, ep::Int64=1)
 
     @assert length(c_idx) > 1 "iview() requires > 1 channels."
     @assert nepochs(obj) > 1 "iview_cont() should be used for continuous object."
