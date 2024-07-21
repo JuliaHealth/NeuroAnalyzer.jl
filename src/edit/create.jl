@@ -11,7 +11,7 @@ Create an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `data_type::String`: data type of the new object ("eeg", "meg", "nirs", "ecog")
+- `data_type::String`: data type of the new object ("eeg", "ecog", "seeg", "meg", "nirs", "mep", "eda", "sensors")
 
 # Returns
 
@@ -204,7 +204,7 @@ function create_object(; data_type::String)
 
     history = String[]
 
-    locs = DataFrame(:labels=>String[],
+    locs = DataFrame(:label=>String[],
                      :loc_radius=>Float64[],
                      :loc_theta=>Float64[],
                      :loc_x=>Float64[],
@@ -297,8 +297,8 @@ function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int6
     obj_new.data = data
     clabels = repeat(["ch-"], size(data, 1))
     clabels = clabels .* string.(collect(1:size(data, 1)))
-    obj_new.header.recording[:labels] = clabels
-    obj_new.header.recording[:units] = repeat([_ch_units(type)])
+    obj_new.header.recording[:label] = clabels
+    obj_new.header.recording[:unit] = repeat([_ch_units(type)])
     obj_new.header.recording[:sampling_rate] = fs
     obj_new.header.recording[:channel_type] = repeat([type], size(data, 1))
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)

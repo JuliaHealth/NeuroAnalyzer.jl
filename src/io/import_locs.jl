@@ -121,7 +121,7 @@ function import_locs_ced(file_name::String)
     "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
     "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_swapxy!(locs, polar=true, cart=true, spherical=true)
     locs_flipx!(locs, polar=true, cart=false, spherical=false)
@@ -153,7 +153,7 @@ function import_locs_locs(file_name::String)
 
     locs = CSV.read(file_name, header=false, delim="\t", stringtype=String, DataFrame)
 
-    DataFrames.rename!(locs, [:number, :theta, :radius, :labels])
+    DataFrames.rename!(locs, [:number, :theta, :radius, :label])
 
     clabels = string.(lstrip.(locs[!, "labels"]))
 
@@ -172,7 +172,7 @@ function import_locs_locs(file_name::String)
     theta_sph = theta
     radius_sph = radius
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_swapxy!(locs, polar=true, cart=false, spherical=false)
     locs_flipx!(locs, polar=true, cart=false, spherical=false)
@@ -243,7 +243,7 @@ function import_locs_elc(file_name::String)
     y = normalize_minmax(y)
     z = normalize_minmax(z)
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -304,7 +304,7 @@ function import_locs_tsv(file_name::String)
     "phi" in colnames && (phi_sph = locs[!, "phi"])
     "phi_sph" in colnames && (phi_sph = locs[!, "phi_sph"])
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -362,7 +362,7 @@ function import_locs_sfp(file_name::String)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     # center X-axis at 0, 0, 0
     x_range = (maximum(x) + abs(minimum(x))) / 2
@@ -398,7 +398,7 @@ function import_locs_csd(file_name::String)
 
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, stringtype=String, DataFrame)
 
-    DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
+    DataFrames.rename!(locs, [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
     clabels = string.(lstrip.(locs[!, "labels"]))
 
     x = Float64.(locs[!, "x"])
@@ -414,7 +414,7 @@ function import_locs_csd(file_name::String)
         radius[idx], theta[idx] = sph2pol(radius_sph[idx], theta_sph[idx], phi_sph[idx])
     end
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_normalize!(locs)
     _locs_round!(locs)
@@ -480,7 +480,7 @@ function import_locs_geo(file_name::String)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs = locs_cart2sph(locs)
     locs = locs_cart2pol(locs)
@@ -527,7 +527,7 @@ function import_locs_mat(file_name::String)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
@@ -559,7 +559,7 @@ function import_locs_txt(file_name::String)
 
     locs = CSV.read(file_name, header=true, delim="\t", stringtype=String, DataFrame)
 
-    DataFrames.rename!(locs, [:labels, :theta, :phi])
+    DataFrames.rename!(locs, [:label, :theta, :phi])
     clabels = lstrip.(locs[!, "labels"])
 
     x = zeros(length(clabels))
@@ -573,7 +573,7 @@ function import_locs_txt(file_name::String)
     radius = radius_sph
     theta = theta_sph
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_sph2cart!(locs)
     locs_swapxy!(locs, polar=false, cart=true, spherical=false)
@@ -658,7 +658,7 @@ function import_locs_dat(file_name::String)
     "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
     "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_center!(locs, polar=false, spherical=false)
     locs_cart2pol!(locs)
@@ -721,7 +721,7 @@ function import_locs_asc(file_name::String)
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:labels=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_center!(locs, polar=false, spherical=false)
     locs_flipy!(locs)

@@ -27,7 +27,7 @@ function locs_rotz(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     locs_new = deepcopy(locs)
 
     if cart
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) - locs[idx, :loc_y] * sind(a)
             locs_new[idx, :loc_y] = locs[idx, :loc_x] * sind(a) + locs[idx, :loc_y] * cosd(a)
         end
@@ -36,7 +36,7 @@ function locs_rotz(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     if spherical
         locs_tmp = deepcopy(locs)
         locs_sph2cart!(locs_tmp)
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             locs_tmp[idx, :loc_x] = locs_tmp[idx, :loc_x] * cosd(a) - locs_tmp[idx, :loc_y] * sind(a)
             locs_tmp[idx, :loc_y] = locs_tmp[idx, :loc_x] * sind(a) + locs_tmp[idx, :loc_y] * cosd(a)
         end

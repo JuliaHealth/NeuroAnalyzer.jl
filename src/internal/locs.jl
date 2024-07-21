@@ -1,21 +1,21 @@
 function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})
     if isa(l, String)
-        if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))) > 0
-            return findall(occursin.(lowercase(l), lowercase.(locs[!, :labels])))[1]
+        if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))) > 0
+            return findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))[1]
         else
             return Int64[]
         end
     else
         l_idx = Vector{Int64}()
         for idx in l
-            lowercase(idx) in lowercase.(locs[!, :labels]) && push!(l_idx, findall(occursin.(lowercase(idx), lowercase.(locs[!, :labels])))[1])
+            lowercase(idx) in lowercase.(locs[!, :label]) && push!(l_idx, findall(occursin.(lowercase(idx), lowercase.(locs[!, :label])))[1])
         end
         return l_idx
     end
 end
 
 function _initialize_locs()
-    return DataFrame(:labels=>String[],
+    return DataFrame(:label=>String[],
                      :loc_radius=>Float64[],
                      :loc_theta=>Float64[],
                      :loc_x=>Float64[],
@@ -28,13 +28,13 @@ end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
     locs_ch = NeuroAnalyzer._ch_idx(obj, get_channel(obj, type=["eeg", "ecog", "seeg", "ieeg", "meg", "grad", "mag", "nirs_int", "nirs_od", "eog", "ref"]))
-    obj.locs = DataFrame(:labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    obj.locs = DataFrame(:label=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
     return nothing
 end
 
 function _initialize_locs(obj::NeuroAnalyzer.NEURO)
     locs_ch = NeuroAnalyzer._ch_idx(obj, get_channel(obj, type=datatype(obj)))
-    return DataFrame(:labels=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
+    return DataFrame(:label=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
 end
 
 function _locs_round(locs::DataFrame)

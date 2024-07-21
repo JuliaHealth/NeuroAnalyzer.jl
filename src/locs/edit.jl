@@ -29,7 +29,8 @@ function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}
 
     obj_new = deepcopy(obj)
     ch = _ch_idx(obj_new, ch)
-    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
+    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])[1]
+
     @assert length(loc_idx) > 0 "$(labels(obj)[ch]) not found in obj.locs labels."
     
     name != "" && rename_channel!(obj_new, ch=labels(obj)[ch], name=name)

@@ -616,14 +616,14 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     xl, yl, tt = "", "", ""
 
     ch_init = ch
-    bm = obj.header.recording[:bad_channels]
+    bm = obj.header.recording[:bad_channel]
     ctypes = obj.header.recording[:channel_type]
     clabels = labels(obj)
     # sort channels by their type
     if !isa(ch, Int64)
         ctypes = ctypes[ch]
         clabels = clabels[ch]
-        cunits = obj.header.recording[:units][ch]
+        cunits = obj.header.recording[:unit][ch]
         if bad
             bm = bm[ch, ep]
         else
@@ -1046,7 +1046,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
         s2 = @views s2[ch, :]
         ctypes = ctypes[ch]
         clabels = clabels[ch]
-        cunits = obj1.header.recording[:units][ch]
+        cunits = obj1.header.recording[:unit][ch]
     end
 
     if isa(ch, Int64)

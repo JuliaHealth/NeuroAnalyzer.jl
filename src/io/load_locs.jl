@@ -42,7 +42,7 @@ Channel locations:
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
-    @assert length(obj.header.recording[:labels]) > 0 "OBJ does not contain labels, use add_label() first."
+    @assert length(obj.header.recording[:label]) > 0 "OBJ does not contain labels, use add_label() first."
 
     _info("Send standard locations for your channels to adam.wysokinski@neuroanalyzer.org")
     _info("Nose direction is set at '+Y'")
@@ -120,7 +120,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
         end
     end
 
-    f_labels = locs[!, :labels]
+    f_labels = locs[!, :label]
 
     loc_theta = float.(locs[!, :loc_theta])
     loc_radius = float.(locs[!, :loc_radius])
@@ -133,7 +133,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
     loc_y = float.(locs[!, :loc_y])
     loc_z = float.(locs[!, :loc_z])
 
-    e_labels = lowercase.(obj.header.recording[:labels])
+    e_labels = lowercase.(obj.header.recording[:label])
 
     no_match = setdiff(e_labels, lowercase.(f_labels))
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name")

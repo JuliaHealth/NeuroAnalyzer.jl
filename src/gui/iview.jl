@@ -213,7 +213,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
                     ch_idx = idx + ch_first - 1
                 end
             end
-            !isnothing(ch_idx) && (obj.header.recording[:bad_channels][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channels][obj.header.recording[:channel_order][ch_idx, 1]])
+            !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
             draw(can)
         else
             time_current = get_gtk_property(entry_time, :value, Float64)
@@ -722,7 +722,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
                     ch_idx = idx + ch_first - 1
                 end
             end
-            !isnothing(ch_idx) && (obj.header.recording[:bad_channels][obj.header.recording[:channel_order][ch_idx], ep] = !obj.header.recording[:bad_channels][obj.header.recording[:channel_order][ch_idx], ep])
+            !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep])
             draw(can)
         else
             x_pos > 1172 && (x_pos = 1172)

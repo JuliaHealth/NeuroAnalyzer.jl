@@ -18,7 +18,7 @@ function locs_generate(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    lab = lowercase.(locs[!, :labels])
+    lab = lowercase.(locs[!, :label])
 
     # remove referencing labels from channel names
     m = match.(r"(.+)\-(.+)", lab)

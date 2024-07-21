@@ -163,7 +163,7 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
 
     head && (p = Plots.plot!(head_shape))
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         if idx in ch
         p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                             color=:lightgrey,
@@ -176,9 +176,9 @@ function plot_connections(locs::DataFrame; connections::Matrix{<:Real}, threshol
         end
     end
     if ch_labels
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             if idx in ch
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
     end

@@ -79,8 +79,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
 
     current_channel = 1
     ch_types = obj_new.header.recording[:channel_type]
-    ch_units = obj_new.header.recording[:units]
-    ch_labels = obj_new.header.recording[:labels]
+    ch_units = obj_new.header.recording[:unit]
+    ch_labels = obj_new.header.recording[:label]
     ch_signal = get_channel(obj_new, type=datatype(obj_new))
 
     if _has_locs(obj_new)
@@ -478,8 +478,8 @@ function iedit(obj::NeuroAnalyzer.NEURO)
             delete_channel!(obj_new, ch=current_channel)
             current_channel > nchannels(obj_new) && (current_channel = nchannels(obj_new))
             ch_types = obj_new.header.recording[:channel_type]
-            ch_units = obj_new.header.recording[:units]
-            ch_labels = obj_new.header.recording[:labels]
+            ch_units = obj_new.header.recording[:unit]
+            ch_labels = obj_new.header.recording[:label]
             locs = obj_new.locs
             locs_ch = _find_bylabel(obj_new.locs, ch_labels[ch_signal])
             Gtk.@sigatom begin
@@ -572,7 +572,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
         get_gtk_property(combo_flip, :active, Int64) == 0 && locs_flipx!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         get_gtk_property(combo_flip, :active, Int64) == 1 && locs_flipy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         get_gtk_property(combo_flip, :active, Int64) == 2 && locs_flipz!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -593,7 +593,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
         elseif ax == 2
             locs_rotz!(locs_tmp, a=get_gtk_property(entry_ax_rot_degree, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         end
-        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -607,7 +607,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
         delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         locs_scale!(locs_tmp, r=get_gtk_property(entry_scale, :value, Float64), polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -621,7 +621,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
         delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         locs_normalize!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true
@@ -649,7 +649,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
         delete_channel!(obj_tmp, ch=get_channel(obj_tmp, type="eog"))
         locs_tmp = obj_tmp.locs
         locs_swapxy!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
-        locs[_find_bylabel(locs_tmp, locs_tmp[!, :labels]), :] = locs_tmp
+        locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
         refresh = false
         _refresh_locs()
         refresh = true

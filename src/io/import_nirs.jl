@@ -158,7 +158,7 @@ function import_nirs(file_name::String)
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:labels=>opt_labels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
+    locs = DataFrame(:label=>opt_labels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 

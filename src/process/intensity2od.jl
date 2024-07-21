@@ -54,8 +54,8 @@ function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     obj_new.header.recording[:wavelength_index] = vcat(obj.header.recording[:wavelength_index][ch], obj.header.recording[:wavelength_index][ch])
     obj_new.header.recording[:optode_pairs] = vcat(obj.header.recording[:optode_pairs][ch, :], obj.header.recording[:optode_pairs][ch, :])
     obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type][ch], repeat(["nirs_od"], length(ch)), obj.header.recording[:channel_type][setdiff(collect(1:size(obj.data, 1)), ch)])
-    obj_new.header.recording[:labels] = vcat(obj.header.recording[:labels][ch], obj.header.recording[:labels][ch], obj.header.recording[:labels][setdiff(collect(1:size(obj.data, 1)), ch)])
-    obj_new.header.recording[:units] = vcat(obj.header.recording[:units][ch], obj.header.recording[:units][ch], obj.header.recording[:units][setdiff(collect(1:size(obj.data, 1)), ch)])
+    obj_new.header.recording[:label] = vcat(obj.header.recording[:label][ch], obj.header.recording[:label][ch], obj.header.recording[:label][setdiff(collect(1:size(obj.data, 1)), ch)])
+    obj_new.header.recording[:unit] = vcat(obj.header.recording[:unit][ch], obj.header.recording[:unit][ch], obj.header.recording[:unit][setdiff(collect(1:size(obj.data, 1)), ch)])
 
     reset_components!(obj_new)
     push!(obj_new.history, "intensity2od(OBJ, ch=$ch)")

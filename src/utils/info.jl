@@ -229,9 +229,9 @@ Return channel labels.
 """
 function labels(obj::NeuroAnalyzer.NEURO)
 
-    @assert length(obj.header.recording[:labels]) > 0 "OBJ has no channel labels."
+    @assert length(obj.header.recording[:label]) > 0 "OBJ has no channel labels."
 
-    l = obj.header.recording[:labels]
+    l = obj.header.recording[:label]
 
     return l
 
@@ -423,12 +423,12 @@ function info(obj::NeuroAnalyzer.NEURO)
                 repeat("-", 11) * " " *
                 repeat("-", 7) * " " *
                 repeat("-", 7))
-        for idx in eachindex(obj.header.recording[:labels])
+        for idx in eachindex(obj.header.recording[:label])
             println(rpad(" $idx", 8) *
-                    rpad("$(obj.header.recording[:labels][idx])", 16) *
+                    rpad("$(obj.header.recording[:label][idx])", 16) *
                     rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
-                    rpad("$(obj.header.recording[:units][idx])", 8) * 
-                    rpad("$(obj.header.recording[:bad_channels][idx])", 8))
+                    rpad("$(obj.header.recording[:unit][idx])", 8) * 
+                    rpad("$(obj.header.recording[:bad_channel][idx])", 8))
         end
     else
         if obj.header.recording[:channel_type][idx] !== "nirs_aux"
@@ -437,20 +437,20 @@ function info(obj::NeuroAnalyzer.NEURO)
                     rpad("type", 12) *
                     rpad("unit", 8) *
                     rpad("wavelength", 8))
-            for idx in eachindex(obj.header.recording[:labels])
+            for idx in eachindex(obj.header.recording[:label])
                 println(rpad(" $idx", 8) *
-                        rpad("$(obj.header.recording[:labels][idx])", 16) *
+                        rpad("$(obj.header.recording[:label][idx])", 16) *
                         rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
-                        rpad("$(obj.header.recording[:units][idx])", 8) *
+                        rpad("$(obj.header.recording[:unit][idx])", 8) *
                         rpad("$(obj.header.recording[:wavelength_index][idx])", 8))
             end
         else
             println(rpad(" ch", 8) *
                     rpad("label", 16) *
                     rpad("type", 12))
-            for idx in eachindex(obj.header.recording[:labels])
+            for idx in eachindex(obj.header.recording[:label])
                 println(rpad(" $idx", 8) *
-                        rpad("$(obj.header.recording[:labels][idx])", 16) *
+                        rpad("$(obj.header.recording[:label][idx])", 16) *
                         rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12))
             end
         end
@@ -472,12 +472,12 @@ function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64)
     _check_channels(obj, labels(obj)[ch])
 
     if obj.header.recording[:data_type] != "nirs"
-        println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:units][ch], 8)) bad: $(obj.header.recording[:bad_channels][ch])")
+        println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) bad: $(obj.header.recording[:bad_channel][ch])")
     else 
         if obj.header.recording[:channel_type][ch] !== "nirs_aux"
-            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:units][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))")
+            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))")
         else
-            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:labels][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))")
+            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))")
         end
     end
 end
@@ -620,18 +620,18 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
     _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
-    clabels = lowercase.(labels(obj))
+    clabels = labels(obj)
     ch = String[]
 
-    cluster === :f1 && (cluster = ["fp1", "f1", "f3", "f5", "f7", "f9", "af3", "af7"])
-    cluster === :f2 && (cluster = ["fp2", "f2", "f4", "f6", "f8", "f10", "af4", "af8"])
-    cluster === :t1 && (cluster = ["c3", "c5", "t7", "t9", "fc3", "fc5", "ft7", "ft9"])
-    cluster === :t2 && (cluster = ["c4", "c6", "t8", "t10", "fc4", "fc6", "ft8", "ft10"])
-    cluster === :c1 && (cluster = ["cz", "c1", "c2", "fc1", "fc2", "fcz"])
-    cluster === :c2 && (cluster = ["pz", "p1", "p2", "cp1", "cp2", "cpz"])
-    cluster === :p1 && (cluster = ["p3", "p5", "p7", "p9", "cp3", "cp5", "tp7", "tp9"])
-    cluster === :p2 && (cluster = ["p4", "p6", "p8", "p10", "cp4", "cp6", "tp8", "tp10"])
-    cluster === :o && (cluster = ["o1", "o2", "poz", "po3", "po4", "po7", "po8", "po9", "po10"])
+    cluster === :f1 && (cluster = ["Fp1", "F1", "F3", "F5", "F7", "F9", "AF3", "AF7"])
+    cluster === :f2 && (cluster = ["Fp2", "F2", "F4", "F6", "F8", "F10", "AF4", "AF8"])
+    cluster === :t1 && (cluster = ["C3", "C5", "T7", "T9", "FC3", "FC5", "FT7", "FT9"])
+    cluster === :t2 && (cluster = ["C4", "C6", "T8", "T10", "FC4", "FC6", "FT8", "FT10"])
+    cluster === :c1 && (cluster = ["Cz", "C1", "C2", "FC1", "FC2", "FCz"])
+    cluster === :c2 && (cluster = ["Pz", "P1", "P2", "CP1", "CP2", "CPz"])
+    cluster === :P1 && (cluster = ["P3", "P5", "P7", "P9", "CP3", "CP5", "TP7", "TP9"])
+    cluster === :P2 && (cluster = ["P4", "P6", "P8", "P10", "CP4", "CP6", "TP8", "TP10"])
+    cluster === :o && (cluster = ["O1", "O2", "POz", "PO3", "PO4", "PO7", "PO8", "PO9", "PO10"])
 
     for idx in cluster
         idx in clabels && push!(ch, idx)
@@ -803,7 +803,7 @@ function describe(obj::NeuroAnalyzer.NEURO)
         println(rpad(string(idx), 4) *
                 rpad(labels(obj)[idx], 16) *
                 rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
-                rpad(obj.header.recording[:units][idx], 8) *
+                rpad(obj.header.recording[:unit][idx], 8) *
                 rpad(round(rng(obj.data[idx, :, :]), digits=2), 10) *
                 rpad(round(mean(obj.data[idx, :, :]), digits=2), 10) *
                 rpad(round(std(obj.data[idx, :, :]), digits=2), 10) *

@@ -154,7 +154,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Str
 
     head && (p = Plots.plot!(head_shape))
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         if idx in ch
         p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                             color=:lightgrey,
@@ -167,9 +167,9 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Str
         end
     end
     if ch_labels
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             if idx in ch
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
     end
@@ -196,7 +196,7 @@ function plot_weights(locs::DataFrame; weights::Vector{<:Real}=[], ch::Union{Str
             p = Plots.plot!(annotations=(fid_loc_x, fid_loc_y, Plots.text(fid_names[idx], pointsize=font_size + 2)))
         end
     end
-    for idx in eachindex(locs[ch, :labels])
+    for idx in eachindex(locs[ch, :label])
         if idx in ch
             if mono
                 Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), pointsize=font_size)))

@@ -40,7 +40,7 @@ function locs_flipy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
     end
 
     if polar
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             t = locs[idx, :loc_theta]
             q = _angle_quadrant(t)
             q == 1 && (t = 360 - t)

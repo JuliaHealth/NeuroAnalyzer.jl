@@ -13,7 +13,7 @@ Delete channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel number(s) to be removed
+- `ch::Union{String, Vector{String}}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
 # Returns
@@ -28,27 +28,17 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
     obj_new = deepcopy(obj)
 
-    # remove channel locations
-    for idx in ch
-        if labels(obj_new)[idx] in obj_new.locs[!, :labels]
-            if length(_find_bylabel(obj_new.locs, labels(obj_new)[idx])) == 1
-                deleteat!(obj_new.locs, _find_bylabel(obj_new.locs, labels(obj_new)[idx]))
-            else
-                deleteat!(obj_new.locs, sort(_find_bylabel(obj_new.locs, labels(obj_new)[idx])))
-            end
-        end
-    end
-
     # update headers
     for idx in ch
-        !isnothing(findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))) && deleteat!(obj_new.locs, findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels]))))
-        deleteat!(obj_new.header.recording[:labels], idx)
+        # remove channel locations
+        !isnothing(findfirst(isequal(lowercase(obj_new.header.recording[:label][idx])), lowercase.(string.(obj_new.locs[!, :label])))) && deleteat!(obj_new.locs, findfirst(isequal(lowercase(obj_new.header.recording[:label][idx])), lowercase.(string.(obj_new.locs[!, :label]))))
+        deleteat!(obj_new.header.recording[:label], idx)
         deleteat!(obj_new.header.recording[:channel_type], idx)
         idx_tmp = findfirst(isequal(idx), obj_new.header.recording[:channel_order])
         deleteat!(obj_new.header.recording[:channel_order], idx)
         obj_new.header.recording[:channel_order][idx_tmp:end] .-= 1
-        obj_new.header.recording[:bad_channels] = obj_new.header.recording[:bad_channels][1:end .!= idx, :]
-        deleteat!(obj_new.header.recording[:units], idx)
+        obj_new.header.recording[:bad_channel] = obj_new.header.recording[:bad_channel][1:end .!= idx, :]
+        deleteat!(obj_new.header.recording[:unit], idx)
         if obj_new.header.recording[:data_type] == "eeg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
             deleteat!(obj_new.header.recording[:transducers], idx)
@@ -88,12 +78,12 @@ end
 """
     delete_channel!(obj; <keyword arguments>)
 
-Delete channel(s).
+Delete channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel number(s) to be removed
+- `ch::Union{String, Vector{String}}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 """
 function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)
@@ -112,12 +102,12 @@ end
 """
     keep_channel(obj; <keyword arguments>)
 
-Keep channel(s).
+Keep channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel number(s) to keep
+- `ch::Union{String, Vector{String}}`: channels to keep
 
 # Returns
 
@@ -138,12 +128,12 @@ end
 """
     keep_channel!(obj; <keyword arguments>)
 
-Keep channel(s).
+Keep channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel number(s) to keep
+- `ch::Union{String, Vector{String}}`: channels to keep
 """
 function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
@@ -161,23 +151,23 @@ end
 """
     keep_channel_type(obj; <keyword arguments>)
 
-Keep channel(s) of `type` type.
+Keep channels of a given type.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::String="eeg"`: type of channels to keep
+- `type::String`: type of channels to keep
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::String="eeg")
+function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::String)
 
     _check_var(type, channel_types, "type")
 
     chs_idx = Vector{Int64}()
-    for idx in 1:nchannels(obj, type="all")
+    for idx in 1:nchannels(obj)
         obj.header.recording[:channel_type][idx] == type && push!(chs_idx, idx)
     end
 
@@ -190,7 +180,7 @@ end
 """
     keep_channel_type!(obj; <keyword arguments>)
 
-Keep OBJ channels of `type` type.
+Keep channels of a given type.
 
 # Arguments
 

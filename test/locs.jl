@@ -18,7 +18,7 @@ add_locs!(eeg, locs=locs)
 @test nrow(eeg.locs) == 23
 
 @info "Test 2/$ntests: locs_details()"
-@test locs_details(eeg, ch=1, out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+@test locs_details(eeg, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 
 @info "Test 3/$ntests: cart2pol()"
 @test cart2pol(1.0, 1.0) == (1.41, 45.0)
@@ -91,13 +91,13 @@ locs_sph2pol!(locs_tmp)
 @test locs_tmp[1, :loc_radius] == 1.0
 @test locs_tmp[1, :loc_theta] == 0.0
 
-@info "Test 14/$ntests: edit_electrode()"
+@info "Test 14/$ntests: edit_locs()"
 eeg_tmp = deepcopy(eeg)
-@test locs_details(eeg_tmp, ch=1, out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
-eeg_tmp = edit_locs(eeg_tmp, ch=1, x=0.5)
-@test locs_details(eeg_tmp, ch=1, out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
-edit_locs!(eeg_tmp, ch=1, x=0.5)
-@test locs_details(eeg_tmp, ch=1, out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+@test locs_details(eeg_tmp, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+eeg_tmp = edit_locs(eeg_tmp, ch="Fp1", x=0.5)
+@test locs_details(eeg_tmp, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+edit_locs!(eeg_tmp, ch="Fp1", x=0.5)
+@test locs_details(eeg_tmp, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 
 @info "Test 15/$ntests: locs_flipx()"
 @test locs[1, :loc_x] == -0.31

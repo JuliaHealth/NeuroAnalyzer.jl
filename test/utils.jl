@@ -1,7 +1,7 @@
 using NeuroAnalyzer
 using Test
 
-ntests = 79
+ntests = 78
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -18,7 +18,7 @@ a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
 @info "Test 1/$ntests: apply()"
-@test size(apply(e10, f="mean(obj, dims=1)")) == (23, 1, 10)
+@test size(apply(e10, ch="all", f="mean(obj, dims=1)")) == (24, 1, 10)
 
 @info "Test 2/$ntests: l1()"
 @test l1(a1, a2) == 12
@@ -185,13 +185,13 @@ s = generate_morlet_fwhm(100, 10)
 @info "Test 36/$ntests: epoch_len()"
 @test epoch_len(e10) == 2560
 
-@info "Test 37/$ntests: signal_channels()"
-@test signal_channels("eeg", ["eeg", "eeg", "ecg", "mrk"]) == [1, 2]
-@test signal_channels(e10) == 1:23
+@info "Test 37/$ntests: get_channel()"
+@test length(get_channel(e10, type=["eeg", "eeg", "ecg", "mrk"])) == 39
 
-@info "Test 38/$ntests: get_channel_bytype()"
-@test get_channel_bytype(["eeg", "ecg", "mrk"], type="eeg") == 1
-@test get_channel_bytype(e10, type="eeg") == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21]
+@info "Test 38/$ntests: cwtfrq()"
+s = rand(100)
+@test length(cwtfrq(s, fs=10)) == 130
+@test length(cwtfrq(e10)) == 19
 
 @info "Test 39/$ntests: history()"
 @test NeuroAnalyzer.history(e10) isa Vector{String}
@@ -200,7 +200,7 @@ s = generate_morlet_fwhm(100, 10)
 @test length(labels(e10)) == 24
 
 @info "Test 41/$ntests: channel_cluster()"
-@test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
+@test channel_cluster(e10, cluster=:f1) == ["Fp1", "F3", "F7"]
 
 @info "Test 42/$ntests: band_frq()"
 @test band_frq(256, band=:alpha) == (8.0, 13.0)
@@ -273,8 +273,8 @@ delete_note!(e10)
 @test s2t(2560, 256) == 10.0
 @test s2t(e10, s=256) == 1.0
 
-@info "Test 63/$ntests: get_channel_bywl()"
-@test get_channel_bywl(n, wl=760) == 1:36
+@info "Test 63/$ntests: get_channel(wl)"
+@test length(get_channel(n, wl=760)) == 36
 
 @info "Test 64/$ntests: size()"
 @test size(e10) == (24, 2560, 10)
@@ -346,10 +346,5 @@ x2, f2 = areduce(x, f)
 @info "Test 78/$ntests: generate_signal()"
 s = generate_signal(100)
 @test length(s) == 100
-
-@info "Test 79/$ntests: cwtfrq()"
-s = rand(100)
-@test length(cwtfrq(s, fs=10)) == 130
-@test length(cwtfrq(e10)) == 19
 
 true

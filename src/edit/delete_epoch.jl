@@ -6,12 +6,12 @@ export keep_epoch!
 """
     delete_epoch(obj; <keyword arguments>)
 
-Remove epoch(s).
+Remove epochs.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to be removed
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch numbers to be removed
 
 # Returns
 
@@ -50,12 +50,12 @@ end
 """
     delete_epoch!(obj; <keyword arguments>)
 
-Remove epoch(s).
+Remove epochs.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to be removed
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch numbers to be removed
 """
 function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
@@ -73,12 +73,12 @@ end
 """
     keep_epoch(obj; <keyword arguments>)
 
-Keep epoch(s).
+Keep epochs.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to keep
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch numbers to keep
 
 # Returns
 
@@ -107,12 +107,12 @@ end
 """
     keep_epoch!(obj; <keyword arguments>)
 
-Keep OBJ epoch(s).
+Keep epochs.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to keep
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch numbers to keep
 """
 function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 

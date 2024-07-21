@@ -62,7 +62,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
 
     obj_new.header.recording[:data_type] = "csd"
     obj_new.header.recording[:channel_type][chs] .= "csd"
-    obj_new.header.recording[:units][chs] .= "µV/m²"
+    obj_new.header.recording[:unit][chs] .= "µV/m²"
 
     reset_components!(obj_new)
     push!(obj_new.history, "csd(OBJ, m=$m, n=$n, lambda=$lambda)")

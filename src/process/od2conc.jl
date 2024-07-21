@@ -79,11 +79,11 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get
 
     # update header
     obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
-    obj_new.header.recording[:units] = vcat(obj.header.recording[:units], repeat(["μM/mm"], 3 * size(dc, 3)))
+    obj_new.header.recording[:unit] = vcat(obj.header.recording[:unit], repeat(["μM/mm"], 3 * size(dc, 3)))
     for idx in 1:size(dc, 3)
-        obj_new.header.recording[:labels] = vcat(obj_new.header.recording[:labels], ["$(split((obj.header.recording[:labels][idx]), ' ')[1]) HbO", "$(split((obj.header.recording[:labels][idx]), ' ')[1]) HbR", "$(split((obj.header.recording[:labels][idx]), ' ')[1]) HbT"])
+        obj_new.header.recording[:label] = vcat(obj_new.header.recording[:label], ["$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT"])
     end
-    obj_new.header.recording[:labels] = replace.(obj_new.header.recording[:labels], ".0"=>"")
+    obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0"=>"")
 
     #=
     for idx in 1:size(dc, 3)

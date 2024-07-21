@@ -59,7 +59,7 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         end
     end
 
-    obj_new.header.recording[:labels][chs] .*= ch isa Int64 ? "-$(labels(obj)[ch])" : "-cavg"
+    obj_new.header.recording[:label][chs] .*= ch isa Int64 ? "-$(labels(obj)[ch])" : "-cavg"
     obj_new.data[chs, :, :] = s
     if ch isa Int64
         obj_new.header.recording[:reference] = "common ($(labels(obj)[ch]))"
@@ -188,9 +188,9 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     end
 
     if average
-        obj_new.header.recording[:labels][chs] .*= weighted ? "-wavg" : "-avg"
+        obj_new.header.recording[:label][chs] .*= weighted ? "-wavg" : "-avg"
     else
-        obj_new.header.recording[:labels][chs] .*= weighted ? "-wsum" : "-sum"
+        obj_new.header.recording[:label][chs] .*= weighted ? "-wsum" : "-sum"
     end
 
     obj_new.data[chs, :, :] = dst
@@ -346,7 +346,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     end
 
     obj_new.data[chs, :, :] = s_ref
-    obj_new.header.recording[:labels][chs] .*= ref_label
+    obj_new.header.recording[:label][chs] .*= ref_label
     if type === :l
         obj_new.header.recording[:reference] = "auricular (linked)"
     elseif type === :i
@@ -501,7 +501,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     end
 
     obj_new.data[chs, :, :] = s_ref
-    obj_new.header.recording[:labels][chs] .*= ref_label
+    obj_new.header.recording[:label][chs] .*= ref_label
     if type === :l
         obj_new.header.recording[:reference] = "mastoid (linked)"
     elseif type === :i
@@ -622,7 +622,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     end
 
     obj_new = deepcopy(obj)
-    obj_new.header.recording[:labels][chs] .*= weighted ? "-wplap" : "-plap"
+    obj_new.header.recording[:label][chs] .*= weighted ? "-wplap" : "-plap"
     obj_new.data[chs, :, :] = s_ref
     obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
     reset_components!(obj_new)
@@ -716,10 +716,10 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
 
     obj_new = delete_channel(obj, ch=chs)
     obj_new.data = vcat(s, obj_new.data)
-    obj_new.header.recording[:labels] = vcat(ref_list, labels(obj_new))
+    obj_new.header.recording[:label] = vcat(ref_list, labels(obj_new))
     obj_new.header.recording[:reference] = ref_name
     obj_new.header.recording[:channel_type] = vcat(repeat(["eeg"], length(ref_list)), obj_new.header.recording[:channel_type])
-    obj_new.header.recording[:units] = vcat(repeat(["μV"], length(ref_list)), obj_new.header.recording[:units])
+    obj_new.header.recording[:unit] = vcat(repeat(["μV"], length(ref_list)), obj_new.header.recording[:unit])
     obj_new.header.recording[:prefiltering] = vcat(repeat([obj.header.recording[:prefiltering][1]], length(ref_list)), obj_new.header.recording[:prefiltering])
     obj_new.header.recording[:transducers] = vcat(repeat([obj.header.recording[:transducers][1]], length(ref_list)), obj_new.header.recording[:transducers])
     obj_new.header.recording[:gain] = vcat(repeat([obj.header.recording[:gain][1]], length(ref_list)), obj_new.header.recording[:gain])

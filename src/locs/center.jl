@@ -24,17 +24,17 @@ function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
     # search for central line channels (Fz, Cz, Pz)
     cl = nothing
     x_offset = 0
-    findfirst(lowercase.(locs[!, :labels]) .== "fz") !== nothing && (cl = findfirst(lowercase.(locs[!, :labels]) .== "fz"))
-    findfirst(lowercase.(locs[!, :labels]) .== "cz") !== nothing && (cl = findfirst(lowercase.(locs[!, :labels]) .== "cz"))
-    findfirst(lowercase.(locs[!, :labels]) .== "pz") !== nothing && (cl = findfirst(lowercase.(locs[!, :labels]) .== "pz"))
+    findfirst(lowercase.(locs[!, :label]) .== "fz") !== nothing && (cl = findfirst(lowercase.(locs[!, :label]) .== "fz"))
+    findfirst(lowercase.(locs[!, :label]) .== "cz") !== nothing && (cl = findfirst(lowercase.(locs[!, :label]) .== "cz"))
+    findfirst(lowercase.(locs[!, :label]) .== "pz") !== nothing && (cl = findfirst(lowercase.(locs[!, :label]) .== "pz"))
     @assert cl !== nothing "Central line channels could not be find."
     x_offset = locs[cl, :loc_x]
 
     cl = nothing
     y_offset = 0
-    findfirst(lowercase.(locs[!, :labels]) .== "cz") !== nothing && (cl = findfirst(lowercase.(locs[!, :labels]) .== "cz"))
-    findfirst(lowercase.(locs[!, :labels]) .== "c1") !== nothing && (cl = findfirst(lowercase.(locs[!, :labels]) .== "c1"))
-    findfirst(lowercase.(locs[!, :labels]) .== "c2") !== nothing && (cl = findfirst(lowercase.(locs[!, :labels]) .== "c2"))
+    findfirst(lowercase.(locs[!, :label]) .== "cz") !== nothing && (cl = findfirst(lowercase.(locs[!, :label]) .== "cz"))
+    findfirst(lowercase.(locs[!, :label]) .== "c1") !== nothing && (cl = findfirst(lowercase.(locs[!, :label]) .== "c1"))
+    findfirst(lowercase.(locs[!, :label]) .== "c2") !== nothing && (cl = findfirst(lowercase.(locs[!, :label]) .== "c2"))
     cl === nothing && _warn("Cz/C1/C2 electrodes could not be find, cannot center along Y axis")
     y_offset = locs[cl, :loc_y]
 

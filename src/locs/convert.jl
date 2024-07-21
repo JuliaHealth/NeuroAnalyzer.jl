@@ -186,7 +186,7 @@ function locs_pol2cart(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         r = locs_new[idx, :loc_radius]
         t = locs_new[idx, :loc_theta]
         x, y = pol2cart(r, t)
@@ -236,7 +236,7 @@ function locs_pol2sph(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         r = locs_new[idx, :loc_radius]
         t = locs_new[idx, :loc_theta]
         r, t, p = pol2sph(r, t)
@@ -286,7 +286,7 @@ function locs_sph2cart(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         r = locs_new[idx, :loc_radius_sph]
         t = locs_new[idx, :loc_theta_sph]
         p = locs_new[idx, :loc_phi_sph]
@@ -338,7 +338,7 @@ function locs_sph2pol(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         r_sph = locs_new[idx, :loc_radius_sph]
         t_sph = locs_new[idx, :loc_theta_sph]
         p_sph = locs_new[idx, :loc_phi_sph]
@@ -388,7 +388,7 @@ function locs_cart2sph(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         x = locs_new[idx, :loc_x]
         y = locs_new[idx, :loc_y]
         z = locs_new[idx, :loc_z]
@@ -439,7 +439,7 @@ function locs_cart2pol(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         x = locs_new[idx, :loc_x]
         y = locs_new[idx, :loc_y]
         r, t = cart2pol(x, y)

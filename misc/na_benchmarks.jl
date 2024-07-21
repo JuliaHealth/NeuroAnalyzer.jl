@@ -257,8 +257,8 @@ reference_a(e10)
 print(rpad("M referencing", 36))
 a1 = labels(e10)[findfirst(isequal("a1"), lowercase.(labels(e10)))]
 a2 = labels(e10)[findfirst(isequal("a2"), lowercase.(labels(e10)))]
-edit_channel!(e10, ch=a1, field=:labels, value="M1")
-edit_channel!(e10, ch=a2, field=:labels, value="M2")
+edit_channel!(e10, ch=a1, field=:label, value="M1")
+edit_channel!(e10, ch=a2, field=:label, value="M2")
 reference_m(e10)
 @time reference_m(e10)
 print(rpad("AVG referencing", 36))

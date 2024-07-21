@@ -8,7 +8,7 @@ export subepoch!
 """
     epoch(obj; <keyword arguments>)
 
-Split OBJ into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
+Split into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
 # Arguments
 
@@ -83,7 +83,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
     obj_new.header.recording[:epoch_id] = epoch_id
 
     # bad channels
-    obj_new.header.recording[:bad_channels] = zeros(Bool, size(epochs, 1), size(epochs, 3))
+    obj_new.header.recording[:bad_channel] = zeros(Bool, size(epochs, 1), size(epochs, 3))
 
     # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
@@ -99,7 +99,7 @@ end
 """
     epoch!(obj; <keyword arguments>)
 
-Split OBJ into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
+Split into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
 # Arguments
 

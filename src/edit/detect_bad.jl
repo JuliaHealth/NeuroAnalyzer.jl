@@ -395,7 +395,7 @@ end
 """
     detect_bad!(obj; <keyword arguments>)
 
-Detect bad channels and epochs and update the `:bad_channels` field in the OBJ header.
+Detect bad channels and epochs and update the `:bad_channel` field in the OBJ header.
 
 # Arguments
 
@@ -428,7 +428,7 @@ Detect bad channels and epochs and update the `:bad_channels` field in the OBJ h
 function detect_bad!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
 
     bm, _ = detect_bad(obj, ch=ch, method=method, w=w, flat_tol=flat_tol, flat_fr=flat_fr, p=p, tc=tc, tkeo_method=tkeo_method, z=z, ransac_r=ransac_r, ransac_tr=ransac_tr, ransac_t=ransac_t, amp_t=amp_t)
-    obj.header.recording[:bad_channels] = bm
+    obj.header.recording[:bad_channel] = bm
 
     return nothing
 

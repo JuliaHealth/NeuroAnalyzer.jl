@@ -325,8 +325,8 @@ e10_tmp = reference_a(e10, type=:i)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "Test 32/$ntests: reference_m()"
-edit_channel!(e10, ch=20, field=:labels, value="M1")
-edit_channel!(e10, ch=21, field=:labels, value="M2")
+edit_channel!(e10, ch=20, field=:label, value="M1")
+edit_channel!(e10, ch=21, field=:label, value="M2")
 e10_tmp = reference_m(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 e10_tmp = reference_m(e10, med=true)

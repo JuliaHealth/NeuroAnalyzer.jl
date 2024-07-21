@@ -15,8 +15,8 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
-    channels = _find_bylabel(obj.locs, obj.locs[!, :labels])
-    clabels = obj.locs[!, :labels]
+    channels = _find_bylabel(obj.locs, obj.locs[!, :label])
+    clabels = obj.locs[!, :label]
     theta = obj.locs[!, :loc_theta]
     radius = obj.locs[!, :loc_radius]
     x = obj.locs[!, :loc_x]
@@ -59,8 +59,8 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool=false)
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
-    channels = _find_bylabel(obj.locs, obj.locs[!, :labels])
-    clabels = locs[!, :labels]
+    channels = _find_bylabel(obj.locs, obj.locs[!, :label])
+    clabels = locs[!, :label]
     theta = locs[!, :loc_theta]
     radius = locs[!, :loc_radius]
     x = locs[!, :loc_x]

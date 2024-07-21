@@ -4,7 +4,7 @@ export delete_optode!
 """
     delete_optode(obj; <keyword arguments>)
 
-Delete optode(s) and channels associated with removed optodes.
+Delete optodes) and channels associated with removed optodes.
 
 # Arguments
 
@@ -29,7 +29,7 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
 
     # remove channel locations
     for idx in opt
-        if optode_labels(obj_new)[idx] in obj_new.locs[!, :labels]
+        if optode_labels(obj_new)[idx] in obj_new.locs[!, :label]
             if length(_find_bylabel(obj_new.locs, optode_labels(obj)[idx])) == 1
                 deleteat!(obj_new.locs, _find_bylabel(obj_new.locs, optode_labels(obj)[idx]))
             else

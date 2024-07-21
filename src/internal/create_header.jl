@@ -23,14 +23,14 @@ function _create_recording_eeg(; data_type::String, file_name::String, file_size
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
                 :reference=>reference,
-                :labels=>clabels,
+                :label=>clabels,
                 :transducers=>transducers,
-                :units=>units,
+                :unit=>units,
                 :prefiltering=>prefiltering,
                 :line_frequency=>line_frequency,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain,
-                :bad_channels=>bad_channels,
+                :bad_channel=>bad_channels,
                 :epoch_id=>"")
 end
 
@@ -47,14 +47,14 @@ function _create_recording_seeg(; data_type::String, file_name::String, file_siz
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
                 :reference=>reference,
-                :labels=>clabels,
+                :label=>clabels,
                 :transducers=>transducers,
-                :units=>units,
+                :unit=>units,
                 :prefiltering=>prefiltering,
                 :line_frequency=>line_frequency,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain,
-                :bad_channels=>bad_channels,
+                :bad_channel=>bad_channels,
                 :epoch_id=>"")
 end
 
@@ -71,14 +71,14 @@ function _create_recording_ecog(; data_type::String, file_name::String, file_siz
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
                 :reference=>reference,
-                :labels=>clabels,
+                :label=>clabels,
                 :transducers=>transducers,
-                :units=>units,
+                :unit=>units,
                 :prefiltering=>prefiltering,
                 :line_frequency=>line_frequency,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain,
-                :bad_channels=>bad_channels,
+                :bad_channel=>bad_channels,
                 :epoch_id=>"")
 end
 
@@ -95,15 +95,15 @@ function _create_recording_meg(; data_type::String, file_name::String, file_size
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
                 :reference=>reference,
-                :labels=>clabels,
-                :units=>units,
+                :label=>clabels,
+                :unit=>units,
                 :prefiltering=>prefiltering,
                 :line_frequency=>line_frequency,
                 :sampling_rate=>sampling_rate,
                 :magnetometers=>magnetometers,
                 :gradiometers=>gradiometers,
                 :coil_type=>coil_type,
-                :bad_channels=>bad_channels,
+                :bad_channel=>bad_channels,
                 :epoch_id=>"")
 end
 
@@ -122,13 +122,13 @@ function _create_recording_nirs(; data_type::String, file_name::String, file_siz
                 :optode_pairs=>optode_pairs,
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
-                :labels=>clabels,
-                :units=>units,
+                :label=>clabels,
+                :unit=>units,
                 :src_labels=>src_labels,
                 :det_labels=>det_labels,
                 :optode_labels=>opt_labels,
                 :sampling_rate=>sampling_rate,
-                :bad_channels=>bad_channels,
+                :bad_channel=>bad_channels,
                 :epoch_id=>"")
 end
 
@@ -144,10 +144,10 @@ function _create_recording_sensors(; data_type::String, file_name::String, file_
                 :recording_notes=>recording_notes,
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
-                :labels=>clabels,
-                :units=>units,
+                :label=>clabels,
+                :unit=>units,
                 :prefiltering=>prefiltering,
-                :bad_channels=>bad_channels,
+                :bad_channel=>bad_channels,
                 :sampling_rate=>sampling_rate,
                 :epoch_id=>"")
 end
@@ -178,15 +178,15 @@ function _create_recording_mep(; data_type::String, file_name::String, file_size
                 :recording_notes=>recording_notes,
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
-                :labels=>clabels,
-                :units=>units,
+                :label=>clabels,
+                :unit=>units,
                 :sampling_rate=>sampling_rate,
                 :stimulation_intensity=>stimulation_intensity,
                 :coil_type=>coil_type,
                 :stimulation_sample=>stimulation_sample,
                 :markers_pos=>markers_pos,
                 :markers_neg=>markers_neg,
-                :bad_channels=>bad_channels)
+                :bad_channel=>bad_channels)
 end
 
 function _create_recording_eda(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})
@@ -201,10 +201,10 @@ function _create_recording_eda(; data_type::String, file_name::String, file_size
                 :recording_notes=>recording_notes,
                 :channel_type=>channel_type,
                 :channel_order=>channel_order,
-                :labels=>clabels,
-                :units=>units,
+                :label=>clabels,
+                :unit=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
                 :epoch_id=>"",
-                :bad_channels=>bad_channels)
+                :bad_channel=>bad_channels)
 end

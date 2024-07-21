@@ -183,7 +183,7 @@ function plot_locs(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(loc
 
     ch = setdiff(ch, selected)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         if idx in ch
         p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                             color=:lightgrey,
@@ -195,7 +195,7 @@ function plot_locs(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(loc
                             markerstrokealpha=0)
         end
     end
-    for idx in eachindex(locs[!, :labels])
+    for idx in eachindex(locs[!, :label])
         if idx in selected
             if mono != true
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
@@ -220,12 +220,12 @@ function plot_locs(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(loc
         end
     end
     if ch_labels
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             if idx in ch
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
             if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
     end
@@ -357,12 +357,12 @@ function plot_locs3d(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(l
     end
 
     if ch_labels
-        for idx in eachindex(locs[!, :labels])
+        for idx in eachindex(locs[!, :label])
             if idx in ch
-                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :labels][idx], font_size))
+                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
             end
             if idx in selected
-                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :labels][idx], font_size))
+                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
             end
         end
     end

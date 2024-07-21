@@ -507,7 +507,7 @@ function import_snirf(file_name::String; n::Int64=0)
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:labels=>opt_labels,
+    locs = DataFrame(:label=>opt_labels,
                      :loc_radius=>radius,
                      :loc_theta=>theta,
                      :loc_x=>x,

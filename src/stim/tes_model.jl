@@ -30,7 +30,7 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
 
     locs = import_locs(joinpath(NeuroAnalyzer.PATH, "locs", "standard-10-10-cap47.ced"))
 
-    labels = locs[!, :labels]
+    labels = locs[!, :label]
     anode_ch = findfirst(isequal(anode), labels)
     cathode_ch = findfirst(isequal(cathode), labe)
 
@@ -73,7 +73,7 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
 
     obj_tmp = ecog = create(data_type="eeg")
     obj_tmp.data = reshape(repeat(E, 1, 2), nrow(locs), 2, 1)
-    obj_tmp.header.recording[:labels] = locs[!, :labels]
+    obj_tmp.header.recording[:label] = locs[!, :label]
     obj_tmp.header.recording[:channel_type] = repeat(["EEG"], nrow(locs))
     obj_tmp.locs = locs
     create_time!(obj_tmp, fs=1)
@@ -83,6 +83,6 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
 
     return p
 
-    # Plots.plot(E, xticks=(1:nrow(locs), locs[!, :labels]), xtickfontsize=3)
+    # Plots.plot(E, xticks=(1:nrow(locs), locs[!, :label]), xtickfontsize=3)
 
 end
