@@ -216,7 +216,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     @assert seg[1] != seg[2] "Signal is too short for analysis."
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])

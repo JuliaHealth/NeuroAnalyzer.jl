@@ -44,7 +44,7 @@ function iplot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
 
     (signal_len(obj) / sr(obj)) < zoom && (zoom = obj.time_pts[end])
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_init = ch
 
     p = NeuroAnalyzer.plot(obj, ch=ch, seg=(0, zoom))
@@ -485,7 +485,7 @@ Interactive plot of epoched signal.
 function iplot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert nepochs(obj) > 1 "iplot_cont() should be used for continuous object."
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=1)
 

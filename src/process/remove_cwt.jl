@@ -74,7 +74,7 @@ Remove artifacts using continuous wavelet transformation (CWT).
 """
 function remove_cwt(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), tseg::Tuple{Real, Real}, fseg::Tuple{Real, Real}, type::Symbol=:nd) where {T <: CWT}
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)[1]
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)

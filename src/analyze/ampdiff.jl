@@ -50,7 +50,7 @@ Calculate amplitude difference between each channel and mean amplitude of refere
 """
 function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     ad = @views ampdiff(obj.data[ch, :, :], ch=ch)
 

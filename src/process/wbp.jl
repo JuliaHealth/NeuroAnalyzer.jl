@@ -88,7 +88,7 @@ Perform wavelet band-pass filtering.
 """
 function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views wbp(obj.data[ch, :, :], pad=pad, frq=frq, fs=sr(obj), ncyc=ncyc)
     reset_components!(obj_new)

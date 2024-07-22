@@ -83,7 +83,7 @@ Named tuple containing:
 """
 function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n=n)
 
     return (pc=pc, pcv=pcv, pcm=pcm, pc_model=pc_model)
@@ -135,7 +135,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     @assert :pc in keys(obj.components) "OBJ does not contain :pc component. Perform pca_decompose() first."
     @assert :pc_model in keys(obj.components) "OBJ does not contain :pc_model component. Perform pca_decompose() first."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=obj_new.components[:pc], pc_model=obj_new.components[:pc_model])
@@ -186,7 +186,7 @@ Reconstruct signal using external PCA components (`pc` and `pca`).
 """
 function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=pc, pc_model=pc_model)

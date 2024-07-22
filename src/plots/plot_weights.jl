@@ -251,7 +251,7 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; weights::Vector{<:Real}, ch::Uni
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p = plot_weights(obj.locs, weights=weights, ch=ch, ch_labels=ch_labels, head=head, head_labels=head_labels, large=large, mono=mono, cart=cart, plane=plane, title=title)
 

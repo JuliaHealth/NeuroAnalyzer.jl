@@ -104,7 +104,7 @@ Named tuple containing:
 """
 function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = @views amp(obj.data[ch, :, :])
 

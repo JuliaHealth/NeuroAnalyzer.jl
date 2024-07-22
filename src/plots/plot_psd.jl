@@ -811,7 +811,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."

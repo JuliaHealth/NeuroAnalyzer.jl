@@ -18,7 +18,7 @@ function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{Stri
 end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}, type::String)
-    _check_channels(get_channel(obj, type=get_channel(obj, type=type)), ch)
+    _check_channels(get_channel(obj, type=type), ch)
     return nothing
 end
 

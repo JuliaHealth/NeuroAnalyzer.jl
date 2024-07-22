@@ -55,7 +55,7 @@ Return the average signal of channels.
 """
 function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     keep_channel!(obj_new, ch=labels(obj)[1])
     obj_new.data = @views average(obj.data[ch, :, :])

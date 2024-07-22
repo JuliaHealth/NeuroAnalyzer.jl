@@ -14,7 +14,7 @@ Interactive play channel signal as audio
 """
 function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true, maxvol::Bool=false)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _check_epochs(obj, ep)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=ep, mono=true, title="", scale=false)

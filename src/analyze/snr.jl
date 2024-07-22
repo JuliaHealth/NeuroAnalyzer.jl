@@ -120,7 +120,7 @@ Named tuple containing:
 """
 function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:rms)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     sn, f = @views snr(obj.data[ch, :, :], t=obj.epoch_time, type=type)
 
     return (sn=sn, f=f)

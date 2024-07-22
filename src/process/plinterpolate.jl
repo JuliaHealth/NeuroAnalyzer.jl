@@ -34,7 +34,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    ch = _ch_idx(obj, ch)[1]
+    ch = get_channel(obj, ch=ch)[1]
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
@@ -49,7 +49,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
     delete_channel!(obj_tmp, ch=labels(obj_tmp)[ch])
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
-    chs = _ch_idx(labels(obj_tmp), get_channel(obj_tmp, type=datatype(obj_tmp)))
+    chs = get_channel(obj_tmp, ch=get_channel(obj_tmp, type=datatype(obj_tmp)))
 
     ep_n = length(ep)
     ep_len = epoch_len(obj_tmp)

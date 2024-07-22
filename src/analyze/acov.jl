@@ -159,7 +159,7 @@ function acov(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Re
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     if datatype(obj) == "erp"
         ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased, method=method)

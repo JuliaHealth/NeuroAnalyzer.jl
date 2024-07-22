@@ -661,7 +661,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(ax, [:linlin, :loglin], "ax")
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."

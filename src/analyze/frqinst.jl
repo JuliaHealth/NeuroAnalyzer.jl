@@ -71,7 +71,7 @@ Calculate instantaneous frequency.
 """
 function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     f = @views frqinst(obj.data[ch, :, :])
 
     return f

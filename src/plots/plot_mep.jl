@@ -388,7 +388,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
     _check_datatype(obj, "mep")
 
     # check channels
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     # set units
     units = _ch_units(obj, ch[1])

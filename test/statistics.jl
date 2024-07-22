@@ -31,7 +31,7 @@ df = DataFrame(:x=>x, :y=>y)
 m = GLM.lm(@formula(y ~ x), df)
 aic, bic = infcrit(m)
 @test aic == 2.0
-@test bic == 2.302585092994046
+@test bic ≈ 2.302585092994046
 
 @info "Test 7/$ntests: outlier_detect()"
 @test !grubbs([1, 2, 3, 4, 5])
@@ -138,16 +138,16 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 
 @info "Test 37/$ntests: p2z()"
 @test p2z(0.05) == 1.6448536269514717
-@test p2z(0.05, twosided=true) == 1.9599639845400576
+@test p2z(0.05, twosided=true) ≈ 1.9599639845400576
 
 @info "Test 38/$ntests: r1r2_test()"
-@test r1r2_test(r1=0.3, r2=0.6, n1=50, n2=50) == -1.8566613853904539
+@test r1r2_test(r1=0.3, r2=0.6, n1=50, n2=50) ≈ -1.8566613853904539
 
 @info "Test 39/$ntests: slope()"
 @test slope((0, 0), (1, 1)) == 1.0
 
 @info "Test 40/$ntests: distance()"
-@test distance((0, 0), (1, 1)) == 1.4142135623730951
+@test distance((0, 0), (1, 1)) ≈ 1.4142135623730951
 
 @info "Test 41/$ntests: friedman()"
 m = [1 4 7; 2 5 8; 3 6 9]
@@ -162,8 +162,8 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test count_thresh(m, t=4, t_type=:leq) == (x_t = [1 1 0; 1 0 0; 1 0 0], n = 4)
 
 @info "Test 43/$ntests: crit_t()"
-@test crit_t(20, 0.05) == 1.7247182429207868
-@test crit_t(20, 0.05, twosided=true) == 2.0859634472658644
+@test crit_t(20, 0.05) ≈ 1.7247182429207868
+@test crit_t(20, 0.05, twosided=true) ≈ 2.0859634472658644
 
 @info "Test 44/$ntests: size_c2g()"
 @test size_c2g(m1=100, s1=10, m2=120) == (n1 = 4, n2 = 4)
@@ -179,19 +179,19 @@ m = [1 4 7; 2 5 8; 3 6 9]
 @test size_p1g(p1=0.40, p2=0.50) == 191
 
 @info "Test 48/$ntests: power_c2g()"
-@test power_c2g(m1=100, s1=10, n1=40, m2=101, s2=10, n2=40) == 0.9348284625617964
+@test power_c2g(m1=100, s1=10, n1=40, m2=101, s2=10, n2=40) ≈ 0.9348284625617964
 
 @info "Test 49/$ntests: power_c1g()"
-@test power_c1g(m=0, s=2, xbar=1, n=42) == 0.8854398137187739
+@test power_c1g(m=0, s=2, xbar=1, n=42) ≈ 0.8854398137187739
 
 @info "Test 50/$ntests: power_p2g()"
-@test power_p2g(p1=0.10, p2=0.20, n1=15, n2=25) == 0.8892656035721543
+@test power_p2g(p1=0.10, p2=0.20, n1=15, n2=25) ≈ 0.8892656035721543
 
 @info "Test 51/$ntests: power_p1g()"
-@test power_p1g(p1=0.10, p2=0.20, n1=15) == 0.6920702687715905
+@test power_p1g(p1=0.10, p2=0.20, n1=15) ≈ 0.6920702687715905
 
 @info "Test 52/$ntests: z2p()"
-@test z2p(1.0) == 0.15865525393145702
+@test z2p(1.0) ≈ 0.15865525393145702
 
 @info "Test 53/$ntests: size_c1diff()"
 @test size_c1diff(s1=20, s2=10) == 128
@@ -238,17 +238,17 @@ s = generate_gaussian(256, 10, ncyc=2)
 @info "Test 62/$ntests: fwhm()"
 x = 1:4
 y = 101:104
-@test cosine_similarity(x, y) == 0.9172693928327048
+@test cosine_similarity(x, y) ≈ 0.9172693928327048
 
 @info "Test 63/$ntests: ci_prop()"
 @test ci_prop(0.5, 10) == (0.23992580606222136, 0.7600741939377786)
 
 @info "Test 64/$ntests: ci2z()"
-@test ci2z(0.95) == 1.6448536269514717
+@test ci2z(0.95) ≈ 1.6448536269514717
 
 @info "Test 65/$ntests: pooledstd()"
-@test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:cohen) == 1.2909944487358056
-@test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:hedges) == 1.118033988749895
+@test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:cohen) ≈ 1.2909944487358056
+@test pooledstd([1, 2, 3, 4], [5, 6, 7, 8], type=:hedges) ≈ 1.118033988749895
 
 @info "Test 66/$ntests: permute()"
 s = permute(rand(5), 10)

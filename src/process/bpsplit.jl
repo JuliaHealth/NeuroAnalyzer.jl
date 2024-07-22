@@ -23,7 +23,7 @@ function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, or
 
     bn = [:delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

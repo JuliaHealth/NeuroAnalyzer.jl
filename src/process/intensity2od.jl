@@ -41,7 +41,7 @@ function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     @assert length(get_channel(obj, type="nirs_int")) > 0 "OBJ does not contain NIRS intensity channels."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj, type="nirs_int"), ch)
 

@@ -28,7 +28,7 @@ Edit electrode.
 function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
 
     obj_new = deepcopy(obj)
-    ch = _ch_idx(obj_new, ch)
+    ch = get_channel(obj_new, ch=ch)
     loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])[1]
 
     @assert length(loc_idx) > 0 "$(labels(obj)[ch]) not found in obj.locs labels."

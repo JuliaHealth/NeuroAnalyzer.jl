@@ -273,7 +273,7 @@ Named tuple containing:
 function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)

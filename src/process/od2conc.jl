@@ -21,7 +21,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get
     @assert length(get_channel(obj, type="nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj, type="nirs_od"), ch)
 

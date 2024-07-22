@@ -138,7 +138,7 @@ Perform piecewise detrending.
 """
 function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :], type=type, offset=offset, order=order, f=f)

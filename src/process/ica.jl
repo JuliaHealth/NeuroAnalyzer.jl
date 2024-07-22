@@ -111,7 +111,7 @@ function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String
 
     @assert nepochs(obj) == 1 "ica_decompose() should be applied to a continuous signal."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     signal_len(obj) / sr(obj) <= 10 && _warn("For ICA decomposition the signal length should be >10 seconds.")
 
@@ -199,8 +199,6 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
     
-    ch = _ch_idx(obj, ch)
-
     return ica_reconstruct(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx, keep=keep)
 
 end
@@ -250,7 +248,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::M
 
     @assert nepochs(obj) == 1 "ica_reconstruct() should be applied to a continuous signal."
     
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[ch, :, :]
@@ -306,14 +304,13 @@ Remove external ICA components from the signal.
 """
 function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    ch = _ch_idx(obj, ch)
     @assert nepochs(obj) == 1 "ica_remove() should be applied to a continuous signal."
 
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
-
     @inbounds for ica_idx in eachindex(ic_idx)
         Threads.@threads for ch_idx in eachindex(ch)
-            obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=ch[ch_idx], ic_idx=ic_idx[ica_idx], keep=true)
+            obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=labels(obj)[ch[ch_idx]], ic_idx=ic_idx[ica_idx], keep=true)
             obj_new.data[ch[ch_idx], :, 1] = @views obj_new.data[ch[ch_idx], :, 1] - obj_tmp.data[ch[ch_idx], :, 1]
         end
     end
@@ -368,8 +365,6 @@ function ica_remove(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
-
-    ch = _ch_idx(obj, ch)
 
     return ica_remove(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx)
 

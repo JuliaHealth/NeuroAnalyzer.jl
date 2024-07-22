@@ -598,7 +598,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     # check channels
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -1018,8 +1018,8 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # check channels
-    _ = _ch_idx(obj2, ch)
-    ch = _ch_idx(obj1, ch)
+    _ = get_channel(obj2, ch=ch)
+    ch = get_channel(obj1, ch=ch)
     clabels = labels(obj1)
 
     # get time vector

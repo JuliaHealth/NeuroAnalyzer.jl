@@ -92,7 +92,7 @@ Perform convolution in the frequency domain.
 """
 function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector, norm::Bool=true)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm)
     
     return s_new

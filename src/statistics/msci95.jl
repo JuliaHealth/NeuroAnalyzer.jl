@@ -163,7 +163,7 @@ Named tuple containing:
 """
 function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=3, method::Symbol=:normal)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     sm, ss, su, sl = @views msci95(obj.data[ch, :, :], n=n, method=method)
 
     return (sm=sm, ss=ss, su=su, sl=sl)

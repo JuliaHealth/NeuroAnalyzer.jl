@@ -53,7 +53,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
     end
 
     ch_list = isa(ch, String) ? [ch] : ch
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

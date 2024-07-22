@@ -194,7 +194,7 @@ Named tuple containing:
 """
 function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::Int64=32)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
     s_t = obj.epoch_time
@@ -399,7 +399,7 @@ Named tuple containing:
 """
 function penv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::Int64=8, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -631,7 +631,7 @@ Named tuple containing:
 """
 function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::Int64=2, t::Union{Real, Nothing}=nothing, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true) where {T <: CWT}
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -894,7 +894,7 @@ Named tuple containing:
 """
 function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::Int64=32)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
     _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])

@@ -109,7 +109,7 @@ Calculate mutual information between channels.
 """
 function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
     isa(ch, Int64) && (ch = [ch])

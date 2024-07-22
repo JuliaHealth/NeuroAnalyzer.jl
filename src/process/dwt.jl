@@ -104,7 +104,7 @@ Perform discrete wavelet transformation (DWT).
 """
 function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     dt = @views dw_trans(obj.data[ch, :, :], wt=wt, type=type, l=l)
 
     return dt

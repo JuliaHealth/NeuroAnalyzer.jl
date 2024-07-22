@@ -109,7 +109,7 @@ Named tuple containing:
 """
 function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ph, f = phsd(obj.data[ch, :, :], fs=sr(obj))
 
     return (ph=ph, f=f)

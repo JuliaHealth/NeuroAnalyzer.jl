@@ -21,7 +21,7 @@ Delete channel(s).
 function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)
 
     ch_n = nchannels(obj)
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     length(ch) > 1 && (ch = sort!(ch, rev=true))
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
     obj_new = deepcopy(obj)
@@ -116,7 +116,7 @@ Keep channels.
 function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     ch_n = nchannels(obj)
-    chs_to_remove = labels(obj)[setdiff(_c(ch_n), _ch_idx(obj, ch))]
+    chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch=ch))]
     @assert length(chs_to_remove) < ch_n "Number of channels to delete ($(length(chs_to_remove))) must be smaller than number of all channels ($ch_n)."
 
     obj_new = delete_channel(obj, ch=chs_to_remove)

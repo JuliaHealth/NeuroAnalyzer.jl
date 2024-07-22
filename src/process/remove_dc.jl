@@ -79,7 +79,7 @@ Remove mean value (DC offset).
 """
 function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
     reset_components!(obj_new)

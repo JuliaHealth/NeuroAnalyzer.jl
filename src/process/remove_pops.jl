@@ -216,7 +216,7 @@ function remove_pops(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
     @assert nepochs(obj) == 1 "pop() must be applied to a continuous (non-epoched) signal."
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
 
     s = @views obj_new.data[ch, :, :]

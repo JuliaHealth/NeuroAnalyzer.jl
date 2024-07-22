@@ -41,7 +41,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "ipsd_ep() should be used for epoched object."
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=ch)
     g = GtkGrid()
@@ -639,7 +639,7 @@ Interactive PSD of epoched signal.
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert nepochs(obj) > 1 "ipsd_cont() should be used for continuous object."
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=ch)
     g = GtkGrid()

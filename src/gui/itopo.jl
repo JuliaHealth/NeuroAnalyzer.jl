@@ -17,7 +17,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
 

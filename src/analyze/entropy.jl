@@ -86,7 +86,7 @@ Named tuple containing:
 """
 function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ent, sent, leent = @views entropy(obj.data[ch, :, :])
 
     return (ent=ent, sent=sent, leent=leent)
@@ -162,7 +162,7 @@ Calculate negentropy.
 """
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ne = @views negentropy(obj.data[ch, :, :])
 
     return ne

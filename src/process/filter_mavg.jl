@@ -97,7 +97,7 @@ Filter using moving average filter (with threshold).
 """
 function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     _info("Window length: $(2 * k + 1) samples")
     _info("Approximate cut-off frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
 

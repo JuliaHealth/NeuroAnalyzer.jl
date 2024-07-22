@@ -119,7 +119,7 @@ Filter using polynomial filter.
 """
 function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_poly(obj.data[ch, :, :], order=order, window=window)
     reset_components!(obj_new)

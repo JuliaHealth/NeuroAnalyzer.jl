@@ -100,7 +100,7 @@ Named tuple containing:
 """
 function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     h_act, h_mob, h_comp = @views hjorth(obj.data[ch, :, :])
 
     return (h_act=h_act, h_mob=h_mob, h_comp=h_comp)

@@ -194,7 +194,7 @@ Named tuple containing:
 """
 function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, h::Bool=false, db::Bool=false)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     c, a, p, ph = spectrum(obj.data[ch, :, :], pad=pad, h=h, db=db)
 
     return (c=c, a=a, p=p, ph=ph)

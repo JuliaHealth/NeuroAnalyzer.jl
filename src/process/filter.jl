@@ -381,7 +381,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fpr
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
 

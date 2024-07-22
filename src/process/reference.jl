@@ -31,8 +31,8 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     _check_datatype(obj, "eeg")
 
     # keep signal channels
-    ch = _ch_idx(obj, ch)
-    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
+    ch = get_channel(obj, ch=ch)
+    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
 
     obj_new = deepcopy(obj)
 
@@ -119,7 +119,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     _check_datatype(obj, "eeg")
 
     # keep signal channels
-    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
+    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
 
     # source signals
     obj_new = deepcopy(obj)
@@ -258,7 +258,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     @assert "a2" in lowercase.(labels(obj)) "OBJ does not contain A2 channel."
 
     # keep signal channels
-    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
+    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
     obj_new = deepcopy(obj)
     s = @view obj_new.data[chs, :, :]
 
@@ -413,7 +413,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     @assert "m2" in lowercase.(labels(obj)) "OBJ does not contain M2 channel."
 
     # keep signal channels
-    chs = [_ch_idx(obj, idx)[1] for idx in get_channel(obj, type="eeg")]
+    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
     obj_new = deepcopy(obj)
     s = @view obj_new.data[chs, :, :]
 
@@ -564,7 +564,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     # keep signal channels
-    chs = _ch_idx(obj, get_channel(obj, type="eeg"))
+    chs = get_channel(obj, ch=get_channel(obj, type="eeg"))
     s = obj.data[chs, :, :]
 
     @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
@@ -686,7 +686,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
 
     _check_datatype(obj, "eeg")
 
-    chs = get_channel(obj, type="eeg")
+    chs = get_channel(obj, ch=get_channel(obj, type="eeg"))
 
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
@@ -714,7 +714,7 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
         end
     end
 
-    obj_new = delete_channel(obj, ch=chs)
+    obj_new = delete_channel(obj, ch=get_channel(obj, type="eeg"))
     obj_new.data = vcat(s, obj_new.data)
     obj_new.header.recording[:label] = vcat(ref_list, labels(obj_new))
     obj_new.header.recording[:reference] = ref_name

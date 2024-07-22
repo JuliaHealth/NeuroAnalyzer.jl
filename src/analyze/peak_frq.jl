@@ -112,7 +112,7 @@ Calculate peak frequency in a band.
 """
 function peak_frq(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     pf = @views peak_frq(obj.data[ch, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     return pf

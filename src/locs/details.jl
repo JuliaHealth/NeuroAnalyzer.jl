@@ -29,7 +29,7 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)
 
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    _ = _ch_idx(obj, ch)
+    get_channel(obj_new, ch=ch)
     ch = _find_bylabel(obj.locs, ch)
 
     x = obj.locs[ch, :loc_x]

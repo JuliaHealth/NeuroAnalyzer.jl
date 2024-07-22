@@ -54,7 +54,7 @@ Calculate ISPCs (Inter-Site-Phase Clustering).
 """
 function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

@@ -14,7 +14,7 @@ load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.
 isfile("test.png") && rm("test.png")
 
 @info "Test 1/$ntests: plot_compose()"
-p1 = NeuroAnalyzer.plot(e10, ep=1, xlabel="")
+p1 = NeuroAnalyzer.plot(e10, ch="Fp1", ep=1, xlabel="")
 p2 = plot_empty()
 pp = [p1, p2]
 l = (2, 1)
@@ -22,26 +22,26 @@ p = NeuroAnalyzer.plot_compose(pp, layout=l)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 2/$ntests: plot_connections()"
-p = NeuroAnalyzer.plot_connections(e10, connections=rand(19, 19), ch=e10.header.recording[:channel_order][1:19], threshold=0.5)
+p = NeuroAnalyzer.plot_connections(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 3/$ntests: plot_erp()"
 e10_erp = erp(e10)
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=1)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=channel_order(obj)[1:10], type=:butterfly)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:butterfly)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=channel_order(obj)[1:10], type=:mean)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:mean)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=channel_order(obj)[1:10], type=:stack)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=1, type=:stack)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=channel_order(obj)[1:10], type=:topo)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 4/$ntests: plot_filter_response()"
@@ -49,79 +49,79 @@ p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftyp
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 5/$ntests: plot_locs()"
-p = NeuroAnalyzer.plot_locs(e10)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_locs(e10, selected=1:4)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_locs(e10, threed=true, interactive=false)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", threed=true, interactive=false)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 6/$ntests: plot_psd()"
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:mw)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:mt)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:stft)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:fft)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:gh)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, method=:cwt)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=1, ref=:delta)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=channel_order(obj)[1:10], type=:mean)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=channel_order(obj)[1:10], type=:butterfly)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=channel_order(obj)[1:10], type=:w3d)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=channel_order(obj)[1:10], type=:topo)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 7/$ntests: plot_save()"
-p = NeuroAnalyzer.plot(e10)
+p = NeuroAnalyzer.plot(e10, ch="Fp1")
 plot_save(p, file_name="test.png")
 @test isfile("test.png")
 isfile("test.png") && rm("test.png")
 
 @info "Test 8/$ntests: plot()"
-p = NeuroAnalyzer.plot(e10)
+p = NeuroAnalyzer.plot(e10, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot(e10, ch=1:19, type=:mean)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot(e10, ch=1:19, type=:butterfly)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 9/$ntests: plot_spectrogram()"
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:stft)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:mt)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:mw)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:gh)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=1, method=:cwt)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=channel_order(obj)[1:10])
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 10/$ntests: plot_topo()"
-p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1))
+p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1))
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1), amethod=:median)
+p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1), amethod=:median)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_topo(e10, seg=(0, 1), amethod=:median, imethod=:nn)
+p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1), amethod=:median, imethod=:nn)
 
 @info "Test 11/$ntests: plot_matrix()"
-channels = get_channel_bytype(e10, type=datatype(e10))
-c = corm(e10, ch=channels)
+channels = get_channel(e10, ch=get_channel(e10, type=datatype(e10)))
+c = corm(e10, ch="eeg")
 p = NeuroAnalyzer.plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
 @test p isa Plots.Plot{Plots.GRBackend}
 
@@ -159,7 +159,7 @@ p = NeuroAnalyzer.plot_polar(stats')
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 19/$ntests: plot_weights()"
-p = NeuroAnalyzer.plot_weights(e10, weights=rand(19), ch=1:19)
+p = NeuroAnalyzer.plot_weights(e10, weights=rand(19), ch="Fp1":19)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 20/$ntests: plot_dipole2d()"
@@ -173,12 +173,12 @@ p = NeuroAnalyzer.plot_dipole3d(d)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 22/$ntests: plot_eros()"
-s, f, t = eros(e10, ch=1)
+s, f, t = eros(e10, ch="Fp1")
 p = NeuroAnalyzer.plot_eros(s, f, t)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 23/$ntests: plot_erop()"
-p, f = erop(e10, ch=1)
+p, f = erop(e10, ch="Fp1")
 p = NeuroAnalyzer.plot_erop(p, f)
 @test p isa Plots.Plot{Plots.GRBackend}
 
@@ -213,13 +213,13 @@ c = plot2canvas(p)
 
 @info "Test 31/$ntests: plot_mep()"
 mep = import_duomag(joinpath(testfiles_path, "mep-duomag.m"))
-p = plot_mep(mep, ch=1)
+p = plot_mep(mep, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=channel_order(obj)[1:10], type=:butterfly)
+p = plot_mep(mep, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=channel_order(obj)[1:10], type=:mean)
+p = plot_mep(mep, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=channel_order(obj)[1:10], type=:stack)
+p = plot_mep(mep, ch=["Fp1", "Fp2"], type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 32/$ntests: plot_ci()"
@@ -230,19 +230,19 @@ p = plot_ci(s_avg, s_l, s_u, t)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 33/$ntests: plot_phsd()"
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=1)
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=channel_order(obj)[1:10], type=:mean)
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=channel_order(obj)[1:10], type=:butterfly)
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=channel_order(obj)[1:10], type=:w3d)
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=channel_order(obj)[1:10], type=:topo)
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 34/$ntests: plot_coherence()"
-coh, mscoh, f = coherence(e10, e10, ch1=1:3, ch2=2:4, ep1=1, ep2=1, frq_lim=(45, 55))
+coh, mscoh, f = coherence(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=1, ep2=1, frq_lim=(45, 55))
 p = NeuroAnalyzer.plot_coherence(coh[1, :, 1], f)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_coherence(coh[:, :, 1], f)

@@ -30,14 +30,14 @@ e10_tmp.data[1, :, 1] == e10.data[1, :, 1] + x
 @test average(a1) == ones(1, 3, 2)
 @test average(a1, a2) == 0.5 .* ones(2, 1, 2)
 e10_tmp = average(e10, ch="Fp1")
-@test size(e10_tmp.data) == (1, 2560, 10)
+@test size(e10_tmp) == (1, 2560, 10)
 e10_tmp = average(e10, e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 3/$ntests: cbp()"
 @test length(cbp(rand(100), fs=10, frq=4)) == 100
 e10_tmp = cbp(e10, ch="all", frq=4)
-@test size(e10_tmp.data) == size(e10.data)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 4/$ntests: ch_zero()"
 e10_tmp = ch_zero(e10)
@@ -66,38 +66,38 @@ s2, f = denoise_fft(s)
 @test length(s2) == 100
 @test length(f) == 100
 e10_tmp = denoise_fft(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 8/$ntests: denoise_dwt())"
 s = denoise_dwt(rand(100), wt=wavelet(WT.haar))
 @test length(s) == 100
 e10_tmp = denoise_dwt(e10, ch="all", wt=wavelet(WT.haar))
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 9/$ntests: denoise_wien()"
 s = denoise_wien(a1)
 @test size(s) == (2, 3, 2)
 e10_tmp = denoise_wien(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 10/$ntests: derivative()"
 @test NeuroAnalyzer.derivative(v1) == [1, 1, 1, 1, 1]
 @test NeuroAnalyzer.derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
 e10_tmp = NeuroAnalyzer.derivative(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 11/$ntests: detrend()"
 @test round.(detrend(v1)) == zeros(5)
 e10_tmp = detrend(e10, ch="all", type=:ls)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = detrend(e10, ch="all", type=:linear)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = detrend(e10, ch="all", type=:constant)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = detrend(e10, ch="all", type=:poly)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = detrend(e10, ch="all", type=:loess)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 12/$ntests: dw_trans()"
 s = rand(100)
@@ -135,93 +135,93 @@ s, bn, bf = bpsplit(e10, ch="all")
 @test fconv(v1, kernel=v2) == [0.8500000000000002 - 9.868649107779169e-17im, 1.5999999999999996 + 0.0im, 2.4999999999999996 + 0.0im, 3.499999999999999 - 3.61217627448181e-17im, 2.6999999999999997 - 3.204937810639273e-17im]
 @test fconv(a1, kernel=[0.5, 1.0, 0.5]) == [0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im;;; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im]
 s_conv = fconv(e10, ch="all", kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
-@test size(s_conv) == (24, 2560, 10)
+@test size(s_conv) == size(e10)
 
 @info "Test 18/$ntests: filter_mavg()"
 @test filter_mavg(vcat(v1, v1), k=2) == [1, 2, 3, 3, 3, 3, 3, 3, 4, 5]
 e10_tmp = filter_mavg(e10, ch="all", k=2)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 19/$ntests: filter_mmed()"
 @test filter_mmed(vcat(v1, v1), k=2) == [1, 2, 3, 3, 3, 3, 3, 3, 4, 5]
 e10_tmp = filter_mmed(e10, ch="all", k=2)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 20/$ntests: filter_poly()"
 s = filter_poly(rand(20))
 @test length(s) == 20
 e10_tmp = filter_poly(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 21/$ntests: filter_sg()"
 s = filter_sg(rand(20))
 @test length(s) == 20
 e10_tmp = filter_poly(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 22/$ntests: filter()"
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:butterworth, ftype=:lp, cutoff=40, order=8)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:butterworth, ftype=:hp, cutoff=1, order=12)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:butterworth, ftype=:bs, cutoff=(49, 51), order=2)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:butterworth, ftype=:bp, cutoff=(49, 51), order=4)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev1, ftype=:lp, cutoff=40, order=8, rs=35)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev1, ftype=:hp, cutoff=1, order=12, rs=2)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev1, ftype=:bs, cutoff=(49, 51), order=2, rs=50)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev1, ftype=:bp, cutoff=(49, 51), order=4, rs=50)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev2, ftype=:lp, cutoff=40, order=8, rs=35)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev2, ftype=:hp, cutoff=1, order=12, rs=2)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev2, ftype=:bs, cutoff=(49, 51), order=2, rs=50)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:chebyshev2, ftype=:bp, cutoff=(49, 51), order=4, rs=50)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:elliptic, ftype=:lp, cutoff=40, order=8, rs=35)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:elliptic, ftype=:hp, cutoff=1, order=12, rs=2)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:elliptic, ftype=:bs, cutoff=(49, 51), order=2, rs=50)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:elliptic, ftype=:bp, cutoff=(49, 51), order=4, rs=50)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:fir, ftype=:lp, cutoff=40, order=8)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:fir, ftype=:hp, cutoff=1, order=12)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:fir, ftype=:bs, cutoff=(49, 51), order=2)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:fir, ftype=:bp, cutoff=(49, 51), order=4)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:firls, ftype=:lp, cutoff=40)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:firls, ftype=:hp, cutoff=1)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:firls, ftype=:bs, cutoff=(49, 51))
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:firls, ftype=:bp, cutoff=(49, 51))
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:remez, ftype=:lp, cutoff=40, order=8, bw=10)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:remez, ftype=:hp, cutoff=1, order=12, bw=0.5)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:remez, ftype=:bs, cutoff=(49, 51), order=4, bw=0.1)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 eeg_tmp = NeuroAnalyzer.filter(e10, ch="all", fprototype=:remez, ftype=:bp, cutoff=(49, 51), order=4, bw=0.5)
-@test size(eeg_tmp.data) == (24, 2560, 10)
+@test size(eeg_tmp) == size(e10)
 
 @info "Test 23/$ntests: filter_g()"
 s = filter_g(rand(20), fs=2, f=4)
 @test length(s) == 20
 e10_tmp = filter_g(e10, ch="all", f=20)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 24/$ntests: invert_polarity()"
 e10_tmp = invert_polarity(e10, ch="all")
@@ -289,7 +289,7 @@ e10_int = lrinterpolate_channel(e10_tmp, ch="Fp1", ep=1)
 @test normalize_fisher(m1, bych=true) == [-18.36840028483855 -0.6931471805599453 -0.20273255405408214; 0.2027325540540821 0.6931471805599454 18.36840028483855]
 @test normalize_fisher(m1, bych=false) == [-18.36840028483855 -0.6931471805599453 -0.20273255405408214; 0.2027325540540821 0.6931471805599454 18.36840028483855]
 e10_tmp = NeuroAnalyzer.normalize(e10, ch="all", method=:zscore)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 27/$ntests: plinterpolate_channel()"
 e10_tmp = deepcopy(e10)
@@ -300,7 +300,7 @@ e10_int = plinterpolate_channel(e10_tmp, ch="Fp1", ep=1)
 @info "Test 28/$ntests: remove_dc()"
 @test remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
 e10_tmp = remove_dc(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 29/$ntests: scale()"
 e10_tmp = NeuroAnalyzer.scale(e10, ch="all", factor=2.0)
@@ -308,58 +308,58 @@ e10_tmp = NeuroAnalyzer.scale(e10, ch="all", factor=2.0)
 
 @info "Test 30/$ntests: reference()"
 e10_tmp = reference_ce(e10, ch="Fp1")
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_ce(e10, ch=labels(e10)[1:5])
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_ce(e10, ch="Fp1", med=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 31/$ntests: reference_a()"
 e10_tmp = reference_a(e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_a(e10, med=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_a(e10, type=:c)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_a(e10, type=:i)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 32/$ntests: reference_m()"
 edit_channel!(e10, ch="A1", field=:label, value="M1")
 edit_channel!(e10, ch="A2", field=:label, value="M2")
 e10_tmp = reference_m(e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_m(e10, med=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_m(e10, type=:c)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_m(e10, type=:i)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 33/$ntests: reference_avg()"
 e10_tmp = reference_avg(e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_avg(e10, exclude_fpo=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_avg(e10, exclude_current=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_avg(e10, average=false)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_avg(e10, weighted=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 34/$ntests: reference_plap()"
 e10_tmp = reference_plap(e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 e10_tmp = reference_plap(e10, weighted=true)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 35/$ntests: csd()"
 g, h = gh(e10.locs)
 @test size(g) == (23, 23)
 @test size(h) == (23, 23)
 e10_tmp = csd(e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 36/$ntests: standardize()"
 m_s, sc = NeuroAnalyzer.standardize(a1)
@@ -370,18 +370,18 @@ m_s, sc = NeuroAnalyzer.standardize(e10, ch="all")
 @info "Test 37/$ntests: taper()"
 @test taper(v1, t=v1) == [1, 4, 9, 16, 25]
 e10_tmp = taper(e10, ch="all", t=e10.data[1, :, 1])
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 38/$ntests: tconv()"
 @test round.(tconv(v1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.2, 0.5, 1.0, 1.5, 2.0]
 @test round.(tconv(a1, kernel=[0.2, 0.1, 0.2]), digits=2) == [0.2 0.3 0.5; 0.2 0.3 0.5;;; 0.2 0.3 0.5; 0.2 0.3 0.5]
 e10_tmp = tconv(e10, ch="all", kernel=[0.2, 0.1, 0.2])
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 39/$ntests: wbp()"
 @test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560
 e10_tmp = wbp(e10, ch="all", frq=4)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 40/$ntests: intensity2od()"
 n_tmp = intensity2od(n)
@@ -398,12 +398,12 @@ npl!(e)
 
 @info "Test 43/$ntests: remove_pops()"
 eeg_tmp, pl, ls, rs = remove_pops(eeg, ch="all")
-@test size(eeg_tmp.data) == size(eeg.data)
+@test size(eeg_tmp) == size(eeg.data)
 
 @info "Test 44/$ntests: remove_powerline()"
 e10_tmp = keep_epoch(e10, ep=1)
 remove_powerline!(e10_tmp, pl_frq=50, ch="Fp1")
-@test size(e10_tmp.data) == (24, 2560, 1)
+@test size(e10_tmp) == (24, 2560, 1)
 
 @info "Test 45/$ntests: ica_decompose()"
 ic, ic_mw = ica_decompose(rand(10, 1000), n=5)
@@ -432,13 +432,13 @@ pc, pcv, pcm, pc_model = pca_decompose(e10, ch="all", n=4)
 e10_tmp = add_component(e10, c=:pc, v=pc)
 add_component!(e10_tmp, c=:pc_model, v=pc_model)
 e10_rec = pca_reconstruct(e10_tmp, ch="all");
-@test size(e10_rec.data) == (24, 2560, 10)
+@test size(e10_rec.data) == size(e10)
 e10_rec = pca_reconstruct(e10_tmp, ch="all", pc, pc_model);
-@test size(e10_rec.data) == (24, 2560, 10)
+@test size(e10_rec.data) == size(e10)
 
 @info "Test 48/$ntests: reference_custom()"
-e10_tmp = reference_custom(e10, ch="all")
-@test size(e10_tmp.data) == (24, 2560, 10)
+e10_tmp = reference_custom(e10)
+@test size(e10_tmp) == (23, 2560, 10)
 
 @info "Test 49/$ntests: ica_reconstruct()"
 ic, ic_mw = ica_decompose(rand(10, 1000), n=5)
@@ -446,40 +446,40 @@ s = ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=5)
 @test size(s) == (10, 1000)
 ic, ic_mw = ica_decompose(eeg, ch="all", n=5, iter=10)
 eeg_tmp = ica_reconstruct(eeg, ch="all", ic, ic_mw, ic_idx=1)
-@test size(eeg_tmp.data) == (24, 308480, 1)
+@test size(eeg_tmp) == size(eeg)
 eeg_tmp = deepcopy(eeg)
 add_component!(eeg_tmp, c=:ic, v=ic)
 add_component!(eeg_tmp, c=:ic_mw, v=ic_mw)
 eeg_tmp = ica_reconstruct(eeg_tmp, ch="all", ic_idx=1);
-@test size(eeg_tmp.data) == (24, 308480, 1)
+@test size(eeg_tmp) == size(eeg)
 
 @info "Test 50/$ntests: ica_remove()"
 ic, ic_mw = ica_decompose(eeg, ch="all", n=5, iter=10)
 eeg_tmp = ica_remove(eeg, ch="all", ic, ic_mw, ic_idx=1)
-@test size(eeg_tmp.data) == (24, 308480, 1)
+@test size(eeg_tmp) == size(eeg)
 eeg_tmp = deepcopy(eeg)
 add_component!(eeg_tmp, c=:ic, v=ic)
 add_component!(eeg_tmp, c=:ic_mw, v=ic_mw)
 eeg_tmp = ica_remove(eeg_tmp, ch="all", ic_idx=1);
-@test size(eeg_tmp.data) == (24, 308480, 1)
+@test size(eeg_tmp) == size(eeg)
 
 @info "Test 51/$ntests: normpower()"
 @test round.(normpower(1:10)) == [6.0, 12.0, 19.0, 25.0, 31.0, 37.0, 43.0, 50.0, 56.0, 62.0]
-@test size(normpower(e10, ch="all")) == (24, 2560, 10)
+@test size(normpower(e10, ch="all")) == size(e10)
 
 @info "Test 52/$ntests: sort_epochs()"
 e10_erp = erp(e10)
 e = sort_epochs(e10_erp, s=collect((nepochs(e10_erp) - 1):-1:1))
-@test size(e.data) == (23, 2560, 11)
+@test size(e.data) == (19, 2560, 11)
 
 @info "Test 53/$ntests: denoise_cwt())"
 s = denoise_cwt(rand(100), fs=10, nf=2)
 @test length(s) == 100
 e10_tmp = denoise_cwt(e10, ch="all", nf=50)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 @info "Test 54/$ntests: remove_cwt())"
 e10_tmp = remove_cwt(e10, ch="Fp1", ep=1, tseg=(0.2, 0.4), fseg=(10, 12.5))
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test size(e10_tmp) == size(e10)
 
 true

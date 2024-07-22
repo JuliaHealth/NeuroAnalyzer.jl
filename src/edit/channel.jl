@@ -16,11 +16,12 @@ export add_channel!
 """
     get_channel(obj; <keyword arguments>)
 
-Return list of channel names.
+Return list of channel names or their numbers.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}}=""`: channels names
 - `type::Union{String, Vector{String}}="all"`: channels types
 - `wl::Real`: return NIRS channels for wavelength (in nm)
 
@@ -28,8 +29,12 @@ Return list of channel names.
 
 - `ch::Vector{String}`
 """
-function get_channel(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector{String}}="all", wl::Real=0)
+function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}="", type::Union{String, Vector{String}}="all", wl::Real=0)
 
+    # return physical channel numbers
+    ch != "" && return _ch_idx(obj, ch)
+
+    # return channel names
     ch = String[]
     isa(type, String) && (type = [type])
     for idx in type
@@ -76,7 +81,7 @@ Get channel type.
 """
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     cht = obj.header.recording[:channel_type][ch]
 
     return cht[1]
@@ -105,7 +110,7 @@ function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::String, type::String)
 
     # create new dataset
     obj_new = deepcopy(obj)
-    ch = _ch_idx(obj_new, ch)[1]
+    ch = get_channel(obj_new, ch=ch)[1]
     obj_new.header.recording[:channel_type][ch] = type
 
     # add entry to :history field
@@ -158,7 +163,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::String, name::String)
     clabels = obj_new.header.recording[:label]
     @assert !(name in clabels) "Channel $name already exist."
 
-    ch = _ch_idx(obj, ch)[1]
+    ch = get_channel(obj, ch=ch)[1]
     obj_new.header.recording[:label][ch] = name
 
     # rename label in locs
@@ -212,7 +217,7 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 function edit_channel(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String)
 
     @assert value !== nothing "value cannot be empty."
-    ch = _ch_idx(obj, ch)[1]
+    ch = get_channel(obj, ch=ch)[1]
     _check_var(field, [:channel_type, :label], "field")
 
     obj_new = deepcopy(obj)
@@ -265,7 +270,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)
 
     @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
 
-    ch = _ch_idx(obj, ch)[1]
+    ch = get_channel(obj, ch=ch)[1]
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = s
 

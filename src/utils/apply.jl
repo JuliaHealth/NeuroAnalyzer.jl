@@ -17,7 +17,7 @@ Apply custom function.
 """
 function apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, f::String)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

@@ -297,7 +297,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
 
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     @assert length(ch) <= nrow(obj.locs) "Some channels do not have locations."
 

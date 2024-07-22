@@ -132,7 +132,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 """
 function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     phd = @views phdiff(obj.data[ch, :, :], avg=avg, pad=pad, h=h)
 
     return phd

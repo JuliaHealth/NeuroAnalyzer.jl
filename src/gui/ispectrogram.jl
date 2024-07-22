@@ -41,7 +41,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "ispectrogram_ep() should be used for epoched object."
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ch_init = ch
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch)
@@ -596,7 +596,7 @@ Interactive spectrogram of epoched signal.
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert nepochs(obj) > 1 "ispectrogram_cont() should be used for continuous object."
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch, ep=1)
     g = GtkGrid()

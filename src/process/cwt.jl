@@ -102,7 +102,7 @@ Perform continuous wavelet transformation (CWT).
 """
 function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T) where {T<:CWT}
 
-    ch = _ch_idx(obj, ch)
+    ch = get_channel(obj, ch=ch)
     ct = @views cw_trans(obj.data[ch, :, :], wt=wt)
 
     return ct

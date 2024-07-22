@@ -9,7 +9,7 @@ Preview channel locations.
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{String, Vector{String}}=1:nrow(locs)`: list of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}}=1:nrow(locs)`: list of channels, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head::Bool=true`: draw head
@@ -27,7 +27,7 @@ Preview channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false)
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
 
@@ -267,7 +267,7 @@ end
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{String, Vector{String}}=1:nrow(locs)`: list of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}}=1:nrow(locs)`: list of channels, default is all channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -279,7 +279,7 @@ end
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{String, Vector{String}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     pal = mono ? :grays : :darktest
 
@@ -392,7 +392,7 @@ Preview of channel locations.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: list of channels
-- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: which channel should be highlighted
+- `selected::Union{String, Vector{String}}=ch`: which channel should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
@@ -415,15 +415,19 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}=ch, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, kwargs...)
 
     # remove reference and EOG channels
     # ch = vec(collect(ch))
     # setdiff!(ch, get_channel(obj, type="ref"))
     # setdiff!(ch, get_channel(obj, type="eog"))
     # select channels, default is all channels
-    _check_channels(get_channel(obj, type=datatype(obj)), ch)
-    selected != 0 && _check_channels(obj, selected)
+    ch = get_channel(obj, ch=ch)
+    if isnothing(_ch_idx(obj, selected))
+        selected = 0
+    else
+        selected = get_channel(obj, ch=selected)
+    end
 
     if datatype(obj) == "ecog"
         @error "Use plot_locs_ecog() for ECoG data."
