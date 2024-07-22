@@ -109,7 +109,7 @@ Named tuple containing:
 """
 function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)
 
-    @assert nepochs(obj) == 1 "ica_decompose() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_decompose() must be applied to a continuous signal."
 
     ch = get_channel(obj, ch=ch)
 
@@ -246,12 +246,12 @@ Reconstruct signals using external ICA components.
 """
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
-    @assert nepochs(obj) == 1 "ica_reconstruct() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to a continuous signal."
     
     ch = get_channel(obj, ch=ch)
 
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[ch, :, :]
+    obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)
 
     reset_components!(obj_new)
     push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx, keep=$keep)")
@@ -304,7 +304,7 @@ Remove external ICA components from the signal.
 """
 function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    @assert nepochs(obj) == 1 "ica_remove() should be applied to a continuous signal."
+    @assert nepochs(obj) == 1 "ica_remove() must be applied to a continuous signal."
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)

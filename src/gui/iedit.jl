@@ -81,7 +81,7 @@ function iedit(obj::NeuroAnalyzer.NEURO)
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:unit]
     ch_labels = obj_new.header.recording[:label]
-    ch_signal = get_channel(obj_new, type=datatype(obj_new))
+    ch_signal = sort(get_channel(obj_new, ch=obj_new.locs[!, :label]))
 
     if _has_locs(obj_new)
         locs = obj_new.locs

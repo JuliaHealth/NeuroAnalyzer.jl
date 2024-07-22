@@ -9,9 +9,9 @@ Preview channel locations.
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}}=1:nrow(locs)`: list of channels, default is all channels
-- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
-- `ch_labels::Bool=true`: plot channel labels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: list of locations to plot, default is all locations
+- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected locations to plot
+- `ch_labels::Bool=true`: plot locations labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: use color or gray palette
@@ -22,12 +22,23 @@ Preview channel locations.
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
+- `transparent::Bool=false`: if true, do not paint the background
+- `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
+- `threshold::Real=0`: threshold for plotting, see below
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: plot if connection weight is equal to threshold
+    - `:neq`: plot if connection weight is not equal to threshold
+    - `:geq`: plot if connection weight is ≥ to threshold
+    - `:leq`: plot if connection weight is ≤ to threshold
+    - `:g`: plot if connection weight is > to threshold
+    - `:l`: plot if connection weight is < to threshold
+- `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
 
@@ -174,7 +185,8 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs)
                            xticks=xt,
                            yticks=yt,
                            xlims=xl,
-                           ylims=yl,                          background_color=transparent ? :transparent : :white,
+                           ylims=yl,
+                           background_color=transparent ? :transparent : :white,
                            foreground_color=:black)
         end
     end
@@ -185,14 +197,14 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs)
 
     for idx in eachindex(locs[!, :label])
         if idx in ch
-        p = Plots.scatter!((loc_x[idx], loc_y[idx]),
-                            color=:lightgrey,
-                            markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                            label="",
-                            markershape=:circle,
-                            markersize=marker_size,
-                            markerstrokewidth=0,
-                            markerstrokealpha=0)
+            p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=:lightgrey,
+                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
         end
     end
     for idx in eachindex(locs[!, :label])
@@ -250,6 +262,218 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs)
                 fid_loc_y = @. origin[2] - (fid_loc_y * 100)
             end
             p = Plots.plot!(annotations=(fid_loc_x, fid_loc_y, Plots.text(fid_names[idx], pointsize=font_size + 2)))
+        end
+    end
+
+    if connections != [0 0; 0 0]
+        @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
+        _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
+        m_tmp = normalize_n(abs.(connections))
+
+        for idx1 in 1:size(connections, 1)
+            for idx2 in 2:size(connections, 1)
+                if idx1 != idx2
+                    if threshold_type === :g
+                        if connections[idx1, idx2] > threshold
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
+                                    end
+                                end
+                            else
+                                p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :red)))
+                                    else
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :blue)))
+                                    end
+                                end
+                            end
+                        end
+                    elseif threshold_type === :l
+                        if connections[idx1, idx2] < threshold
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
+                                    end
+                                end
+                            else
+                                p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :red)))
+                                    else
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :blue)))
+                                    end
+                                end
+                            end
+                        end
+                    elseif threshold_type === :eq
+                        if connections[idx1, idx2] == threshold
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
+                                    end
+                                end
+                            else
+                                p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :red)))
+                                    else
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :blue)))
+                                    end
+                                end
+                            end
+                        end
+                    elseif threshold_type === :neq
+                        if connections[idx1, idx2] != threshold
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
+                                    end
+                                end
+                            else
+                                p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :red)))
+                                    else
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :blue)))
+                                    end
+                                end
+                            end
+                        end
+                    elseif threshold_type === :leq
+                        if connections[idx1, idx2] <= threshold
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
+                                    end
+                                end
+                            else
+                                p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :red)))
+                                    else
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :blue)))
+                                    end
+                                end
+                            end
+                        end
+                    elseif threshold_type === :geq
+                        if connections[idx1, idx2] >= threshold
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:red, legend=false)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, ls=:dot, legend=false)
+                                    else
+                                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:blue, legend=false)
+                                    end
+                                end
+                            else
+                                p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2)))
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :red)))
+                                    else
+                                        p = Plots.plot!(annotations=(l_pos[1], l_pos[2], Plots.text(connections[idx1, idx2], pointsize=font_size+2, :blue)))
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if typeof(weights)<:Vector
+        @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
+        @assert length(weights) >= 1 "weights must contain at least one value."
+        for idx in eachindex(locs[ch, :label])
+            if idx in ch
+                if mono
+                    Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), pointsize=font_size)))
+                else
+                    if weights[idx] >= 0
+                        Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), :red, pointsize=font_size)))
+                    else
+                        Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + round(p.attr[:size][2] * 0.03), Plots.text(string(weights[idx]), :blue, pointsize=font_size)))
+                    end
+                end
+            end
         end
     end
 
@@ -392,7 +616,7 @@ Preview of channel locations.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: list of channels
-- `selected::Union{String, Vector{String}}=ch`: which channel should be highlighted
+- `selected::Union{String, Vector{String}}`: which channel should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
@@ -409,24 +633,35 @@ Preview of channel locations.
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
 - `interactive::Bool=true`: if true, use interactive 3-dimensional plot
+- `transparent::Bool=false`: if true, do not paint the background
+- `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
+- `threshold::Real=0`: threshold for plotting, see below
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: plot if connection weight is equal to threshold
+    - `:neq`: plot if connection weight is not equal to threshold
+    - `:geq`: plot if connection weight is ≥ to threshold
+    - `:leq`: plot if connection weight is ≤ to threshold
+    - `:g`: plot if connection weight is > to threshold
+    - `:l`: plot if connection weight is < to threshold
+- `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}=ch, ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, kwargs...)
 
-    # remove reference and EOG channels
-    # ch = vec(collect(ch))
-    # setdiff!(ch, get_channel(obj, type="ref"))
-    # setdiff!(ch, get_channel(obj, type="eog"))
-    # select channels, default is all channels
     ch = get_channel(obj, ch=ch)
-    if isnothing(_ch_idx(obj, selected))
+    ch = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(ch), obj.locs)
+
+    if selected == ""
         selected = 0
     else
         selected = get_channel(obj, ch=selected)
+        selected = intersect(locs[!, :label], labels(obj)[selected])
+        selected = _find_bylabel(locs, selected)
     end
 
     if datatype(obj) == "ecog"
@@ -438,14 +673,14 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
             det_n = length(detector_labels(obj))
             p = plot_locs_nirs(obj.locs, opt_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, grid=grid, mono=mono)
         else
-            p = plot_locs(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane, transparent=transparent)
+            p = plot_locs(locs, ch=collect(1:nrow(locs)), selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane, transparent=transparent, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights)
         end
     else
         if interactive
-            iplot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
+            iplot_locs3d(locs, ch=collect(1:nrow(locs)), selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
             return
         else
-            p = plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
+            p = plot_locs3d(locs, ch=collect(1:nrow(locs)), selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
         end
     end
 

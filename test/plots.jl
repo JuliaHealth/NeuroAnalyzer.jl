@@ -22,7 +22,7 @@ p = NeuroAnalyzer.plot_compose(pp, layout=l)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 2/$ntests: plot_connections()"
-p = NeuroAnalyzer.plot_connections(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 3/$ntests: plot_erp()"
@@ -126,10 +126,10 @@ p = NeuroAnalyzer.plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylab
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 12/$ntests: plot_xac()"
-ac, lags = acov(e10)
+ac, lags = acov(e10, ch="eeg")
 p = NeuroAnalyzer.plot_xac(ac[1, :, 1], lags)
 @test p isa Plots.Plot{Plots.GRBackend}
-xc, lags = xcov(e10, e10, ch1=1, ch2=2)
+xc, lags = xcov(e10, e10, ch1="Fp1", ch2="Fp2")
 p = NeuroAnalyzer.plot_xac(xc[1, :, 1], lags)
 @test p isa Plots.Plot{Plots.GRBackend}
 
@@ -159,7 +159,7 @@ p = NeuroAnalyzer.plot_polar(stats')
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 19/$ntests: plot_weights()"
-p = NeuroAnalyzer.plot_weights(e10, weights=rand(19), ch="Fp1":19)
+p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg")
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 20/$ntests: plot_dipole2d()"
@@ -183,17 +183,17 @@ p = NeuroAnalyzer.plot_erop(p, f)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 24/$ntests: plot(obj1, obj2)"
-p = NeuroAnalyzer.plot(e10, e10)
+p = NeuroAnalyzer.plot(e10, e10, ch="all")
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 25/$ntests: plot_icatopo()"
 eeg_new = keep_epoch(e10, ep=1)
-ic, ic_mw, ic_var = ica_decompose(eeg_new, iter=10)
-p = plot_icatopo(eeg_new, ic, ic_mw)
+ic, ic_mw, ic_var = ica_decompose(eeg_new, ch="eeg", iter=10)
+p = plot_icatopo(eeg_new, ch="eeg", ic, ic_mw)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 26/$ntests: add_locs()"
-c = add_locs(NeuroAnalyzer.plot(eeg), NeuroAnalyzer.plot_locs(eeg), view=false, file_name="")
+c = add_locs(NeuroAnalyzer.plot(e10, ch="Fp1"), NeuroAnalyzer.plot_locs(e10, ch="Fp1", large=false), view=false, file_name="")
 @test c isa Cairo.CairoSurfaceBase{UInt32}
 
 @info "Test 27/$ntests: plot2canvas()"
@@ -213,13 +213,13 @@ c = plot2canvas(p)
 
 @info "Test 31/$ntests: plot_mep()"
 mep = import_duomag(joinpath(testfiles_path, "mep-duomag.m"))
-p = plot_mep(mep, ch="Fp1")
+p = plot_mep(mep, ch="MEP1")
 @test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=["Fp1", "Fp2"], type=:butterfly)
+p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:butterfly)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=["Fp1", "Fp2"], type=:mean)
+p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:mean)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=["Fp1", "Fp2"], type=:stack)
+p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:stack)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 32/$ntests: plot_ci()"

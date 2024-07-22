@@ -247,7 +247,6 @@ function import_locs_elc(file_name::String)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-
     locs_normalize!(locs)
     _locs_round!(locs)
 
@@ -308,7 +307,6 @@ function import_locs_tsv(file_name::String)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-
     locs_normalize!(locs)
     _locs_round!(locs)
 
@@ -482,9 +480,8 @@ function import_locs_geo(file_name::String)
 
     locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
-    locs = locs_cart2sph(locs)
-    locs = locs_cart2pol(locs)
-
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
     locs_normalize!(locs)
     _locs_round!(locs)
 
@@ -531,7 +528,6 @@ function import_locs_mat(file_name::String)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-
     locs_normalize!(locs)
     _locs_round!(locs)
 

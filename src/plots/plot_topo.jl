@@ -240,7 +240,7 @@ Topographical plot.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{String, Vector{String}}=obj.locs[:, :label]`: list of channels
+- `ch::Union{String, Vector{String}}`: list of channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or gray palette
@@ -268,7 +268,7 @@ Topographical plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}=obj.locs[:, :label], seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -298,6 +298,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
 
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     ch = get_channel(obj, ch=ch)
+    loc_idx = NeuroAnalyzer._loc_idx(obj, ch)
 
     @assert length(ch) <= nrow(obj.locs) "Some channels do not have locations."
 
@@ -324,13 +325,13 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
 
     if seg[2] != seg[1]
-        title == "default" && (title = "Amplitude topographical plot\n[$(string(amethod)) over time window: $t_s1:$t_s2]")
+        title == "default" && (title = "Amplitude\n[$(string(amethod)) over time window: $t_s1:$t_s2]")
     else
-        title == "default" && (title = "Amplitude topographical plot\n[time point: $t_s1]")
+        title == "default" && (title = "Amplitude\n[time point: $t_s1]")
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=ch, locs=obj.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
+    p = plot_topo(s, ch=loc_idx, locs=obj.locs[ch, :], cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
 
     Plots.plot(p)
 
@@ -460,12 +461,12 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     if time_segment
         if seg[2] != seg[1]
-          title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, $(string(amethod)) over time window: $t_s1:$t_s2]")
+          title == "default" && (title = "Amplitude\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, $(string(amethod)) over time window: $t_s1:$t_s2]")
         else
-            title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, time point: $t_s1]")
+            title == "default" && (title = "Amplitude\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, time point: $t_s1]")
         end
     else
-        title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx))]")
+        title == "default" && (title = "Amplitude\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx))]")
     end
 
     cb_label == "default" && (cb_label = "[A.U.]")

@@ -391,7 +391,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
     ch = get_channel(obj, ch=ch)
 
     # set units
-    units = _ch_units(obj, ch[1])
+    units = _ch_units(obj, labels(obj)[ch[1]])
 
     _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
@@ -422,8 +422,8 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
     end
 
     if type === :normal
-        @assert ch isa Int64 "For :normal plot type, only one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude $(_channel2channel_name(ch))\n[time window: $t_s1:$t_s2]")
+        @assert length(ch) == 1 "For :normal plot type, only one channel must be specified."
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude\n[time window: $t_s1:$t_s2]")
         p = plot_mep(t,
                      s,
                      xlabel=xl,
@@ -433,8 +433,8 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                      yrev=yrev;
                      kwargs...)
     elseif type === :butterfly
-        @assert !(ch isa Int64) "For :butterfly plot type, more than one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude$(_pl(length(ch))) $(_channel2channel_name(ch))\n[time window: $t_s1:$t_s2]")
+        @assert length(ch) > 1 "For :butterfly plot type, more than one channel must be specified."
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude\n[time window: $t_s1:$t_s2]")
         if channel_labels
             clabels = labels(obj)[ch]
         else
@@ -451,8 +451,8 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        @assert !(ch isa Int64) "For :mean plot type, more than one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude [mean ± 95%CI] signal$(_pl(length(ch))) $(_channel2channel_name(ch))\n[time window: $t_s1:$t_s2]")
+        @assert length(ch) > 1 "For :mean plot type, more than one channel must be specified."
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude [mean ± 95%CI]\n[time window: $t_s1:$t_s2]")
         p = plot_mep_avg(t,
                          s,
                          xlabel=xl,
@@ -465,7 +465,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
         @assert !(ch isa Int64) "For :stack plot type, more than one channel must be specified."
         peaks = false
         cb_title == "default" && (cb_title = "Amplitude [$units]")
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude$(_pl(length(ch))) $(_channel2channel_name(ch))\n[time window: $t_s1:$t_s2]")
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude\n[time window: $t_s1:$t_s2]")
         if channel_labels
             clabels = labels(obj)[ch]
         else

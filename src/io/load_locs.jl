@@ -120,47 +120,12 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
         end
     end
 
-    f_labels = locs[!, :label]
-
-    loc_theta = float.(locs[!, :loc_theta])
-    loc_radius = float.(locs[!, :loc_radius])
-
-    loc_radius_sph = float.(locs[!, :loc_radius_sph])
-    loc_theta_sph = float.(locs[!, :loc_theta_sph])
-    loc_phi_sph = float.(locs[!, :loc_phi_sph])
-
-    loc_x = float.(locs[!, :loc_x])
-    loc_y = float.(locs[!, :loc_y])
-    loc_z = float.(locs[!, :loc_z])
-
-    e_labels = lowercase.(obj.header.recording[:label])
-
-    no_match = setdiff(e_labels, lowercase.(f_labels))
+    no_match = setdiff(lowercase.(labels(obj)), lowercase.(locs[!, :label]))
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in $file_name")
-
-    labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in eachindex(e_labels)
-        for idx2 in eachindex(f_labels)
-            e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
-        end
-    end
-    for idx in length(labels_idx):-1:1
-        labels_idx[idx] == 0 && deleteat!(labels_idx, idx)
-    end
 
     # create new dataset
     obj_new = deepcopy(obj)
-    for idx in labels_idx
-        l_idx = findfirst(e_labels .== lowercase.(f_labels)[idx])
-        obj_new.locs[l_idx, :loc_radius] = loc_radius[idx]
-        obj_new.locs[l_idx, :loc_theta] = loc_theta[idx]
-        obj_new.locs[l_idx, :loc_x] = loc_x[idx]
-        obj_new.locs[l_idx, :loc_y] = loc_y[idx]
-        obj_new.locs[l_idx, :loc_z] = loc_z[idx]
-        obj_new.locs[l_idx, :loc_radius_sph] = loc_radius_sph[idx]
-        obj_new.locs[l_idx, :loc_theta_sph] = loc_theta_sph[idx]
-        obj_new.locs[l_idx, :loc_phi_sph] = loc_phi_sph[idx]
-    end
+    obj_new.locs = Base.filter(:label => in(labels(obj)), locs)
 
     _locs_round!(obj_new.locs)
     _locs_remove_nans!(obj_new.locs)

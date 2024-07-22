@@ -34,8 +34,6 @@ Named tuple containing:
 """
 function erop(obj::NeuroAnalyzer.NEURO; ch::String, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, method::Symbol=:welch, db::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
-    ch = get_channel(obj, ch=ch)[1]
-
     p, f = psd(obj, ch=ch, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
 
     p = p[1, :, :]

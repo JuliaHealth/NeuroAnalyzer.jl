@@ -57,7 +57,6 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector;
                         s,
                         linewidth=1,
                         label="",
-                        alpha=0.2,
                         color=:black)
     end
 

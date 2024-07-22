@@ -34,7 +34,6 @@ Named tuple containing:
 """
 function eros(obj::NeuroAnalyzer.NEURO; ch::String, pad::Int64=0, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=true, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
-    ch = get_channel(obj, ch=ch)[1]
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
     s, f, t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, db=db, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
