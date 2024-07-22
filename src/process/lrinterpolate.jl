@@ -9,7 +9,7 @@ Interpolate channel using linear regression.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`: channel number to interpolate
+- `ch::String`: channel to interpolate
 - `ep::Int64`: epoch number(s) within to interpolate
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
 
@@ -17,9 +17,10 @@ Interpolate channel using linear regression.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
+function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
 
-    channels = get_channel(obj, type=obj.header.recording[:data_type])
+    ch = _ch_idx(obj, ch)[1]
+    channels = _ch_idx(obj, get_channel(obj, type=obj.header.recording[:data_type]))
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
     @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
@@ -71,7 +72,7 @@ Interpolate channel using linear regression.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`: channel number to interpolate
+- `ch::String`: channel to interpolate
 - `ep::Int64`: epoch number(s) within to interpolate
 - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
 
@@ -79,7 +80,7 @@ Interpolate channel using linear regression.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
+function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
 
     obj_new = lrinterpolate_channel(obj, ch=ch, ep=ep, ep_ref=ep_ref)
     obj.data = obj_new.data

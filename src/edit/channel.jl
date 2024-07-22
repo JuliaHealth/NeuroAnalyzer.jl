@@ -33,7 +33,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; type::Union{String, Vector{String
     ch = String[]
     isa(type, String) && (type = [type])
     for idx in type
-        _check_var(idx, NeuroAnalyzer.channel_types, "type")
+        _check_var(idx, channel_types, "type")
     end
 
     l = labels(obj)
@@ -263,7 +263,7 @@ Replace channel.
 """
 function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)
 
-    @assert size(s) == (1, epoch_len(obj_new), nepochs(obj_new)) "signal size ($(size(s))) must be the same as channel size ($(size(obj_new.data[ch, :, :]))."
+    @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
 
     ch = _ch_idx(obj, ch)[1]
     obj_new = deepcopy(obj)

@@ -73,19 +73,42 @@ end
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String) = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
 function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})
-    l == "all" && (l = cl)
-    _check_channels(cl, l)
-    ch = Int64[]
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
+    any(occursin.("all", l)) && (l = cl)
+    _check_channels(cl, l)
+    ch = Int64[]
     for ch_idx in eachindex(l)
         @assert l[ch_idx] in cl "$(l[ch_idx]) does not match signal labels."
         push!(ch, findfirst(isequal(l[ch_idx]), cl))
     end
-    return ch
+    return unique(ch)
 end
 
-_ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}}) = _ch_idx(labels(obj), l)
+function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
+    cl = labels(obj)
+    isa(l, String) && (l = [l])
+    isa(cl, String) && (cl = [l])
+    any(occursin.("all", l)) && (l = cl)
+    l_tmp = String[]
+    for idx1 in eachindex(l)
+        if l[idx1] in NeuroAnalyzer.channel_types
+            for idx2 in NeuroAnalyzer.channel_types
+                l[idx1] == idx2 && append!(l_tmp, get_channel(obj, type=idx2))
+            end
+        else
+            push!(l_tmp, l[idx1])
+        end
+    end
+    l = l_tmp
+    NeuroAnalyzer._check_channels(cl, l)
+    ch = Int64[]
+    for ch_idx in eachindex(l)
+        @assert l[ch_idx] in cl "$(l[ch_idx]) does not match signal labels."
+        push!(ch, findfirst(isequal(l[ch_idx]), cl))
+    end
+    return unique(ch)
+end
 
 function _set_channel_types(clabels::Vector{String}, default::String="other")
     channel_names = ["af3", "af4", "af7", "af8", "afz", "c1", "c2", "c3", "c4", "c5", "c6", "cp1", "cp2", "cp3", "cp4", "cp5", "cp6", "cpz", "cz", "f1", "f10", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fc1", "fc2", "fc3", "fc4", "fc5", "fc6", "fcz", "fp1", "fp2", "fpz", "ft10", "ft7", "ft8", "ft9", "fz", "nz", "o1", "o2", "oz", "p1", "p10", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "po3", "po4", "po7", "po8", "poz", "pz", "t10", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "tp10", "tp7", "tp8", "tp9"]

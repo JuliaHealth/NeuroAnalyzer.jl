@@ -52,10 +52,14 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], "method")
     end
 
-    ch_list = ch
+    ch_list = isa(ch, String) ? [ch] : ch
     ch = _ch_idx(obj, ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
+
+    :rmse in method && @assert ch_n > 1 ":rmse method requires > 1 channel."
+    :rmsd in method && @assert ch_n > 1 ":rmsd method requires > 1 channel."
+    :euclid in method && @assert ch_n > 1 ":euclid method requires > 1 channel."
 
     bm = zeros(Bool, ch_n, ep_n)
     be = Vector{Int64}()
@@ -89,7 +93,6 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
             ch_m = @views vec(median(obj.data[ch, :, ep_idx], dims=1))
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-
             rmse_ch = zeros(ch_n)
             Threads.@threads for ch_idx in 1:ch_n
                 rmse_ch[ch_idx] = @views rmse(obj.data[ch[ch_idx], :, ep_idx], ch_m)
@@ -313,7 +316,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
         chs = get_channel(obj, type=["eeg", "seeg", "ecog", "meg", "mag", "grad"])
-        [@assert ch_list[idx] in chs "ch must not contain non-signal channels." for idx in eachindex(ch)]
+        @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
 
         ch_n = length(ch)
         ep_n = nepochs(obj)

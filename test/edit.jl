@@ -4,7 +4,7 @@ using Wavelets
 using ContinuousWavelets
 using DataFrames
 
-ntests = 30
+ntests = 29
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -30,42 +30,40 @@ set_channel_type!(e10_tmp, ch="F3", type="eeg")
 @test get_channel(e10, type="eeg") == ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "P3", "P4", "O1", "O2", "F7", "F8", "T3", "T4", "T5", "T6", "Fz", "Cz", "Pz"]
 
 @info "Test 3/$ntests: rename_channel()"
-e10_tmp = rename_channel(e10, ch="F3", name="FP1")
-@test get_channel(e10_tmp, ch="F3") == "FP1"
-rename_channel!(e10_tmp, ch="F3", name="Fp1")
-@test get_channel(e10_tmp, ch="F3") == "Fp1"
+e10_tmp = rename_channel(e10, ch="Fp1", name="FP1")
+@test labels(e10_tmp)[1] == "FP1"
+rename_channel!(e10_tmp, ch="FP1", name="Fp1")
+@test labels(e10_tmp)[1] == "Fp1"
 
 @info "Test 4/$ntests: replace_channel()"
 e10_tmp = replace_channel(e10, ch="F3", s=ones(1, epoch_len(e10), nepochs(e10)));
-@test e10_tmp.data[1, :, :] == ones(epoch_len(e10), nepochs(e10))
+@test e10_tmp.data[3, :, :] == ones(epoch_len(e10), nepochs(e10))
 replace_channel!(e10_tmp, ch="F3", s=zeros(1, epoch_len(e10), nepochs(e10)));
-@test e10_tmp.data[1, :, :] == zeros(epoch_len(e10), nepochs(e10))
+@test e10_tmp.data[3, :, :] == zeros(epoch_len(e10), nepochs(e10))
 
 @info "Test 5/$ntests: add_labels()"
 l = string.(1:24)
 e10_tmp = add_label(e10, clabels=l)
 @test labels(e10_tmp) == l
-add_labels!(e10_tmp, clabels=l)
+add_label!(e10_tmp, clabels=l)
 @test labels(e10_tmp) == l
 
 @info "Test 6/$ntests: delete_channel()"
 e10_tmp = delete_channel(e10, ch="F3")
 @test nchannels(e10_tmp) == 23
-delete_channel!(e10_tmp, ch="F3")
+delete_channel!(e10_tmp, ch="F4")
 @test nchannels(e10_tmp) == 22
 
 @info "Test 7/$ntests: keep_channel()"
-e10_tmp = keep_channel(e10, ch="F3"0:24)
-@test nchannels(e10_tmp) == 15
-keep_channel!(e10_tmp, ch=5:15)
-@test nchannels(e10_tmp) == 11
+e10_tmp = keep_channel(e10, ch=["eeg"])
+@test nchannels(e10_tmp) == 19
+keep_channel!(e10_tmp, ch=["Fp1", "Fp2", "F3", "F4"])
+@test nchannels(e10_tmp) == 4
 
-@info "Test 8/$ntests: keep_channel_type()"
-e10_tmp = keep_channel_type(e10, type="eog")
-@test nchannels(e10_tmp) == 2
-e10_tmp = deepcopy(e10)
-keep_channel_type!(e10_tmp, type="eog")
-@test nchannels(e10_tmp) == 2
+@info "Test 8/$ntests: create_data()"
+e = create_object(data_type="eda")
+create_data!(e, data=rand(10, 100, 1), fs=10, type="eda")
+@test size(e.data) == (10, 100, 1)
 
 @info "Test 9/$ntests: delete_epoch()"
 e10_tmp = delete_epoch(e10, ep=1)
@@ -90,8 +88,8 @@ keep_epoch!(e10_tmp, ep=1:2)
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
 @info "Test 11/$ntests: detect_bad()"
-bm, be = detect_bad(e10, ch=channel_order(obj)[1:19])
-@test sum(bm) == 190
+bm, be = detect_bad(e10, ch=["Fp1","Fp2"])
+@test sum(bm) == 20
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "Test 12/$ntests: epoch(), subepoch()"
@@ -125,8 +123,8 @@ e10_tmp = extract_epoch(e10, ep=1)
 @test length(e10_tmp.epoch_time) == 2560
 
 @info "Test 16/$ntests: extract_data()"
-d = extract_data(e10)
-@test size(d) == (23, 2560, 120)
+d = extract_data(e10, ch="all")
+@test size(d) == (24, 2560, 120)
 
 @info "Test 17/$ntests: extract_time()"
 tpts = extract_time(e10)
@@ -170,7 +168,7 @@ idx = getindex.(findall(eeg_mrk.data[28, :, :] .== -11502.913868619822), 1)
 eeg_mrk.data[28, idx, :] .= 1.0
 idx = getindex.(findall(eeg_mrk.data[28, :, :] .!= 1.0), 1)
 eeg_mrk.data[28, idx, :] .= 0.0
-channel2marker!(eeg_mrk, ch=28, id="mrk")
+channel2marker!(eeg_mrk, ch="Mark2", id="mrk")
 @test nrow(eeg_mrk.markers) == 1094
 
 @info "Test 24/$ntests: epoch()"
@@ -200,8 +198,8 @@ e10_tmp = NeuroAnalyzer.join(e10, e10)
 
 @info "Test 27/$ntests: add_channel()"
 e = create_object(data_type="ecog")
-add_channel!(e, data=rand(10, 10, 1), type=repeat(["ecog"], 10), unit=repeat(["µV"], 10))
-@test size(e.data) == (10, 10, 1)
+add_channel!(e, data=rand(2, 10, 1), label=["ecog1", "ecog2"], type=repeat(["ecog"], 2), unit=repeat(["µV"], 2))
+@test size(e.data) == (2, 10, 1)
 
 @info "Test 28/$ntests: create_time()"
 create_time!(e, fs=1)
@@ -217,10 +215,5 @@ delete_optode!(n, opt=1)
 @test size(n.header.recording[:optode_pairs]) == (70, 2)
 @test nrow(n.locs) == 35
 @test size(n) == (70, 500, 1)
-
-@info "Test 30/$ntests: create_data()"
-e = create_object(data_type="eda")
-create_data!(e, data=rand(10, 100, 1), fs=10, type="eda")
-@test size(e.data) == (10, 100, 1)
 
 true

@@ -30,7 +30,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
     @assert q >= 0.01 "q must be ≥ 0.01."
     @assert q < 5 "q must be < 5."
 
-    ch = _ch_idx(obj, ch)
+    isa(ch, String) && (ch = [ch])
     _check_var(method, [:iir], "method")
 
     obj_new = deepcopy(obj)

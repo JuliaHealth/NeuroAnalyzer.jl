@@ -57,7 +57,7 @@ function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     ch = _ch_idx(obj, ch)
     obj_new = deepcopy(obj)
-    keep_channel!(obj_new, ch=1)
+    keep_channel!(obj_new, ch=labels(obj)[1])
     obj_new.data = @views average(obj.data[ch, :, :])
     obj_new.header.recording[:label]=["averaged ch"]
     reset_components!(obj_new)

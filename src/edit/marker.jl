@@ -231,7 +231,7 @@ Convert event channel to markers.
 function channel2marker(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", desc::String="")
 
     stim_ch = get_channel(obj, type="mrk")
-    ch = _ch_idx(obj, ch)
+    ch = _ch_idx(obj, ch)[1]
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]

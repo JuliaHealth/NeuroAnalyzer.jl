@@ -171,7 +171,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Re
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    ch = _ch_idx(obj, ch)
+    ch = _ch_idx(obj, ch)[1]
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."

@@ -63,8 +63,8 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
     reset_components!(obj_new)
     push!(obj_new.history, "delete_optode(OBJ, opt=$opt)")
 
-    chs_to_delete = sort(unique(chs_to_delete))
-    _info("Deleting the following NIRS channels: $(_v2s(chs_to_delete))")
+    chs_to_delete = labels(obj_new)[sort(unique(chs_to_delete))]
+    _info("Deleting the following NIRS channels: $chs_to_delete")
     delete_channel!(obj_new, ch=chs_to_delete, del_opt=true)
 
     return obj_new

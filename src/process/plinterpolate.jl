@@ -27,14 +27,14 @@ Interpolate channel using planar interpolation.
 """
 function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)
 
-    channels = get_channel(obj, type=obj.header.recording[:data_type])
+    channels = get_channel(obj, type=datatype(obj))
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
-    ch = _ch_idx(obj, ch)
+    ch = _ch_idx(obj, ch)[1]
     _check_epochs(obj, ep)
     isa(ep, Int64) && (ep = [ep])
 
@@ -46,10 +46,10 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
     locs_x1 = obj_tmp.locs[!, :loc_x]
     locs_y1 = obj_tmp.locs[!, :loc_y]
 
-    delete_channel!(obj_tmp, ch=ch)
+    delete_channel!(obj_tmp, ch=labels(obj_tmp)[ch])
     locs_x2 = obj_tmp.locs[!, :loc_x]
     locs_y2 = obj_tmp.locs[!, :loc_y]
-    chs = get_channel(obj_tmp, datatype(obj))
+    chs = _ch_idx(labels(obj_tmp), get_channel(obj_tmp, type=datatype(obj_tmp)))
 
     ep_n = length(ep)
     ep_len = epoch_len(obj_tmp)
@@ -115,7 +115,7 @@ Interpolate channel using planar interpolation.
 
 - `s::Matrix{Float64}`: values to plot (one value per channel)
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::String`: channel to interpolate
+- `ch::Int64`: channel to interpolate
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -133,9 +133,8 @@ Interpolate channel using planar interpolation.
 - `int_x::Vector{Float64}`: X-axis coordinates
 - `int_y::Vector{Float64}`: Y-axis coordinates
 """
-function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::String, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)
+function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)
 
-    ch = _ch_idx(obj, ch)
     @assert ch in 1:size(s, 1) "ch must be in [1, $(size(s, 1))"
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 

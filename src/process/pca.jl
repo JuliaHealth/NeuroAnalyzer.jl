@@ -192,7 +192,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_mod
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=pc, pc_model=pc_model)
 
     reset_components!(obj_new)
-    push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch, pc, pc_model)")
+    push!(obj_new.history, "pca_reconstruct(OBJ, pc, pc_model, ch=$ch)")
 
     return obj_new
 

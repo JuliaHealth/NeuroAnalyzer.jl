@@ -564,7 +564,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
 
     # keep signal channels
-    chs = get_channel(obj, type="eeg")
+    chs = _ch_idx(obj, get_channel(obj, type="eeg"))
     s = obj.data[chs, :, :]
 
     @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
