@@ -127,7 +127,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
     end
 
     ma = 1.0
-    ch_labels && (ma = 0.75)
+    ch_labels && (ma = 0.5)
 
     if grid
         p = Plots.plot(grid=true,
@@ -265,6 +265,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     end
 
+    # draw connections
     if connections != [0 0; 0 0]
         @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
         _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
@@ -459,7 +460,8 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
         end
     end
 
-    if typeof(weights)<:Vector
+    # draw weights
+    if typeof(weights) <: Vector
         @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
         @assert length(weights) >= 1 "weights must contain at least one value."
         for idx in eachindex(locs[ch, :label])
