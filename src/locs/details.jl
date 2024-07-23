@@ -27,25 +27,19 @@ Named tuple containing:
 """
 function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)
 
-    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
+    ch = intersect(obj.locs[!, :label], [ch])
+    locs = Base.filter(:label => in(ch), obj.locs)
+    @assert nrow(locs) == 1 "Channel has no location details."
 
-    get_channel(obj_new, ch=ch)
-    ch = _find_bylabel(obj.locs, ch)
-
-    x = obj.locs[ch, :loc_x]
-    y = obj.locs[ch, :loc_y]
-    z = obj.locs[ch, :loc_z]
-    theta_pl = obj.locs[ch, :loc_theta]
-    radius_pl = obj.locs[ch, :loc_radius]
-    theta_sph = obj.locs[ch, :loc_theta_sph]
-    radius_sph = obj.locs[ch, :loc_radius_sph]
-    phi_sph = obj.locs[ch, :loc_phi_sph]
-
-    # convert InlineString to String
-    l = ""
-    for idx in eachindex(obj.locs[ch, :label])
-        l *= obj.locs[ch, :label][idx]
-    end
+    l = obj.locs[1, :label]
+    x = obj.locs[1, :loc_x]
+    y = obj.locs[1, :loc_y]
+    z = obj.locs[1, :loc_z]
+    theta_pl = obj.locs[1, :loc_theta]
+    radius_pl = obj.locs[1, :loc_radius]
+    theta_sph = obj.locs[1, :loc_theta_sph]
+    radius_sph = obj.locs[1, :loc_radius_sph]
+    phi_sph = obj.locs[1, :loc_phi_sph]
 
     if out
         println("  Label: $l")

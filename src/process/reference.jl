@@ -130,8 +130,8 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     dst = @view deepcopy(obj_new).data[chs, :, :]
 
     if weighted
-        @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
-        @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
+        @assert length(chs) == nrow(obj.locs) "Some channels do not have locations."
+        _has_locs(obj)
 
         locs_idx = _find_bylabel(obj.locs, labels(obj)[chs])
         loc_x = obj.locs[locs_idx, :loc_x]
@@ -561,13 +561,13 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)
 
     _check_datatype(obj, "eeg")
-    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
+    _has_locs(obj)
 
     # keep signal channels
     chs = get_channel(obj, ch=get_channel(obj, type="eeg"))
     s = obj.data[chs, :, :]
 
-    @assert length(chs) <= nrow(obj.locs) "Some channels do not have locations."
+    @assert length(chs) == nrow(obj.locs) "Some channels do not have locations."
 
     ch_n = size(s, 1)
     @assert nn >= 1 "nn must be ≥ 1"

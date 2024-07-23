@@ -391,7 +391,7 @@ function info(obj::NeuroAnalyzer.NEURO)
         else
             println("                Markers: no")
         end
-        if _has_locs(obj)
+        if nrow(obj.locs) > 0
             println("      Channel locations: yes")
         else
             println("      Channel locations: no")

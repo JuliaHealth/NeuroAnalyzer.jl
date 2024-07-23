@@ -533,7 +533,10 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
     _check_tuple(frq_lim, "frq_lim")
-    @assert length(ch) <= nrow(locs) "Some channels do not have locations."
+
+    chs = intersect(locs[!, :label], clabels[ch])
+    locs = Base.filter(:label => in(chs), locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
 
@@ -700,7 +703,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     ep = _s2epoch(obj, seg[1], seg[2])
 
     # set units
-    units = _ch_units(obj, ch[1])
+    units = _ch_units(obj, labels(obj)[ch][1])
 
     clabels = labels(obj)[ch]
     ch isa Int64 && (clabels = [clabels])
@@ -827,7 +830,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PHSD plots all channels should be of the same type."
-        @assert _has_locs(obj) "Electrode locations not available."
+        _has_locs(obj)
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
         xlabel == "default" && (xlabel = "")
         ylabel == "default" && (ylabel = "")

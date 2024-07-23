@@ -340,8 +340,10 @@ Plot topographical map ERPs.
 """
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
 
+    chs = intersect(locs[!, :label], clabels[ch])
+    locs = Base.filter(:label => in(chs), locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
     @assert size(s, 2) == length(t) "Signal length and time length must be equal."
-    @assert length(ch) <= nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
 
@@ -648,7 +650,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                          yrev=yrev;
                          kwargs...)
     elseif type === :topo
-        @assert _has_locs(obj) "Electrode locations not available."
+        _has_locs(obj)
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         peaks = false
         ndims(s) == 1 && (s = reshape(s, 1, length(s)))

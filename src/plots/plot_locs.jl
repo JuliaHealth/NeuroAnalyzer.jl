@@ -655,8 +655,9 @@ Preview of channel locations.
 function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, kwargs...)
 
     ch = get_channel(obj, ch=ch)
-    ch = intersect(obj.locs[!, :label], labels(obj)[ch])
-    locs = Base.filter(:label => in(ch), obj.locs)
+    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
 
     if selected == ""
         selected = 0

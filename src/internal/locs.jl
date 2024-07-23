@@ -86,7 +86,7 @@ function _locs_round!(obj::NeuroAnalyzer.NEURO)
     obj.locs = _locs_round(obj.locs)
 end
 
-_has_locs(obj::NeuroAnalyzer.NEURO) = nrow(obj.locs) > 0 ? true : false
+_has_locs(obj::NeuroAnalyzer.NEURO) = @assert nrow(obj.locs) > 0 "Electrode locations not available, use load_locs() or add_locs() first."
 
 function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
     xy = normalize_minmax(hcat(x, y))

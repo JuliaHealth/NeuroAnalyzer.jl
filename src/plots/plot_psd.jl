@@ -639,7 +639,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
     _check_tuple(frq_lim, "frq_lim")
-    @assert length(ch) <= nrow(locs) "Some channels do not have locations."
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
 
@@ -1064,18 +1064,19 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         variant=:s;
                         kwargs...)
     elseif type === :topo
-        ch_t = obj.header.recording[:channel_type]
-        ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
-        @assert _has_locs(obj) "Electrode locations not available."
+        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        _has_locs(obj)
+        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+        locs = Base.filter(:label => in(chs), obj.locs)
+        @assert length(ch) == nrow(locs) "Some channels do not have locations."
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
         xlabel == "default" && (xlabel = "")
         ylabel == "default" && (ylabel = "")
         title = replace(title, "channel" => "channels")
-        p = plot_psd_topo(obj.locs,
+        p = plot_psd_topo(locs,
                           sf,
                           sp,
-                          ch=ch,
+                          ch=collect(1:nrow(locs)),
                           clabels=clabels[ch],
                           xlabel=xlabel,
                           ylabel=ylabel,

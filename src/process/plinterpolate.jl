@@ -32,7 +32,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
-    @assert _has_locs(obj) "Electrode locations not available, use load_locs() or add_locs() first."
+    _has_locs(obj)
 
     ch = get_channel(obj, ch=ch)[1]
     _check_epochs(obj, ep)

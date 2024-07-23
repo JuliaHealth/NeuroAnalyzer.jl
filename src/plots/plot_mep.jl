@@ -392,6 +392,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
+    length(ch) == 1 && (ch = ch[1])
 
     _check_var(type, [:normal, :butterfly, :mean, :stack], "type")
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
@@ -451,7 +452,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        @assert length(ch) > 1 "For :mean plot type, more than one channel must be specified."
+        @assert !(ch isa Int64) "For :mean plot type, more than one channel must be specified."
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude [mean ± 95%CI]\n[time window: $t_s1:$t_s2]")
         p = plot_mep_avg(t,
                          s,
@@ -511,7 +512,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                 _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2]], digits=2)) $units")
             elseif (type === :butterfly && avg) || type === :mean
                 mep_tmp = mean(mean(obj.data[ch, :, :], dims=1), dims=3)
-                obj_tmp = keep_channel(obj, ch=1)
+                obj_tmp = keep_channel(obj, ch=labels(obj)[1])
                 obj_tmp.data = mep_tmp
                 pp = mep_peaks(obj_tmp)
                 if !mono

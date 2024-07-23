@@ -36,7 +36,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     ch_n = nrow(locs)
     ep_n = nepochs(obj)
 
-    @assert length(chs) <= nrow(locs) "Some channels do not have locations."
+    @assert length(chs) == nrow(locs) "Some channels do not have locations."
 
     G, H = gh(locs, m=m, n=n)
 
