@@ -9,8 +9,8 @@ Preview channel locations.
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs)`: list of locations to plot, default is all locations
-- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected locations to plot
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs)`: list of locations to plot, default is all locations
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels should be highlighted
 - `ch_labels::Bool=true`: plot locations labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
@@ -33,25 +33,21 @@ Preview channel locations.
     - `:g`: plot if connection weight is > to threshold
     - `:l`: plot if connection weight is < to threshold
 - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}, threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
 
     pal = mono ? :grays : :darktest
-
     locs = locs[ch, :]
 
     if plane === :xy
-        if large
-            head_shape = FileIO.load(joinpath(res_path, "head_t_large.png"))
-        else
-            head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
-        end
+        head_shape = large ? FileIO.load(joinpath(res_path, "head_t_large.png")) : FileIO.load(joinpath(res_path, "head_t_small.png"))
         if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
@@ -63,11 +59,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             loc_y = locs[!, :loc_y]
         end
     elseif plane === :xz
-        if large
-            head_shape = FileIO.load(joinpath(res_path, "head_f_large.png"))
-        else
-            head_shape = FileIO.load(joinpath(res_path, "head_f_small.png"))
-        end
+        head_shape = large ? FileIO.load(joinpath(res_path, "head_f_large.png")) : FileIO.load(joinpath(res_path, "head_f_small.png"))
         if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
@@ -79,11 +71,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             loc_y = locs[!, :loc_z]
         end
     elseif plane === :yz
-        if large
-            head_shape = FileIO.load(joinpath(res_path, "head_s_large.png"))
-        else
-            head_shape = FileIO.load(joinpath(res_path, "head_s_small.png"))
-        end
+        head_shape = large ? FileIO.load(joinpath(res_path, "head_s_large.png")) : FileIO.load(joinpath(res_path, "head_s_small.png"))
         if !cart
             loc_x = zeros(nrow(locs))
             loc_y = zeros(nrow(locs))
@@ -159,11 +147,6 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                            bottom_margin=-100*Plots.px,
                            top_margin=-100*Plots.px,
                            left_margin=-100*Plots.px,
-                           # size=size(head_shape),
-                           # right_margin=-30*Plots.px,
-                           # bottom_margin=-40*Plots.px,
-                           # top_margin=-30*Plots.px,
-                           # left_margin=-40*Plots.px,
                            ticks_fontsize=font_size,
                            xticks=xt,
                            yticks=yt,
@@ -207,6 +190,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
                                 markerstrokealpha=0)
         end
     end
+
     for idx in eachindex(locs[!, :label])
         if idx in selected
             if mono != true
@@ -231,6 +215,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             end
         end
     end
+
     if ch_labels
         for idx in eachindex(locs[!, :label])
             if idx in ch
@@ -241,6 +226,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRa
             end
         end
     end
+
     if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
         for idx in 1:length(NeuroAnalyzer.fiducial_points)
@@ -494,7 +480,7 @@ end
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}}=1:nrow(locs)`: list of channels, default is all channels
-- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
@@ -505,7 +491,7 @@ end
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
 
     pal = mono ? :grays : :darktest
 
@@ -584,12 +570,8 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(loc
 
     if ch_labels
         for idx in eachindex(locs[!, :label])
-            if idx in ch
-                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
-            end
-            if idx in selected
-                Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
-            end
+            idx in ch && Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
+            idx in selected && Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
         end
     end
 
@@ -618,7 +600,7 @@ Preview of channel locations.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: list of channels
-- `selected::Union{String, Vector{String}}`: which channel should be highlighted
+- `selected::Union{String, Vector{String}}`: which channels should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
@@ -654,10 +636,13 @@ Preview of channel locations.
 """
 function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, kwargs...)
 
+    @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
+
     ch = get_channel(obj, ch=ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    ch = collect(1:nrow(locs))
 
     if selected == ""
         selected = 0
@@ -667,24 +652,58 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         selected = _find_bylabel(locs, selected)
     end
 
-    if datatype(obj) == "ecog"
-        @error "Use plot_locs_ecog() for ECoG data."
-    elseif !threed
-        if datatype(obj) == "nirs"
-            opt_pairs = obj.header.recording[:optode_pairs]
-            src_n = length(source_labels(obj))
-            det_n = length(detector_labels(obj))
-            p = plot_locs_nirs(obj.locs, opt_pairs, src_n, det_n; src_labels=src_labels, det_labels=det_labels, opt_labels=opt_labels, head=head, head_labels=head_labels, grid=grid, mono=mono)
+    if datatype(obj) == "nirs"
+        opt_pairs = obj.header.recording[:optode_pairs]
+        src_n = length(source_labels(obj))
+        det_n = length(detector_labels(obj))
+        p = plot_locs_nirs(obj.locs,
+                           opt_pairs,
+                           src_n,
+                           det_n,
+                           src_labels=src_labels,
+                           det_labels=det_labels,
+                           opt_labels=opt_labels,
+                           head=head,
+                           head_labels=head_labels,
+                           grid=grid,
+                           mono=mono)
+        return p
+    end
+
+    if threed
+        if interactive
+            iplot_locs3d(locs,
+                         ch=ch,
+                         selected=selected,
+                         ch_labels=ch_labels,
+                         head_labels=head_labels,
+                         mono=mono)
+            return nothing
         else
-            p = plot_locs(locs, ch=collect(1:nrow(locs)), selected=selected, ch_labels=ch_labels, head=head, head_labels=head_labels, grid=grid, large=large, mono=mono, cart=cart, plane=plane, transparent=transparent, connections=connections, threshold=threshold, threshold_type=threshold_type, weights=weights)
+            p = plot_locs3d(locs,
+                            ch=ch,
+                            selected=selected,
+                            ch_labels=ch_labels,
+                            head_labels=head_labels,
+                            mono=mono)
         end
     else
-        if interactive
-            iplot_locs3d(locs, ch=collect(1:nrow(locs)), selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
-            return
-        else
-            p = plot_locs3d(locs, ch=collect(1:nrow(locs)), selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono)
-        end
+        p = plot_locs(locs,
+                      ch=ch,
+                      selected=selected,
+                      ch_labels=ch_labels,
+                      head=head,
+                      head_labels=head_labels,
+                      grid=grid,
+                      large=large,
+                      mono=mono,
+                      cart=cart,
+                      plane=plane,
+                      transparent=transparent,
+                      connections=connections,
+                      threshold=threshold,
+                      threshold_type=threshold_type,
+                      weights=weights)
     end
 
     return p
