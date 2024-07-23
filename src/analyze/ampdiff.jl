@@ -8,13 +8,13 @@ Calculate amplitude difference between each channel and mean amplitude of refere
 # Arguments
 
 - `s::AbstractArray`
-- `ch::Union{String, Vector{String}}=size(s, 1)`: index of reference channels, default is all channels except the analyzed one
+- `ch::Union{Int64, Vector{Int64}}=size(s, 1)`: index of reference channels, default is all channels except the analyzed one
 
 # Returns
 
 - `ad::Array{Float64, 3}`
 """
-function ampdiff(s::AbstractArray; ch::Union{String, Vector{String}}=_c(size(s, 1)))
+function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)))
 
     _check_channels(s, ch)
 

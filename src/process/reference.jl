@@ -30,42 +30,33 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     _check_datatype(obj, "eeg")
 
-    # keep signal channels
+    # reference channels
     ch = get_channel(obj, ch=ch)
-    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
 
+    # channels that will be referenced
+    referenced_channels = get_channel(obj, ch=get_channel(obj, type="eeg"))
     obj_new = deepcopy(obj)
-
-    s = @view obj_new.data[chs, :, :]
-
+    s = @view obj_new.data[referenced_channels, :, :]
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            if ch isa Int64
+        Threads.@threads for ch_idx in ch
+            if length(ch) == 1
                 ref_ch = @views vec(s[ch, :, ep_idx])
                 if ch_idx != ch
                     @views s[ch_idx, :, ep_idx] .-= ref_ch
                 end
             else
-                if !med
-                    ref_ch = @views vec(mean(s[ch, :, ep_idx], dims=1))
-                else
-                    ref_ch = @views vec(median(s[ch, :, ep_idx], dims=1))
-                end
-                @views s[ch_idx, :, ep_idx] .-= ref_ch
+                ref_ch = med ? (@views vec(median(s[ch, :, ep_idx], dims=1))) : (@views vec(mean(s[ch, :, ep_idx], dims=1)))
+                s[ch_idx, :, ep_idx] .-= ref_ch
             end
         end
     end
 
-    obj_new.header.recording[:label][chs] .*= ch isa Int64 ? "-$(labels(obj)[ch])" : "-cavg"
-    obj_new.data[chs, :, :] = s
-    if ch isa Int64
-        obj_new.header.recording[:reference] = "common ($(labels(obj)[ch]))"
-    else
-        obj_new.header.recording[:reference] = "common ($(labels(obj)[ch]) averaged)"
-    end
+    obj_new.header.recording[:label][referenced_channels] .*= ch isa Int64 ? "-$(labels(obj)[ch])" : "-cavg"
+    obj_new.data[referenced_channels, :, :] = s
+    obj_new.header.recording[:reference] = length(ch) == 1 ? "common ($(labels(obj)[ch]))" : obj_new.header.recording[:reference] = "common ($(labels(obj)[ch]) averaged)"
     reset_components!(obj_new)
     push!(obj_new.history, "reference_ce(OBJ, ch=$ch, med=$med)")
 
@@ -118,24 +109,26 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
 
     _check_datatype(obj, "eeg")
 
-    # keep signal channels
-    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
+    # channels that will be referenced
+    ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
 
     # source signals
     obj_new = deepcopy(obj)
-    src = @view deepcopy(obj_new).data[chs, :, :]
+    src = @view deepcopy(obj_new).data[ch, :, :]
     ch_n = size(src, 1)
     ep_n = size(src, 3)
+
     # destination signals
-    dst = @view deepcopy(obj_new).data[chs, :, :]
+    dst = @view deepcopy(obj_new).data[ch, :, :]
 
     if weighted
-        @assert length(chs) == nrow(obj.locs) "Some channels do not have locations."
         _has_locs(obj)
+        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+        locs = Base.filter(:label => in(chs), obj.locs)
+        @assert length(ch) == nrow(locs) "Some channels do not have locations."
 
-        locs_idx = _find_bylabel(obj.locs, labels(obj)[chs])
-        loc_x = obj.locs[locs_idx, :loc_x]
-        loc_y = obj.locs[locs_idx, :loc_y]
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
 
         # Euclidean distance matrix
         d = zeros(ch_n, ch_n)
@@ -151,7 +144,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
         Threads.@threads for ch_idx in 1:ch_n
 
             if weighted
-                src = @view deepcopy(obj).data[chs, :, :]
+                src = @view deepcopy(obj).data[ch, :, :]
                 w = zeros(ch_n)
                 # calculate vector of weights - distances between the current electrode and each of the reference electrodes
                 for w_idx in 1:ch_n
@@ -175,11 +168,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
             ref_chs = @view src[setdiff(1:ch_n, unique(chs2exclude)), :, ep_idx]
 
             if average
-                if !med
-                    ref_ch = vec(mean(ref_chs, dims=1))
-                else
-                    ref_ch = vec(median(ref_chs, dims=1))
-                end
+                ref_ch = med ? vec(median(ref_chs, dims=1)) : vec(mean(ref_chs, dims=1))
             else
                 ref_ch = vec(sum(ref_chs, dims=1))
             end
@@ -188,12 +177,12 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     end
 
     if average
-        obj_new.header.recording[:label][chs] .*= weighted ? "-wavg" : "-avg"
+        obj_new.header.recording[:label][ch] .*= weighted ? "-wavg" : "-avg"
     else
-        obj_new.header.recording[:label][chs] .*= weighted ? "-wsum" : "-sum"
+        obj_new.header.recording[:label][ch] .*= weighted ? "-wsum" : "-sum"
     end
 
-    obj_new.data[chs, :, :] = dst
+    obj_new.data[ch, :, :] = dst
     if average
         obj_new.header.recording[:reference] = weighted ? "average (weighted)" : "average"
     else
@@ -258,9 +247,9 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     @assert "a2" in lowercase.(labels(obj)) "OBJ does not contain A2 channel."
 
     # keep signal channels
-    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
+    ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
     obj_new = deepcopy(obj)
-    s = @view obj_new.data[chs, :, :]
+    s = @view obj_new.data[ch, :, :]
 
     a1_idx = labels(obj)[findfirst(isequal("a1"), lowercase.(labels(obj)))]
     a2_idx = labels(obj)[findfirst(isequal("a2"), lowercase.(labels(obj)))]
@@ -271,7 +260,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     ep_n = size(s, 3)
     s_ref = similar(s)
 
-    ref_label = repeat([""], length(chs))
+    ref_label = repeat([""], length(ch))
 
     if type === :l
         @inbounds for ep_idx in 1:ep_n
@@ -345,8 +334,8 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
         end
     end
 
-    obj_new.data[chs, :, :] = s_ref
-    obj_new.header.recording[:label][chs] .*= ref_label
+    obj_new.data[ch, :, :] = s_ref
+    obj_new.header.recording[:label][ch] .*= ref_label
     if type === :l
         obj_new.header.recording[:reference] = "auricular (linked)"
     elseif type === :i
@@ -413,9 +402,9 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     @assert "m2" in lowercase.(labels(obj)) "OBJ does not contain M2 channel."
 
     # keep signal channels
-    chs = [get_channel(obj, ch=idx)[1] for idx in get_channel(obj, type="eeg")]
+    ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
     obj_new = deepcopy(obj)
-    s = @view obj_new.data[chs, :, :]
+    s = @view obj_new.data[ch, :, :]
 
     m1_idx = labels(obj)[findfirst(isequal("m1"), lowercase.(labels(obj)))]
     m2_idx = labels(obj)[findfirst(isequal("m2"), lowercase.(labels(obj)))]
@@ -426,7 +415,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     ep_n = size(s, 3)
     s_ref = similar(s)
 
-    ref_label = repeat([""], length(chs))
+    ref_label = repeat([""], length(ch))
 
     if type === :l
         @inbounds for ep_idx in 1:ep_n
@@ -500,8 +489,8 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
         end
     end
 
-    obj_new.data[chs, :, :] = s_ref
-    obj_new.header.recording[:label][chs] .*= ref_label
+    obj_new.data[ch, :, :] = s_ref
+    obj_new.header.recording[:label][ch] .*= ref_label
     if type === :l
         obj_new.header.recording[:reference] = "mastoid (linked)"
     elseif type === :i
@@ -564,18 +553,19 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     _has_locs(obj)
 
     # keep signal channels
-    chs = get_channel(obj, ch=get_channel(obj, type="eeg"))
-    s = obj.data[chs, :, :]
+    ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
+    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
 
-    @assert length(chs) == nrow(obj.locs) "Some channels do not have locations."
-
+    s = @views obj.data[ch, :, :]
     ch_n = size(s, 1)
+    ep_n = size(s, 3)
     @assert nn >= 1 "nn must be ≥ 1"
     @assert nn < ch_n - 1 "nn must be < $(ch_n - 1)"
-    ep_n = size(s, 3)
 
-    loc_x = obj.locs[1:ch_n, :loc_x]
-    loc_y = obj.locs[1:ch_n, :loc_y]
+    loc_x = locs[!, :loc_x]
+    loc_y = locs[!, :loc_y]
 
     # Euclidean distance matrix
     d = zeros(ch_n, ch_n)
@@ -622,8 +612,8 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     end
 
     obj_new = deepcopy(obj)
-    obj_new.header.recording[:label][chs] .*= weighted ? "-wplap" : "-plap"
-    obj_new.data[chs, :, :] = s_ref
+    obj_new.header.recording[:label][ch] .*= weighted ? "-wplap" : "-plap"
+    obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
     reset_components!(obj_new)
     push!(obj_new.history, "reference_plap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
@@ -686,15 +676,15 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
 
     _check_datatype(obj, "eeg")
 
-    chs = get_channel(obj, ch=get_channel(obj, type="eeg"))
+    ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
 
     for ref_idx in eachindex(ref_list)
         if '-' in ref_list[ref_idx]
             m = match(r"(.*)-(.+)", ref_list[ref_idx])
-            @assert m[1] in labels(obj)[chs] "Label $(m[1]) does not match OBJ labels."
-            @assert m[2] in labels(obj)[chs] "Label $(m[2]) does not match OBJ labels."
+            @assert m[1] in labels(obj)[ch] "Label $(m[1]) does not match OBJ labels."
+            @assert m[2] in labels(obj)[ch] "Label $(m[2]) does not match OBJ labels."
         else
-            @assert ref_list[ref_idx] in labels(obj)[chs] "Label $(ref_list[ref_idx]) does not match OBJ labels."
+            @assert ref_list[ref_idx] in labels(obj)[ch] "Label $(ref_list[ref_idx]) does not match OBJ labels."
         end
     end
 

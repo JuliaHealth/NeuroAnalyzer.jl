@@ -88,7 +88,7 @@ Calculate stationarity.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}: list of channels
+- `ch::Union{String, Vector{String}}: list of channels
 - `window::Int64=10`: time window in samples
 - `method::Symbol=:euclid`: stationarity method:
     - `:mean`: mean across `window`-long windows
@@ -101,13 +101,13 @@ Calculate stationarity.
 
 - `stationarity::Array{Float64, 3}`
 """
-function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}, window::Int64=10, method::Symbol=:hilbert)
+function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, window::Int64=10, method::Symbol=:hilbert)
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= epoch_len(obj) "window must be ≤ $(epoch_len(obj))."
-    isa(ch, Int64) && (ch = [ch])
 
+    ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 

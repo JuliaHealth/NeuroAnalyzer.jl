@@ -275,8 +275,8 @@ Named tuple containing:
 function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
 
     # check channels
-    _check_channels(obj1, ch1)
-    _check_channels(obj2, ch2)
+    ch1 = get_channel(obj1, ch=ch1)
+    ch2 = get_channel(obj2, ch=ch2)
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
 
     # check epochs
@@ -285,8 +285,6 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    isa(ch1, Int64) && (ch1 = [ch1])
-    isa(ch2, Int64) && (ch2 = [ch2])
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 

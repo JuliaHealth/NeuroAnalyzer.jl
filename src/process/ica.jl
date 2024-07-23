@@ -251,7 +251,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::M
     ch = get_channel(obj, ch=ch)
 
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)
+    obj_new.data[ch, :, 1] = @views ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=ic_idx, keep=keep)[1:length(ch), :]
 
     reset_components!(obj_new)
     push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx, keep=$keep)")
@@ -307,6 +307,8 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
     @assert nepochs(obj) == 1 "ica_remove() must be applied to a continuous signal."
 
     ch = get_channel(obj, ch=ch)
+    length(ch) == 1 && (ch = ch[1])
+
     obj_new = deepcopy(obj)
     @inbounds for ica_idx in eachindex(ic_idx)
         Threads.@threads for ch_idx in eachindex(ch)

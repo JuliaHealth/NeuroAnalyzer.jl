@@ -102,7 +102,7 @@ l = import_locs_mat(joinpath(testfiles_path, "locs.mat"));
 @info "Test 18/$ntests: load_locs()"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"));
 eeg = load_locs(eeg, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"));
-@test NeuroAnalyzer._has_locs(eeg)
+@test eeg.locs isa DataFrame
 
 @info "Test 19/$ntests: save()"
 isfile("test.hdf") && rm("test.hdf")

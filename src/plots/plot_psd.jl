@@ -636,10 +636,10 @@ Plot topographical map PSDs.
 """
 function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
 
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
     _check_tuple(frq_lim, "frq_lim")
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
 
     pal = mono ? :grays : :darktest
 

@@ -3,6 +3,20 @@ _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}) = _find_by
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}}) = obj.locs[_loc_idx(obj, ch), :label]
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}) = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
 
+function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})
+    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    return locs
+end
+
+function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})
+    chs = intersect(obj.locs[!, :label], ch)
+    locs = Base.filter(:label => in(chs), obj.locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    return locs
+end
+
 function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})
     if isa(l, String)
         if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))) > 0

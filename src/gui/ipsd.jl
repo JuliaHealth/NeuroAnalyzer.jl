@@ -363,7 +363,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
                 warn_dialog("For w3d plot, the signal must contain ≥ 2 channels.")
             elseif length(ch) < 2 && type === :s3d
                 warn_dialog("For s3d plot, the signal must contain ≥ 2 channels.")
-            elseif !_has_locs(obj) && type === :topo
+            elseif nrow(obj.locs) == 0 && type === :topo
                 warn_dialog("Electrode locations not available.")
             elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type in [:butterfly, :mean, :w3d, :s3d, :topo]
                 warn_dialog("For $(string(type)) plot\nall channels should be of the same type.")
@@ -954,7 +954,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
                 warn_dialog("For w3d plot, the signal must contain ≥ 2 channels.")
             elseif length(ch) < 2 && type === :s3d
                 warn_dialog("For s3d plot, the signal must contain ≥ 2 channels.")
-            elseif !_has_locs(obj) && type === :topo
+            elseif nrow(obj.locs) == 0 && type === :topo
                 warn_dialog("Electrode locations not available.")
             elseif length(unique(obj.header.recording[:channel_type][ch])) > 1 && type in [:butterfly, :mean, :w3d, :s3d, :topo]
                 warn_dialog("For $(string(type)) plot\nall channels should be of the same type.")

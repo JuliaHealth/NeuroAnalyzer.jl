@@ -25,18 +25,17 @@ Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a ge
 function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
 
     _check_datatype(obj, "eeg")
-    @assert _has_locs(obj) "Channel locations not available, use load_locs() or add_locs() first."
+    _has_locs(obj)
     @assert !(m < 2 || m > 10) "m must be in [2, 10]."
     @assert n >= 1 "n must be ≥ 1."
     @assert lambda > 0 "lambda must be > 0."
 
-    chs = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
-    loc_idx = NeuroAnalyzer._find_bylabel(obj.locs, get_channel(obj, type=datatype(obj)))
-    locs = obj.locs[loc_idx, :]
+    ch = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
+    locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
+    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+
     ch_n = nrow(locs)
     ep_n = nepochs(obj)
-
-    @assert length(chs) == nrow(locs) "Some channels do not have locations."
 
     G, H = gh(locs, m=m, n=n)
 
@@ -52,18 +51,18 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
 
     obj_new = deepcopy(obj)
     @inbounds for ep_idx in 1:ep_n
-        data = @views obj.data[chs, :, ep_idx]
-        # dataGs = data[chs, :]' / Gs
+        data = @views obj.data[ch, :, ep_idx]
+        # dataGs = data[ch, :]' / Gs
         dataGs = Gs / data'
         # C = dataGs .- (sum(dataGs,dims=2)/sum(Gs_inv_sum))*Gs_inv_sum
         C = data .- (sum(dataGs, dims=2) / sum(Gs_inv_sum)) * Gs_inv_sum
         # compute surface Laplacian
-        obj_new.data[chs, :, ep_idx] = (C'*H)'
+        obj_new.data[ch, :, ep_idx] = (C'*H)'
     end
 
     obj_new.header.recording[:data_type] = "csd"
-    obj_new.header.recording[:channel_type][chs] .= "csd"
-    obj_new.header.recording[:unit][chs] .= "µV/m²"
+    obj_new.header.recording[:channel_type][ch] .= "csd"
+    obj_new.header.recording[:unit][ch] .= "µV/m²"
 
     reset_components!(obj_new)
     push!(obj_new.history, "csd(OBJ, m=$m, n=$n, lambda=$lambda)")

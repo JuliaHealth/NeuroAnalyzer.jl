@@ -427,7 +427,9 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     c_idx isa Int64 && (clabels = [clabels])
 
     @assert length(c_idx) >= 2 "plot_topo() requires ≥ 2 channels."
-    @assert length(c_idx) == nrow(obj.locs) "Some channels do not have locations."
+    chs = intersect(obj.locs[!, :label], labels(obj)[c_idx])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    @assert length(chs) == nrow(locs) "Some channels do not have locations."
 
     # get time vector
     if time_segment
@@ -470,7 +472,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=c_idx, locs=obj.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
+    p = plot_topo(s, ch=c_idx, locs=locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, kwargs=kwargs)
 
     Plots.plot(p)
 

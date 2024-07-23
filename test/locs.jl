@@ -10,15 +10,12 @@ locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 
 @info "Test 1/$ntests: add_locs()"
 eeg_tmp = add_locs(eeg, locs=locs)
-@test NeuroAnalyzer._has_locs(eeg_tmp)
-@test nrow(eeg_tmp.locs) == 23
-@test NeuroAnalyzer._has_locs(eeg)
+@test nrow(eeg_tmp.locs) == 19
 add_locs!(eeg, locs=locs)
-@test NeuroAnalyzer._has_locs(eeg)
-@test nrow(eeg.locs) == 23
+@test nrow(eeg.locs) == 19
 
 @info "Test 2/$ntests: locs_details()"
-@test locs_details(eeg, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+@test locs_details(eeg, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 
 @info "Test 3/$ntests: cart2pol()"
 @test cart2pol(1.0, 1.0) == (1.41, 45.0)
@@ -93,11 +90,11 @@ locs_sph2pol!(locs_tmp)
 
 @info "Test 14/$ntests: edit_locs()"
 eeg_tmp = deepcopy(eeg)
-@test locs_details(eeg_tmp, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+@test locs_details(eeg_tmp, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 eeg_tmp = edit_locs(eeg_tmp, ch="Fp1", x=0.5)
-@test locs_details(eeg_tmp, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+@test locs_details(eeg_tmp, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 edit_locs!(eeg_tmp, ch="Fp1", x=0.5)
-@test locs_details(eeg_tmp, ch="Fp1", out=false) == (ch = 1, label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
+@test locs_details(eeg_tmp, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 
 @info "Test 15/$ntests: locs_flipx()"
 @test locs[1, :loc_x] == -0.31

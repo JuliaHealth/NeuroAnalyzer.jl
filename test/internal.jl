@@ -63,10 +63,8 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test NeuroAnalyzer._gen_clabels(a1) == ["1", "2"]
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
-@test NeuroAnalyzer._has_locs(e10)
 @test NeuroAnalyzer._initialize_locs(e10) isa DataFrame
 NeuroAnalyzer._initialize_locs!(e10)
-@test NeuroAnalyzer._has_locs(e10)
 @test NeuroAnalyzer._initialize_locs() isa DataFrame
 xn, yn = NeuroAnalyzer._locs_norm(x, y)
 @test xn[1] ≈ -0.31

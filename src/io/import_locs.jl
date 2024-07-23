@@ -155,7 +155,7 @@ function import_locs_locs(file_name::String)
 
     DataFrames.rename!(locs, [:number, :theta, :radius, :label])
 
-    clabels = string.(lstrip.(locs[!, "labels"]))
+    clabels = string.(lstrip.(locs[!, :label]))
 
     x = zeros(length(clabels))
     y = zeros(length(clabels))
@@ -397,14 +397,14 @@ function import_locs_csd(file_name::String)
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, stringtype=String, DataFrame)
 
     DataFrames.rename!(locs, [:label, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
-    clabels = string.(lstrip.(locs[!, "labels"]))
+    clabels = string.(lstrip.(locs[!, :label]))
 
-    x = Float64.(locs[!, "x"])
-    y = Float64.(locs[!, "y"])
-    z = Float64.(locs[!, "z"])
-    radius_sph = Float64.(locs[!, "radius_sph"])
-    theta_sph = Float64.(locs[!, "theta_sph"])
-    phi_sph = Float64.(locs[!, "phi_sph"])
+    x = Float64.(locs[!, :x])
+    y = Float64.(locs[!, :y])
+    z = Float64.(locs[!, :z])
+    radius_sph = Float64.(locs[!, :radius_sph])
+    theta_sph = Float64.(locs[!, :theta_sph])
+    phi_sph = Float64.(locs[!, :phi_sph])
 
     radius = zeros(length(x))
     theta = zeros(length(y))
@@ -556,7 +556,7 @@ function import_locs_txt(file_name::String)
     locs = CSV.read(file_name, header=true, delim="\t", stringtype=String, DataFrame)
 
     DataFrames.rename!(locs, [:label, :theta, :phi])
-    clabels = lstrip.(locs[!, "labels"])
+    clabels = lstrip.(locs[!, :label])
 
     x = zeros(length(clabels))
     y = zeros(length(clabels))

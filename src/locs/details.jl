@@ -43,17 +43,16 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)
 
     if out
         println("  Label: $l")
-        println("Channel: $ch")
-        println("  theta: $theta_pl (polar)")
-        println(" radius: $radius_pl (polar)")
+        println("  Theta: $theta_pl (polar)")
+        println(" Radius: $radius_pl (polar)")
         println("      X: $x (spherical)")
         println("      Y: $y (spherical)")
         println("      Z: $z (spherical)")
-        println(" radius: $radius_sph (spherical)")
-        println("  theta: $theta_sph (spherical)")
-        println("    phi: $phi_sph (spherical)")
+        println(" Radius: $radius_sph (spherical)")
+        println("  Theta: $theta_sph (spherical)")
+        println("    Phi: $phi_sph (spherical)")
     end
 
-    return (ch=ch, label=l, theta_pl=theta_pl, radius_pl=radius_pl, x=x, y=y, z=z, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph)
+    return (label=l, theta_pl=theta_pl, radius_pl=radius_pl, x=x, y=y, z=z, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph)
 
 end

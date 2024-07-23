@@ -276,7 +276,7 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
     else
         # mean over channels and epochs
 
-        t_env_m, t_env_u, t_env_l, _ = tenv_mean(obj, dims=1, d=d)
+        t_env_m, t_env_u, t_env_l, _ = tenv_mean(obj, ch=ch, dims=1, d=d)
 
         t_env_m = mean(t_env_m, dims=2)
         t_env_u = mean(t_env_u, dims=2)
@@ -356,7 +356,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     else
         # median over channels and epochs
 
-        t_env_m, t_env_u, t_env_l, _ = tenv_median(obj, dims=1, d=d)
+        t_env_m, t_env_u, t_env_l, _ = tenv_median(obj, ch=ch, dims=1, d=d)
         t_env_m = median(t_env_m, dims=2)
         t_env_u = median(t_env_u, dims=2)
         t_env_l = median(t_env_l, dims=2)
@@ -494,7 +494,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
     else
         # mean over channels and epochs
 
-        p_env_m, p_env_u, p_env_l, _ = penv_mean(obj, dims=1, d=d)
+        p_env_m, p_env_u, p_env_l, _ = penv_mean(obj, ch=ch, dims=1, d=d)
         p_env_m = mean(p_env_m, dims=2)
         p_env_u = mean(p_env_u, dims=2)
         p_env_l = mean(p_env_l, dims=2)
@@ -583,7 +583,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     else
         # median over channels and epochs
 
-        p_env_m, p_env_u, p_env_l, _ = penv_median(obj, dims=1, d=d)
+        p_env_m, p_env_u, p_env_l, _ = penv_median(obj, ch=ch, dims=1, d=d)
         p_env_m = median(p_env_m, dims=2)
         p_env_u = median(p_env_u, dims=2)
         p_env_l = median(p_env_l, dims=2)
@@ -768,7 +768,7 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
     else
         # mean over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, dims=1, d=d, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+        s_env_m, s_env_u, s_env_l, _ = senv_mean(obj, ch=ch, dims=1, d=d, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
         s_env_m = mean(s_env_m, dims=2)
         s_env_u = mean(s_env_u, dims=2)
         s_env_l = mean(s_env_l, dims=2)
@@ -862,7 +862,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     else
         # median over channels and epochs
 
-        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, dims=1, d=d, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
+        s_env_m, s_env_u, s_env_l, _ = senv_median(obj, ch=ch, dims=1, d=d, pad=pad, method=method, db=db, nt=nt, gw=gw, ncyc=ncyc, wt=wt, wlen=wlen, woverlap=woverlap, w=w)
         s_env_m = median(s_env_m, dims=2)
         s_env_u = median(s_env_u, dims=2)
         s_env_l = median(s_env_l, dims=2)
@@ -980,7 +980,7 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
     else
         # mean over channels and epochs
 
-        h_env_m, h_env_u, h_env_l, _ = henv_mean(obj, dims=1, d=d)
+        h_env_m, h_env_u, h_env_l, _ = henv_mean(obj, ch=ch, dims=1, d=d)
         h_env_m = mean(h_env_m, dims=2)
         h_env_u = mean(h_env_u, dims=2)
         h_env_l = mean(h_env_l, dims=2)
@@ -1058,7 +1058,7 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     else
         # median over channels and epochs
 
-        h_env_m, h_env_u, h_env_l, _ = henv_median(obj, dims=1, d=d)
+        h_env_m, h_env_u, h_env_l, _ = henv_median(obj, ch=ch, dims=1, d=d)
         h_env_m = median(h_env_m, dims=2)
         h_env_u = median(h_env_u, dims=2)
         h_env_l = median(h_env_l, dims=2)

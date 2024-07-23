@@ -29,26 +29,12 @@ Electrode locations:
 """
 function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
-    f_labels = lowercase.(locs[!, :label])
-    e_labels = lowercase.(labels(obj))
-    no_match = setdiff(e_labels, f_labels)
-
+    no_match = setdiff(labels(obj), locs[!, :label])
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.")
     locs = Base.filter(:label => in(labels(obj)), locs)
-    
-    labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in eachindex(e_labels)
-        for idx2 in eachindex(f_labels)
-            e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
-        end
-    end
-    for idx in length(labels_idx):-1:1
-        labels_idx[idx] == 0 && deleteat!(labels_idx, idx)
-    end
-
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.locs = Base.filter(:label => in(labels(obj)), locs)
+    obj_new.locs = locs
 
     # add entry to :history field
     push!(obj_new.history, "add_locs(OBJ, locs)")

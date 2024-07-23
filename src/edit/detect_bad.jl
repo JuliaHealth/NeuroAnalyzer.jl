@@ -316,11 +316,10 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
         chs = get_channel(obj, type=["eeg", "seeg", "ecog", "meg", "mag", "grad"])
         @assert length(setdiff(ch_list, chs)) == 0 "ch must contain only signal channels."
-
-        chs = intersect(obj.locs[!, :label], labels(obj)[chs])
+        locs = _ch_locs(obj, ch_list)
+        chs = intersect(ch_list, obj.locs[!, :label])
         locs = Base.filter(:label => in(chs), obj.locs)
-        @assert length(ch) == nrow(locs) "Some channels do not have locations."
-
+        @assert length(ch_list) == nrow(locs) "Some channels do not have locations."
         ch_n = length(ch)
         ep_n = nepochs(obj)
         
