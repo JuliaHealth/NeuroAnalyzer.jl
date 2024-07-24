@@ -1,7 +1,14 @@
 _xlims(t::Union{AbstractVector, AbstractRange}) = floor(t[1], digits=2), ceil(t[end], digits=2)
 function _ylims(s::AbstractVector)
-    max = round(maximum(s) * 1.5, digits=-2)
-    min = round(minimum(s) * 1.5, digits=-2)
+    if maximum(abs.(s)) > 100
+        n = 2
+    elseif maximum(abs.(s)) >= 0
+        n = 1
+    elseif maximum(abs.(s)) < 0
+        n = 0
+    end
+    max = round(maximum(s) * 1.5, digits=-n)
+    min = round(minimum(s) * 1.5, digits=-n)
     if abs(max) > abs(min)
         return (-abs(max), abs(max))
     else

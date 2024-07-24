@@ -10,6 +10,7 @@ Interactive view of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
 - `ep::Int64=1`: initial epoch to display
 - `zoom::Real=10`: how many seconds are displayed in one segment
 - `bad::Bool=true`: show bad channels
@@ -19,13 +20,13 @@ Interactive view of continuous or epoched signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview(obj::NeuroAnalyzer.NEURO; ep::Int64=1, zoom::Real=10, bad::Bool=true, snap::Bool=true)
+function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, zoom::Real=10, bad::Bool=true, snap::Bool=true)
 
     seg = nothing
     if nepochs(obj) == 1
-        seg = iview_cont(obj, zoom=zoom, bad=bad, snap=snap)
+        seg = iview_cont(obj, mch=mch, zoom=zoom, bad=bad, snap=snap)
     else
-        seg = iview_ep(obj, ep=ep, bad=bad)
+        seg = iview_ep(obj, mch=mch, ep=ep, bad=bad)
     end
 
     return seg
@@ -40,6 +41,7 @@ Interactive view of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
 - `zoom::Real=10`: how many seconds are displayed in one segment
 - `bad::Bool=true`: list of bad channels; if not false -- plot bad channels using this list
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
@@ -48,7 +50,7 @@ Interactive view of continuous signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, snap::Bool=true)
+function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)
 
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
 
@@ -64,15 +66,24 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
     quit = false
     scale = true
 
-    if length(ch) > 20
-        ch_first = 1
-        ch_last = ch_first + 19
+    if mch
+        if length(ch) > 20
+            ch_first = 1
+            ch_last = ch_first + 19
+        else
+            ch_first = 1
+            ch_last = ch[end]
+        end
     else
         ch_first = 1
-        ch_last = length(ch)
+        ch_last = ch[end]
     end
 
-    p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], title="", bad=bad)
+    if mch
+        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], title="", bad=bad)
+    else
+        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], title="Channel: $(cl[ch_first])")
+    end
     win = GtkWindow("NeuroAnalyzer: iview_cont()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -101,13 +112,18 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
     set_gtk_property!(bt_help, :tooltip_text, "Show keyboard shortcuts")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    if length(ch) > 20
-        ch_slider = GtkScale(false, ch[ch_first]:(ch[end] - 19))
+    if !mch
+        ch_slider = GtkScale(false, 1:nchannels(obj))
         set_gtk_property!(ch_slider, :draw_value, false)
     else
-        ch_slider = GtkScale(false, ch[ch_first]:ch[end])
-        set_gtk_property!(ch_slider, :draw_value, false)
-        set_gtk_property!(ch_slider, :sensitive, false)
+        if length(ch) > 20
+            ch_slider = GtkScale(false, ch[ch_first]:(ch[end] - 19))
+            set_gtk_property!(ch_slider, :draw_value, false)
+        else
+            ch_slider = GtkScale(false, ch[1]:ch[end])
+            set_gtk_property!(ch_slider, :draw_value, false)
+            set_gtk_property!(ch_slider, :sensitive, false)
+        end
     end
     set_gtk_property!(ch_slider, :tooltip_text, "Scroll channels")
     set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
@@ -146,46 +162,43 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
-        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                       ch=cl[ch_first:ch_last],
-                                                       seg=(time1, time2),
-                                                       s_pos=(ts1, ts2),
-                                                       mono=mono,
-                                                       title="",
-                                                       scale=scale,
-                                                       bad=bad))
+        if mch
+            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
+                                                           ch=cl[ch_first:ch_last],
+                                                           seg=(time1, time2),
+                                                           s_pos=(ts1, ts2),
+                                                           mono=mono,
+                                                           title="",
+                                                           scale=scale))
+        else
+            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
+                                                           ch=cl[ch_first],
+                                                           seg=(time1, time2),
+                                                           s_pos=(ts1, ts2),
+                                                           mono=mono,
+                                                           title="Channel: $(cl[ch_first])",
+                                                           scale=scale,
+                                                           bad=bad))
+        end
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
     end
 
-    can.mouse.button2press = @guarded (widget, event) -> begin
-        x_pos = event.x
-        y_pos = event.y
-        ch_n = length(ch)
-        ch_x1 = 0
-        ch_x2 = 82
-        ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-        ch_idx = nothing
-        for idx in eachindex(ch_y)
-            if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
-                ch_idx = idx
-            end
-        end
-    end
-
     can.mouse.button1press = @guarded (widget, event) -> begin
         x_pos = event.x
         if x_pos < 82
-            y_pos = event.y
-            ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-            ch_idx = nothing
-            for idx in eachindex(ch_y)
-                if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
-                    ch_idx = idx + ch_first - 1
+            if mch
+                y_pos = event.y
+                ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
+                ch_idx = nothing
+                for idx in eachindex(ch_y)
+                    if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
+                        ch_idx = idx + ch_first - 1
+                    end
                 end
+                !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
             end
-            !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
         else
             time_current = get_gtk_property(entry_time, :value, Float64)
             x_pos > 1172 && (x_pos = 1172)
@@ -205,16 +218,18 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
     can.mouse.button3press = @guarded (widget, event) -> begin
         x_pos = event.x
         if x_pos < 82
-            y_pos = event.y
-            ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-            ch_idx = nothing
-            for idx in eachindex(ch_y)
-                if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
-                    ch_idx = idx + ch_first - 1
+            if mch
+                y_pos = event.y
+                ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
+                ch_idx = nothing
+                for idx in eachindex(ch_y)
+                    if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
+                        ch_idx = idx + ch_first - 1
+                    end
                 end
+                !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
+                draw(can)
             end
-            !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
-            draw(can)
         else
             time_current = get_gtk_property(entry_time, :value, Float64)
             x_pos = event.x
@@ -256,13 +271,23 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
                     set_gtk_property!(entry_time, :value, time_current)
                 end
             else
-                if ch_last < length(ch)
-                    ch_first += 1
-                    ch_last += 1
-                    Gtk.@sigatom begin
-                        GAccessor.value(ch_slider, ch_first)
+                if mch
+                    if ch_last < length(ch)
+                        ch_first += 1
+                        ch_last += 1
+                        Gtk.@sigatom begin
+                            GAccessor.value(ch_slider, ch_first)
+                        end
+                        draw(can)
                     end
-                    draw(can)
+                else
+                    if ch_first < length(ch)
+                        ch_first += 1
+                        Gtk.@sigatom begin
+                            GAccessor.value(ch_slider, ch_first)
+                        end
+                        draw(can)
+                    end
                 end
             end
         elseif event.direction == 0 # up
@@ -330,7 +355,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
 
     signal_connect(ch_slider, "value-changed") do widget, others...
         ch_first = round(Int64, GAccessor.value(ch_slider))
-        ch_last = ch_first + 19
+        length(ch) > 20 && (ch_last = ch_first + 19)
         draw(can)
     end
 
@@ -396,7 +421,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    if mch
+        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    else
+        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
+    end
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -405,8 +435,6 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        @show k
-        @show s
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
@@ -417,13 +445,23 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
                 draw(can)
             end
         elseif k == 0x0000ff56 # Page Down
-            if ch_last < length(ch)
-                ch_first += 1
-                ch_last += 1
-                Gtk.@sigatom begin
-                    GAccessor.value(ch_slider, ch_first)
+            if mch
+                if ch_last < length(ch)
+                    ch_first += 1
+                    ch_last += 1
+                    Gtk.@sigatom begin
+                        GAccessor.value(ch_slider, ch_first)
+                    end
+                    draw(can)
                 end
-                draw(can)
+            else
+                if ch_first < length(ch)
+                    ch_first += 1
+                    Gtk.@sigatom begin
+                        GAccessor.value(ch_slider, ch_first)
+                    end
+                    draw(can)
+                end
             end
         elseif k == 0x0000005b # [
             if zoom > 1
@@ -432,7 +470,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            if mch
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            else
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
+            end
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
@@ -445,7 +488,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            if mch
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            else
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
+            end
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -489,6 +537,12 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; zoom::Real=10, bad::Bool=true, sna
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
+            elseif k == 0x00000070 # p
+                if !mch
+                    _info("Playing current segment as audio")
+                    time_current = get_gtk_property(entry_time, :value, Float64)
+                    play(obj, ch=cl[ch_first], seg=(time_current, time_current+zoom), ep=1)
+                end
             elseif k == 0x0000ff0d # Enter
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -581,6 +635,7 @@ Interactive view of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
 - `ep::Int64=1`: initial epoch to display
 - `bad::Bool=true`: list of bad channels; if not false -- plot bad channels using this list
 - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
@@ -589,7 +644,7 @@ Interactive view of epoched signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::Bool=true)
+function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bool=true, snap::Bool=true)
 
     @assert nepochs(obj) > 1 "iview_cont() should be used for continuous object."
     _check_epochs(obj, ep)
@@ -603,15 +658,24 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
     scale = true
     zoom = epoch_len(obj)
 
-    if length(ch) > 20
-        ch_first = 1
-        ch_last = ch_first + 19
+    if mch
+        if length(ch) > 20
+            ch_first = 1
+            ch_last = ch_first + 19
+        else
+            ch_first = 1
+            ch_last = ch[end]
+        end
     else
         ch_first = 1
-        ch_last = length(ch)
+        ch_last = ch[end]
     end
 
-    p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], ep=ep, title="", bad=bad)
+    if mch
+        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], ep=ep, title="", bad=bad)
+    else
+        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], ep=ep, title="Channel: $(cl[ch_first])")
+    end
     win = GtkWindow("NeuroAnalyzer: iview_ep()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
@@ -644,13 +708,18 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
     set_gtk_property!(bt_ts, :tooltip_text, "Return selected time segment")
     bt_delete = GtkButton("Delete epoch")
     set_gtk_property!(bt_delete, :tooltip_text, "Delete current epoch")
-    if length(ch) > 20
-        ch_slider = GtkScale(false, ch[ch_first]:(ch[end] - 19))
+    if !mch
+        ch_slider = GtkScale(false, 1:nchannels(obj))
         set_gtk_property!(ch_slider, :draw_value, false)
     else
-        ch_slider = GtkScale(false, ch[ch_first]:ch[end])
-        set_gtk_property!(ch_slider, :draw_value, false)
-        set_gtk_property!(ch_slider, :sensitive, false)
+        if length(ch) > 20
+            ch_slider = GtkScale(false, ch[ch_first]:(ch[end] - 19))
+            set_gtk_property!(ch_slider, :draw_value, false)
+        else
+            ch_slider = GtkScale(false, ch[1]:ch[end])
+            set_gtk_property!(ch_slider, :draw_value, false)
+            set_gtk_property!(ch_slider, :sensitive, false)
+        end
     end
     set_gtk_property!(ch_slider, :tooltip_text, "Scroll channels")
     set_gtk_property!(ch_slider, :vexpand, true)
@@ -676,14 +745,24 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
-        show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                       ch=cl[ch_first:ch_last],
-                                                       ep=ep,
-                                                       s_pos=(ts1, ts2),
-                                                       mono=mono,
-                                                       title="",
-                                                       scale=scale,
-                                                       bad=bad))
+        if mch
+            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
+                                                           ch=cl[ch_first:ch_last],
+                                                           ep=ep,
+                                                           s_pos=(ts1, ts2),
+                                                           mono=mono,
+                                                           title="",
+                                                           scale=scale))
+        else
+            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
+                                                           ch=cl[ch_first],
+                                                           ep=ep,
+                                                           s_pos=(ts1, ts2),
+                                                           mono=mono,
+                                                           title="Channel: $(cl[ch_first])",
+                                                           scale=scale,
+                                                           bad=bad))
+        end
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -692,15 +771,17 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
     can.mouse.button1press = @guarded (widget, event) -> begin
         x_pos = event.x
         if x_pos < 82
-            y_pos = event.y
-            ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-            ch_idx = nothing
-            for idx in eachindex(ch_y)
-                if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
-                    ch_idx = idx + ch_first - 1
+            if mch
+                y_pos = event.y
+                ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
+                ch_idx = nothing
+                for idx in eachindex(ch_y)
+                    if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
+                        ch_idx = idx + ch_first - 1
+                    end
                 end
+                !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
             end
-            !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
         else
             x_pos > 1172 && (x_pos = 1172)
             ts1 = obj.epoch_time[1] + (x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
@@ -715,17 +796,19 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
     can.mouse.button3press = @guarded (widget, event) -> begin
         x_pos = event.x
         if x_pos < 82
-            ep = get_gtk_property(entry_epoch, :value, Int64)
-            y_pos = event.y
-            ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-            ch_idx = nothing
-            for idx in eachindex(ch_y)
-                if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
-                    ch_idx = idx + ch_first - 1
+            if mch
+                ep = get_gtk_property(entry_epoch, :value, Int64)
+                y_pos = event.y
+                ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
+                ch_idx = nothing
+                for idx in eachindex(ch_y)
+                    if y_pos > ch_y[idx] && y_pos < ch_y[idx] + 15 && x_pos > 0 && x_pos < 82
+                        ch_idx = idx + ch_first - 1
+                    end
                 end
+                !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep])
+                draw(can)
             end
-            !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep])
-            draw(can)
         else
             x_pos > 1172 && (x_pos = 1172)
             ts2 = obj.epoch_time[1] + ((x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
@@ -749,13 +832,23 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
                     end
                 end
             else
-                if ch_last < length(ch)
-                    ch_first += 1
-                    ch_last += 1
-                    Gtk.@sigatom begin
-                        GAccessor.value(ch_slider, ch_first)
+                if mch
+                    if ch_last < length(ch)
+                        ch_first += 1
+                        ch_last += 1
+                        Gtk.@sigatom begin
+                            GAccessor.value(ch_slider, ch_first)
+                        end
+                        draw(can)
                     end
-                    draw(can)
+                else
+                    if ch_first < length(ch)
+                        ch_first += 1
+                        Gtk.@sigatom begin
+                            GAccessor.value(ch_slider, ch_first)
+                        end
+                        draw(can)
+                    end
                 end
             end
         elseif event.direction == 0 # up
@@ -843,7 +936,11 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to first epoch\nEnd\tgo to last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete current epoch\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    if mch
+        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to first epoch\nEnd\tgo to last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    else
+        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to first epoch\nEnd\tgo to last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nplay current epoch as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    end
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -862,13 +959,23 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
                 draw(can)
             end
         elseif k == 0x0000ff56 # Page Down
-            if ch_last < length(ch)
-                ch_first += 1
-                ch_last += 1
-                Gtk.@sigatom begin
-                    GAccessor.value(ch_slider, ch_first)
+            if mch
+                if ch_last < length(ch)
+                    ch_first += 1
+                    ch_last += 1
+                    Gtk.@sigatom begin
+                        GAccessor.value(ch_slider, ch_first)
+                    end
+                    draw(can)
                 end
-                draw(can)
+            else
+                if ch_first < length(ch)
+                    ch_first += 1
+                    Gtk.@sigatom begin
+                        GAccessor.value(ch_slider, ch_first)
+                    end
+                    draw(can)
+                end
             end
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
@@ -888,6 +995,12 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; ep::Int64=1, bad::Bool=true, snap::B
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
+            elseif k == 0x00000070 # p
+                if !mch
+                    _info("Playing current epoch as audio")
+                    ep = get_gtk_property(entry_epoch, :value, Int64)
+                    play(obj, ch=cl[ch_first], seg=(0, epoch_len(obj) / sr(obj)), ep=ep)
+                end
             elseif k == 0x0000ff0d # Enter
                 quit = false
                 Gtk.destroy(win)
