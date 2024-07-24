@@ -14,7 +14,7 @@ Interactive play channel signal as audio
 """
 function play(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true)
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj, ch=ch)[1]
     _check_epochs(obj, ep)
 
     s = @views obj.data[ch, :, ep]

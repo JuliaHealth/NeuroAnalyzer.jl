@@ -12,9 +12,9 @@ Interactive play channel signal as audio
 - `ep::Int64`: epoch number
 - `mono::Bool=true`: play mono or stereo
 """
-function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true, maxvol::Bool=false)
+function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true)
 
-    ch = get_channel(obj, ch=ch)
+    ch_idx = get_channel(obj, ch=ch)
     _check_epochs(obj, ep)
 
     p = NeuroAnalyzer.plot(obj, ch=ch, ep=ep, mono=true, title="", scale=false)
@@ -54,7 +54,7 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true,
     set_gtk_property!(bt_play, :tooltip_text, "Play current epoch")
     bt_close = GtkButton("✖")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    lab_ch = GtkLabel("$(string(ch))")
+    lab_ch = GtkLabel("$ch")
     set_gtk_property!(lab_ch, :halign, 0)
     g[1:14, 1] = can
     g[1, 2] = bt_chup
@@ -79,11 +79,11 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true,
         ep = get_gtk_property(entry_epoch, :value, Int64)
         ctx = getgc(can)
         show(NeuroAnalyzer.io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                                        ch=ch,
-                                                                        ep=ep,
-                                                                        mono=true,
-                                                                        scale=false,
-                                                                        title=""))
+                                                                     ch=ch,
+                                                                     ep=ep,
+                                                                     mono=true,
+                                                                     scale=false,
+                                                                     title=""))
         img = read_from_png(NeuroAnalyzer.io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -91,22 +91,22 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true,
 
     can.mouse.scroll = @guarded (widget, event) -> begin
         if event.direction == 1 # down
-            if ch < nchannels(obj)
-                ch += 1
+            if ch_idx < nchannels(obj)
+                ch_idx += 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(string(ch))")
-                    ch > 1 && set_gtk_property!(bt_chup, :sensitive, true)
-                    ch == nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, false)
+                    set_gtk_property!(lab_ch, :label, "$(labels(obj)[ch_idx])")
+                    ch_idx > 1 && set_gtk_property!(bt_chup, :sensitive, true)
+                    ch_idx == nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, false)
                 end
                 draw(can)
             end
         elseif event.direction == 0 # up
-            if ch > 1
-                ch -= 1
+            if ch_idx > 1
+                ch_idx -= 1
                 Gtk.@sigatom begin
-                    set_gtk_property!(lab_ch, :label, "$(string(ch))")
-                    ch == 1 && set_gtk_property!(bt_chup, :sensitive, false)
-                    ch < nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, true)
+                    set_gtk_property!(lab_ch, :label, "$(labels(obj)[ch_idx])")
+                    ch_idx == 1 && set_gtk_property!(bt_chup, :sensitive, false)
+                    ch_idx < nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, true)
                 end
                 draw(can)
             end
@@ -114,24 +114,24 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true,
     end
 
     signal_connect(bt_chdown, "clicked") do widget
-        if ch < nchannels(obj)
-            ch += 1
+        if ch_idx < nchannels(obj)
+            ch_idx += 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(string(ch))")
-                ch > 1 && set_gtk_property!(bt_chup, :sensitive, true)
-                ch == nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, false)
+                set_gtk_property!(lab_ch, :label, "$(labels(obj)[ch_idx])")
+                ch_idx > 1 && set_gtk_property!(bt_chup, :sensitive, true)
+                ch_idx == nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, false)
             end
             draw(can)
         end
     end
 
     signal_connect(bt_chup, "clicked") do widget
-        if ch > 1
-            ch -= 1
+        if ch_idx > 1
+            ch_idx -= 1
             Gtk.@sigatom begin
-                set_gtk_property!(lab_ch, :label, "$(string(ch))")
-                ch == 1 && set_gtk_property!(bt_chup, :sensitive, false)
-                ch < nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, true)
+                set_gtk_property!(lab_ch, :label, "$(labels(obj)[ch_idx])")
+                ch_idx == 1 && set_gtk_property!(bt_chup, :sensitive, false)
+                ch_idx < nchannels(obj) && set_gtk_property!(bt_chdown, :sensitive, true)
             end
             draw(can)
         end
@@ -175,7 +175,7 @@ function iplay(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, mono::Bool=true,
 
     signal_connect(bt_play, "clicked") do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
-        s = @views obj.data[ch, :, ep]
+        s = @views obj.data[ch_idx, :, ep]
         fs = sr(obj)
         !mono && (s = [s s])
         wavplay(s, fs)
