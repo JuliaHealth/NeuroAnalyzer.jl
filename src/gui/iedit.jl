@@ -1,20 +1,23 @@
 export iedit
 
 """
-    iedit(obj)
+    iedit(obj; <keyword arguments>)
 
 Interactive edit signal channels properties and locations.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::String`: initial channel
 """
-function iedit(obj::NeuroAnalyzer.NEURO)
+function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
 
     @assert datatype(obj) == "eeg" "Currently this function only works for EEG data."
+    ch = get_channel(obj, ch=ch)
+    @assert length(ch) == 1 "ch must be a single channel."
+    current_channel = ch[1]
 
     # TO DO: select channel by clicking its location
-    # TO DO: generate locations
     # TO DO: other recording types
 
     obj_new = deepcopy(obj)
@@ -74,7 +77,6 @@ function iedit(obj::NeuroAnalyzer.NEURO)
         return nothing
     end
 
-    current_channel = 1
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:unit]
     ch_labels = labels(obj_new)
