@@ -41,7 +41,7 @@ function import_recording(file_name::String; detect_type::Bool=true, n::Int64=0)
     splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".nwb" && return import_nwb(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".fiff" && return import_fiff(file_name)
     splitext(file_name)[2] == ".snirf" && return import_snirf(file_name, n=n)
     splitext(file_name)[2] == ".nirs" && return import_nirs(file_name)
 

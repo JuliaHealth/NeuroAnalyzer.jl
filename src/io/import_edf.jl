@@ -83,68 +83,48 @@ function import_edf(file_name::String; detect_type::Bool=true)
     header = UInt8[]
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
-    end
+    [transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)]) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
-    end
+    [units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)]) for idx in 1:ch_n]
     units = replace(lowercase.(units), "uv"=>"μV")
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
+    [physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
+    [physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
+    [digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
+    [digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
-    end
+    [prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)]) for idx in 1:ch_n]
 
     header = UInt8[]
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
+    [samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
 
     close(fid)
 
     clabels = _clean_labels(clabels)
-    if detect_type
-        ch_type = _set_channel_types(clabels, "eeg")
-    else
-        ch_type = repeat(["eeg"], ch_n)
-    end
+    ch_type = detect_type ? _set_channel_types(clabels, "eeg") : repeat(["eeg"], ch_n)
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
     if file_type == "EDF"

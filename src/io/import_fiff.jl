@@ -2,7 +2,7 @@ export load_fiff
 export import_fiff
 
 """
-    load_fiff(file_name; <keyword arguments>)
+    load_fiff(file_name)
 
 Load FIFF (Functional Image File Format) file and return FIFF object.
 
@@ -355,20 +355,19 @@ function load_fiff(file_name::String)
 end
 
 """
-    import_fiff(file_name; <keyword arguments>)
+    import_fiff(file_name)
 
 Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function import_fiff(file_name::String; detect_type::Bool=true)
+function import_fiff(file_name::String)
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

@@ -63,14 +63,10 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         ch_n = reinterpret(Int32, header[253:256])[1]
 
         clabels = String[]
-        for idx in 1:ch_n
-            push!(clabels, _v2s(_fread(fid, 16, :c)))
-        end
+        [push!(clabels, _v2s(_fread(fid, 16, :c))) for idx in 1:ch_n]
 
         transducers = String[]
-        for idx in 1:ch_n
-            push!(transducers, _v2s(_fread(fid, 80, :c)))
-        end
+        [push!(transducers, _v2s(_fread(fid, 80, :c))) for idx in 1:ch_n]
 
         units = String[]
         buf = UInt8[]

@@ -127,16 +127,12 @@ function import_nirx(file_name::String)
         gains_start = findfirst(startswith.(hdr, "Gains="))
         buf = hdr[gains_start + 1:gains_start + sources]
         gains = zeros(Int64, sources, detectors)
-        for idx in eachindex(buf)
-            gains[idx, :] = parse.(Int64, split(buf[idx], '\t'))
-        end
+        [gains[idx, :] = parse.(Int64, split(buf[idx], '\t')) for idx in eachindex(buf)]
     else
         buf = readlines(splitext(file_name)[1] * ".set")
         buf = split.(buf, ' ')
         gains = zeros(Int64, sources, detectors)
-        for idx in eachindex(buf)
-            gains[idx, :] = parse.(Int64, buf[idx])
-        end
+        [gains[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
     end
 
     # parse opt_pairs
@@ -144,9 +140,7 @@ function import_nirx(file_name::String)
     pairs = split(replace(lowercase.(pairs), "s-d-key="=>""), ",")[1:end - 1]
     ch_n = length(pairs)
     opt_pairs = zeros(Int64, ch_n, 2)
-    for idx in 1:ch_n
-        opt_pairs[idx, :] = [parse(Int64, split(pairs[idx], "-")[1]), parse(Int64, split(split(pairs[idx], "-")[2], ":")[1])]
-    end
+    [opt_pairs[idx, :] = [parse(Int64, split(pairs[idx], "-")[1]), parse(Int64, split(split(pairs[idx], "-")[2], ":")[1])] for idx in 1:ch_n]
     ch_mask_start = findfirst(startswith.(lowercase.(hdr), "s-d-mask="))
     masks = hdr[ch_mask_start + 1:ch_mask_start + sources]
     masks = split.(masks, '\t')
@@ -171,9 +165,7 @@ function import_nirx(file_name::String)
     chd = replace(lowercase.(chd), "chandis="=>"")
     chd = split.(chd, '\t')
     channel_distance = zeros(length(chd))
-    for idx in eachindex(chd)
-        channel_distance[idx] = parse(Float64, chd[idx])
-    end
+    [channel_distance[idx] = parse(Float64, chd[idx]) for idx in eachindex(chd)]
 
     # read raw light intensity channels (V)
     nirs_int = Matrix(CSV.read(splitext(file_name)[1] * ".wl1", header=false, stringtype=String, DataFrame))'[ch_masks, :]
@@ -201,39 +193,27 @@ function import_nirx(file_name::String)
         buf = hdr[events_start + 1:events_end - 2]
         buf = split.(buf, '\t')
         events = zeros(Float64, length(buf), length(buf[1]))
-        for idx in eachindex(buf)
-            events[idx, :] = parse.(Float64, buf[idx])
-        end
+        [events[idx, :] = parse.(Float64, buf[idx]) for idx in eachindex(buf)]
         stim_onset = Int.(events[:, 3])
         stim_id = string.(Int.(events[:, 2]))
     elseif isfile(splitext(file_name)[1] * ".evt")
         buf = readlines(splitext(file_name)[1] * ".evt")
         buf = split.(buf, '\t')
         events = zeros(Int64, length(buf), length(buf[1]))
-        for idx in eachindex(buf)
-            events[idx, :] = parse.(Int64, buf[idx])
-        end
+        [events[idx, :] = parse.(Int64, buf[idx]) for idx in eachindex(buf)]
         # what are those 0s and 1s in events[] ???
         stim_onset = events[:, 1]
         stim_id = String[]
-        for idx in 1:size(events, 1)
-            push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end])))
-        end
+        [push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for idx in 1:size(events, 1)]
     end
 
-    if stim_onset !== nothing
-        markers = DataFrame(:id=>stim_id, :start=>stim_onset, :length=>repeat([1], length(stim_id)), :description=>repeat(["stim"], length(stim_id)), :channel=>zeros(Int64, length(stim_id)))
-    else
-        markers = DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :description=>nothing, :channel=>nothing)
-    end
+    markers = isnothing(stim_onset) ? DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :description=>nothing, :channel=>nothing) : DataFrame(:id=>stim_id, :start=>stim_onset, :length=>repeat([1], length(stim_id)), :description=>repeat(["stim"], length(stim_id)), :channel=>zeros(Int64, length(stim_id)))
 
     # read data ???
     buf = readlines(splitext(file_name)[1] * ".dat")
     buf_r = length(parse.(Float64, split(buf[1], ' ')))
     data = zeros(buf_r, length(buf))
-    for idx in eachindex(buf)
-        data[:, idx] = parse.(Float64, split(buf[idx], ' '))
-    end
+    [data[:, idx] = parse.(Float64, split(buf[idx], ' ')) for idx in eachindex(buf)]
 
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
@@ -248,9 +228,7 @@ function import_nirx(file_name::String)
     opt_labels = string.(vcat(src_labels, det_labels))
 
     clabels = repeat([""], ch_n)
-    for idx in 1:ch_n
-        clabels[idx] = src_labels[opt_pairs[idx, :][1]] * "_" * det_labels[opt_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]])
-    end
+    [clabels[idx] = src_labels[opt_pairs[idx, :][1]] * "_" * det_labels[opt_pairs[idx, :][2]] * " " * string(wavelengths[wavelength_index[idx]]) for idx in 1:ch_n]
     clabels = replace.(clabels, ".0"=>"")
 
     # probes["probeInfo"]["probes"]["coords_c2"]
@@ -288,20 +266,8 @@ function import_nirx(file_name::String)
     else
         x = pos3d[1, :]
     end
-    if src_pos3d === nothing
-        if src_pos2d === nothing
-            y = zeros(length(opt_labels))
-        else
-            y = pos2d[2, :]
-        end
-    else
-        y = pos3d[2, :]
-    end
-    if src_pos3d === nothing
-        z = zeros(length(opt_labels))
-    else
-        z = pos3d[3, :]
-    end
+    y = isnothing(src_pos3d) ? zeros(length(opt_labels)) : pos2d[2, :]
+    z = isnothing(src_pos3d) ? zeros(length(opt_labels)) : pos3d[3, :]
     # swap x and y
     # x, y = y, x
     # normalize to a unit-sphere
