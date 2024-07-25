@@ -1,3 +1,14 @@
+_i16i64(x) = Int64(ntoh.(reinterpret(Int16, x)[1]))
+_i32i64(x) = Int64(ntoh.(reinterpret(Int32, x)[1]))
+_f16f64(x) = Float64(ntoh.(reinterpret(Float16, x)[1]))
+_f32f64(x) = Float64(ntoh.(reinterpret(Float32, x)[1]))
+_f64f64(x) = Float64(ntoh.(reinterpret(Float64, x)[1]))
+_i16f64(x) = Float64(ntoh.(reinterpret(Int16, x)[1]))
+_i32f64(x) = Float64(ntoh.(reinterpret(Int32, x)[1]))
+_i8i8(x) = ntoh.(reinterpret(Int8, x)[1])
+_ui32i32(x) = ntoh.(reinterpret(UInt32, x)[1])
+_i32i32(x) = ntoh.(reinterpret(Int32, x)[1])
+
 _find_fiff_tag(t::String) = fiff_tags[:id][findfirst(isequal(t), fiff_tags[:tag])]
 _find_fiff_tag(n::Int64) = fiff_tags[:tag][findfirst(isequal(n), fiff_tags[:id])]
 _find_fiff_block(t::String) = fiff_blocks[:id][findfirst(isequal(t), fiff_blocks[:block])]
@@ -74,11 +85,11 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
     if fs_mask == 0x00000000 # scalar
         d = Float64[]
         if df == "float"
-            [push!(d, Float64(ntoh.(reinterpret(Float16, buf[idx:(idx + 1)])[1]))) for idx in 1:4:length(buf)]
+            [push!(d, _f16f64(buf[idx:(idx + 1)])) for idx in 1:4:length(buf)]
         elseif df == "old_pack"
-            a = Float64(ntoh.(reinterpret(Float32, buf[1:4])[1]))
-            b = Float64(ntoh.(reinterpret(Float32, buf[5:8])[1]))
-            [push!(d, Float64(ntoh.(reinterpret(Int16, buf[idx:(idx + 1)])[1]))) for idx in 9:2:length(buf)]
+            a = _f32f64(buf[1:4])
+            b = _f32f64(buf[5:8])
+            [push!(d, _i16f64(buf[idx:(idx + 1)])) for idx in 9:2:length(buf)]
             d = a .* (d .+ b)
         else
             _warn("scalar of $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
@@ -86,52 +97,52 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
     elseif fs_mask == 0x40000000 # matrix
         mc_mask = fb & 0x00FF0000
         if mc_mask == 0x00000000 # dense
-            n = ntoh.(reinterpret(Int32, buf[(end - 3):end]))[1]
+            n = _i32i32(buf[(end - 3):end])
             dim = Int64[]
             dims = buf[(end - 5 * n - 1):(end - 4)]
-            [push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1]) for dim_idx in 1:4:length(dims)]
+            [push!(dim, _i32i32(dims[dim_idx:(dim_idx + 3)])) for dim_idx in 1:4:length(dims)]
             reverse!(dim)
             dim = ntuple(i -> dim[i], Val(length(dim)))
             tmp = buf[1:(end - length(dims) - 4)]
             d = Float64[]
             if df == "float"
-                [push!(d, Float64(ntoh.(reinterpret(Float32, tmp[idx:(idx + 3)])[1]))) for idx in 1:4:length(tmp)]
+                [push!(d, _f32f64(tmp[idx:(idx + 3)])) for idx in 1:4:length(tmp)]
             elseif df == "int32"
-                [push!(d, Float64(ntoh.(reinterpret(Int32, tmp[idx:(idx + 3)])[1]))) for idx in 1:4:length(tmp)]
+                [push!(d, _i32f64(tmp[idx:(idx + 3)])) for idx in 1:4:length(tmp)]
             elseif df == "old_pack"
-                a = Float64(ntoh.(reinterpret(Float32, tmp[1:4])[1]))
-                b = Float64(ntoh.(reinterpret(Float32, tmp[5:8])[1]))
-                [push!(d, Float64(ntoh.(reinterpret(Int16, tmp[idx:(idx + 1)])[1]))) for idx in 9:2:length(tmp)]
+                a = _f32f64(tmp[1:4])
+                b = _f32f64(tmp[5:8])
+                [push!(d, _i16f64(tmp[idx:(idx + 1)])) for idx in 9:2:length(tmp)]
                 d = a .* (d .+ b)
             else
                 _warn("matrix of $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
             end
             d = reshape(d, dim[1], dim[2])
         elseif mc_mask == 0x00100000 # sparse, column-compressed
-            n = ntoh.(reinterpret(Int32, buf[(end - 3):end]))[1]
+            n = _i32i32(buf[(end - 3):end])
             dim = Int64[]
             dims = buf[(end - 5 * n - 1):(end - 4)]
-            [push!(dim, ntoh.(reinterpret(Int32, dims[dim_idx:(dim_idx + 3)]))[1]) for dim_idx in 1:4:length(dims)]
+            [push!(dim, _i32i32(dims[dim_idx:(dim_idx + 3)])) for dim_idx in 1:4:length(dims)]
             reverse!(dim)
             dim = ntuple(i -> dim[i], Val(length(dim)))
             tmp = buf[1:(end - length(dims) - 4)]
-            nz = ntoh.(reinterpret(Int32, tmp[(end - 3):end]))[1]
+            nz = _i32i32(tmp[(end - 3):end])
             tmp = buf[1:(end - length(dims) - 8)]
-            nz = ntoh.(reinterpret(Int32, tmp[(end - 3):end]))[1]
+            nz = _i32i32(tmp[(end - 3):end])
             tmp = buf[1:(end - length(dims) - 12)]
             col_start_idx = Int64[]
             l = length(tmp[(end + 1 - dim[2] * 4):end])
-            [push!(col_start_idx, ntoh.(reinterpret(Int32, tmp[(end - l + idx):(end - l + 3 + idx)]))[1]) for idx in 1:4:length(tmp[(end + 1 - dim[2] * 4):end])]
+            [push!(col_start_idx, _i32i32(tmp[(end - l + idx):(end - l + 3 + idx)])) for idx in 1:4:length(tmp[(end + 1 - dim[2] * 4):end])]
             col_start_idx .+= 1
             tmp = buf[1:(end - l - length(dims) - 12)]
             row_idx = Int64[]
             l = length(tmp[(end + 1 - nz * 4):end])
-            [push!(row_idx, ntoh.(reinterpret(Int32, tmp[(end - l + idx):(end - l + 3 + idx)]))[1]) for idx in 1:4:length(tmp[(end + 1 - nz * 4):end])]
+            [push!(row_idx, _i32i32(tmp[(end - l + idx):(end - l + 3 + idx)])) for idx in 1:4:length(tmp[(end + 1 - nz * 4):end])]
             row_idx .+= 1
             tmp = tmp[1:(end - l)]
             if df == "float"
                 m = Float64[]
-                [push!(m, Float64(ntoh.(reinterpret(Float32, tmp[idx:(idx + 3)]))[1])) for idx in 1:4:length(tmp)]
+                [push!(m, _f32f64(tmp[idx:(idx + 3)])) for idx in 1:4:length(tmp)]
             else
                 _warn("sparse, column-compressed of $df is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
             end
