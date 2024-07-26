@@ -63,33 +63,74 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     loc_y = _s2v(loc_y)
 
     s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
-
-    if head
-        xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))
-        yt = (linspace(0, size(head_shape, 2), 25), string.(1.2:-0.1:-1.2))
+ 
+    head12 = false
+    maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5 && (head15 = true)
+    if head12
+        xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.2, 1.2, 25), digits=1)))
+        yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.2, -1.2, 25), digits=1)))
         interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
         interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
         xl = (0, size(head_shape, 1))
         yl = (0, size(head_shape, 2))
+        !head && (loc_y .= -loc_y)
+        origin = size(head_shape) ./ 2 .+ 1
+        if large
+            marker_size = length(ch) > 64 ? 5 : 10
+            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+        else
+            marker_size = length(ch) > 64 ? 2 : 4
+            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+        end
     else
-        xl = (-1.2, 1.2)
-        yl = (-1.2, 1.2)
-    end
+        if large
+            m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
+            m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
+            head_shape = m
+            xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
+            yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
+            interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
+            interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
+            xl = (0, size(head_shape, 1))
+            yl = (0, size(head_shape, 2))
+            !head && (loc_y .= -loc_y)
+            origin = size(head_shape) ./ 2 .+ 1
+            marker_size = length(ch) > 64 ? 5 : 10
+            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+            length(ch) > 64 && (ch_labels = false)
+        else
+            m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 100)
+            m[51:50+size(head_shape, 1), 51:50+size(head_shape, 2)] .= head_shape
+            head_shape = m
+            xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
+            yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
+            interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
+            interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
+            xl = (0, size(head_shape, 1))
+            yl = (0, size(head_shape, 2))
+            !head && (loc_y .= -loc_y)
+            origin = size(head_shape) ./ 2 .+ 1
+            marker_size = length(ch) > 64 ? 2 : 4
+            font_size = 4
+            ch_labels = false
+            sch_labels = false
+            grid = false
+            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+        end
+    end        
 
-    origin = size(head_shape) ./ 2
     if large
-        marker_size = 4
         font_size = 10
-        loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-        loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
         !occursin("\n", title) && title !== "" && (title *= "\n")
     else
         title=""
         cb_label=""
         marker_size = 2
         font_size = 2
-        loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-        loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
     end
 
     if large
@@ -99,11 +140,11 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 102,
-                           right_margin=0*Plots.px,
-                           bottom_margin=title == "" ? -50*Plots.px : -100*Plots.px,
-                           top_margin=title == "" ? -50*Plots.px : -100*Plots.px,
-                           left_margin=-30*Plots.px,
+                           size=size(head_shape) .+ 170,
+                           right_margin=10*Plots.px,
+                           bottom_margin=0*Plots.px,
+                           top_margin=10*Plots.px,
+                           left_margin=0*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
                            colorbar_title=cb_label,
@@ -119,19 +160,17 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 90,
+                           size=size(head_shape),
                            right_margin=-100*Plots.px,
-                           bottom_margin=5*Plots.px,
-                           top_margin=title == "" ? 50*Plots.px : 10*Plots.px,
+                           bottom_margin=-100*Plots.px,
+                           top_margin=-100*Plots.px,
                            left_margin=-100*Plots.px,
-                           titlefontsize=font_size,
-                           colorbar=cb,
-                           colorbar_title=cb_label,
-                           colorbar_tickfontsize=1,
+                           ticks_fontsize=font_size,
+                           xticks=xt,
+                           yticks=yt,
                            xlims=xl,
                            ylims=yl,
-                           title=title;
-                           kwargs...)
+                           foreground_color=:black)
         end
     else
         if cb
@@ -140,11 +179,11 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 34,
-                           right_margin=-10*Plots.px,
-                           bottom_margin=-100*Plots.px,
+                           size=size(head_shape) .+ 52,
+                           right_margin=-15*Plots.px,
+                           bottom_margin=-30*Plots.px,
                            top_margin=-10*Plots.px,
-                           left_margin=-30*Plots.px,
+                           left_margin=-20*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
                            colorbar_title=cb_label,
@@ -160,18 +199,15 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            palette=pal,
                            aspect_ratio=1,
                            size=size(head_shape),
-                           right_margin=-50*Plots.px,
-                           bottom_margin=-50*Plots.px,
-                           top_margin=-50*Plots.px,
-                           left_margin=-100*Plots.px,
-                           titlefontsize=font_size,
-                           colorbar=cb,
-                           colorbar_title=cb_label,
-                           colorbar_ticks=false,
+                           right_margin=-10*Plots.px,
+                           bottom_margin=-30*Plots.px,
+                           top_margin=-20*Plots.px,
+                           left_margin=-40*Plots.px,
+                           xticks=xt,
+                           yticks=yt,
                            xlims=xl,
                            ylims=yl,
-                           title=title;
-                           kwargs...)
+                           foreground_color=:black)
         end
     end
 
@@ -215,13 +251,17 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         if large
             cb ? head_mask = head_mask[158:end-140, 147:end-140] : head_mask = head_mask[158:end-140, 148:end-135]
             p = Plots.plot!(head_shape)
-            p = Plots.plot!(head_mask)
-            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
+            if head12
+                p = Plots.plot!(head_mask)
+                p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
+            end
         else
             head_mask = head_mask[80:end-80, 80:end-80]
             p = Plots.plot!(head_shape)
-            p = Plots.plot!(head_mask)
-            p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=5, fill=nothing, legend=false)
+            if head12
+                p = Plots.plot!(head_mask)
+                p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=5, fill=nothing, legend=false)
+            end
         end
     end
 
