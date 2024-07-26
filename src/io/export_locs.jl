@@ -3,7 +3,7 @@ export export_locs
 """
     export_locs(obj; <keyword arguments>)
 
-Export channel locations data, format is based on `file_name` extension (.ced, .locs or .tsv)
+Export channel locations data, format is based on `file_name` extension (.csv, .ced, .locs or .tsv)
 
 # Arguments
 
@@ -35,8 +35,10 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
     elseif splitext(file_name)[2] == ".tsv"
         df = DataFrame(labels=clabels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
         CSV.write(file_name, df, delim="\t", header=true)
+    elseif splitext(file_name)[2] == ".csv"
+        CSV.write(file_name, obj.locs, header=true)
     else
-        @error "$file_name format must be .ced, .locs or .tsv."
+        @error "$file_name format must be .csv, .ced, .locs or .tsv."
     end
 end
 

@@ -41,9 +41,9 @@ Preview channel locations.
 function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
-
     pal = mono ? :grays : :darktest
     locs = locs[ch, :]
+    sch_labels = ch_labels
 
     if plane === :xy
         head_shape = large ? FileIO.load(joinpath(res_path, "head_t_large.png")) : FileIO.load(joinpath(res_path, "head_t_small.png"))
@@ -86,45 +86,65 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
-    if head
-        xt = (linspace(0, size(head_shape, 1), 25), string.(-1.2:0.1:1.2))
-        yt = (linspace(0, size(head_shape, 2), 25), string.(1.2:-0.1:-1.2))
+    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
+        xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.2, 1.2, 25), digits=1)))
+        yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.2, -1.2, 25), digits=1)))
         xl = (0, size(head_shape, 1))
         yl = (0, size(head_shape, 2))
+        !head && (loc_y .= -loc_y)
+        origin = size(head_shape) ./ 2 .+ 1
+        if large
+            marker_size = length(ch) > 64 ? 5 : 10
+            font_size = 6
+            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+            length(ch) > 64 && (ch_labels = false)
+        else
+            marker_size = length(ch) > 64 ? 2 : 4
+            font_size = 4
+            ch_labels = false
+            grid = false
+            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+        end
     else
-        xt = (-1.2:0.1:1.2)
-        yt = (1.2:-0.1:-1.2)
-        xl = (-1.2, 1.2)
-        yl = (-1.2, 1.2)
+        m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
+        m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
+        head_shape = m
+        xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
+        yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
+        xl = (0, size(head_shape, 1))
+        yl = (0, size(head_shape, 2))
+        !head && (loc_y .= -loc_y)
+        origin = size(head_shape) ./ 2 .+ 1
+        if large
+            marker_size = length(ch) > 64 ? 5 : 10
+            font_size = 6
+            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+            length(ch) > 64 && (ch_labels = false)
+        else
+            marker_size = length(ch) > 64 ? 2 : 4
+            font_size = 4
+            ch_labels = false
+            sch_labels = false
+            grid = false
+            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+        end
     end
 
-    origin = size(head_shape) ./ 2
-    if large
-        marker_size = 10
-        font_size = 6
-        loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-        loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-    else
-        marker_size = 4
-        font_size = 4
-        ch_labels = false
-        grid = false
-        loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-        loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
-    end
-
-    ma = 1.0
-    ch_labels && (ma = 0.5)
+    ma = ch_labels ? 0.5 : 1.0
 
     if grid
         p = Plots.plot(grid=true,
                        framestyle=:grid,
                        palette=pal,
                        aspect_ratio=1,
-                       size=size(head_shape) .+ 35,
-                       right_margin=0*Plots.px,
+                       size=size(head_shape) .+ 50,
+                       right_margin=10*Plots.px,
                        bottom_margin=0*Plots.px,
-                       top_margin=0*Plots.px,
+                       top_margin=10*Plots.px,
                        left_margin=0*Plots.px,
                        xtickfontsize=font_size,
                        ytickfontsize=font_size,
@@ -159,11 +179,11 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 1,
+                           size=size(head_shape),
                            right_margin=-10*Plots.px,
                            bottom_margin=-30*Plots.px,
                            top_margin=-20*Plots.px,
-                           left_margin=-30*Plots.px,
+                           left_margin=-40*Plots.px,
                            xticks=xt,
                            yticks=yt,
                            xlims=xl,
@@ -222,6 +242,13 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
             end
             if idx in selected
                 Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            end
+        end
+    end
+    if sch_labels
+        for idx in eachindex(locs[!, :label])
+            if idx in selected
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] - 10, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
     end
@@ -507,11 +534,18 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
         loc_z = locs[!, :loc_z]
     end
 
-    x_lim = (-1.5, 1.5)
-    y_lim = (-1.5, 1.5)
-    z_lim = (-1.5, 1.5)
+    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
+        x_lim = (-1.5, 1.5)
+        y_lim = (-1.5, 1.5)
+        z_lim = (-1.5, 1.5)
+        plot_size = 640
+    else
+        x_lim = (-2.0, 2.0)
+        y_lim = (-2.0, 2.0)
+        z_lim = (-2.0, 2.0)
+        plot_size = 850
+    end
 
-    plot_size = 640
     marker_size = 6
     font_size = 6
 
@@ -639,7 +673,6 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
     ch = get_channel(obj, ch=ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
     ch = collect(1:nrow(locs))
 
     if selected == ""

@@ -92,6 +92,15 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
     any(occursin.("all", l)) && (l = cl)
+    if any(occursin.("meg", l))
+        idx = findfirst(isequal("meg"), l)
+        l[idx] = "mag"
+        if idx < length(l)
+            append!(l[1:idx], ["grad"; l[idx+1:end]])
+        else
+            append!(l, ["grad"])
+        end
+    end
     l_tmp = String[]
     for idx1 in eachindex(l)
         if l[idx1] in NeuroAnalyzer.channel_types

@@ -10,6 +10,7 @@ export import_locs_mat
 export import_locs_txt
 export import_locs_dat
 export import_locs_asc
+export import_locs_csv
 
 """
     import_locs(file_name)
@@ -26,6 +27,7 @@ Load channel locations. Supported formats:
 - TXT
 - DAT
 - ASC
+- CSV
 
 This is a meta-function that triggers appropriate `import_locs_*()` function. File format is detected based on file extension.
 
@@ -515,7 +517,7 @@ function import_locs_mat(file_name::String)
     clabels = string.(vec(dataset["Cnames"]))
 
     # x, y, z positions must be within -1..+1
-    x, y = _locs_norm(x, y)
+    x, y = _locs_norm(x, y) .* r
 
     z = zeros(ch_n)
     radius = zeros(length(clabels))
@@ -523,12 +525,15 @@ function import_locs_mat(file_name::String)
     radius_sph = zeros(length(clabels))
     theta_sph = zeros(length(clabels))
     phi_sph = zeros(length(clabels))
+    clabels = replace.(clabels, "MEG"=> "MEG ")
+    clabels = replace.(clabels, "  "=> " ")
+    clabels = replace.(clabels, " 0"=> " ")
 
     locs = DataFrame(:label=>clabels, :loc_radius=>radius, :loc_theta=>theta, :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>radius_sph, :loc_theta_sph=>theta_sph, :loc_phi_sph=>phi_sph)
 
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    locs_normalize!(locs)
+    # locs_normalize!(locs)
     _locs_round!(locs)
 
     return locs
@@ -725,6 +730,31 @@ function import_locs_asc(file_name::String)
     locs_cart2sph!(locs)
     locs_normalize!(locs)
     _locs_round!(locs)
+
+    return locs
+
+end
+
+"""
+    import_locs_csv(file_name)
+
+Load channel locations from CSV file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function import_locs_csv(file_name::String)
+
+    @assert isfile(file_name) "$file_name not found."
+    @assert lowercase(splitext(file_name)[2]) == ".csv" "This is not CSV file."
+
+    locs = CSV.read(file_name, header=true, delim=",", stringtype=String, DataFrame)
+    @assert names(locs) == ["label", "loc_radius", "loc_theta", "loc_x", "loc_y", "loc_z", "loc_radius_sph", "loc_theta_sph", "loc_phi_sph"] "This is not a NeuroAnalyzer locs CSV file."
 
     return locs
 

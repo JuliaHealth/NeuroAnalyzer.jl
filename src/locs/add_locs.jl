@@ -34,7 +34,10 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     locs = Base.filter(:label => in(labels(obj)), locs)
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.locs = locs
+    for idx in 1:nrow(locs)
+        lidx = findfirst(isequal(locs[idx, :label]), obj_new.locs[!, :label])
+        isa(lidx, Int64) && (obj_new.locs[lidx, :] = locs[idx, :])
+    end
 
     # add entry to :history field
     push!(obj_new.history, "add_locs(OBJ, locs)")

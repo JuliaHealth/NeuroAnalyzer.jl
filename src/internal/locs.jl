@@ -46,7 +46,7 @@ function _initialize_locs()
 end
 
 function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
-    locs_ch = get_channel(obj, ch=get_channel(obj, type=["eeg", "ecog", "seeg", "ieeg", "meg", "grad", "mag", "nirs_int", "nirs_od", "eog", "ref"]))
+    locs_ch = get_channel(obj, ch=get_channel(obj, type=["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]))
     obj.locs = DataFrame(:label=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
     return nothing
 end

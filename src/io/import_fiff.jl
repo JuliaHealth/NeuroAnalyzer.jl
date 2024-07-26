@@ -88,7 +88,7 @@ function load_fiff(file_name::String)
             # ch_pos
             coil_type = @views _i32i64(buf_tmp[1:4])
             r0_1 = @views _f32f64(buf_tmp[5:8])
-            r0_2 = @views _f32f64(buf_tmp[9:12])
+            r0_2 = @views _f32f64(buf_tmp[9:12]) 
             r0_3 = @views _f32f64(buf_tmp[13:16])
             ex_1 = @views _f32f64(buf_tmp[17:20])
             ex_2 = @views _f32f64(buf_tmp[21:24])
@@ -383,6 +383,7 @@ function import_fiff(file_name::String)
     @inbounds for (k, v) in fiff[:meas_info][:ch_info]
         ch = v[1]
         ch_type[ch] = v[3]
+        ch_type[ch] == "stim" && (ch_type[ch] = "mrk")
         range = v[4]
         cal = v[5]
         coil_type[ch] = NeuroAnalyzer._find_fiff_coiltype(v[6])
@@ -391,6 +392,10 @@ function import_fiff(file_name::String)
         clabels[ch] = uppercase(v[3]) * " " * string(v[2])
         @views data[ch, :, 1] .*= (range * cal * unit_mul)
     end
+
+    clabels = replace.(clabels, "MEG"=> "MEG ")
+    clabels = replace.(clabels, "  "=> " ")
+    clabels = replace.(clabels, " 0"=> " ")
 
     # convert data to standard units
     @inbounds for ch_idx in 1:ch_n
@@ -438,7 +443,18 @@ function import_fiff(file_name::String)
     bad_channels = zeros(Bool, ch_n, 1)
     !isnothing(fiff[:meas_info][:bad_chs]) && _warn("bad_channels tag is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
-    # locs
+    # hpi
+    p = Int64[]
+    x = Float64[]
+    y = Float64[]
+    z = Float64[]
+    for (k, v) in fiff[:meas_info][:hpi][:isotrak]
+        push!(p, v[2])
+        push!(x, v[3])
+        push!(y, v[4])
+        push!(z, v[5])
+    end
+    dp = DataFrame(:point=>p, :x=>x, :y=>y, :z=>z)
 
     # SSS, PCA
     # fiff[:meas_info][:ssp]
@@ -506,7 +522,7 @@ function import_fiff(file_name::String)
                               clabels=clabels,
                               units=units,
                               prefiltering=repeat(["LP: $lp Hz; HP: $hp, digits=1)) Hz"], ch_n),
-                              line_frequency=lf,
+                              line_frequency=round(Int64, lf),
                               sampling_rate=sampling_rate,
                               magnetometers=magnetometers,
                               gradiometers=gradiometers,
@@ -524,8 +540,10 @@ function import_fiff(file_name::String)
     markers = DataFrame()
 
     locs = _initialize_locs()
-
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    _initialize_locs!(obj)
+    l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+    add_locs!(obj, locs=l)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 

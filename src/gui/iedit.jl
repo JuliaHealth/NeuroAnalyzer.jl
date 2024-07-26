@@ -12,10 +12,13 @@ Interactive edit signal channels properties and locations.
 """
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
 
-    @assert datatype(obj) == "eeg" "Currently this function only works for EEG data."
+    @assert datatype(obj) in ["eeg", "meg"] "Currently this function only works for EEG or MEG objects."
     ch = get_channel(obj, ch=ch)
     @assert length(ch) == 1 "ch must be a single channel."
     current_channel = ch[1]
+
+    datatype(obj) == "eeg" && (scaling_ratio = 0.7)
+    datatype(obj) == "meg" && (scaling_ratio = 0.53)
 
     # TO DO: select channel by clicking its location
     # TO DO: other recording types
@@ -41,14 +44,16 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
                 set_gtk_property!(entry_loc_theta_sph, :sensitive, true)
                 set_gtk_property!(entry_loc_radius_sph, :sensitive, true)
                 set_gtk_property!(entry_loc_phi_sph, :sensitive, true)
-                set_gtk_property!(entry_loc_theta, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta])
-                set_gtk_property!(entry_loc_radius, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius])
-                set_gtk_property!(entry_loc_x, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x])
-                set_gtk_property!(entry_loc_y, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y])
-                set_gtk_property!(entry_loc_z, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z])
-                set_gtk_property!(entry_loc_theta_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph])
-                set_gtk_property!(entry_loc_radius_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph])
-                set_gtk_property!(entry_loc_phi_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph])
+                if isa(NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel]), Int64)
+                    set_gtk_property!(entry_loc_theta, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta])
+                    set_gtk_property!(entry_loc_radius, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius])
+                    set_gtk_property!(entry_loc_x, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x])
+                    set_gtk_property!(entry_loc_y, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y])
+                    set_gtk_property!(entry_loc_z, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z])
+                    set_gtk_property!(entry_loc_theta_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph])
+                    set_gtk_property!(entry_loc_radius_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph])
+                    set_gtk_property!(entry_loc_phi_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph])
+                end
             else
                 set_gtk_property!(entry_loc_theta, :sensitive, false)
                 set_gtk_property!(entry_loc_radius, :sensitive, false)
@@ -80,7 +85,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     ch_types = obj_new.header.recording[:channel_type]
     ch_units = obj_new.header.recording[:unit]
     ch_labels = labels(obj_new)
-    ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["eeg", "eog", "ref"]))
+    ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
 
     if nrow(obj_new.locs) > 0
         chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
@@ -114,10 +119,10 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     set_gtk_property!(g_opts, :column_spacing, 10)
     set_gtk_property!(g_opts, :row_spacing, 10)
 
-    can1 = GtkCanvas(450, 450)
-    can2 = GtkCanvas(450, 450)
-    can3 = GtkCanvas(450, 450)
-    can4 = GtkCanvas(450, 450)
+    can1 = GtkCanvas(458, 458)
+    can2 = GtkCanvas(458, 458)
+    can3 = GtkCanvas(458, 458)
+    can4 = GtkCanvas(458, 458)
 
     lab_chn = GtkLabel("Channel number:")
     set_gtk_property!(lab_chn, :halign, 2)
@@ -149,15 +154,15 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     nchannels(obj_new) == 0 && set_gtk_property!(bt_delete, :sensitive, false)
 
     lab_loc_x = GtkLabel("Cartesian X")
-    entry_loc_x = GtkSpinButton(-1.5, 1.5, 0.01)
+    entry_loc_x = GtkSpinButton(-2.0, 2.0, 0.01)
     set_gtk_property!(entry_loc_x, :tooltip_text, "Cartesian X coordinate (:loc_x)")
     set_gtk_property!(entry_loc_x, :digits, 2)
     lab_loc_y = GtkLabel("Cartesian Y")
-    entry_loc_y = GtkSpinButton(-1.5, 1.5, 0.01)
+    entry_loc_y = GtkSpinButton(-2.0, 2.0, 0.01)
     set_gtk_property!(entry_loc_y, :tooltip_text, "Cartesian Y coordinate (:loc_y)")
     set_gtk_property!(entry_loc_y, :digits, 2)
     lab_loc_z = GtkLabel("Cartesian Z")
-    entry_loc_z = GtkSpinButton(-1.5, 1.5, 0.01)
+    entry_loc_z = GtkSpinButton(-2.0, 2.0, 0.01)
     set_gtk_property!(entry_loc_z, :tooltip_text, "Cartesian Z coordinate (:loc_z)")
     set_gtk_property!(entry_loc_z, :digits, 2)
     lab_loc_theta_sph = GtkLabel("Spherical theta")
@@ -169,7 +174,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     set_gtk_property!(entry_loc_phi_sph, :tooltip_text, "Spherical azimuth angle (:loc_phi_sph)")
     set_gtk_property!(entry_loc_phi_sph, :digits, 2)
     lab_loc_radius_sph = GtkLabel("Spherical radius")
-    entry_loc_radius_sph = GtkSpinButton(-1.5, 1.5, 0.01)
+    entry_loc_radius_sph = GtkSpinButton(-2.0, 2.0, 0.01)
     set_gtk_property!(entry_loc_radius_sph, :tooltip_text, "Spherical radius (:loc_radius_sph)")
     set_gtk_property!(entry_loc_radius_sph, :digits, 2)
 
@@ -178,7 +183,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     set_gtk_property!(entry_loc_theta, :tooltip_text, "Polar theta angle (:loc_theta)")
     set_gtk_property!(entry_loc_theta, :digits, 2)
     lab_loc_radius = GtkLabel("Polar radius")
-    entry_loc_radius = GtkSpinButton(-1.5, 1.5, 0.01)
+    entry_loc_radius = GtkSpinButton(-2.0, 2.0, 0.01)
     set_gtk_property!(entry_loc_radius, :tooltip_text, "Polar radius (:loc_radius)")
     set_gtk_property!(entry_loc_radius, :digits, 2)
 
@@ -324,19 +329,17 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
         if refresh
             cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-            if current_channel in ch_signal
-                selected = NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel])
-            else
-                selected = 0
-            end
-            p = NeuroAnalyzer.plot_locs(locs, ch=1:length(ch_signal), selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
+            selected = 0
+            current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
+            selected == Int64[] && (selected = 0)
+            p = NeuroAnalyzer.plot_locs(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
             img = read_from_png(io)
             ctx = getgc(can1)
             if !already_scaled1
-                Cairo.scale(ctx, 0.7, 0.7)
+                Cairo.scale(ctx, scaling_ratio, scaling_ratio)
                 already_scaled1 = true
             end
-            rectangle(ctx, 0, 0, 1200, 1200)
+            rectangle(ctx, 0, 0, 800, 800)
             set_source_rgb(ctx, 1, 1, 1)
             fill(ctx)
             show(io, MIME("image/png"), p)
@@ -350,19 +353,17 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
         if refresh
             cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-            if current_channel in ch_signal
-                selected = NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel])
-            else
-                selected = 0
-            end
-            p = NeuroAnalyzer.plot_locs(locs, ch=1:length(ch_signal), selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
+            selected = 0
+            current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
+            selected == Int64[] && (selected = 0)
+            p = NeuroAnalyzer.plot_locs(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
             img = read_from_png(io)
             ctx = getgc(can2)
             if !already_scaled2
-                Cairo.scale(ctx, 0.7, 0.7)
+                Cairo.scale(ctx, scaling_ratio, scaling_ratio)
                 already_scaled2 = true
             end
-            rectangle(ctx, 0, 0, 1200, 1200)
+            rectangle(ctx, 0, 0, 800, 800)
             set_source_rgb(ctx, 1, 1, 1)
             fill(ctx)
             show(io, MIME("image/png"), p)
@@ -376,19 +377,17 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
         if refresh
             cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-            if current_channel in ch_signal
-                selected = NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel])
-            else
-                selected = 0
-            end
-            p = NeuroAnalyzer.plot_locs(locs, ch=1:length(ch_signal), selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
+            selected = 0
+            current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
+            selected == Int64[] && (selected = 0)
+            p = NeuroAnalyzer.plot_locs(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
             img = read_from_png(io)
             ctx = getgc(can3)
             if !already_scaled3
-                Cairo.scale(ctx, 0.7, 0.7)
+                Cairo.scale(ctx, scaling_ratio, scaling_ratio)
                 already_scaled3 = true
             end
-            rectangle(ctx, 0, 0, 1200, 1200)
+            rectangle(ctx, 0, 0, 800, 800)
             set_source_rgb(ctx, 1, 1, 1)
             fill(ctx)
             show(io, MIME("image/png"), p)
@@ -402,19 +401,17 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
         if refresh
             cart = get_gtk_property(cb_plot_cart, :active, Bool)
             hdlab = get_gtk_property(cb_hdlab, :active, Bool)
-            if current_channel in ch_signal
-                selected = NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel])
-            else
-                selected = 0
-            end
-            p = NeuroAnalyzer.plot_locs3d(locs, ch=1:length(ch_signal), selected=selected, ch_labels=false, head_labels=hdlab, cart=cart);
+            selected = 0
+            current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
+            selected == Int64[] && (selected = 0)
+            p = NeuroAnalyzer.plot_locs3d(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart);
             img = read_from_png(io)
             ctx = getgc(can4)
             if !already_scaled4
-                Cairo.scale(ctx, 0.7, 0.7)
+                Cairo.scale(ctx, scaling_ratio, scaling_ratio)
                 already_scaled4 = true
             end
-            rectangle(ctx, 0, 0, 1200, 1200)
+            rectangle(ctx, 0, 0, 800, 800)
             set_source_rgb(ctx, 1, 1, 1)
             fill(ctx)
             show(io, MIME("image/png"), p)
@@ -459,7 +456,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
             ch_types = obj_new.header.recording[:channel_type]
             ch_units = obj_new.header.recording[:unit]
             ch_labels = labels(obj_new)
-            ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["eeg", "eog", "ref"]))
+            ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
             chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
             locs = Base.filter(:label => in(chs), obj_new.locs)
             Gtk.@sigatom begin
@@ -483,7 +480,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
 
     signal_connect(combo_chtype, "changed") do widget
         ch_types[current_channel] = string(NeuroAnalyzer.channel_types[get_gtk_property(combo_chtype, :active, Int64) + 2])
-        ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["eeg", "eog", "ref"]))
+        ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
         Gtk.@sigatom begin
             set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         end
