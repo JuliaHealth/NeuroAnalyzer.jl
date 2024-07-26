@@ -445,7 +445,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
                         linecolor=idx,
                         linewidth=0.5,
                         label=clabels[idx],
-                        legend=true;
+                        legend=false;
                         kwargs...)
     end
 
@@ -679,8 +679,26 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     end
 
     # plot parameters
-    plot_size = 800
-    marker_size = (120, 80)
+    if size(sp, 1) <= 64
+        plot_size = 800
+        marker_size = (120, 80)
+        rx = 1
+        ry = 1
+        offset = 0
+    elseif size(sp, 1) <= 100
+        size(sp, 1) > 64
+        plot_size = 1200
+        marker_size = (100, 60)
+        rx = 0.9
+        ry = 0.7
+        offset = 150
+    else
+        plot_size = 2500
+        marker_size = (90, 50)
+        rx = 0.6
+        ry = 0.4
+        offset = 250
+    end
 
     # get locations
     if !cart
@@ -698,22 +716,23 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
     # get marker centers
-    loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
-    loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
+    loc_x .*= ((plot_size / 2) - marker_size[1] / 2) .* rx
+    loc_y .*= ((plot_size / 2) - marker_size[2] / 2) .* ry
     # origin is in the left top corner, convert positions
     loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
     loc_y = (plot_size - marker_size[2]) .- round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
-    c = CairoRGBSurface(plot_size, plot_size)
+    c = CairoRGBSurface(plot_size, plot_size - 3 * offset)
     cr = CairoContext(c)
     Cairo.set_source_rgb(cr, 256, 256, 256)
-    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size)
+    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size - 3 * offset)
     Cairo.fill(cr)
     for idx in 1:size(sp, 1)
         p = Plots.plot(sf,
                        sp[idx, :],
                        t=:line,
                        c=:black,
+                       showaxis=false,
                        linewidth=0.5,
                        xlabel=xlabel,
                        ylabel=ylabel,
@@ -732,17 +751,18 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                        xtickfontsize=6,
                        ytickfontsize=6;
                        kwargs...)
+        p = Plots.hline!([minimum(sp[idx, :])], c=:black, linewidth=0.5, xlims=(0, sf[end]))
+        p = Plots.vline!([0], c=:black, linewidth=0.5, ylims=(minimum(sp[idx, :]), maximum(sp[idx, :])))
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
-        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx])
+        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
         Cairo.paint(cr)
     end
     img_png = tempname() * ".png"
     Cairo.write_to_png(c, img_png)
     img = FileIO.load(img_png)
-    p = nothing
     p = Plots.plot(img,
-                   size=(plot_size + 100, plot_size + 100),
+                   size=(plot_size, plot_size - 3 * offset),
                    title=title,
                    titlefontsize=12,
                    border=:none)
@@ -1077,7 +1097,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                           sf,
                           sp,
                           ch=collect(1:nrow(locs)),
-                          clabels=clabels[ch],
+                          clabels=obj.locs[!, :label],
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,
