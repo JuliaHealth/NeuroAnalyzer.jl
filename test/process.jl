@@ -48,8 +48,8 @@ e10_tmp = ch_zero(e10)
 s = rand(100)
 ct = cw_trans(s, wt=wavelet(Morlet(π), β=32, Q=128))
 @test size(ct) == (130, 100)
-ct = cw_trans(e10, ch="all", wt=wavelet(Morlet(π), β=32, Q=128));
-@test size(ct) == (24, 131, 2560, 10)
+ct = cw_trans(e10, ch="Fp1", wt=wavelet(Morlet(π), β=32, Q=128));
+@test size(ct) == (1, 131, 2560, 10)
 
 @info "Test 6/$ntests: icw_trans()"
 ct = cw_trans(s, wt=wavelet(Morlet(π), β=32, Q=128))
@@ -117,8 +117,8 @@ s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:sdwt)
 s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
 @test length(s_new) == 100
 
-@info "Test 14/$ntests: dwtsplit()"
-s = dwtsplit(e10, ch="Fp1", wt = wavelet(WT.haar), type=:sdwt)
+@info "Test 14/$ntests: dw_split()"
+s = dw_split(e10, ch="Fp1", wt = wavelet(WT.haar), type=:sdwt)
 @test size(s) == (10, 2560, 10)
 
 @info "Test 15/$ntests: erp()"

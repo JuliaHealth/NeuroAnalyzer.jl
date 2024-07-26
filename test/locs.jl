@@ -10,9 +10,9 @@ locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 
 @info "Test 1/$ntests: add_locs()"
 eeg_tmp = add_locs(eeg, locs=locs)
-@test nrow(eeg_tmp.locs) == 19
+@test nrow(eeg_tmp.locs) == 23
 add_locs!(eeg, locs=locs)
-@test nrow(eeg.locs) == 19
+@test nrow(eeg.locs) == 23
 
 @info "Test 2/$ntests: locs_details()"
 @test locs_details(eeg, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)

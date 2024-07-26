@@ -443,7 +443,9 @@ function import_fiff(file_name::String)
     bad_channels = zeros(Bool, ch_n, 1)
     !isnothing(fiff[:meas_info][:bad_chs]) && _warn("bad_channels tag is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
-    # hpi
+
+    # HPI
+    # fiff[:meas_info][:hpi]
     p = Int64[]
     x = Float64[]
     y = Float64[]
@@ -461,9 +463,15 @@ function import_fiff(file_name::String)
 
     # events
     # fiff[:meas_info][:events]
+    events_ch = fiff[:meas_info][:events][:event_channels]
+    # number of sample, before, after
+    events = reshape(fiff[:meas_info][:events][:event_list], 3, :)'
 
-    # HPI
-    # fiff[:meas_info][:hpi]
+    markers = DataFrame(:id=>String[],
+                        :start=>Float64[],
+                        :length=>Float64[],
+                        :description=>String[],
+                        :channel=>Int64[])
 
     # MaxShield
 
@@ -536,8 +544,6 @@ function import_fiff(file_name::String)
     components = Dict()
 
     history = String[]
-
-    markers = DataFrame()
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
