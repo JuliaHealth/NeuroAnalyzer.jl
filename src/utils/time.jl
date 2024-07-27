@@ -18,6 +18,7 @@ Convert time in seconds to sample number.
 function t2s(t::T, fs::Int64) where {T<:Real}
 
     @assert t >= 0 "t must be ≥ 0."
+
     return t == 0 ? 1 : round(Int64, t * fs)
 
 end

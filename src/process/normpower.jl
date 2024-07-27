@@ -59,7 +59,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 
 # Returns
 
@@ -85,7 +85,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 """
 function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 

@@ -47,7 +47,7 @@ Return the average signal of channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 
 # Returns
 
@@ -75,7 +75,7 @@ Return the average signal of channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 """
 function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 

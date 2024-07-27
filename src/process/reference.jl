@@ -19,7 +19,7 @@ Reference to common electrode(s). Only signal channels are processed.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -72,7 +72,7 @@ Reference to common electrode(s). Only signal channels are processed.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 """
 function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)

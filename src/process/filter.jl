@@ -346,7 +346,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter
@@ -429,7 +429,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter

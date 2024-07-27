@@ -149,7 +149,7 @@ Calculate mean, standard deviation and 95% confidence interval.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 

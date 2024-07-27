@@ -193,7 +193,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram

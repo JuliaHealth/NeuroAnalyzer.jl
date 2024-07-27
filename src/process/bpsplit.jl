@@ -8,7 +8,7 @@ Split signal into frequency bands using a FIR band-pass filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `order::Int64=8`: number of taps for FIR band-pass filter
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb)
 

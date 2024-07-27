@@ -183,7 +183,7 @@ Calculate temporal envelope (amplitude).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -219,7 +219,7 @@ Calculate temporal envelope (amplitude): mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -299,7 +299,7 @@ Calculate temporal envelope (amplitude): median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -377,7 +377,7 @@ Calculate power (in dB) envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -426,7 +426,7 @@ Calculate power (in dB) envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -515,7 +515,7 @@ Calculate power (in dB) envelope: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -604,7 +604,7 @@ Calculate spectral envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 - `method::Symbol=:stft`: method of calculating spectrogram:
@@ -695,7 +695,7 @@ Calculate spectral envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -789,7 +789,7 @@ Calculate spectral envelope: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -883,7 +883,7 @@ Calculate Hilbert spectrum amplitude envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -923,7 +923,7 @@ Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -1001,7 +1001,7 @@ Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 

@@ -181,7 +181,7 @@ Plots spectrogram.
 - `obj::NeuroAnalyzer.NEURO`
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
 - `method::Symbol=:stft`: method of calculating spectrogram:
     - `:stft`: short-time Fourier transform

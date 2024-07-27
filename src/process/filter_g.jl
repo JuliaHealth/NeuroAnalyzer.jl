@@ -80,7 +80,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
@@ -109,7 +109,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz

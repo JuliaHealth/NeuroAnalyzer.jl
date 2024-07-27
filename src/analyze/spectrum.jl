@@ -179,7 +179,7 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 - `db::Bool=false`: normalize powers to dB

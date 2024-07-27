@@ -40,7 +40,7 @@ Perform Wiener deconvolution denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 
 # Returns
 - `obj_new::NeuroAnalyzer.NEURO`
@@ -64,7 +64,7 @@ Perform Wiener deconvolution denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 

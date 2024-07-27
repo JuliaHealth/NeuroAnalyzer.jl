@@ -3,7 +3,7 @@ export play
 """
     play(obj; <keyword arguments>)
 
-Interactive play channel signal as audio
+Play channel signal as audio.
 
 # Arguments
 

@@ -109,7 +109,7 @@ Filter using polynomial filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length
 
@@ -137,7 +137,7 @@ Filter using polynomial filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length
 

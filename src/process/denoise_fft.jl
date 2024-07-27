@@ -80,7 +80,7 @@ Perform FFT denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `t::Int64=100`: PSD threshold for keeping frequency components
 
@@ -108,7 +108,7 @@ Perform FFT denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `t::Int64=100`: PSD threshold for keeping frequency components
 """

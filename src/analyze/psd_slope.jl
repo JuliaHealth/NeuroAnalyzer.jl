@@ -111,7 +111,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range frq_lim[1] to frq_lim[2]
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:

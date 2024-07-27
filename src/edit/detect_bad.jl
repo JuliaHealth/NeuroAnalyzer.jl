@@ -9,7 +9,7 @@ Detect bad channels and epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
     - `:flat`: flat channel(s)
     - `:rmse`: RMSE vs average channel outside of 95% CI
@@ -404,7 +404,7 @@ Detect bad channels and epochs and update the `:bad_channel` field in the OBJ he
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]`: detection method:
     - `:flat`: flat channel(s)
     - `:rmse`: RMSE vs average channel outside of 95% CI

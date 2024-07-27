@@ -333,15 +333,16 @@ function chtypes(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    info(obj)
+    info(obj; <keyword arguments>)
 
 Show info.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+- `df::Bool=false`: if true, return object data as a DataFrame containing time points and channels
 """
-function info(obj::NeuroAnalyzer.NEURO)
+function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)
 
     println("              Data type: $(uppercase(obj.header.recording[:data_type]))")
     println("            File format: $(obj.header.recording[:file_type])")
@@ -451,6 +452,15 @@ function info(obj::NeuroAnalyzer.NEURO)
             end
         end
     end
+
+    if df
+        df = DataFrame(hcat(obj.time_pts, reshape(obj.data, nchannels(obj), :, 1)[:, :]'), :auto)
+        DataFrames.rename!(df, vcat(:time, Symbol.(labels(obj))))
+        return df
+    else
+        return nothing
+    end
+
 end
 
 """
@@ -773,41 +783,69 @@ function band_frq(fs::Int64; band::Symbol)
 end
 
 """
-    describe(obj)
+    describe(obj; <keyword arguments>)
 
 Return basic descriptive statistics of the object data.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+- `df::Bool=false`: if true, return statistics as a DataFrame
 """
-function describe(obj::NeuroAnalyzer.NEURO)
-    println("< " * uppercase(obj.header.recording[:data_type]) * ", $(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) ($(signal_len(obj) / sr(obj)) s) >")
-    println(rpad("ch", 4) *
-            rpad("label", 16) *
-            rpad("type", 12) *
-            rpad("unit", 8) *
-            rpad("range", 10) *
-            rpad("mean", 10) *
-            rpad("sd", 10) *
-            rpad("min", 10) *
-            rpad("Q1", 10) *
-            rpad("median", 10) *
-            rpad("Q3", 10) *
-            rpad("max", 10))
-    for idx in 1:nchannels(obj)
-        println(rpad(string(idx), 4) *
-                rpad(labels(obj)[idx], 16) *
-                rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
-                rpad(obj.header.recording[:unit][idx], 8) *
-                rpad(round(rng(obj.data[idx, :, :]), digits=2), 10) *
-                rpad(round(mean(obj.data[idx, :, :]), digits=2), 10) *
-                rpad(round(std(obj.data[idx, :, :]), digits=2), 10) *
-                rpad(round(minimum(obj.data[idx, :, :]), digits=2), 10) *
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.5), digits=2), 10) *
-                rpad(round(median(obj.data[idx, :, :]), digits=2), 10) *
-                rpad(round(quantile(obj.data[idx, :, :][:], 0.95), digits=2), 10) *
-                rpad(round(maximum(obj.data[idx, :, :]), digits=2), 10))
+function describe(obj::NeuroAnalyzer.NEURO; df::Bool=false)
+    d = zeros(8, nchannels(obj))
+    @inbounds for idx in 1:nchannels(obj)
+        d[1, idx] = round(rng(obj.data[idx, :, :]), digits=2)
+        d[2, idx] = round(mean(obj.data[idx, :, :]), digits=2)
+        d[3, idx] = round(std(obj.data[idx, :, :]), digits=2)
+        d[4, idx] = round(minimum(obj.data[idx, :, :]), digits=2)
+        d[5, idx] = round(quantile(obj.data[idx, :, :][:], 0.5), digits=2)
+        d[6, idx] = round(median(obj.data[idx, :, :]), digits=2)
+        d[7, idx] = round(quantile(obj.data[idx, :, :][:], 0.95), digits=2)
+        d[8, idx] = round(maximum(obj.data[idx, :, :]), digits=2)
+    end
+    if df
+        df = DataFrame(:ch=>collect(1:nchannels(obj)),
+                       :label=>labels(obj),
+                       :type=>uppercase.(obj.header.recording[:channel_type]),
+                       :unit=>obj.header.recording[:unit],
+                       :range=>d[1, :],
+                       :mean=>d[2, :],
+                       :sd=>d[3, :],
+                       :min=>d[4, :],
+                       :Q1=>d[5, :],
+                       :median=>d[6, :],
+                       :Q3=>d[7, :],
+                       :max=>d[8, :])
+        return df
+    else        
+        println("< " * uppercase(obj.header.recording[:data_type]) * ", $(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)) ($(signal_len(obj) / sr(obj)) s) >")
+        println(rpad("ch", 4) *
+                rpad("label", 16) *
+                rpad("type", 12) *
+                rpad("unit", 8) *
+                rpad("range", 10) *
+                rpad("mean", 10) *
+                rpad("sd", 10) *
+                rpad("min", 10) *
+                rpad("Q1", 10) *
+                rpad("median", 10) *
+                rpad("Q3", 10) *
+                rpad("max", 10))
+        for idx in 1:nchannels(obj)
+            println(rpad(string(idx), 4) *
+                    rpad(labels(obj)[idx], 16) *
+                    rpad(uppercase(obj.header.recording[:channel_type][idx]), 12) *
+                    rpad(obj.header.recording[:unit][idx], 8) *
+                    rpad(string(d[1, idx]), 10) *
+                    rpad(string(d[2, idx]), 10) *
+                    rpad(string(d[3, idx]), 10) *
+                    rpad(string(d[4, idx]), 10) *
+                    rpad(string(d[5, idx]), 10) *
+                    rpad(string(d[6, idx]), 10) *
+                    rpad(string(d[7, idx]), 10) *
+                    rpad(string(d[8, idx]), 10))
+        end
     end
 end
 

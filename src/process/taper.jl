@@ -62,7 +62,7 @@ Taper the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `t::Union{Vector{Real, Vector{ComplexF64}}`
 
 # Returns
@@ -89,7 +89,7 @@ Taper the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `t::Union{Vector{<:Real}, Vector{ComplexF64}}`
 """
 function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, taper::Union{Vector{<:Real}, Vector{ComplexF64}})
