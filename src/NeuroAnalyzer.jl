@@ -189,7 +189,7 @@ BLAS.set_num_threads(Sys.CPU_THREADS)
 
 # load NA functions
 
-include("na.jl")
+include("utils/na.jl")
 
 function __init__()
 
