@@ -2308,7 +2308,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})
         w = img.width
         h = img.height
         ctx = getgc(can)
-        # Cairo.scale(ctx, 242/w, 241/h)
+        # Cairo.scale(ctx, 0.75, 0.75)
         Cairo.set_source_surface(ctx, img, 1, 2)
         Cairo.paint(ctx)
     end
