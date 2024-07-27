@@ -47,12 +47,12 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
         yt = _ticks(frq_lim)
     else
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         ysc = :log10
     end
@@ -132,12 +132,12 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
         xt = _ticks(frq_lim)
     else
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
     end

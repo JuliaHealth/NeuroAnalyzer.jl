@@ -44,12 +44,12 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
         ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = :identity
@@ -59,12 +59,12 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
         ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = !db ? :log10 : :identity
@@ -160,12 +160,12 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
         ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = :identity
@@ -177,12 +177,12 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     elseif ax === :loglog
         _warn("For multi-channel PSD plots, y-axis log-scale is ignored.")
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = :identity
@@ -272,12 +272,12 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
         ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = :identity
@@ -287,12 +287,12 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
         ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = !db ? :log10 : :identity
@@ -391,12 +391,12 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
         ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = :identity
@@ -406,12 +406,12 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
         ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = !db ? :log10 : :identity
@@ -502,12 +502,12 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
         zsc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         zsc = :identity
@@ -517,12 +517,12 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
         zsc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         zsc = !db ? :log10 : :identity
@@ -652,12 +652,12 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         ysc = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = :identity
@@ -667,12 +667,12 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         ysc = !db ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            sf[1] == 0 && (sf[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            frq_lim = (0.1, frq_lim[2])
+            _warn("Lower frequency bound truncated to 0.1 Hz")
+            sf[1] == 0 && (sf[1] = 0.1)
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
         xsc = :log10
         ysc = !db ? :log10 : :identity
