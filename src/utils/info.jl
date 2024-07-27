@@ -380,12 +380,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     if datatype(obj) == "nirs"
         println("        Wavelength [nm]: $(obj.header.recording[:wavelengths])")
     end
-    if length(labels(obj)) == 0
-        println("                 Labels: no")
-    else
-        println("                 Labels: yes")
-    end
-    if !(obj.header.recording[:data_type] in ["mep", "sensors", "eda"])
+    if !(datatype(obj) in ["mep", "sensors", "eda"])
         if _has_markers(obj)
             println("                Markers: yes")
         else
@@ -411,6 +406,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("             Components: no")
     end
+    println()
     println("Channels:")
     if obj.header.recording[:data_type] != "nirs"
         println(rpad(" ch", 8) *
