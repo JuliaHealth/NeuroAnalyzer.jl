@@ -197,13 +197,13 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=size(sp, 1) <= 64 ? (1200, 800) : (1200, 1200),
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
-                   ytickfontsize=6)
+                   ytickfontsize=size(sp, 1) <= 64 ? 6 : 5)
 
     # plot zero line
     p = Plots.hline!(collect((ch_n - 1):-1:0),

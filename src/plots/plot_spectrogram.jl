@@ -153,8 +153,8 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
                       ylabel=ylabel,
                       yticks=(ch, sch),
                       title=title,
-                      size=(1200, 800),
-                      margins=20Plots.px,
+                      size=size(sp, 1) <= 64 ? (1200, 800) : (1200, 1200),
+                      margins=10Plots.px,
                       seriescolor=pal,
                       background_color=:black,
                       background_color_outside=:white,
@@ -164,7 +164,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
                       xlabelfontsize=8,
                       ylabelfontsize=8,
                       xtickfontsize=6,
-                      ytickfontsize=6;
+                      ytickfontsize=size(sp, 1) <= 64 ? 6 : 5;
                       kwargs...)
 
     return p
