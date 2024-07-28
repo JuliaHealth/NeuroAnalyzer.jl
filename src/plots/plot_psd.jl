@@ -380,6 +380,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
     _check_tuple(frq_lim, "frq_lim")
 
+    ch_n = size(sp, 1)
     pal = mono ? :grays : :darktest
 
     # channel labels
@@ -420,7 +421,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     # prepare plot
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
-                   legend=false,
+                   legend=ch_n < 20,
                    xlims=frq_lim,
                    xticks=xt,
                    xscale=xsc,
@@ -444,11 +445,9 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
                         t=:line,
                         linecolor=idx,
                         linewidth=0.5,
-                        label=clabels[idx],
-                        legend=false;
+                        label=clabels[idx];
                         kwargs...)
     end
-
     return p
 
 end
@@ -564,7 +563,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                             sp[idx, :],
                             st=:line,
                             linecolor=idx,
-                            linewidth=0.5,
+                            linewidth=0.5;
                             kwargs...)
         end
     else

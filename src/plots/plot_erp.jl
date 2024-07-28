@@ -131,7 +131,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                    palette=pal,
                    size=(1200, 400),
                    margins=20Plots.px,
-                   legend=false,
+                   legend=ch_n < 20,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -626,11 +626,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
 
     if type === :normal
         @assert ch isa Int64 "For :normal plot type, only one channel must be specified."
-        if datatype(obj) == "erp"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        else
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        end
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp(t,
                      s,
                      xlabel=xl,
@@ -641,11 +637,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                      yrev=yrev;
                      kwargs...)
     elseif type === :butterfly
-        if datatype(obj) == "erp"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        else
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        end
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         if channel_labels
             clabels = labels(obj)[ch]
         else
@@ -663,11 +655,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        if datatype(obj) == "erp"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude [mean ± 95%CI]\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        else
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERF amplitude [mean ± 95%CI]\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        end
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "$(uppercase(datatype(obj))) amplitude [mean ± 95%CI]\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp_avg(t,
                          s,
                          xlabel=xl,
@@ -679,11 +667,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                          kwargs...)
     elseif type === :topo
         _has_locs(obj)
-        if datatype(obj) == "erp"
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        else
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        end
+        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         @assert length(ch) == nrow(locs) "Some channels do not have locations."
@@ -705,19 +689,10 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
     elseif type === :stack
         peaks = false
         cb_title == "default" && (cb_title = "Amplitude [$units]")
-
-        if datatype(obj) == "erp"
-            if ch isa Int64
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-            else
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-            end
+        if ch isa Int64
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         else
-            if ch isa Int64
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-            else
-                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-            end
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         end
         if channel_labels
             clabels = labels(obj)[ch]

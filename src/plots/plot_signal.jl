@@ -377,6 +377,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
                    title=title,
                    palette=pal,
                    size=plot_size,
+                   legend=ch_n < 20,
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -390,8 +391,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
                         t=:line,
                         linecolor=idx,
                         linewidth=0.5,
-                        label=clabels[idx],
-                        legend=false)
+                        label=clabels[idx])
     end
 
     # plot averaged channels
@@ -691,12 +691,11 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if type === :butterfly
         @assert length(unique(ctypes)) == 1 "For plot type=:butterfly all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
-
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
-                                   "Amplitude [$(cunits[ch[1]])]",
+                                   "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
                                    "")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
@@ -725,12 +724,11 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if type === :mean
         @assert length(unique(ctypes)) == 1 "For plot type=:mean all channels should be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
-
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
-                                   "Amplitude [$(cunits[ch[1]])]",
+                                   "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
                                    "")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")

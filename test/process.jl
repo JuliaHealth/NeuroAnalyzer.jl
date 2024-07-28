@@ -124,10 +124,10 @@ s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
 s = dw_split(e10, ch="Fp1", wt = wavelet(WT.haar), type=:sdwt)
 @test size(s) == (10, 2560, 10)
 
-@info "Test 15/$ntests: erp() / erf()"
-e_erp = erp(e10)
+@info "Test 15/$ntests: average_epochs()"
+e_erp = average_epochs(e10)
 @test size(e_erp.data) == (19, 2560, 11)
-m_erf = erf(m2)
+m_erf = average_epochs(m2)
 @test size(m_erf.data) == (306, 1202, 11)
 
 @info "Test 16/$ntests: bpsplit()"
@@ -397,7 +397,7 @@ n_tmp2 = od2conc(n_tmp)
 @test size(n_tmp2.data) == (22, 9015, 1)
 
 @info "Test 42/$ntests: npl()"
-e = erp(e10)
+e = average_epochs(e10)
 npl!(e)
 @test size(e.data) == (19, 2560, 11)
 
@@ -473,7 +473,7 @@ eeg_tmp = ica_remove(eeg_tmp, ch="all", ic_idx=1);
 @test size(normpower(e10, ch="all")) == size(e10)
 
 @info "Test 52/$ntests: sort_epochs()"
-e10_erp = erp(e10)
+e10_erp = average_epochs(e10)
 e = sort_epochs(e10_erp, s=collect((nepochs(e10_erp) - 1):-1:1))
 @test size(e.data) == (19, 2560, 11)
 
