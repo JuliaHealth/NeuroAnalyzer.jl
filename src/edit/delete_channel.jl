@@ -41,12 +41,11 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
             deleteat!(obj_new.header.recording[:gain], idx)
         elseif obj_new.header.recording[:data_type] == "meg"
             deleteat!(obj_new.header.recording[:prefiltering], idx)
-            deleteat!(obj_new.header.recording[:coils], idx)
+            deleteat!(obj_new.header.recording[:coil_type], idx)
             idx_tmp = findfirst(isequal(idx), obj_new.header.recording[:gradiometers])
             !isnothing(idx_tmp) && deleteat!(obj_new.header.recording[:gradiometers], idx_tmp)
             idx_tmp = findfirst(isequal(idx), obj_new.header.recording[:magnetometers])
             !isnothing(idx_tmp) && deleteat!(obj_new.header.recording[:magnetometers], idx_tmp)
-            deleteat!(obj_new.header.recording[:coil_type], idx)
         elseif obj_new.header.recording[:data_type] == "nirs"
             if !del_opt && idx in 1:length(obj_new.header.recording[:optode_labels])
                 @warn "NIRS signal channels must be deleted using delete_optode()."

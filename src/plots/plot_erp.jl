@@ -7,7 +7,7 @@ export plot_erp_stack
 """
     plot_erp(t, s, bad; <keyword arguments>)
 
-Plot ERP.
+Plot ERP/ERF.
 
 # Arguments
 
@@ -131,6 +131,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                    palette=pal,
                    size=(1200, 400),
                    margins=20Plots.px,
+                   legend=false,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -155,14 +156,12 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                             t=:line,
                             linecolor=idx,
                             linewidth=0.2,
-                            alpha=0.2,
-                            legend=false)
+                            alpha=0.2)
         else
             if clabels == repeat([""], ch_n)
                 p = Plots.plot!(t,
                                 s[idx, :],
                                 t=:line,
-                                legend=false,
                                 linecolor=idx,
                                 linewidth=0.5,
                                 alpha=0.5)
@@ -187,7 +186,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
         end
         p = Plots.plot!(t,
                         s,
-                        linewidth=1,
+                        linewidth=2,
                         linecolor=:black,
                         label=false)
     end
@@ -214,7 +213,7 @@ end
 """
     plot_erp_avg(t, s; <keyword arguments>)
 
-Plot ERP amplitude mean and ±95% CI.
+Plot ERP/ERF amplitude mean and ±95% CI.
 
 # Arguments
 
@@ -340,9 +339,6 @@ Plot topographical map ERPs.
 """
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
 
-    chs = intersect(locs[!, :label], clabels[ch])
-    locs = Base.filter(:label => in(chs), locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
     @assert size(s, 2) == length(t) "Signal length and time length must be equal."
 
     pal = mono ? :grays : :darktest
@@ -355,35 +351,50 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     ylim = _tuple_max(ylim)
 
     # plot parameters
-    plot_size = 800
-    marker_size = (120, 80)
+    if size(s, 1) <= 64
+        plot_size = 800
+        marker_size = (120, 80)
+        rx = 1
+        ry = 1
+        offset = 0
+    elseif size(s, 1) <= 100
+        plot_size = 1200
+        marker_size = (120, 80)
+        rx = 0.9
+        ry = 0.7
+        offset = 150
+    else
+        plot_size = 2500
+        marker_size = (90, 50)
+        rx = 0.6
+        ry = 0.4
+        offset = 250
+    end
 
     # get locations
     if !cart
-        loc_x = zeros(nrow(locs))
-        loc_y = zeros(nrow(locs))
-        for idx in 1:nrow(locs)
+        loc_x = zeros(size(locs, 1))
+        loc_y = zeros(size(locs, 1))
+        for idx in 1:size(locs, 1)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
-        loc_x = loc_x[ch]
-        loc_y = loc_y[ch]
     else
-        loc_x = locs[ch, :loc_x]
-        loc_y = locs[ch, :loc_y]
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
     end
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
     # get marker centers
-    loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
-    loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
+    loc_x .*= ((plot_size / 2) - marker_size[1] / 2) .* rx
+    loc_y .*= ((plot_size / 2) - marker_size[2] / 2) .* ry
     # origin is in the left top corner, convert positions
     loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
     loc_y = (plot_size - marker_size[2]) .- round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
-    c = CairoRGBSurface(plot_size, plot_size)
+    c = CairoRGBSurface(plot_size, plot_size - 3 * offset)
     cr = CairoContext(c)
     Cairo.set_source_rgb(cr, 256, 256, 256)
-    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size)
+    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size - 3 * offset)
     Cairo.fill(cr)
     for idx in 1:size(s, 1)
         p = Plots.plot(xlabel=xlabel,
@@ -430,7 +441,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
 
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
-        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx])
+        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
         Cairo.paint(cr)
     end
 
@@ -439,7 +450,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     img = FileIO.load(img_png)
     p = nothing
     p = Plots.plot(img,
-                   size=(plot_size + 100, plot_size + 100),
+                   size=(plot_size, plot_size - 3 * offset),
                    title=title,
                    titlefontsize=12,
                    border=:none)
@@ -498,7 +509,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
     p = Plots.heatmap(t,
                       1:size(s, 1),
                       s,
-                      size=(1200, 500),
+                      size=size(s, 1) <= 64 ? (1200, 800) : (1200, 1200),
                       margins=20Plots.px,
                       legend=false,
                       xticks=(_erpticks(t), string.(_erpticks(t) .* 1000)),
@@ -514,7 +525,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
                       xlabelfontsize=8,
                       ylabelfontsize=8,
                       xtickfontsize=8,
-                      ytickfontsize=8;
+                      ytickfontsize=size(s, 1) <= 64 ? 8 : 5;
                       kwargs...)
 
     # plot 0 v-line
@@ -541,7 +552,7 @@ end
 """
     plot_erp(obj; <keyword arguments>)
 
-Plot ERP.
+Plot ERP/ERF.
 
 # Arguments
 
@@ -556,7 +567,11 @@ Plot ERP.
 - `mono::Bool=false`: use color or gray palette
 - `peaks::Bool=true`: draw peaks
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot
-- `type::Symbol=:normal`: plot type: `:normal`, butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
+- `type::Symbol=:normal`: plot type:
+    - `:normal`
+    - `:butterfly`: butterfly plot
+    - `:topo`: topographical plot of ERPs
+    - `:stack`: stacked epochs/channels
 - `yrev::Bool=false`: reverse Y axis
 - `avg::Bool=false`: plot average ERP for `:butterfly` plot
 - `smooth::Bool=false`: smooth the image using Gaussian blur
@@ -571,10 +586,11 @@ Plot ERP.
 """
 function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false, kwargs...)
 
-    _check_datatype(obj, "erp")
+    _check_datatype(obj, ["erp", "erf"])
 
     # check channels
-    ch = isa(ch, String) ? get_channel(obj, ch=ch)[1] : get_channel(obj, ch=ch)
+    ch = get_channel(obj, ch=ch)
+    length(ch) == 1  && (ch = get_channel(obj, ch=ch)[1])
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
@@ -610,7 +626,11 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
 
     if type === :normal
         @assert ch isa Int64 "For :normal plot type, only one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        if datatype(obj) == "erp"
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        end
         p = plot_erp(t,
                      s,
                      xlabel=xl,
@@ -621,7 +641,11 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                      yrev=yrev;
                      kwargs...)
     elseif type === :butterfly
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        if datatype(obj) == "erp"
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        end
         if channel_labels
             clabels = labels(obj)[ch]
         else
@@ -639,7 +663,11 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude [mean ± 95%CI]\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        if datatype(obj) == "erp"
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude [mean ± 95%CI]\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERF amplitude [mean ± 95%CI]\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        end
         p = plot_erp_avg(t,
                          s,
                          xlabel=xl,
@@ -651,12 +679,19 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
                          kwargs...)
     elseif type === :topo
         _has_locs(obj)
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        if datatype(obj) == "erp"
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        else
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "", "", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        end
+        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+        locs = Base.filter(:label => in(chs), obj.locs)
+        @assert length(ch) == nrow(locs) "Some channels do not have locations."
         peaks = false
         ndims(s) == 1 && (s = reshape(s, 1, length(s)))
         clabels = labels(obj)[ch]
         clabels isa String && (clabels = [clabels])
-        p = plot_erp_topo(obj.locs,
+        p = plot_erp_topo(locs,
                           t,
                           s,
                           ch=ch,
@@ -671,12 +706,19 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
         peaks = false
         cb_title == "default" && (cb_title = "Amplitude [$units]")
 
-        if ch isa Int64
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        if datatype(obj) == "erp"
+            if ch isa Int64
+                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            else
+                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            end
         else
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Channels", "ERP amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            if ch isa Int64
+                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Epochs", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            else
+                xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERF amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            end
         end
-
         if channel_labels
             clabels = labels(obj)[ch]
         else

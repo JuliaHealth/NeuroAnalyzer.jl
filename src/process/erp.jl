@@ -106,11 +106,11 @@ Average MEG epochs. Non-MEG channels are removed. `OBJ.header.recording[:data_ty
 """
 function erf(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)
 
-    _check_datatype(obj, "eeg")
+    _check_datatype(obj, "meg")
 
-    nchannels(obj) > length(get_channel(obj, type=datatype(obj))) && _warn("Non-signal channels will be removed.")
+    nchannels(obj) > length(get_channel(obj, ch=["meg", "mag", "grad"])) && _warn("Non-signal channels will be removed.")
 
-    obj_new = keep_channel(obj, ch=get_channel(obj, type=datatype(obj)))
+    obj_new = keep_channel(obj, ch=["meg", "mag", "grad"])
 
     # remove baseline prior to averaging
     if blfirst

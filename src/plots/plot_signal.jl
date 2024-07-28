@@ -566,6 +566,7 @@ Plot signal.
 function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
+    datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
     datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
 
     if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)

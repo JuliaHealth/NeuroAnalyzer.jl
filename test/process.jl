@@ -11,6 +11,8 @@ n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
 m = import_nirs(joinpath(testfiles_path, "meg-test-fiff.fif"))
 e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
+e2 = epoch(m, ep_len=2)
+keep_epoch!(m2, ep=1:10)
 load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -122,9 +124,11 @@ s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
 s = dw_split(e10, ch="Fp1", wt = wavelet(WT.haar), type=:sdwt)
 @test size(s) == (10, 2560, 10)
 
-@info "Test 15/$ntests: erp()"
-e = erp(e10)
-@test size(e.data) == (19, 2560, 11)
+@info "Test 15/$ntests: erp() / erf()"
+e_erp = erp(e10)
+@test size(e_erp.data) == (19, 2560, 11)
+m_erf = erf(m2)
+@test size(m_erf.data) == (306, 1202, 11)
 
 @info "Test 16/$ntests: bpsplit()"
 s, bn, bf = bpsplit(e10, ch="all")

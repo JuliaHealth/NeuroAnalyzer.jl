@@ -150,7 +150,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
                       xticks=xt,
                       xlims=frq_lim,
                       xscale=xsc,
-                      ylabel="",
+                      ylabel=ylabel,
                       yticks=(ch, sch),
                       title=title,
                       size=size(sp, 1) <= 64 ? (1200, 800) : (1200, 1200),
@@ -319,7 +319,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     else
         ch_t = unique(obj.header.recording[:channel_type][ch])
         @assert length(ch_t) == 1 "For multi-channel spectrogram plot, all channels should be of the same type."
-        ylabel == "default" && (ylabel = "Channel")
+        ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         if method === :stft
             sp, sf = psd(signal, fs=fs, db=db, method=:stft, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
@@ -503,7 +503,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
         end
 
     else
-        ylabel == "default" && (ylabel = "Component")
+        ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         if method === :stft
             sp, sf = psd(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)

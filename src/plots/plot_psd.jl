@@ -686,9 +686,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         ry = 1
         offset = 0
     elseif size(sp, 1) <= 100
-        size(sp, 1) > 64
         plot_size = 1200
-        marker_size = (100, 60)
+        marker_size = (120, 80)
         rx = 0.9
         ry = 0.7
         offset = 150
@@ -707,11 +706,9 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         for idx in 1:size(locs, 1)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
-        loc_x = loc_x[ch]
-        loc_y = loc_y[ch]
     else
-        loc_x = locs[ch, :loc_x]
-        loc_y = locs[ch, :loc_y]
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
     end
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
@@ -1037,7 +1034,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "Channels")
+        ylabel == "default" && (ylabel = "")
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
@@ -1063,7 +1060,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "Channels")
+        ylabel == "default" && (ylabel = "")
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
@@ -1349,7 +1346,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     elseif type === :w3d
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "Channels")
+        ylabel == "default" && (ylabel = "")
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
@@ -1372,7 +1369,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
     elseif type === :s3d
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "Channels")
+        ylabel == "default" && (ylabel = "")
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else

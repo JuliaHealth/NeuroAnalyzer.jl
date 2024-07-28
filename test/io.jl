@@ -220,8 +220,8 @@ eeg = import_xdf(joinpath(testfiles_path, "eeg-test-xdf.xdf"));
 @test eeg.header.recording[:data_type] == "eeg"
 @test eeg.header.recording[:file_type] == "XDF"
 
-@info "Test 38/$ntests: import_fif()"
-meg = import_fif(joinpath(testfiles_path, "meg-test-fiff.fif"));
+@info "Test 38/$ntests: import_fiff()"
+meg = import_fiff(joinpath(testfiles_path, "meg-test-fiff.fif"));
 @test meg isa NeuroAnalyzer.NEURO
 @test meg.header.recording[:data_type] == "meg"
 @test meg.header.recording[:file_type] == "FIFF"

@@ -533,7 +533,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
                 snap = !snap
             end
         end
-        if s == 0x00000014 # ctrl
+        if s == 0x00000004 # ctrl
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
@@ -991,7 +991,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 snap = !snap
             end
         end
-        if s == 0x00000014 # ctrl
+        if s == 0x00000004 # ctrl
             if k == 113 # q
                 quit = true
                 Gtk.destroy(win)
@@ -1388,7 +1388,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
                 end
             end
         end
-        if s == 0x00000014 # ctrl
+        if s == 0x00000004 # ctrl
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1993,7 +1993,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
                 end
             end
         end
-        if s == 0x00000014 # ctrl
+        if s == 0x00000004 # ctrl
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
