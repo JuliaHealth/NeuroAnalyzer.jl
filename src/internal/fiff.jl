@@ -30,7 +30,7 @@ fiff_data_type= Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 13, 14, 16,
                :name=>["void", "byte", "int16", "int32", "float", "double", "julian", "uint16", "uint32", "uint64", "string", "ascii", "int64", "dau_pack13", "dau_pack14", "dau_pack16", "complex_float", "complex_double", "old_pack", "ch_info_struct", "id_struct", "dir_entry_struct", "dig_point_struct", "ch_pos_struct", "coord_trans_struct", "old_pack"],
                :data_type=>["void_t", "byte_t", "int16_t", "int32_t", "float_t", "double_t", "julian_t", "uint16_t", "uint32_t", "uint64_t", "byte_t", "byte_t", "int64_t", "dau_pack13_t", "dau_pack14_t", "dau_pack16_t", "complex_float_t", "complex_double_t", "old_pack_tvariable", "ch_info_t", "id_t", "dir_entry_t", "dig_point_t", "ch_pos_t", "coord_trans_t", "old_pack_tvariable"],
                :size=>[1, 1, 2, 4, 4, 8, 8, 2, 4, 8, 1, 1, 8, 2, 2, 2, 8, 16, 80, 20, 16, 20, 52, 80])
-    
+
 # units
 fiff_units = Dict(:id=>[-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 201, 202],
                   :unit=>["none", "unitless", "m", "kg", "S", "A", "k", "mol", "rad", "sr", "cd", "Hz", "N", "Pa", "J", "W", "C", "V", "F", "Ω", "Mho", "Wb", "T", "H", "C", "lm", "lx", "T/m", "Am"])

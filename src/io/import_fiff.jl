@@ -373,6 +373,7 @@ function import_fiff(file_name::String)
 
     fiff, _, _ = load_fiff(file_name)
 
+    sampling_rate = fiff[:meas_info][:sfreq]
     ch_n = fiff[:meas_info][:nchan]
     data = @views reshape(fiff[:raw_data][:raw_data], fiff[:meas_info][:nchan], :, 1)
 
@@ -439,10 +440,8 @@ function import_fiff(file_name::String)
         end
     end
 
-    sampling_rate = fiff[:meas_info][:sfreq]
     bad_channels = zeros(Bool, ch_n, 1)
     !isnothing(fiff[:meas_info][:bad_chs]) && _warn("bad_channels tag is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
-
 
     # HPI
     # fiff[:meas_info][:hpi]
@@ -492,21 +491,40 @@ function import_fiff(file_name::String)
         _warn("Unknown data type: $(lowercase(fiff[:meas_info][:experimenter])).")
     end
 
-    id = !isnothing(fiff[:meas_info][:subject_info][:subj_id]) ? string(fiff[:meas_info][:subject_info][:subj_id]) : ""
-    first_name = !isnothing(fiff[:meas_info][:subject_info][:subj_first_name]) ? fiff[:meas_info][:subject_info][:subj_first_name] : ""
-    middle_name = !isnothing(fiff[:meas_info][:subject_info][:subj_middle_name]) ? fiff[:meas_info][:subject_info][:subj_middle_name] : ""
-    last_name = !isnothing(fiff[:meas_info][:subject_info][:subj_last_name]) ? fiff[:meas_info][:subject_info][:subj_last_name] : ""
-    handedness = !isnothing(fiff[:meas_info][:subject_info][:subj_hand]) ? string(fiff[:meas_info][:subject_info][:subj_hand]) : ""
-    weight = !isnothing(fiff[:meas_info][:subject_info][:subj_weight]) ? fiff[:meas_info][:subject_info][:subj_weight] : -1
-    height = !isnothing(fiff[:meas_info][:subject_info][:subj_height]) ? fiff[:meas_info][:subject_info][:subj_height] : -1
-    recording = !isnothing(fiff[:meas_info][:description]) ? fiff[:meas_info][:description] : ""
-    project_info = !isnothing(fiff[:meas_info][:project_info][:proj_name]) ? fiff[:meas_info][:project_info][:proj_name] : ""
+    id = fiff[:meas_info][:subject_info][:subj_id]
+    isnothing(id) && (id = "")
+    first_name = fiff[:meas_info][:subject_info][:subj_first_name]
+    isnothing(first_name) && (first_name = "")
+    middle_name = fiff[:meas_info][:subject_info][:subj_middle_name]
+    isnothing(middle_name) && (middle_name = "")
+    last_name = fiff[:meas_info][:subject_info][:subj_last_name]
+    isnothing(last_name) && (last_name = "")
+    handedness = fiff[:meas_info][:subject_info][:subj_hand]
+    isnothing(handedness) && (handedness = "")
+    weight = fiff[:meas_info][:subject_info][:subj_weight]
+    isnothing(weight) && (weight = -1)
+    height = fiff[:meas_info][:subject_info][:subj_height]
+    isnothing(height) && (height = -1)
+    recording = fiff[:meas_info][:description] 
+    isnothing(recording) && (recording = "")
+    project_info = fiff[:meas_info][:project_info][:proj_name]
+    isnothing(project_info) && (project_info = "")
 
-    rec_d = isnothing(fiff[:meas_info][:meas_date]) ? "" : string(Dates.day(date)) * "-" * string(Dates.month(date)) * "-" * string(Dates.year(date))
-    rec_t = isnothing(fiff[:meas_info][:meas_date]) ? "" : string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date))
-    lp = isnothing(fiff[:meas_info][:lowpass]) ? 0 : fiff[:meas_info][:lowpass]
-    hp = isnothing(fiff[:meas_info][:highpass]) ? 0 : fiff[:meas_info][:highpass]
-    lf = isnothing(fiff[:meas_info][:line_freq]) ? 0 : fiff[:meas_info][:line_freq]
+    date = fiff[:meas_info][:meas_date]
+    if isnothing(date)
+        rec_d = ""
+        rec_t = ""
+    else
+        rec_d = string(Dates.day(date)) * "-" * string(Dates.month(date)) * "-" * string(Dates.year(date))
+        rec_t = string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date))
+    end
+
+    lp = fiff[:meas_info][:lowpass]
+    isnothing(lp) && (lp = 0)
+    hp = fiff[:meas_info][:highpass]
+    isnothing(hp) && (hp = 0)
+    lf = fiff[:meas_info][:line_freq]
+    isnothing(lf) && (lf = 0)
 
     s = _create_subject(id=id,
                         first_name=first_name,

@@ -21,7 +21,9 @@ const data_types = ["eeg",
                     "nirs",
                     "sensors",
                     "eda",
-                    "mep"]
+                    "mep",
+                    "erp",
+                    "erf"]
 const channel_types = ["all",
                        "eeg", "ecog", "seeg", "ieeg",
                        "csd",
