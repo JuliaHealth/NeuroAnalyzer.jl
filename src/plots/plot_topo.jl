@@ -63,7 +63,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     loc_y = _s2v(loc_y)
 
     s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
- 
+
     head12 = false
     maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5 && (head15 = true)
     if head12
@@ -121,7 +121,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
             loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
         end
-    end        
+    end
 
     if large
         font_size = 10

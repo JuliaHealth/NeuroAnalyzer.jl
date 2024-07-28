@@ -62,7 +62,7 @@ function tacs_dose(; current::Real, pad_area::Real, duration::Int64, offset::Rea
     t = collect(0:0.001:1)
     current = abs.(generate_sine(frequency, t, current, phase) .+ offset)
     current = simpson(current, t)
-    
+
     cycles = frequency * duration
     _info("Number of cycles: $cycles")
     _info("Effective current: $current")

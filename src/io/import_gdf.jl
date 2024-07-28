@@ -430,7 +430,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)
         t_idx += 1
     end
     data = reshape(data, size(data, 1), size(data, 2), 1)
-    
+
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
     data .*= gain
 

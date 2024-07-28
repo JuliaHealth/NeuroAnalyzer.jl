@@ -28,7 +28,7 @@ Detect bad channels and epochs.
 - `p::Float64=0.99`: probability threshold (0.0 to 1.0) for marking a channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326); also threshold for `:z` method: percentage of channel length per epoch for marking a channel as bad
 - `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 - `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
-- `z::Real=3`: threshold number of z-scores 
+- `z::Real=3`: threshold number of z-scores
 - `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
 - `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
 - `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
@@ -322,7 +322,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @assert length(ch_list) == nrow(locs) "Some channels do not have locations."
         ch_n = length(ch)
         ep_n = nepochs(obj)
-        
+
         # scan in 1-second windows
         w = sr(obj)
 
@@ -423,7 +423,7 @@ Detect bad channels and epochs and update the `:bad_channel` field in the OBJ he
 - `p::Float64=0.99`: probability threshold (0.0 to 1.0) for marking a channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326); also threshold for `:z` method: percentage of channel length per epoch for marking a channel as bad
 - `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 - `tkeo_method::Symbol=:pow`: method of calculating TKEO, see `tkeo()` for details
-- `z::Real=3`: threshold number of z-scores 
+- `z::Real=3`: threshold number of z-scores
 - `ransac_r::Float64=0.8`: threshold (0.0 to 1.0) correlation between channels
 - `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
 - `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well

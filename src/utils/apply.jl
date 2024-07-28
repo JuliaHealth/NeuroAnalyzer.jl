@@ -39,7 +39,7 @@ function apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, f::S
             progress_bar && next!(progbar)
         end
     end
-    
+
     return out
 
 end

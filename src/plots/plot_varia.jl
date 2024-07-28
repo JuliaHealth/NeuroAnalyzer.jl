@@ -913,7 +913,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
     @assert size(p, 1) == length(f) "f vector length does not match powers."
     @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
-    
+
     _check_tuple(frq_lim, "frq_lim")
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 

@@ -123,7 +123,7 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
             set_gtk_property!(lb_status2, :label, "FINISHED")
             _beep()
             sleep(2)
-            
+
             # Interacting with GTK from a thread other than the main thread is
             # generally not allowed, so we register an idle callback instead.
             Gtk.GLib.g_idle_add(nothing) do user_data

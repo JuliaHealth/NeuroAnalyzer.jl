@@ -451,7 +451,7 @@ Normalize to Gaussian.
 - `sn::AbstractVector`
 """
 function normalize_gauss(s::AbstractVector)
-    
+
     l = length(s) + 1
     sn = (tiedrank(s) ./ l .- 0.5) .* 2
     sn = atanh.(sn)
@@ -481,7 +481,7 @@ Normalize to Gaussian.
 - `sn::AbstractArray`
 """
 function normalize_gauss(s::AbstractArray; bych::Bool=false)
-    
+
     @assert ndims(s) <= 3 "normalize_gauss() only works for arrays of ≤ 3 dimensions."
 
     if bych == false

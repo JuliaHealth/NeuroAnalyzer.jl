@@ -88,7 +88,7 @@ function load_fiff(file_name::String)
             # ch_pos
             coil_type = @views _i32i64(buf_tmp[1:4])
             r0_1 = @views _f32f64(buf_tmp[5:8])
-            r0_2 = @views _f32f64(buf_tmp[9:12]) 
+            r0_2 = @views _f32f64(buf_tmp[9:12])
             r0_3 = @views _f32f64(buf_tmp[13:16])
             ex_1 = @views _f32f64(buf_tmp[17:20])
             ex_2 = @views _f32f64(buf_tmp[21:24])
@@ -312,7 +312,7 @@ function load_fiff(file_name::String)
 
     fields = ["experimenter", "description", "meas_date"]
     merge!(meas_info, _pack_fiff_blocks(fiff_object, "meas_info", fields))
-    
+
     push!(meas_info, :subject_info=>subject_info)
     push!(meas_info, :project_info=>project_info)
     push!(meas_info, :hpi=>hpi)
@@ -349,7 +349,7 @@ function load_fiff(file_name::String)
     end
 
     fiff = Dict(:meas_info=>meas_info, :raw_data=>raw_data)
-    
+
     return fiff, fiff_object, fiff_blocks
 
 end
@@ -410,7 +410,7 @@ function import_fiff(file_name::String)
         if units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
             @views data[ch_idx, :, 1] .*= 10^6
             units[ch_idx] = "μV"
-        end 
+        end
     end
 
     # coil types

@@ -198,7 +198,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
-    
+
     return ica_reconstruct(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch, ic_idx=ic_idx, keep=keep)
 
 end
@@ -247,7 +247,7 @@ Reconstruct signals using external ICA components.
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
 
     @assert nepochs(obj) == 1 "ica_reconstruct() must be applied to a continuous signal."
-    
+
     ch = get_channel(obj, ch=ch)
 
     obj_new = deepcopy(obj)

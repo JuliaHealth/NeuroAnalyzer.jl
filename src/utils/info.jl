@@ -416,8 +416,8 @@ function info(obj::NeuroAnalyzer.NEURO)
         println(rpad(" ch", 8) *
                 rpad("label", 16) *
                 rpad("type", 12) *
-                rpad("unit", 8) * 
-                rpad("bad", 8)) 
+                rpad("unit", 8) *
+                rpad("bad", 8))
         println(" " * repeat("-", 6) * " " *
                 repeat("-", 15) * " " *
                 repeat("-", 11) * " " *
@@ -427,7 +427,7 @@ function info(obj::NeuroAnalyzer.NEURO)
             println(rpad(" $idx", 8) *
                     rpad("$(obj.header.recording[:label][idx])", 16) *
                     rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
-                    rpad("$(obj.header.recording[:unit][idx])", 8) * 
+                    rpad("$(obj.header.recording[:unit][idx])", 8) *
                     rpad("$(obj.header.recording[:bad_channel][idx])", 8))
         end
     else
@@ -473,7 +473,7 @@ function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64)
 
     if obj.header.recording[:data_type] != "nirs"
         println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) bad: $(obj.header.recording[:bad_channel][ch])")
-    else 
+    else
         if obj.header.recording[:channel_type][ch] !== "nirs_aux"
             println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))")
         else

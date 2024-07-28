@@ -540,11 +540,11 @@ Calculate critical t value.
 
 # Notes
 
-Critical region for one tailed probability: 
+Critical region for one tailed probability:
 - left: `(-∞ , -t]`
 - right: `[t , ∞)`
 
-Critical region for two tailed probability: `(-∞ , -t] ∪ [t, ∞)`  
+Critical region for two tailed probability: `(-∞ , -t] ∪ [t, ∞)`
 """
 function crit_t(df::Real, alpha::Float64=0.05; twosided::Bool=false)
 
@@ -725,7 +725,7 @@ Calculate standard deviation of the signal data (along epochs).
 function Statistics.std(obj::NeuroAnalyzer.NEURO)
 
     @assert nepochs(obj) > 1 "OBJ must have > 1 epoch."
-    
+
     if datatype(obj) == "erp"
         s = @views std(obj.data[:, :, 2:end], dims=3)
     else
@@ -754,7 +754,7 @@ Permute signal data.
 function permute(s::AbstractVector, n::Int64)
 
     @assert n > 0 "n must have > 0 epoch."
-    
+
     s_new = zeros(n, length(s))
     for idx in 1:n
         x = rand(2:length(s))
@@ -785,7 +785,7 @@ function permute(s::AbstractArray, n::Int64)
 
     @assert n > 0 "n must have > 0 epoch."
     @assert ndims(s) <= 3 "permute() only works for arrays of ≤ 3 dimensions."
-    
+
     if ndims(s) == 2
         s_new = zeros(n, size(s,1 ), size(s,2 ))
         @inbounds for idx1 in 1:n

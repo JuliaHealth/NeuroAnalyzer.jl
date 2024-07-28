@@ -241,7 +241,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
             _info(" F2_pass: $f2_pass Hz")
             _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
         end
-    
+
         flt = firls_design(n_taps, flt_frq, flt_shape, flt_weights, true, fs=fs)
 
         return flt

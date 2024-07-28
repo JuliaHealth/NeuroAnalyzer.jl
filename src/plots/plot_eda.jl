@@ -127,7 +127,7 @@ function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; cl
                                label="",
                                color=channel_color[idx])
     end
-    
+
     # plot labels
     p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
 

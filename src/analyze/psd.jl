@@ -363,7 +363,7 @@ function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, 
     end
 
     f = cwtfrq(s, fs=fs, wt=wt)
-    
+
     return (p=p, f=f)
 
 end

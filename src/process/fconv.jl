@@ -94,7 +94,7 @@ function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kern
 
     ch = get_channel(obj, ch=ch)
     s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm)
-    
+
     return s_new
 
 end

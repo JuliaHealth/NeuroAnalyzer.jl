@@ -104,7 +104,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
     int_t_kp = Vector{Vector{Float64}}()
     int_d_kp = Vector{Vector{Float64}}()
     key_pressed = false
-    
+
     t_kp_tmp = Vector{Float64}()
     d_kp_tmp = Vector{Float64}()
     int_t_kp_tmp = Vector{Float64}()

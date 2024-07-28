@@ -119,7 +119,7 @@ function create_object(; data_type::String)
                                   line_frequency=50,
                                   sampling_rate=0,
                                   bad_channels=[false;; ],
-                                  gain=Float64[])    
+                                  gain=Float64[])
     elseif data_type == "nirs"
         r = _create_recording_nirs(data_type="nirs",
                                    file_name="",

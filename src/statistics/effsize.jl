@@ -76,7 +76,7 @@ function pooledstd(x1::AbstractVector, x2::AbstractVector; type::Symbol=:cohen)
     v2 = var(x2)
     n1 = length(x1)
     n2 = length(x2)
-    
+
     if type === :cohen
         ps = sqrt((((n1 - 1) * v1) + ((n2 - 1) * v2))/(n1 + n2 - 2))
     else

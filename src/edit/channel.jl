@@ -42,7 +42,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     end
 
     l = labels(obj)
-    if wl == 0        
+    if wl == 0
         if type == ["all"]
             ch = l
         else

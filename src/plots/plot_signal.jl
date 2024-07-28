@@ -92,7 +92,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
 
     ch_n = size(s, 1)
 
-    ctypes_uni = unique(ctypes)        
+    ctypes_uni = unique(ctypes)
     t_pos = zeros(Int64, length(ctypes_uni))
     for idx in eachindex(ctypes_uni)
          t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
@@ -141,9 +141,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
                    title=title,
                    palette=pal,
                    size=plot_size,
-                   top_margin=10Plots.px,                   
-                   bottom_margin=40Plots.px,                 
-                   right_margin=20Plots.px,                   
+                   top_margin=10Plots.px,
+                   bottom_margin=40Plots.px,
+                   right_margin=20Plots.px,
                    left_margin=60Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -436,7 +436,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
 
     ch_n = size(s1, 1)
 
-    ctypes_uni = unique(ctypes)        
+    ctypes_uni = unique(ctypes)
     t_pos = zeros(Int64, length(ctypes_uni))
     for idx in eachindex(ctypes_uni)
          t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
@@ -474,9 +474,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
                    title=title,
                    palette=:darktest,
                    size=plot_size,
-                   top_margin=10Plots.px,                   
-                   bottom_margin=40Plots.px,                 
-                   right_margin=20Plots.px,                   
+                   top_margin=10Plots.px,
+                   bottom_margin=40Plots.px,
+                   right_margin=20Plots.px,
                    left_margin=60Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,

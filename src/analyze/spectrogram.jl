@@ -211,7 +211,7 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
     @assert fs >= 1 "fs must be ≥ 1."
 
     # w = w ? hanning(length(s)) : ones(length(s))
-    
+
     p = abs.(ContinuousWavelets.cwt(s, wt)')
 
     # scale
@@ -221,7 +221,7 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
     end
 
     f = cwtfrq(s, fs=fs, wt=wt)
-    
+
     # reverse order
     f_idx = sortperm(f)
     f = f[f_idx]
