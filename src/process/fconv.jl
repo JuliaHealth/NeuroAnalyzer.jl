@@ -82,7 +82,7 @@ Perform convolution in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `kernel::AbstractVector`: convolution kernel
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 

@@ -82,7 +82,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
@@ -118,7 +118,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window

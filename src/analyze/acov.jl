@@ -139,7 +139,7 @@ Calculate autocovariance. For ERP return trial-averaged autocovariance.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `l::Int64=1`: lags range is `0:lag` [samples]
 - `demean::Bool=true`: demean signal before computing autocovariance
 - `biased::Bool=true`: calculate biased or unbiased autocovariance

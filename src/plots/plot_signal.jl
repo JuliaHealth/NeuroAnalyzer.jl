@@ -541,7 +541,7 @@ Plot signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -976,7 +976,7 @@ Plot signal.
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label

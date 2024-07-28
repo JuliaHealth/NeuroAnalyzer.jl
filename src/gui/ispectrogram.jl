@@ -10,7 +10,7 @@ Interactive spectrogram of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
@@ -33,7 +33,7 @@ Interactive spectrogram of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
 function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
@@ -591,7 +591,7 @@ Interactive spectrogram of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 

@@ -10,7 +10,7 @@ Remove power line noise and its peaks above power line frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pl_frq::Real=50`: power line frequency
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB
@@ -165,7 +165,7 @@ Remove power line noise and harmonics.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pl_frq::Real=50`: power line frequency
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB

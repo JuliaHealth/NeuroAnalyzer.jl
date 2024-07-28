@@ -632,7 +632,7 @@ Preview of channel locations.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `selected::Union{String, Vector{String}}`: which channels should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: plot source labels

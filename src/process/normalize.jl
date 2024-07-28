@@ -1110,7 +1110,7 @@ Normalize channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
 
@@ -1150,7 +1150,7 @@ Normalize channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
 """

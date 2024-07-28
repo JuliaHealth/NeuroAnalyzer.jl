@@ -31,7 +31,7 @@ Add signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `s::AbstractVector`: signal to be added to each channel
 
 # Returns
@@ -66,7 +66,7 @@ Add signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `s::AbstractVector`: signal to be added to each channel
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)

@@ -644,7 +644,7 @@ Plot phase spectral density.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]

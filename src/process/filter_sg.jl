@@ -69,7 +69,7 @@ Filter using Savitzky-Golay filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
@@ -97,7 +97,7 @@ Filter using Savitzky-Golay filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 

@@ -10,7 +10,7 @@ Interactive PSD of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
@@ -33,7 +33,7 @@ Interactive PSD of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `zoom::Real=5`: how many seconds are displayed in one segment
 """
 function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
@@ -634,7 +634,7 @@ Interactive PSD of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 

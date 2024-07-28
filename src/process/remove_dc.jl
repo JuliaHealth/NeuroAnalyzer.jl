@@ -70,7 +70,7 @@ Remove mean value (DC offset).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
@@ -97,7 +97,7 @@ Remove mean value (DC offset).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 """
 function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)

@@ -38,7 +38,7 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 
@@ -74,7 +74,7 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Tuple{Real, Real}`: filter frequency
 """

@@ -55,7 +55,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 

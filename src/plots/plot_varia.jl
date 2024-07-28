@@ -1044,7 +1044,7 @@ Topographical plot of embedded ICA components.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component(s) to plot, default is all components
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `cb::Bool=false`: plot color bar
@@ -1113,7 +1113,7 @@ Topographical plot of external ICA components.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component(s) to plot, default is all components
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `cb::Bool=false`: plot color bar

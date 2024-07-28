@@ -137,7 +137,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance

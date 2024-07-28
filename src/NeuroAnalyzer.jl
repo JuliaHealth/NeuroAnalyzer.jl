@@ -189,7 +189,7 @@ BLAS.set_num_threads(Sys.CPU_THREADS)
 
 # load NA functions
 
-include("na.jl")
+include("utils/na.jl")
 
 function __init__()
 
@@ -478,7 +478,6 @@ include("utils/phase.jl")
 include("utils/time.jl")
 include("utils/vector.jl")
 include("utils/make_table.jl")
-include("utils/to_df.jl")
 include("utils/labels.jl")
 include("utils/play.jl")
 include("utils/wavelets.jl")

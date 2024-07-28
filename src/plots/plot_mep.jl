@@ -363,7 +363,7 @@ Plot MEP.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [units]

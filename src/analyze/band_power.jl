@@ -105,7 +105,7 @@ Calculate absolute band power between two frequencies.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram

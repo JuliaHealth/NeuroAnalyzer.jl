@@ -16,12 +16,12 @@ export add_channel!
 """
     get_channel(obj; <keyword arguments>)
 
-Return list of channel names or their numbers.
+Return list of channel names of specified type or their numbers if names are specified.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}=""`: channels names
+- `ch::Union{String, Vector{String}}=""`: channel name or list of channel names
 - `type::Union{String, Vector{String}}="all"`: channels types
 - `wl::Real`: return NIRS channels for wavelength (in nm)
 

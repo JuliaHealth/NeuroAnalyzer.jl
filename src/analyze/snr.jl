@@ -107,7 +107,7 @@ Calculate SNR.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `type::Symbol=:rms`: SNR type:
     - `:mean`: mean-based
     - `:rms`: RMS-based

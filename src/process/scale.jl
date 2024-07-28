@@ -9,7 +9,7 @@ Multiply channel(s) by `factor`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `factor::Real`: signal is multiplied by `factor`
 
 # Returns
@@ -36,7 +36,7 @@ Multiply channel(s) by `factor`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: list of channels
+- `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `factor::Real`: signal is multiplied by `factor`
 """
 function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, factor::Real)
