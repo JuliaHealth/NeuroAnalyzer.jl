@@ -316,7 +316,7 @@ em, eu, el, t = NeuroAnalyzer.henv_median(e10, ch="all", dims=3)
 @test length(t) == 2560
 
 @info "Test 15/$ntests: erp_peaks()"
-e = NeuroAnalyzer.erp(e10)
+e = NeuroAnalyzer.average_epochs(e10)
 p = NeuroAnalyzer.erp_peaks(e)
 @test size(p) == (19, 2)
 
@@ -860,7 +860,7 @@ xc, l = NeuroAnalyzer.xcor(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=2, method=
 @test length(l) == 3
 
 @info "Test 49/$ntests: amp_at()"
-e = NeuroAnalyzer.erp(e10)
+e = NeuroAnalyzer.average_epochs(e10)
 @test size(amp_at(e, t=2)) == (19, 11)
 
 @info "Test 50/$ntests: avgamp_at()"

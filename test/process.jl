@@ -7,12 +7,12 @@ ntests = 54
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
-n = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
-m = import_nirs(joinpath(testfiles_path, "meg-test-fiff.fif"))
+nirs = import_nirs(joinpath(testfiles_path, "fnirs-test-nirs.nirs"))
+meg = import_fiff(joinpath(testfiles_path, "meg-test-fiff.fif"))
 e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
-e2 = epoch(m, ep_len=2)
-keep_epoch!(m2, ep=1:10)
+epoch!(meg, ep_len=2)
+keep_epoch!(meg, ep=1:10)
 load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
@@ -127,8 +127,8 @@ s = dw_split(e10, ch="Fp1", wt = wavelet(WT.haar), type=:sdwt)
 @info "Test 15/$ntests: average_epochs()"
 e_erp = average_epochs(e10)
 @test size(e_erp.data) == (19, 2560, 11)
-m_erf = average_epochs(m2)
-@test size(m_erf.data) == (306, 1202, 11)
+m_erf = average_epochs(meg)
+@test size(m_erf.data) == (306, 2000, 11)
 
 @info "Test 16/$ntests: bpsplit()"
 s, bn, bf = bpsplit(e10, ch="all")
@@ -389,7 +389,7 @@ e10_tmp = wbp(e10, ch="all", frq=4)
 @test size(e10_tmp) == size(e10)
 
 @info "Test 40/$ntests: intensity2od()"
-n_tmp = intensity2od(n)
+n_tmp = intensity2od(nirs)
 @test size(n_tmp.data) == (16, 9015, 1)
 
 @info "Test 41/$ntests: od2conc()"

@@ -26,7 +26,7 @@ p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test 3/$ntests: plot_erp()"
-e10_erp = erp(e10)
+e10_erp = average_epochs(e10)
 p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1")
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:butterfly)

@@ -590,7 +590,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
 
     # check channels
     ch = get_channel(obj, ch=ch)
-    length(ch) == 1  && (ch = get_channel(obj, ch=ch)[1])
+    length(ch) == 1  && (ch = ch[1])
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])

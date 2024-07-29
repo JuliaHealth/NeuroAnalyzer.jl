@@ -494,7 +494,7 @@ function import_fiff(file_name::String)
     end
 
     id = fiff[:meas_info][:subject_info][:subj_id]
-    isnothing(id) && (id = "")
+    id = isnothing(id) ? "" : string(id)
     first_name = fiff[:meas_info][:subject_info][:subj_first_name]
     isnothing(first_name) && (first_name = "")
     middle_name = fiff[:meas_info][:subject_info][:subj_middle_name]
@@ -502,7 +502,7 @@ function import_fiff(file_name::String)
     last_name = fiff[:meas_info][:subject_info][:subj_last_name]
     isnothing(last_name) && (last_name = "")
     handedness = fiff[:meas_info][:subject_info][:subj_hand]
-    isnothing(handedness) && (handedness = "")
+    handedness = isnothing(handedness) ? "" : string(handedness)
     weight = fiff[:meas_info][:subject_info][:subj_weight]
     isnothing(weight) && (weight = -1)
     height = fiff[:meas_info][:subject_info][:subj_height]
