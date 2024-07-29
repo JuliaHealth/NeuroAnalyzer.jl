@@ -86,25 +86,7 @@ function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{Stri
     return unique(ch)
 end
 
-function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}}, e::Union{String, Vector{String}}="")
-    isa(e, String) && (e = [e])
-    if e == [""]
-        e = nothing
-    elseif any(occursin.("bad", e))
-        idx = findfirst(isequal("bad"), l)
-        bads = vec(sum(obj.header.recording[:bad_channel], dims=2))
-        bad_ch = labels(obj)[bads .> 0]
-        if length(bad_ch) > 0
-            idx = findfirst(isequal("bad"), e)
-            if idx < length(e)
-                e = [e[1:idx]; bad_ch; l[idx+1:end]]
-            else
-                    l = append!(l, bad_ch)
-            end
-        end
-    else
-        e = _ch_idx(obj, e, "")
-    end
+function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
     l == "" && return(nothing)
     cl = labels(obj)
     isa(l, String) && (l = [l])
@@ -125,7 +107,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}}, e::
         if idx < length(l)
             l = [l[1:idx]; "nirs_od"; "nirs_dmean"; "nirs_dvar"; "nirs_dskew"; "nirs_mua"; "nirs_musp"; "nirs_hbo"; "nirs_hbr"; "nirs_hbt"; "nirs_h2o"; "nirs_lipid"; "nirs_bfi"; "nirs_hrf_dod"; "nirs_hrf_dmean"; "nirs_hrf_dvar"; "nirs_hrf_dskew"; "nirs_hrf_hbo"; "nirs_hrf_hbr"; "nirs_hrf_hbt"; "nirs_hrf_bfi"; "nirs_aux"; l[idx+1:end]]
         else
-            l = append!(l, ["nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux"])
+            append!(l, ["nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux"])
         end
     end
     if any(occursin.("sensors", l))
@@ -134,9 +116,23 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}}, e::
         if idx < length(l)
             l = [l[1:idx]; "magfld"; "orient"; "angvel"; l[idx+1:end]]
         else
-            l = append!(l, ["magfld", "orient", "angvel"])
+            append!(l, ["magfld", "orient", "angvel"])
         end
     end
+    if any(occursin.("bad", l))
+        idx = findfirst(isequal("bad"), l)
+        bads = vec(sum(obj.header.recording[:bad_channel], dims=2))
+        bad_ch = labels(obj)[bads .> 0]
+        deleteat!(l, idx)
+        if length(bad_ch) > 0
+            if idx < length(l)
+                l = [l[1:idx]; bad_ch l[idx+1:end]]
+            else
+                append!(l, bad_ch)
+            end
+        end
+    end
+    length(l) == 0 && return nothing
     l_tmp = String[]
     for idx1 in eachindex(l)
         if l[idx1] in NeuroAnalyzer.channel_types
@@ -154,11 +150,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}}, e::
         @assert l[ch_idx] in cl "$(l[ch_idx]) does not match signal labels."
         push!(ch, findfirst(isequal(l[ch_idx]), cl))
     end
-    if isnothing(e)
-        return unique(ch)
-    else
-        return setdiff(unique(ch), e)
-    end
+    return unique(ch)
 end
 
 function _set_channel_types(clabels::Vector{String}, default::String="other")

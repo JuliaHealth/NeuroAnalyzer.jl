@@ -33,14 +33,20 @@ Return list of channel names of specified type or their numbers if names are spe
 function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}="", type::Union{String, Vector{String}}="all", wl::Real=0, exclude::Union{String, Vector{String}}="bad")
 
     # return physical channel numbers
-    ch != "" && return _ch_idx(obj, ch)
+    if ch != ""
+        exclude = _ch_idx(obj, exclude)
+        ch = _ch_idx(obj, ch)
+        if isnothing(exclude)
+            return ch
+        else
+            return setdiff(ch, exclude)
+        end
+    end
 
     # return channel names
     ch = String[]
     isa(type, String) && (type = [type])
-    for idx in type
-        _check_var(idx, channel_types, "type")
-    end
+    [_check_var(idx, channel_types, "type") for idx in type]
 
     l = labels(obj)
     if wl == 0
@@ -62,7 +68,12 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
         end
     end
 
-    return ch
+    exclude != "" && (exclude = _ch_idx(obj, exclude))
+    if isnothing(exclude)
+        return ch
+    else
+        return setdiff(ch, labels(obj)[exclude])
+    end
 
 end
 
