@@ -598,7 +598,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     # check channels
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj, ch=ch, exclude="")
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -696,7 +696,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                    title,
                                    "Time [s]",
                                    "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
-                                   "")
+                                   "$(size(s[ch, :], 1)) $(uppercase(unique(ctypes)[1])) channels")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
             p = plot_eda_butterfly(t,
@@ -729,7 +729,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                    title,
                                    "Time [s]",
                                    "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
-                                   "")
+                                   "$(size(s[ch, :], 1)) $(uppercase(unique(ctypes)[1])) channels")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
             p = plot_eda_avg(t,
@@ -1016,8 +1016,8 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # check channels
-    _ = get_channel(obj2, ch=ch)
-    ch = get_channel(obj1, ch=ch)
+    _ = get_channel(obj2, ch=ch, exclude="")
+    ch = get_channel(obj1, ch=ch, exclude="")
     clabels = labels(obj1)
 
     # get time vector

@@ -1,7 +1,7 @@
 using NeuroAnalyzer
 using Test
 
-ntests = 78
+ntests = 79
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -279,8 +279,9 @@ delete_note!(e10)
 @info "Test 64/$ntests: size()"
 @test size(e10) == (24, 2560, 10)
 
-@info "Test 65/$ntests: to_df()"
-@test to_df(eeg) isa DataFrame
+@info "Test 65/$ntests: generate_signal()"
+s = generate_signal(100)
+@test length(s) == 100
 
 @info "Test 66/$ntests: chtypes()"
 @test length(chtypes(e10)) == 24
@@ -343,8 +344,10 @@ f = linspace(0, 10, 100)
 x2, f2 = areduce(x, f)
 @test size(x2, 2) == length(f2) == 21
 
-@info "Test 78/$ntests: generate_signal()"
-s = generate_signal(100)
-@test length(s) == 100
+@info "Test 78/$ntests: info()"
+@test isa(info(e10, df=true), DataFrame)
+
+@info "Test 79/$ntests: describe()"
+@test isa(NeuroAnalyzer.describe(e10, df=true), DataFrame)
 
 true
