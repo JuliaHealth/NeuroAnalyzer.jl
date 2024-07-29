@@ -24,12 +24,13 @@ Return list of channel names of specified type or their numbers if names are spe
 - `ch::Union{String, Vector{String}}=""`: channel name or list of channel names
 - `type::Union{String, Vector{String}}="all"`: channels types
 - `wl::Real`: return NIRS channels for wavelength (in nm)
+- `exclude::Union{String, Vector{String}}="bad"`: channel name or list of channel names to exclude from the list
 
 # Returns
 
 - `ch::Vector{String}`
 """
-function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}="", type::Union{String, Vector{String}}="all", wl::Real=0)
+function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}="", type::Union{String, Vector{String}}="all", wl::Real=0, exclude::Union{String, Vector{String}}="bad")
 
     # return physical channel numbers
     ch != "" && return _ch_idx(obj, ch)
