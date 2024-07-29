@@ -96,9 +96,27 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
         idx = findfirst(isequal("meg"), l)
         l[idx] = "mag"
         if idx < length(l)
-            append!(l[1:idx], ["grad"; l[idx+1:end]])
+            l = [l[1:idx]; "grad"; l[idx+1:end]]
         else
-            append!(l, ["grad"])
+            l = append!(l, ["grad"])
+        end
+    end
+    if any(occursin.("nirs", l))
+        idx = findfirst(isequal("nirs"), l)
+        l[idx] = "nirs_int"
+        if idx < length(l)
+            l = [l[1:idx]; "nirs_od"; "nirs_dmean"; "nirs_dvar"; "nirs_dskew"; "nirs_mua"; "nirs_musp"; "nirs_hbo"; "nirs_hbr"; "nirs_hbt"; "nirs_h2o"; "nirs_lipid"; "nirs_bfi"; "nirs_hrf_dod"; "nirs_hrf_dmean"; "nirs_hrf_dvar"; "nirs_hrf_dskew"; "nirs_hrf_hbo"; "nirs_hrf_hbr"; "nirs_hrf_hbt"; "nirs_hrf_bfi"; "nirs_aux"; l[idx+1:end]]
+        else
+            l = append!(l, ["nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux"])
+        end
+    end
+    if any(occursin.("sensors", l))
+        idx = findfirst(isequal("sensors"), l)
+        l[idx] = "accel"
+        if idx < length(l)
+            l = [l[1:idx]; "magfld"; "orient"; "angvel"; l[idx+1:end]]
+        else
+            l = append!(l, ["magfld", "orient", "angvel"])
         end
     end
     l_tmp = String[]

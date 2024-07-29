@@ -385,6 +385,8 @@ function import_fiff(file_name::String)
         ch = v[1]
         ch_type[ch] = v[3]
         ch_type[ch] == "stim" && (ch_type[ch] = "mrk")
+        ch_type[ch] == "ias" && (ch_type[ch] = "other")
+        ch_type[ch] == "syst" && (ch_type[ch] = "other")
         range = v[4]
         cal = v[5]
         coil_type[ch] = NeuroAnalyzer._find_fiff_coiltype(v[6])
