@@ -237,7 +237,7 @@ end
 
 function _view_fiff_block(fb::Matrix{Int64})
     indent = ""
-    for tag_idx in 1:size(fb, 1)
+    for tag_idx in axes(fb, 1)
         fb[tag_idx, 2] == 104 && (indent = repeat("  ", length(indent) + 1))
         println(indent * "$(fb[tag_idx, 2]) [$(fb[tag_idx, 5])]")
         fb[tag_idx, 2] == 105 && (indent = repeat("  ", length(indent) - 1))

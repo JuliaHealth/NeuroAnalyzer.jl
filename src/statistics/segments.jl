@@ -86,7 +86,7 @@ function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::
     else
         seg = zeros(Bool, size(m))
         seg_radius = distance((r1, c1), (r2, c2))
-        for idx_r in 1:size(m, 1), idx_c in 1:size(m, 2)
+        for idx_r in axes(m, 1), idx_c in axes(m, 2)
             if distance((r1, c1), (idx_r, idx_c)) <= seg_radius
                 seg[idx_r, idx_c] = true
             end

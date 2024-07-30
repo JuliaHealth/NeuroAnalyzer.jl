@@ -55,12 +55,12 @@ function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
 
     idx = zeros(Int, size(m))
     if dims == 1
-        @inbounds for m_idx = 1:size(m, 2)
+        @inbounds for m_idx = axes(m, 2)
             # sort by columns
             idx[:, m_idx] = sortperm(m[:, m_idx], rev=rev)
         end
     else
-        @inbounds for m_idx = 1:size(m, 1)
+        @inbounds for m_idx = axes(m, 1)
             # sort by rows
             idx[m_idx, :] = sortperm(m[m_idx, :], rev=rev)'
         end
@@ -94,12 +94,12 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1
-        @inbounds for idx = 1:size(m, 2)
+        @inbounds for idx = axes(m, 2)
             # sort by columns
             m_sorted[:, idx] = @views m[:, idx][m_idx]
         end
     else
-        @inbounds for idx = 1:size(m, 1)
+        @inbounds for idx = axes(m, 1)
             # sort by rows
             m_sorted[idx, :] = @views m[idx, :][m_idx]
         end
@@ -180,7 +180,7 @@ function arr2mat(x::AbstractArray)
     @assert size(x, 1) == 1 "First dimension of x must be 1."
 
     m = zeros(size(x, 3), size(x, 2))
-    for idx in 1:size(x, 3)
+    for idx in axes(x, 3)
         m[idx, :] = x[1, :, idx]
     end
 

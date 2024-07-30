@@ -375,7 +375,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     if !cart
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
-        for idx in 1:size(locs, 1)
+        for idx in axes(locs, 1)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
     else
@@ -396,7 +396,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}
     Cairo.set_source_rgb(cr, 256, 256, 256)
     Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size - 3 * offset)
     Cairo.fill(cr)
-    for idx in 1:size(s, 1)
+    for idx in axes(s, 1)
         p = Plots.plot(xlabel=xlabel,
                        ylabel=ylabel,
                        legend=false,
@@ -499,7 +499,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
     if clabels == [""]
         yticks = round.(Int64, range(1, size(s, 1), length=10))
     else
-        yticks = (1:size(s, 1), clabels)
+        yticks = (axes(s, 1), clabels)
     end
 
     if smooth
@@ -507,7 +507,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
     end
 
     p = Plots.heatmap(t,
-                      1:size(s, 1),
+                      axes(s, 1),
                       s,
                       size=size(s, 1) <= 64 ? (1200, 800) : (1200, 1200),
                       margins=20Plots.px,

@@ -180,8 +180,8 @@ function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64
 
     d = zeros(size(m))
 
-    @inbounds for idx1 in 1:size(m, 1)
-        for idx2 in 1:size(m, 2)
+    @inbounds for idx1 in axes(m, 1)
+        for idx2 in axes(m, 2)
             d[idx1, idx2] = euclidean(m[idx1, idx2], p)
         end
     end

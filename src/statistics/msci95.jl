@@ -82,10 +82,10 @@ function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)
         sl = sm - 1.96 * ss
     else
         s_tmp1 = zeros(size(s, 1) * n, size(s, 2))
-        Threads.@threads for idx1 in 1:size(s, 1) * n
+        Threads.@threads for idx1 in axes(s, 1) * n
             s_tmp2 = zeros(size(s))
-            sample_idx = rand(1:size(s, 1), size(s, 1))
-            @inbounds for idx2 in 1:size(s, 1)
+            sample_idx = rand(axes(s, 1), size(s, 1))
+            @inbounds for idx2 in axes(s, 1)
                 s_tmp2[idx2, :] = s[sample_idx[idx2], :]'
             end
             s_tmp1[idx1, :] = mean(s_tmp2, dims=1)

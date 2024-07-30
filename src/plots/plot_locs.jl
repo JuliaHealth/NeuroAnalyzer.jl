@@ -283,7 +283,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
         m_tmp = normalize_n(abs.(connections))
 
-        for idx1 in 1:size(connections, 1)
+        for idx1 in axes(connections, 1)
             for idx2 in 2:size(connections, 1)
                 if idx1 != idx2
                     if threshold_type === :g

@@ -204,7 +204,7 @@ function import_nirx(file_name::String)
         # what are those 0s and 1s in events[] ???
         stim_onset = events[:, 1]
         stim_id = String[]
-        [push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for idx in 1:size(events, 1)]
+        [push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for idx in axes(events, 1)]
     end
 
     markers = isnothing(stim_onset) ? DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :description=>nothing, :channel=>nothing) : DataFrame(:id=>stim_id, :start=>stim_onset, :length=>repeat([1], length(stim_id)), :description=>repeat(["stim"], length(stim_id)), :channel=>zeros(Int64, length(stim_id)))

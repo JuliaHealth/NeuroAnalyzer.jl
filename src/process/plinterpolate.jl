@@ -135,7 +135,7 @@ Interpolate channel using planar interpolation.
 """
 function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)
 
-    @assert ch in 1:size(s, 1) "ch must be in [1, $(size(s, 1))"
+    @assert ch in axes(s, 1) "ch must be in [1, $(size(s, 1))"
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     locs = locs[ch, :]

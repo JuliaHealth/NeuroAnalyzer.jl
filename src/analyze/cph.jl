@@ -68,7 +68,7 @@ function cph(s::AbstractArray; fs::Int64)
         end
     end
 
-    @inbounds for cph_idx in 1:size(ph, 3)
+    @inbounds for cph_idx in axes(ph, 3)
         Threads.@threads for ep_idx in 1:ep_n
             for ch_idx1 in 1:(ch_n - 1)
                 for ch_idx2 in (ch_idx1 + 1):ch_n

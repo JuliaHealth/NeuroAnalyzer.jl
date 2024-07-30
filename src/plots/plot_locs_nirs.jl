@@ -88,7 +88,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
     x = locs[!, :loc_x]
     y = locs[!, :loc_y]
 
-    for idx in 1:size(opt_pairs, 1)
+    for idx in axes(opt_pairs, 1)
         xs = x[opt_pairs[idx, 1]]
         xd = x[src_n + opt_pairs[idx, 2]]
         ys = y[opt_pairs[idx, 1]]

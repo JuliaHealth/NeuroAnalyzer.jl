@@ -318,10 +318,10 @@ function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
     if clabels == [""]
         yticks = round.(Int64, range(1, size(s, 1), length=10))
     else
-        yticks = (1:size(s, 1), clabels)
+        yticks = (axes(s, 1), clabels)
     end
     p = Plots.heatmap(t,
-                      1:size(s, 1),
+                      axes(s, 1),
                       s,
                       size=(1200, 500),
                       margins=20Plots.px,

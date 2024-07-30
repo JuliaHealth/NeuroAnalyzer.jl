@@ -54,7 +54,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
             idx in 1:length(obj_new.header.recording[:wavelength_index]) && deleteat!(obj_new.header.recording[:wavelength_index], idx)
             chp1 = obj_new.header.recording[:optode_pairs][:, 1]
             chp2 = obj_new.header.recording[:optode_pairs][:, 2]
-            if idx in 1:size(obj_new.header.recording[:optode_pairs], 1)
+            if idx in axes(obj_new.header.recording[:optode_pairs], 1)
                 deleteat!(chp1, idx)
                 deleteat!(chp2, idx)
                 obj_new.header.recording[:optode_pairs] = hcat(chp1, chp2)

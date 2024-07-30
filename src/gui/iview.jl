@@ -1714,7 +1714,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
     @assert nepochs(obj) == 1 "iview_ep() should be used for epoched object."
 
     c isa Symbol && (c = _get_component(obj, c))
-    ch = 1:size(c, 1)
+    ch = axes(c, 1)
 
     mono = false
     quit = false
@@ -2057,7 +2057,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
     @assert nepochs(obj) > 1 "iview_cont() should be used for continuous object."
 
     c isa Symbol && (c = _get_component(obj, c))
-    ch = 1:size(c, 1)
+    ch = axes(c, 1)
 
     _check_epochs(obj, ep)
 

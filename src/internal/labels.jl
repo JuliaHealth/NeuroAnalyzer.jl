@@ -24,7 +24,7 @@ end
 function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)
     c = _get_component(obj, c)
     clabels = Vector{String}()
-    for idx in 1:size(c, 1)
+    for idx in axes(c, 1)
         push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
     end
     return clabels
@@ -35,7 +35,7 @@ function _gen_clabels(c::Union{AbstractVector, AbstractArray})
     if ndims(c) == 1
         push!(clabels, "1")
     else
-        for idx in 1:size(c, 1)
+        for idx in axes(c, 1)
             push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
         end
     end

@@ -216,12 +216,12 @@ function normalize_zscore(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_zscore(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_zscore(s[idx2, :, idx1])
                 end
             end
@@ -287,12 +287,12 @@ function normalize_minmax(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_minmax(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_minmax(s[idx2, :, idx1])
                 end
             end
@@ -358,12 +358,12 @@ function normalize_n(s::AbstractArray, n::Real=1.0; bych::Bool=false)
             sn = @. n * (s - smin) / (smax - smin)
         else
             if ndims(s) == 2
-                for idx in 1:size(s, 1)
+                for idx in axes(s, 1)
                     sn[idx, :] = @views normalize_n(s[idx, :], n)
                 end
             elseif ndims(s) == 3
-                for idx1 in 1:size(s, 3)
-                    for idx2 in 1:size(s, 1)
+                for idx1 in axes(s, 3)
+                    for idx2 in axes(s, 1)
                         sn[idx2, :, idx1] = @views normalize_n(s[idx2, :, idx1], n)
                     end
                 end
@@ -421,12 +421,12 @@ function normalize_log(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_log(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_log(s[idx2, :, idx1])
                 end
             end
@@ -491,12 +491,12 @@ function normalize_gauss(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_gauss(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_gauss(s[idx2, :, idx1])
                 end
             end
@@ -553,12 +553,12 @@ function normalize_log10(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_log10(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_log10(s[idx2, :, idx1])
                 end
             end
@@ -659,12 +659,12 @@ function normalize_neg(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_neg(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_neg(s[idx2, :, idx1])
                 end
             end
@@ -721,12 +721,12 @@ function normalize_pos(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_pos(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_pos(s[idx2, :, idx1])
                 end
             end
@@ -796,12 +796,12 @@ function normalize_perc(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_perc(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_perc(s[idx2, :, idx1])
                 end
             end
@@ -861,12 +861,12 @@ function normalize_invroot(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_invroot(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_invroot(s[idx2, :, idx1])
                 end
             end
@@ -973,12 +973,12 @@ function normalize_mad(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_mad(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_mad(s[idx2, :, idx1])
                 end
             end
@@ -1036,12 +1036,12 @@ function normalize_rank(s::AbstractArray; bych::Bool=false)
     else
         sn = zeros(size(s))
         if ndims(s) == 2
-            for idx in 1:size(s, 1)
+            for idx in axes(s, 1)
                 sn[idx, :] = @views normalize_rank(s[idx, :])
             end
         elseif ndims(s) == 3
-            for idx1 in 1:size(s, 3)
-                for idx2 in 1:size(s, 1)
+            for idx1 in axes(s, 3)
+                for idx2 in axes(s, 1)
                     sn[idx2, :, idx1] = @views normalize_rank(s[idx2, :, idx1])
                 end
             end

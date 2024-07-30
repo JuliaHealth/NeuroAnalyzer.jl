@@ -64,7 +64,7 @@ function import_duomag(file_name::String)
 
         # data matrix: signals × samples
         mep_signal = zeros((samples_count[1], signal_count))
-        for idx in 1:size(mep_signal)[1]
+        for idx in axes(mep_signal)[1]
             mep_signal[idx, :] = parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.'))
         end
 
@@ -169,7 +169,7 @@ function import_duomag(file_name::String)
     end
 
     data = zeros(size(mep_signal, 2), size(mep_signal, 1), 1)
-    for idx in 1:size(data, 1)
+    for idx in axes(data, 1)
         data[idx, :, 1] = @views -mep_signal[:, idx]
         # reduce stimulation amplitude
         data[idx, stim_sample[1]-10:stim_sample[1]+10, 1] .*= 0.05

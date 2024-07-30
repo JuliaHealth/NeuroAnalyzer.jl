@@ -296,7 +296,7 @@ function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int6
     obj_new = deepcopy(obj)
     obj_new.data = data
     clabels = repeat(["ch-"], size(data, 1))
-    clabels = clabels .* string.(collect(1:size(data, 1)))
+    clabels = clabels .* string.(collect(axes(data, 1)))
     obj_new.header.recording[:label] = clabels
     obj_new.header.recording[:unit] = repeat([_ch_units(type)])
     obj_new.header.recording[:sampling_rate] = fs

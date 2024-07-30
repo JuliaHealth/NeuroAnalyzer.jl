@@ -45,14 +45,14 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
 
     Threads.@threads for idx1 in 1:(size(s1, 1) * n)
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
-        sample_idx = rand(1:size(ss, 1), size(ss, 1))
-        @inbounds for idx2 in 1:size(s1, 1)
+        sample_idx = rand(axes(ss, 1), size(ss, 1))
+        @inbounds for idx2 in axes(s1, 1)
             s_tmp1[idx2, :] = @views ss[sample_idx[idx2], :]'
         end
         s1_mean = vec(mean(s_tmp1, dims=1))
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
-        sample_idx = rand(1:size(ss, 1), size(ss, 1))
-        @inbounds for idx2 in 1:size(s1, 1)
+        sample_idx = rand(axes(ss, 1), size(ss, 1))
+        @inbounds for idx2 in axes(s1, 1)
             s_tmp1[idx2, :] = @views ss[sample_idx[idx2], :]'
         end
         s2_mean = vec(mean(s_tmp1, dims=1))

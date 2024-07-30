@@ -453,7 +453,7 @@ function import_snirf(file_name::String; n::Int64=0)
 
     if aux_data !== nothing
         data = vcat(data, reshape(aux_data, size(aux_data, 2), :))
-        for idx in 1:size(aux_data, 1)
+        for idx in axes(aux_data, 1)
             push!(clabels, "AUX$idx")
             push!(data_type_label, "nirs_aux")
             if aux_unit !== nothing

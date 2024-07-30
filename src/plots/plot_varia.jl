@@ -742,7 +742,7 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
     end
 
     if smooth
-        for idx in 1:size(s, 3)
+        for idx in axes(s, 3)
             s[:, :, idx] = @views imfilter(s[:, :, idx], Kernel.gaussian(n))
         end
     end

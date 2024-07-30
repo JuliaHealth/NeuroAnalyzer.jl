@@ -215,7 +215,7 @@ function fft_transform(x::AbstractVector; fs::Int64, wlen::Int64=fs, woverlap::I
 
     # apply window per segment
     w = w ? hanning(size(m, 2)) : ones(size(m, 2))
-    for idx in 1:size(m, 1)
+    for idx in axes(m, 1)
         m[idx, :] = @views m[idx, :] .* w
     end
 

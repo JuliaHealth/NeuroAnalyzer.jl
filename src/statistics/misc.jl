@@ -789,7 +789,7 @@ function permute(s::AbstractArray, n::Int64)
     if ndims(s) == 2
         s_new = zeros(n, size(s,1 ), size(s,2 ))
         @inbounds for idx1 in 1:n
-            Threads.@threads for idx2 in 1:size(s, 1)
+            Threads.@threads for idx2 in axes(s, 1)
                 x = rand(2:size(s, 2))
                 s1 = s[idx2, x:end]
                 s2 = s[idx2, 1:(x - 1)]
@@ -799,8 +799,8 @@ function permute(s::AbstractArray, n::Int64)
     else
         s_new = zeros(n, size(s, 1), size(s, 2), size(s, 3))
         for idx1 in 1:n
-            @inbounds for idx2 in 1:size(s, 1)
-                Threads.@threads for idx3 in 1:size(s, 3)
+            @inbounds for idx2 in axes(s, 1)
+                Threads.@threads for idx3 in axes(s, 3)
                     x = rand(2:size(s, 2))
                     s1 = s[idx2, x:end, idx3]
                     s2 = s[idx2, 1:(x - 1), idx3]

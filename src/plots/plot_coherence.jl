@@ -219,7 +219,7 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
 
     # plot labels
     p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
-    for idx in 1:size(coh, 1)
+    for idx in axes(coh, 1)
         max_coh = maxat(coh_tmp[idx, :], f)
         min_coh = minat(coh_tmp[idx, :], f)
         if clabels == repeat([""], size(coh, 1))
@@ -337,7 +337,7 @@ function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::V
                     c=:black,
                     lw=0.5)
 
-    for idx in 1:size(coh, 1)
+    for idx in axes(coh, 1)
         max_coh = maxat(coh[idx, :], f)
         min_coh = minat(coh[idx, :], f)
         if clabels == repeat([""], size(coh, 1))
@@ -428,7 +428,7 @@ function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clab
                    ytickfontsize=6)
 
     # plot coherence
-    for idx in 1:size(coh, 1)
+    for idx in axes(coh, 1)
         p = Plots.plot!(f,
                         coh[idx, :],
                         t=:line,
@@ -439,7 +439,7 @@ function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clab
                         kwargs...)
     end
 
-    for idx in 1:size(coh, 1)
+    for idx in axes(coh, 1)
         max_coh = maxat(coh[idx, :], f)
         min_coh = minat(coh[idx, :], f)
         if clabels == repeat([""], size(coh, 1))

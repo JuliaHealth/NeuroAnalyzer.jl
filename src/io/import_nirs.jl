@@ -51,7 +51,7 @@ function import_nirs(file_name::String)
     tmp = Int.(probes["MeasList"])
     ch_n = size(tmp, 1)
     opt_pairs=zeros(Int64, size(tmp, 1), 2)
-    for idx in 1:size(tmp, 1)
+    for idx in axes(tmp, 1)
         opt_pairs[idx, 1] = tmp[idx, 1]
         opt_pairs[idx, 2] = tmp[idx, 2]
     end
@@ -129,7 +129,7 @@ function import_nirs(file_name::String)
     aux = Matrix(nirs["aux"]')
     if length(aux) > 0
         data = vcat(data, aux)
-        for idx in 1:size(aux, 1)
+        for idx in axes(aux, 1)
             push!(clabels, "AUX$idx")
             push!(ch_type, "nirs_aux")
             push!(data_unit, "")

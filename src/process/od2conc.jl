@@ -73,20 +73,20 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get
     end
 
     # add channels
-    for dc_idx in 1:size(dc, 3)
+    for dc_idx in axes(dc, 3)
         obj_new.data = vcat(obj_new.data, dc[:, :, dc_idx, :])
     end
 
     # update header
     obj_new.header.recording[:channel_type] = vcat(obj.header.recording[:channel_type], repeat(["nirs_hbo", "nirs_hbr", "nirs_hbt"], size(dc, 3)))
     obj_new.header.recording[:unit] = vcat(obj.header.recording[:unit], repeat(["μM/mm"], 3 * size(dc, 3)))
-    for idx in 1:size(dc, 3)
+    for idx in axes(dc, 3)
         obj_new.header.recording[:label] = vcat(obj_new.header.recording[:label], ["$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT"])
     end
     obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0"=>"")
 
     #=
-    for idx in 1:size(dc, 3)
+    for idx in axes(dc, 3)
         obj_new.header.recording[:optode_pairs] = vcat(obj_new.header.recording[:optode_pairs], repeat(chp[unique(chp), :][idx, :]', 3))
     end
     obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))

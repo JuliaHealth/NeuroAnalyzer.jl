@@ -357,7 +357,7 @@ function plot_phsd_butterfly(sf::Vector{Float64}, sp::Array{Float64, 2}; clabels
                    ytickfontsize=6)
 
     # plot powers
-    for idx in 1:size(sp, 1)
+    for idx in axes(sp, 1)
         p = Plots.plot!(sf,
                         sp[idx, :],
                         t=:line,
@@ -568,7 +568,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     if !cart
         loc_x = zeros(size(locs, 1))
         loc_y = zeros(size(locs, 1))
-        for idx in 1:size(locs, 1)
+        for idx in axes(locs, 1)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
         loc_x = loc_x[ch]
@@ -591,7 +591,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Array{Float64,
     Cairo.set_source_rgb(cr, 256, 256, 256)
     Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size)
     Cairo.fill(cr)
-    for idx in 1:size(sp, 1)
+    for idx in axes(sp, 1)
         p = Plots.plot(sf,
                        sp[idx, :],
                        t=:line,

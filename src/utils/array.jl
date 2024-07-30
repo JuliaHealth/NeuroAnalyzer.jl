@@ -180,7 +180,7 @@ function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)
 
     if ndims(a) == 2
         a_new = zeros(size(a, 1), length(f_new))
-        @inbounds for ch_idx in 1:size(a, 1)
+        @inbounds for ch_idx in axes(a, 1)
             for idx in eachindex(f_new)
                 f_idx = vsearch(f_new[idx], f)
                 a_new[ch_idx, idx] = a[ch_idx, f_idx]
@@ -188,8 +188,8 @@ function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)
         end
     else
         a_new = zeros(size(a, 1), length(f_new), size(a, 3))
-        @inbounds for ep_idx in 1:size(a, 3)
-            for ch_idx in 1:size(a, 1)
+        @inbounds for ep_idx in axes(a, 3)
+            for ch_idx in axes(a, 1)
                 for idx in eachindex(f_new)
                     f_idx = vsearch(f_new[idx], f)
                     a_new[ch_idx, idx, ep_idx] = a[ch_idx, f_idx, ep_idx]

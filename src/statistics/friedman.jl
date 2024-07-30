@@ -27,7 +27,7 @@ function friedman(m::AbstractMatrix)
     k = size(m, 2)
     n = size(m, 1)
     @assert k >= 2 "Data must have at least two groups."
-    for idx in 1:size(m, 2)
+    for idx in axes(m, 2)
         r = ordinalrank(m[:, idx])
         rs .+= r
     end

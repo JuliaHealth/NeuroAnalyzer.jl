@@ -66,7 +66,7 @@ function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch:
 
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
-    @assert ch in 1:size(sp, 3) "ch must be in [1, $(size(sp, 3))]."
+    @assert ch in axes(sp, 3) "ch must be in [1, $(size(sp, 3))]."
 
     fidx1 = vsearch(f[1], sf)
     fidx2 = vsearch(f[2], sf)

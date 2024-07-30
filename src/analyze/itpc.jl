@@ -127,7 +127,7 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)
         _, _, _, itpc_phases[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
 
-    for idx in 1:size(itpc_phases, 1)
+    for idx in axes(itpc_phases, 1)
         itpc_values[idx] = @views abs.(mean(exp.(1im .* itpc_phases[idx, :] .* w)))
         itpc_angles[idx] = @views angle.(mean(exp.(1im .* itpc_phases[idx, :] .* w)))
         itpcz_values[idx] = @views ep_n * itpc_values[idx]^2
