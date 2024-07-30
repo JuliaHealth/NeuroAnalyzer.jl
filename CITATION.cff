@@ -22,5 +22,6 @@ abstract: >-
 keywords:
   - EEG
   - MEG
+  - NIRS
   - NIBS
 license: BSD-2-Clause
