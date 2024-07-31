@@ -49,7 +49,7 @@ function tconv(s::AbstractArray; kernel::AbstractVector)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    s_new = similar(s)
+    s_new = zeros(eltype(kernel), size(s))
 
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
@@ -80,15 +80,21 @@ Perform convolution in the time domain.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+- `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector)
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)
+
+    if eltype(kernel) == ComplexF64
+        return tconv(obj.data[ch, :, :], kernel=kernel)
+    else
+        obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)
+    end
+
     reset_components!(obj_new)
-    push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=$kernel)")
+    push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
 
     return obj_new
 
