@@ -550,7 +550,7 @@ function import_fiff(file_name::String)
                               clabels=clabels,
                               units=units,
                               prefiltering=repeat(["LP: $lp Hz; HP: $hp, digits=1)) Hz"], ch_n),
-                              line_frequency=round(Int64, lf),
+                              line_frequency=lf,
                               sampling_rate=sampling_rate,
                               magnetometers=magnetometers,
                               gradiometers=gradiometers,

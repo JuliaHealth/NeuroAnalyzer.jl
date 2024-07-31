@@ -10,7 +10,7 @@ function _create_subject(; id::String, first_name::String, middle_name::String, 
                 :height=>height)
 end
 
-function _create_recording_eeg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Int64, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
+function _create_recording_eeg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Real, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -34,7 +34,7 @@ function _create_recording_eeg(; data_type::String, file_name::String, file_size
                 :epoch_id=>"")
 end
 
-function _create_recording_seeg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Int64, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
+function _create_recording_seeg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Real, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -58,7 +58,7 @@ function _create_recording_seeg(; data_type::String, file_name::String, file_siz
                 :epoch_id=>"")
 end
 
-function _create_recording_ecog(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Int64, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
+function _create_recording_ecog(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, transducers::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Real, sampling_rate::Int64, gain::Vector{Float64}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -82,7 +82,7 @@ function _create_recording_ecog(; data_type::String, file_name::String, file_siz
                 :epoch_id=>"")
 end
 
-function _create_recording_meg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Int64, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String}, bad_channels::Matrix{Bool})
+function _create_recording_meg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Real, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String}, bad_channels::Matrix{Bool})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
