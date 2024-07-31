@@ -336,7 +336,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ep_idx in 1:ep_n
             t_env_m[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims=1)
-            for m_idx in 1:length(s_t)
+            for m_idx in eachindex(s_t)
                 t_env_u[m_idx, ep_idx], t_env_l[m_idx, ep_idx] = ci_median(s_a[:, m_idx, ep_idx])
             end
         end
@@ -349,7 +349,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ch_idx in 1:ch_n
             t_env_m[:, ch_idx] = @views median(s_a[ch_idx, :, :], dims=2)
-            for m_idx in 1:length(s_t)
+            for m_idx in eachindex(s_t)
                 t_env_u[m_idx, ch_idx], t_env_l[m_idx, ch_idx] = ci_median(s_a[ch_idx, m_idx, :])
             end
         end
@@ -563,7 +563,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ep_idx in 1:ep_n
             p_env_m[:, ep_idx] = @views median(pw[:, :, ep_idx], dims=1)
-            for m_idx in 1:length(pf)
+            for m_idx in eachindex(pf)
                 p_env_u[m_idx, ep_idx], p_env_l[m_idx, ep_idx] = ci_median(pw[:, m_idx, ep_idx])
             end
         end
@@ -576,7 +576,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ch_idx in 1:ch_n
             p_env_m[:, ch_idx] = @views median(pw[ch_idx, :, :], dims=2)
-            for m_idx in 1:length(pf)
+            for m_idx in eachindex(pf)
                 p_env_u[m_idx, ch_idx], p_env_l[m_idx, ch_idx] = ci_median(pw[ch_idx, :, :])
             end
         end
@@ -842,7 +842,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ep_idx in 1:ep_n
             s_env_m[:, ep_idx] = @views median(sp[:, :, ep_idx], dims=1)
-            for m_idx in 1:length(st)
+            for m_idx in eachindex(st)
                 s_env_u[m_idx, ep_idx], s_env_l[m_idx, ep_idx] = ci_median(sp[:, m_idx, ep_idx])
             end
         end
@@ -855,7 +855,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ch_idx in 1:ch_n
             s_env_m[:, ch_idx] = @views median(sp[ch_idx, :, :], dims=2)
-            for m_idx in 1:length(st)
+            for m_idx in eachindex(st)
                 s_env_u[m_idx, ch_idx], s_env_l[m_idx, ch_idx] = ci_median(sp[ch_idx, :, :])
             end
         end
@@ -1038,7 +1038,7 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ep_idx in 1:ep_n
             h_env_m[:, ep_idx] = @views median(s_a[:, :, ep_idx], dims=1)
-            for m_idx in 1:length(s_t)
+            for m_idx in eachindex(s_t)
                 h_env_u[m_idx, ep_idx], h_env_l[m_idx, ep_idx] = ci_median(s_a[:, m_idx, ep_idx])
             end
         end
@@ -1051,7 +1051,7 @@ function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
         @inbounds for ch_idx in 1:ch_n
             h_env_m[:, ch_idx] = median(s_a[ch_idx, :, :], dims=2)
-            for m_idx in 1:length(s_t)
+            for m_idx in eachindex(s_t)
                 h_env_u[m_idx, ch_idx], h_env_l[m_idx, ch_idx] = ci_median(s_a[ch_idx, m_idx, :])
             end
         end

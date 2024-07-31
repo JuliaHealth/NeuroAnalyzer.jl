@@ -32,7 +32,7 @@ function import_ncs(file_name::String)
     header = replace.(header, "-"=>"")
     header = replace.(header, "\t"=>" ")
     header = replace.(header, "  "=>" ")
-    for idx in 1:length(header)
+    for idx in eachindex(header)
         header[idx][end] == ' ' && (header[idx] = header[idx][1:(end - 1)])
     end
     for idx in length(header):-1:1
@@ -50,7 +50,7 @@ function import_ncs(file_name::String)
     AmpGain = 1
     AmpLowCut = 0
     AmpHiCut = 0
-    for idx in 1:length(header)
+    for idx in eachindex(header)
         header[idx][1] == "ADBitVolts" && (ADBitVolts = parse(Float64, header[idx][2]))
         header[idx][1] == "SamplingFrequency" && (sampling_rate = parse(Int64, header[idx][2]))
         header[idx][1] == "ADChannel" && (ADChannel = parse(Int64, header[idx][2]))

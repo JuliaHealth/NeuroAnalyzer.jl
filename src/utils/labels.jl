@@ -23,7 +23,7 @@ function paired_labels(l::Vector{String}; unq::Bool=true)
     end
 
     idx = 1
-    for idx1 in 1:length(l), idx2 in 1:length(l)
+    for idx1 in 1:length(l), idx2 in eachindex(l)
         if unq
             if idx1 != idx2
                 l_paired[idx] = l[idx1] * "-" * l[idx2]

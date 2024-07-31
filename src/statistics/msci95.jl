@@ -31,10 +31,10 @@ function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
         sl = sm - 1.96 * ss
     else
         s_tmp1 = zeros(length(s) * n)
-        Threads.@threads for idx1 in 1:length(s) * n
+        Threads.@threads for idx1 in eachindex(s) * n
             s_tmp2 = zeros(length(s))
             sample_idx = rand(1:length(s), length(s))
-            @inbounds for idx2 in 1:length(s)
+            @inbounds for idx2 in eachindex(s)
                 s_tmp2[idx2] = s[sample_idx[idx2]]
             end
             s_tmp1[idx1] = mean(s_tmp2)

@@ -255,7 +255,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
 
     if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+        for idx in eachindex(NeuroAnalyzer.fiducial_points)
             if plane === :xy
                 fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
                 fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
@@ -610,7 +610,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
 
     if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+        for idx in eachindex(NeuroAnalyzer.fiducial_points)
             Plots.annotate!(NeuroAnalyzer.fiducial_points[idx][1],
                             NeuroAnalyzer.fiducial_points[idx][2],
                             NeuroAnalyzer.fiducial_points[idx][3],

@@ -408,7 +408,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
 
         # remove duplicates
         d_idx = Vector{Vector{Int64}}()
-        for idx in 1:length(t_keypressed)
+        for idx in eachindex(t_keypressed)
             if length(unique(t_keypressed[idx])) != length(t_keypressed[idx])
                 push!(d_idx, unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx])))
             else
@@ -419,7 +419,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
             d_keypressed[idx] = d_keypressed[idx][d_idx[idx]]
         end
         d_idx = Vector{Vector{Int64}}()
-        for idx in 1:length(int_t_keypressed)
+        for idx in eachindex(int_t_keypressed)
             if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
                 push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
             else
@@ -811,10 +811,10 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
     reverse!(int_d_keypressed)
 
     if isnothing(sp) && !(rpi isa PiGPIO.Pi)
-        for idx in 1:length(t_keypressed)
+        for idx in eachindex(t_keypressed)
             t_keypressed[idx] = round.(t_keypressed[idx] .- (idx - 1) * (duration + interval) * 1000, digits=3)
         end
-        for idx in 1:length(int_t_keypressed)
+        for idx in eachindex(int_t_keypressed)
             int_t_keypressed[idx] = round.(int_t_keypressed[idx] .- ((idx * duration + ((idx - 1) * interval)) * 1000), digits=1)
         end
     end
@@ -841,7 +841,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
 
     # remove duplicates
     d_idx = Vector{Vector{Int64}}()
-    for idx in 1:length(t_keypressed)
+    for idx in eachindex(t_keypressed)
         if length(unique(t_keypressed[idx])) != length(t_keypressed[idx])
             push!(d_idx, unique(i -> t_keypressed[idx][i], eachindex(t_keypressed[idx])))
         else
@@ -852,7 +852,7 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         d_keypressed[idx] = d_keypressed[idx][d_idx[idx]]
     end
     d_idx = Vector{Vector{Int64}}()
-    for idx in 1:length(int_t_keypressed)
+    for idx in eachindex(int_t_keypressed)
         if length(unique(int_t_keypressed[idx])) != length(int_t_keypressed[idx])
             push!(d_idx, unique(i -> int_t_keypressed[idx][i], eachindex(int_t_keypressed[idx])))
         else

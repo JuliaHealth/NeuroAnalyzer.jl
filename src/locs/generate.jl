@@ -22,11 +22,11 @@ function locs_generate(locs::DataFrame)
 
     # remove referencing labels from channel names
     m = match.(r"(.+)\-(.+)", lab)
-    for idx in 1:length(lab)
+    for idx in eachindex(lab)
         m[idx] !== nothing && (lab[idx] = m[idx].captures[1])
     end
     m = match.(r"([a-z]+[0-9]+[0-9]?)([a-z]+[0-9]+)", lab)
-    for idx in 1:length(lab)
+    for idx in eachindex(lab)
         m[idx] !== nothing && (lab[idx] = m[idx].captures[1])
     end
 

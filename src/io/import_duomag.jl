@@ -139,7 +139,7 @@ function import_duomag(file_name::String)
         signals_data = replace(signals_data, "];"=>"")
         signals_data = split(signals_data, ';')
         mep_signal = zeros(length(signals_data), length(split(signals_data[1], ' ')))
-        for idx in 1:length(signals_data)
+        for idx in eachindex(signals_data)
             mep_signal[idx, :] = parse.(Float64, split(signals_data[idx], ' '))
         end
 
@@ -197,7 +197,7 @@ function import_duomag(file_name::String)
     ep_time = time_pts
 
     if splitext(file_name)[2] == ".ascii"
-        for idx in 1:length(markers_pos)
+        for idx in eachindex(markers_pos)
             markers_pos[idx] = vsearch(markers_pos[idx] / 1000, time_pts)
             markers_pos[idx] == stim_sample[1] && (markers_pos[idx] = 0)
             markers_neg[idx] = vsearch(markers_neg[idx] / 1000, time_pts)

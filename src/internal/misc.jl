@@ -92,7 +92,7 @@ function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_
     m = match.(r"(.+)\-(.+)", lowercase.(clabels[ch_type .== data_type]))
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
-        for idx in 1:length(m)
+        for idx in eachindex(m)
             push!(r, m[idx].captures[2])
         end
         if length(unique(r)) == 1
@@ -106,7 +106,7 @@ function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_
     m = match.(r"([a-z]+)([0-9]+[0-9]?)([a-z]+)([0-9]+)", lowercase.(clabels[ch_type .== data_type]))
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
-        for idx in 1:length(m)
+        for idx in eachindex(m)
             push!(r, m[idx].captures[3])
         end
         if length(unique(r)) == 1

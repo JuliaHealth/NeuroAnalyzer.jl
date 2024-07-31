@@ -34,7 +34,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})
 
     typeof(file_name) == String && (file_name = [file_name])
 
-    for file_idx in 1:length(file_name)
+    for file_idx in eachindex(file_name)
 
         @assert isfile(file_name[file_idx]) "File $(file_name[file_idx]) cannot be loaded."
 
@@ -116,7 +116,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})
 
     data = zeros(length(data_tmp), length(data_tmp[1]), 1)
 
-    for idx in 1:length(file_name)
+    for idx in eachindex(file_name)
         data[idx, :, 1] = data_tmp[idx]
     end
 
