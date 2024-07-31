@@ -695,18 +695,18 @@ function import_locs_asc(file_name::String)
         buffer[idx][1] == ';' && deleteat!(buffer, idx)
     end
     labels = String[]
-    for idx in 1:length(buffer)
+    for idx in eachindex(buffer)
         buffer[idx][1] == '#' && push!(labels, buffer[idx])
     end
     labels_regexp = match.(r"\#.+ (.+)", labels)
     clabels = String[]
-    for idx in 1:length(labels_regexp)
+    for idx in eachindex(labels_regexp)
         push!(clabels, labels_regexp[idx][1])
     end
     buffer = buffer[length(labels) + 1:2 * length(labels)]
     locs = zeros(length(labels), 4)
     locs_regexp = match.(r"([0-9]+ +)([0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+ +)([0-9]+\.[0-9]+)", buffer)
-    for idx in 1:length(labels_regexp)
+    for idx in eachindex(labels_regexp)
         locs[idx, 1] = parse(Float64, strip(locs_regexp[idx][3]))
         locs[idx, 2] = parse(Float64, strip(locs_regexp[idx][4]))
         locs[idx, 3] = parse(Float64, strip(locs_regexp[idx][5]))

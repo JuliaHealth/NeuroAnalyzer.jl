@@ -97,7 +97,7 @@ function na_info()
             "WaveletsExt",
             "XDF" ]
         versions = TOML.parsefile(joinpath(na_pkg, "Manifest.toml"))["deps"]
-        for idx in 1:length(required_packages)
+        for idx in eachindex(required_packages)
             pkg = lpad(required_packages[idx], 25 - length(idx), " ")
             pkg_ver = versions[required_packages[idx]][1]["version"]
             println("$pkg $pkg_ver")
@@ -119,9 +119,9 @@ function na_plugins_reload()
     path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
-    for idx1 in 1:length(plugins)
+    for idx1 in eachindex(plugins)
         plugin = readdir(joinpath(plugins[idx1], "src"))
-        for idx2 in 1:length(plugin)
+        for idx2 in eachindex(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
                 include(joinpath(plugins_path, plugins[idx1], "src", plugin[idx2]))
                 _info(" Loaded: $(plugin[idx2])")
@@ -145,7 +145,7 @@ function na_plugins_list()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     println("Available plugins:")
-    for idx in 1:length(plugins)
+    for idx in eachindex(plugins)
         println("$idx. $(plugins[idx])")
     end
     cd(path_tmp)
@@ -246,7 +246,7 @@ function na_plugins_update(plugin::String="")
     cd(plugins_path)
     plugins = readdir(plugins_path)
     if plugin == ""
-        for idx in 1:length(plugins)
+        for idx in eachindex(plugins)
             cd(plugins[idx])
             @info "Updating: $(plugins[idx])"
             try
