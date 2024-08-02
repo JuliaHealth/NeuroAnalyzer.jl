@@ -17,8 +17,6 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    ch = get_channel(obj, ch=ch)
-
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
 
     win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, p.attr[:size][2] + 40)

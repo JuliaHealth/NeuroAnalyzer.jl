@@ -101,10 +101,10 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
-    bt_prev5 = GtkButton("↞")
-    set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
-    bt_next5 = GtkButton("↠")
-    set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+    bt_prev = GtkButton("↞")
+    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+    bt_next = GtkButton("↠")
+    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
@@ -135,22 +135,40 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
     set_gtk_property!(bt_ts, :tooltip_text, "Return selected time segment")
     bt_delete = GtkButton("Delete TS")
     set_gtk_property!(bt_delete, :tooltip_text, "Delete selected time segment")
+
+    combo_ch = GtkComboBoxText()
+    ch_types = ["ALL"; uppercase.(unique(obj.header.recording[:channel_type]))]
+    for idx in ch_types
+        length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+    end
+    set_gtk_property!(combo_ch, :active, 0)
+    set_gtk_property!(combo_ch, :tooltip_text, "Channels")
+
+    combo_type = GtkComboBoxText()
+    plot_types = ["normal", "butterfly", "mean"]
+    [push!(combo_type, idx) for idx in plot_types]
+    set_gtk_property!(combo_type, :active, 0)
+    set_gtk_property!(combo_type, :tooltip_text, "Plot type")
+    set_gtk_property!(combo_type, :sensitive, false)
+
     set_gtk_property!(ch_slider, :vexpand, true)
     oc = GtkOrientable(ch_slider)
     set_gtk_property!(oc, :orientation, 1)
-    g[1:10, 1] = can
-    g[11, 1] = ch_slider
+    g[1:9, 1] = can
+    g[10, 1] = ch_slider
     g[1, 2] = bt_start
-    g[2, 2] = bt_prev5
-    g[4, 2] = entry_time
-    g[6, 2] = bt_next5
-    g[7, 2] = bt_end
-    g[8, 2] = entry_ts1
-    g[9, 2] = bt_ts
-    g[10, 2] = bt_help
-    g[8, 3] = entry_ts2
-    g[9, 3] = bt_delete
-    g[10, 3] = bt_close
+    g[2, 2] = bt_prev
+    g[3, 2] = entry_time
+    g[4, 2] = bt_next
+    g[5, 2] = bt_end
+    g[6, 2] = combo_ch
+    g[7, 2] = entry_ts1
+    g[8, 2] = bt_ts
+    g[9, 2] = bt_help
+    g[6, 3] = combo_type
+    g[7, 3] = entry_ts2
+    g[8, 3] = bt_delete
+    g[9, 3] = bt_close
     push!(win, g)
 
     showall(win)
@@ -162,24 +180,47 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
+        plot_type = get_gtk_property(combo_type, :active, Int64)
+        channel_type = lowercase.(ch_types)[get_gtk_property(combo_ch, :active, Int64) + 1]
         if mch
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=cl[ch_first:ch_last],
-                                                           seg=(time1, time2),
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="",
-                                                           scale=scale))
+            if plot_type == 0
+                p = NeuroAnalyzer.plot(obj,
+                                       ch=cl[ch_first:ch_last],
+                                       seg=(time1, time2),
+                                       s_pos=(ts1, ts2),
+                                       mono=mono,
+                                       title="",
+                                       scale=scale)
+            elseif plot_type == 1
+                p =  NeuroAnalyzer.plot(obj,
+                                        ch=get_channel(obj, type=channel_type),
+                                        seg=(time1, time2),
+                                        s_pos=(ts1, ts2),
+                                        mono=mono,
+                                        type=:butterfly,
+                                        avg=false)
+            elseif plot_type == 2
+                p = NeuroAnalyzer.plot(obj,
+                                       ch=get_channel(obj, type=channel_type),
+                                       seg=(time1, time2),
+                                       s_pos=(ts1, ts2),
+                                       mono=mono,
+                                       type=:mean)
+            end
         else
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=cl[ch_first],
-                                                           seg=(time1, time2),
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="Channel: $(cl[ch_first])",
-                                                           scale=scale,
-                                                           bad=bad))
+            p = NeuroAnalyzer.plot(obj,
+                                   ch=cl[ch_first],
+                                   seg=(time1, time2),
+                                   s_pos=(ts1, ts2),
+                                   mono=mono,
+                                   title="Channel: $(cl[ch_first])",
+                                   scale=scale,
+                                   bad=bad)
         end
+        show(io, MIME("image/png"), p)
+        Gtk.resize!(win, p.attr[:size][2] + 40, p.attr[:size][2] + 40)
+        set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+        set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -250,7 +291,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 0x00000011
+            if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += 1
@@ -260,7 +301,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            elseif s == 0x00000014
+            elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -291,7 +332,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
                 end
             end
         elseif event.direction == 0 # up
-            if s == 0x00000011
+            if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
@@ -299,7 +340,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif s == 0x00000014
+            elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -377,7 +418,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
         draw(can)
     end
 
-    signal_connect(bt_prev5, "clicked") do widget
+    signal_connect(bt_prev, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj.time_pts[1] + zoom
             time_current = time_current - zoom
@@ -387,7 +428,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
         end
     end
 
-    signal_connect(bt_next5, "clicked") do widget
+    signal_connect(bt_next, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current < obj.time_pts[end] - zoom
             time_current += zoom
@@ -421,10 +462,29 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
         Gtk.destroy(win)
     end
 
+    signal_connect(combo_ch, "changed") do widget
+        ch_type = get_gtk_property(combo_ch, :active, Int64)
+        if ch_type > 0
+            Gtk.@sigatom begin
+                set_gtk_property!(combo_type, :sensitive, true)
+            end
+        else
+            Gtk.@sigatom begin
+                set_gtk_property!(combo_type, :active, 0)
+                set_gtk_property!(combo_type, :sensitive, false)
+            end
+        end
+        draw(can)
+    end
+
+    signal_connect(combo_type, "changed") do widget
+        draw(can)
+    end
+
     if mch
-        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
     else
-        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     end
 
@@ -466,32 +526,35 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
         elseif k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
             if mch
-                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
             else
-                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
             end
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             else
                 zoom = obj.time_pts[end]
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
             if mch
-                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
             else
-                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
+                help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-Enter\treturn selected time segment\nctrl-d\t\tdelete selected time segment\n\nalt-s\ttoggle snapping\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-p\tplay current segment as audio\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
             end
         elseif k == 0x0000ff50 # home
@@ -506,7 +569,8 @@ function iview_cont(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad
             end
             draw(can)
         end
-        if s == 0x00000018 # alt
+
+        if s == 0x00000008 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
@@ -721,21 +785,39 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             set_gtk_property!(ch_slider, :sensitive, false)
         end
     end
+
+    combo_ch = GtkComboBoxText()
+    ch_types = ["ALL"; uppercase.(unique(obj.header.recording[:channel_type]))]
+    for idx in ch_types
+        length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+    end
+    set_gtk_property!(combo_ch, :active, 0)
+    set_gtk_property!(combo_ch, :tooltip_text, "Channels")
+
+    combo_type = GtkComboBoxText()
+    plot_types = ["normal", "butterfly", "mean"]
+    [push!(combo_type, idx) for idx in plot_types]
+    set_gtk_property!(combo_type, :active, 0)
+    set_gtk_property!(combo_type, :tooltip_text, "Plot type")
+    set_gtk_property!(combo_type, :sensitive, false)
+
     set_gtk_property!(ch_slider, :tooltip_text, "Scroll channels")
     set_gtk_property!(ch_slider, :vexpand, true)
     oc = GtkOrientable(ch_slider)
     set_gtk_property!(oc, :orientation, 1)
-    g[1:6, 1] = can
-    g[7, 1] = ch_slider
+    g[1:7, 1] = can
+    g[8, 1] = ch_slider
     g[1, 2] = bt_start
     g[2, 2] = entry_epoch
     g[3, 2] = bt_end
-    g[4, 2] = entry_ts1
-    g[5, 2] = bt_ts
-    g[6, 2] = bt_help
-    g[4, 3] = entry_ts2
-    g[5, 3] = bt_delete
-    g[6, 3] = bt_close
+    g[4, 2] = combo_ch
+    g[5, 2] = entry_ts1
+    g[6, 2] = bt_ts
+    g[7, 2] = bt_help
+    g[4, 3] = combo_type
+    g[5, 3] = entry_ts2
+    g[6, 3] = bt_delete
+    g[7, 3] = bt_close
     push!(win, g)
 
     showall(win)
@@ -745,24 +827,47 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         ts1 = get_gtk_property(entry_ts1, :value, Float64)
         ts2 = get_gtk_property(entry_ts2, :value, Float64)
         ctx = getgc(can)
+        plot_type = get_gtk_property(combo_type, :active, Int64)
+        channel_type = lowercase.(ch_types)[get_gtk_property(combo_ch, :active, Int64) + 1]
         if mch
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=cl[ch_first:ch_last],
-                                                           ep=ep,
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="",
-                                                           scale=scale))
+            if plot_type == 0
+                p = NeuroAnalyzer.plot(obj,
+                                       ch=cl[ch_first:ch_last],
+                                       ep=ep,
+                                       s_pos=(ts1, ts2),
+                                       mono=mono,
+                                       title="",
+                                       scale=scale)
+            elseif plot_type == 1
+                p =  NeuroAnalyzer.plot(obj,
+                                        ch=get_channel(obj, type=channel_type),
+                                        ep=ep,
+                                        s_pos=(ts1, ts2),
+                                        mono=mono,
+                                        type=:butterfly,
+                                        avg=false)
+            elseif plot_type == 2
+                p = NeuroAnalyzer.plot(obj,
+                                       ch=get_channel(obj, type=channel_type),
+                                       ep=ep,
+                                       s_pos=(ts1, ts2),
+                                       mono=mono,
+                                       type=:mean)
+            end
         else
-            show(io, MIME("image/png"), NeuroAnalyzer.plot(obj,
-                                                           ch=cl[ch_first],
-                                                           ep=ep,
-                                                           s_pos=(ts1, ts2),
-                                                           mono=mono,
-                                                           title="Channel: $(cl[ch_first])",
-                                                           scale=scale,
-                                                           bad=bad))
+            p = NeuroAnalyzer.plot(obj,
+                                   ch=cl[ch_first],
+                                   ep=ep,
+                                   s_pos=(ts1, ts2),
+                                   mono=mono,
+                                   title="Channel: $(cl[ch_first])",
+                                   scale=scale,
+                                   bad=bad)
         end
+        show(io, MIME("image/png"), p)
+        Gtk.resize!(win, p.attr[:size][2] + 40, p.attr[:size][2] + 40)
+        set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+        set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
         paint(ctx)
@@ -823,7 +928,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 0x00000011
+            if s == 0x00000001
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1
@@ -852,7 +957,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 end
             end
         elseif event.direction == 0 # up
-            if s == 0x00000011
+            if s == 0x00000001
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep > 1
                     ep -= 1
@@ -895,11 +1000,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         end
     end
 
-    signal_connect(bt_close, "clicked") do widget
-        quit = true
-        Gtk.destroy(win)
-    end
-
     signal_connect(entry_ts1, "value-changed") do widget
         Gtk.@sigatom begin
             set_gtk_property!(entry_ts1, :value, obj.epoch_time[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.epoch_time)])
@@ -932,8 +1032,31 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     end
 
     signal_connect(bt_ts, "clicked") do widget
+        Gtk.destroy(win)
+    end
+
+    signal_connect(bt_close, "clicked") do widget
         quit = true
         Gtk.destroy(win)
+    end
+
+    signal_connect(combo_ch, "changed") do widget
+        ch_type = get_gtk_property(combo_ch, :active, Int64)
+        if ch_type > 0
+            Gtk.@sigatom begin
+                set_gtk_property!(combo_type, :sensitive, true)
+            end
+        else
+            Gtk.@sigatom begin
+                set_gtk_property!(combo_type, :active, 0)
+                set_gtk_property!(combo_type, :sensitive, false)
+            end
+        end
+        draw(can)
+    end
+
+    signal_connect(combo_type, "changed") do widget
+        draw(can)
     end
 
     if mch
@@ -986,7 +1109,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         end
-        if s == 0x00000018 # alt
+        if s == 0x00000008 # alt
             if k == 0x00000073 # s
                 snap = !snap
             end
@@ -1141,10 +1264,10 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
-    bt_prev5 = GtkButton("↞")
-    set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
-    bt_next5 = GtkButton("↠")
-    set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+    bt_prev = GtkButton("↞")
+    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+    bt_next = GtkButton("↠")
+    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
@@ -1166,9 +1289,9 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
     g[1:7, 1] = can
     g[8, 1] = ch_slider
     g[1, 2] = bt_start
-    g[2, 2] = bt_prev5
+    g[2, 2] = bt_prev
     g[3, 2] = entry_time
-    g[4, 2] = bt_next5
+    g[4, 2] = bt_next
     g[5, 2] = bt_end
     g[6, 2] = bt_help
     g[7, 2] = bt_close
@@ -1194,7 +1317,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 0x00000011
+            if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj1.time_pts[end] - zoom
                     time_current += 1
@@ -1204,7 +1327,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            elseif s == 0x00000014
+            elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj1.time_pts[end] - zoom
                     time_current += zoom
@@ -1225,7 +1348,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
                 end
             end
         elseif event.direction == 0 # up
-            if s == 0x00000011
+            if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj1.time_pts[1] + 1
                     time_current -= 1
@@ -1233,7 +1356,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif s == 0x00000014
+            elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj1.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -1264,7 +1387,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
         draw(can)
     end
 
-    signal_connect(bt_prev5, "clicked") do widget
+    signal_connect(bt_prev, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj1.time_pts[1] + zoom
             time_current = time_current - zoom
@@ -1274,7 +1397,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
         end
     end
 
-    signal_connect(bt_next5, "clicked") do widget
+    signal_connect(bt_next, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current < obj1.time_pts[end] - zoom
             time_current += zoom
@@ -1299,11 +1422,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
         end
     end
 
-    signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
-    end
-
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -1333,24 +1452,27 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
         elseif k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj1.time_pts[end] - 1
                 zoom += 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             else
                 zoom = obj1.time_pts[end]
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj1.time_pts[1])
@@ -1363,7 +1485,7 @@ function iview_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::
             end
             draw(can)
         end
-        if s == 0x00000018 # alt
+        if s == 0x00000008 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj1.time_pts[1] + zoom
@@ -1627,7 +1749,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
                 set_gtk_property!(entry_epoch, :value, nepochs(obj1))
             end
         end
-        if s == 0x00000014
+        if s == 0x00000004
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1748,10 +1870,10 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
-    bt_prev5 = GtkButton("↞")
-    set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
-    bt_next5 = GtkButton("↠")
-    set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+    bt_prev = GtkButton("↞")
+    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+    bt_next = GtkButton("↠")
+    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
@@ -1773,9 +1895,9 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
     g[1:7, 1] = can
     g[8, 1] = ch_slider
     g[1, 2] = bt_start
-    g[2, 2] = bt_prev5
+    g[2, 2] = bt_prev
     g[3, 2] = entry_time
-    g[4, 2] = bt_next5
+    g[4, 2] = bt_next
     g[5, 2] = bt_end
     g[6, 2] = bt_help
     g[7, 2] = bt_close
@@ -1802,8 +1924,9 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
 
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
+        @show s
         if event.direction == 1 # down
-            if s == 0x00000011
+            if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += 1
@@ -1813,7 +1936,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
                 Gtk.@sigatom begin
                     set_gtk_property!(entry_time, :value, time_current)
                 end
-            elseif s == 0x00000014
+            elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
@@ -1834,7 +1957,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
                 end
             end
         elseif event.direction == 0 # up
-            if s == 0x00000011
+            if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
@@ -1842,7 +1965,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif s == 0x00000014
+            elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -1869,7 +1992,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
         draw(can)
     end
 
-    signal_connect(bt_prev5, "clicked") do widget
+    signal_connect(bt_prev, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj.time_pts[1] + zoom
             time_current = time_current - zoom
@@ -1879,7 +2002,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
         end
     end
 
-    signal_connect(bt_next5, "clicked") do widget
+    signal_connect(bt_next, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current < obj.time_pts[end] - zoom
             time_current += zoom
@@ -1908,7 +2031,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\nctrl-m\ttoggle monochromatic mode\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog()
@@ -1938,24 +2061,27 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
         elseif k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             else
                 zoom = obj.time_pts[end]
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nPage Up\t\tscroll channels up\nPage Down\tscroll channels down\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\ttoggle scales\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -1968,7 +2094,7 @@ function iview_cont(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; z
             end
             draw(can)
         end
-        if s == 0x00000018 # alt
+        if s == 0x00000008 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
@@ -2142,7 +2268,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
     can.mouse.scroll = @guarded (widget, event) -> begin
         s = event.state
         if event.direction == 1 # down
-            if s == 0x00000011
+            if s == 0x00000001
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1
@@ -2161,7 +2287,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
                 end
             end
         elseif event.direction == 0 # up
-            if s == 0x00000011
+            if s == 0x00000001
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep > 1
                     ep -= 1
@@ -2238,7 +2364,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
                 set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         end
-        if s == 0x00000014
+        if s == 0x00000004
             if k == 113 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -2316,7 +2442,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000014
+        if s == 0x00000004
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
@@ -2382,7 +2508,7 @@ function iview(file_name::String)
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000014
+        if s == 0x00000004
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
@@ -2443,7 +2569,7 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000014
+        if s == 0x00000004
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""

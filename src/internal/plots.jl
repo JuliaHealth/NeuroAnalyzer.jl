@@ -19,12 +19,13 @@ end
 function _ticks(t::Union{AbstractVector, AbstractRange})
     if length(t) >= 3
         if t[2] - t[1] == t[3] - t[2]
-            tc = round.(linspace(t[1], t[end], 11))
+            tc = linspace(t[1], t[end], 11)
         else
-            tc = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+            tc = collect(floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2))
         end
     end
     tc[end] = t[end]
+    tc = round.(tc, digits=2)
     return tc
 end
 

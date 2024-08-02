@@ -416,7 +416,6 @@ include("plots/plot_coherence.jl")
 # gui
 include("gui/iview.jl")
 include("gui/iedit.jl")
-include("gui/iplot.jl")
 include("gui/iplot_locs3d.jl")
 include("gui/itopo.jl")
 include("gui/ipsd.jl")

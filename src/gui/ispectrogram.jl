@@ -70,9 +70,9 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
     bt_prev5 = GtkButton("↞")
-    set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+    set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
     bt_next5 = GtkButton("↠")
-    set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+    set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $(round(zoom)) seconds")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
@@ -98,9 +98,9 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     end
     if ch_init in lowercase.(ctypes)
         n = findfirst(isequal(ch_init), lowercase.(ctypes))
-        set_gtk_property!(combo_ch, :active, n - 2)
+        set_gtk_property!(combo_ch, :active, n - 1)
     else
-        set_gtk_property!(combo_ch, :active, (length(ctypes) + ch[1]))
+        set_gtk_property!(combo_ch, :active, (length(ctypes) + ch[1] - 1))
     end
     set_gtk_property!(combo_ch, :tooltip_text, "Channels")
 
@@ -314,6 +314,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             warn_dialog("For multi-channel spectrogram plot, all channels should be of the same type.")
             no_error = false
         end
+
         if no_error
             time1 = get_gtk_property(entry_time, :value, Float64)
             time2 = time1 + zoom
@@ -347,6 +348,51 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
+        end
+    end
+
+    can.mouse.scroll = @guarded (widget, event) -> begin
+        s = event.state
+        if event.direction == 1 # down
+            if s == 0x00000001
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += 1
+                else
+                    time_current = obj.time_pts[end] - zoom
+                end
+                Gtk.@sigatom begin
+                    set_gtk_property!(entry_time, :value, time_current)
+                end
+            elseif s == 0x00000004
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                else
+                    time_current = obj.time_pts[end] - zoom
+                end
+                Gtk.@sigatom begin
+                    set_gtk_property!(entry_time, :value, time_current)
+                end
+            end
+        elseif event.direction == 0 # up
+            if s == 0x00000001
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            elseif s == 0x00000004
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+            end
         end
     end
 
@@ -444,7 +490,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -457,24 +503,24 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         if k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             else
                 zoom = obj.time_pts[end]
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -488,7 +534,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             draw(can)
         end
 
-        if s == 0x00000018 # alt
+        if s == 0x00000008 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
@@ -514,7 +560,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             end
         end
 
-        if s == 0x00000014 # ctrl
+        if s == 0x00000004 # ctrl
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h
@@ -630,9 +676,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     end
     if ch_init in lowercase.(ctypes)
         n = findfirst(isequal(ch_init), lowercase.(ctypes))
-        set_gtk_property!(combo_ch, :active, n - 2)
+        set_gtk_property!(combo_ch, :active, n - 1)
     else
-        set_gtk_property!(combo_ch, :active, (length(ctypes) + ch[1]))
+        set_gtk_property!(combo_ch, :active, (length(ctypes) + ch[1] - 1))
     end
     set_gtk_property!(combo_ch, :tooltip_text, "Channels")
 
@@ -966,7 +1012,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
             end
             draw(can)
         end
-        if s == 0x00000014
+        if s == 0x00000004
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h

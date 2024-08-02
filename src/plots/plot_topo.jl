@@ -65,7 +65,8 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 100, imethod, nmethod)
 
     head12 = false
-    maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5 && (head15 = true)
+    maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5 && (head12 = true)
+
     if head12
         xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.2, 1.2, 25), digits=1)))
         yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.2, -1.2, 25), digits=1)))
@@ -140,7 +141,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 170,
+                           size=head12 ? size(head_shape) .+ 150 : size(head_shape) .+ 170,
                            right_margin=10*Plots.px,
                            bottom_margin=0*Plots.px,
                            top_margin=10*Plots.px,
@@ -149,7 +150,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            colorbar=cb,
                            colorbar_title=cb_label,
                            colorbar_tickfontsize=1,
-                           colorbar_titlefontsize=6,
+                           colorbar_titlefontsize=8,
                            xlims=xl,
                            ylims=yl,
                            title=title;
@@ -179,7 +180,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape) .+ 52,
+                           size=head12 ? size(head_shape) .+ 45 : size(head_shape) .+ 52,
                            right_margin=-15*Plots.px,
                            bottom_margin=-30*Plots.px,
                            top_margin=-10*Plots.px,

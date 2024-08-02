@@ -286,7 +286,7 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArr
     s_m, _, s_u, s_l = msci95(s)
 
     # get limits
-    ylim = (round(minimum(s_l) * 1.5, digits=-2), round(maximum(s_u) * 1.5, digits=-2))
+    ylim = (round(minimum(s_l) * 1.5, digits=0), round(maximum(s_u) * 1.5, digits=0))
     ylim = _tuple_max(ylim)
 
     # prepare plot
@@ -361,7 +361,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
     ch_n = size(s, 1)
 
     # get limits
-    ylim = (round(minimum(s) * 1.5, digits=-2), round(maximum(s) * 1.5, digits=-2))
+    ylim = (round(minimum(s) * 1.5, digits=0), round(maximum(s) * 1.5, digits=0))
     ylim = _tuple_max(ylim)
 
     # channel labels
@@ -377,7 +377,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstr
                    title=title,
                    palette=pal,
                    size=plot_size,
-                   legend=ch_n < 20,
+                   legend=false,
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
