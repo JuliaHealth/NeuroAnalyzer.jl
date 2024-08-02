@@ -10,10 +10,10 @@ Interactive spectrogram of continuous or epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `zoom::Real=5`: how many seconds are displayed in one segment
+- `ch::String`: channel name
+- `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     if nepochs(obj) == 1
         ispectrogram_cont(obj, ch=ch, zoom=zoom)
@@ -33,34 +33,37 @@ Interactive spectrogram of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `zoom::Real=5`: how many seconds are displayed in one segment
+- `ch::String`: channel name
+- `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, zoom::Real=5)
+function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
     @assert nepochs(obj) == 1 "ispectrogram_ep() should be used for epoched object."
-    ch = get_channel(obj, ch=ch)
-    ch_init = ch
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch)
-    g = GtkGrid()
-    g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: plot_spectrogram()", 1200, (p.attr[:size][2] + 40))
-    set_gtk_property!(win, :border_width, 20)
+    ch_init = ch
+    ch = get_channel(obj, ch=ch)
+    clabels = labels(obj)
+
+    p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch])
+    win = GtkWindow("NeuroAnalyzer: ispectrogram_cont()", 1200, 850)
+    set_gtk_property!(win, :border_width, 10)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    g = GtkGrid()
+    g_opts = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g_opts, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 10)
     set_gtk_property!(g, :row_spacing, 10)
     set_gtk_property!(g_opts, :row_spacing, 10)
     set_gtk_property!(g_opts, :column_spacing, 10)
-    entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, zoom)
+
+    entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
@@ -68,10 +71,6 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
     bt_prev5 = GtkButton("↞")
     set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
-    bt_prev = GtkButton("←")
-    set_gtk_property!(bt_prev, :tooltip_text, "Go back by 1 second")
-    bt_next = GtkButton("→")
-    set_gtk_property!(bt_next, :tooltip_text, "Go forward by 1 second")
     bt_next5 = GtkButton("↠")
     set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
     bt_end = GtkButton("⇥")
@@ -91,11 +90,19 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     set_gtk_property!(entry_ylab, :text, "default")
     set_gtk_property!(entry_ylab, :tooltip_text, "Y axis label")
 
-    entry_ch = GtkEntry()
-    ch = _i2s(ch)
-    ch_init = ch
-    set_gtk_property!(entry_ch, :text, string(ch))
-    set_gtk_property!(entry_ch, :tooltip_text, "Channels")
+    combo_ch = GtkComboBoxText()
+    ctypes = uppercase.(unique(obj.header.recording[:channel_type]))
+    ch_types = [ctypes; clabels]
+    for idx in ch_types
+        push!(combo_ch, idx)
+    end
+    if ch_init in lowercase.(ctypes)
+        n = findfirst(isequal(ch_init), lowercase.(ctypes))
+        set_gtk_property!(combo_ch, :active, n - 2)
+    else
+        set_gtk_property!(combo_ch, :active, (length(ctypes) + ch[1]))
+    end
+    set_gtk_property!(combo_ch, :tooltip_text, "Channels")
 
     cb_mono = GtkCheckButton()
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
@@ -117,7 +124,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     set_gtk_property!(cb_smooth, :active, true)
 
     combo_method = GtkComboBoxText()
-    spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "continuous wavelet transformation"]
+    spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"]
     for idx in spectrogram_methods
         push!(combo_method, idx)
     end
@@ -159,14 +166,6 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     entry_n = GtkSpinButton(1, 64, 1)
     set_gtk_property!(entry_n, :value, 3)
     set_gtk_property!(entry_n, :tooltip_text, "Gaussian smoothing filter kernel size")
-
-    combo_save = GtkComboBoxText()
-    file_types = ["PNG", "PDF"]
-    for idx in file_types
-        push!(combo_save, idx)
-    end
-    set_gtk_property!(combo_save, :active, 0)
-    bt_save = GtkButton("Save as:")
 
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
@@ -211,8 +210,8 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     set_gtk_property!(lab_smooth, :halign, 2)
     lab_n = GtkLabel("Kernel size:")
     set_gtk_property!(lab_n, :halign, 2)
-    g_opts[1, 1] = lab_method
-    g_opts[1, 2] = lab_ch
+    g_opts[1, 1] = lab_ch
+    g_opts[1, 2] = lab_method
     g_opts[1, 3] = lab_t
     g_opts[1, 4] = lab_x
     g_opts[1, 5] = lab_y
@@ -230,9 +229,8 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     g_opts[1, 17] = lab_mono
     g_opts[1, 18] = lab_smooth
     g_opts[1, 19] = lab_n
-    g_opts[1, 20] = bt_save
-    g_opts[2, 1] = combo_method
-    g_opts[2, 2] = entry_ch
+    g_opts[2, 1] = combo_ch
+    g_opts[2, 2] = combo_method
     g_opts[2, 3] = entry_title
     g_opts[2, 4] = entry_xlab
     g_opts[2, 5] = entry_ylab
@@ -250,118 +248,111 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
     g_opts[2, 17] = cb_mono
     g_opts[2, 18] = cb_smooth
     g_opts[2, 19] = entry_n
-    g_opts[2, 20] = combo_save
-    g_opts[1:2, 21] = bt_refresh
+    g_opts[1:2, 20] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
     g[1, 1] = vbox
-    g[2:11, 1] = can
-    g[1, 2] = GtkLabel("")
+    g[2:9, 1] = can
     g[2, 2] = bt_start
     g[3, 2] = bt_prev5
-    g[4, 2] = bt_prev
-    g[5, 2] = entry_time
-    g[6, 2] = bt_next
-    g[7, 2] = bt_next5
-    g[8, 2] = bt_end
-    g[9, 2] = GtkLabel("")
-    g[10, 2] = bt_help
-    g[11, 2] = bt_close
+    g[4, 2] = entry_time
+    g[5, 2] = bt_next5
+    g[6, 2] = bt_end
+    g[7, 2] = GtkLabel("")
+    g[8, 2] = bt_help
+    g[9, 2] = bt_close
     push!(win, g)
 
     showall(win)
 
     @guarded draw(can) do widget
-        ch = get_gtk_property(entry_ch, :text, String)
-        if length(ch) < 1
-            warn_dialog("Incorrect list of channels.")
-            ch = ch_init
-            set_gtk_property!(entry_ch, :text, string(ch))
+        ch = ch_types[get_gtk_property(combo_ch, :active, Int64) + 1]
+        ch in ctypes && (ch = lowercase(ch))
+        title = get_gtk_property(entry_title, :text, String)
+        xlab = get_gtk_property(entry_xlab, :text, String)
+        ylab = get_gtk_property(entry_ylab, :text, String)
+        mono = get_gtk_property(cb_mono, :active, Bool)
+        db = get_gtk_property(cb_db, :active, Bool)
+        frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
+        hw = get_gtk_property(cb_hw, :active, Bool)
+        smooth = get_gtk_property(cb_smooth, :active, Bool)
+        n = get_gtk_property(entry_n, :value, Int64)
+        method = get_gtk_property(combo_method, :active, String)
+        method == "0" && (method = :stft)
+        method == "1" && (method = :mt)
+        method == "2" && (method = :mw)
+        method == "3" && (method = :gh)
+        method == "4" && (method = :cwt)
+        wt = nothing
+        try
+            wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
+        catch
         end
-        if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
-            ch = _s2i(ch)
-            if ch isa Int64 && !in(ch, get_channel(obj))
-                warn_dialog("Incorrect list of channels.")
-                ch = ch_init
-                set_gtk_property!(entry_ch, :text, string(ch))
-            elseif !(ch isa Int64) && intersect(ch, get_channel(obj)) != ch
-                warn_dialog("Incorrect list of channels.")
-                ch = ch_init
-                set_gtk_property!(entry_ch, :text, string(ch))
-            end
-            title = get_gtk_property(entry_title, :text, String)
-            xlab = get_gtk_property(entry_xlab, :text, String)
-            ylab = get_gtk_property(entry_ylab, :text, String)
-            mono = get_gtk_property(cb_mono, :active, Bool)
-            db = get_gtk_property(cb_db, :active, Bool)
-            frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
-            hw = get_gtk_property(cb_hw, :active, Bool)
-            smooth = get_gtk_property(cb_smooth, :active, Bool)
-            n = get_gtk_property(entry_n, :value, Int64)
-            method = get_gtk_property(combo_method, :active, String)
-            method == "0" && (method = :stft)
-            method == "1" && (method = :mt)
-            method == "2" && (method = :mw)
-            method == "3" && (method = :gh)
-            method == "4" && (method = :cwt)
-            wt = nothing
-            try
-                wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
-            catch
-            end
-            frq1 = get_gtk_property(entry_frq1, :value, Float64)
-            frq2 = get_gtk_property(entry_frq2, :value, Float64)
-            nt = get_gtk_property(entry_nt, :value, Int64)
-            ncyc = get_gtk_property(entry_ncyc, :value, Int64)
-            wlen = get_gtk_property(entry_wlen, :value, Int64)
-            woverlap = get_gtk_property(entry_woverlap, :value, Int64)
-            gw = get_gtk_property(entry_gw, :value, Int64)
-            if frq1 == frq2
-                warn_dialog("Start and end frequencies must be different.")
-            elseif wt === nothing
-                warn_dialog("Incorrect wavelet formula.")
-            elseif frq1 > frq2
-                warn_dialog("Start frequency must be < end frequency.")
-            elseif woverlap >= wlen
-                warn_dialog("Window overlap must be < window length.")
-            else
-                time1 = get_gtk_property(entry_time, :value, Float64)
-                time2 = time1 + zoom
-                time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-                p = NeuroAnalyzer.plot_spectrogram(obj,
-                                                   ch=ch,
-                                                   seg=(time1, time2),
-                                                   mono=mono,
-                                                   title=title,
-                                                   xlabel=xlab,
-                                                   ylabel=ylab,
-                                                   db=db,
-                                                   method=method,
-                                                   frq_lim=(frq1, frq2),
-                                                   ncyc=ncyc,
-                                                   nt=nt,
-                                                   wlen=wlen,
-                                                   woverlap=woverlap,
-                                                   w=hw,
-                                                   wt=wt,
-                                                   gw=gw,
-                                                   frq=frq,
-                                                   smooth=smooth,
-                                                   n=n)
-                img = read_from_png(io)
-                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-                set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-                set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-                ctx = getgc(can)
-                show(io, MIME("image/png"), p)
-                img = read_from_png(io)
-                set_source_surface(ctx, img, 0, 0)
-                paint(ctx)
-            end
+        frq1 = get_gtk_property(entry_frq1, :value, Float64)
+        frq2 = get_gtk_property(entry_frq2, :value, Float64)
+        nt = get_gtk_property(entry_nt, :value, Int64)
+        ncyc = get_gtk_property(entry_ncyc, :value, Int64)
+        wlen = get_gtk_property(entry_wlen, :value, Int64)
+        woverlap = get_gtk_property(entry_woverlap, :value, Int64)
+        gw = get_gtk_property(entry_gw, :value, Int64)
+
+        no_error = true
+        if frq1 == frq2
+            warn_dialog("Start and end frequencies must be different.")
+            no_error = false
+        elseif wt === nothing
+            warn_dialog("Incorrect wavelet formula.")
+            no_error = false
+        elseif frq1 > frq2
+            warn_dialog("Start frequency must be < end frequency.")
+            no_error = false
+        elseif woverlap >= wlen
+            warn_dialog("Window overlap must be < window length.")
+            no_error = false
+        elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1
+            warn_dialog("For multi-channel spectrogram plot, all channels should be of the same type.")
+            no_error = false
+        end
+        if no_error
+            time1 = get_gtk_property(entry_time, :value, Float64)
+            time2 = time1 + zoom
+            time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
+            p = NeuroAnalyzer.plot_spectrogram(obj,
+                                               ch=ch,
+                                               seg=(time1, time2),
+                                               mono=mono,
+                                               title=title,
+                                               xlabel=xlab,
+                                               ylabel=ylab,
+                                               db=db,
+                                               method=method,
+                                               frq_lim=(frq1, frq2),
+                                               ncyc=ncyc,
+                                               nt=nt,
+                                               wlen=wlen,
+                                               woverlap=woverlap,
+                                               w=hw,
+                                               wt=wt,
+                                               gw=gw,
+                                               frq=frq,
+                                               smooth=smooth,
+                                               n=n)
+            img = read_from_png(io)
+            # Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+            set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+            set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
+            ctx = getgc(can)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
     end
 
+    signal_connect(combo_ch, "changed") do widget
+        draw(can)
+    end
     signal_connect(bt_refresh, "clicked") do widget
         draw(can)
     end
@@ -411,62 +402,10 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
         draw(can)
     end
 
-    signal_connect(bt_save, "clicked") do widget
-        format = get_gtk_property(combo_save, :active, String)
-        if format == "0"
-            file_name = save_dialog("Save as PNG", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
-            if file_name != ""
-                splitext(file_name)[2] == "" && (file_name *= ".png")
-                if splitext(file_name)[2] == ".png"
-                    plot_save(p, file_name=file_name)
-                    _info("Plot saved as: $file_name")
-                else
-                    warn_dialog("Incorrect filename!")
-                end
-            end
-        else
-            file_name = save_dialog("Save as PDF", GtkNullContainer(), (GtkFileFilter("*.pdf", name="All supported formats"), "*.pdf"))
-            if file_name != ""
-                splitext(file_name)[2] == "" && (file_name *= ".pdf")
-                if splitext(file_name)[2] == ".pdf"
-                    plot_save(p, file_name=file_name)
-                    _info("Plot saved as: $file_name")
-                else
-                    warn_dialog("Incorrect filename!")
-                end
-            end
-        end
-    end
-
-    signal_connect(bt_prev, "clicked") do widget
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        if time_current >= obj.time_pts[1] + 1
-            time_current -= 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
-        end
-    end
-
     signal_connect(bt_prev5, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj.time_pts[1] + zoom
             time_current = time_current - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
-        end
-    end
-
-    signal_connect(bt_next, "clicked") do widget
-        time_current = get_gtk_property(entry_time, :value, Float64)
-        if time_current < obj.time_pts[end] - zoom
-            time_current += 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
-        else
-            time_current = obj.time_pts[end] - zoom
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, time_current)
             end
@@ -505,36 +444,52 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
         Gtk.destroy(win)
     end
 
+    help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        info_dialog(help)
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
-            if k == 113 # q
-                Gtk.destroy(win)
-            elseif k == 104 # h
-                info_dialog("Keyboard shortcuts:\n\nctrl-a\tgo to the signal beginning\nctrl-s\tgo to the signal end\nctrl-z\tgo back by 1 second\nctrl-x\tgo forward by 1 second\nctrl-c\tgo back by $zoom seconds\nctrl-v\tgo forward by $zoom seconds\n\nctrl-h\tthis info\nctrl-q\texit\n")
-            elseif k == 97 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, obj.time_pts[1])
-                end
-            elseif k == 115 # s
-                time_current = obj.time_pts[end] - zoom
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
-            elseif k == 122 # z
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                if time_current >= obj.time_pts[1] + 1
-                    time_current -= 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
-                end
-            elseif k == 99 # c
+
+        if k == 0x0000005b # [
+            if zoom > 1
+                zoom -= 1
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                draw(can)
+            end
+            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        elseif k == 0x0000005d # ]
+            if zoom < 30 && zoom < obj.time_pts[end] - 1
+                zoom += 1
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                draw(can)
+            else
+                zoom = obj.time_pts[end]
+                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                draw(can)
+            end
+            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+        elseif k == 0x0000ff50 # home
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_time, :value, obj.time_pts[1])
+            end
+            draw(can)
+        elseif k == 0x0000ff57 # end
+            time_current = obj.time_pts[end] - zoom
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_time, :value, time_current)
+            end
+            draw(can)
+        end
+
+        if s == 0x00000018 # alt
+            if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
@@ -542,10 +497,11 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif k == 120 # x
+                draw(can)
+            elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
-                    time_current += 1
+                    time_current += zoom
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_time, :value, time_current)
                     end
@@ -555,10 +511,38 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
                         set_gtk_property!(entry_time, :value, time_current)
                     end
                 end
-            elseif k == 118 # v
+            end
+        end
+
+        if s == 0x00000014 # ctrl
+            if k == 0x00000071 # q
+                Gtk.destroy(win)
+            elseif k == 0x00000068 # h
+                info_dialog(help)
+            elseif k == 0x00000073 # s
+                file_name = save_dialog("Save as PNG", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
+                if file_name != ""
+                    splitext(file_name)[2] == "" && (file_name *= ".png")
+                    if splitext(file_name)[2] == ".png"
+                        plot_save(p, file_name=file_name)
+                        _info("Plot saved as: $file_name")
+                    else
+                        warn_dialog("Incorrect filename!")
+                    end
+                end
+            elseif k == 0x0000002c # ,
+                time_current = get_gtk_property(entry_time, :value, Float64)
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    Gtk.@sigatom begin
+                        set_gtk_property!(entry_time, :value, time_current)
+                    end
+                end
+                draw(can)
+            elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
-                    time_current += zoom
+                    time_current += 1
                     Gtk.@sigatom begin
                         set_gtk_property!(entry_time, :value, time_current)
                     end
@@ -591,17 +575,20 @@ Interactive spectrogram of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::String`: channel name
 """
-function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
 
     @assert nepochs(obj) > 1 "ispectrogram_cont() should be used for continuous object."
-    ch = get_channel(obj, ch=ch)
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch=ch, ep=1)
+    ch_init = ch
+    ch = get_channel(obj, ch=ch)
+    clabels = labels(obj)
+
+    p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch], ep=1)
     g = GtkGrid()
     g_opts = GtkGrid()
-    win = GtkWindow("NeuroAnalyzer: plot_spectrogram()", 1200, (p.attr[:size][2] + 40))
+    win = GtkWindow("NeuroAnalyzer: ispectrogram_ep()", 1200, 850)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -618,10 +605,6 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
-    bt_prev = GtkButton("←")
-    set_gtk_property!(bt_prev, :tooltip_text, "Go back by 1 epoch")
-    bt_next = GtkButton("→")
-    set_gtk_property!(bt_next, :tooltip_text, "Go forward by 1 epoch")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
@@ -639,11 +622,19 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     set_gtk_property!(entry_ylab, :text, "default")
     set_gtk_property!(entry_ylab, :tooltip_text, "Y axis label")
 
-    entry_ch = GtkEntry()
-    ch = _i2s(ch)
-    ch_init = ch
-    set_gtk_property!(entry_ch, :text, string(ch))
-    set_gtk_property!(entry_ch, :tooltip_text, "Channels")
+    combo_ch = GtkComboBoxText()
+    ctypes = uppercase.(unique(obj.header.recording[:channel_type]))
+    ch_types = [ctypes; clabels]
+    for idx in ch_types
+        push!(combo_ch, idx)
+    end
+    if ch_init in lowercase.(ctypes)
+        n = findfirst(isequal(ch_init), lowercase.(ctypes))
+        set_gtk_property!(combo_ch, :active, n - 2)
+    else
+        set_gtk_property!(combo_ch, :active, (length(ctypes) + ch[1]))
+    end
+    set_gtk_property!(combo_ch, :tooltip_text, "Channels")
 
     cb_mono = GtkCheckButton()
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
@@ -665,7 +656,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     set_gtk_property!(cb_smooth, :active, true)
 
     combo_method = GtkComboBoxText()
-    spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "continuous wavelet transformation"]
+    spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"]
     for idx in spectrogram_methods
         push!(combo_method, idx)
     end
@@ -707,14 +698,6 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     entry_n = GtkSpinButton(1, 64, 1)
     set_gtk_property!(entry_n, :value, 3)
     set_gtk_property!(entry_n, :tooltip_text, "Gaussian smoothing filter kernel size")
-
-    combo_save = GtkComboBoxText()
-    file_types = ["PNG", "PDF"]
-    for idx in file_types
-        push!(combo_save, idx)
-    end
-    set_gtk_property!(combo_save, :active, 0)
-    bt_save = GtkButton("Save as:")
 
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
@@ -759,8 +742,8 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     set_gtk_property!(lab_smooth, :halign, 2)
     lab_n = GtkLabel("Kernel size:")
     set_gtk_property!(lab_n, :halign, 2)
-    g_opts[1, 1] = lab_method
-    g_opts[1, 2] = lab_ch
+    g_opts[1, 1] = lab_ch
+    g_opts[1, 2] = lab_method
     g_opts[1, 3] = lab_t
     g_opts[1, 4] = lab_x
     g_opts[1, 5] = lab_y
@@ -778,9 +761,8 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     g_opts[1, 17] = lab_mono
     g_opts[1, 18] = lab_smooth
     g_opts[1, 19] = lab_n
-    g_opts[1, 20] = bt_save
-    g_opts[2, 1] = combo_method
-    g_opts[2, 2] = entry_ch
+    g_opts[2, 1] = combo_ch
+    g_opts[2, 2] = combo_method
     g_opts[2, 3] = entry_title
     g_opts[2, 4] = entry_xlab
     g_opts[2, 5] = entry_ylab
@@ -798,114 +780,107 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     g_opts[2, 17] = cb_mono
     g_opts[2, 18] = cb_smooth
     g_opts[2, 19] = entry_n
-    g_opts[2, 20] = combo_save
-    g_opts[1:2, 21] = bt_refresh
+    g_opts[1:2, 20] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
     g[1, 1] = vbox
-    g[2:9, 1] = can
-    g[1, 2] = GtkLabel("")
+    g[2:7, 1] = can
     g[2, 2] = bt_start
-    g[3, 2] = bt_prev
-    g[4, 2] = entry_epoch
-    g[5, 2] = bt_next
-    g[6, 2] = bt_end
-    g[7, 2] = GtkLabel("")
-    g[8, 2] = bt_help
-    g[9, 2] = bt_close
+    g[3, 2] = entry_epoch
+    g[4, 2] = bt_end
+    g[5, 2] = GtkLabel("")
+    g[6, 2] = bt_help
+    g[7, 2] = bt_close
     push!(win, g)
 
     showall(win)
 
     @guarded draw(can) do widget
-        ch = get_gtk_property(entry_ch, :text, String)
-        if length(ch) < 1
-            warn_dialog("Incorrect list of channels.")
-            ch = ch_init
-            set_gtk_property!(entry_ch, :text, string(ch))
+        ch = ch_types[get_gtk_property(combo_ch, :active, Int64) + 1]
+        ch in ctypes && (ch = lowercase(ch))
+        title = get_gtk_property(entry_title, :text, String)
+        xlab = get_gtk_property(entry_xlab, :text, String)
+        ylab = get_gtk_property(entry_ylab, :text, String)
+        mono = get_gtk_property(cb_mono, :active, Bool)
+        db = get_gtk_property(cb_db, :active, Bool)
+        frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
+        hw = get_gtk_property(cb_hw, :active, Bool)
+        smooth = get_gtk_property(cb_smooth, :active, Bool)
+        n = get_gtk_property(entry_n, :value, Int64)
+        method = get_gtk_property(combo_method, :active, String)
+        method == "0" && (method = :stft)
+        method == "1" && (method = :mt)
+        method == "2" && (method = :mw)
+        method == "3" && (method = :gh)
+        method == "4" && (method = :cwt)
+        wt = nothing
+        try
+            wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
+        catch
         end
-        if (occursin(", ", ch) && _check_svec(ch)) || (occursin(":", ch) && _check_srange(ch)) || _check_sint(ch)
-            ch = _s2i(ch)
-            if ch isa Int64 && !in(ch, get_channel(obj))
-                warn_dialog("Incorrect list of channels.")
-                ch = ch_init
-                set_gtk_property!(entry_ch, :text, string(ch))
-            elseif !(ch isa Int64) && intersect(ch, get_channel(obj)) != ch
-                warn_dialog("Incorrect list of channels.")
-                ch = ch_init
-                set_gtk_property!(entry_ch, :text, string(ch))
-            end
-            title = get_gtk_property(entry_title, :text, String)
-            xlab = get_gtk_property(entry_xlab, :text, String)
-            ylab = get_gtk_property(entry_ylab, :text, String)
-            mono = get_gtk_property(cb_mono, :active, Bool)
-            db = get_gtk_property(cb_db, :active, Bool)
-            frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
-            hw = get_gtk_property(cb_hw, :active, Bool)
-            smooth = get_gtk_property(cb_smooth, :active, Bool)
-            n = get_gtk_property(entry_n, :value, Int64)
-            method = get_gtk_property(combo_method, :active, String)
-            method == "0" && (method = :stft)
-            method == "1" && (method = :mt)
-            method == "2" && (method = :mw)
-            method == "3" && (method = :gh)
-            method == "4" && (method = :cwt)
-            wt = nothing
-            try
-                wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
-            catch
-            end
-            frq1 = get_gtk_property(entry_frq1, :value, Float64)
-            frq2 = get_gtk_property(entry_frq2, :value, Float64)
-            nt = get_gtk_property(entry_nt, :value, Int64)
-            ncyc = get_gtk_property(entry_ncyc, :value, Int64)
-            wlen = get_gtk_property(entry_wlen, :value, Int64)
-            woverlap = get_gtk_property(entry_woverlap, :value, Int64)
-            gw = get_gtk_property(entry_gw, :value, Int64)
-            if frq1 == frq2
-                warn_dialog("Start and end frequencies must be different.")
-            elseif wt === nothing
-                warn_dialog("Incorrect wavelet formula.")
-            elseif frq1 > frq2
-                warn_dialog("Start frequency must be < end frequency.")
-            elseif woverlap >= wlen
-                warn_dialog("Window overlap must be < window length.")
-            else
-                ep = get_gtk_property(entry_epoch, :value, Int64)
-                p = NeuroAnalyzer.plot_spectrogram(obj,
-                                                   ch=ch,
-                                                   ep=ep,
-                                                   mono=mono,
-                                                   title=title,
-                                                   xlabel=xlab,
-                                                   ylabel=ylab,
-                                                   db=db,
-                                                   method=method,
-                                                   frq_lim=(frq1, frq2),
-                                                   ncyc=ncyc,
-                                                   nt=nt,
-                                                   wlen=wlen,
-                                                   woverlap=woverlap,
-                                                   w=hw,
-                                                   wt=wt,
-                                                   gw=gw,
-                                                   frq=frq,
-                                                   smooth=smooth,
-                                                   n=n)
-                img = read_from_png(io)
-                Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
-                set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-                set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
-                ctx = getgc(can)
-                show(io, MIME("image/png"), p)
-                img = read_from_png(io)
-                set_source_surface(ctx, img, 0, 0)
-                paint(ctx)
-            end
+        frq1 = get_gtk_property(entry_frq1, :value, Float64)
+        frq2 = get_gtk_property(entry_frq2, :value, Float64)
+        nt = get_gtk_property(entry_nt, :value, Int64)
+        ncyc = get_gtk_property(entry_ncyc, :value, Int64)
+        wlen = get_gtk_property(entry_wlen, :value, Int64)
+        woverlap = get_gtk_property(entry_woverlap, :value, Int64)
+        gw = get_gtk_property(entry_gw, :value, Int64)
+
+        no_error = true
+        if frq1 == frq2
+            warn_dialog("Start and end frequencies must be different.")
+            no_error = false
+        elseif wt === nothing
+            warn_dialog("Incorrect wavelet formula.")
+            no_error = false
+        elseif frq1 > frq2
+            warn_dialog("Start frequency must be < end frequency.")
+            no_error = false
+        elseif woverlap >= wlen
+            warn_dialog("Window overlap must be < window length.")
+            no_error = false
+        elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1
+            warn_dialog("For multi-channel spectrogram plot, all channels should be of the same type.")
+            no_error = false
+        end
+        if no_error
+            ep = get_gtk_property(entry_epoch, :value, Int64)
+            p = NeuroAnalyzer.plot_spectrogram(obj,
+                                               ch=ch,
+                                               ep=ep,
+                                               mono=mono,
+                                               title=title,
+                                               xlabel=xlab,
+                                               ylabel=ylab,
+                                               db=db,
+                                               method=method,
+                                               frq_lim=(frq1, frq2),
+                                               ncyc=ncyc,
+                                               nt=nt,
+                                               wlen=wlen,
+                                               woverlap=woverlap,
+                                               w=hw,
+                                               wt=wt,
+                                               gw=gw,
+                                               frq=frq,
+                                               smooth=smooth,
+                                               n=n)
+            img = read_from_png(io)
+            Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
+            set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
+            set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
+            ctx = getgc(can)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
     end
 
+    signal_connect(combo_ch, "changed") do widget
+        draw(can)
+    end
     signal_connect(bt_refresh, "clicked") do widget
         draw(can)
     end
@@ -955,53 +930,6 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
         draw(can)
     end
 
-    signal_connect(bt_save, "clicked") do widget
-        format = get_gtk_property(combo_save, :active, String)
-        if format == "0"
-            file_name = save_dialog("Save as PNG", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
-            if file_name != ""
-                splitext(file_name)[2] == "" && (file_name *= ".png")
-                if splitext(file_name)[2] == ".png"
-                    plot_save(p, file_name=file_name)
-                    _info("Plot saved as: $file_name")
-                else
-                    warn_dialog("Incorrect filename!")
-                end
-            end
-        else
-            file_name = save_dialog("Save as PDF", GtkNullContainer(), (GtkFileFilter("*.pdf", name="All supported formats"), "*.pdf"))
-            if file_name != ""
-                splitext(file_name)[2] == "" && (file_name *= ".pdf")
-                if splitext(file_name)[2] == ".pdf"
-                    plot_save(p, file_name=file_name)
-                    _info("Plot saved as: $file_name")
-                else
-                    warn_dialog("Incorrect filename!")
-                end
-            end
-        end
-    end
-
-    signal_connect(bt_prev, "clicked") do widget
-        ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep >= 2
-            ep -= 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, ep)
-            end
-        end
-    end
-
-    signal_connect(bt_next, "clicked") do widget
-        ep = get_gtk_property(entry_epoch, :value, Int64)
-        if ep < nepochs(obj)
-            ep += 1
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, ep)
-            end
-        end
-    end
-
     signal_connect(bt_start, "clicked") do widget
         Gtk.@sigatom begin
             set_gtk_property!(entry_epoch, :value, 1)
@@ -1018,27 +946,43 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
         Gtk.destroy(win)
     end
 
+    help = "Keyboard shortcuts:\n\nHome\tgo to the first epoch\nEnd\tgo to the last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+
     signal_connect(bt_help, "clicked") do widgete
-        info_dialog("Keyboard shortcuts:\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
+        info_dialog(help)
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
-            if k == 113 # q
+        if k == 0x0000ff50 # home
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_epoch, :value, 1)
+            end
+            draw(can)
+        elseif k == 0x0000ff57 # end
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_epoch, :value, nepochs(obj))
+            end
+            draw(can)
+        end
+        if s == 0x00000014
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
-            elseif k == 104 # h
-                info_dialog("Keyboard shortcuts:\nctrl-a\tgo to first epoch\nctrl-s\tgo to last epoch\nctrl-z\tprevious epoch\nctrl-x\tnext epoch\n\nctrl-h\tthis info\nctrl-q\texit\n")
-            elseif k == 97 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, 1)
+            elseif k == 0x00000068 # h
+                info_dialog(help)
+            elseif k == 0x00000073 # s
+                file_name = save_dialog("Save as PNG", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
+                if file_name != ""
+                    splitext(file_name)[2] == "" && (file_name *= ".png")
+                    if splitext(file_name)[2] == ".png"
+                        plot_save(p, file_name=file_name)
+                        _info("Plot saved as: $file_name")
+                    else
+                        warn_dialog("Incorrect filename!")
+                    end
                 end
-            elseif k == 115 # a
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_epoch, :value, nepochs(obj))
-                end
-            elseif k == 122 # z
+            elseif k == 0x0000002c # ,
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep >= 2
                     ep -= 1
@@ -1046,7 +990,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
                         set_gtk_property!(entry_epoch, :value, ep)
                     end
                 end
-            elseif k == 120 # x
+            elseif k == 0x0000002e # .
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1

@@ -44,17 +44,15 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
 
     if frq === :lin
         ysc = :identity
-        yt = _ticks(frq_lim)
+        yt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
     else
+        ysc = :log10
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
-        ysc = :log10
+        yt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
 
     p = Plots.heatmap(st,
@@ -63,16 +61,18 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
                       xlabel=xlabel,
                       ylabel=ylabel,
                       ylims=frq_lim,
-                      xticks=_ticks(st),
-                      yticks=yt,
+                      xticks=_ticks(st[1]:st[end]),
+                      yticks=(yt, string.(yt)),
                       yscale=ysc,
                       title=title,
+                      xtick_direction=:out,
+                      ytick_direction=:out,
                       size=(1200, 800),
-                      margins=20Plots.px,
+                      top_margin=20Plots.px,
+                      bottom_margin=30Plots.px,
+                      right_margin=20Plots.px,
+                      left_margin=20Plots.px,
                       seriescolor=pal,
-                      background_color=:black,
-                      background_color_outside=:white,
-                      foreground_color=:black,
                       colorbar_title=cb_title,
                       titlefontsize=8,
                       xlabelfontsize=8,
@@ -129,43 +129,61 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Flo
 
     if frq === :lin
         xsc = :identity
-        xt = _ticks(frq_lim)
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
     else
+        xsc = :log10
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
-        xsc = :log10
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
-
     ch = collect(eachindex(sch)) .- 0.5
+    ch_n = length(ch)
+    plot_size = (1200, 800)
     p = Plots.heatmap(sf,
                       ch,
                       sp,
-                      xlabel=xlabel,
-                      xticks=xt,
+                      xticks=(xt, string.(xt)),
                       xlims=frq_lim,
                       xscale=xsc,
-                      ylabel=ylabel,
-                      yticks=(ch, sch),
+                      xlabel=xlabel,
+                      ylabel="",
+                      yticks=false,
+                      xtick_direction=:out,
                       title=title,
-                      size=size(sp, 1) <= 64 ? (1200, 800) : (1200, 1200),
-                      margins=10Plots.px,
-                      seriescolor=pal,
-                      background_color=:black,
-                      background_color_outside=:white,
-                      foreground_color=:black,
-                      colorbar_title=cb_title,
-                      titlefontsize=10,
+                      size=plot_size,
+                      top_margin=20Plots.px,
+                      bottom_margin=30Plots.px,
+                      right_margin=20Plots.px,
+                      left_margin=100Plots.px,
+                      titlefontsize=8,
                       xlabelfontsize=8,
                       ylabelfontsize=8,
                       xtickfontsize=6,
-                      ytickfontsize=size(sp, 1) <= 64 ? 6 : 5;
+                      ytickfontsize=6,
+                      seriescolor=pal,
+                      colorbar_title=cb_title;
                       kwargs...)
+
+    # draw labels
+    if ch_n > 64
+        for idx in 1:5:ch_n
+            s_pos = ch_n - idx
+            p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos + 0.5), Plots.text("$(sch[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
+        end
+    elseif ch_n > 32
+        for idx in 1:2:ch_n
+            s_pos = ch_n - idx
+            p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos + 0.5), Plots.text("$(sch[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
+        end
+    else
+        for idx in 1:ch_n
+            s_pos = ch_n - idx
+            p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos + 0.5), Plots.text("$(sch[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
+        end
+    end
 
     return p
 
@@ -256,7 +274,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     clabels = labels(obj)[ch]
 
     # set units
-    units = _ch_units(obj, clabels[ch[1]])
+    units = _ch_units(obj, labels(obj)[ch[1]])
 
     # get frequency range
     fs = sr(obj)

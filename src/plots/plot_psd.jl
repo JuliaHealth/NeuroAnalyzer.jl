@@ -19,55 +19,33 @@ Plot PSD (power spectrum density).
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
+    if frq === :lin
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
+        xt[end] = frq_lim[2]
         xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
+    elseif frq === :log
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
-        ysc = :identity
-    elseif ax === :linlog
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = !db ? :log10 : :identity
-    elseif ax === :loglog
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        end
-        xsc = :log10
-        ysc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -79,9 +57,9 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 500),
+                   size=(1200, 800),
                    margins=20Plots.px,
-                   titlefontsize=10,
+                   titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
@@ -90,9 +68,8 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
     # plot powers
     p = Plots.plot!(sf,
                     sp,
-                    xticks=xt,
-                    xscale=xsc,
-                    yscale=ysc;
+                    xticks=(xt, string.(xt)),
+                    xscale=xsc;
                     kwargs...)
 
     return p
@@ -115,22 +92,18 @@ Plot multi-channel PSD (power spectrum density).
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
 
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     # reverse so 1st channel is on top
@@ -154,52 +127,40 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
         sp[idx, :] = @views normalize(sp[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
     end
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
+    if frq === :lin
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
         xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
+    elseif frq === :log
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
-        ysc = :identity
-    elseif ax === :linlog
-        _warn("For multi-channel PSD plots, y-axis log-scale is ignored.")
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = :identity
-    elseif ax === :loglog
-        _warn("For multi-channel PSD plots, y-axis log-scale is ignored.")
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        end
-        xsc = :log10
-        ysc = :identity
     end
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
+    plot_size = 100 + 40 * ch_n <= 800 ? (1200, 800) : (1200, 100 + 40 * ch_n)
+    p = Plots.plot(ylabel="",
+                   xlabel=100 + 40 * ch_n < 800 ? xlabel : "",
                    legend=false,
                    xlims=frq_lim,
+                   ylims=(-1, ch_n),
+                   xticks=100 + 40 * ch_n <= 800 ? (xt, string.(xt)) : (xt, []),
+                   yticks=((ch_n - 1):-1:0, []),
+                   ytick_direction=:none,
+                   xtick_direction=:out,
                    title=title,
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=size(sp, 1) <= 64 ? (1200, 800) : (1200, 1200),
-                   margins=20Plots.px,
-                   titlefontsize=10,
+                   size=plot_size,
+                   top_margin=10Plots.px,
+                   bottom_margin=30Plots.px,
+                   right_margin=20Plots.px,
+                   left_margin=60Plots.px,
+                   titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
@@ -217,13 +178,28 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
                                sp[idx, :],
                                linewidth=1,
                                label="",
-                               xticks=xt,
                                xscale=xsc,
                                color=channel_color[idx])
     end
 
-    # plot labels
-    p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
+    # draw labels
+    for idx in 1:ch_n
+        s_pos = ch_n - idx
+        p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos), Plots.text("$(clabels[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
+    end
+
+    # draw ticks
+    if 100 + 40 * ch_n > 800
+        xt_s = string.(xt)
+        for idx in eachindex(xt)
+            p = Plots.plot!(annotations=(xt[idx], (-1.5), Plots.text("$(xt_s[idx])", pointsize=6, halign=:center, valign=:center)), label=false)
+        end
+        if xsc == :log10
+            p = Plots.plot!(annotations=((logspace(log10(xt[1]), log10(xt[end]), 3)[2]), (-2.5), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
+        else
+            p = Plots.plot!(annotations=((mean(xt)), (-2.5), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
+        end
+    end
 
     return p
 
@@ -244,21 +220,17 @@ Plot PSD mean and ±95% CI of averaged channels.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
@@ -266,36 +238,17 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
     # get mean and 95%CI
     s_m, _, s_u, s_l = msci95(sp)
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
+    if frq === :lin
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
         xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
+    elseif frq === :log
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
-        ysc = :identity
-    elseif ax === :linlog
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = !db ? :log10 : :identity
-    elseif ax === :loglog
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        end
-        xsc = :log10
-        ysc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -303,14 +256,13 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
                    ylabel=ylabel,
                    legend=false,
                    xlims=frq_lim,
-                   xticks=xt,
+                   xticks=(xt, string.(xt)),
                    xscale=xsc,
-                   yscale=ysc,
                    title=title,
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 500),
+                   size=(1200, 800),
                    margins=20Plots.px,
                    titlefontsize=10,
                    xlabelfontsize=8,
@@ -363,21 +315,17 @@ Butterfly PSD plot.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     ch_n = size(sp, 1)
@@ -386,36 +334,17 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
+    if frq === :lin
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
         xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
+    elseif frq === :log
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
-        ysc = :identity
-    elseif ax === :linlog
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = !db ? :log10 : :identity
-    elseif ax === :loglog
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        end
-        xsc = :log10
-        ysc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -423,14 +352,13 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
                    ylabel=ylabel,
                    legend=ch_n < 20,
                    xlims=frq_lim,
-                   xticks=xt,
+                   xticks=(xt, string.(xt)),
                    xscale=xsc,
-                   yscale=ysc;
                    title=title,
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 500),
+                   size=(1200, 800),
                    margins=20Plots.px,
                    titlefontsize=10,
                    xlabelfontsize=8,
@@ -469,11 +397,7 @@ Plot 3-d waterfall PSD plot.
 - `zlabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
 - `kwargs`: optional arguments for plot() function
 
@@ -481,11 +405,11 @@ Plot 3-d waterfall PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
+function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol, kwargs...)
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     ch_n = size(sp, 1)
@@ -495,36 +419,17 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
     # channel labels
     clabels == [""] && (clabels = repeat([""], ch_n))
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
+    if frq === :lin
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
         xsc = :identity
-        zsc = :identity
-    elseif ax === :loglin
+    elseif frq === :log
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
-        zsc = :identity
-    elseif ax === :linlog
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        zsc = !db ? :log10 : :identity
-    elseif ax === :loglog
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        end
-        xsc = :log10
-        zsc = !db ? :log10 : :identity
     end
 
     # prepare plot
@@ -532,28 +437,28 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
         p = Plots.plot3d(sf,
                          ones(length(sf)),
                          sp[1, :],
+                         aspect_ratio=:none,
                          xlabel=xlabel,
                          ylabel="",
                          zlabel=zlabel,
                          legend=false,
                          xlims=frq_lim,
-                         xticks=xt,
+                         xticks=(xt, string.(xt)),
                          xscale=xsc,
-                         zscale=zsc;
                          title=title,
                          palette=pal,
                          st=:line,
                          lc=:black,
-                         size=size(sp, 1) <= 64 ? (900, 900) : (1400, 1400),
-                         margins=-50Plots.px,
-                         xrotation=-15,
+                         size=(1200, 800),
+                         margins=-10Plots.px,
+                         xrotation=xsc == :log10 ? 45 : -15,
                          yrotation=-10,
                          titlefontsize=10,
                          xlabelfontsize=8,
                          ylabelfontsize=8,
                          zlabelfontsize=8,
                          xtickfontsize=6,
-                         ytickfontsize=size(sp, 1) <= 64 ? 6 : 4,
+                         ytickfontsize=5,
                          ztickfontsize=6)
 
         # plot powers
@@ -570,6 +475,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
         f1 = vsearch(frq_lim[1], sf)
         f2 = vsearch(frq_lim[2], sf)
         p = Plots.plot3d(sf[f1:f2],
+                         aspect_ratio=:none,
                          eachindex(clabels),
                          sp[:, f1:f2],
                          xlabel=xlabel,
@@ -577,27 +483,33 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                          zlabel=zlabel,
                          legend=false,
                          xlims=frq_lim,
-                         xticks=xt,
+                         xticks=(xt, string.(xt)),
+                         xrotation=xsc == :log10 ? 45 : -15,
                          xscale=xsc,
-                         zscale=zsc;
                          title=title,
                          palette=pal,
                          st=:surface,
                          lc=:black,
-                         size=size(sp, 1) <= 64 ? (900, 800) : (1400, 1400),
+                         size=(1200, 800),
                          margins=-10Plots.px,
-                         xrotation=-15,
                          yrotation=-10,
                          titlefontsize=10,
                          xlabelfontsize=8,
                          ylabelfontsize=8,
                          zlabelfontsize=8,
                          xtickfontsize=6,
-                         ytickfontsize=size(sp, 1) <= 64 ? 6 : 4,
+                         ytickfontsize=5,
                          ztickfontsize=6)
     end
 
-    p = Plots.plot!(yticks=(1:ch_n, clabels))
+    if ch_n > 64
+        yt = (1:5:ch_n, clabels[1:5:length(clabels)])
+    elseif ch_n > 32
+        yt = (1:2:ch_n, clabels[1:2:length(clabels)])
+    else
+        yt = (1:ch_n, clabels)
+    end
+    p = Plots.plot!(yticks=yt)
 
     return p
 
@@ -621,11 +533,7 @@ Plot topographical map PSDs.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
 
@@ -633,11 +541,11 @@ Plot topographical map PSDs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, kwargs...)
 
     @assert length(ch) == nrow(locs) "Some channels do not have locations."
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
@@ -645,36 +553,17 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
+    if frq === :lin
+        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
         xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
+    elseif frq === :log
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
         end
+        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
-        ysc = :identity
-    elseif ax === :linlog
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = !db ? :log10 : :identity
-    elseif ax === :loglog
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)))
-        end
-        xsc = :log10
-        ysc = !db ? :log10 : :identity
     end
 
     # plot parameters
@@ -692,7 +581,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         offset = 150
     else
         plot_size = 2500
-        marker_size = (90, 50)
+        marker_size = (85, 50)
         rx = 0.6
         ry = 0.4
         offset = 250
@@ -728,7 +617,6 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                        sp[idx, :],
                        t=:line,
                        c=:black,
-                       showaxis=false,
                        linewidth=0.5,
                        xlabel=xlabel,
                        ylabel=ylabel,
@@ -737,18 +625,15 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                        xticks=false,
                        yticks=false,
                        xscale=xsc,
-                       yscale=ysc,
                        title=clabels[idx],
                        palette=pal,
                        size=marker_size,
-                       titlefontsize=10,
+                       titlefontsize=8,
                        xlabelfontsize=8,
                        ylabelfontsize=8,
                        xtickfontsize=6,
                        ytickfontsize=6;
                        kwargs...)
-        p = Plots.hline!([minimum(sp[idx, :])], c=:black, linewidth=0.5, xlims=(0, sf[end]))
-        p = Plots.vline!([0], c=:black, linewidth=0.5, ylims=(minimum(sp[idx, :]), maximum(sp[idx, :])))
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
         Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
@@ -797,11 +682,7 @@ Plot power spectrum density.
 - `gw::Real=5`: Gaussian width in Hz
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
@@ -820,12 +701,12 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
+function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
 
     ch = get_channel(obj, ch=ch)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
@@ -868,7 +749,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     clabels = labels(obj)
 
     # set units
-    units = _ch_units(obj, clabels[ch][1])
+    units = _ch_units(obj, labels(obj)[ch[1]])
 
     ref !== :abs && (frq_lim = band_frq(obj, band=ref))
 
@@ -977,7 +858,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          title=title,
                          db=db,
                          frq_lim=frq_lim,
-                         ax=ax,
+                         frq=frq,
                          mono=mono;
                          kwargs...)
         else
@@ -989,7 +870,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          title=title,
                          db=db,
                          frq_lim=frq_lim,
-                         ax=ax,
+                         frq=frq,
                          mono=mono;
                          kwargs...)
         end
@@ -1007,7 +888,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                                title=title,
                                db=db,
                                frq_lim=frq_lim,
-                               ax=ax,
+                               frq=frq,
                                mono=mono;
                                kwargs...)
     elseif type === :mean
@@ -1024,7 +905,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          title=title,
                          db=db,
                          frq_lim=frq_lim,
-                         ax=ax,
+                         frq=frq,
                          mono=mono;
                          kwargs...)
     elseif type === :w3d
@@ -1049,7 +930,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         title=title,
                         db=db,
                         frq_lim=frq_lim,
-                        ax=ax,
+                        frq=frq,
                         mono=mono,
                         variant=:w;
                         kwargs...)
@@ -1075,7 +956,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         title=title,
                         db=db,
                         frq_lim=frq_lim,
-                        ax=ax,
+                        frq=frq,
                         mono=mono,
                         variant=:s;
                         kwargs...)
@@ -1099,7 +980,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                           title=title,
                           db=db,
                           frq_lim=frq_lim,
-                          ax=ax,
+                          frq=frq,
                           mono=mono;
                           kwargs...)
     end
@@ -1140,11 +1021,7 @@ Plot power spectrum density of embedded or external component.
 - `gw::Real=5`: Gaussian width in Hz
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
@@ -1163,12 +1040,12 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    _check_var(frq, [:lin, :log], "frq")
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
 
@@ -1311,7 +1188,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                      title=title,
                      db=db,
                      frq_lim=frq_lim,
-                     ax=ax,
+                     frq=frq,
                      mono=mono;
                      kwargs...)
     elseif type === :butterfly
@@ -1325,7 +1202,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                                title=title,
                                db=db,
                                frq_lim=frq_lim,
-                               ax=ax,
+                               frq=frq,
                                mono=mono;
                                kwargs...)
     elseif type === :mean
@@ -1339,7 +1216,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                          title=title,
                          db=db,
                          frq_lim=frq_lim,
-                         ax=ax,
+                         frq=frq,
                          mono=mono;
                          kwargs...)
     elseif type === :w3d
@@ -1361,7 +1238,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                         title=title,
                         db=db,
                         frq_lim=frq_lim,
-                        ax=ax,
+                        frq=frq,
                         mono=mono,
                         variant=:w;
                         kwargs...)
@@ -1384,7 +1261,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                         title=title,
                         db=db,
                         frq_lim=frq_lim,
-                        ax=ax,
+                        frq=frq,
                         mono=mono,
                         variant=:s;
                         kwargs...)

@@ -15,12 +15,17 @@ function _ylims(s::AbstractVector)
         return (-abs(min), abs(min))
     end
 end
+
 function _ticks(t::Union{AbstractVector, AbstractRange})
-    if length(t) > 1 / (t[2] - t[1])
-        return floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
-    else
-        return floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 20):ceil(t[end], digits=2)
+    if length(t) >= 3
+        if t[2] - t[1] == t[3] - t[2]
+            tc = round.(linspace(t[1], t[end], 11))
+        else
+            tc = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+        end
     end
+    tc[end] = t[end]
+    return tc
 end
 
 function _ticks(t::Tuple{Real, Real})
