@@ -195,9 +195,9 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
             p = Plots.plot!(annotations=(xt[idx], (-1.5), Plots.text("$(xt_s[idx])", pointsize=6, halign=:center, valign=:center)), label=false)
         end
         if xsc == :log10
-            p = Plots.plot!(annotations=((logspace(log10(xt[1]), log10(xt[end]), 3)[2]), (-2.5), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
+            p = Plots.plot!(annotations=((logspace(log10(xt[1]), log10(xt[end]), 3)[2]), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
         else
-            p = Plots.plot!(annotations=((mean(xt)), (-2.5), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
+            p = Plots.plot!(annotations=((mean(xt)), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
         end
     end
 
@@ -350,7 +350,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
     # prepare plot
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
-                   legend=ch_n < 20,
+                   legend=false,
                    xlims=frq_lim,
                    xticks=(xt, string.(xt)),
                    xscale=xsc,

@@ -48,10 +48,10 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=clabels[ch])
 
-    win = GtkWindow("NeuroAnalyzer: ipsd_cont()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: ipsd_cont()", 1200, 850)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
-    set_gtk_property!(win_view, :min_content_height, 600)
+    set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 10)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -68,16 +68,16 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     set_gtk_property!(g_opts, :row_spacing, 10)
     set_gtk_property!(g_opts, :column_spacing, 10)
 
-    entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, zoom)
+    entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
     set_gtk_property!(entry_time, :digits, 2)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_start = GtkButton("⇤")
     set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
-    bt_prev5 = GtkButton("↞")
-    set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
-    bt_next5 = GtkButton("↠")
-    set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
+    bt_prev = GtkButton("↞")
+    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $zoom seconds")
+    bt_next = GtkButton("↠")
+    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $zoom seconds")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("🛈")
@@ -183,7 +183,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
-    lab_type = GtkLabel("PSD method:")
+    lab_type = GtkLabel("Plot type:")
     set_gtk_property!(lab_type, :halign, 2)
     lab_method = GtkLabel("PSD method:")
     set_gtk_property!(lab_method, :halign, 2)
@@ -266,9 +266,9 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     g[1, 1] = vbox
     g[2:9, 1] = win_view
     g[2, 2] = bt_start
-    g[3, 2] = bt_prev5
+    g[3, 2] = bt_prev
     g[4, 2] = entry_time
-    g[5, 2] = bt_next5
+    g[5, 2] = bt_next
     g[6, 2] = bt_end
     g[7, 2] = GtkLabel("")
     g[8, 2] = bt_help
@@ -386,7 +386,6 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
                                        wt=wt,
                                        gw=gw)
             img = read_from_png(io)
-            # Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
             set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
             set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
             ctx = getgc(can)
@@ -449,7 +448,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         draw(can)
     end
 
-    signal_connect(bt_prev5, "clicked") do widget
+    signal_connect(bt_prev, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj.time_pts[1] + zoom
             time_current = time_current - zoom
@@ -459,7 +458,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         end
     end
 
-    signal_connect(bt_next5, "clicked") do widget
+    signal_connect(bt_next, "clicked") do widget
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current < obj.time_pts[end] - zoom
             time_current += zoom
@@ -504,21 +503,21 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         if k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             end
             help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             else
                 zoom = obj.time_pts[end]
-                set_gtk_property!(bt_next5, :tooltip_text, "Go forward by $zoom seconds")
-                set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $zoom seconds")
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $zoom seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $zoom seconds")
                 draw(can)
             end
             help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $zoom seconds\nalt-.\tgo forward by $zoom seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
@@ -635,10 +634,10 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=clabels[ch], ep=1)
 
-    win = GtkWindow("NeuroAnalyzer: ipsd_ep()", 1200, 800)
+    win = GtkWindow("NeuroAnalyzer: ipsd_ep()", 1200, 850)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
-    set_gtk_property!(win_view, :min_content_height, 600)
+    set_gtk_property!(win_view, :min_content_height, 800)
     set_gtk_property!(win, :border_width, 10)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -764,7 +763,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
-    lab_type = GtkLabel("PSD method:")
+    lab_type = GtkLabel("Plot type:")
     set_gtk_property!(lab_type, :halign, 2)
     lab_method = GtkLabel("PSD method:")
     set_gtk_property!(lab_method, :halign, 2)
@@ -806,18 +805,18 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     g_opts[1, 2] = lab_type
     g_opts[1, 3] = lab_method
     g_opts[1, 4] = lab_ref
-    g_opts[1, 5] = lab_frq
-    g_opts[1, 6] = lab_t
-    g_opts[1, 7] = lab_x
-    g_opts[1, 8] = lab_y
-    g_opts[1, 9] = lab_frq1
-    g_opts[1, 10] = lab_frq2
-    g_opts[1, 11] = lab_nc
-    g_opts[1, 12] = lab_nt
-    g_opts[1, 13] = lab_wlen
-    g_opts[1, 14] = lab_woverlap
-    g_opts[1, 15] = lab_gw
-    g_opts[1, 16] = lab_wt
+    g_opts[1, 5] = lab_t
+    g_opts[1, 6] = lab_x
+    g_opts[1, 7] = lab_y
+    g_opts[1, 8] = lab_frq1
+    g_opts[1, 9] = lab_frq2
+    g_opts[1, 10] = lab_nc
+    g_opts[1, 11] = lab_nt
+    g_opts[1, 12] = lab_wlen
+    g_opts[1, 13] = lab_woverlap
+    g_opts[1, 14] = lab_gw
+    g_opts[1, 15] = lab_wt
+    g_opts[1, 16] = lab_frq
     g_opts[1, 17] = lab_norm
     g_opts[1, 18] = lab_mono
     g_opts[1, 19] = lab_hw
@@ -825,18 +824,18 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     g_opts[2, 2] = combo_type
     g_opts[2, 3] = combo_method
     g_opts[2, 4] = combo_ref
-    g_opts[2, 5] = combo_ax
-    g_opts[2, 6] = entry_title
-    g_opts[2, 7] = entry_xlab
-    g_opts[2, 8] = entry_ylab
-    g_opts[2, 9] = entry_frq1
-    g_opts[2, 10] = entry_frq2
-    g_opts[2, 11] = entry_ncyc
-    g_opts[2, 12] = entry_nt
-    g_opts[2, 13] = entry_wlen
-    g_opts[2, 14] = entry_woverlap
-    g_opts[2, 15] = entry_gw
-    g_opts[2, 16] = entry_wt
+    g_opts[2, 5] = entry_title
+    g_opts[2, 6] = entry_xlab
+    g_opts[2, 7] = entry_ylab
+    g_opts[2, 8] = entry_frq1
+    g_opts[2, 9] = entry_frq2
+    g_opts[2, 10] = entry_ncyc
+    g_opts[2, 11] = entry_nt
+    g_opts[2, 12] = entry_wlen
+    g_opts[2, 13] = entry_woverlap
+    g_opts[2, 14] = entry_gw
+    g_opts[2, 15] = entry_wt
+    g_opts[2, 16] = cb_frq
     g_opts[2, 17] = cb_db
     g_opts[2, 18] = cb_mono
     g_opts[2, 19] = cb_hw
@@ -963,7 +962,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
                                        wt=wt,
                                        gw=gw)
             img = read_from_png(io)
-            Gtk.resize!(win, 1200, p.attr[:size][2] + 40)
             set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
             set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
             ctx = getgc(can)
@@ -992,7 +990,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     signal_connect(combo_ref, "changed") do widget
         draw(can)
     end
-    signal_connect(combo_ax, "changed") do widget
+    signal_connect(cb_frq, "clicked") do widget
         draw(can)
     end
     signal_connect(entry_frq1, "value-changed") do widget
