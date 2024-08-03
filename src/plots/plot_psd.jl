@@ -434,57 +434,61 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
 
     # prepare plot
     if variant === :w
-        p = Plots.plot3d(sf,
-                         ones(length(sf)),
-                         sp[1, :],
-                         aspect_ratio=:none,
-                         xlabel=xlabel,
+        p = Plots.plot3d(xlabel=xlabel,
                          ylabel="",
                          zlabel=zlabel,
                          legend=false,
                          xlims=frq_lim,
-                         xticks=(xt, string.(xt)),
-                         xscale=xsc,
+                         xrotation=-15,
+                         yrotation=-10,
                          title=title,
                          palette=pal,
                          st=:line,
                          lc=:black,
                          size=(1200, 800),
                          margins=-10Plots.px,
-                         xrotation=xsc == :log10 ? 45 : -15,
-                         yrotation=-10,
                          titlefontsize=10,
                          xlabelfontsize=8,
                          ylabelfontsize=8,
                          zlabelfontsize=8,
                          xtickfontsize=6,
                          ytickfontsize=5,
-                         ztickfontsize=6)
+                         ztickfontsize=6,
+                         xscale=xsc,
+                         linewidth=0.5;
+                         kwargs...)
 
         # plot powers
-        for idx in 2:ch_n
-            p = Plots.plot!(sf,
-                            ones(length(sf)) .* idx,
-                            sp[idx, :],
-                            st=:line,
-                            linecolor=idx,
-                            linewidth=0.5;
-                            kwargs...)
+        for idx in 1:ch_n
+            if frq === :lin
+                p = Plots.plot!(sf,
+                                ones(length(sf)) .* idx,
+                                sp[idx, :],
+                                linecolor=idx,
+                                xticks=(xt, string.(xt)))
+            else
+                p = Plots.plot!(sf,
+                                ones(length(sf)) .* idx,
+                                sp[idx, :],
+                                xticks=((frq_lim[1], frq_lim[2]), (string(frq_lim[1]), string(frq_lim[2]))),
+                                linecolor=idx)
+            end
         end
     else
         f1 = vsearch(frq_lim[1], sf)
         f2 = vsearch(frq_lim[2], sf)
-        p = Plots.plot3d(sf[f1:f2],
-                         aspect_ratio=:none,
+        p = Plots.plot(sf[f1:f2],
                          eachindex(clabels),
                          sp[:, f1:f2],
+
                          xlabel=xlabel,
                          ylabel="",
                          zlabel=zlabel,
                          legend=false,
                          xlims=frq_lim,
-                         xticks=(xt, string.(xt)),
-                         xrotation=xsc == :log10 ? 45 : -15,
+                         xrotation=-15,
+                         yrotation=-10,
+                         #xticks=frq === :lin ? (xt, string.(xt)) : ((frq_lim[1], frq_lim[2]), (string(frq_lim[1]), string(frq_lim[2]))),
                          xscale=xsc,
                          title=title,
                          palette=pal,
@@ -492,14 +496,14 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                          lc=:black,
                          size=(1200, 800),
                          margins=-10Plots.px,
-                         yrotation=-10,
                          titlefontsize=10,
                          xlabelfontsize=8,
                          ylabelfontsize=8,
                          zlabelfontsize=8,
                          xtickfontsize=6,
                          ytickfontsize=5,
-                         ztickfontsize=6)
+                         ztickfontsize=6;
+                         kwargs...)
     end
 
     if ch_n > 64
