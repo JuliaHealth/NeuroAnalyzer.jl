@@ -2606,8 +2606,13 @@ function iview(p::Plots.Plot{Plots.GRBackend})
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
                         if splitext(file_name)[2] in [".png"]
-                            surface_buf = Gtk.cairo_surface(can)
-                            Cairo.write_to_png(surface_buf, file_name)
+                            try
+                                surface_buf = Gtk.cairo_surface(can)
+                                Cairo.write_to_png(surface_buf, file_name)
+                                _info("Plot saved as: $file_name")
+                            catch
+                                warn_dialog("File $file_name cannot be written!")
+                            end
                         else
                             warn_dialog("Incorrect filename!")
                         end
@@ -2721,8 +2726,13 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
                         if splitext(file_name)[2] in [".png"]
-                            surface_buf = Gtk.cairo_surface(can)
-                            Cairo.write_to_png(surface_buf, file_name)
+                            try
+                                surface_buf = Gtk.cairo_surface(can)
+                                Cairo.write_to_png(surface_buf, file_name)
+                                _info("Plot saved as: $file_name")
+                            catch
+                                warn_dialog("File $file_name cannot be written!")
+                            end
                         else
                             warn_dialog("Incorrect filename!")
                         end

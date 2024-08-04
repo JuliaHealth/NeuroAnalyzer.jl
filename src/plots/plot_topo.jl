@@ -77,7 +77,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         !head && (loc_y .= -loc_y)
         origin = size(head_shape) ./ 2 .+ 1
         if large
-            marker_size = length(ch) > 64 ? 5 : 10
+            marker_size = length(ch) > 64 ? 4 : 8
             loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
             loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
         else
@@ -98,7 +98,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             yl = (0, size(head_shape, 2))
             !head && (loc_y .= -loc_y)
             origin = size(head_shape) ./ 2 .+ 1
-            marker_size = length(ch) > 64 ? 5 : 10
+            marker_size = length(ch) > 64 ? 4 : 8
             loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
             loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
             length(ch) > 64 && (ch_labels = false)
@@ -159,19 +159,22 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             p = Plots.plot(grid=false,
                            framestyle=:none,
                            border=:none,
+                           colorbar=cb,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape),
-                           right_margin=-100*Plots.px,
-                           bottom_margin=-100*Plots.px,
-                           top_margin=-100*Plots.px,
-                           left_margin=-100*Plots.px,
+                           size=head12 ? size(head_shape) .+ 105 : size(head_shape) .+ 125,
+                           right_margin=-30*Plots.px,
+                           bottom_margin=10*Plots.px,
+                           top_margin=20*Plots.px,
+                           left_margin=-30*Plots.px,
                            ticks_fontsize=font_size,
                            xticks=xt,
                            yticks=yt,
                            xlims=xl,
                            ylims=yl,
-                           foreground_color=:black)
+                           titlefontsize=font_size,
+                           title=title;
+                           kwargs...)
         end
     else
         if cb
@@ -197,6 +200,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             p = Plots.plot(grid=false,
                            framestyle=:none,
                            border=:none,
+                           colorbar=cb,
                            palette=pal,
                            aspect_ratio=1,
                            size=size(head_shape),
@@ -228,7 +232,6 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                         fill=:darktest,
                         seriestype=:contour,
                         seriescolor=pal,
-                        colorbar=cb,
                         colorbar_title=cb_label,
                         levels=5,
                         linecolor=:black,

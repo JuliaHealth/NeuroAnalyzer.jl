@@ -19,10 +19,10 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
 
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
 
-    win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, p.attr[:size][2] + 40)
+    win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, p.attr[:size][2])
     can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
     set_gtk_property!(win, :border_width, 5)
-    set_gtk_property!(win, :resizable, true)
+    set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
@@ -42,6 +42,8 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
     set_gtk_property!(entry_ts2, :digits, 3)
     set_gtk_property!(entry_ts2, :tooltip_text, "Segment end [s]")
 
+    bt_help = GtkButton("Help")
+    set_gtk_property!(bt_help, :tooltip_text, "Show help")
     bt_close = GtkButton("Close")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
 
@@ -97,14 +99,6 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
     set_gtk_property!(combo_nmethod, :active, 0)
     set_gtk_property!(combo_nmethod, :tooltip_text, "Normalization method")
 
-    combo_save = GtkComboBoxText()
-    file_types = ["PNG", "PDF"]
-    for idx in file_types
-        push!(combo_save, idx)
-    end
-    set_gtk_property!(combo_save, :active, 0)
-    bt_save = GtkButton("Save as:")
-
     bt_refresh = GtkButton("Refresh")
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
@@ -142,7 +136,6 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
     g_opts[1, 10] = lab_large
     g_opts[1, 11] = lab_elec
     g_opts[1, 12] = lab_contour
-    g_opts[1, 13] = bt_save
     g_opts[1, 1] = lab_ts1
     g_opts[2, 1] = lab_ts2
     g_opts[2, 3] = entry_title
@@ -155,9 +148,9 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
     g_opts[2, 10] = cb_large
     g_opts[2, 11] = cb_elec
     g_opts[2, 12] = cb_contour
-    g_opts[2, 13] = combo_save
     g_opts[1:2, 14] = bt_refresh
-    g_opts[1:2, 15] = bt_close
+    g_opts[1, 15] = bt_help
+    g_opts[2, 15] = bt_close
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
@@ -217,16 +210,13 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
                                         plot_contours=plot_contours,
                                         plot_electrodes=plot_electrodes,
                                         cart=cart)
-            Gtk.resize!(win, p.attr[:size][2] + 100, p.attr[:size][2] + 40)
-            set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
-            set_gtk_property!(can, :height_request, Int32(p.attr[:size][2]))
             ctx = getgc(can)
-            # Gtk.rectangle(ctx, 0, 0, 705, 705)
-            # Cairo.set_source_rgb(ctx, 255, 255, 255)
-            # Gtk.fill(ctx)
+            Gtk.rectangle(ctx, 0, 0, 753, 753)
+            Cairo.set_source_rgb(ctx, 255, 255, 255)
+            Gtk.fill(ctx)
             show(io, MIME("image/png"), p)
             img = read_from_png(io)
-            set_source_surface(ctx, img, 0, 0)
+            set_source_surface(ctx, img, (754 ÷ 2) - (p.attr[:size][1] ÷ 2), (754 ÷ 2) - (p.attr[:size][1] ÷ 2))
             paint(ctx)
         end
     end
@@ -287,44 +277,38 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
     signal_connect(cb_contour, "clicked") do widget
         draw(can)
     end
-
-    signal_connect(bt_save, "clicked") do widget
-        format = get_gtk_property(combo_save, :active, String)
-        if format == "0"
-            file_name = save_dialog("Save as PNG", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
-            if file_name != ""
-                splitext(file_name)[2] == "" && (file_name *= ".png")
-                if splitext(file_name)[2] == ".png"
-                    plot_save(p, file_name=file_name)
-                    _info("Plot saved as: $file_name")
-                else
-                    warn_dialog("Incorrect filename!")
-                end
-            end
-        else
-            file_name = save_dialog("Save as PDF", GtkNullContainer(), (GtkFileFilter("*.pdf", name="All supported formats"), "*.pdf"))
-            if file_name != ""
-                splitext(file_name)[2] == "" && (file_name *= ".pdf")
-                if splitext(file_name)[2] == ".pdf"
-                    plot_save(p, file_name=file_name)
-                    _info("Plot saved as: $file_name")
-                else
-                    warn_dialog("Incorrect filename!")
-                end
-            end
-        end
-    end
-
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
+    end
+
+    help = "Keyboard shortcuts:\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
+
+    signal_connect(bt_help, "clicked") do widgete
+        info_dialog(help)
     end
 
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
-            if k == 113 # q
+        if s == 0x00000004 # ctrl
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
+            elseif k == 0x00000068 # h
+                info_dialog(help)
+            elseif k == 0x00000073 # s
+                file_name = save_dialog_native("Save as PNG", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"));
+                if file_name != ""
+                    splitext(file_name)[2] == "" && (file_name *= ".png")
+                    if splitext(file_name)[2] == ".png"
+                        if plot_save(p, file_name=file_name) == -1
+                            warn_dialog("File $file_name cannot be written!")
+                        else
+                            _info("Plot saved as: $file_name")
+                        end
+                    else
+                        warn_dialog("Incorrect filename!")
+                    end
+                end
             end
         end
     end

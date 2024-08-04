@@ -649,8 +649,11 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
                 if file_name != ""
                     splitext(file_name)[2] == "" && (file_name *= ".png")
                     if splitext(file_name)[2] == ".png"
-                        plot_save(p, file_name=file_name)
-                        _info("Plot saved as: $file_name")
+                        if plot_save(p, file_name=file_name) == -1
+                            warn_dialog("File $file_name cannot be written!")
+                        else
+                            _info("Plot saved as: $file_name")
+                        end
                     else
                         warn_dialog("Incorrect filename!")
                     end
@@ -1182,8 +1185,11 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
                 if file_name != ""
                     splitext(file_name)[2] == "" && (file_name *= ".png")
                     if splitext(file_name)[2] == ".png"
-                        plot_save(p, file_name=file_name)
-                        _info("Plot saved as: $file_name")
+                        if plot_save(p, file_name=file_name) == -1
+                            warn_dialog("File $file_name cannot be written!")
+                        else
+                            _info("Plot saved as: $file_name")
+                        end
                     else
                         warn_dialog("Incorrect filename!")
                     end

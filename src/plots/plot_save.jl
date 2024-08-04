@@ -16,8 +16,11 @@ function plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
     _check_var(ext, [".png", ".pdf"], "File format")
 
     (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
-    savefig(p, file_name)
-
-    return nothing
+    try
+        savefig(p, file_name)
+        return nothing
+    catch
+        return -1
+    end
 
 end
