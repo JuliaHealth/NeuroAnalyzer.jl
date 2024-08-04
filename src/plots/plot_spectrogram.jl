@@ -336,7 +336,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
 
     else
         ch_t = unique(obj.header.recording[:channel_type][ch])
-        @assert length(ch_t) == 1 "For multi-channel spectrogram plot, all channels should be of the same type."
+        @assert length(ch_t) == 1 "For multi-channel spectrogram plot, all channels must be of the same type."
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         if method === :stft

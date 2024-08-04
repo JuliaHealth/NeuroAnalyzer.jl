@@ -852,7 +852,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         ch_t = obj.header.recording[:channel_type]
         if length(ch) > 1
             ch_t_uni = unique(ch_t[ch])
-            @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+            @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
         end
         if size(sp, 1) == 1
             p = plot_psd(sf,
@@ -881,7 +881,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :butterfly
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
         @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
         title = replace(title, "channel" => "channels")
         p = plot_psd_butterfly(sf,
@@ -898,7 +898,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :mean
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
         @assert ndims(sp) >= 2 "For type=:mean plot the signal must contain ≥ 2 channels."
         title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
         title = replace(title, "channel" => "averaged channels")
@@ -915,7 +915,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :w3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
@@ -941,7 +941,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     elseif type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
         @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
@@ -965,7 +965,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         variant=:s;
                         kwargs...)
     elseif type === :topo
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels should be of the same type."
+        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)

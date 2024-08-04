@@ -689,7 +689,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     if type === :butterfly
-        @assert length(unique(ctypes)) == 1 "For plot type=:butterfly all channels should be of the same type."
+        @assert length(unique(ctypes)) == 1 "For plot type=:butterfly all channels must be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
@@ -722,7 +722,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     if type === :mean
-        @assert length(unique(ctypes)) == 1 "For plot type=:mean all channels should be of the same type."
+        @assert length(unique(ctypes)) == 1 "For plot type=:mean all channels must be of the same type."
         @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,

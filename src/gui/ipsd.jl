@@ -40,7 +40,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert nepochs(obj) == 1 "ipsd_ep() should be used for epoched object."
+    @assert nepochs(obj) == 1 "ipsd_ep() must be used for epoched object."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)
@@ -357,7 +357,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             warn_dialog("Electrode locations not available.")
             no_error = false
         elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo])
-            warn_dialog("For multi-channel $(string(type)) plot all channels should be of the same type.")
+            warn_dialog("For multi-channel $(string(type)) plot all channels must be of the same type.")
             no_error = false
         end
 
@@ -671,7 +671,7 @@ Interactive PSD of epoched signal.
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
 
-    @assert nepochs(obj) > 1 "ipsd_cont() should be used for continuous object."
+    @assert nepochs(obj) > 1 "ipsd_cont() must be used for continuous object."
 
 
     ch_init = ch
@@ -981,7 +981,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
             warn_dialog("Electrode locations not available.")
             no_error = false
         elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")
-            warn_dialog("For multi-channel $(string(type)) plot all channels should be of the same type.")
+            warn_dialog("For multi-channel $(string(type)) plot all channels must be of the same type.")
             no_error = false
         end
 

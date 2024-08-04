@@ -31,7 +31,7 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
     w === nothing && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
+    @assert length(w) == ep_n "Length of w must be equal to number of epochs ($ep_n)."
 
     s_phase = zeros(size(s, 2), ep_n)
     @inbounds for ep_idx in 1:ep_n
@@ -116,7 +116,7 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)
     w === nothing && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    @assert length(w) == ep_n "Length of w should be equal to number of epochs ($ep_n)."
+    @assert length(w) == ep_n "Length of w must be equal to number of epochs ($ep_n)."
 
     itpc_phases = zeros(size(s, 2), ep_n)
     itpc_values = zeros(size(s, 2))
