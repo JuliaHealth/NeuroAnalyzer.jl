@@ -94,7 +94,7 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
     h = Int64(cx_set[1].height)
 
     win = GtkWindow("NeuroAnalyzer: iplot_icatopo()", w * 4 + 40, h * 3 + 20)
-    set_gtk_property!(win, :border_width, 20)
+    set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
@@ -105,8 +105,8 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     g_opts = GtkGrid()
     set_gtk_property!(g_opts, :column_homogeneous, false)
-    set_gtk_property!(g_opts, :row_spacing, 10)
-    set_gtk_property!(g_opts, :column_spacing, 10)
+    set_gtk_property!(g_opts, :row_spacing, 5)
+    set_gtk_property!(g_opts, :column_spacing, 5)
 
     entry_ic = GtkSpinButton(1, length(ic_idx), 1)
     set_gtk_property!(entry_ic, :tooltip_text, "ICA component")
@@ -174,8 +174,8 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     g_cans = GtkGrid()
     set_gtk_property!(g_cans, :column_homogeneous, false)
-    set_gtk_property!(g_cans, :row_spacing, 10)
-    set_gtk_property!(g_cans, :column_spacing, 10)
+    set_gtk_property!(g_cans, :row_spacing, 5)
+    set_gtk_property!(g_cans, :column_spacing, 5)
     idx = 1
     for idx1 in 1:nr, idx2 in 1:nc
         g_cans[idx2, idx1] = can_set[idx]
@@ -185,8 +185,8 @@ function iplot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Mat
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :row_spacing, 10)
-    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 5)
+    set_gtk_property!(g, :column_spacing, 5)
     g[1, 1] = vbox
     g[2, 1] = win_view
     push!(win, g)

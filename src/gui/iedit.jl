@@ -103,7 +103,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     refresh = true
 
     win = GtkWindow("NeuroAnalyzer: iedit()", 1000, 900)
-    set_gtk_property!(win, :border_width, 20)
+    set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
@@ -111,13 +111,13 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)
-    set_gtk_property!(g, :row_spacing, 10)
+    set_gtk_property!(g, :column_spacing, 5)
+    set_gtk_property!(g, :row_spacing, 5)
 
     g_opts = GtkGrid()
     set_gtk_property!(g_opts, :column_homogeneous, true)
-    set_gtk_property!(g_opts, :column_spacing, 10)
-    set_gtk_property!(g_opts, :row_spacing, 10)
+    set_gtk_property!(g_opts, :column_spacing, 5)
+    set_gtk_property!(g_opts, :row_spacing, 5)
 
     can1 = GtkCanvas(458, 458)
     can2 = GtkCanvas(458, 458)

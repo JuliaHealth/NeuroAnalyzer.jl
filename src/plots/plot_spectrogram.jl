@@ -54,14 +54,13 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Flo
         end
         yt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
-
     p = Plots.heatmap(st,
                       sf,
                       sp,
                       xlabel=xlabel,
                       ylabel=ylabel,
                       ylims=frq_lim,
-                      xticks=_ticks(st[1]:st[end]),
+                      xticks=_ticks((st[1], st[end])),
                       yticks=(yt, string.(yt)),
                       yscale=ysc,
                       title=title,

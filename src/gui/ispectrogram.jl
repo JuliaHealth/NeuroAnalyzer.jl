@@ -48,7 +48,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch])
     win = GtkWindow("NeuroAnalyzer: ispectrogram_cont()", 1200, 850)
-    set_gtk_property!(win, :border_width, 10)
+    set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
@@ -58,10 +58,10 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     g_opts = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g_opts, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)
-    set_gtk_property!(g, :row_spacing, 10)
-    set_gtk_property!(g_opts, :row_spacing, 10)
-    set_gtk_property!(g_opts, :column_spacing, 10)
+    set_gtk_property!(g, :column_spacing, 5)
+    set_gtk_property!(g, :row_spacing, 5)
+    set_gtk_property!(g_opts, :row_spacing, 5)
+    set_gtk_property!(g_opts, :column_spacing, 5)
 
     entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
     set_gtk_property!(entry_time, :digits, 2)
@@ -490,7 +490,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal beginning\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -507,7 +507,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal beginning\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
@@ -520,7 +520,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nHome\tgo to the signal beginning\nEnd\tgo to the signal end\nctrl-,\tgo back by 1 second\nctrl-.\tgo forward by 1 second\nalt-,\tgo back by $(round(zoom)) seconds\nalt-.\tgo forward by $(round(zoom)) seconds\n\n[\t zoom in\n]\tzoom out\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+            help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal beginning\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -635,7 +635,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     g = GtkGrid()
     g_opts = GtkGrid()
     win = GtkWindow("NeuroAnalyzer: ispectrogram_ep()", 1200, 850)
-    set_gtk_property!(win, :border_width, 20)
+    set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
@@ -643,10 +643,10 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g_opts, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)
-    set_gtk_property!(g, :row_spacing, 10)
-    set_gtk_property!(g_opts, :row_spacing, 10)
-    set_gtk_property!(g_opts, :column_spacing, 10)
+    set_gtk_property!(g, :column_spacing, 5)
+    set_gtk_property!(g, :row_spacing, 5)
+    set_gtk_property!(g_opts, :row_spacing, 5)
+    set_gtk_property!(g_opts, :column_spacing, 5)
     entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
@@ -788,6 +788,11 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     set_gtk_property!(lab_smooth, :halign, 2)
     lab_n = GtkLabel("Kernel size:")
     set_gtk_property!(lab_n, :halign, 2)
+
+    signal_slider = GtkScale(false, 1:nepochs(obj))
+    set_gtk_property!(signal_slider, :draw_value, false)
+    set_gtk_property!(signal_slider, :tooltip_text, "Current epoch")
+
     g_opts[1, 1] = lab_ch
     g_opts[1, 2] = lab_method
     g_opts[1, 3] = lab_t
@@ -832,12 +837,13 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
 
     g[1, 1] = vbox
     g[2:7, 1] = can
-    g[2, 2] = bt_start
-    g[3, 2] = entry_epoch
-    g[4, 2] = bt_end
-    g[5, 2] = GtkLabel("")
-    g[6, 2] = bt_help
-    g[7, 2] = bt_close
+    g[2:7, 2] = signal_slider
+    g[2, 3] = bt_start
+    g[3, 3] = entry_epoch
+    g[4, 3] = bt_end
+    g[5, 3] = GtkLabel("")
+    g[6, 3] = bt_help
+    g[7, 3] = bt_close
     push!(win, g)
 
     showall(win)
@@ -930,9 +936,6 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     signal_connect(bt_refresh, "clicked") do widget
         draw(can)
     end
-    signal_connect(entry_epoch, "value-changed") do widget
-        draw(can)
-    end
     signal_connect(combo_method, "changed") do widget
         draw(can)
     end
@@ -976,6 +979,20 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
         draw(can)
     end
 
+    signal_connect(entry_epoch, "value-changed") do widget
+         Gtk.@sigatom begin
+            GAccessor.value(signal_slider, get_gtk_property(entry_epoch, :value, Int64))
+        end
+        draw(can)
+    end
+
+    signal_connect(signal_slider, "value-changed") do widget, others...
+        Gtk.@sigatom begin
+            set_gtk_property!(entry_epoch, :value, round(Int64, GAccessor.value(signal_slider)))
+        end
+        draw(can)
+    end
+
     signal_connect(bt_start, "clicked") do widget
         Gtk.@sigatom begin
             set_gtk_property!(entry_epoch, :value, 1)
@@ -992,7 +1009,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nHome\tgo to the first epoch\nEnd\tgo to the last epoch\nctrl-,\tprevious epoch\nctrl-.\tnext epoch\n\nctrl-s\tsave as PNG\n\nctrl-h\tthis info\nctrl-q\texit\n"
+    help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the first epoch\nEnd\t\t\tGo to last epoch\nCtrl + ,\t\t\tPrevious epoch\nCtrl + .\t\t\tNext epoch\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)

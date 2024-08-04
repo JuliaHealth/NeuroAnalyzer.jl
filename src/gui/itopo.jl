@@ -21,7 +21,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
 
     win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, p.attr[:size][2] + 40)
     can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
-    set_gtk_property!(win, :border_width, 20)
+    set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
@@ -29,8 +29,8 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
 
     g_opts = GtkGrid()
     set_gtk_property!(g_opts, :column_homogeneous, false)
-    set_gtk_property!(g_opts, :row_spacing, 10)
-    set_gtk_property!(g_opts, :column_spacing, 10)
+    set_gtk_property!(g_opts, :row_spacing, 5)
+    set_gtk_property!(g_opts, :column_spacing, 5)
 
     entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.01)
     set_gtk_property!(entry_ts1, :value, seg[1])
@@ -161,8 +161,8 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
 
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :row_spacing, 10)
-    set_gtk_property!(g, :column_spacing, 10)
+    set_gtk_property!(g, :row_spacing, 5)
+    set_gtk_property!(g, :column_spacing, 5)
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
     g[1, 1] = vbox
@@ -240,6 +240,10 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
         else
             draw(can)
         end
+        Gtk.@sigatom begin
+            seg[1] == seg[2] && set_gtk_property!(combo_amethod, :sensitive, false)
+            seg[1] != seg[2] && set_gtk_property!(combo_amethod, :sensitive, true)
+        end
     end
     signal_connect(entry_ts2, "value-changed") do widget
         Gtk.@sigatom begin
@@ -249,6 +253,10 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg:
             warn_dialog("Cannot plot!\nSegment start is larger than segment end.")
         else
             draw(can)
+        end
+        Gtk.@sigatom begin
+            seg[1] == seg[2] && set_gtk_property!(combo_amethod, :sensitive, false)
+            seg[1] != seg[2] && set_gtk_property!(combo_amethod, :sensitive, true)
         end
     end
 
