@@ -626,6 +626,11 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         cunits = obj.header.recording[:unit][ch]
         if bad
             bm = bm[ch, ep]
+            if isa(bm, Matrix{Bool})
+                bm_tmp = zeros(Bool, size(bm, 1))
+                [sum(bm[idx, :]) > 0 && (bm_tmp[idx] = true) for idx in 1:size(bm, 1)]
+                bm = bm_tmp
+            end
         else
             bm = zeros(Bool, length(ch))
         end

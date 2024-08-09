@@ -800,10 +800,10 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     set_gtk_property!(bt_help, :tooltip_text, "Show help")
     bt_close = GtkButton("Close")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-    entry_ts1 = GtkSpinButton(obj.epoch_time[1], obj.epoch_time[end], 0.5)
+    entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
     set_gtk_property!(entry_ts1, :tooltip_text, "Segment start [s]")
     set_gtk_property!(entry_ts1, :digits, 3)
-    entry_ts2 = GtkSpinButton(obj.epoch_time[1], obj.epoch_time[end], 0.5)
+    entry_ts2 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
     set_gtk_property!(entry_ts2, :digits, 3)
     set_gtk_property!(entry_ts2, :tooltip_text, "Segment end [s]")
     bt_ts = GtkButton("Return TS")
@@ -925,7 +925,8 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             end
         else
             x_pos > 1172 && (x_pos = 1172)
-            ts1 = obj.epoch_time[1] + (x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
+            ep = get_gtk_property(entry_epoch, :value, Int64)
+            ts1 = (obj.epoch_time[end] * (ep - 1)) + obj.epoch_time[1] + (x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
             snap && (ts1 = round(ts1 * 4) / 4)
             round(ts1, digits=3)
             Gtk.@sigatom begin
@@ -952,7 +953,8 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             end
         else
             x_pos > 1172 && (x_pos = 1172)
-            ts2 = obj.epoch_time[1] + ((x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
+            ep = get_gtk_property(entry_epoch, :value, Int64)
+            ts2 = (obj.epoch_time[end] * (ep - 1)) + obj.epoch_time[1] + ((x_pos - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
             snap && (ts2 = round(ts2 * 4) / 4)
             round(ts2, digits=3)
             Gtk.@sigatom begin
@@ -1048,14 +1050,14 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
 
     signal_connect(entry_ts1, "value-changed") do widget
         Gtk.@sigatom begin
-            set_gtk_property!(entry_ts1, :value, obj.epoch_time[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.epoch_time)])
+            set_gtk_property!(entry_ts1, :value, obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)])
         end
         draw(can)
     end
 
     signal_connect(entry_ts2, "value-changed") do widget
         Gtk.@sigatom begin
-            set_gtk_property!(entry_ts2, :value, obj.epoch_time[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.epoch_time)])
+            set_gtk_property!(entry_ts2, :value, obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)])
         end
         draw(can)
     end
@@ -1235,8 +1237,8 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     @async Gtk.gtk_main()
     wait(cnd)
     if !quit
-        time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.epoch_time)]
-        time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.epoch_time)]
+        time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
+        time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
         seg = (time1, time2)
         return seg
     else
