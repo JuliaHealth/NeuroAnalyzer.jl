@@ -68,7 +68,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
     set_gtk_property!(entry_time, :value, obj.time_pts[1])
     set_gtk_property!(entry_time, :tooltip_text, "Time position [s]")
     bt_start = GtkButton("⇤")
-    set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
+    set_gtk_property!(bt_start, :tooltip_text, "Go to the signal start")
     bt_prev5 = GtkButton("←")
     set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
     bt_next5 = GtkButton("→")
@@ -490,7 +490,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
         Gtk.destroy(win)
     end
 
-    help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal beginning\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
+    help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
 
     signal_connect(bt_help, "clicked") do widgete
         info_dialog(help)
@@ -507,7 +507,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal beginning\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
+            help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
@@ -520,7 +520,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
                 set_gtk_property!(bt_prev5, :tooltip_text, "Go back by $(round(zoom)) seconds")
                 draw(can)
             end
-            help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal beginning\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
+            help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
         elseif k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_time, :value, obj.time_pts[1])
@@ -653,7 +653,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
     entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
     set_gtk_property!(entry_epoch, :tooltip_text, "Epoch")
     bt_start = GtkButton("⇤")
-    set_gtk_property!(bt_start, :tooltip_text, "Go to the signal beginning")
+    set_gtk_property!(bt_start, :tooltip_text, "Go to the signal start")
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
     bt_help = GtkButton("Help")

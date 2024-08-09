@@ -144,7 +144,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            size=head12 ? size(head_shape) .+ 150 : size(head_shape) .+ 175,
                            right_margin=10*Plots.px,
                            bottom_margin=0*Plots.px,
-                           top_margin=10*Plots.px,
+                           top_margin=-50*Plots.px,
                            left_margin=0*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
@@ -183,11 +183,11 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=head12 ? size(head_shape) .+ 45 : size(head_shape) .+ 54,
-                           right_margin=-30*Plots.px,
-                           bottom_margin=-30*Plots.px,
-                           top_margin=-30*Plots.px,
-                           left_margin=-20*Plots.px,
+                           size=head12 ? size(head_shape) .+ 45 : (size(head_shape)[1] + 58, size(head_shape)[2] + 55),
+                           right_margin=head12 ? -30*Plots.px : -20*Plots.px,
+                           bottom_margin=head12 ? -30*Plots.px : -25*Plots.px,
+                           top_margin=head12 ? -30*Plots.px : -20*Plots.px,
+                           left_margin=head12 ? -20*Plots.px : -20*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
                            colorbar_title=cb_label,
@@ -257,14 +257,14 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
             p = Plots.plot!(head_shape)
             if head12
                 p = Plots.plot!(head_mask)
-                p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
+                p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=1, fill=nothing, legend=false)
             end
         else
             head_mask = head_mask[80:end-80, 80:end-80]
             p = Plots.plot!(head_shape)
             if head12
                 p = Plots.plot!(head_mask)
-                p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=5, fill=nothing, legend=false)
+                p = Plots.plot!(Shape([0, size(head_shape, 1), size(head_shape, 1), 0], [0, 0, size(head_shape, 2), size(head_shape, 2)]), lc=:white, lw=2, fill=nothing, legend=false)
             end
         end
     end
