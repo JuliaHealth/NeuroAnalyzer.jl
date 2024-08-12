@@ -337,7 +337,7 @@ Remove external ICA components from the signal.
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names, default is all channels
 - `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove or keep
 """
-function ica_remove!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, keep::Bool=false)
+function ica_remove!(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_new = ica_remove(obj, ic, ic_mw, ch=ch, ic_idx=ic_idx)
     obj.data = obj_new.data

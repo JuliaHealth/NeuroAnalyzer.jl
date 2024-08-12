@@ -57,7 +57,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=(1200, 400),
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -1179,7 +1179,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             ylabel == "default" && (ylabel = "Magnitude")
         else
-            ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+            ylabel == "default" && (ylabel = db ? "Power [dB A.U.^2/Hz]" : "Power [A.U.^2/Hz]")
         end
     end
 
@@ -1230,7 +1230,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB A.U.^2/Hz]" : "Power [A.U.^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
@@ -1253,7 +1253,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB A.U.^2/Hz]" : "Power [A.U.^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,

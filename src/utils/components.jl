@@ -107,7 +107,7 @@ function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
     push!(obj_new.components, c=>v)
 
     # update history
-    push!(obj_new.history, "add_component(OBJ, c=$c, v=$v)")
+    push!(obj_new.history, "add_component(OBJ, c=$c, v")
 
     return obj_new
 

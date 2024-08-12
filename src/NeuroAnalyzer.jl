@@ -420,7 +420,7 @@ include("gui/iplot_locs3d.jl")
 include("gui/itopo.jl")
 include("gui/ipsd.jl")
 include("gui/ispectrogram.jl")
-include("gui/iplot_icatopo.jl")
+include("gui/iview_ica.jl")
 include("gui/iselect_seg.jl")
 # statistics
 include("statistics/specseg.jl")

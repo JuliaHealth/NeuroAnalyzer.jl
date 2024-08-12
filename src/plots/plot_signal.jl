@@ -173,7 +173,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
     # draw labels
     for idx in 1:ch_n
         s_pos = ch_n - idx
-        p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos), Plots.text("$(clabels[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
+        p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos), Plots.text("$(clabels[idx])   ", pointsize=8, halign=:right, valign=:center)), label=false)
     end
 
     # draw ticks
@@ -191,7 +191,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
                 p = Plots.plot!([_xlims(t)[1], _xlims(t)[1]], [(s_pos - 1.5), (s_pos - 0.5)], color=:red, linewidth=5, label="")
-                p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos - 1.5), Plots.text("$(r[idx2]) $(cunits[idx1])  ", pointsize=5, halign=:right, valign=:bottom)), label=false)
+                p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos - 0.5), Plots.text("$(r[idx2]) $(cunits[idx1])  ", pointsize=5, halign=:right, valign=:bottom, rotation=90)), label=false)
                 idx2 += 1
             end
         end
@@ -232,7 +232,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector
                    xticks=_ticks(t),
                    ytick_direction=:out,
                    xtick_direction=:out,
-                   ylims=_ylims(s1),
+                   ylims=_ylims(s1)[1] < _ylims(s2)[1] ? _ylims(s1) : _ylims(s2),
                    title=title,
                    size=plot_size,
                    margins=20Plots.px,
@@ -248,12 +248,14 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector
                     s1,
                     linewidth=1,
                     label="",
+                    alpha=0.5,
                     color=:black)
     p = Plots.plot!(t,
                     s2,
                     linewidth=1,
                     label="",
-                    color=:black)
+                    alpha=0.5,
+                    color=:blue)
 
     return p
 
@@ -527,6 +529,64 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
             end
         end
     end
+
+    return p
+
+end
+
+"""
+    plot_signal(t, s1, s2; <keyword arguments>)
+
+Plot amplitude of single-channel signals.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `s1::AbstractVector`: data to plot
+- `s2::AbstractVector`: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)
+
+    # prepare plot
+    plot_size = (1200, 400)
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ytick_direction=:out,
+                   xtick_direction=:out,
+                   ylims=_ylims(s1),
+                   title=title,
+                   size=plot_size,
+                   margins=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+
+    # plot signal
+    p = Plots.plot!(t,
+                    s1,
+                    linewidth=1,
+                    label="",
+                    alpha=0.5,
+                    color=:black)
+    p = Plots.plot!(t,
+                    s2,
+                    linewidth=1,
+                    label="",
+                    alpha=0.5,
+                    color=:blue)
 
     return p
 
@@ -895,8 +955,9 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                                        ylabel,
                                        title,
                                        "Time [s]",
-                                       "",
-                                       "Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                                       "Amplitude",
+                                       "Component$(_pl(length(c_idx))) $(c_idx) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+                                       #"Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
             p = plot_signal(t,
                             s,
                             xlabel=xl,
@@ -1043,8 +1104,8 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     xl, yl, tt = "", "", ""
 
     # sort channels by their type
+    ctypes = obj1.header.recording[:channel_type]
     if !isa(ch, Int64)
-        ctypes = obj1.header.recording[:channel_type]
         s1 = @views s1[ch, :]
         s2 = @views s2[ch, :]
         ctypes = ctypes[ch]
@@ -1053,21 +1114,20 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     if isa(ch, Int64)
-        ch_name = _ch_rename(ctypes[ch])
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
                                    "",
                                    "")
-            ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj1, ch))]")
-            p = plot_signal(t,
-                            s1[ch, :],
-                            s2[ch, :],
-                            xlabel=xl,
-                            ylabel=yl,
-                            title=tt,
-                            kwargs...)
+        ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj1, labels(obj1)[ch]))]")
+        p = plot_signal(t,
+                        vec(s1[ch, :]),
+                        vec(s2[ch, :]),
+                        xlabel=xl,
+                        ylabel=yl,
+                        title=tt,
+                        kwargs...)
     else
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
