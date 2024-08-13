@@ -1,9 +1,9 @@
 export iview_ica
 
-function _refresh_ica_can_set(obj_reconstructed::Vector{NeuroAnalyzer.NEURO}, ica_can_set::Vector{Gtk.GtkCanvas}, ic_idx::Vector{Int64}, time1::Float64, time2::Float64, amethod::Symbol, imethod::Symbol, nmethod::Symbol)
+function _refresh_ica_can_set(obj_reconstructed::Vector{NeuroAnalyzer.NEURO}, ica_can_set::Vector{Gtk.GtkCanvas}, ic_idx::Vector{Int64}, time1::Float64, time2::Float64)
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
-        p_tmp = plot_topo(obj_reconstructed[idx], ch=datatype(obj_reconstructed[1]), seg=(time1, time2), amethod=amethod, imethod=imethod, nmethod=nmethod, cb=false, large=false)
+        p_tmp = plot_topo(obj_reconstructed[idx], ch=datatype(obj_reconstructed[1]), seg=(time1, time2), amethod=:mean, imethod=:sh, nmethod:=:minmax, cb=false, large=false)
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)
     end
@@ -29,32 +29,17 @@ Interactive view of embedded ("ic" and "ic_mw") ICA components.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-- `amethod::Symbol=:mean`: averaging method:
-    - `:mean`
-    - `:median`
-- `imethod::Symbol=:sh`: interpolation method:
-    - `:sh`: Shepard
-    - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
-    - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
-    - `:ga`: Gaussian
-- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iview_ica(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
+function iview_ica(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
 
-    ic = obj.components[:ic]
-    ic_mw = obj.components[:ic_mw]
-
-    iview_ica(obj, ic, ic_mw, ch=ch, amethod=amethod, imethod=imethod, nmethod=nmethod)
+    iview_ica(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch)
 
 end
 
@@ -69,23 +54,17 @@ Interactive view of external ICA components.
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `amethod::Symbol=:mean`: averaging method:
-    - `:mean`
-    - `:median`
-- `imethod::Symbol=:sh`: interpolation method:
-    - `:sh`: Shepard
-    - `:mq`: Multiquadratic
-    - `:imq`: InverseMultiquadratic
-    - `:tp`: ThinPlate
-    - `:nn`: NearestNeighbour
-    - `:ga`: Gaussian
-- `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
+function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}})
+
+    @assert size(ic_mw, 1) == nchannels(obj) "ICA weighting matrix size does not match number of OBJ channels."
+    @assert size(ic_mw, 2) == size(ic, 1) "ICA weighting matrix size does not match number of ICA components."
+    @assert size(ic, 2) == signal_len(obj) "ICA components length does not match OBJ signal length."
+    @assert size(ic_mw, 1) >= length(ch) "ICA weighting matrix size does not match number of selected channels."
 
     plot_sig_type = 0
     plot_psd_type = 0
@@ -117,7 +96,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     # ICA topos
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
-        p_tmp = plot_topo(obj_reconstructed[idx], ch=datatype(obj_reconstructed[1]), seg=seg, amethod=amethod, imethod=imethod, nmethod=nmethod, cb=false, large=false)
+        p_tmp = plot_topo(obj_reconstructed[idx], ch=datatype(obj_reconstructed[1]), seg=seg, amethod=:mean, imethod=:sh, nmethod:=:minmax, cb=false, large=false)
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)
     end
@@ -343,7 +322,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         time1 = get_gtk_property(entry_time, :value, Float64)
         time2 = time1 + zoom
         time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-        _refresh_ica_can_set(obj_reconstructed, ica_can_set, ic_idx, time1, time2, amethod, imethod, nmethod)
+        _refresh_ica_can_set(obj_reconstructed, ica_can_set, ic_idx, time1, time2)
     end
 
     signal_connect(ch_slider, "value-changed") do widget, others...
@@ -353,6 +332,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     end
 
     signal_view.mouse.scroll = @guarded (widget, event) -> begin
+        plot_sig_type = get_gtk_property(combo_sig, :active, Int64)
         s = event.state
         if event.direction == 1 # down
             if s == 0x00000001
@@ -376,13 +356,15 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                     set_gtk_property!(entry_time, :value, time_current)
                 end
             else
-                if ch_idx < length(chn)
-                    ch_idx += 1
-                    Gtk.@sigatom begin
-                        GAccessor.value(ch_slider, chn[ch_idx])
+                if plot_sig_type != 3
+                    if ch_idx < length(chn)
+                        ch_idx += 1
+                        Gtk.@sigatom begin
+                            GAccessor.value(ch_slider, chn[ch_idx])
+                        end
+                        draw(signal_view)
+                        draw(psd_view)
                     end
-                    draw(signal_view)
-                    draw(psd_view)
                 end
             end
         elseif event.direction == 0 # up
@@ -403,13 +385,15 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                     end
                 end
             else
-                if ch_idx > 1
-                    ch_idx -= 1
-                    Gtk.@sigatom begin
-                        GAccessor.value(ch_slider, chn[ch_idx])
+                if plot_sig_type != 3
+                    if ch_idx > 1
+                        ch_idx -= 1
+                        Gtk.@sigatom begin
+                            GAccessor.value(ch_slider, chn[ch_idx])
+                        end
+                        draw(signal_view)
+                        draw(psd_view)
                     end
-                    draw(signal_view)
-                    draw(psd_view)
                 end
             end
         end
