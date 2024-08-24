@@ -57,7 +57,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 400),
+                   size=(1200, 800),
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -478,32 +478,31 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
         f1 = vsearch(frq_lim[1], sf)
         f2 = vsearch(frq_lim[2], sf)
         p = Plots.plot(sf[f1:f2],
-                         eachindex(clabels),
-                         sp[:, f1:f2],
-
-                         xlabel=xlabel,
-                         ylabel="",
-                         zlabel=zlabel,
-                         legend=false,
-                         xlims=frq_lim,
-                         xrotation=-15,
-                         yrotation=-10,
-                         #xticks=frq === :lin ? (xt, string.(xt)) : ((frq_lim[1], frq_lim[2]), (string(frq_lim[1]), string(frq_lim[2]))),
-                         xscale=xsc,
-                         title=title,
-                         palette=pal,
-                         st=:surface,
-                         lc=:black,
-                         size=(1200, 800),
-                         margins=-10Plots.px,
-                         titlefontsize=10,
-                         xlabelfontsize=8,
-                         ylabelfontsize=8,
-                         zlabelfontsize=8,
-                         xtickfontsize=6,
-                         ytickfontsize=5,
-                         ztickfontsize=6;
-                         kwargs...)
+                       eachindex(clabels),
+                       sp[:, f1:f2],
+                       xlabel=xlabel,
+                       ylabel="",
+                       zlabel=zlabel,
+                       legend=false,
+                       xlims=frq_lim,
+                       xrotation=-15,
+                       yrotation=-10,
+                       #xticks=frq === :lin ? (xt, string.(xt)) : ((frq_lim[1], frq_lim[2]), (string(frq_lim[1]), string(frq_lim[2]))),
+                       xscale=xsc,
+                       title=title,
+                       palette=pal,
+                       st=:surface,
+                       lc=:black,
+                       size=(1200, 800),
+                       margins=-10Plots.px,
+                       titlefontsize=10,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       zlabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=5,
+                       ztickfontsize=6;
+                       kwargs...)
     end
 
     if ch_n > 64
@@ -1179,7 +1178,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             ylabel == "default" && (ylabel = "Magnitude")
         else
-            ylabel == "default" && (ylabel = db ? "Power [dB A.U.^2/Hz]" : "Power [A.U.^2/Hz]")
+            ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
     end
 
@@ -1230,7 +1229,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB A.U.^2/Hz]" : "Power [A.U.^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
@@ -1253,7 +1252,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
         if method === :cwt
             zlabel == "default" && (zlabel = "Magnitude")
         else
-            zlabel == "default" && (zlabel = db ? "Power [dB A.U.^2/Hz]" : "Power [A.U.^2/Hz]")
+            zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
         title = replace(title, "channel" => "channels")
         p = plot_psd_3d(sf,
