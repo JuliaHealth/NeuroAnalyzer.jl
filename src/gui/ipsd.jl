@@ -1,32 +1,8 @@
 export ipsd
-export ipsd_cont
 export ipsd_ep
 
 """
     ipsd(obj; <keyword arguments>)
-
-Interactive PSD of continuous or epoched signal.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::String`: channel name
-- `zoom::Real=10`: how many seconds are displayed in one segment
-"""
-function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
-
-    if nepochs(obj) == 1
-        ipsd_cont(obj, ch=ch, zoom=zoom)
-    else
-        ipsd_ep(obj, ch=ch)
-    end
-
-    return nothing
-
-end
-
-"""
-    ipsd_cont(obj; <keyword arguments>)
 
 Interactive PSD of continuous signal.
 
@@ -36,11 +12,10 @@ Interactive PSD of continuous signal.
 - `ch::String`: channel name
 - `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
+function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert nepochs(obj) == 1 "ipsd_ep() must be used for epoched object."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)
@@ -48,7 +23,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     p = NeuroAnalyzer.plot_psd(obj, ch=clabels[ch])
 
-    win = GtkWindow("NeuroAnalyzer: ipsd_cont()", 1200, 650)
+    win = GtkWindow("NeuroAnalyzer: ipsd()", 1200, 650)
     win_view = GtkScrolledWindow()
     set_gtk_property!(win_view, :min_content_width, 1200)
     set_gtk_property!(win_view, :min_content_height, 600)
@@ -613,7 +588,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             draw(can)
         end
 
-        if s == 0x00000008 # alt
+        if s == 0x00000008 || s == 0x00000010 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
@@ -639,7 +614,7 @@ function ipsd_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             end
         end
 
-        if s == 0x00000004 # ctrl
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h
@@ -707,7 +682,7 @@ Interactive PSD of epoched signal.
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
 
-    @assert nepochs(obj) > 1 "ipsd_cont() must be used for continuous object."
+    @assert nepochs(obj) > 1 "ipsd() must be used for continuous object."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)

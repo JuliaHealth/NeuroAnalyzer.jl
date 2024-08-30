@@ -1,31 +1,8 @@
 export itopo
-export itopo_cont
 export itopo_ep
 
 """
     itopo(obj; <keyword arguments>)
-
-Interactive topographical map.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: channels to plot
-"""
-function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
-
-    if nepochs(obj) == 1
-        itopo_cont(obj, ch=ch)
-    else
-        itopo_ep(obj, ch=ch)
-    end
-
-    return nothing
-
-end
-
-"""
-    itopo_cont(obj; <keyword arguments>)
 
 Interactive topographical map of continuous signal.
 
@@ -34,7 +11,7 @@ Interactive topographical map of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}}`: channels to plot
 """
-function itopo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
     redraw = true
 
@@ -43,10 +20,10 @@ function itopo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
     size = p.attr[:size]
     if size[1] > 900
-        win = GtkWindow("NeuroAnalyzer: itopo_cont()", p.attr[:size][1] + 100, 1000)
+        win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, 1000)
         can = GtkCanvas(1000, 1000)
     else
-        win = GtkWindow("NeuroAnalyzer: itopo_cont()", p.attr[:size][1] + 100, 800)
+        win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, 800)
         can = GtkCanvas(800, 800)
     end
     set_gtk_property!(win, :border_width, 5)
@@ -321,7 +298,7 @@ function itopo_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000004 # ctrl
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h
@@ -367,7 +344,7 @@ Interactive topographical map of epoched signal.
 """
 function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
 
-    @assert nepochs(obj) > 1 "itopo_cont() must be used for continuous object."
+    @assert nepochs(obj) > 1 "itopo() must be used for continuous object."
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
@@ -645,7 +622,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000004 # ctrl
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h

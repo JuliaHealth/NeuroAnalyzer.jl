@@ -63,8 +63,10 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(lo
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4 && k == 113 # ctrl-q
-            Gtk.destroy(win)
+        if s == 0x00000004 || s == 0x00000014 # ctrl
+            if k == 113 # q
+                Gtk.destroy(win)
+            end
         end
         if  k == 116 # t
             camera_pos = (0, 90)
@@ -149,17 +151,20 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
-            if k == 116 # t
-                camera_pos = (0, 90)
-                draw(can)
-            elseif k == 115 # s
-                camera_pos = (90, 0)
-                draw(can)
-            elseif k == 102 # f
-                camera_pos = (180, 0)
-                draw(can)
+        if s == 0x00000004 || s == 0x00000014 # ctrl
+            if k == 113 # q
+                Gtk.destroy(win)
             end
+        end
+        if  k == 116 # t
+            camera_pos = (0, 90)
+            draw(can)
+        elseif k == 115 # s
+            camera_pos = (90, 0)
+            draw(can)
+        elseif k == 102 # f
+            camera_pos = (180, 0)
+            draw(can)
         end
     end
 

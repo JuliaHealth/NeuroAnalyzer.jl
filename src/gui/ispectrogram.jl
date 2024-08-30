@@ -1,32 +1,8 @@
 export ispectrogram
-export ispectrogram_cont
 export ispectrogram_ep
 
 """
     ispectrogram(obj; <keyword arguments>)
-
-Interactive spectrogram of continuous or epoched signal.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::String`: channel name
-- `zoom::Real=10`: how many seconds are displayed in one segment
-"""
-function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
-
-    if nepochs(obj) == 1
-        ispectrogram_cont(obj, ch=ch, zoom=zoom)
-    else
-        ispectrogram_ep(obj, ch=ch)
-    end
-
-    return nothing
-
-end
-
-"""
-    ispectrogram_cont(obj; <keyword arguments>)
 
 Interactive spectrogram of continuous signal.
 
@@ -36,18 +12,17 @@ Interactive spectrogram of continuous signal.
 - `ch::String`: channel name
 - `zoom::Real=10`: how many seconds are displayed in one segment
 """
-function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
-    @assert nepochs(obj) == 1 "ispectrogram_ep() must be used for epoched object."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)
     clabels = labels(obj)
 
     p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch])
-    win = GtkWindow("NeuroAnalyzer: ispectrogram_cont()", 1200, 850)
+    win = GtkWindow("NeuroAnalyzer: ispectrogram()", 1200, 850)
     set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -534,7 +509,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             draw(can)
         end
 
-        if s == 0x00000008 # alt
+        if s == 0x00000008 || s == 0x00000010 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
@@ -560,7 +535,7 @@ function ispectrogram_cont(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
             end
         end
 
-        if s == 0x00000004 # ctrl
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h
@@ -628,7 +603,7 @@ Interactive spectrogram of epoched signal.
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)
 
-    @assert nepochs(obj) > 1 "ispectrogram_cont() must be used for continuous object."
+    @assert nepochs(obj) > 1 "ispectrogram() must be used for continuous object."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)

@@ -68,21 +68,21 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
 
     @guarded draw(can) do widget
         p = Plots.plot(t,
-                          eda_signal,
-                          mc=:black,
-                          ms=0.5,
-                          lw=0.5,
-                          lc=:black,
-                          ylims=(0, 10),
-                          xlims=(t[1], t[end]),
-                          legend=false,
-                          palette=:darktest,
-                          size=(800, 400),
-                          margins=20Plots.px,
-                          xlabelfontsize=8,
-                          ylabelfontsize=8,
-                          xtickfontsize=8,
-                          ytickfontsize=8)
+                       eda_signal,
+                       mc=:black,
+                       ms=0.5,
+                       lw=0.5,
+                       lc=:black,
+                       ylims=(0, 10),
+                       xlims=(t[1], t[end]),
+                       legend=false,
+                       palette=:darktest,
+                       size=(800, 400),
+                       margins=20Plots.px,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=8,
+                       ytickfontsize=8)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)
         img = read_from_png(io)

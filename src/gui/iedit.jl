@@ -694,7 +694,10 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 4
+        if s == 0x00000004 || s == 0x00000014 # ctrl
+            if k == 113 # q
+                Gtk.destroy(win)
+            end
         end
     end
 
