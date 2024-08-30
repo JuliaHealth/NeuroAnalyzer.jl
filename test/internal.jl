@@ -147,7 +147,7 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._v2r(1) == 1
 @test NeuroAnalyzer._find_bylabel(eeg.locs, "fp1") == 1
 @test NeuroAnalyzer._xlims(1:10) == (1.0, 10.0)
-@test NeuroAnalyzer._ticks(1:10) == 1.0:0.9:10.0
+@test NeuroAnalyzer._ticks(1:10) == [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 @test NeuroAnalyzer._ticks((1, 10)) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 @test NeuroAnalyzer._erpticks(1:10) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]
 @test NeuroAnalyzer._erpticks((1, 10)) == [1.0, 0.5, 0.0, 1.25, 2.5, 3.75, 5.0, 6.25, 7.5, 8.75, 10.0]

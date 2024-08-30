@@ -456,8 +456,6 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        @show s
-        @show k
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1

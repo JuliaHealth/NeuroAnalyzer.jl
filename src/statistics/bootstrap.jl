@@ -31,7 +31,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, ci::Flo
     @inbounds for idx1 in 1:n1
         s_tmp = zeros(size(s, 1), n2)
         @inbounds for idx2 in 1:n2
-            ep_idx = rand(1:axes(s, 2))
+            ep_idx = rand(1:size(s, 2))
             s_tmp[:, idx2] = @views s[:, ep_idx]
         end
         s_avg[idx1, :] = vec(mean(s_tmp, dims=2))
@@ -94,7 +94,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::St
     @inbounds for idx1 in 1:n1
         s_tmp = zeros(size(s, 1), n2)
         @inbounds for idx2 in 1:n2
-            ep_idx = rand(1:axes(s, 2))
+            ep_idx = rand(1:size(s, 2))
             s_tmp[:, idx2] = @views s[:, ep_idx]
         end
         s_avg[idx1, :] = mean(s_tmp, dims=2)
