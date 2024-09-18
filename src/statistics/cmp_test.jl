@@ -37,7 +37,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
     ks = ApproximateTwoSampleKSTest(s1, s2)
     pks = pvalue(ks)
     if type !== :perm
-        if (pks < alpha && type === :auto) || type === :p
+        if (pks > alpha && type === :auto) || type === :p
             if paired
                 _info("Using one sample T-test")
                 t = OneSampleTTest(s1, s2)
@@ -55,7 +55,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             ts = t.t
             tc = confint(t, level=(1 - alpha))
             tn = "t"
-        elseif (pks >= alpha && type === :auto) || type === :np
+        elseif (pks <= alpha && type === :auto) || type === :np
             if paired
                 if exact
                     _info("Using exact signed rank (Wilcoxon) test")

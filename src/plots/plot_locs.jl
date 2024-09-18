@@ -195,90 +195,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
 
     head && (p = Plots.plot!(head_shape))
 
-    ch = setdiff(ch, selected)
-
-    for idx in eachindex(locs[!, :label])
-        if idx in ch
-            p = Plots.scatter!((loc_x[idx], loc_y[idx]),
-                                color=:lightgrey,
-                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                label="",
-                                markershape=:circle,
-                                markersize=marker_size,
-                                markerstrokewidth=0,
-                                markerstrokealpha=0)
-        end
-    end
-
-    for idx in eachindex(locs[!, :label])
-        if idx in selected
-            if mono != true
-                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
-                                color=idx,
-                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                label="",
-                                markershape=:circle,
-                                markersize=marker_size,
-                                markeralpha=ma,
-                                markerstrokewidth=0,
-                                markerstrokealpha=0)
-            else
-                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
-                                color=:lightgrey,
-                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                label="",
-                                markershape=:circle,
-                                markersize=marker_size,
-                                markerstrokewidth=0,
-                                markerstrokealpha=0)
-            end
-        end
-    end
-
-    if ch_labels
-        for idx in eachindex(locs[!, :label])
-            if idx in ch
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
-            end
-            if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
-            end
-        end
-    end
-    if sch_labels
-        for idx in eachindex(locs[!, :label])
-            if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] - 10, Plots.text(locs[!, :label][idx], pointsize=font_size)))
-            end
-        end
-    end
-
-    if head_labels
-        fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in eachindex(NeuroAnalyzer.fiducial_points)
-            if plane === :xy
-                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
-                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
-            elseif plane === :xz
-                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
-                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
-            elseif plane === :yz
-                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
-                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
-            end
-            if large
-                fid_loc_x = @. origin[1] + (fid_loc_x * 250)
-                fid_loc_y = @. origin[2] - (fid_loc_y * 250)
-            else
-                fid_loc_x = @. origin[1] - (fid_loc_x * 100)
-                fid_loc_y = @. origin[2] - (fid_loc_y * 100)
-            end
-            p = Plots.plot!(annotations=(fid_loc_x, fid_loc_y, Plots.text(fid_names[idx], pointsize=font_size + 2)))
-        end
-    end
-
     # draw connections
     if connections != [0 0; 0 0]
+        selected = ""
         @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
         _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
         m_tmp = normalize_n(abs.(connections))
@@ -469,6 +388,88 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
                     end
                 end
             end
+        end
+    end
+
+    ch = setdiff(ch, selected)
+
+    for idx in eachindex(locs[!, :label])
+        if idx in ch
+            p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=:lightgrey,
+                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+        end
+    end
+
+    for idx in eachindex(locs[!, :label])
+        if idx in selected
+            if mono != true
+                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=idx,
+                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markeralpha=ma,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+            else
+                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=:lightgrey,
+                                markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+            end
+        end
+    end
+
+    if ch_labels
+        for idx in eachindex(locs[!, :label])
+            if idx in ch
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            end
+            if idx in selected
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            end
+        end
+    end
+    if sch_labels
+        for idx in eachindex(locs[!, :label])
+            if idx in selected
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] - 10, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            end
+        end
+    end
+
+    if head_labels
+        fid_names = ["NAS", "IN", "LPA", "RPA"]
+        for idx in eachindex(NeuroAnalyzer.fiducial_points)
+            if plane === :xy
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
+            elseif plane === :xz
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+            elseif plane === :yz
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+            end
+            if large
+                fid_loc_x = @. origin[1] + (fid_loc_x * 250)
+                fid_loc_y = @. origin[2] - (fid_loc_y * 250)
+            else
+                fid_loc_x = @. origin[1] - (fid_loc_x * 100)
+                fid_loc_y = @. origin[2] - (fid_loc_y * 100)
+            end
+            p = Plots.plot!(annotations=(fid_loc_x, fid_loc_y, Plots.text(fid_names[idx], pointsize=font_size + 2)))
         end
     end
 
