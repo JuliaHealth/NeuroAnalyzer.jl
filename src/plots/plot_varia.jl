@@ -141,6 +141,8 @@ Plot histogram.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
+- `draw_mean::Bool=true`
+- `draw_median::Bool=true`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -228,16 +230,19 @@ Bar plot.
 """
 function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels length ($(length(xlabels)))."
+    @assert length(s) == length(xlabels) "s length ($(length(s))) and xlabels length ($(length(xlabels))) differ."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
+
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     p = Plots.plot(s,
                    seriestype=:bar,
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
+                   ylims=yl,
                    xticks=(eachindex(xlabels), xlabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
