@@ -407,6 +407,22 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)
     else
         println("             Components: no")
     end
+    if datatype(obj) in ["eeg", "ecog", "seeg", "ieeg", "erp"]
+        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        println(" Number of EEG channels: $nch")
+    elseif datatype(obj) in ["meg", "erf"]
+        nch = count(x -> isequal(x, "mag"), obj.header.recording[:channel_type])
+        println(" Number of MAG channels: $nch")
+        nch = count(x -> isequal(x, "grad"), obj.header.recording[:channel_type])
+        println("Number of GRAD channels: $nch")
+        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        println(" Number of EEG channels: $nch")
+    elseif datatype(obj) == "nirs"
+        nch = count(x -> isequal(x, "nirs"), obj.header.recording[:channel_type])
+        println("Number of NIRS channels: $nch")
+        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        println(" Number of EEG channels: $nch")
+    end
     println()
     println("Channels:")
     if obj.header.recording[:data_type] != "nirs"
