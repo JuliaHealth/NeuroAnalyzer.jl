@@ -535,64 +535,6 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
 end
 
 """
-    plot_signal(t, s1, s2; <keyword arguments>)
-
-Plot amplitude of single-channel signals.
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-- `s1::AbstractVector`: data to plot
-- `s2::AbstractVector`: data to plot
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)
-
-    # prepare plot
-    plot_size = (1200, 400)
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ytick_direction=:out,
-                   xtick_direction=:out,
-                   ylims=_ylims(s1),
-                   title=title,
-                   size=plot_size,
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
-
-    # plot signal
-    p = Plots.plot!(t,
-                    s1,
-                    linewidth=1,
-                    label="",
-                    alpha=0.5,
-                    color=:black)
-    p = Plots.plot!(t,
-                    s2,
-                    linewidth=1,
-                    label="",
-                    alpha=0.5,
-                    color=:blue)
-
-    return p
-
-end
-
-"""
     plot(obj; <keyword arguments>)
 
 Plot signal.
