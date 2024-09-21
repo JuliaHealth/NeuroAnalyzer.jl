@@ -51,6 +51,8 @@ add_label!(e10_tmp, clabels=l)
 @info "Test 6/$ntests: delete_channel()"
 e10_tmp = delete_channel(e10, ch="F3")
 @test nchannels(e10_tmp) == 23
+e10_tmp = delete_channel(e10, ch=String[])
+@test nchannels(e10_tmp) == nchannels(e10)
 
 @info "Test 7/$ntests: delete_channel!()"
 e10_copy = deepcopy(e10)
@@ -60,6 +62,8 @@ delete_channel!(e10_copy, ch="F4")
 @info "Test 8/$ntests: keep_channel()"
 e10_tmp = keep_channel(e10, ch=["eeg"])
 @test nchannels(e10_tmp) == 19
+e10_tmp = keep_channel(e10, ch=labels(e10))
+@test nchannels(e10_tmp) == nchannels(e10)
 
 @info "Test 9/$ntests: keep_channel!()"
 e10_copy = deepcopy(e10)
