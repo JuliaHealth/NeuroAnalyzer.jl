@@ -33,8 +33,8 @@ function import_set(file_name::String; detect_type::Bool=true)
     ch_n = Int64(dataset["nbchan"])
     ep_n = 1
     data_src = nothing
-    # data in .FTD file
-    if dataset isa String
+    # data in .FDT file
+    if dataset isa String || dataset isa Dict
         data_src = joinpath(dirname(file_name), dataset["data"])
         fid = nothing
         try
