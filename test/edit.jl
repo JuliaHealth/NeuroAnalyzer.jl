@@ -57,7 +57,7 @@ e10_tmp = delete_channel(e10, ch=String[])
 @info "Test 7/$ntests: delete_channel!()"
 e10_copy = deepcopy(e10)
 delete_channel!(e10_copy, ch="F4")
-@test nchannels(e10_tmp) == nchannels(e10) - 1
+@test nchannels(e10_copy) == nchannels(e10) - 1
 
 @info "Test 8/$ntests: keep_channel()"
 e10_tmp = keep_channel(e10, ch=["eeg"])
