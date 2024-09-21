@@ -50,7 +50,7 @@ add_label!(e10_tmp, clabels=l)
 
 @info "Test 6/$ntests: delete_channel()"
 e10_tmp = delete_channel(e10, ch="F3")
-@test nchannels(e10_tmp) == 23
+@test nchannels(e10_tmp) == nchannels(e10) - 1
 e10_tmp = delete_channel(e10, ch=String[])
 @test nchannels(e10_tmp) == nchannels(e10)
 
