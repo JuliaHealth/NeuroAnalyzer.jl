@@ -121,7 +121,7 @@ s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
 @test length(s_new) == 100
 
 @info "Test 14/$ntests: dw_split()"
-s = dw_split(e10, ch="Fp1", wt = wavelet(WT.haar), type=:sdwt)
+s = dw_split(e10, ch="Fp1", wt=wavelet(WT.haar), type=:sdwt)
 @test size(s) == (10, 2560, 10)
 
 @info "Test 15/$ntests: average_epochs()"
@@ -137,8 +137,8 @@ s, bn, bf = bpsplit(e10, ch="all")
 @test size(s) == (13, 24, 2560, 10)
 
 @info "Test 17/$ntests: fconv()"
-@test fconv(v1, kernel=v2) == [0.8500000000000002 - 9.868649107779169e-17im, 1.5999999999999996 + 0.0im, 2.4999999999999996 + 0.0im, 3.499999999999999 - 3.61217627448181e-17im, 2.6999999999999997 - 3.204937810639273e-17im]
-@test fconv(a1, kernel=[0.5, 1.0, 0.5]) == [0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im;;; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im; 0.25 + 0.0im 0.75 + 0.0im 1.0 + 0.0im]
+@test all(isapprox.(fconv(v1, kernel=v2), [0.8500000000000002 - 9.868649107779169e-17im, 1.5999999999999996 + 0.0im, 2.4999999999999996 + 0.0im, 3.499999999999999 - 3.61217627448181e-17im, 2.6999999999999997 - 3.204937810639273e-17im]))
+@test all(isapprox.(fconv(a1, kernel=[0.5, 1.0, 0.5]), [0.25+0.0im 0.75+0.0im 1.0+0.0im; 0.25+0.0im 0.75+0.0im 1.0+0.0im;;; 0.25+0.0im 0.75+0.0im 1.0+0.0im; 0.25+0.0im 0.75+0.0im 1.0+0.0im]))
 s_conv = fconv(e10, ch="all", kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
 @test size(s_conv) == size(e10)
 
@@ -474,7 +474,7 @@ eeg_tmp = ica_remove(eeg_tmp, ch="all", ic_idx=1);
 
 @info "Test 52/$ntests: sort_epochs()"
 e10_erp = average_epochs(e10)
-e = sort_epochs(e10_erp, s=collect((nepochs(e10_erp) - 1):-1:1))
+e = sort_epochs(e10_erp, s=collect((nepochs(e10_erp)-1):-1:1))
 @test size(e.data) == (19, 2560, 11)
 
 @info "Test 53/$ntests: denoise_cwt())"
