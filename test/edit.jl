@@ -4,7 +4,7 @@ using Wavelets
 using ContinuousWavelets
 using DataFrames
 
-ntests = 29
+ntests = 31
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
