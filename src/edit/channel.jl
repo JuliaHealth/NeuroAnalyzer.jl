@@ -30,7 +30,7 @@ Return list of channel names of specified type or their numbers if names are spe
 
 - `ch::Vector{String}`
 """
-function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}="", type::Union{String, Vector{String}}="all", wl::Real=0, exclude::Union{String, Vector{String}}="bad")
+function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String}}="", type::Union{String,Vector{String}}="all", wl::Real=0, exclude::Union{String,Vector{String}}="bad")
 
     # return physical channel numbers
     if ch != ""
@@ -69,11 +69,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     end
 
     exclude != "" && (exclude = _ch_idx(obj, exclude))
-    if isnothing(exclude)
-        return ch
-    else
-        return setdiff(ch, labels(obj)[exclude])
-    end
+    return setdiff(ch, labels(obj)[exclude])
 
 end
 
@@ -304,7 +300,7 @@ Replace channel.
 - `ch::String`: channel name
 - `s::Array{Float64, 3}`: signal to replace with
 """
-function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64, 3})
+function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64,3})
 
     obj_new = replace_channel(obj, ch=ch, s=s)
     obj.header = obj_new.header
@@ -379,7 +375,7 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::Union{String, Vector{String}}, type::Union{String, Vector{String}}, unit::Union{String, Vector{String}})
+function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::Union{String,Vector{String}}, type::Union{String,Vector{String}}, unit::Union{String,Vector{String}})
 
     if length(obj.data) > 0
         @assert signal_len(obj) == size(data, 2) "Epoch length of the new data and the object data must be equal."
@@ -424,7 +420,7 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 - `label::Union{String, Vector{String}}`: channels labels
 - `type::Union{String, Vector{String}}`: channels types
 """
-function add_channel!(obj::NeuroAnalyzer.NEURO; data::Array{<:Number, 3}, label::Union{String, Vector{String}}, type::Union{String, Vector{String}}, unit::Union{String, Vector{String}})
+function add_channel!(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::Union{String,Vector{String}}, type::Union{String,Vector{String}}, unit::Union{String,Vector{String}})
 
     obj_new = add_channel(obj, data=data, label=label, type=type, unit=unit)
     obj.data = obj_new.data

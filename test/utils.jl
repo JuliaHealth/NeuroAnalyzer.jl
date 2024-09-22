@@ -87,8 +87,8 @@ x = rfft2(v1)
 
 @info "Test 17/$ntests: gradient()"
 g, g_l = NeuroAnalyzer.gradient(rand(10))
-@test size(g) == (10, )
-@test size(g_l) == (10, )
+@test size(g) == (10,)
+@test size(g_l) == (10,)
 g, g_l = NeuroAnalyzer.gradient(rand(10, 10))
 @test size(g) == (10, 10)
 @test size(g_l) == (10, 10)
@@ -186,7 +186,7 @@ s = generate_morlet_fwhm(100, 10)
 @test epoch_len(e10) == 2560
 
 @info "Test 37/$ntests: get_channel()"
-@test length(get_channel(e10, type=["eeg", "eeg", "ecg", "mrk"])) == 39
+@test length(get_channel(e10, type=["eeg", "eeg", "ecg", "mrk"])) == 20
 
 @info "Test 38/$ntests: cwtfrq()"
 s = rand(100)
@@ -219,16 +219,16 @@ s = rand(100)
 @test m_norm(m1) == [0.5 1.0 1.5; 2.0 2.5 3.0]
 
 @info "Test 47/$ntests: linspace()"
-@test linspace(1 , 10, 10) == 1:10
+@test linspace(1, 10, 10) == 1:10
 
 @info "Test 48/$ntests: logspace()"
 @test logspace(1, 2, 2) == [10.0, 100.0]
 
 @info "Test 49/$ntests: cmax()"
-@test cmax([1+2im, 10+10im]) == 10+10im
+@test cmax([1 + 2im, 10 + 10im]) == 10 + 10im
 
 @info "Test 50/$ntests: cmin()"
-@test cmin([1+2im, 10+10im]) == 1+2im
+@test cmin([1 + 2im, 10 + 10im]) == 1 + 2im
 
 @info "Test 51/$ntests: tuple_order()"
 @test tuple_order((2, 1)) == (1, 2)

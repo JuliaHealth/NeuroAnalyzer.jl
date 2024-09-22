@@ -60,20 +60,20 @@ function _ch_units(ch_type::String)
     lowercase(ch_type) == "nirs_hbt" && return "μM/mm"
     lowercase(ch_type) == "nirs_aux" && return ""
     lowercase(ch_type) == "mrk" && return ""
-    lowercase(ch_type) == "accel" &&return "m/s²"
-    lowercase(ch_type) == "magfld" &&return "µT"
-    lowercase(ch_type) == "orient" &&return "°"
-    lowercase(ch_type) == "angvel" &&return "rad/s"
-    lowercase(ch_type) == "mep" &&return "μV"
-    lowercase(ch_type) == "eda" &&return "μS"
+    lowercase(ch_type) == "accel" && return "m/s²"
+    lowercase(ch_type) == "magfld" && return "µT"
+    lowercase(ch_type) == "orient" && return "°"
+    lowercase(ch_type) == "angvel" && return "rad/s"
+    lowercase(ch_type) == "mep" && return "μV"
+    lowercase(ch_type) == "eda" && return "μS"
     lowercase(ch_type) == "other" && return ""
     return u
 end
 
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String) = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
-function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})
-    l == "" && return(nothing)
+function _ch_idx(cl::Union{String,Vector{String}}, l::Union{String,Vector{String}})
+    l == "" && return Int64[]
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
     any(occursin.("all", l)) && (l = cl)
@@ -86,8 +86,8 @@ function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{Stri
     return unique(ch)
 end
 
-function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
-    l == "" && return(nothing)
+function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String,Vector{String}})
+    l == "" && return Int64[]
     cl = labels(obj)
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
@@ -122,7 +122,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
     if any(occursin.("bad", l))
         idx = findfirst(isequal("bad"), l)
         bads = vec(sum(obj.header.recording[:bad_channel], dims=2))
-        bad_ch = labels(obj)[bads .> 0]
+        bad_ch = labels(obj)[bads.>0]
         deleteat!(l, idx)
         if length(bad_ch) > 0
             if idx < length(l)
@@ -132,7 +132,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
             end
         end
     end
-    length(l) == 0 && return nothing
+    length(l) == 0 && return Int64[]
     l_tmp = String[]
     for idx1 in eachindex(l)
         if l[idx1] in NeuroAnalyzer.channel_types
@@ -233,7 +233,7 @@ function _sort_channels(ch_t::Vector{String})
     replace!(ch_order, "ecg" => "6")
     replace!(ch_order, "emg" => "7")
     replace!(ch_order, "other" => "8")
-    replace!(ch_order, "nirs_int" => "1" )
+    replace!(ch_order, "nirs_int" => "1")
     replace!(ch_order, "nirs_od" => "1")
     replace!(ch_order, "nirs_dmean" => "3")
     replace!(ch_order, "nirs_dvar" => "3")
