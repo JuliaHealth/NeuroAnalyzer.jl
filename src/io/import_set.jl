@@ -34,7 +34,7 @@ function import_set(file_name::String; detect_type::Bool=true)
     ep_n = 1
     data_src = nothing
     # data in .FDT file
-    if dataset isa String || dataset isa Dict
+    if dataset isa String || (dataset isa Dict && dataset["data"] isa String)
         data_src = joinpath(dirname(file_name), dataset["data"])
         fid = nothing
         try
