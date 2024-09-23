@@ -15,7 +15,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
+function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) @info "Serial port $port_name is not available"
@@ -167,7 +167,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")
+function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) "Serial port $port_name is not available"

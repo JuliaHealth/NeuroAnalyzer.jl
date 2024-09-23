@@ -14,7 +14,7 @@ Create NeuroAnalyzer STUDY object.
 
 - `study::NeuroAnalyzer.STUDY`
 """
-function create_study(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})
+function create_study(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})::NeuroAnalyzer.STUDY
     @assert length(obj) == length(group) "Length of OBJs and groups must be equal."
 
     ch_n = nchannels(obj[1])

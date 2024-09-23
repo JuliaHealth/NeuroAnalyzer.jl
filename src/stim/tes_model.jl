@@ -24,7 +24,7 @@ This is a very initial version, simplified model -- just superficial spread of t
 
 Model spread of electric field at the cortical surface -- reduce charge for skull resistance
 """
-function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, cathode_curr::Real=-2.0)
+function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, cathode_curr::Real=-2.0)::Plots.Plot{Plots.GRBackend}
 
     _wip()
 

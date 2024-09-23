@@ -17,7 +17,7 @@ Return number of NeuroAnalyzer NEURO objects in the study.
 
 - `n::Int64`
 """
-function obj_n(study::NeuroAnalyzer.STUDY)
+function obj_n(study::NeuroAnalyzer.STUDY)::Int64
 
     return length(study.objects)
 
@@ -36,7 +36,7 @@ Return number of channels per NeuroAnalyzer NEURO object in the study.
 
 - `n::Int64`
 """
-function nchannels(study::NeuroAnalyzer.STUDY)
+function nchannels(study::NeuroAnalyzer.STUDY)::Int64
 
     return nchannels(study.objects[1])
 
@@ -55,7 +55,7 @@ Return number of epochs per NeuroAnalyzer NEURO object in the study.
 
 - `n::Int64`
 """
-function nepochs(study::NeuroAnalyzer.STUDY)
+function nepochs(study::NeuroAnalyzer.STUDY)::Int64
 
     return nepochs(study.objects[1])
 
@@ -74,7 +74,7 @@ Return length of epochs per NeuroAnalyzer NEURO object in the study.
 
 - `len::Int64`
 """
-function epoch_len(study::NeuroAnalyzer.STUDY)
+function epoch_len(study::NeuroAnalyzer.STUDY)::Int64
 
     return epoch_len(study.objects[1])
 
@@ -93,7 +93,7 @@ Return sampling rate of NeuroAnalyzer NEURO objects in the study.
 
 - `sr::Int64`
 """
-function sr(study::NeuroAnalyzer.STUDY)
+function sr(study::NeuroAnalyzer.STUDY)::Int64
 
     return sr(study.objects[1])
 
