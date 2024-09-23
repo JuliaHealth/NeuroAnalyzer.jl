@@ -19,7 +19,7 @@ Compare two arrays (e.g. two spectrograms), using L1 (Manhattan) distance.
 
 - `l1::Float64`
 """
-function l1(a1::AbstractArray, a2::AbstractArray)
+function l1(a1::AbstractArray, a2::AbstractArray)::Float64
 
     @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
 
@@ -41,7 +41,7 @@ Compare two arrays (e.g. two spectrograms), using L2 (Euclidean) distance.
 
 - `l2::Float64`
 """
-function l2(a1::AbstractArray, a2::AbstractArray)
+function l2(a1::AbstractArray, a2::AbstractArray)::Float64
 
     @assert size(a1) == size(a2) "a1 and a2 mast have the same size."
 
@@ -68,7 +68,7 @@ Named tuple containing:
 - `zmap::Array{Float64, 3}`: array of Z-values
 - `bm::Array{Float64, 3}`: binarized mask of statistically significant positions
 """
-function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
+function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)::NamedTuple{(:zmap, :bm), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
     @assert size(a1) == size(a2) "Both arrays must have the same size"
     @assert perm_n > 0 "perm_n must be > 0."
@@ -116,7 +116,7 @@ Average signal across trials.
 
 - `s_new::AbstractArray`
 """
-function tavg(s::AbstractArray)
+function tavg(s::AbstractArray)::AbstractArray
 
     @assert ndims(s) == 3 "Signal must have 3 dimensions."
 
@@ -137,7 +137,7 @@ Demean signal.
 
 - `s_new::AbstractArray`
 """
-function delmean(s::AbstractArray; dims::Union{Int64, Nothing}=nothing)
+function delmean(s::AbstractArray; dims::Union{Int64, Nothing}=nothing)::AbstractArray
 
     ms = 0
     if isnothing(dims)
@@ -167,7 +167,7 @@ Reduce an array at indices of a vector being multiplications of a constant. Usef
 - `a_new::Array{eltype(a), ndims(a)}`
 - `f_new::Vector{eltype(f)}`
 """
-function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)
+function areduce(a::AbstractArray, f::AbstractVector; n::Float64=0.5)::Tuple{AbstractArray, AbstractVector}
 
     @assert ndims(a) <= 3 "areduce() only works for 2- and 3-dimensional arrays."
     @assert size(a, 2) == length(f) "Length of both vectors must be equal."

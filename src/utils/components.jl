@@ -24,7 +24,7 @@ Return component data type.
 
 - `c_type::DataType`
 """
-function component_type(obj::NeuroAnalyzer.NEURO; c::Symbol)
+function component_type(obj::NeuroAnalyzer.NEURO; c::Symbol)::DataType
 
     @assert c in keys(obj.components) "Component :$c does not exist. Use list_component() to view existing components."
 
@@ -45,9 +45,9 @@ Rename component.
 
 # Return
 
-- `obj_new::NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)
+function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)::NeuroAnalyzer.NEURO
 
     @assert c_old in keys(obj.components) "Component $c_old does not exist. Use list_component() to view existing components."
     @assert !(c_new in keys(obj.components)) "Component $c_new already exists. Use list_component() to view existing components."
@@ -72,8 +72,12 @@ Rename component.
 - `obj::NeuroAnalyzer.NEURO`
 - `c_old::Symbol`: old component name
 - `c_new::Symbol`: new component name
+
+# Returns
+
+Nothing
 """
-function rename_component!(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)
+function rename_component!(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)::Nothing
 
     obj_new = rename_component(obj, c_old=c_old, c_new=c_new)
     obj.history = obj_new.history
@@ -98,7 +102,7 @@ Add component.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
+function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     @assert !(c in keys(obj.components)) "Component $c already exists. Use different component name or delete_component() to remove it prior the operation."
@@ -123,8 +127,12 @@ Add component.
 - `obj::NeuroAnalyzer.NEURO`
 - `c::Symbol`: component name
 - `v::Any`: component value
+
+# Returns
+
+Nothing
 """
-function add_component!(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
+function add_component!(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)::Nothing
 
     obj_new = add_component(obj, c=c, v=v)
     obj.components = obj_new.components
@@ -147,7 +155,7 @@ List component names.
 
 - `components::Vector{Symbol}`
 """
-function list_component(obj::NeuroAnalyzer.NEURO)
+function list_component(obj::NeuroAnalyzer.NEURO)::Vector{Symbol}
 
     return keys(obj.components)
 
@@ -167,7 +175,7 @@ Extract component values.
 
 - `c::Any`
 """
-function extract_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
+function extract_component(obj::NeuroAnalyzer.NEURO; c::Symbol)::Any
 
     @assert c in keys(obj.components) "Component $c does not exist. Use list_component() to view existing components."
     c = obj.components[c]
@@ -190,7 +198,7 @@ Delete component.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
+function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)::NeuroAnalyzer.NEURO
 
     @assert c in keys(obj.components) "Component $c does not exist. Use list_component() to view existing components."
 
@@ -213,8 +221,12 @@ Delete component.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `c::Symbol`: component name
+
+# Returns
+
+Nothing
 """
-function delete_component!(obj::NeuroAnalyzer.NEURO; c::Symbol)
+function delete_component!(obj::NeuroAnalyzer.NEURO; c::Symbol)::Nothing
 
     obj_new = delete_component(obj, c=c)
     obj.history = obj_new.history
@@ -237,7 +249,7 @@ Remove all components.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reset_components(obj::NeuroAnalyzer.NEURO)
+function reset_components(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     obj_new.components = Dict()
@@ -255,8 +267,12 @@ Remove all components.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+Nothing
 """
-function reset_components!(obj::NeuroAnalyzer.NEURO)
+function reset_components!(obj::NeuroAnalyzer.NEURO)::Nothing
 
     obj_new = reset_components(obj)
     obj.history = obj_new.history
