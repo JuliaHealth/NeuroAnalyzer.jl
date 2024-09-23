@@ -18,7 +18,7 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """
-function import_snirf(file_name::String; n::Int64=0)
+function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".snirf" "This is not SNIRF file."

@@ -39,7 +39,7 @@ This is a meta-function that triggers appropriate `import_locs_*()` function. Fi
 
 - `locs::DataFrame`
 """
-function import_locs(file_name::String)
+function import_locs(file_name::String)::DataFrame
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -91,7 +91,7 @@ Load channel locations from CED file.
 
 - `locs::DataFrame`
 """
-function import_locs_ced(file_name::String)
+function import_locs_ced(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".ced" "Not CED file."
@@ -148,7 +148,7 @@ Load channel locations from LOCS file.
 
 - `locs::DataFrame`
 """
-function import_locs_locs(file_name::String)
+function import_locs_locs(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".locs" "This is not LOCS file."
@@ -201,7 +201,7 @@ Load channel locations from ELC file.
 
 - `locs::DataFrame`
 """
-function import_locs_elc(file_name::String)
+function import_locs_elc(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".elc" "This is not ELC file."
@@ -269,7 +269,7 @@ Load channel locations from TSV file.
 
 - `locs::DataFrame`
 """
-function import_locs_tsv(file_name::String)
+function import_locs_tsv(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".tsv" "This is not TSV file."
@@ -329,7 +329,7 @@ Load channel locations from SFP file.
 
 - `locs::DataFrame`
 """
-function import_locs_sfp(file_name::String)
+function import_locs_sfp(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".sfp" "This is not SFP file."
@@ -391,7 +391,7 @@ Load channel locations from CSD file.
 
 - `locs::DataFrame`
 """
-function import_locs_csd(file_name::String)
+function import_locs_csd(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".csd" "This is not CSD file."
@@ -436,7 +436,7 @@ Load channel locations from GEO file.
 
 - `locs::DataFrame`
 """
-function import_locs_geo(file_name::String)
+function import_locs_geo(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".geo" "This is not GEO file."
@@ -504,7 +504,7 @@ Load channel locations from MAT file.
 
 - `locs::DataFrame`
 """
-function import_locs_mat(file_name::String)
+function import_locs_mat(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".mat" "This is not MAT file."
@@ -553,7 +553,7 @@ Load channel locations from TXT file.
 
 - `locs::DataFrame`
 """
-function import_locs_txt(file_name::String)
+function import_locs_txt(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".txt" "This is not TXT file."
@@ -618,7 +618,7 @@ Load channel locations from DAT file.
 
 - `locs::DataFrame`
 """
-function import_locs_dat(file_name::String)
+function import_locs_dat(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".dat" "Not DAT file."
@@ -684,7 +684,7 @@ Load channel locations from ASC file.
 
 - `locs::DataFrame`
 """
-function import_locs_asc(file_name::String)
+function import_locs_asc(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".asc" "Not ASC file."
@@ -748,7 +748,7 @@ Load channel locations from CSV file.
 
 - `locs::DataFrame`
 """
-function import_locs_csv(file_name::String)
+function import_locs_csv(file_name::String)::DataFrame
 
     @assert isfile(file_name) "$file_name not found."
     @assert lowercase(splitext(file_name)[2]) == ".csv" "This is not CSV file."

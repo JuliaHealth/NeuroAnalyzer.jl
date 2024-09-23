@@ -26,7 +26,7 @@ Load GDF file and return `NeuroAnalyzer.NEURO` object.
 2. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.12. 2009
 3. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.51. 2013
 """
-function import_gdf(file_name::String; detect_type::Bool=true)
+function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".gdf" "This is not GDF file."
@@ -631,4 +631,3 @@ function import_gdf(file_name::String; detect_type::Bool=true)
     return obj
 
 end
-

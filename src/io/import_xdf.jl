@@ -13,7 +13,7 @@ Load Extensible Data Format (XDF) and return `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function import_xdf(file_name::String)
+function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".xdf" "This is not XDF file."

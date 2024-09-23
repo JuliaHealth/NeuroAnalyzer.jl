@@ -18,7 +18,7 @@ Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.
 
 - EDF files exported from Alice 4 have incorrect value of `data_records` (-1) and multiple sampling rate; channels are upsampled to the highest rate.
 """
-function import_alice4(file_name::String; detect_type::Bool=true)
+function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

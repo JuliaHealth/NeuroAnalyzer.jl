@@ -26,7 +26,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003; 114: 1755–61
 3. https://www.edfplus.info/specs/
 """
-function import_edf(file_name::String; detect_type::Bool=true)
+function import_edf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".edf" "This is not EDF file."
@@ -303,4 +303,3 @@ function import_edf(file_name::String; detect_type::Bool=true)
     return obj
 
 end
-

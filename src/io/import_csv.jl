@@ -20,7 +20,7 @@ CSV first row or first column must contain channel names.
 Shape of data array will be detected automatically. Sampling rate will be detected.
 If file is gzip-ed, it will be uncompressed automatically while reading.
 """
-function import_csv(file_name::String; detect_type::Bool=true)
+function import_csv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

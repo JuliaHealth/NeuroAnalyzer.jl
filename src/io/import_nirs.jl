@@ -17,7 +17,7 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 
 https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
-function import_nirs(file_name::String)
+function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".nirs" "This is not NIRS file."

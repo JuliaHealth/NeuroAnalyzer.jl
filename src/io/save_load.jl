@@ -13,8 +13,12 @@ Save `NeuroAnalyzer.NEURO` object to `file_name` file (HDF5-based).
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: name of the file to save to
 - `overwrite::Bool=false`
+
+# Return
+
+Nothing
 """
-function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
+function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
     @assert lowercase(splitext(file_name)[2]) == ".hdf" "Filename extension must be .hdf"
@@ -26,6 +30,8 @@ function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false
     rm("/tmp/$(basename(file_name))")
 
     JLD2.save_object(file_name, obj)
+
+    return nothing
 
 end
 
@@ -42,7 +48,7 @@ Load `NeuroAnalyzer.NEURO` object from `file_name` file (HDF5-based).
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function load(file_name::String)
+function load(file_name::String)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -64,14 +70,20 @@ Save `NeuroAnalyzer.STUDY` object to `file_name` file (HDF5-based).
 - `obj::NeuroAnalyzer.STUDY`
 - `file_name::String`: name of the file to save to
 - `overwrite::Bool=false`
+
+# Return
+
+Nothing
 """
-function save_study(obj::NeuroAnalyzer.STUDY; file_name::String, overwrite::Bool=false)
+function save_study(obj::NeuroAnalyzer.STUDY; file_name::String, overwrite::Bool=false)::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
     @assert lowercase(splitext(file_name)[2]) == ".hdf" "Filename extension must be .hdf"
 
     JLD2.save_object(file_name, obj)
+
+    return nothing
 
 end
 
@@ -88,14 +100,14 @@ Load `NeuroAnalyzer.STUDY` object from `file_name` file (HDF5-based).
 
 - `obj::NeuroAnalyzer.STUDY`
 """
-function load_study(file_name::String)
+function load_study(file_name::String)::NeuroAnalyzer.STUDY
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
-    obj = JLD2.load_object(file_name)
+    s = JLD2.load_object(file_name)
 
-    _info("Loaded study: $(obj_n(obj)) objects")
+    _info("Loaded study: $(obj_n(s)) objects")
 
-    return obj
+    return s
 
 end

@@ -24,7 +24,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 https://www.biosemi.com/faq/file_format.htm
 """
-function import_bdf(file_name::String; detect_type::Bool=true)
+function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".bdf" "This is not BDF file."
@@ -289,4 +289,3 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     return obj
 
 end
-

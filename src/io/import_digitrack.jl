@@ -14,7 +14,7 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function import_digitrack(file_name::String; detect_type::Bool=true)
+function import_digitrack(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

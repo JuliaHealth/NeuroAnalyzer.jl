@@ -18,9 +18,9 @@ Calculate autocovariance.
 
 # Returns
 
-- `ac::Matrix{Float64}`
+- `ac::Array{Float64, 3}`
 """
-function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     _check_var(method, [:sum, :cov, :stat], "method")
 
@@ -78,9 +78,9 @@ Calculate autocovariance.
 
 # Returns
 
-- `ac::Matrix{Float64}`
+- `ac::Array{Float64, 3}`
 """
-function acov(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acov(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     ep_n = size(s, 2)
 
@@ -112,9 +112,9 @@ Calculate autocovariance.
 
 # Returns
 
-- `ac::Matrix{Float64}`
+- `ac::Array{Float64, 3}`
 """
-function acov(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acov(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -154,7 +154,7 @@ Named tuple containing:
 - `ac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function acov(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acov(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::NamedTuple{(:ac, :l), Tuple{Array{Float64, 3}, Vector{Float64}}}
 
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."

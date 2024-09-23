@@ -18,9 +18,9 @@ Calculate auto-correlation.
 
 # Returns
 
-- `ac::Matrix{Float64}`
+- `ac::Array{Float64, 3}`
 """
-function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     _check_var(method, [:sum, :cor, :stat], "method")
 
@@ -76,16 +76,16 @@ Calculate auto-correlation.
 
 # Returns
 
-- `ac::Matrix{Float64}`
+- `ac::Array{Float64, 3}`
 """
-function acor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     ep_n = size(s, 2)
 
     ac = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        ac[1, :, ep_idx] = @views reshape(acor(s[:, ep_idx], l=l, demean=demean, biased=biased, method=method), 1, :, ep_n)
+        ac[1, :, ep_idx] = @views acor(s[:, ep_idx], l=l, demean=demean, biased=biased, method=method)
     end
 
     return ac
@@ -110,9 +110,9 @@ Calculate auto-correlation.
 
 # Returns
 
-- `ac::Matrix{Float64}`
+- `ac::Array{Float64, 3}`
 """
-function acor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -152,7 +152,7 @@ Named tuple containing:
 - `ac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::NamedTuple{(:ac, :l), Tuple{Array{Float64, 3}, Vector{Float64}}}
 
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."

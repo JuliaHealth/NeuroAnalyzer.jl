@@ -172,8 +172,12 @@ Channel locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
+
+# Return
+
+Nothing
 """
-function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)
+function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
 
     obj_tmp = load_locs(obj, file_name=file_name)
     obj.locs = obj_tmp.locs

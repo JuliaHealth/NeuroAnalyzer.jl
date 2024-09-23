@@ -10,8 +10,12 @@ Export channel locations data, format is based on `file_name` extension (.csv, .
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
 - `overwrite::Bool=false`
+
+# Returns
+
+Nothing
 """
-function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
+function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
@@ -40,6 +44,9 @@ function export_locs(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
     else
         @error "$file_name format must be .csv, .ced, .locs or .tsv."
     end
+
+    return nothing
+
 end
 
 """
@@ -55,9 +62,9 @@ Export channel locations, format is based on `file_name` extension (.ced, .locs,
 
 # Returns
 
-- `success::Bool`
+Nothing
 """
-function export_locs(locs::DataFrame; file_name::String, overwrite::Bool=false)
+function export_locs(locs::DataFrame; file_name::String, overwrite::Bool=false)::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
@@ -85,5 +92,6 @@ function export_locs(locs::DataFrame; file_name::String, overwrite::Bool=false)
         @error "file_name format must be .ced, .locs or .tsv."
     end
 
-end
+    return nothing
 
+end

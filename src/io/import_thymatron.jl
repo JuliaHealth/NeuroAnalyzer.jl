@@ -27,7 +27,7 @@ Image properties:
 
 Wysokiński A. EEG_ADC: Digitizer and Analyzer of Electroconvulsive Therapy Paper Electroencephalogram Recordings. JECT 2022; 4: 255-256
 """
-function import_thymatron(file_name::Union{String, Vector{String}})
+function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     data_tmp = Vector{Vector{Float64}}()
     sampling_rate = 100 # = DPI

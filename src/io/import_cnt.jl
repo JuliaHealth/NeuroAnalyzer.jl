@@ -19,7 +19,7 @@ Load Neuroscan continuous signal file and return `NeuroAnalyzer.NEURO` object.
 
 Based on loadcnt.m by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html)
 """
-function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bool=true)
+function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     _check_var(data_format, [:i32, :i16], "data_format")
 

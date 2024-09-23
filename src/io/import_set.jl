@@ -18,7 +18,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
-function import_set(file_name::String; detect_type::Bool=true)
+function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".set" "This is not SET file."

@@ -21,7 +21,7 @@ Named tuple containing:
 - `energy::Float64`: total signal energy
 - `rms::Float64`: root mean square
 """
-function amp(s::AbstractVector)
+function amp(s::AbstractVector)::NamedTuple{(:p, :r, :p2p, :semi_p2p, :msa, :rmsa, :energy, :rms), Tuple{Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64}}
 
     p = maximum(abs.(s))
     r = p / sqrt(2)
@@ -57,7 +57,7 @@ Named tuple containing:
 - `rmsa::Matrix{Float64}`: root mean square amplitude
 - `energy::Matrix{Float64}`: total signal energy
 """
-function amp(s::AbstractArray)
+function amp(s::AbstractArray)::NamedTuple{(:p, :r, :p2p, :semi_p2p, :msa, :rmsa, :energy, :rms), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -102,7 +102,7 @@ Named tuple containing:
 - `rmsa::Matrix{Float64}`: root mean square amplitude
 - `energy::Matrix{Float64}`: total signal energy
 """
-function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:p, :r, :p2p, :semi_p2p, :msa, :rmsa, :energy, :rms), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch = get_channel(obj, ch=ch)
 

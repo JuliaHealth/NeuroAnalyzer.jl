@@ -14,7 +14,7 @@ Load NPY file (exported from MNE) and return `NeuroAnalyzer.NEURO` object. Data 
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function import_npy(file_name::String; sampling_rate::Int64)
+function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".npy" "This is not NPY file."

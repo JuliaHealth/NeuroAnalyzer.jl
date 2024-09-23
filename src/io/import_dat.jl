@@ -13,7 +13,7 @@ Load Neuroscan DAT file.
 
 - `dat::DataFrame`
 """
-function import_dat(file_name)
+function import_dat(file_name)::DataFrame
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".dat" "This is not DAT file."
