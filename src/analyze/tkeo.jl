@@ -18,7 +18,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Vector{Float64}`
 """
-function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)
+function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Vector{Float64}
 
     _check_var(method, [:pow, :der, :amp], "method")
 
@@ -69,7 +69,7 @@ Calculate Teager-Kaiser energy-tracking operator
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)
+function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Array{Float64, 3}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -104,7 +104,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 - `tk::Array{Float64, 3}`
 """
-function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol=:pow)
+function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol=:pow)::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method=method)

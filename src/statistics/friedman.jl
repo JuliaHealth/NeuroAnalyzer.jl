@@ -22,7 +22,8 @@ Named tuple containing:
 - H0 (Kendall) is that there is agreement between rankings or test results
 - Kendall's coefficient of concordance ranges from 0 to 1, with 0 meaning no agreement across raters (judges)
 """
-function friedman(m::AbstractMatrix)
+function friedman(m::AbstractMatrix)::NamedTuple{(:f, :k, :p), Tuple{Float64, Float64, Float64}}
+
     rs = zeros(eltype(m), size(m, 1))
     k = size(m, 2)
     n = size(m, 1)
@@ -39,5 +40,6 @@ function friedman(m::AbstractMatrix)
     p = k * (n - 1) * w
     p = pdf(Distributions.Chisq(n - 1), p) * 2
 
-    return(f=f, k=w, p=p)
+    return (f=f, k=w, p=p)
+
 end

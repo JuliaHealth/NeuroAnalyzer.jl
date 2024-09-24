@@ -76,7 +76,7 @@ Calculate signal statistic using bootstrapping.
 
 - `out::AbstractVector`
 """
-function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::String)
+function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::String)::AbstractVector
 
     f_tmp = replace(f, "OBJ" => "$(s[:, 1])")
     out_tmp = nothing

@@ -16,7 +16,7 @@ Calculate phase stationarity using Hilbert transformation.
 
 - `stph::Vector{Float64}`
 """
-function stationarity_hilbert(s::AbstractVector)
+function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
 
     stph = diff(DSP.unwrap(angle.(hilbert(s))))
 
@@ -38,7 +38,7 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 
 - `stm::Vector{Float64}`
 """
-function stationarity_mean(s::AbstractVector; window::Int64)
+function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
 
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= length(s) "window must be ≤ $(length(s))."
@@ -66,7 +66,7 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 
 - `stv::Vector{Float64}`
 """
-function stationarity_var(s::AbstractVector; window::Int64)
+function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
 
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= length(s) "window must be ≤ $(length(s))."
@@ -101,7 +101,7 @@ Calculate stationarity.
 
 - `stationarity::Array{Float64, 3}`
 """
-function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, window::Int64=10, method::Symbol=:hilbert)
+function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, window::Int64=10, method::Symbol=:hilbert)::Array{Float64, 3}
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     @assert window >= 1 "window must be ≥ 1."

@@ -13,16 +13,16 @@ Calculate epochs statistics.
 # Returns
 
 Named tuple containing:
-- `e_mean::Vector(Float64)`: mean
-- `e_median::Vector(Float64)`: median
-- `e_std::Vector(Float64)`: standard deviation
-- `e_var::Vector(Float64)`: variance
-- `e_kurt::Vector(Float64)`: kurtosis
-- `e_skew::Vector(Float64)`: skewness
-- `e_mean_diff::Vector(Float64)`: mean diff value
-- `e_median_diff::Vector(Float64)`: median diff value
-- `e_max_dif::Vector(Float64)`: max difference
-- `e_dev_mean::Vector(Float64)`: deviation from channel mean
+- `e_mean::Vector{Float64}`: mean
+- `e_median::Vector{Float64}`: median
+- `e_std::Vector{Float64}`: standard deviation
+- `e_var::Vector{Float64}`: variance
+- `e_kurt::Vector{Float64}`: kurtosis
+- `e_skew::Vector{Float64}`: skewness
+- `e_mean_diff::Vector{Float64}`: mean diff value
+- `e_median_diff::Vector{Float64}`: median diff value
+- `e_max_dif::Vector{Float64}`: max difference
+- `e_dev_mean::Vector{Float64}`: deviation from channel mean
 """
 function epoch_stats(obj::NeuroAnalyzer.NEURO)
 

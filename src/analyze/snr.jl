@@ -18,7 +18,7 @@ Calculate mean-based SNR.
 
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
-function snr(s::AbstractVector)
+function snr(s::AbstractVector)::Float64
 
     return mean(s) / std(s)
 
@@ -37,7 +37,7 @@ Calculate RMS-based SNR.
 
 - `snr2::Float64`: SNR
 """
-function snr2(s::AbstractVector)
+function snr2(s::AbstractVector)::Float64
 
     _, _, _, _, _, _, _, r = amp(s)
     return (maximum(s) - minimum(s)) / r
@@ -60,10 +60,10 @@ Calculate SNR.
 # Returns
 
 Named tuple containing:
-- `s::Matrix(Float64)`: SNR for each channel over frequencies 1:Nyquist
-- `f::Vector(Float64)`: frequencies
+- `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
+- `f::Vector{Float64}`: frequencies
 """
-function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)
+function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::NamedTuple{(:sn, :f), Tuple{Matrix{Float64}, Vector{Float64}}}
 
     _check_var(type, [:mean, :rms], "type")
 
@@ -115,10 +115,10 @@ Calculate SNR.
 # Returns
 
 Named tuple containing:
-- `sn::Matrix(Float64)`: SNR for each channel over frequencies 1:Nyquist
-- `f::Vector(Float64)`: frequencies
+- `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
+- `f::Vector{Float64}`: frequencies
 """
-function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:rms)
+function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:rms)::NamedTuple{(:sn, :f), Tuple{Matrix{Float64}, Vector{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     sn, f = @views snr(obj.data[ch, :, :], t=obj.epoch_time, type=type)

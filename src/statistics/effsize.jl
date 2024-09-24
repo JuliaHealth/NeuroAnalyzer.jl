@@ -19,7 +19,7 @@ Named tuple containing:
 - `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin
 - `Δ::Float64`: Glass' Δ
 """
-function effsize(x1::AbstractVector, x2::AbstractVector)
+function effsize(x1::AbstractVector, x2::AbstractVector)::NamedTuple{(:d, :g, :Δ), Tuple{Float64, Float64, Float64}}
 
     d = (mean(x2) - mean(x1)) / pooledstd(x1, x2, type=:cohen)
     g = (mean(x2) - mean(x1)) / pooledstd(x1, x2, type=:hedges)
@@ -43,7 +43,7 @@ Calculate effect size for two proportions `p1` and `p2`.
 
 - `e::Float64`
 """
-function effsize_p2g(p1::Float64, p2::Float64)
+function effsize_p2g(p1::Float64, p2::Float64)::Float64
 
     @assert p1 + p2 == 1.0 "Proportions must add to 1.0."
 
@@ -68,7 +68,7 @@ Calculate pooled standard deviation
 
 - `ps::Float64`
 """
-function pooledstd(x1::AbstractVector, x2::AbstractVector; type::Symbol=:cohen)
+function pooledstd(x1::AbstractVector, x2::AbstractVector; type::Symbol=:cohen)::Float64
 
     _check_var(type, [:cohen, :hedges], "type")
 

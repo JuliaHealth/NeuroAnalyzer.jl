@@ -14,8 +14,16 @@ export na_version
     na_info()
 
 Show NeuroAnalyzer and imported packages versions.
+
+# Arguments
+
+Nothing
+
+# Returns
+
+Nothing
 """
-function na_info()
+function na_info()::Nothing
 
     println("     NeuroAnalyzer: $(NeuroAnalyzer.VER)")
     println("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
@@ -105,14 +113,25 @@ function na_info()
     else
         @warn "Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages."
     end
+
+    return nothing
+
 end
 
 """
     na_plugins_reload()
 
 Reload NeuroAnalyzer plugins.
+
+# Arguments
+
+Nothing
+
+# Returns
+
+Nothing
 """
-function na_plugins_reload()
+function na_plugins_reload()::Nothing
 
     @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
@@ -128,7 +147,10 @@ function na_plugins_reload()
             end
         end
     end
+
     cd(path_tmp)
+
+    return nothing
 
 end
 
@@ -136,6 +158,14 @@ end
     na_plugins_list()
 
 List NeuroAnalyzer plugins.
+
+# Arguments
+
+Nothing
+
+# Returns
+
+Nothing
 """
 function na_plugins_list()
 
@@ -148,7 +178,10 @@ function na_plugins_list()
     for idx in eachindex(plugins)
         println("$idx. $(plugins[idx])")
     end
+
     cd(path_tmp)
+
+    return nothing
 
 end
 
@@ -160,8 +193,12 @@ Remove NeuroAnalyzer plugin.
 # Arguments
 
 - `plugin::String`: plugin name
+
+# Returns
+
+Nothing
 """
-function na_plugins_remove(plugin::String)
+function na_plugins_remove(plugin::String)::Nothing
 
     _warn("This will remove the whole $plugin directory, along with its file contents.")
     @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
@@ -175,8 +212,11 @@ function na_plugins_remove(plugin::String)
     catch
         @error "Cannot remove $plugin directory."
     end
+
     na_plugins_reload()
     cd(path_tmp)
+
+    return nothing
 
 end
 
@@ -188,8 +228,12 @@ Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.Z
 # Arguments
 
 - `plugin::String`: plugin Git repository URL or file name (with full path)
+
+# Returns
+
+Nothing
 """
-function na_plugins_install(plugin::String)
+function na_plugins_install(plugin::String)::Nothing
 
     @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
@@ -224,8 +268,11 @@ function na_plugins_install(plugin::String)
             end
         end
     end
+
     na_plugins_reload()
     cd(path_tmp)
+
+    return nothing
 
 end
 
@@ -237,8 +284,12 @@ Update NeuroAnalyzer plugin(s).
 # Arguments
 
 - `plugin::String`: plugin to update; if empty, update all
+
+# Returns
+
+Nothing
 """
-function na_plugins_update(plugin::String="")
+function na_plugins_update(plugin::String="")::Nothing
 
     @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 
@@ -266,8 +317,11 @@ function na_plugins_update(plugin::String="")
         end
         cd(plugins_path)
     end
+
     na_plugins_reload()
     cd(path_tmp)
+
+    return nothing
 
 end
 
@@ -279,11 +333,17 @@ Change `use_cuda` preference.
 # Arguments
 
 - `value::Bool`: value
+
+# Returns
+
+Nothing
 """
-function na_set_use_cuda(value::Bool)
+function na_set_use_cuda(value::Bool)::Nothing
 
     @set_preferences!("use_cuda" => value)
     _info("New option value set, restart your Julia session for this change to take effect")
+
+    return nothing
 
 end
 
@@ -295,11 +355,17 @@ Change `progress_bar` preference.
 # Arguments
 
 - `value::Bool`: value
+
+# Returns
+
+Nothing
 """
-function na_set_progress_bar(value::Bool)
+function na_set_progress_bar(value::Bool)::Nothing
 
     @set_preferences!("progress_bar" => value)
     _info("New option value set, restart your Julia session for this change to take effect")
+
+    return nothing
 
 end
 
@@ -311,11 +377,17 @@ Change `verbose` preference.
 # Arguments
 
 - `value::Bool`: value
+
+# Returns
+
+Nothing
 """
-function na_set_verbose(value::Bool)
+function na_set_verbose(value::Bool)::Nothing
 
     @set_preferences!("verbose" => value)
     _info("New option value set, restart your Julia session for this change to take effect")
+
+    return nothing
 
 end
 
@@ -329,12 +401,18 @@ Save NeuroAnalyzer preferences.
 - `use_cuda::Bool`
 - `progress_bar::Bool`
 - `verbose::Bool`
+
+# Returns
+
+Nothing
 """
-function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)
+function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)::Nothing
 
     @set_preferences!("use_cuda" => use_cuda)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
+
+    return nothing
 
 end
 
@@ -343,12 +421,18 @@ end
 
 Convert NeuroAnalyzer version to string.
 
+# Arguments
+
+Nothing
+
 # Returns
 
 - `VER::String`
 """
-function na_version()
+function na_version()::String
 
-    return string(Int(NeuroAnalyzer.VER.major)) * "." * string(Int(NeuroAnalyzer.VER.minor)) * "." * string(Int(NeuroAnalyzer.VER.patch))
+    VER = string(Int(NeuroAnalyzer.VER.major)) * "." * string(Int(NeuroAnalyzer.VER.minor)) * "." * string(Int(NeuroAnalyzer.VER.patch))
+
+    return VER
 
 end
