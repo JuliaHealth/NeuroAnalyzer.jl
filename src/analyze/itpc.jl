@@ -65,7 +65,7 @@ Named tuple containing:
 - `itpc_value::Vector{Float64}`: ITPC or wITPC value
 - `itpcz_value::Vector{Float64}`: Rayleigh's ITPC z value
 - `itpc_angle::Vector{Float64}`: ITPC angle
-- `itpc_phases::Array{Float64, 2}`: phase difference (channel2 - channel1)
+- `itpc_phases::Matrix{Float64}`: phase difference (channel2 - channel1)
 """
 function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 

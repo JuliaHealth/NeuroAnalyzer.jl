@@ -15,9 +15,9 @@ Detect a pair of positive and negative peaks of ERP.
 
 # Returns
 
-- `p::Array{Int64, 2}`: peaks: channels × positive peak position, negative peak position
+- `p::Matrix{Int64}`: peaks: channels × positive peak position, negative peak position
 """
-function erp_peaks(obj::NeuroAnalyzer.NEURO)
+function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
     _check_datatype(obj, ["erp", "erf"])
 
@@ -45,9 +45,9 @@ Calculate amplitude at given time.
 
 # Returns
 
-- `p::Matrix{Float64, 2}`: amplitude for each channel per epoch
+- `p::Matrix{Float64}`: amplitude for each channel per epoch
 """
-function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)
+function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
     if datatype(obj) in ["erp", "mep"]
         @assert t >= obj.epoch_time[1] "t must be ≥ $(obj.epoch_time[1])."
@@ -94,9 +94,9 @@ Calculate average amplitude at given time segment.
 
 # Returns
 
-- `p::Matrix{Float64, 2}`: mean amplitude for each channel per epoch
+- `p::Matrix{Float64}`: mean amplitude for each channel per epoch
 """
-function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
+function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
     if datatype(obj) in ["erp", "mep"]
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
@@ -147,9 +147,9 @@ Calculate maximum amplitude at given time segment.
 
 # Returns
 
-- `p::Matrix{Float64, 2}`: maximum amplitude for each channel per epoch
+- `p::Matrix{Float64}`: maximum amplitude for each channel per epoch
 """
-function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
+function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
     if datatype(obj) in ["erp", "mep"]
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."
@@ -200,9 +200,9 @@ Calculate minimum amplitude at given time segment.
 
 # Returns
 
-- `p::Matrix{Float64, 2}`: minimum amplitude for each channel per epoch
+- `p::Matrix{Float64}`: minimum amplitude for each channel per epoch
 """
-function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})
+function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
     if datatype(obj) in ["erp", "mep"]
         @assert t[1] >= obj.epoch_time[1] "t[1] must be ≥ $(obj.epoch_time[1])."

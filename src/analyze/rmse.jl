@@ -35,7 +35,7 @@ Calculate Root Mean Square Error (RMSE).
 
 # Returns
 
-- `r::Array{Float64, 2}`: RMSE
+- `r::Matrix{Float64}`: RMSE
 """
 function rmse(s1::AbstractArray, s2::AbstractArray)
 

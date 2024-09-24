@@ -117,7 +117,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Returns
 
 Named tuple containing:
-- `p::Array{Float64, 2}`: powers
+- `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
 function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}

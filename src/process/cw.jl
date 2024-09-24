@@ -13,7 +13,7 @@ Perform continuous wavelet transformation (CWT).
 
 # Returns
 
-- `ct::Array{Float64, 2}`: CWT coefficients (by rows)
+- `ct::Matrix{Float64}`: CWT coefficients (by rows)
 """
 function cw_trans(s::AbstractVector; wt::T) where {T<:CWT}
 

@@ -13,7 +13,7 @@ Calculate instantaneous frequency.
 
 - `f::Vector{Float64}`
 """
-function frqinst(s::AbstractVector)
+function frqinst(s::AbstractVector)::Vector{Float64}
 
     _, _, _, pha = hspectrum(s)
     f = 1 / (2 * pi) * derivative(DSP.unwrap(pha))
@@ -33,9 +33,9 @@ Calculate instantaneous frequency.
 
 # Returns
 
-- `f::Array{Float64, 2}`
+- `f::Matrix{Float64}`
 """
-function frqinst(s::AbstractArray)
+function frqinst(s::AbstractArray)::Matrix{Float64}
 
     _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 
@@ -69,7 +69,7 @@ Calculate instantaneous frequency.
 
 - `f::Array{Float64, 3}`
 """
-function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     f = @views frqinst(obj.data[ch, :, :])

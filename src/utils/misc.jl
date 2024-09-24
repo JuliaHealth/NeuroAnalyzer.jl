@@ -19,9 +19,9 @@ Generates a sequence of evenly spaced numbers between `start` and `stop`.
 
 # Returns
 
-- `range::Vector`
+- `range::Vector{Float64}`
 """
-function linspace(start::Number, stop::Number, n::Int64)
+function linspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
     @assert n >= 2 "n must be ≥ 2."
 
@@ -42,9 +42,9 @@ Generates a sequence of log10-spaced numbers between `start` and `stop`.
 
 # Returns
 
-- `range::Vector{<:Number}`
+- `range::Vector{Float64}`
 """
-function logspace(start::Number, stop::Number, n::Int64)
+function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
     @assert n >= 2 "n must be ≥ 2."
 
@@ -65,7 +65,7 @@ Return maximum value of the complex vector.
 
 - `cmax::ComplexF64`
 """
-function cmax(x::Vector{<:Complex})
+function cmax(x::Vector{<:Complex})::ComplexF64
 
     return argmax(abs2, x)
 
@@ -84,7 +84,7 @@ Return minimum value of the complex vector.
 
 - `cmin::ComplexF64`
 """
-function cmin(x::Vector{<:Complex})
+function cmin(x::Vector{<:Complex})::ComplexF64
 
     return argmin(abs2, x)
 
@@ -105,7 +105,7 @@ Tuple containing:
 - `cmax::ComplexF64`
 - `cmin::ComplexF64`
 """
-function cextrema(x::Vector{<:Complex})
+function cextrema(x::Vector{<:Complex})::Tuple{ComplexF64, ComplexF64}
 
     return (cmax(x), cmin(x))
 
@@ -125,7 +125,7 @@ Order tuple elements in ascending or descending (`rev=true`) order.
 
 - `t::Tuple{Real, Real}`
 """
-function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
+function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)::Tuple{Real, Real}
 
     (!rev && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev && t[1] < t[2]) && (t = (t[2], t[1]))
@@ -147,7 +147,7 @@ Calculate cumulative sum of a 3-dimensional array.
 
 - `signal_cs::Array{Float64, 3}`
 """
-function cums(signal::Array{<:Real, 3})
+function cums(signal::Array{<:Real, 3})::Array{Float64, 3}
 
     ch_n, _, ep_n = size(signal)
     signal_cs = similar(signal)
@@ -176,7 +176,7 @@ Find nearest position tuple in a matrix of positions.
 
 - `pos::Tuple{Int64, Int64}`: row and column in m
 """
-function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
+function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})::Tuple{Int64, Int64}
 
     d = zeros(size(m))
 

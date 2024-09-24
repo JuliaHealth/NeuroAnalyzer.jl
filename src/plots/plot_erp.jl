@@ -322,7 +322,7 @@ Plot topographical map ERPs.
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `t::Vector{Float64}`: time vector
-- `s::Array{Float64, 2}`: ERPs
+- `s::Matrix{Float64}`: ERPs
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
 - `clabels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
@@ -337,7 +337,7 @@ Plot topographical map ERPs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Array{Float64, 2}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)
 
     @assert size(s, 2) == length(t) "Signal length and time length must be equal."
 

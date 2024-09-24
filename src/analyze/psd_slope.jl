@@ -133,7 +133,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 Named tuple containing:
 - `lf::Array{Float64, 3}`: linear fit
-- `ls::Array{Float64, 2}`: slope of linear fit
+- `ls::Matrix{Float64}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
 function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}

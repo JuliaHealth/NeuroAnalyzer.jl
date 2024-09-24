@@ -15,7 +15,7 @@ Calculate GFP (Global Field Power).
 
 - `gfp::Float64`
 """
-function gfp(s::AbstractVector)
+function gfp(s::AbstractVector)::Float64
 
     return sum(s.^2) / length(s)
 
@@ -34,7 +34,7 @@ Calculate signal normalized for GFP (Global Field Power).
 
 - `gfp_norm::Float64`
 """
-function gfp_norm(s::AbstractVector)
+function gfp_norm(s::AbstractVector)::Float64
 
     return s ./ gfp(s)
 
@@ -56,7 +56,7 @@ Named tuple containing:
 - `gd::Float64`: global dissimilarity
 - `sc::Float64`: spatial correlation
 """
-function diss(s1::AbstractVector, s2::AbstractVector)
+function diss(s1::AbstractVector, s2::AbstractVector)::NamedTuple{(:gd, :sc), Tuple{Float64, Float64}}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -84,7 +84,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(s::AbstractArray)
+function diss(s::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -132,7 +132,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(s1::AbstractArray, s2::AbstractArray)
+function diss(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -168,7 +168,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
     ch = get_channel(obj, ch=ch)
     gd, sc = diss(obj.data[ch, :, :])
@@ -196,7 +196,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."

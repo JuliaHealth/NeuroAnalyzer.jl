@@ -17,7 +17,7 @@ Perform discrete wavelet transformation (DWT).
 
 # Returns
 
-- `dt::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+- `dt::Matrix{Float64}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
 function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")

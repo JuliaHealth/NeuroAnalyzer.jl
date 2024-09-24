@@ -9,7 +9,7 @@ Plot single-channel spectrogram.
 
 - `st::Vector{Float64}`: time
 - `sf::Vector{<:Real}`: frequencies
-- `sp::Array{Float64, 2}`: powers
+- `sp::Matrix{Float64}`: powers
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
@@ -26,7 +26,7 @@ Plot single-channel spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Array{Float64, 2}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
+function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
 
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
@@ -93,7 +93,7 @@ Plot multiple-channel spectrogram.
 
 - `sch::Vector{String}`: channel labels
 - `sf::Vector{<:Real}`: frequencies
-- `sp::Array{Float64, 2}`: powers
+- `sp::Matrix{Float64}`: powers
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
@@ -110,7 +110,7 @@ Plot multiple-channel spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Array{Float64, 2}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
+function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)
 
     @assert size(sp, 1) == length(sch) "Size of powers ($(size(sp, 1))) and channels vector ($(length(sch))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."

@@ -52,7 +52,7 @@ Calculate PLI (Phase Lag Index).
 # Returns
 
 Named tuple containing:
-- `pv::Array{Float64, 2}`: PLI value
+- `pv::Matrix{Float64}`: PLI value
 - `sd::Array{Float64, 3}`: signal difference (s2 - s1)
 - `phd::Array{Float64, 3}`: phase difference (s2 - s1)
 - `s1ph::Array{Float64, 3}`: signal 1 phase

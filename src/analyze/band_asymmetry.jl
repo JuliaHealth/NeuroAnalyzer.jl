@@ -26,10 +26,11 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
 
 # Returns
 
+Named tuple containing:
 - `ba::Float64`: band asymmetry
 - `ba_norm::Float64`: normalized band asymmetry
 """
-function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::NamedTuple{(:ba, :ba_norm), Tuple{Float64, Float64}} where {T <: CWT}
 
     ch1 = get_channel(obj, ch=ch1)
     ch2 = get_channel(obj, ch=ch2)

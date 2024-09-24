@@ -32,7 +32,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function eros(obj::NeuroAnalyzer.NEURO; ch::String, pad::Int64=0, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=true, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function eros(obj::NeuroAnalyzer.NEURO; ch::String, pad::Int64=0, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=true, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128))::NamedTuple{(:s, :f, :t), Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}}} where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 

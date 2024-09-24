@@ -14,7 +14,7 @@ Calculate amplitude difference between each channel and mean amplitude of refere
 
 - `ad::Array{Float64, 3}`
 """
-function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)))
+function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)))::Array{Float64, 3}
 
     _check_channels(s, ch)
 
@@ -32,6 +32,7 @@ function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)
     end
 
     return ad
+
 end
 
 """
@@ -48,7 +49,7 @@ Calculate amplitude difference between each channel and mean amplitude of refere
 
 - `ad::Array{Float64, 3}`
 """
-function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
 

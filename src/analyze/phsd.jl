@@ -39,7 +39,7 @@ Calculate phase spectral density.
 # Returns
 
 Named tuple containing:
-- `ph::Array{Float64, 2}`: phases
+- `ph::Matrix{Float64}`: phases
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractMatrix; fs::Int64)

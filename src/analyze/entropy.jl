@@ -12,11 +12,12 @@ Calculate entropy.
 
 # Returns
 
+Named tuple containing:
 - `ent::Float64`
 - `sent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
 """
-function entropy(s::AbstractVector)
+function entropy(s::AbstractVector)::NamedTuple{(:ent, :sent, :leent), Tuple{Float64, Float64, Float64}}
 
     n = length(s)
     maxmin_range = maximum(s) - minimum(s)
@@ -44,11 +45,11 @@ Calculate entropy.
 # Returns
 
 Named tuple containing:
-- `ent::Array{Float64, 2}`
-- `sent::Array{Float64, 2}`: Shanon entropy
-- `leent::Array{Float64, 2}`: log energy entropy
+- `ent::Matrix{Float64}`
+- `sent::Matrix{Float64}`: Shanon entropy
+- `leent::Matrix{Float64}`: log energy entropy
 """
-function entropy(s::AbstractArray)
+function entropy(s::AbstractArray)::NamedTuple{(:ent, :sent, :leent), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -80,11 +81,11 @@ Calculate entropy.
 # Returns
 
 Named tuple containing:
-- `ent::Array{Float64, 2}`
-- `sent::Array{Float64, 2}`: Shanon entropy
-- `leent::Array{Float64, 2}`: log energy entropy
+- `ent::Matrix{Float64}`
+- `sent::Matrix{Float64}`: Shanon entropy
+- `leent::Matrix{Float64}`: log energy entropy
 """
-function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:ent, :sent, :leent), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     ent, sent, leent = @views entropy(obj.data[ch, :, :])
@@ -106,7 +107,7 @@ Calculate negentropy.
 
 - `negent::Float64`
 """
-function negentropy(signal::AbstractVector)
+function negentropy(signal::AbstractVector)::Float64
 
     s = remove_dc(signal)
 
@@ -127,9 +128,9 @@ Calculate negentropy.
 
 # Returns
 
-- `ne::Array{Float64, 2}`
+- `ne::Matrix{Float64}`
 """
-function negentropy(s::AbstractArray)
+function negentropy(s::AbstractArray)::Matrix{Float64}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -158,9 +159,9 @@ Calculate negentropy.
 
 # Returns
 
-- `ne::Array{Float64, 2}`
+- `ne::Matrix{Float64}`
 """
-function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Matrix{Float64}
 
     ch = get_channel(obj, ch=ch)
     ne = @views negentropy(obj.data[ch, :, :])

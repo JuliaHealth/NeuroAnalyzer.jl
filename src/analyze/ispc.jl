@@ -94,8 +94,8 @@ Calculate ISPC (Inter-Site-Phase Clustering).
 # Returns
 
 Named tuple containing:
-- `ispc_value::Array{Float64, 2}`: ISPC value
-- `ispc_angle::Array{Float64, 2}`: ISPC angle
+- `ispc_value::Matrix{Float64}`: ISPC value
+- `ispc_angle::Matrix{Float64}`: ISPC angle
 - `s_diff::Array{Float64, 3}`: signal difference (s2 - s1)
 - `ph_diff::Array{Float64, 3}`: phase difference (s2 - s1)
 - `s1_phase::Array{Float64, 3}`: signal 1 phase

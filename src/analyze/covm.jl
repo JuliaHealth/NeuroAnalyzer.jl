@@ -12,9 +12,9 @@ Calculate covariance matrix of `s * s'`.
 
 # Returns
 
-- `cm::Matrix{Float64}`
+- `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s::AbstractVector; norm::Bool=false)
+function covm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
     if CUDA.functional() && use_cuda
@@ -43,9 +43,9 @@ Calculate covariance matrix of `s1 * s2'`.
 
 # Returns
 
-- `cm::Matrix{Float64}`
+- `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)
+function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -75,9 +75,9 @@ Calculate covariance matrix.
 
 # Returns
 
-- `cm::Matrix{Float64}`
+- `cm::Array{Float64, 3}`: covariance matrix
 """
-function covm(s::AbstractArray; norm::Bool=false)
+function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
 
     ch_n = size(s, 1)
     ep_len = size(s, 2)
@@ -126,7 +126,7 @@ Calculate covariance matrix of `signal * signal'`.
 
 - `cm::Array{Float64, 3}`: covariance matrix for each epoch
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)
+function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
 

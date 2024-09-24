@@ -14,7 +14,7 @@ Calculate correlation matrix of `s * s'`.
 
 - `cm::Matrix{Float64}`
 """
-function corm(s::AbstractVector; norm::Bool=false)
+function corm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
     if CUDA.functional() && use_cuda
@@ -45,7 +45,7 @@ Calculate correlation matrix of `s1 * s2'`.
 
 - `cm::Matrix{Float64}`
 """
-function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)
+function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -77,7 +77,7 @@ Calculate correlation matrix.
 
 - `cm::Array{Float64, 4}`
 """
-function corm(s::AbstractArray; norm::Bool=false)
+function corm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
 
     ch_n = size(s, 1)
     ep_len = size(s, 2)
@@ -125,9 +125,9 @@ Calculate correlation matrix.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: correlation matrix for each epoch
+- `cm::Array{Float64, 4}`: correlation matrix for each epoch
 """
-function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)
+function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 4}
 
     ch = get_channel(obj, ch=ch)
 
