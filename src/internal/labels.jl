@@ -1,4 +1,4 @@
-function _clean_labels(clabels::Vector{String})
+function _clean_labels(clabels::Vector{String})::Vector{String}
     l = deepcopy(clabels)
     l = replace.(l, "eeg " => "")
     l = replace.(l, "EEG " => "")
@@ -21,7 +21,7 @@ function _clean_labels(clabels::Vector{String})
     return l
 end
 
-function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)
+function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)::Vector{String}
     c = _get_component(obj, c)
     clabels = Vector{String}()
     for idx in axes(c, 1)
@@ -30,7 +30,7 @@ function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)
     return clabels
 end
 
-function _gen_clabels(c::Union{AbstractVector, AbstractArray})
+function _gen_clabels(c::Union{AbstractVector, AbstractArray})::Vector{String}
     clabels = Vector{String}()
     if ndims(c) == 1
         push!(clabels, "1")

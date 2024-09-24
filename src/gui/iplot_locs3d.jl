@@ -15,8 +15,12 @@ export iplot_locs3d
 - `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
+
+# Returns
+
+Nothing
 """
-function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
 
     p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
     win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
@@ -99,8 +103,12 @@ end
 - `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
 - `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
+
+# Returns
+
+Nothing
 """
-function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
 
     # select channels, default is all channels
     _check_channels(obj, ch, obj.header.recording[:data_type])

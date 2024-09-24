@@ -1,6 +1,6 @@
 export iview_ica
 
-function _refresh_ica_can_set(obj_reconstructed::Vector{NeuroAnalyzer.NEURO}, ica_can_set::Vector{Gtk.GtkCanvas}, ic_idx::Vector{Int64}, time1::Float64, time2::Float64)
+function _refresh_ica_can_set(obj_reconstructed::Vector{NeuroAnalyzer.NEURO}, ica_can_set::Vector{Gtk.GtkCanvas}, ic_idx::Vector{Int64}, time1::Float64, time2::Float64)::Nothing
     ica_set = Vector{Cairo.CairoSurfaceBase{UInt32}}()
     for idx in ic_idx
         p_tmp = plot_topo(obj_reconstructed[idx], ch=datatype(obj_reconstructed[1]), seg=(time1, time2), amethod=:mean, imethod=:sh, nmethod=:minmax, cb=false, large=false)
@@ -18,6 +18,7 @@ function _refresh_ica_can_set(obj_reconstructed::Vector{NeuroAnalyzer.NEURO}, ic
             Cairo.show_text(ctx_ica, "IC: $idx")
         end
     end
+    return nothing
 end
 
 """
@@ -32,9 +33,9 @@ Interactive view of embedded ("ic" and "ic_mw") ICA components.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+Nothing
 """
-function iview_ica(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function iview_ica(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
@@ -57,9 +58,9 @@ Interactive view of external ICA components.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+Nothing
 """
-function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}})
+function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}})::Nothing
 
     @assert size(ic_mw, 1) == nchannels(obj) "ICA weighting matrix size does not match number of OBJ channels."
     @assert size(ic_mw, 2) == size(ic, 1) "ICA weighting matrix size does not match number of ICA components."

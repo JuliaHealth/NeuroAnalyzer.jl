@@ -3,14 +3,14 @@ _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}) = _find_by
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}}) = obj.locs[_loc_idx(obj, ch), :label]
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}) = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
 
-function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})
+function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::DataFrame
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     @assert length(ch) == nrow(locs) "Some channels do not have locations."
     return locs
 end
 
-function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})
+function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::DataFrame
     chs = intersect(obj.locs[!, :label], ch)
     locs = Base.filter(:label => in(chs), obj.locs)
     @assert length(ch) == nrow(locs) "Some channels do not have locations."
@@ -33,7 +33,7 @@ function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{
     end
 end
 
-function _initialize_locs()
+function _initialize_locs()::DataFrame
     return DataFrame(:label=>String[],
                      :loc_radius=>Float64[],
                      :loc_theta=>Float64[],
@@ -45,18 +45,18 @@ function _initialize_locs()
                      :loc_phi_sph=>Float64[])
 end
 
-function _initialize_locs!(obj::NeuroAnalyzer.NEURO)
+function _initialize_locs!(obj::NeuroAnalyzer.NEURO)::Nothing
     locs_ch = get_channel(obj, ch=get_channel(obj, type=["meg", "grad", "mag", "eeg", "ecog", "seeg", "ieeg", "nirs_int", "nirs_od", "eog", "ref"]))
     obj.locs = DataFrame(:label=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
     return nothing
 end
 
-function _initialize_locs(obj::NeuroAnalyzer.NEURO)
+function _initialize_locs(obj::NeuroAnalyzer.NEURO)::DataFrame
     locs_ch = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
     return DataFrame(:label=>labels(obj)[locs_ch], :loc_radius=>zeros(length(locs_ch)), :loc_theta=>zeros(length(locs_ch)), :loc_x=>zeros(length(locs_ch)), :loc_y=>zeros(length(locs_ch)), :loc_z=>zeros(length(locs_ch)), :loc_radius_sph=>zeros(length(locs_ch)), :loc_theta_sph=>zeros(length(locs_ch)), :loc_phi_sph=>zeros(length(locs_ch)))
 end
 
-function _locs_round(locs::DataFrame)
+function _locs_round(locs::DataFrame)::DataFrame
     locs_new = deepcopy(locs)
     locs_new[!, :loc_radius] = round.(locs[!, :loc_radius], digits=2)
     locs_new[!, :loc_theta] = round.(locs[!, :loc_theta], digits=2)
@@ -117,7 +117,7 @@ function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Rea
     return x, y, z
 end
 
-function _locs_norm(locs::DataFrame)
+function _locs_norm(locs::DataFrame)::DataFrame
     locs_new = deepcopy(locs)
     x, y, z = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
     xyz = normalize_minmax(hcat(x, y, z))
@@ -128,7 +128,7 @@ function _locs_norm(locs::DataFrame)
     return locs_new
 end
 
-function _locs_norm!(locs::DataFrame)
+function _locs_norm!(locs::DataFrame)::Nothing
     x, y, z = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
     xyz = normalize_minmax(hcat(x, y, z))
     x = xyz[:, 1]
@@ -138,18 +138,18 @@ function _locs_norm!(locs::DataFrame)
     return nothing
 end
 
-function _locs_norm(obj::NeuroAnalyzer.NEURO)
+function _locs_norm(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     _locs_norm!(obj_new.locs)
     return obj_new
 end
 
-function _locs_norm!(obj::NeuroAnalyzer.NEURO)
+function _locs_norm!(obj::NeuroAnalyzer.NEURO)::Nothing
     _locs_norm!(obj.locs)
     return nothing
 end
 
-function _angle_quadrant(a::Real)
+function _angle_quadrant(a::Real)::Int64
     if a >= 0
         a = mod(a, 360)
         a <= 90 && (q = 1)
@@ -166,6 +166,6 @@ function _angle_quadrant(a::Real)
     return q
 end
 
-_xyz2r(x, y, z) = sqrt(x^2 + y^2 + z^2)
+_xyz2r(x::Real, y::Real, z::Real)::Float64 = sqrt(x^2 + y^2 + z^2)
 
-_midxy(x1, y1, x2, y2) = (x1 + ((x2 - x1) / 2), y1 + ((y2 - y1) / 2))
+_midxy(x1::Real, y1::Real, x2::Real, y2::Real)::Tuple{Float64, Float64} = (x1 + ((x2 - x1) / 2), y1 + ((y2 - y1) / 2))

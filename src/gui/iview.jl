@@ -18,7 +18,7 @@ Interactive view of continuous signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)
+function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
 
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
 
@@ -710,7 +710,7 @@ Interactive view of epoched signal.
 
 - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bool=true, snap::Bool=true)
+function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
 
     @assert nepochs(obj) > 1 "iview() must be used for continuous object."
     _check_epochs(obj, ep)
@@ -1223,8 +1223,12 @@ Interactive view of two continuous signals.
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `zoom::Real=10`: how many seconds are displayed in one segment
+
+# Returns
+
+Nothing
 """
-function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)
+function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
 
     (signal_len(obj1) / sr(obj1)) < zoom && (zoom = obj1.time_pts[end])
 
@@ -1589,8 +1593,12 @@ Interactive view of two epoched signals.
 - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Int64=1`: initial epoch to display
+
+# Returns
+
+Nothing
 """
-function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)
+function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)::Nothing
 
     @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
@@ -1854,8 +1862,12 @@ Interactive view of embedded or external component of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `zoom::Real=10`: how many seconds are displayed in one segment
+
+# Returns
+
+Nothing
 """
-function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::Real=10)
+function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::Real=10)::Nothing
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -2225,8 +2237,12 @@ Interactive view of embedded or external component of epoched signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Int64=1`: initial epoch to display
+
+# Returns
+
+Nothing
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Int64=1)
+function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Int64=1)::Nothing
 
     @assert nepochs(obj) > 1 "iview() must be used for continuous object."
 
@@ -2484,8 +2500,12 @@ View plot object.
 # Arguments
 
 - `p::Plots.Plot{Plots.GRBackend}`
+
+# Returns
+
+Nothing
 """
-function iview(p::Plots.Plot{Plots.GRBackend})
+function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
 
     win = GtkWindow("NeuroAnalyzer: iview()", p.attr[:size][1] + 2, p.attr[:size][2] + 2)
     set_gtk_property!(win, :border_width, 0)
@@ -2552,8 +2572,12 @@ View PNG image.
 # Arguments
 
 - `file_name::String`
+
+# Returns
+
+Nothing
 """
-function iview(file_name::String)
+function iview(file_name::String)::Nothing
 
     @assert isfile(file_name) "File $file_name cannot be opened."
     if splitext(file_name)[2] != ".png"
@@ -2608,8 +2632,12 @@ View Cairo surface object.
 # Arguments
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
+
+# Returns
+
+Nothing
 """
-function iview(c::Cairo.CairoSurfaceBase{UInt32})
+function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
 
     win = GtkWindow("NeuroAnalyzer: iview()", c.width, c.height)
     set_gtk_property!(win, :border_width, 0)

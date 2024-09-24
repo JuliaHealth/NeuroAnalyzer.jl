@@ -8,7 +8,7 @@ end
 _v2r(v::AbstractRange) = return v
 _v2r(v::Int64) = return v
 
-function _ch_rename(ch_type::String)
+function _ch_rename(ch_type::String)::String
     lowercase(ch_type) == "eeg" && return "EEG"
     lowercase(ch_type) == "ecog" && return "ECoG"
     lowercase(ch_type) == "ecog" && return "ECoG"
@@ -30,7 +30,7 @@ function _ch_rename(ch_type::String)
     return ch_type
 end
 
-function _def_ylabel(ch_type::String, u::String)
+function _def_ylabel(ch_type::String, u::String)::String
     yl = "Amplitude [$u]"
     lowercase(ch_type) == "nirs_int" && return "Intensity [$u]"
     lowercase(ch_type) == "nirs_od" && return "OD [$u]"
@@ -40,7 +40,7 @@ function _def_ylabel(ch_type::String, u::String)
     return yl
 end
 
-function _ch_units(ch_type::String)
+function _ch_units(ch_type::String)::String
     u = ""
     lowercase(ch_type) == "eeg" && return "μV"
     lowercase(ch_type) == "ieeg" && return "μV"
@@ -72,7 +72,7 @@ end
 
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String) = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
-function _ch_idx(cl::Union{String,Vector{String}}, l::Union{String,Vector{String}})
+function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})
     l == "" && return Int64[]
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
@@ -86,7 +86,7 @@ function _ch_idx(cl::Union{String,Vector{String}}, l::Union{String,Vector{String
     return unique(ch)
 end
 
-function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String,Vector{String}})
+function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
     l == "" && return Int64[]
     cl = labels(obj)
     isa(l, String) && (l = [l])

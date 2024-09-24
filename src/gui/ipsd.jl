@@ -11,8 +11,12 @@ Interactive PSD of continuous signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::String`: channel name
 - `zoom::Real=10`: how many seconds are displayed in one segment
+
+# Returns
+
+Nothing
 """
-function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)
+function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -679,8 +683,12 @@ Interactive PSD of epoched signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::String`: channel name
+
+# Returns
+
+Nothing
 """
-function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)
+function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
     @assert nepochs(obj) > 1 "ipsd() must be used for continuous object."
 

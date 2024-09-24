@@ -26,7 +26,7 @@ or
 
 - `seg::Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}`: extracted segment
 """
-function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)
+function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)::Union{Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}
 
     _check_var(shape, [:r, :c, :p], "shape")
 
