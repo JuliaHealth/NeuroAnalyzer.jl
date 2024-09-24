@@ -1,6 +1,6 @@
 export hjorth
 
-_h_mob(s::AbstractVector) = sqrt(var(derivative(s)) / var(s))
+_h_mob(s::AbstractVector)::Float64 = sqrt(var(derivative(s)) / var(s))
 
 """
     hjorth(s)
@@ -24,7 +24,7 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(s::AbstractVector)
+function hjorth(s::AbstractVector)::NamedTuple{(:h_act, :h_mob, :h_comp), Tuple{Float64, Float64, Float64}}
 
     h_act = var(s)
     h_mob = _h_mob(s)
@@ -56,7 +56,7 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(s::AbstractArray)
+function hjorth(s::AbstractArray)::NamedTuple{(:h_act, :h_mob, :h_comp), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -98,7 +98,8 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:h_act, :h_mob, :h_comp), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
+
 
     ch = get_channel(obj, ch=ch)
     h_act, h_mob, h_comp = @views hjorth(obj.data[ch, :, :])

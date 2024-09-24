@@ -15,12 +15,12 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 # Returns
 
 Named tuple containing:
-- `itpc_value::Float64`: ITPC value
-- `itpcz_value::Float64`: Rayleigh's ITPC z value
-- `itpc_angle::Float64`: ITPC angle
-- `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
+- `itpc_val::Float64`: ITPC value
+- `itpcz_val::Float64`: Rayleigh's ITPC z value
+- `itpc_ang::Float64`: ITPC angle
+- `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)
+function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Float64, Float64, Float64, Vector{Float64}}}
 
     @assert t >= 1 "t must be ≥ 1."
     @assert t <= size(s, 2) "t must be ≤ $(size(s, 2))."
@@ -38,12 +38,12 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
         _, _, _, s_phase[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
 
-    itpc_phases = @view s_phase[t, :]
-    itpc_value = abs.(mean(exp.(1im .* itpc_phases .* w)))
-    itpc_angle = angle.(mean(exp.(1im .* itpc_phases .* w)))
-    itpcz_value = ep_n * itpc_value^2
+    itpc_ph = @view s_phase[t, :]
+    itpc_val = abs.(mean(exp.(1im .* itpc_ph .* w)))
+    itpc_ang = angle.(mean(exp.(1im .* itpc_ph .* w)))
+    itpcz_val = ep_n * itpc_val^2
 
-    return (itpc_value=itpc_value, itpcz_value=itpcz_value, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
+    return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
 
 end
 
@@ -62,12 +62,12 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 # Returns
 
 Named tuple containing:
-- `itpc_value::Vector{Float64}`: ITPC or wITPC value
-- `itpcz_value::Vector{Float64}`: Rayleigh's ITPC z value
-- `itpc_angle::Vector{Float64}`: ITPC angle
-- `itpc_phases::Matrix{Float64}`: phase difference (channel2 - channel1)
+- `itpc_val::Vector{Float64}`: ITPC or wITPC value
+- `itpcz_val::Vector{Float64}`: Rayleigh's ITPC z value
+- `itpc_ang::Vector{Float64}`: ITPC angle
+- `itpc_ph::Matrix{Float64}`: phase difference (channel2 - channel1)
 """
-function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
+function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Matrix{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -76,16 +76,16 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::In
     @assert t <= epoch_len(obj) "t must be ≤ $(epoch_len(obj))."
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 
-    itpc_value = zeros(ch_n)
-    itpcz_value = zeros(ch_n)
-    itpc_angle = zeros(ch_n)
-    itpc_phases = zeros(ch_n, ep_n)
+    itpc_val = zeros(ch_n)
+    itpcz_val = zeros(ch_n)
+    itpc_ang = zeros(ch_n)
+    itpc_ph = zeros(ch_n, ep_n)
 
     Threads.@threads for ch_idx in 1:ch_n
-        @inbounds itpc_value[ch_idx], itpcz_value[ch_idx], itpc_angle[ch_idx], itpc_phases[ch_idx, :] = @views itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
+        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
     end
 
-    return (itpc_value=itpc_value, itpcz_value=itpcz_value, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
+    return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
 
 end
 
@@ -102,12 +102,12 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 # Returns
 
 Named tuple containing:
-- `itpc_values::Vector{Float64}`: ITPC values
-- `itpcz_values::Vector{Float64}`: Rayleigh's ITPC z values
-- `itpc_angles::Vector{Float64}`: ITPC angles
-- `itpc_phases::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
+- `itpc_val::Vector{Float64}`: ITPC values
+- `itpcz_val::Vector{Float64}`: Rayleigh's ITPC z values
+- `itpc_ang::Vector{Float64}`: ITPC angles
+- `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)
+function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Matrix{Float64}}}
 
     @assert size(s, 1) == 1 "s must have 1 channel."
 
@@ -118,22 +118,22 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
     @assert length(w) == ep_n "Length of w must be equal to number of epochs ($ep_n)."
 
-    itpc_phases = zeros(size(s, 2), ep_n)
-    itpc_values = zeros(size(s, 2))
-    itpc_angles = zeros(size(s, 2))
-    itpcz_values = zeros(size(s, 2))
+    itpc_ph = zeros(size(s, 2), ep_n)
+    itpc_val = zeros(size(s, 2))
+    itpc_ang = zeros(size(s, 2))
+    itpcz_val = zeros(size(s, 2))
 
     @inbounds for ep_idx in 1:ep_n
-        _, _, _, itpc_phases[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
+        _, _, _, itpc_ph[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
 
-    for idx in axes(itpc_phases, 1)
-        itpc_values[idx] = @views abs.(mean(exp.(1im .* itpc_phases[idx, :] .* w)))
-        itpc_angles[idx] = @views angle.(mean(exp.(1im .* itpc_phases[idx, :] .* w)))
-        itpcz_values[idx] = @views ep_n * itpc_values[idx]^2
+    for idx in axes(itpc_ph, 1)
+        itpc_val[idx] = @views abs.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
+        itpc_ang[idx] = @views angle.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
+        itpcz_val[idx] = @views ep_n * itpc_val[idx]^2
     end
 
-    return (itpc_values=itpc_values, itpcz_values=itpcz_values, itpc_angles=itpc_angles, itpc_phases=itpc_phases)
+    return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
 
 end
 
@@ -155,10 +155,10 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 Named tuple containing:
 - `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
-- `itpcz_s::Array{Float64, 3}`: spectrogram itpcz_value values
+- `itpcz_s::Array{Float64, 3}`: spectrogram of ITPCZ values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
+function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{(:itpc_s, :itpcz_s, :itpc_f), Tuple{Array{Float64, 3}, Array{Float64, 3}, Vector{Float64}}}
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))

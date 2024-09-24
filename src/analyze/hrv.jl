@@ -12,10 +12,11 @@ Detect heart rate variability (HRV). Requires ECG channel (which will be automat
 
 # Returns
 
+Named tuple containing:
 - `nn_seg::Vector{Float64}`: list of NN segments [msec]
 - `r_idx::Vector{Float64}`: index of R peaks
 """
-function hrv_detect(obj::NeuroAnalyzer.NEURO)
+function hrv_detect(obj::NeuroAnalyzer.NEURO)::NamedTuple{(:nn_seg, :r_idx), Tuple{Vector{Float64}, Vector{Float64}}}
 
     @assert "ecg" in obj.header.recording[:channel_type] "OBJ does not contain ECG channel."
     ch = get_channel(obj, type="ecg")
@@ -28,7 +29,7 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)
 
     _info("Detected NN segments: $(length(nn_seg))")
 
-    return nn_seg, r_idx
+    return (nn_seg=nn_seg, r_idx=r_idx)
 
 end
 
@@ -55,7 +56,7 @@ Named tuple containing:
 - `nn20::Float64`, the number of pairs of successive NNs that differ by more than 20 ms
 - `pnn20::Float64`, the proportion of NN20 divided by total number of NNs
 """
-function hrv_analyze(nn_seg::Vector{Float64})
+function hrv_analyze(nn_seg::Vector{Float64})::NamedTuple{(:menn, :mdnn, :vnn, :sdnn, :rmssd, :sdsd, :nn50, :pnn50, :nn20, :pnn20), Tuple{Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64}}
 
     nn_diff = diff(nn_seg)
 

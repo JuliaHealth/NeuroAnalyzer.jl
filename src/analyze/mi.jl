@@ -14,7 +14,7 @@ Calculate mutual information.
 
 - `mutual_information::Float64`
 """
-function mutual_information(s1::AbstractVector, s2::AbstractVector)
+function mutual_information(s1::AbstractVector, s2::AbstractVector)::Float64
 
     return get_mutual_information(s1, s2)
 
@@ -32,9 +32,9 @@ Calculate mutual information (channels of `s1` vs channels of `s2`).
 
 # Returns
 
-- `mutual_information::Array{Float64}`
+- `m::Array{Float64, 3}`
 """
-function mutual_information(s1::AbstractArray, s2::AbstractArray)
+function mutual_information(s1::AbstractArray, s2::AbstractArray)::Array{Float64}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -64,8 +64,9 @@ Calculate mutual information (channels vs channels).
 
 # Returns
 
+- `m::Array{Float64, 3}`
 """
-function mutual_information(s::AbstractArray)
+function mutual_information(s::AbstractArray)::Array{Float64, 3}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -105,9 +106,9 @@ Calculate mutual information between channels.
 
 # Returns
 
-- `mutual_information::Array{Float64, 3}`
+- `m::Array{Float64, 3}`
 """
-function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -150,7 +151,7 @@ Calculate mutual information between two channels.
 
 - `m::Array{Float64, 3}`
 """
-function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::Array{Float64, 3}
 
     # check channels
     ch1 = get_channel(obj1, ch=ch1)

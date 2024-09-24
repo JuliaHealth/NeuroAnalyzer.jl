@@ -22,7 +22,7 @@ Calculate partial auto-correlation.
 
 If you get `ERROR: PosDefException: matrix is not positive definite; Cholesky factorization failed.`, try lowering `l` value or change method to `:yw`.
 """
-function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, method::Symbol=:yw)
+function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
 
     _check_var(method, [:reg, :yw], "method")
 
@@ -66,7 +66,7 @@ Calculate partial auto-correlation.
 
 - `pac::Matrix{Float64}`
 """
-function pacor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, method::Symbol=:yw)
+function pacor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
 
     ep_n = size(s, 2)
 
@@ -98,7 +98,7 @@ Calculate partial auto-correlation.
 
 - `pac::Matrix{Float64}`
 """
-function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)
+function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -136,7 +136,7 @@ Named tuple containing:
 - `pac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, method::Symbol=:yw)
+function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, method::Symbol=:yw)::NamedTuple{(:pac, :l), Tuple{Array{Float64, 3}, Vector{Float64}}}
 
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 

@@ -17,7 +17,7 @@ Calculate phase difference between signals.
 Named tuple containing:
 - `phd::Vector{Float64}`: phase differences in radians
 """
-function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=false)
+function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=false)::Vector{Float64}
 
     if h
         _, _, _, ph1 = hspectrum(s1, pad=pad)
@@ -52,7 +52,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 - `phd::Array{Float64, 3}`
 """
-function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)::Array{Float64, 3}
 
     _check_var(avg, [:phase, :signal], "avg")
 
@@ -130,7 +130,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 - `phd::Array{Float64, 3}`
 """
-function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     phd = @views phdiff(obj.data[ch, :, :], avg=avg, pad=pad, h=h)
