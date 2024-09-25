@@ -32,7 +32,7 @@ Convert Cartesian coordinates to polar.
 - `radius::Float64`
 - `theta::Float64`
 """
-function cart2pol(x::Real, y::Real)
+function cart2pol(x::Real, y::Real)::Tuple{Float64, Float64}
 
     radius = hypot(x, y)
     theta = atand(y, x)
@@ -58,7 +58,7 @@ Convert spherical coordinates to Cartesian.
 - `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
 - `phi::Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
-function cart2sph(x::Real, y::Real, z::Real)
+function cart2sph(x::Real, y::Real, z::Real)::Tuple{Float64, Float64, Float64}
 
     # radius = sqrt(x^2 + y^2 + z^2)
     radius = hypot(x, y, z)
@@ -87,7 +87,7 @@ Convert polar coordinates to Cartesian.
 - `x::Float64`
 - `y::Float64`
 """
-function pol2cart(radius::Real, theta::Real)
+function pol2cart(radius::Real, theta::Real)::Tuple{Float64, Float64}
 
     x = radius * cosd(theta)
     y = radius * sind(theta)
@@ -112,7 +112,7 @@ Convert polar coordinates to spherical.
 - `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
 - `phi::Float64`: spherical azimuth angle, the angle with respect to the z axis (elevation), in degrees
 """
-function pol2sph(radius::Real, theta::Real)
+function pol2sph(radius::Real, theta::Real)::Tuple{Float64, Float64, Float64}
 
     return round(radius, digits=2), round(theta, digits=2), 0
 
@@ -135,7 +135,7 @@ Convert spherical coordinates to Cartesian.
 - `y::Float64`
 - `z::Float64`
 """
-function sph2cart(radius::Real, theta::Real, phi::Real)
+function sph2cart(radius::Real, theta::Real, phi::Real)::Tuple{Float64, Float64, Float64}
 
     x = radius * sind(90 - phi) * cosd(theta)
     y = radius * sind(90 - phi) * sind(theta)
@@ -161,7 +161,7 @@ Convert spherical coordinates to polar.
 - `radius::Real`: polar radius, the distance from the origin to the point
 - `theta::Real`: polar horizontal angle, the angle in the xy plane with respect to the x axis, in degrees
 """
-function sph2pol(radius::Real, theta::Real, phi::Real)
+function sph2pol(radius::Real, theta::Real, phi::Real)::Tuple{Float64, Float64}
 
     radius = radius * abs(cosd(phi))
 
@@ -182,7 +182,7 @@ Convert polar coordinates to Cartesian.
 
 - `locs_new::DataFrame`
 """
-function locs_pol2cart(locs::DataFrame)
+function locs_pol2cart(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -210,8 +210,12 @@ Convert polar coordinates to Cartesian.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_pol2cart!(locs::DataFrame)
+function locs_pol2cart!(locs::DataFrame)::Nothing
 
     locs[!, :] = locs_pol2cart(locs)[!, :]
 
@@ -232,7 +236,7 @@ Convert polar coordinates to spherical.
 
 - `locs_new::DataFrame`
 """
-function locs_pol2sph(locs::DataFrame)
+function locs_pol2sph(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -260,8 +264,12 @@ Convert polar coordinates to spherical.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_pol2sph!(locs::DataFrame)
+function locs_pol2sph!(locs::DataFrame)::Nothing
 
     locs[!, :] = locs_pol2sph(locs)[!, :]
 
@@ -282,7 +290,7 @@ Convert spherical coordinates to Cartesian.
 
 - `locs_new::DataFrame`
 """
-function locs_sph2cart(locs::DataFrame)
+function locs_sph2cart(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -312,8 +320,12 @@ Convert spherical coordinates to Cartesian.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_sph2cart!(locs::DataFrame)
+function locs_sph2cart!(locs::DataFrame)::Nothing
 
     locs[!, :] = locs_sph2cart(locs)[!, :]
 
@@ -334,7 +346,7 @@ Convert spherical coordinates to polar.
 
 - `locs_new::DataFrame`
 """
-function locs_sph2pol(locs::DataFrame)
+function locs_sph2pol(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -362,8 +374,12 @@ Convert Cartesian coordinates to polar.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_sph2pol!(locs::DataFrame)
+function locs_sph2pol!(locs::DataFrame)::Nothing
 
     locs[!, :] = locs_sph2pol(locs)[!, :]
 
@@ -384,7 +400,7 @@ Convert Cartesian coordinates to spherical.
 
 - `locs_new::DataFrame`
 """
-function locs_cart2sph(locs::DataFrame)
+function locs_cart2sph(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -413,8 +429,12 @@ Convert Cartesian coordinates to spherical.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_cart2sph!(locs::DataFrame)
+function locs_cart2sph!(locs::DataFrame)::Nothing
 
     locs[!, :] = locs_cart2sph(locs)[!, :]
 
@@ -435,7 +455,7 @@ Convert Cartesian coordinates to polar.
 
 - `locs_new::DataFrame`
 """
-function locs_cart2pol(locs::DataFrame)
+function locs_cart2pol(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -462,8 +482,12 @@ Convert Cartesian coordinates to polar.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_cart2pol!(locs::DataFrame)
+function locs_cart2pol!(locs::DataFrame)::Nothing
 
     locs[!, :] = locs_cart2pol(locs)[!, :]
 

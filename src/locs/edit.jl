@@ -25,7 +25,7 @@ Edit electrode.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
+function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     ch = get_channel(obj_new, ch=ch)
@@ -71,8 +71,12 @@ Edit electrode.
 - `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 - `name::String=""`: channel name
 - `type::String=""`: channel type
+
+# Returns
+
+Nothing
 """
-function edit_locs!(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
+function edit_locs!(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")::Nothing
 
     obj_new = edit_locs(obj, ch=ch, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
     obj.locs = obj_new.locs

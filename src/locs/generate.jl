@@ -14,7 +14,7 @@ Generate spherical coordinates according to 10/10 system.
 
 - `locs_new::DataFrame`
 """
-function locs_generate(locs::DataFrame)
+function locs_generate(locs::DataFrame)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -434,8 +434,12 @@ Generate spherical coordinates according to 10/5 system.
 # Arguments
 
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function locs_generate!(locs::DataFrame)
+function locs_generate!(locs::DataFrame)::Nothing
 
     locs_tmp = locs_generate(locs)
 
@@ -465,7 +469,7 @@ Generate spherical coordinates according to 10/5 system.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function locs_generate(obj::NeuroAnalyzer.NEURO)
+function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     locs = locs_generate(obj.locs)
@@ -486,8 +490,12 @@ Generate spherical coordinates according to 10/5 system.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+Nothing
 """
-function locs_generate!(obj::NeuroAnalyzer.NEURO)
+function locs_generate!(obj::NeuroAnalyzer.NEURO)::Nothing
 
     obj_new = locs_generate(obj)
     obj.history = obj_new.history

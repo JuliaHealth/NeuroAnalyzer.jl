@@ -27,7 +27,7 @@ Electrode locations:
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
+function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEURO
 
     no_match = setdiff(labels(obj), locs[!, :label])
     length(no_match) > 0 && _warn("Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.")
@@ -67,8 +67,12 @@ Electrode locations:
 
 - `obj::NeuroAnalyzer.NEURO`
 - `locs::DataFrame`
+
+# Returns
+
+Nothing
 """
-function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
+function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::Nothing
 
     obj_new = add_locs(obj, locs=locs)
     obj.history = obj_new.history

@@ -20,7 +20,7 @@ Scale channel locations.
 
 - `locs_new::DataFrame`
 """
-function locs_scale(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_scale(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -55,8 +55,12 @@ Scale channel locations.
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+Nothing
 """
-function locs_scale!(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_scale!(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
     locs[!, :] = locs_scale(locs, r=r, polar=polar, cart=cart, spherical=spherical)[!, :]
 
@@ -80,7 +84,7 @@ Normalize channel locations to fit the unit sphere.
 
 - `locs_new::DataFrame`
 """
-function locs_normalize(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_normalize(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -127,8 +131,12 @@ Normalize channel locations to fit the unit sphere.
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+Nothing
 """
-function locs_normalize!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_normalize!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
     locs[!, :] = locs_normalize(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 

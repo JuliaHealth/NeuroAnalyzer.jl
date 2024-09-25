@@ -17,7 +17,7 @@ Center locs at (0, 0).
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::NeuroAnalyzer.NEURO
 
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)
@@ -73,8 +73,12 @@ Center locs at X=0.
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+Nothing
 """
-function locs_center!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_center!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
     locs[!, :] = locs_center(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 

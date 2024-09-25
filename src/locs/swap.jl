@@ -17,7 +17,7 @@ Swap channel locations x and y axes.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
 
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)
@@ -57,8 +57,12 @@ Swap channel locations x and y axes.
 - `polar::Bool=true`: modify polar coordinates
 - `cart::Bool=true`: modify Cartesian coordinates
 - `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+Nothing
 """
-function locs_swapxy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)
+function locs_swapxy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
     locs[!, :] = locs_swapxy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
 
