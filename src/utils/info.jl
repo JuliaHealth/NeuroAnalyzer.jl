@@ -139,15 +139,15 @@ Return epoch length.
 
 # Returns
 
-- `el::Int64`
+- `len::Int64`
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)
 
     @assert ndims(obj.data) == 3 "Record data is either a vector or a matrix."
 
-    el = size(obj.data, 2)
+    len = size(obj.data, 2)
 
-    return el
+    return len
 
 end
 

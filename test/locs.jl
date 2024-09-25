@@ -2,77 +2,75 @@ using NeuroAnalyzer
 using Test
 using DataFrames
 
-ntests = 21
-
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 locs = import_locs(joinpath(testfiles_path, "standard-10-20-cap19-elmiko.ced"))
 
-@info "Test 1/$ntests: add_locs()"
+@info "Test: add_locs()"
 eeg_tmp = add_locs(eeg, locs=locs)
 @test nrow(eeg_tmp.locs) == 23
 add_locs!(eeg, locs=locs)
 @test nrow(eeg.locs) == 23
 
-@info "Test 2/$ntests: locs_details()"
+@info "Test: locs_details()"
 @test locs_details(eeg, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 
-@info "Test 3/$ntests: cart2pol()"
+@info "Test: cart2pol()"
 @test cart2pol(1.0, 1.0) == (1.41, 45.0)
 
-@info "Test 4/$ntests: pol2cart()"
+@info "Test: pol2cart()"
 @test pol2cart(1.41, 45.0) == (1, 1)
 
-@info "Test 5/$ntests: sph2cart()"
+@info "Test: sph2cart()"
 @test sph2cart(1.73, 45.0, 35.27) == (1.0, 1.0, 1.0)
 
-@info "Test 6/$ntests: cart2sph()"
+@info "Test: cart2sph()"
 @test cart2sph(1.0, 1.0, 1.0) == (1.73, 45.0, 35.26)
 
-@info "Test 7/$ntests: sph2pol()"
+@info "Test: sph2pol()"
 @test sph2pol(1.73, 45.0, 35.26) == (1.41, 45.0)
 
-@info "Test 8/$ntests: locs_sph2cart()"
+@info "Test: locs_sph2cart()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_tmp = locs_sph2cart(locs_tmp)
 @test locs_tmp[1, :loc_x] == 1.0
 
-@info "Test 9/$ntests: locs_sph2cart!()"
+@info "Test: locs_sph2cart!()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_sph2cart!(locs_tmp)
 @test locs_tmp[1, :loc_x] == 1.0
 
-@info "Test 8/$ntests: locs_cart2sph()"
+@info "Test: locs_cart2sph()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_x] = 1
 locs_tmp[1, :loc_y] = 0
 locs_tmp = locs_cart2sph(locs_tmp)
 @test locs_tmp[1, :loc_theta_sph] == 0.0
 
-@info "Test 9/$ntests: locs_cart2sph!()"
+@info "Test: locs_cart2sph!()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_x] = 1
 locs_tmp[1, :loc_y] = 0
 locs_cart2sph!(locs_tmp)
 @test locs_tmp[1, :loc_theta_sph] == 0.0
 
-@info "Test 10/$ntests: locs_cart2pol()"
+@info "Test: locs_cart2pol()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_x] = 1
 locs_tmp[1, :loc_y] = 0
 locs_tmp = locs_cart2pol(locs_tmp)
 @test locs_tmp[1, :loc_theta] == 0.0
 
-@info "Test 11/$ntests: locs_cart2pol!()"
+@info "Test: locs_cart2pol!()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_x] = 1
 locs_tmp[1, :loc_y] = 0
 locs_cart2pol!(locs_tmp)
 @test locs_tmp[1, :loc_theta] == 0.0
 
-@info "Test 12/$ntests: locs_sph2pol()"
+@info "Test: locs_sph2pol()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_tmp[1, :loc_phi_sph] = 0
@@ -80,7 +78,7 @@ locs_tmp = locs_sph2pol(locs_tmp)
 @test locs_tmp[1, :loc_radius] == 1.0
 @test locs_tmp[1, :loc_theta] == 0.0
 
-@info "Test 13/$ntests: locs_sph2pol!()"
+@info "Test: locs_sph2pol!()"
 locs_tmp = deepcopy(locs)
 locs_tmp[1, :loc_theta_sph] = 0
 locs_tmp[1, :loc_phi_sph] = 0
@@ -88,7 +86,7 @@ locs_sph2pol!(locs_tmp)
 @test locs_tmp[1, :loc_radius] == 1.0
 @test locs_tmp[1, :loc_theta] == 0.0
 
-@info "Test 14/$ntests: edit_locs()"
+@info "Test: edit_locs()"
 eeg_tmp = deepcopy(eeg)
 @test locs_details(eeg_tmp, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = -0.31, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 eeg_tmp = edit_locs(eeg_tmp, ch="Fp1", x=0.5)
@@ -96,36 +94,36 @@ eeg_tmp = edit_locs(eeg_tmp, ch="Fp1", x=0.5)
 edit_locs!(eeg_tmp, ch="Fp1", x=0.5)
 @test locs_details(eeg_tmp, ch="Fp1", out=false) == (label = "Fp1", theta_pl = 108.0, radius_pl = 1.0, x = 0.5, y = 0.95, z = -0.03, theta_sph = 108.02, radius_sph = 1.0, phi_sph = -1.72)
 
-@info "Test 15/$ntests: locs_flipx()"
+@info "Test: locs_flipx()"
 @test locs[1, :loc_x] == -0.31
 locs2 = locs_flipx(locs)
 @test locs2[1, :loc_x] == 0.31
 
-@info "Test 16/$ntests: locs_flipy()"
+@info "Test: locs_flipy()"
 @test locs[1, :loc_y] == 0.95
 locs2 = locs_flipy(locs)
 @test locs2[1, :loc_y] == -0.95
 
-@info "Test 17/$ntests: locs_flipz()"
+@info "Test: locs_flipz()"
 @test locs[1, :loc_z] == -0.03
 locs2 = locs_flipz(locs)
 @test locs2[1, :loc_z] == 0.03
 
-@info "Test 18/$ntests: locs_scale()"
+@info "Test: locs_scale()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_radius_sph] == 1.0
 locs2 = locs_scale(locs, r=1.2)
 @test locs2[1, :loc_radius] == 1.2
 @test locs2[1, :loc_radius_sph] == 1.2
 
-@info "Test 19/$ntests: locs_normalize()"
+@info "Test: locs_normalize()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_radius_sph] == 1.0
 locs2 = locs_normalize(locs)
 @test locs2[1, :loc_radius] == 1.0
 @test locs2[1, :loc_radius_sph] == 1.0
 
-@info "Test 20/$ntests: locs_swapxy()"
+@info "Test: locs_swapxy()"
 @test locs[1, :loc_theta] == 108.0
 @test locs2[1, :loc_theta_sph] == 108.02
 locs2 = locs_swapxy(locs)

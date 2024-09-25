@@ -1,6 +1,6 @@
 export plot_compose
 export plot_empty
-export add_locs
+export add_plot_locs
 
 """
     plot_compose(p; <keyword arguments>)
@@ -57,7 +57,7 @@ function plot_empty()
 end
 
 """
-    add_locs(p1, p2; <keyword arguments>)
+    add_plot_locs(p1, p2; <keyword arguments>)
 
 Add locations to a plot. Locations are placed in the top right corner. If `file_name` is provided, the plot is saved as PNG file.
 
@@ -72,7 +72,7 @@ Add locations to a plot. Locations are placed in the top right corner. If `file_
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")
+function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")
 
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])
