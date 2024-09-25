@@ -471,6 +471,7 @@ include("utils/make_table.jl")
 include("utils/labels.jl")
 include("utils/play.jl")
 include("utils/wavelets.jl")
+include("utils/to_df.jl")
 # study
 include("study/create.jl")
 include("study/info.jl")
