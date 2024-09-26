@@ -16,7 +16,7 @@ Convert Plots.Plot to CairoSurfaceBase.
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function plot2canvas(p::Plots.Plot{Plots.GRBackend})
+function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UInt32}
 
     p_size = p.attr[:size]
     c = CairoRGBSurface(p_size[1], p_size[2])
@@ -42,12 +42,12 @@ Resize CairoSurfaceBase by a factor.
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+- `c_new::Cairo.CairoSurfaceBase{UInt32}`
 """
-function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)
+function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)::Cairo.CairoSurfaceBase{UInt32}
 
-    c_tmp = CairoRGBSurface(ceil(Int64, c.width * r) - 1, round(Int64, c.height * r) - 1)
-    cr = CairoContext(c_tmp)
+    c_new = CairoRGBSurface(ceil(Int64, c.width * r) - 1, round(Int64, c.height * r) - 1)
+    cr = CairoContext(c_new)
     Cairo.scale(cr, r, r)
     # Cairo.set_source_rgb(cr, 256, 256, 256)
     # Cairo.rectangle(cr, 0, 0, ceil(Int64, c.width * r) + 10, ceil(Int64, c.height * r) + 10)
@@ -55,7 +55,7 @@ function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)
     Cairo.set_source_surface(cr, c, 0, 0)
     Cairo.paint(cr)
 
-    return c_tmp
+    return c_new
 
 end
 
@@ -73,7 +73,7 @@ Resize CairoSurfaceBase to make space for another canvas
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_topmargin_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32})
+function add_topmargin_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32})::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height + c2.height)
     cr = CairoContext(c)
@@ -106,7 +106,7 @@ Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, 
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}; x::Int64, y::Int64, title::String="", view::Bool=true, file_name::String="")
+function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}; x::Int64, y::Int64, title::String="", view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
 
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])

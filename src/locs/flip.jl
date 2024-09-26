@@ -224,4 +224,3 @@ function locs_flipz!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
     return nothing
 
 end
-

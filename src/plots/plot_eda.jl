@@ -21,7 +21,7 @@ Plot EDA.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -77,7 +77,7 @@ Plot EDA.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(s, 1)
     @assert size(s, 2) == length(t) "Length of EDA values must equal length of time points vector."
@@ -156,7 +156,7 @@ Butterfly plot of EDA.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eda_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)
+function plot_eda_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -259,7 +259,7 @@ Plot EDA amplitude mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eda_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_eda_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 

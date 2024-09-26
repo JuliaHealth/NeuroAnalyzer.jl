@@ -25,7 +25,7 @@ Plot coherence.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -112,7 +112,7 @@ Plot multi-channel coherence.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(coh, 1)
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
@@ -259,7 +259,7 @@ Plot coherence mean and ±95% CI of averaged channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin], "ax")
@@ -377,7 +377,7 @@ Butterfly PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")

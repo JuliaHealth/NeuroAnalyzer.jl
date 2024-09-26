@@ -18,7 +18,7 @@ Plot dipole in 3D.
 
 Brain volume is within -1.0 to +1.0 (X-, Y- and Z-axis)
 """
-function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
+function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)::Plots.Plot{Plots.GRBackend}
 
     _wip()
 

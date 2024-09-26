@@ -38,7 +38,7 @@ Preview channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
     pal = mono ? :grays : :darktest
@@ -518,7 +518,7 @@ end
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -667,7 +667,7 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
 
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
 

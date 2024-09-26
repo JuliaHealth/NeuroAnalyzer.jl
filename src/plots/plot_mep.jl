@@ -23,7 +23,7 @@ Plot MEP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
+function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -98,7 +98,7 @@ Butterfly plot of MEP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)
+function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -212,7 +212,7 @@ Plot MEP amplitude mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
+function plot_mep_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -308,7 +308,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)
+function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
@@ -383,7 +383,7 @@ Plot MEP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, peaks_detect::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, kwargs...)
+function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, peaks_detect::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _check_datatype(obj, "mep")
 

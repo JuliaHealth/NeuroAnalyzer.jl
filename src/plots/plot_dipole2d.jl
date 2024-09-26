@@ -17,7 +17,7 @@ Plot dipole in 2D.
 
 Brain volume is within -1.0 to +1.0 (X-, Y- and Z-axis)
 """
-function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)
+function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::Plots.Plot{Plots.GRBackend}
 
     _wip()
 

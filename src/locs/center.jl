@@ -60,6 +60,7 @@ function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
     _locs_remove_nans!(locs_new)
 
     return locs_new
+
 end
 
 """

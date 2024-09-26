@@ -25,7 +25,7 @@ Plot PHSD (phase spectral density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_phsd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -101,7 +101,7 @@ Plot multi-channel PHSD (phase spectral density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_phsd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -210,7 +210,7 @@ Plot PHSD mean and ±95% CI of averaged channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_phsd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax,[:linlin, :loglin], "ax")
@@ -309,7 +309,7 @@ Butterfly PHSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_phsd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -396,7 +396,7 @@ Plot 3-d waterfall PHSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
+function plot_phsd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -528,7 +528,7 @@ Plot topographical map PHSDs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)
+function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -659,7 +659,7 @@ Plot phase spectral density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(ax, [:linlin, :loglin], "ax")
@@ -882,7 +882,7 @@ Plot phase spectral density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)
+function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, units::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(ax, [:linlin, :loglin], "ax")

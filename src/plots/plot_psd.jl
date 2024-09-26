@@ -26,7 +26,7 @@ Plot PSD (power spectrum density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
+function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -99,7 +99,7 @@ Plot multi-channel PSD (power spectrum density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
+function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -227,7 +227,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
+function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -322,7 +322,7 @@ Butterfly PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)
+function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -405,7 +405,7 @@ Plot 3-d waterfall PSD plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol, kwargs...)
+function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -544,7 +544,7 @@ Plot topographical map PSDs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, kwargs...)
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(ch) == nrow(locs) "Some channels do not have locations."
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -704,7 +704,7 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
+function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")
@@ -1043,7 +1043,7 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...) where {T <: CWT}
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh, :cwt], "method")

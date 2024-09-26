@@ -37,7 +37,7 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)
+function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))

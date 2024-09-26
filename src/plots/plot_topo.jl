@@ -33,7 +33,7 @@ Plot topographical view.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -312,7 +312,7 @@ Topographical plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -420,7 +420,7 @@ Topographical plot of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])

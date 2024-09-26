@@ -21,7 +21,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)
+function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
@@ -47,12 +47,13 @@ Return an empty plot, useful for filling matrices of plots.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_empty()
+function plot_empty()::Plots.Plot{Plots.GRBackend}
 
-    return Plots.plot(grid=false,
-                      framestyle=:none,
-                      border=:none,
-                      margins=0Plots.px)
+    p = Plots.plot(grid=false,
+                   framestyle=:none,
+                   border=:none,
+                   margins=0Plots.px)
+    return p
 
 end
 
@@ -72,7 +73,7 @@ Add locations to a plot. Locations are placed in the top right corner. If `file_
 
 - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")
+function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
 
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])

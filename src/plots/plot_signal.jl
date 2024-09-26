@@ -23,7 +23,7 @@ Plot amplitude of single-channel signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     # prepare plot
     plot_size = (1200, 400)
@@ -88,7 +88,7 @@ Plot amplitude of multi-channel signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(s, 1)
 
@@ -220,7 +220,7 @@ Plot amplitude of single-channel signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -280,7 +280,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -356,7 +356,7 @@ Butterfly plot of `s` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false, kwargs...)
+function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -434,7 +434,7 @@ Plot amplitude of multi-channel signals.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(s1, 1)
 
@@ -565,7 +565,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)::Plots.Plot{Plots.GRBackend}
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
@@ -831,7 +831,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -995,7 +995,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)
+function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
