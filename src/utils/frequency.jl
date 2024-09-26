@@ -17,7 +17,7 @@ Convert frequency in Hz to rad/s.
 
 - `f_rads::Float64`
 """
-function hz2rads(f::Real)
+function hz2rads(f::Real)::Float64
 
     return 2pi * f
 
@@ -36,7 +36,7 @@ Convert frequency in rad/s to Hz.
 
 - `f_rads::Float64`
 """
-function rads2hz(f::Real)
+function rads2hz(f::Real)::Float64
 
     return f / 2pi
 
@@ -55,7 +55,7 @@ Convert cycle length in ms to frequency.
 
 - `f::Float64`: frequency in Hz
 """
-function t2f(t::Real)
+function t2f(t::Real)::Float64
 
     @assert t > 0 "t must be > 0."
 
@@ -76,7 +76,7 @@ Convert frequency in Hz to cycle length in ms.
 
 - `f::Float64`: cycle length in ms
 """
-function f2t(f::Real)
+function f2t(f::Real)::Float64
 
     @assert f > 0 "f must be > 0."
 
@@ -98,7 +98,7 @@ Return vector of frequencies and Nyquist frequency for time vector.
 - `hz::Vector{Float64}`
 - `nf::Float64`
 """
-function freqs(t::Union{AbstractVector, AbstractRange})
+function freqs(t::Union{AbstractVector, AbstractRange})::Tuple{Vector{Float64}, Float64}
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
@@ -134,7 +134,7 @@ Return vector of frequencies and Nyquist frequency for signal.
 - `hz::Vector{Float64`: signal vector
 - `nf::Float64`
 """
-function freqs(s::AbstractVector, fs::Int64)
+function freqs(s::AbstractVector, fs::Int64)::Tuple{Vector{Float64}, Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -163,7 +163,7 @@ Named tuple containing:
 - `hz::Vector{Float64}`
 - `nf::Float64`
 """
-function freqs(obj::NeuroAnalyzer.NEURO)
+function freqs(obj::NeuroAnalyzer.NEURO)::NamedTuple{(:hz, :nf), Tuple{Vector{Float64}, Float64}}
 
     hz, nf = freqs(obj.data[1, :, 1], sr(obj))
 

@@ -65,10 +65,10 @@ Compare two 3-dimensional arrays (e.g. two spectrograms), using permutation base
 # Returns
 
 Named tuple containing:
-- `zmap::Array{Float64, 3}`: array of Z-values
-- `bm::Array{Float64, 3}`: binarized mask of statistically significant positions
+- `zmap::Matrix{Float64}`: array of Z-values
+- `bm::BitMatrix`: binarized mask of statistically significant positions
 """
-function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)::NamedTuple{(:zmap, :bm), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
+function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)::NamedTuple{(:zmap, :bm), Tuple{Matrix{Float64}, BitMatrix}}
 
     @assert size(a1) == size(a2) "Both arrays must have the same size"
     @assert perm_n > 0 "perm_n must be > 0."
@@ -77,7 +77,6 @@ function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, p
 
     spec_diff = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
     zval = abs(norminvcdf(p))
-    perm_n = 1000
     spec_all = cat(a1, a2, dims=3)
     perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
     ep_n = size(spec_all, 3)

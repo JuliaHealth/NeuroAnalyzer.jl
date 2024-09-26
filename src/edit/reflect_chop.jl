@@ -15,9 +15,9 @@ Expand signal by adding reflected signal before the signal and after the signal,
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
+function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))::NeuroAnalyzer.NEURO
 
     # add up to one epoch
     n > epoch_len(obj) && (n = epoch_len(obj))
@@ -52,8 +52,12 @@ Expand signal by adding reflected signal before the signal and after the signal,
 
 - `obj::NeuroAnalyzer.NEURO`
 - `n::Int64=sr(obj)`: number of samples to add, default is 1 second
+
+# Returns
+
+Nothing
 """
-function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
+function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))::nothing
 
     obj_new = reflect(obj, n=n)
     obj.header = obj_new.header
@@ -79,9 +83,9 @@ Reduce signal by removing reflected signal before the signal and after the signa
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
+function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))::NeuroAnalyzer.NEURO
 
     # add up to one epoch
     n > epoch_len(obj) && (n = epoch_len(obj))
@@ -115,8 +119,12 @@ Reduce signal by removing reflected signal before the signal and after the signa
 
 - `obj::NeuroAnalyzer.NEURO`
 - `n::Int64=sr(obj)`: number of samples to remove, default is 1 second
+
+# Returns
+
+Nothing
 """
-function chop!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
+function chop!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))::Nothing
 
     obj_new = chop(obj, n=n)
     obj.header = obj_new.header

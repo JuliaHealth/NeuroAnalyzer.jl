@@ -16,7 +16,7 @@ Filter using Savitzky-Golay filter.
 
 - `s_filtered::Vector{Float64}`
 """
-function filter_sg(s::AbstractVector; order::Int64=6, window::Int64=11)
+function filter_sg(s::AbstractVector; order::Int64=6, window::Int64=11)::Vector{Float64}
 
     @assert !(window < 1 || window > length(s)) "window must be in [1, $(length(s))]."
     @assert isodd(window) "window must be an odd number."
@@ -44,7 +44,7 @@ Filter using Savitzky-Golay filter.
 
 - `s_filtered::Array{Float64, 3}`: convoluted signal
 """
-function filter_sg(s::AbstractArray; order::Int64=6, window::Int64=11)
+function filter_sg(s::AbstractArray; order::Int64=6, window::Int64=11)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -76,9 +76,9 @@ Filter using Savitzky-Golay filter.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)
+function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -102,8 +102,11 @@ Filter using Savitzky-Golay filter.
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
+# Returns
+
+Nothing
 """
-function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)
+function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)::Nothing
 
     obj_new = filter_sg(obj, ch=ch, order=order, window=window)
     obj.data = obj_new.data

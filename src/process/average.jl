@@ -11,9 +11,9 @@ Average all channels.
 
 # Returns
 
-- `average::AbstractArray`
+- `average::Array{Float64, 3}`
 """
-function average(s::AbstractArray)::AbstractArray
+function average(s::AbstractArray)::Array{Float64, 3}
 
     _chk3d(s)
     return mean(s, dims=1)
@@ -32,9 +32,9 @@ Averages two signals.
 
 # Returns
 
-- `average::Vector{Float64}`
+- `average::Array{Float64, 3}`
 """
-function average(s1::AbstractArray, s2::AbstractArray)::Vector{Float64}
+function average(s1::AbstractArray, s2::AbstractArray)::Array{Float64, 3}
 
     _chk3d(s1)
     _chk3d(s2)

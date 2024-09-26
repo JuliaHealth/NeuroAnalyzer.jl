@@ -18,7 +18,7 @@ Detect outliers.
 
 - `o::Vector{Bool}`: index of outliers
 """
-function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
+function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
 
     _check_var(method, [:iqr, :z, :g], "method")
     o = zeros(Bool, length(x))
@@ -74,7 +74,7 @@ Perform Grubbs test for outlier.
 
 - `g::Bool`: true: outlier exists, false: there is no outlier
 """
-function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
+function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)::Bool
 
     n = length(x)
     df = n - 2
@@ -99,4 +99,3 @@ function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
     return g < h ? false : true
 
 end
-

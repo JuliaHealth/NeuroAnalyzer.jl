@@ -182,7 +182,7 @@ BLAS.set_num_threads(Sys.CPU_THREADS)
 
 include("utils/na.jl")
 
-function __init__()
+function __init__()::Nothing
 
     global use_cuda = @load_preference("use_cuda", false)
     global progress_bar = @load_preference("progress_bar", true)
@@ -212,6 +212,8 @@ function __init__()
     else
         mkpath(plugins_path)
     end
+
+    return nothing
 
 end
 

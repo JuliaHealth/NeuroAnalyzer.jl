@@ -15,7 +15,7 @@ Convert time in seconds to sample number.
 
 - `t2s::Int64`: sample number
 """
-function t2s(t::T, fs::Int64) where {T<:Real}
+function t2s(t::T, fs::Int64)::Int64 where {T<:Real}
 
     @assert t >= 0 "t must be ≥ 0."
 
@@ -37,7 +37,7 @@ Convert sample number to time in seconds.
 
 - `s2t::Float64`: time in s
 """
-function s2t(s::Int64, fs::Int64)
+function s2t(s::Int64, fs::Int64)::Float64
 
     @assert s > 0 "s must be > 0."
 
@@ -59,7 +59,7 @@ Convert time in seconds to sample number.
 
 - `t2s::Int64`: time in samples
 """
-function t2s(obj::NeuroAnalyzer.NEURO; t::T) where {T<:Real}
+function t2s(obj::NeuroAnalyzer.NEURO; t::T)::Int64 where {T<:Real}
 
     return floor(Int64, t * sr(obj)) + 1
 
@@ -79,7 +79,7 @@ Convert time in samples to seconds.
 
 - `s2t::Float64`: time in seconds
 """
-function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)
+function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)::Float64
 
     return round(s / sr(obj), digits=2)
 

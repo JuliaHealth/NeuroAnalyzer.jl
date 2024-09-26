@@ -40,7 +40,7 @@ Named tuple containing:
 - `bm::Matrix{Bool}`: matrix of bad channels × epochs
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
+function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)::NamedTuple{(:bm, :be), Tuple{Matrix{Bool}, Vector{Int64}}}
 
     @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
     @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
@@ -428,8 +428,12 @@ Detect bad channels and epochs and update the `:bad_channel` field in the OBJ he
 - `ransac_tr::Float64=0.4`: threshold (0.0 to 1.0) ratio of uncorrelated channels
 - `ransac_t::Float64=100.0`: threshold distance of a sample point to the regression hyperplane to determine if it fits the model well
 - `amp_t::Float64=400.0`: two-sided rejection amplitude threshold (± 400 μV)
+
+# Returns
+
+Nothing
 """
-function detect_bad!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)
+function detect_bad!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)::Nothing
 
     bm, _ = detect_bad(obj, ch=ch, method=method, w=w, flat_tol=flat_tol, flat_fr=flat_fr, p=p, tc=tc, tkeo_method=tkeo_method, z=z, ransac_r=ransac_r, ransac_tr=ransac_tr, ransac_t=ransac_t, amp_t=amp_t)
     obj.header.recording[:bad_channel] = bm

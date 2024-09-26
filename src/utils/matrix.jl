@@ -12,13 +12,13 @@ Pad matrix with zeros to make it square.
 
 # Arguments
 
-- `m::Matrix{<:Number}`
+- `m::AbstractMatrix`
 
 # Returns
 
-- `m::Matrix{<:Number}`
+- `m::AbstractMatrix`
 """
-function m_pad0(m::Matrix{<:Number})
+function m_pad0(m::AbstractMatrix)::AbstractMatrix
 
     nr, nc = size(m)
 
@@ -49,7 +49,7 @@ Generates matrix sorting index.
 
 - `idx::Matrix{Int64}`
 """
-function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
+function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)::AbstractMatrix
 
     @assert dims in [1, 2] "dims must be 1 or 2."
 
@@ -77,16 +77,16 @@ Sorts matrix using sorting index.
 
 # Arguments
 
-- `m::Matrix`
+- `m::AbstractMatrix`
 - `m_idx::Vector{Int64}`: sorting index
 - `rev::Bool=false`: reverse sort
 - `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
 
 # Returns
 
-- `m_sorted::Matrix`
+- `m_sorted::AbstractMatrix`
 """
-function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
+function m_sort(m::AbstractMatrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)::AbstractMatrix
 
     @assert dims in [1, 2] "dims must be 1 or 2."
 
@@ -122,7 +122,7 @@ Normalize matrix.
 
 - `m_norm::AbstractArray`
 """
-function m_norm(m::AbstractArray)
+function m_norm(m::AbstractArray)::AbstractArray
 
     return m ./ (size(m, 2) - 1)
 
@@ -141,9 +141,9 @@ Reshape vector into matrix using fixed segment length and overlapping.
 
 # Returns
 
-- `m::Matrix{eltype(x)}`
+- `m::AbstractMatrix`
 """
-function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)
+function vec2mat(x::AbstractVector; wlen::Int64, woverlap::Int64)::AbstractMatrix
 
     @assert woverlap < length(x) "woverlap must be < $(length(x))."
     @assert wlen >= 1 "wlen must be ≥ 1."
@@ -173,9 +173,9 @@ Reshape array into matrix.
 
 # Returns
 
-- `m::Matrix{eltype(x)}`
+- `m::AbstractMatrix`
 """
-function arr2mat(x::AbstractArray)
+function arr2mat(x::AbstractArray)::AbstractMatrix
 
     @assert size(x, 1) == 1 "First dimension of x must be 1."
 

@@ -1,6 +1,5 @@
-function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
+function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)::Array{Float64, 3}
 
-    _chk3d(s)
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
     ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
     ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
@@ -24,7 +23,7 @@ function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep
     return epochs
 end
 
-function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
+function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)::Array{Float64, 3}
 
     _chk3d(s)
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
@@ -46,7 +45,7 @@ function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_
     return epochs
 end
 
-function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)
+function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)::Tuple{Array{Float64, 3}, DataFrame}
 
     _chk3d(s)
     if size(s, 3) > 1
@@ -112,7 +111,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
 
 end
 
-function _epochs_tps(obj::NeuroAnalyzer.NEURO)
+function _epochs_tps(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
     # return time borders of epochs
     tps = zeros(2, nepochs(obj))
     # epoch start
@@ -122,7 +121,7 @@ function _epochs_tps(obj::NeuroAnalyzer.NEURO)
     return tps
 end
 
-function _markers_epochs(obj::NeuroAnalyzer.NEURO)
+function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     # return epoch numbers of markers
     mrk_start = obj.markers[!, :start]
     mrk_epoch = zeros(Int64, length(mrk_start))

@@ -1,12 +1,12 @@
-function _v2r(v::Vector{Int64})
+function _v2r(v::Vector{Int64})::Union{AbstractRange, Vector{Int64}}
     if sort(v) == sort(v)[1]:sort(v)[end]
         return sort(v)[1]:sort(v)[end]
     else
         return v
     end
 end
-_v2r(v::AbstractRange) = return v
-_v2r(v::Int64) = return v
+_v2r(v::AbstractRange)::AbstractRange = return v
+_v2r(v::Int64)::Int64 = return v
 
 function _ch_rename(ch_type::String)::String
     lowercase(ch_type) == "eeg" && return "EEG"
@@ -70,9 +70,9 @@ function _ch_units(ch_type::String)::String
     return u
 end
 
-_ch_units(obj::NeuroAnalyzer.NEURO, ch::String) = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
+_ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
-function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})
+function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})::Vector{Int64}
     l == "" && return Int64[]
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
@@ -86,7 +86,7 @@ function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{Stri
     return unique(ch)
 end
 
-function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
+function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})::Vector{Int64}
     l == "" && return Int64[]
     cl = labels(obj)
     isa(l, String) && (l = [l])
@@ -153,7 +153,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})
     return unique(ch)
 end
 
-function _set_channel_types(clabels::Vector{String}, default::String="other")
+function _set_channel_types(clabels::Vector{String}, default::String="other")::Vector{String}
     channel_names = ["af3", "af4", "af7", "af8", "afz", "c1", "c2", "c3", "c4", "c5", "c6", "cp1", "cp2", "cp3", "cp4", "cp5", "cp6", "cpz", "cz", "f1", "f10", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fc1", "fc2", "fc3", "fc4", "fc5", "fc6", "fcz", "fp1", "fp2", "fpz", "ft10", "ft7", "ft8", "ft9", "fz", "nz", "o1", "o2", "oz", "p1", "p10", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "po3", "po4", "po7", "po8", "poz", "pz", "t10", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "tp10", "tp7", "tp8", "tp9"]
     ref_channels = ["a1", "a2", "m1", "m2", "pg1", "pg2"]
     eog_channel = ["e", "e1", "e2"]
@@ -218,7 +218,7 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")
     return channel_type
 end
 
-function _sort_channels(ch_t::Vector{String})
+function _sort_channels(ch_t::Vector{String})::Vector{Int64}
     ch_order = deepcopy(ch_t)
     replace!(ch_order, "eeg" => "3")
     replace!(ch_order, "seeg" => "3")

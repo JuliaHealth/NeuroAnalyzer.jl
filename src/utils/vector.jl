@@ -20,7 +20,7 @@ Return the positions of the value in the vector.
 - `idx::Int64`
 - `d::Real`: the difference between `y` and `x[idx]`
 """
-function vsearch(y::T, x::AbstractVector; acc::Bool=false) where {T<:Real}
+function vsearch(y::T, x::AbstractVector; acc::Bool=false)::Tuple{Int64, Real} where {T<:Real}
 
     d, idx = findmin(abs.(x .- y))
 
@@ -44,7 +44,7 @@ Return the positions of the value in the vector.
 - `idx::Int64`
 - `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
 """
-function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
+function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)::Tuple{Int64, Real}
 
     @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
 
@@ -56,6 +56,7 @@ function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
     end
 
     return acc ? (convert.(Int64, idx), d) : idx
+
 end
 
 """
@@ -72,7 +73,7 @@ Splits vector into pieces.
 
 - `x::Vector{AbstractVector}`
 """
-function vsplit(x::AbstractVector, n::Int64=1)
+function vsplit(x::AbstractVector, n::Int64=1)::Vector{AbstractVector}
 
     @assert n >= 1 "n must be ≥ 1."
     @assert length(x) % n == 0 "Length of x must be a multiple of n."
@@ -98,10 +99,10 @@ Find minimum value of one vector and return value at its index from another vect
 
 # Returns
 
-- `value::eltype(y)`
+- `value::Real`
 - `idx::Int64`
 """
-function minat(x::AbstractVector, y::AbstractVector)
+function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
     @assert length(x) == length(x) "x and y length must be equal."
 
@@ -124,10 +125,10 @@ Find maximum value of one vector and return value at its index from another vect
 
 # Returns
 
-- `value::eltype(y)`
+- `value::Real`
 - `idx::Int64`
 """
-function maxat(x::AbstractVector, y::AbstractVector)
+function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
     @assert length(x) == length(x) "x and y length must be equal."
 
@@ -151,10 +152,10 @@ Reduce two vectors at indices of the second vector being multiplications of a co
 
 # Returns
 
-- `x_new::Vector{eltype(x)}`
-- `f_new::Vector{eltype(f)}`
+- `x_new::AbstractVector`
+- `f_new::AbstractVector`
 """
-function vreduce(x::AbstractVector, f::AbstractVector; n::Float64=0.5)
+function vreduce(x::AbstractVector, f::AbstractVector; n::Float64=0.5)::Tuple{AbstractVector, AbstractVector}
 
     @assert length(x) == length(f) "Length of both vectors must be equal."
 

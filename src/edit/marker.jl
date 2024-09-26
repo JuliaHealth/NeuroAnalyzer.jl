@@ -16,8 +16,12 @@ Show markers.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+Nothing
 """
-function view_marker(obj::NeuroAnalyzer.NEURO)
+function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
 
     @assert _has_markers(obj) "OBJ has no markers."
 
@@ -51,9 +55,9 @@ Delete marker.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
+function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
 
     @assert _has_markers(obj) "OBJ has no markers."
 
@@ -77,8 +81,12 @@ Delete marker.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `n::Int64`: marker number
+
+# Returns
+
+Nothing
 """
-function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)
+function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
 
     obj_new = delete_marker(obj, n=n)
     obj.history = obj_new.history
@@ -104,9 +112,9 @@ Add marker.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)
+function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)::NeuroAnalyzer.NEURO
 
     @assert start > 0 "start must be > 0."
     @assert len > 0 "len must be > 0."
@@ -136,8 +144,12 @@ Add marker.
 - `len::Real=1.0`: marker length in seconds
 - `desc::String`: marker description
 - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
+
+# Returns
+
+Nothing
 """
-function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)
+function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)::Nothing
 
     obj_new = add_marker(obj, id=id, start=start, len=len, desc=desc, ch=ch)
     obj.history = obj_new.history
@@ -164,9 +176,9 @@ Edit marker.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)
+function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)::NeuroAnalyzer.NEURO
 
     @assert _has_markers(obj) "OBJ has no markers."
     @assert start > 0 "start must be > 0."
@@ -200,8 +212,12 @@ Edit marker.
 - `len::Real=1`: marker length in seconds
 - `desc::String`: marker description
 - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
+
+# Returns
+
+Nothing
 """
-function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)
+function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, desc::String, ch::Int64=0)::Nothing
 
     obj_new = edit_marker(obj, n=n, id=id, start=start, len=len, desc=desc, ch=ch)
     obj.history = obj_new.history
@@ -226,9 +242,9 @@ Convert event channel to markers.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function channel2marker(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", desc::String="")
+function channel2marker(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", desc::String="")::NeuroAnalyzer.NEURO
 
     stim_ch = get_channel(obj, type="mrk")
     ch = get_channel(obj, ch=ch)[1]
@@ -303,8 +319,12 @@ Convert event channel to markers.
 - `v::Real=1.0`: event channel value interpreted as an event
 - `id::String`: prefix for marker ID; default is "mrk_"
 - `desc::String=""`: prefix for marker description; default is based on event channel name (e.g. "stim1_")
+
+# Returns
+
+Nothing
 """
-function channel2marker!(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", desc::String="")
+function channel2marker!(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", desc::String="")::Nothing
 
     obj_new = channel2marker(obj, ch=ch, v=v, id=id, desc=desc)
     obj.history = obj_new.history

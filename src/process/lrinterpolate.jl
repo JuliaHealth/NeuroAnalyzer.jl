@@ -17,7 +17,7 @@ Interpolate channel using linear regression.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
+function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)[1]
     channels = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
@@ -78,9 +78,9 @@ Interpolate channel using linear regression.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+Nothing
 """
-function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))
+function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))::Nothing
 
     obj_new = lrinterpolate_channel(obj, ch=ch, ep=ep, ep_ref=ep_ref)
     obj.data = obj_new.data

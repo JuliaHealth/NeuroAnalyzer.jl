@@ -13,7 +13,7 @@ function _chk4d(a::AbstractArray)::Nothing
     return nothing
 end
 
-function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)
+function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)::Nothing
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."
     if range !== nothing
@@ -22,22 +22,23 @@ function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, 
     return nothing
 end
 
-function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
     isa(ch, Int64) && (ch = [ch])
     [@assert !(ch_idx < 1 || ch_idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]." for ch_idx in ch]
+    return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::Nothing
     _check_channels(get_channel(obj, type="all"), ch)
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}, type::String)
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}, type::String)::Nothing
     _check_channels(get_channel(obj, type=type), ch)
     return nothing
 end
 
-function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}})
+function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}})::Nothing
     isa(ch_ref, String) && (ch_ref = [ch_ref])
     isa(ch, String) && (ch = [ch])
     @assert length(ch) > 0 "ch is empty."
@@ -46,14 +47,14 @@ function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String
     return nothing
 end
 
-function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
     for idx in epoch
         @assert !(idx < 1 || idx > nepochs(obj)) "epoch must be in [1, $(nepochs(obj))]."
     end
     return nothing
 end
 
-function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
+function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
     c, _ = _get_component(obj, c)
     if ndims(c) == 1
         @assert cc == 1 "cc must be 1."
@@ -65,7 +66,7 @@ function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vecto
     return nothing
 end
 
-function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
+function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
     if ndims(c) == 1
         @assert cc == 1 "cc must be in 1."
     else
@@ -76,7 +77,7 @@ function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
+function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
     from = seg[1]
     to = seg[2]
     @assert to > from "to must be > from."
@@ -87,7 +88,7 @@ function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
     return nothing
 end
 
-function _check_segment_topo(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
+function _check_segment_topo(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
     from = seg[1]
     to = seg[2]
     @assert to >= from "to must be >= from."
@@ -98,7 +99,7 @@ function _check_segment_topo(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
+function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)::Nothing
     @assert from >= 0 "from must be ≥ 0."
     @assert to >= 0 "to must be ≥ 0."
     @assert to >= from "to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."
@@ -107,7 +108,7 @@ function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
     return nothing
 end
 
-function _check_segment(signal::AbstractVector, from::Int64, to::Int64)
+function _check_segment(signal::AbstractVector, from::Int64, to::Int64)::Nothing
     @assert from > 0 "from must be > 0."
     @assert to > 0 "to must be > 0."
     @assert to >= from "to must be ≥ $from."
@@ -116,7 +117,7 @@ function _check_segment(signal::AbstractVector, from::Int64, to::Int64)
     return nothing
 end
 
-function _check_var(s1::Symbol, s2::Vector{Symbol}, var::String)
+function _check_var(s1::Symbol, s2::Vector{Symbol}, var::String)::Nothing
     if length(s2) > 1
         m = var * " must be "
         for idx in 1:(length(s2) - 2)
@@ -131,7 +132,7 @@ function _check_var(s1::Symbol, s2::Vector{Symbol}, var::String)
     return nothing
 end
 
-function _check_var(s1::String, s2::Vector{String}, var::String)
+function _check_var(s1::String, s2::Vector{String}, var::String)::Nothing
     if length(s2) > 1
         m = var * " must be "
         for idx in 1:(length(s2) - 2)
@@ -146,25 +147,26 @@ function _check_var(s1::String, s2::Vector{String}, var::String)
     return nothing
 end
 
-function _check_markers(markers::Vector{String}, marker::String)
+function _check_markers(markers::Vector{String}, marker::String)::Nothing
     @assert marker in markers "Marker: $marker not found in markers."
     return nothing
 end
 
-function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)
+function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)::Nothing
     @assert marker in unique(obj.markers[!, :description]) "Marker: $marker not found in markers."
     return nothing
 end
 
-function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{String}})
+function _check_datatype(obj::NeuroAnalyzer.NEURO, type::Union{String, Vector{String}})::Nothing
     if type isa String
         @assert datatype(obj) == type "This function works only for $(uppercase(string(type))) objects."
     else
         @assert obj.header.recording[:data_type] in type "This function works only for $(replace(uppercase(string(type)), "["=>"", "]"=>"", ":"=>"")) objects."
     end
+    return nothing
 end
 
-function _check_svec(s::String)
+function _check_svec(s::String)::Bool
     s = replace(s, " "=>"")
     s = replace(s, "["=>"", count=1)
     s = replace(s, "]"=>"", count=1)
@@ -178,7 +180,7 @@ function _check_svec(s::String)
     end
 end
 
-function _check_srange(s::String)
+function _check_srange(s::String)::Bool
     s = replace(s, " "=>"")
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [":"]) || return false
@@ -190,7 +192,7 @@ function _check_srange(s::String)
     end
 end
 
-function _check_stuplei(s::String)
+function _check_stuplei(s::String)::Bool
     s = replace(s, " "=>"")
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","], ["("], [")"]) || return false
@@ -202,7 +204,7 @@ function _check_stuplei(s::String)
     end
 end
 
-function _check_stuplef(s::String)
+function _check_stuplef(s::String)::Bool
     s = replace(s, " "=>"")
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), ["."], [","], ["("], [")"]) || return false
@@ -214,14 +216,14 @@ function _check_stuplef(s::String)
     end
 end
 
-function _check_sfloat(s::String)
+function _check_sfloat(s::String)::Bool
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), ["."]) || return false
     end
     return true
 end
 
-function _check_sint(s::String)
+function _check_sint(s::String)::Bool
     for idx in eachindex(s)
         string(s[idx]) in string.(0:9) || return false
     end

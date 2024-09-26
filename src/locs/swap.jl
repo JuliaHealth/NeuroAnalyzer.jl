@@ -15,7 +15,7 @@ Swap channel locations x and y axes.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
 

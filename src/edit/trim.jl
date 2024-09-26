@@ -97,7 +97,7 @@ Trim signal by removing parts of the signal.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false, remove_epochs::Bool=true)::NeuroAnalyzer.NEURO
 
@@ -140,6 +140,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
     push!(obj_new.history, "trim(OBJ, seg=$seg, remove_epochs=$remove_epochs)")
 
     return obj_new
+
 end
 
 """
@@ -153,8 +154,12 @@ Trim signal by removing parts of the signal.
 - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
 - `inverse::Bool=false`: if true, keep the segment
 - `remove_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
+
+# Returns
+
+Nothing
 """
-function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false, remove_epochs::Bool=true)
+function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false, remove_epochs::Bool=true)::Nothing
 
     obj_new = trim(obj, seg=seg, inverse=inverse, remove_epochs=remove_epochs)
     obj.data = obj_new.data

@@ -37,7 +37,7 @@ Calculate Z-scores for each value of the vector `x`.
 
 - `z::Vector{Float64}`
 """
-function z_score(x::AbstractVector)
+function z_score(x::AbstractVector)::Vector{Float64}
 
     m = mean(x)
     s = std(x)
@@ -62,7 +62,7 @@ Named tuple containing:
 - `k1::Float64`: sqrt(n)
 - `k2::Float64`: 1 + 3.222 * log10(n)
 """
-function k_categories(n::Int64)
+function k_categories(n::Int64)::NamedTuple{(:k1, :k2), Tuple{Float64, Float64}}
 
     k1 = sqrt(n)
     k2 = 1 + 3.222 * log10(n)
@@ -84,7 +84,7 @@ Calculate standard error of the mean.
 
 - `s::Float64`
 """
-function sem(x::AbstractVector)
+function sem(x::AbstractVector)::Float64
 
     s = std(x) / sqrt(length(x))
 
@@ -105,7 +105,7 @@ Calculate range.
 
 - `r::Float64`
 """
-function rng(x::AbstractArray)
+function rng(x::AbstractArray)::Float64
 
     r = maximum(x) - minimum(x)
 
@@ -126,7 +126,7 @@ Calculate margin of error for given sample size `n`.
 
 - `m::Float64`
 """
-function moe(n::Int64)
+function moe(n::Int64)::Float64
 
     m = 1 / sqrt(n)
 
@@ -147,7 +147,7 @@ Calculate margin of error.
 
 - `m::Float64`
 """
-function moe(x::AbstractArray)
+function moe(x::AbstractArray)::Float64
 
     n = length(x)
     m = 1 / sqrt(n)
@@ -171,7 +171,7 @@ Calculate probability of exactly `r` successes in `n` trials.
 
 - `bp::Float64`: probability
 """
-function binom_prob(p::Float64, r::Int64, n::Int64)
+function binom_prob(p::Float64, r::Int64, n::Int64)::Float64
 
     bp = binomial(n, r) * (p^r) * (1 - p)^(n - r)
 
@@ -195,7 +195,7 @@ Named tuple containing:
 - `m::Float64`: mean
 - `s::Float64`: standard deviation
 """
-function binom_stat(p::Float64, n::Int64)
+function binom_stat(p::Float64, n::Int64)::NamedTuple{(:m, :s), Tuple{Float64, Float64}}
 
     m = n * p
     s = sqrt(n * p * (1 - p))
@@ -217,7 +217,7 @@ Calculate coefficient of variation for a mean.
 
 - `cvar_mean::Float64`
 """
-function cvar_mean(x::AbstractVector)
+function cvar_mean(x::AbstractVector)::Float64
 
     return std(x) / mean(x)
 
@@ -236,7 +236,7 @@ Calculate coefficient of variation for a median.
 
 - `cvar_median::Float64`
 """
-function cvar_median(x::AbstractVector)
+function cvar_median(x::AbstractVector)::Float64
 
     return ((quantile(x, 0.75) - quantile(x, 0.25)) / 2) / median(x)
 
@@ -254,9 +254,9 @@ Calculate confidence interval for a median.
 
 # Returns
 
-- `ci_median::Tuple(Float64, Float64)`
+- `ci_median::Tuple{Float64, Float64}`
 """
-function ci_median(x::AbstractVector; ci::Float64=0.95)
+function ci_median(x::AbstractVector; ci::Float64=0.95)::Tuple{Float64, Float64}
 
     x_new = sort(x)
     n = length(x)
@@ -282,9 +282,9 @@ Calculate confidence interval for a median.
 
 # Returns
 
-- `ci_median::Tuple(Float64, Float64)`
+- `ci_median::Tuple{Float64, Float64}`
 """
-function ci_median(x::AbstractArray; ci::Float64=0.95)
+function ci_median(x::AbstractArray; ci::Float64=0.95)::Tuple{Float64, Float64}
 
     x_new = sort(vec(median(x, dims=1)))
     n = size(x, 2)
@@ -311,9 +311,9 @@ Calculate confidence interval for a proportion.
 
 # Returns
 
-- `ci_prop::Tuple(Float64, Float64)`
+- `ci_prop::Tuple{Float64, Float64}`
 """
-function ci_prop(p::Float64, n::Int64; ci::Float64=0.95)
+function ci_prop(p::Float64, n::Int64; ci::Float64=0.95)::Tuple{Float64, Float64}
 
     z = ci2z(ci)
     q = 1 - p
@@ -337,9 +337,9 @@ Calculate confidence interval for a correlation coefficient.
 
 # Returns
 
-- `ci_r::Tuple(Float64, Float64)`
+- `ci_r::Tuple{Float64, Float64}`
 """
-function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)
+function ci_r(x::AbstractVector, y::AbstractVector; ci::Float64=0.95)::Tuple{Float64, Float64}
 
     @assert length(x) == length(y) "Both vectors must have the same length."
     @assert length(x) > 3 "Length of both vectors must be > 3."
@@ -378,9 +378,9 @@ Calculate confidence interval for a correlation coefficient.
 
 # Returns
 
-- `ci_r::Tuple(Float64, Float64)`
+- `ci_r::Tuple{Float64, Float64}`
 """
-function ci_r(; r::Float64, n::Int64, ci::Float64=0.95)
+function ci_r(; r::Float64, n::Int64, ci::Float64=0.95)::Tuple{Float64, Float64}
 
     z_r = 1 / sqrt(n - 3)
 
@@ -416,7 +416,7 @@ Test if two correlation coefficients are significantly different.
 
 - `z::Float64`: z score
 """
-function r1r2_test(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)
+function r1r2_test(; r1::Float64, r2::Float64, n1::Int64, n2::Int64)::Float64
 
     r_values = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39, 0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.6, 0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.69, 0.7, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.8, 0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99]
     z_values = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.121, 0.131, 0.141, 0.151, 0.161, 0.172, 0.182, 0.192, 0.203, 0.213, 0.224, 0.234, 0.245, 0.255, 0.266, 0.277, 0.288, 0.299, 0.31, 0.321, 0.332, 0.343, 0.354, 0.365, 0.377, 0.389, 0.4, 0.412, 0.424, 0.436, 0.448, 0.46, 0.472, 0.485, 0.497, 0.51, 0.523, 0.536, 0.549, 0.563, 0.577, 0.59, 0.604, 0.618, 0.633, 0.648, 0.663, 0.678, 0.693, 0.709, 0.725, 0.741, 0.758, 0.775, 0.793, 0.811, 0.829, 0.848, 0.867, 0.887, 0.908, 0.929, 0.95, 0.973, 0.996, 1.02, 1.045, 1.071, 1.099, 1.127, 1.157, 1.188, 1.221, 1.256, 1.293, 1.333, 1.376, 1.422, 1.472, 1.528, 1.589, 1.658, 1.738, 1.832, 1.946, 2.092, 2.298, 2.647]
@@ -447,7 +447,7 @@ Calculate slope of the line crossing two points.
 
 - `s::Float64`: slope
 """
-function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})
+function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
     s = (p2[2] - p1[2]) / (p2[1] - p1[1])
 
@@ -469,7 +469,7 @@ Calculate distance between two points.
 
 - `d::Float64`: distance
 """
-function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})
+function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
     d = sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
 
@@ -499,7 +499,7 @@ Named tuple containing:
 - `x_t::Int64`: thresholded matrix
 - `n::Int64`: number of elements
 """
-function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)
+function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::NamedTuple{(:x_t, :n), Tuple{Int64, Int64}}
 
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 
@@ -546,7 +546,7 @@ Critical region for one tailed probability:
 
 Critical region for two tailed probability: `(-∞ , -t] ∪ [t, ∞)`
 """
-function crit_t(df::Real, alpha::Float64=0.05; twosided::Bool=false)
+function crit_t(df::Real, alpha::Float64=0.05; twosided::Bool=false)::Float64
 
     if twosided
         t = quantile(TDist(df), 1 - (alpha / 2))
@@ -571,7 +571,7 @@ Calculate critical z score.
 
 - `z::Float64`
 """
-function ci2z(ci::Float64)
+function ci2z(ci::Float64)::Float64
 
     z = quantile(Distributions.Normal(0, 1), ci)
 
@@ -593,7 +593,7 @@ Calculate z score for p value.
 
 - `z::Float64`
 """
-function p2z(p::Float64=0.05; twosided::Bool=false)
+function p2z(p::Float64=0.05; twosided::Bool=false)::Float64
 
     if twosided
         z = quantile(Distributions.Normal(0.0, 1.0), 1 - p / 2)
@@ -619,7 +619,7 @@ Calculate probability for a given z value.
 
 - `p::Float64`
 """
-function z2p(z::Real; twosided::Bool=false)
+function z2p(z::Real; twosided::Bool=false)::Float64
 
     if twosided
         p = 2 * ccdf(Distributions.Normal(0.0, 1.0), z)
@@ -646,7 +646,7 @@ Calculate proportion of elements below or above a given statistic value.
 
 - `p::Float64`
 """
-function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol=:g)
+function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol=:g)::Float64
 
     _check_var(type, [:g, :l], "type")
 
@@ -670,7 +670,7 @@ Calculate indices of full-width half-maximum points of a Gaussian-like distribut
 - `p_idx::Int64`: peak
 - `p2_idx::Int64`: post-peak half-maximum point
 """
-function fwhm(s::AbstractVector)
+function fwhm(s::AbstractVector)::Tuple{Int64, Int64, Int64}
 
     s = normalize_n(s)
 
@@ -699,7 +699,7 @@ Calculate cosine similarity.
 
 - `cs::Float64`
 """
-function cosine_similarity(s1::AbstractVector, s2::AbstractVector)
+function cosine_similarity(s1::AbstractVector, s2::AbstractVector)::Float64
 
     @assert length(s1) == length(s2) "Both vectors must have the same length."
 
@@ -722,7 +722,7 @@ Calculate standard deviation of the signal data (along epochs).
 
 - `s::Matrix{Float64}`
 """
-function Statistics.std(obj::NeuroAnalyzer.NEURO)
+function Statistics.std(obj::NeuroAnalyzer.NEURO)::Matrix{Float64}
 
     @assert nepochs(obj) > 1 "OBJ must have > 1 epoch."
 
@@ -751,7 +751,7 @@ Permute signal data.
 
 - `s_new::Matrix{Float64}`
 """
-function permute(s::AbstractVector, n::Int64)
+function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
     @assert n > 0 "n must have > 0 epoch."
 
@@ -781,7 +781,7 @@ Permute signal data.
 
 - `s_new::Matrix{Float64}`
 """
-function permute(s::AbstractArray, n::Int64)
+function permute(s::AbstractArray, n::Int64)::Matrix{Float64}
 
     @assert n > 0 "n must have > 0 epoch."
     @assert ndims(s) <= 3 "permute() only works for arrays of ≤ 3 dimensions."

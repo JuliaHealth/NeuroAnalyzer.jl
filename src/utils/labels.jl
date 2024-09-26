@@ -14,7 +14,7 @@ Return paired labels.
 
 - `l_paired::Vector{String}`: paired labels
 """
-function paired_labels(l::Vector{String}; unq::Bool=true)
+function paired_labels(l::Vector{String}; unq::Bool=true)::Vector{String}
 
     if unq
         l_paired = repeat([""], length(l)^2 - length(l))
@@ -53,7 +53,7 @@ Return paired labels.
 
 - `l_paired::Vector{String}`: paired labels
 """
-function paired_labels(l1::Vector{String}, l2::Vector{String})
+function paired_labels(l1::Vector{String}, l2::Vector{String})::Vector{String}
 
     @assert length(l1) == length(l2) "l1 and l2 length must be equal."
     l_paired = l1 .* "-" .* l2

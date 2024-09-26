@@ -14,9 +14,9 @@ Pad row(s) with zeros. Works with 1-, 2- and 3-dimensional arrays.
 
 # Returns
 
-- `pad0::Union{AbstractVector, AbstractArray`
+- `pad0::Union{AbstractVector, AbstractArray}`
 """
-function pad0(x::Union{AbstractVector, AbstractArray}, n::Int64)
+function pad0(x::Union{AbstractVector, AbstractArray}, n::Int64)::Union{AbstractVector, AbstractArray}
 
     @assert n >= 0 "n must be ≥ 0."
     @assert ndims(x) <= 3 "pad0() works only for 1-, 2- or 3-dimension array."
@@ -38,9 +38,9 @@ Pad row(s) with zeros to the nearest power of 2 length. Works with 1-, 2- and 3-
 
 # Returns
 
-- `pad2::Union{AbstractVector, AbstractArray`
+- `pad2::Union{AbstractVector, AbstractArray}`
 """
-function pad2(x::Union{AbstractVector, AbstractArray})
+function pad2(x::Union{AbstractVector, AbstractArray})::Union{AbstractVector, AbstractArray}
 
     @assert ndims(x) <= 3 "pad2() works only for 1-, 2- or 3-dimension array."
 
@@ -65,9 +65,9 @@ Pad row(s) with mean value(s). Works with 1-, 2- and 3-dimensional arrays.
 
 # Returns
 
-- `padm::Union{AbstractVector, AbstractArray`
+- `padm::Union{AbstractVector, AbstractArray}`
 """
-function padm(x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol=:all)
+function padm(x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol=:all)::Union{AbstractVector, AbstractArray}
 
     _check_var(mode, [:all, :row], "mode")
     @assert n >= 0 "n must be ≥ 0."

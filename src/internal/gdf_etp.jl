@@ -1,4 +1,4 @@
-function _gdf_etp(etp::Vector{UInt8})
+function _gdf_etp(etp::Vector{UInt8})::String
     event = "unknown code ($(etp[1])$(etp[2]))"
     etp[1] == 0x01 && etp[2] == 0x01 && (event = "artifact:EOG (blinks)")
     etp[1] == 0x01 && etp[2] == 0x02 && (event = "artifact:ECG")

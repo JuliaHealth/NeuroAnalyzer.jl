@@ -15,7 +15,7 @@ Named tuple containing:
 - `ph::Vector{Float64}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractVector; fs::Int64)
+function phsd(s::AbstractVector; fs::Int64)::NamedTuple{(:ph, :f), Tuple{Vector{Float64}, Vector{Float64}}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -42,7 +42,7 @@ Named tuple containing:
 - `ph::Matrix{Float64}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractMatrix; fs::Int64)
+function phsd(s::AbstractMatrix; fs::Int64)::NamedTuple{(:ph, :f), Tuple{Matrix{Float64}, Vector{Float64}}}
 
     ch_n = size(s, 1)
     _, f = phsd(s[1, :], fs=fs)
@@ -72,7 +72,7 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractArray; fs::Int64)
+function phsd(s::AbstractArray; fs::Int64)::NamedTuple{(:ph, :f), Tuple{Array{Float64, 3}, Vector{Float64}}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -108,7 +108,7 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:ph, :f), Tuple{Array{Float64, 3}, Vector{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     ph, f = phsd(obj.data[ch, :, :], fs=sr(obj))

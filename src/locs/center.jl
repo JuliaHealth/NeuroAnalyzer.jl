@@ -15,9 +15,9 @@ Center locs at (0, 0).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `locs_new::DataFrame`
 """
-function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::NeuroAnalyzer.NEURO
+function locs_center(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
 
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)

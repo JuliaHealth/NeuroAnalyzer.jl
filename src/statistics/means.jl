@@ -16,9 +16,11 @@ Calculate geometric mean.
 
 - `m::Float64`
 """
-function meang(x::AbstractVector)
+function meang(x::AbstractVector)::Float64
 
-    return exp(mean(log.(x[x .> 0])))
+    m = exp(mean(log.(x[x .> 0])))
+
+    return m
 
 end
 
@@ -35,9 +37,11 @@ Calculate harmonic mean.
 
 - `m::Float64`
 """
-function meanh(x::AbstractVector)
+function meanh(x::AbstractVector)::Float64
 
-    return length(x) / sum(1 ./ x)
+    m = length(x) / sum(1 ./ x)
+
+    return m
 
 end
 
@@ -55,11 +59,13 @@ Calculate weighted mean.
 
 - `m::Float64`
 """
-function meanw(x::AbstractVector, w::AbstractVector)
+function meanw(x::AbstractVector, w::AbstractVector)::Float64
 
     @assert length(x) == length(w) "Weights and values vectors must have the same length."
 
-    return length(x) / sum(1 ./ x)
+    m = length(x) / sum(1 ./ x)
+
+    return m
 
 end
 
@@ -77,12 +83,14 @@ Calculate circular mean.
 
 - `m::Float64`
 """
-function meanc(x::AbstractVector; rad::Bool=false)
+function meanc(x::AbstractVector; rad::Bool=false)::Float64
 
     if rad
-        return atan(sum(sin.(x)), sum(cos.(x)))
+        m = atan(sum(sin.(x)), sum(cos.(x)))
     else
-        return rad2deg(atan(sum(sind.(x)), sum(cosd.(x))))
+        m = rad2deg(atan(sum(sind.(x)), sum(cosd.(x))))
     end
+
+    return m
 
 end

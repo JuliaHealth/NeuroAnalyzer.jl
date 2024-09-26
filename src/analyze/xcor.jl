@@ -21,7 +21,7 @@ Calculate cross-correlation.
 
 - `xc::Matrix{Float64}`
 """
-function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function xcor(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Matrix{Float64}
 
     _check_var(method, [:sum, :cor, :stat], "method")
 
@@ -98,7 +98,7 @@ Calculate cross-correlation.
 
 - `xc::Array{Float64, 3}`
 """
-function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -138,7 +138,7 @@ Calculate cross-correlation.
 
 - `xc::Array{Float64, 3}`
 """
-function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -186,7 +186,7 @@ Named tuple containing:
 - `xc::Array{Float64, 3}`: cross-correlation
 - `l::Vector{Float64}`: lags [s]
 """
-function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
+function xcor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)), l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::NamedTuple{(:xc, :l), Tuple{Array{Float64, 3}, Vector{Float64}}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."

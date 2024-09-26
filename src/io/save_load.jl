@@ -104,10 +104,10 @@ function load_study(file_name::String)::NeuroAnalyzer.STUDY
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
-    s = JLD2.load_object(file_name)
+    obj = JLD2.load_object(file_name)
 
-    _info("Loaded study: $(obj_n(s)) objects")
+    _info("Loaded study: $(obj_n(obj)) objects")
 
-    return s
+    return obj
 
 end

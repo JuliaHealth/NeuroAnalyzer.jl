@@ -19,7 +19,7 @@ Extract channel data.
 
 - `d::Vector{Float64}`
 """
-function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)
+function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Vector{Float64}
 
     ch = get_channel(obj, ch=ch)
     d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
@@ -42,7 +42,7 @@ Extract epoch.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)
+function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)::NeuroAnalyzer.NEURO
 
     _check_epochs(obj, ep)
 
@@ -68,8 +68,12 @@ Extract epoch.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ep::Int64`: epoch index
+
+# Returns
+
+Nothing
 """
-function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)
+function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
 
     obj_new = extract_epoch(obj, ep=ep)
     obj.header = obj_new.header
@@ -101,7 +105,7 @@ Extract data.
 - `time::Vector{Float64}`
 - `etime::Vector{Float64}`
 """
-function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)
+function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)::Union{Array{Float64, 3}, Tuple{Array{Float64, 3}, Vector{Float64}}, Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     _check_epochs(obj, ep)
@@ -132,7 +136,7 @@ Extract time.
 
 - `tpts::Array{Float64, 3}`
 """
-function extract_time(obj::NeuroAnalyzer.NEURO)
+function extract_time(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
 
     tpts = obj.time_pts
 
@@ -153,7 +157,7 @@ Extract epochs time.
 
 - `et::Array{Float64, 3}`
 """
-function extract_eptime(obj::NeuroAnalyzer.NEURO)
+function extract_eptime(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
 
     et = obj.epoch_time
 

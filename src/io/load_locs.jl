@@ -38,7 +38,7 @@ Channel locations:
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
 

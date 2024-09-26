@@ -20,9 +20,9 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)
+function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
 
@@ -108,8 +108,12 @@ Split into epochs. Return signal that is split either by markers (if specified),
 - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+
+# Returns
+
+Nothing
 """
-function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)
+function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::Nothing
 
     obj_new = epoch(obj, marker=marker, offset=offset, ep_n=ep_n, ep_len=ep_len)
     obj.header = obj_new.header
@@ -135,9 +139,9 @@ Edit epochs time start.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)
+function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     obj_new.epoch_time .+= ts
@@ -160,9 +164,9 @@ Edit OBJ epochs time start.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+Nothing
 """
-function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)
+function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)::Nothing
 
     obj_new = epoch_ts(obj, ts=ts)
     obj.history = obj_new.history
@@ -185,9 +189,9 @@ Extract sub-epochs with a reduced time range.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
+function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
     ep_time = obj.epoch_time
@@ -244,8 +248,12 @@ Extract sub-epochs with a reduced time range.
 - `obj::NeuroAnalyzer.NEURO`
 - `ep_start::Real`: sub-epoch start
 - `ep_end::Real`: sub-epoch end
+
+# Returns
+
+Nothing
 """
-function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)
+function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Nothing
 
     obj_new = subepoch(obj, ep_start=ep_start, ep_end=ep_end)
     obj.header = obj_new.header

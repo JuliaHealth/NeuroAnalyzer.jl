@@ -13,7 +13,7 @@ Calculate phases.
 
 - `phases::Vector{Float64}`
 """
-function phases(s::AbstractVector)
+function phases(s::AbstractVector)::Vector{Float64}
 
     return angle.(hilbert(s))
 

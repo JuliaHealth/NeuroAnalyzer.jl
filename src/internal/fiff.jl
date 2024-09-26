@@ -1,32 +1,32 @@
-_i16i64(x) = Int64(ntoh.(reinterpret(Int16, x)[1]))
-_i32i64(x) = Int64(ntoh.(reinterpret(Int32, x)[1]))
-_f16f64(x) = Float64(ntoh.(reinterpret(Float16, x)[1]))
-_f32f64(x) = Float64(ntoh.(reinterpret(Float32, x)[1]))
-_f64f64(x) = Float64(ntoh.(reinterpret(Float64, x)[1]))
-_i16f64(x) = Float64(ntoh.(reinterpret(Int16, x)[1]))
-_i32f64(x) = Float64(ntoh.(reinterpret(Int32, x)[1]))
-_i8i8(x) = ntoh.(reinterpret(Int8, x)[1])
-_ui32i32(x) = ntoh.(reinterpret(UInt32, x)[1])
-_i32i32(x) = ntoh.(reinterpret(Int32, x)[1])
+_i16i64(x)::Int64 = Int64(ntoh.(reinterpret(Int16, x)[1]))
+_i32i64(x)::Int64 = Int64(ntoh.(reinterpret(Int32, x)[1]))
+_f16f64(x)::Float64 = Float64(ntoh.(reinterpret(Float16, x)[1]))
+_f32f64(x)::Float64 = Float64(ntoh.(reinterpret(Float32, x)[1]))
+_f64f64(x)::Float64 = Float64(ntoh.(reinterpret(Float64, x)[1]))
+_i16f64(x)::Float64 = Float64(ntoh.(reinterpret(Int16, x)[1]))
+_i32f64(x)::Float64 = Float64(ntoh.(reinterpret(Int32, x)[1]))
+_i8i8(x)::Int8 = ntoh.(reinterpret(Int8, x)[1])
+_ui32i32(x)::Int32 = ntoh.(reinterpret(UInt32, x)[1])
+_i32i32(x)::Int32 = ntoh.(reinterpret(Int32, x)[1])
 
-_find_fiff_tag(t::String) = fiff_tags[:id][findfirst(isequal(t), fiff_tags[:tag])]
-_find_fiff_tag(n::Int64) = fiff_tags[:tag][findfirst(isequal(n), fiff_tags[:id])]
-_find_fiff_block(t::String) = fiff_blocks[:id][findfirst(isequal(t), fiff_blocks[:block])]
-_find_fiff_block(n::Int64) = fiff_blocks[:block][findfirst(isequal(n), fiff_blocks[:id])]
-_find_fiff_dt(n::Int64) = fiff_data_type[:name][findfirst(isequal(n & 0x00000FFF), fiff_data_type[:id])]
-_find_fiff_unit(n::Int64) = fiff_units[:unit][findfirst(isequal(n), fiff_units[:id])]
-_find_fiff_mul(n::Int64) = fiff_multipliers[:id][findfirst(isequal(n), fiff_multipliers[:id])]
-_find_fiff_chtype(n::Int64) = fiff_channel_type[:channel_type][findfirst(isequal(n), fiff_channel_type[:id])]
-_find_fiff_gantry_type(n::Int64) = fiff_gantry_type[:gantry_type][findfirst(isequal(n), fiff_gantry_type[:id])]
-_find_fiff_dacq_system(n::Int64) = fiff_dacq_system[:dacq_system][findfirst(isequal(n), fiff_dacq_system[:id])]
-_find_fiff_proj_item(n::Int64) = fiff_proj_item[:proj_item][findfirst(isequal(n), fiff_proj_item[:id])]
-_find_fiff_proj_by(n::Int64) = fiff_proj_by[:proj_by][findfirst(isequal(n), fiff_proj_by[:id])]
-_find_fiff_coiltype(n::Int64) = fiff_coil_type[:coil_type][findfirst(isequal(n), fiff_coil_type[:id])]
-_find_fiff_aspect(n::Int64) = fiff_aspect[:aspect][findfirst(isequal(n), fiff_aspect[:id])]
-_find_fiff_sss_job(n::Int64) = fiff_sss_job[:sss_job][findfirst(isequal(n), fiff_sss_job[:id])]
+_find_fiff_tag(t::String)::Int64 = fiff_tags[:id][findfirst(isequal(t), fiff_tags[:tag])]
+_find_fiff_tag(n::Int64)::String = fiff_tags[:tag][findfirst(isequal(n), fiff_tags[:id])]
+_find_fiff_block(t::String)::Int64 = fiff_blocks[:id][findfirst(isequal(t), fiff_blocks[:block])]
+_find_fiff_block(n::Int64)::String = fiff_blocks[:block][findfirst(isequal(n), fiff_blocks[:id])]
+_find_fiff_dt(n::Int64)::String = fiff_data_type[:name][findfirst(isequal(n & 0x00000FFF), fiff_data_type[:id])]
+_find_fiff_unit(n::Int64)::String = fiff_units[:unit][findfirst(isequal(n), fiff_units[:id])]
+_find_fiff_mul(n::Int64)::Int64 = fiff_multipliers[:id][findfirst(isequal(n), fiff_multipliers[:id])]
+_find_fiff_chtype(n::Int64)::String = fiff_channel_type[:channel_type][findfirst(isequal(n), fiff_channel_type[:id])]
+_find_fiff_gantry_type(n::Int64)::String = fiff_gantry_type[:gantry_type][findfirst(isequal(n), fiff_gantry_type[:id])]
+_find_fiff_dacq_system(n::Int64)::String = fiff_dacq_system[:dacq_system][findfirst(isequal(n), fiff_dacq_system[:id])]
+_find_fiff_proj_item(n::Int64)::String = fiff_proj_item[:proj_item][findfirst(isequal(n), fiff_proj_item[:id])]
+_find_fiff_proj_by(n::Int64)::String = fiff_proj_by[:proj_by][findfirst(isequal(n), fiff_proj_by[:id])]
+_find_fiff_coiltype(n::Int64)::String = fiff_coil_type[:coil_type][findfirst(isequal(n), fiff_coil_type[:id])]
+_find_fiff_aspect(n::Int64)::String = fiff_aspect[:aspect][findfirst(isequal(n), fiff_aspect[:id])]
+_find_fiff_sss_job(n::Int64)::String = fiff_sss_job[:sss_job][findfirst(isequal(n), fiff_sss_job[:id])]
 
 # data type
-fiff_data_type= Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35],
+fiff_data_type = Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 13, 14, 16, 20, 21, 23, 30, 31, 32, 33, 34, 35],
                :name=>["void", "byte", "int16", "int32", "float", "double", "julian", "uint16", "uint32", "uint64", "string", "ascii", "int64", "dau_pack13", "dau_pack14", "dau_pack16", "complex_float", "complex_double", "old_pack", "ch_info_struct", "id_struct", "dir_entry_struct", "dig_point_struct", "ch_pos_struct", "coord_trans_struct", "old_pack"],
                :data_type=>["void_t", "byte_t", "int16_t", "int32_t", "float_t", "double_t", "julian_t", "uint16_t", "uint32_t", "uint64_t", "byte_t", "byte_t", "int64_t", "dau_pack13_t", "dau_pack14_t", "dau_pack16_t", "complex_float_t", "complex_double_t", "old_pack_tvariable", "ch_info_t", "id_t", "dir_entry_t", "dig_point_t", "ch_pos_t", "coord_trans_t", "old_pack_tvariable"],
                :size=>[1, 1, 2, 4, 4, 8, 8, 2, 4, 8, 1, 1, 8, 2, 2, 2, 8, 16, 80, 20, 16, 20, 52, 80])
@@ -78,7 +78,7 @@ fiff_aspect = Dict(:id=>[100, 101, 102, 103, 104, 105, 106, 200, 1100, 1101, 110
 fiff_sss_job = Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                       :sss_job=>["sss_job_nothing", "sss_job_ctc", "sss_job_filter", "sss_job_virt", "sss_job_head_pos", "sss_job_movec_fit", "sss_job_movec_qua", "sss_job_rec_all", "sss_job_rec_in", "sss_job_rec_out", "sss_job_st"])
 
-function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
+function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Matrix{Float64}}
     d = nothing
     df = NeuroAnalyzer._find_fiff_dt(fb)
     fs_mask = fb & 0xFF000000
@@ -168,7 +168,7 @@ function _fiff_matrix(fb::Int64, buf::Vector{UInt8})
     return d
 end
 
-function _read_fiff_tag(fid::IOStream)
+function _read_fiff_tag(fid::IOStream)::Tuple{Int32, Int32, Int32, Any, Int32}
     tag = reinterpret(Int32, read(fid, 4 * sizeof(Int32)))
     tag .= ntoh.(tag)
     tag_kind = tag[1]
@@ -180,14 +180,14 @@ function _read_fiff_tag(fid::IOStream)
     return tag_kind, data_type, data_size, data, tag_next
 end
 
-function _get_fiff_block_type(fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64})
+function _get_fiff_block_type(fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64})::Int32
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
     readbytes!(fid, buf, tag[4])
     return reinterpret(Int32, reverse(buf))
 end
 
-function _create_fiff_block(fid::IOStream)
+function _create_fiff_block(fid::IOStream)::Tuple{Vector{Vector{UInt8}}, Vector{Int64}, Vector{Int64}, Vector{Int64}, Vector{Int64}, Vector{Int64}, Vector{Int64}}
 
     # read tags
     seek(fid, 0)
@@ -235,16 +235,17 @@ function _create_fiff_block(fid::IOStream)
     return d, hcat(tag_pos, tag_ids, tag_type, tag_size, block_level, block_type)
 end
 
-function _view_fiff_block(fb::Matrix{Int64})
+function _view_fiff_block(fb::Matrix{Int64})::Nothing
     indent = ""
     for tag_idx in axes(fb, 1)
         fb[tag_idx, 2] == 104 && (indent = repeat("  ", length(indent) + 1))
         println(indent * "$(fb[tag_idx, 2]) [$(fb[tag_idx, 5])]")
         fb[tag_idx, 2] == 105 && (indent = repeat("  ", length(indent) - 1))
     end
+    return nothing
 end
 
-function _get_fiff_data(d::Vector{Any}, id::Int64)
+function _get_fiff_data(d::Vector{Any}, id::Int64)::Any
     data = Any[]
     for idx in eachindex(d)
         if d[idx][2] == NeuroAnalyzer._find_fiff_tag(id) && length(d[idx]) == 4
@@ -254,9 +255,9 @@ function _get_fiff_data(d::Vector{Any}, id::Int64)
     return data
 end
 
-function _get_blocks(b::Matrix{Int64})
+function _get_blocks(b::Matrix{Int64})::Tuple{Vector{Int64}, Vector{Int64}}
     levels = unique(b[:, 5])
-    bidx = Vector{Int64}[]
+    bidx = Int64[]
     [push!(bidx, findall(isequal(levels[idx]), b[:, 5])) for idx in eachindex(levels)]
     btmp = Int64[]
     [push!(btmp, length(bidx[idx])) for idx in eachindex(bidx)]
@@ -265,7 +266,7 @@ function _get_blocks(b::Matrix{Int64})
     return bidx, btypes
 end
 
-function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vector{String})
+function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vector{String})::Dict
     block_idx = [fiff_object[idx][3] for idx in eachindex(fiff_object)] .== block
     d = Dict()
     for f in fields
@@ -281,8 +282,9 @@ function _pack_fiff_blocks(fiff_object::Vector{Any}, block::String, fields::Vect
     return d
 end
 
-function _fiff_tree(fiff_object::Vector{Any})
+function _fiff_tree(fiff_object::Vector{Any})::Nothing
     for idx in eachindex(fiff_object)
         println(fiff_object[idx][3] * " - " * fiff_object[idx][2])
     end
+    return nothing
 end

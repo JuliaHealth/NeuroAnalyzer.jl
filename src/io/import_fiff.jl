@@ -20,7 +20,7 @@ Load FIFF (Functional Image File Format) file and return FIFF object.
 
 Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. March 2011
 """
-function load_fiff(file_name::String)::NeuroAnalyzer.NEURO
+function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vector{Any}, Matrix{Int64}}
 
     fid = nothing
     try

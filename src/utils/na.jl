@@ -167,7 +167,7 @@ Nothing
 
 Nothing
 """
-function na_plugins_list()
+function na_plugins_list()::Nothing
 
     @assert isdir(plugins_path) "Folder $plugins_path cannot be opened."
 

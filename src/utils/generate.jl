@@ -33,7 +33,7 @@ Return the `n`-point long symmetric window `type`.
 
 - `w::Vector{Float64}`:: generated window
 """
-function generate_window(type::Symbol, n::Int64; even::Bool=false)
+function generate_window(type::Symbol, n::Int64; even::Bool=false)::Vector{Float64}
 
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
     @assert n >= 1 "n must be ≥ 1."
@@ -97,7 +97,7 @@ Generates sine wave.
 
 - s::Vector{Float64}`
 """
-function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
+function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)::Vector{Float64}
 
     s = @. a * sin(2 * pi * f * t + deg2rad(p))
 
@@ -120,7 +120,7 @@ Generates complex sine wave.
 
 - cs::Vector{ComplexF64}`
 """
-function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
+function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)::Vector{ComplexF64}
 
     cs = @. a * exp(1im * 2 * pi * f * t)
 
@@ -144,7 +144,7 @@ Generate sinc function.
 
 - `s::Vector{Float64}`
 """
-function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1.0, peak::Real=0, norm::Bool=true)
+function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1.0, peak::Real=0, norm::Bool=true)::Vector{Float64}
 
     s = norm ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(s)
@@ -171,7 +171,7 @@ Generate Morlet wavelet.
 
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
+function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)::Union{Vector{Float64}, Vector{ComplexF64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert ncyc >= 1 "ncyc must be ≥ 1."
@@ -203,7 +203,7 @@ Generate Gaussian wave.
 
 - `g::Vector{Float64}`
 """
-function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
+function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)::Vector{Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert ncyc >= 1 "ncyc must be ≥ 1."
@@ -236,9 +236,9 @@ Generate noise.
 
 # Returns
 
-- `s::Float64`
+- `s::Vector{Float64}`
 """
-function generate_noise(n::Int64, a::Real=1.0; type::Symbol=:whiten)
+function generate_noise(n::Int64, a::Real=1.0; type::Symbol=:whiten)::Vector{Float64}
 
     _check_var(type, [:whiten, :whiteu, :pink], "type")
 
@@ -269,9 +269,9 @@ Generate signal based on normally distributed random noise.
 
 # Returns
 
-- `s::Float64`
+- `s::Vector{Float64}`
 """
-function generate_signal(n::Int64, a::Real=1.0)
+function generate_signal(n::Int64, a::Real=1.0)::Vector{Float64}
 
     s = randn(n)
     s = cumsum(s)
@@ -301,7 +301,7 @@ Generate Morlet wavelet using FWHM (full width at half maximum) formula.
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6.
 """
-function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
+function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)::Vector{ComplexF64}
 
     t = -t:1/fs:t
     mw = @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
@@ -327,7 +327,7 @@ Generates square wave.
 
 - `s::Vector{Float64}`
 """
-function generate_square(t::Union{AbstractVector, AbstractRange}, p::Real, a::Real=1, offset::Real=0, w::Real=1)
+function generate_square(t::Union{AbstractVector, AbstractRange}, p::Real, a::Real=1, offset::Real=0, w::Real=1)::Vector{Float64}
 
     s = @. offset + a * (mod(p + t, 2) > w)
     return s
@@ -348,9 +348,10 @@ Generates triangle wave.
 
 - `s::Vector{Float64}`
 """
-function generate_triangle(t::Union{AbstractVector, AbstractRange}, a::Real=1)
+function generate_triangle(t::Union{AbstractVector, AbstractRange}, a::Real=1)::Vector{Float64}
 
     s = @. a * abs(mod(t, 2) - 1)
+
     return s
 
 end

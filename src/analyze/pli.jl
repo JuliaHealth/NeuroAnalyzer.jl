@@ -19,7 +19,7 @@ Named tuple containing:
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
 """
-function pli(s1::AbstractVector, s2::AbstractVector)
+function pli(s1::AbstractVector, s2::AbstractVector)::NamedTuple{(:pv, :sd, :phd, :s1ph, :s2ph), Tuple{Float64, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
@@ -58,7 +58,7 @@ Named tuple containing:
 - `s1ph::Array{Float64, 3}`: signal 1 phase
 - `s2ph::Array{Float64, 3}`: signal 2 phase
 """
-function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::NamedTuple{(:pv, :sd, :phd, :s1ph, :s2ph), Tuple{Matrix{Float64}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
 
     ch1 = get_channel(obj1, ch=ch1)
     ch2 = get_channel(obj2, ch=ch2)
@@ -105,7 +105,7 @@ Calculate PLIs (Phase Lag Index).
 
 - `pv::Array{Float64, 3}`: PLI value matrices over epochs
 """
-function pli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function pli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)

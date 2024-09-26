@@ -1,4 +1,4 @@
-function _free_gpumem(threshold::Real=0.95)
+function _free_gpumem(threshold::Real=0.95)::Nothing
     m = CUDA.MemoryInfo()
     usedmem = m.total_bytes - m.free_bytes
     totalmem = m.total_bytes
@@ -6,4 +6,5 @@ function _free_gpumem(threshold::Real=0.95)
         # CUDA.reclaim()
         GC.gc(true)
     end
+    return nothing
 end

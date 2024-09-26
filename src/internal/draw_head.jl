@@ -1,4 +1,4 @@
-function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head_details::Bool=true, topo::Bool=false, kwargs...)
+function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head_details::Bool=true, topo::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
     _deprecated("_draw_head")
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
@@ -70,5 +70,5 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
     end
 
     return p
-end
 
+end

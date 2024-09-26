@@ -17,7 +17,7 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::
     return locs
 end
 
-function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})
+function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})::Vector{Int64}
     if isa(l, String)
         if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))) > 0
             return findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))[1]
@@ -69,7 +69,7 @@ function _locs_round(locs::DataFrame)::DataFrame
     return locs_new
 end
 
-function _locs_round!(locs::DataFrame)
+function _locs_round!(locs::DataFrame)::Nothing
     locs[!, :loc_radius] = round.(locs[!, :loc_radius], digits=2)
     locs[!, :loc_theta] = round.(locs[!, :loc_theta], digits=2)
     locs[!, :loc_x] = round.(locs[!, :loc_x], digits=2)
@@ -78,9 +78,10 @@ function _locs_round!(locs::DataFrame)
     locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits=2)
     locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits=2)
     locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=2)
+    return nothing
 end
 
-function _locs_remove_nans(locs::DataFrame)
+function _locs_remove_nans(locs::DataFrame)::DataFrame
     locs_new = deepcopy(locs)
     for idx in eachcol(locs_new)
         replace!(idx, NaN => 0)
@@ -88,28 +89,33 @@ function _locs_remove_nans(locs::DataFrame)
     return locs_new
 end
 
-function _locs_remove_nans!(locs::DataFrame)
+function _locs_remove_nans!(locs::DataFrame)::Nothing
     for idx in eachcol(locs)
         replace!(idx, NaN => 0)
     end
+    return nothing
 end
 
-_locs_round(obj::NeuroAnalyzer.NEURO) = _locs_round(obj.locs)
+_locs_round(obj::NeuroAnalyzer.NEURO)::DataFrame = _locs_round(obj.locs)
 
-function _locs_round!(obj::NeuroAnalyzer.NEURO)
+function _locs_round!(obj::NeuroAnalyzer.NEURO)::Nothing
     obj.locs = _locs_round(obj.locs)
+    return nothing
 end
 
-_has_locs(obj::NeuroAnalyzer.NEURO) = @assert nrow(obj.locs) > 0 "Electrode locations not available, use load_locs() or add_locs() first."
+function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
+    @assert nrow(obj.locs) > 0 "Electrode locations not available, use load_locs() or add_locs() first."
+    return nothing
+end
 
-function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
+function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})::Tuple{Vector{Float64}, Vector{Float64}}
     xy = normalize_minmax(hcat(x, y))
     x = xy[:, 1]
     y = xy[:, 2]
     return x, y
 end
 
-function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}, z::Union{AbstractVector, Real})
+function _locs_norm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}, z::Union{AbstractVector, Real})::Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}}
     xyz = normalize_minmax(hcat(x, y, z))
     x = xyz[:, 1]
     y = xyz[:, 2]

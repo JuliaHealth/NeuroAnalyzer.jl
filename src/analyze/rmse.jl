@@ -12,14 +12,16 @@ Calculate Root Mean Square Error (RMSE).
 
 # Returns
 
-- `rmse::Float64`: RMSE
+- `r::Float64`: RMSE
 """
-function rmse(s1::AbstractVector, s2::AbstractVector)
+function rmse(s1::AbstractVector, s2::AbstractVector)::Float64
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # r = sum(s1 .* s2) ./ (sqrt(sum(s1.^2)) .* sqrt(sum(s2.^2)))
-    return sqrt(mean(s2 - s1)^2)
+    r = sqrt(mean(s2 - s1)^2)
+
+    return r
 
 end
 
@@ -37,7 +39,7 @@ Calculate Root Mean Square Error (RMSE).
 
 - `r::Matrix{Float64}`: RMSE
 """
-function rmse(s1::AbstractArray, s2::AbstractArray)
+function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -73,12 +75,9 @@ Calculate Root Mean Square Error (RMSE).
 
 # Returns
 
-Named tuple containing:
-- `r::Array{Float64, 3}`: RMSE
-- `cps_ph::Array{Float64, 3}`: cross power spectrum phase (in radians)
-- `cps_fq::Vector{Float64, 3}`: cross power spectrum frequencies
+- `r::Matrix{Float64}`: RMSE
 """
-function rmse(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function rmse(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
 
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
 

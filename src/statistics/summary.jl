@@ -11,6 +11,7 @@ Return summary statistics.
 
 # Returns
 
+Named tuple containing:
 - `mm::Float64`: mean
 - `s::Float64`: standard deviation
 - `v::Float64`: variance
@@ -36,6 +37,7 @@ function summary(x::AbstractVector; g::String="")
     end
 
     return (mm=mm, s=s, me=me, mo=mo)
+
 end
 
 """
@@ -52,6 +54,7 @@ Return summary statistics.
 
 # Returns
 
+Named tuple containing:
 - `mm1::Float64`: mean
 - `mm2::Float64`: mean
 - `s1::Float64`: standard deviation

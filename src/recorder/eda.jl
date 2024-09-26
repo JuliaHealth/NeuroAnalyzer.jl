@@ -13,7 +13,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
@@ -165,7 +165,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 

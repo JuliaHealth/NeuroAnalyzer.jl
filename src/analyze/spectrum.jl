@@ -20,7 +20,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
 """
-function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)
+function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::NamedTuple{(:ft, :a, :p, :ph), Tuple{Vector{ComplexF64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
 
     ft = rfft0(s, pad)
 
@@ -57,12 +57,12 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `hc::Vector(ComplexF64}`: Hilbert components
+- `hc::Vector{ComplexF64}`: Hilbert components
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
 """
-function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)
+function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::NamedTuple{(:hc, :a, :p, :ph), Tuple{Vector{ComplexF64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
 
     hc = hilbert(pad0(s, pad))
 
@@ -94,12 +94,12 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `hc::Array(ComplexF64, 3}`: Hilbert components
+- `hc::Array{ComplexF64, 3}`: Hilbert components
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}`: phases
 """
-function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)
+function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::NamedTuple{(:hc, :a, :p, :ph), Tuple{Array{ComplexF64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -141,7 +141,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phase angles
 """
-function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)
+function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::NamedTuple{(:c, :a, :p, :ph), Tuple{Array{ComplexF64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
 
     _chk3d(s)
     h && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
@@ -194,7 +194,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phase angles
 """
-function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, h::Bool=false, db::Bool=false)
+function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, h::Bool=false, db::Bool=false)::NamedTuple{(:c, :a, :p, :ph), Tuple{Array{ComplexF64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
 
     ch = get_channel(obj, ch=ch)
     c, a, p, ph = spectrum(obj.data[ch, :, :], pad=pad, h=h, db=db)

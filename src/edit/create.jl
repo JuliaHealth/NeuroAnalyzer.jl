@@ -15,9 +15,9 @@ Create an empty `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function create_object(; data_type::String)
+function create_object(; data_type::String)::NeuroAnalyzer.NEURO
 
     _check_var(data_type, data_types, "data_type")
 
@@ -234,7 +234,7 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)
+function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
 
     @assert length(obj.data) > 0 "OBJ does not contain data."
     @assert length(obj.time_pts) == 0 "OBJ already has time points."
@@ -258,8 +258,12 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `fs::Int64`
+
+# Returns
+
+Nothing
 """
-function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)
+function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
 
     obj_new = create_time(obj, fs=fs)
     obj.header = obj_new.header
@@ -287,7 +291,7 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)
+function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)::NeuroAnalyzer.NEURO
 
     @assert length(obj.data) == 0 "OBJ already contains data."
     @assert length(obj.time_pts) == 0 "OBJ already has time points."
@@ -320,8 +324,12 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 - `data::Array{Float64, 3}`
 - `fs::Int64`
 - `type::String`: channel types of imported data channels
+
+# Returns
+
+Nothing
 """
-function create_data!(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)
+function create_data!(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)::Nothing
 
     obj_new = create_data(obj, data=data, fs=fs, type=type)
     obj.header = obj_new.header

@@ -16,7 +16,7 @@ Filter using polynomial filter.
 
 - `s_filtered::Vector{Float64}`
 """
-function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)
+function filter_poly(s::AbstractVector; order::Int64=8, window::Int64=10)::Vector{Float64}
 
     @assert order > 1 "order must be > 1."
     @assert !(window < 1 || window > length(s)) "window must be in [1, $(length(s))]."
@@ -84,7 +84,7 @@ Filter using polynomial filter.
 
 - `s_filtered::Array{Float64, 3}`: convoluted signal
 """
-function filter_poly(s::AbstractArray; order::Int64=8, window::Int64=10)
+function filter_poly(s::AbstractArray; order::Int64=8, window::Int64=10)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -118,7 +118,7 @@ Filter using polynomial filter.
 
 - `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
 """
-function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)
+function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -142,8 +142,11 @@ Filter using polynomial filter.
 - `order::Int64=8`: polynomial order
 - `window::Int64=10`: window length
 
+# Returns
+
+Nothing
 """
-function filter_poly!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)
+function filter_poly!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, window::Int64=10)::Nothing
 
     obj_new = filter_poly(obj, ch=ch, order=order, window=window)
     obj.data = obj_new.data

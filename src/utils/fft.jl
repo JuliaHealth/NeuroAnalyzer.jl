@@ -20,7 +20,7 @@ Perform zeros-padded FFT.
 
 - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::AbstractVector, n::Int64=0)
+function fft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
 
     @assert n >=0 "n must be ≥ 0."
 
@@ -58,7 +58,7 @@ Perform IFFT of zero-padded vector.
 
 - `ifft0::Vector{ComplexF64}`: reconstructed signal trimmed to original length
 """
-function ifft0(x::AbstractVector, n::Int64=0)
+function ifft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
@@ -87,7 +87,7 @@ Perform zeros-padded FFT, so the length of padded vector is a power of 2.
 
 - `fft2::Vector{ComplexF64}`
 """
-function fft2(x::AbstractVector)
+function fft2(x::AbstractVector)::Vector{ComplexF64}
 
     n = nextpow2(length(x)) - length(x)
 
@@ -108,7 +108,7 @@ Return the next power of 2 for a given number.
 
 - `nextpow2::Int64`
 """
-function nextpow2(x::Int64)
+function nextpow2(x::Int64)::Int64
 
     # return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
     return nextpow(2, x)
@@ -129,7 +129,7 @@ Perform zeros-padded single-sided FFT.
 
 - `rfft0::Vector{ComplexF64}`
 """
-function rfft0(x::AbstractVector, n::Int64=0)
+function rfft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
 
     @assert n >=0 "n must be ≥ 0."
 
@@ -166,7 +166,7 @@ Perform zeros-padded single-sided FFT, so the length of padded vector is a power
 
 - `rfft2::Vector{ComplexF64}`
 """
-function rfft2(x::AbstractVector)
+function rfft2(x::AbstractVector)::Vector{ComplexF64}
 
     n = nextpow2(length(x)) - length(x)
 
@@ -197,7 +197,7 @@ Perform FFT transformation.
 - `mf::Vector{ComplexF64}`: Fourier coefficients
 - `f::Vector{Float64}`: frequencies
 """
-function fft_transform(x::AbstractVector; fs::Int64, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=false, nfft::Int64=nextpow(2, wlen), demean::Bool=false, pad::Int64=0, mode::Symbol=:r)
+function fft_transform(x::AbstractVector; fs::Int64, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=false, nfft::Int64=nextpow(2, wlen), demean::Bool=false, pad::Int64=0, mode::Symbol=:r)::Tuple{Vector{ComplexF64}, Vector{Float64}}
 
     _check_var(mode, [:r, :f], "mode")
     @assert fs > 0 "fs must be > 0."

@@ -16,9 +16,9 @@ Delete channel(s).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)
+function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     ch = get_channel(obj, ch=ch)
@@ -84,8 +84,12 @@ Delete channels.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
+
+# Returns
+
+Nothing
 """
-function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)
+function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)::Nothing
 
     obj_new = delete_channel(obj, ch=ch, del_opt=del_opt)
     obj.header = obj_new.header
@@ -110,9 +114,9 @@ Keep channels.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch=ch))]
@@ -133,8 +137,12 @@ Keep channels.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channels to keep
+
+# Returns
+
+Nothing
 """
-function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = keep_channel(obj, ch=ch)
     obj.header = obj_new.header

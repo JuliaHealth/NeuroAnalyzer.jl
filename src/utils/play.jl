@@ -11,8 +11,12 @@ Play channel signal as audio.
 - `ch::String`: channel name
 - `seg::Tuple{Real, Real}`: time segment to play
 - `ep::Int64`: epoch number
+
+# Returns
+
+Nothing
 """
-function play(obj::NeuroAnalyzer.NEURO; ch::String, seg::Tuple{Real, Real}, ep::Int64)
+function play(obj::NeuroAnalyzer.NEURO; ch::String, seg::Tuple{Real, Real}, ep::Int64)::Nothing
 
     _check_epochs(obj, ep)
 

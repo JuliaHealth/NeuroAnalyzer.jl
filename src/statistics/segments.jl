@@ -14,7 +14,7 @@ Calculate mean of a segment (e.g. spectrogram).
 
 - `sm::Vector{Float64}`: averaged segment
 """
-function seg_mean(seg::AbstractArray)
+function seg_mean(seg::AbstractArray)::Vector{Float64}
 
     _chk3d(seg)
     sm = reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
@@ -39,7 +39,7 @@ Named tuple containing:
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg_mean(seg1::AbstractArray, seg2::AbstractArray)
+function seg_mean(seg1::AbstractArray, seg2::AbstractArray)::NamedTuple{(:seg1, :seg2), Tuple{Vector{Float64}, Vector{Float64}}}
 
     seg1 = seg_mean(seg1)
     seg2 = seg_mean(seg2)
@@ -64,7 +64,7 @@ Extract segment from a matrix.
 
 - `seg::Union{AbstractMatrix, AbstractVector}`
 """
-function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::Bool=false)
+function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::Bool=false)::Union{AbstractMatrix, AbstractVector}
 
     r1 = rc[1]
     c1 = rc[2]

@@ -24,7 +24,7 @@ Named tuple containing:
 - `radius_sph::Float64`: spherical radius, the distance from the origin to the point
 - `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
-function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)::NamedTuple{(:label, :theta, :radius, :x, :y, :z, :theta_sph, :radius_sph, :phi_sph), Tuple{String, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64}}
+function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)::NamedTuple{(:label, :theta_pl, :radius_pl, :x, :y, :z, :theta_sph, :radius_sph, :phi_sph), Tuple{String, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64}}
 
     ch = intersect(obj.locs[!, :label], [ch])
     locs = Base.filter(:label => in(ch), obj.locs)

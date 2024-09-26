@@ -18,9 +18,9 @@ Each channel/channel pair must be in a separate line
 
 Named tuple containing:
 - `ref_list::Vector{String}`: list of channel pairs
-- `ref_name::Vector{String}`: name of the montage
+- `ref_name::String`: name of the montage
 """
-function import_montage(file_name::String)::NamedTuple{(:ref_list, :ref_name), Tuple{Vector{String}, Vector{String}}}
+function import_montage(file_name::String)::NamedTuple{(:ref_list, :ref_name), Tuple{Vector{String}, String}}
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

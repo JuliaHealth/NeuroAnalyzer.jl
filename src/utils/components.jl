@@ -100,7 +100,7 @@ Add component.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)::NeuroAnalyzer.NEURO
 
@@ -196,7 +196,7 @@ Delete component.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)::NeuroAnalyzer.NEURO
 
