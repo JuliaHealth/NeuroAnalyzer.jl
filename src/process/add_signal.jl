@@ -15,7 +15,7 @@ Add signal.
 
 - `s_noisy::AbstractVector`
 """
-function add_signal(s1::AbstractVector, s2::AbstractVector)
+function add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -38,7 +38,7 @@ Add signal.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)
+function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -68,8 +68,12 @@ Add signal.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `s::AbstractVector`: signal to be added to each channel
+
+# Returns
+
+Nothing
 """
-function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)
+function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)::Nothing
 
     obj_new = add_signal(obj, ch=ch, s=s)
     obj.data = obj_new.data

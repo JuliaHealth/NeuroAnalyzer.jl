@@ -101,6 +101,7 @@ Named tuple containing:
 """
 function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
@@ -142,6 +143,7 @@ Named tuple containing:
 """
 function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)
 
+    _chk3d(s)
     h && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
 
     ch_n = size(s, 1)

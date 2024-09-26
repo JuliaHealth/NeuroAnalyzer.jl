@@ -55,6 +55,7 @@ Perform wavelet band-pass filtering.
 """
 function wbp(s::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

@@ -98,6 +98,8 @@ Named tuple containing:
 function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    _chk3d(s1)
+    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)

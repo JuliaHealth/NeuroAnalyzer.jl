@@ -1,5 +1,6 @@
 function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
+    _chk3d(s)
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
     ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
     ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
@@ -25,6 +26,7 @@ end
 
 function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
+    _chk3d(s)
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
     ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
     ep_len === nothing && @assert ep_n !== nothing "Both ep_n and ep_len cannot be specified."
@@ -46,6 +48,7 @@ end
 
 function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)
 
+    _chk3d(s)
     if size(s, 3) > 1
         _warn("Signal has already been epoched, parts of the signal might have been removed.")
         s = reshape(s, ch_n, (size(s, 2) * size(s, 3)), 1)

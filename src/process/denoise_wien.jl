@@ -14,8 +14,9 @@ Perform Wiener deconvolution denoising.
 
 - `s_new::Vector{Float64}`
 """
-function denoise_wien(s::AbstractArray)
+function denoise_wien(s::AbstractArray)::Vector{Float64}
 
+    _chk3d(s)
     ch_n, _, ep_n = size(s)
     s_new = similar(s)
 
@@ -45,7 +46,7 @@ Perform Wiener deconvolution denoising.
 # Returns
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -65,8 +66,12 @@ Perform Wiener deconvolution denoising.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
+
+# Returns
+
+Nothing
 """
-function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = denoise_wien(obj, ch=ch)
     obj.data = obj_new.data

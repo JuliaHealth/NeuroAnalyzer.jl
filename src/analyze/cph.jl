@@ -48,6 +48,7 @@ Named tuple containing:
 """
 function cph(s::AbstractArray; fs::Int64)::NamedTuple{(:ph, :f), Tuple{Array{Float64, 4}, Vector{Float64}}}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -102,6 +103,8 @@ Named tuple containing:
 function cph(s1::AbstractArray, s2::AbstractArray; fs::Int64)::NamedTuple{(:ph, :f), Tuple{Array{Float64, 4}, Vector{Float64}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    _chk3d(s1)
+    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)

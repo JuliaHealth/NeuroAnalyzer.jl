@@ -16,6 +16,7 @@ Calculate amplitude difference between each channel and mean amplitude of refere
 """
 function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)))::Array{Float64, 3}
 
+    _chk3d(s)
     _check_channels(s, ch)
 
     ch_n = length(ch)

@@ -87,6 +87,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 """
 function sef(s::AbstractArray; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     sef_frq = zeros(ch_n, ep_n)

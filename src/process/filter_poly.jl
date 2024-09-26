@@ -86,6 +86,7 @@ Filter using polynomial filter.
 """
 function filter_poly(s::AbstractArray; order::Int64=8, window::Int64=10)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

@@ -59,6 +59,7 @@ Filter using moving median filter (with threshold).
 """
 function filter_mmed(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

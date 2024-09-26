@@ -18,7 +18,7 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)
+function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, ["eeg", "meg"])
 
@@ -79,8 +79,12 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 - `obj::NeuroAnalyzer.NEURO`
 - `bl::Tuple{Real, Real}=(0, 0)`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
 - `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
+
+# Returns
+
+Nothing
 """
-function average_epochs!(average_epochs::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)
+function average_epochs!(average_epochs::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::Nothing
 
     obj_new = average_epochs(obj, bl=bl, blfirst=blfirst)
     obj.data = obj_new.data
@@ -109,7 +113,7 @@ Sort epochs.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
+function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, ["erp", "erf"])
     @assert length(s) == nepochs(obj) - 1 "Length of the sorting vector must be equal to $(nepochs(obj) - 1)."
@@ -139,9 +143,9 @@ Sort epochs.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+Nothing
 """
-function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
+function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
 
     obj_new = sort_epochs(obj, s=s)
     obj.data = obj_new.data
@@ -149,9 +153,6 @@ function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
-    reset_components!(obj_new)
-    push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
-
-    return obj_new
+    return nothing
 
 end

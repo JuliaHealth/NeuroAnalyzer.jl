@@ -15,10 +15,9 @@ Filter using Gaussian in the frequency domain.
 
 # Returns
 
-Named tuple containing:
-- `s_filtered::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
-function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)
+function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)::Vector{Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert f >= 0 "f must be ≥ 0."
@@ -33,9 +32,9 @@ function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_filtered = 2 .* abs.(ifft0((fft0(s, pad) .* g ./ length(s)), pad) .* length(s))
+    s_new = 2 .* abs.(ifft0((fft0(s, pad) .* g ./ length(s)), pad) .* length(s))
 
-    return s_filtered
+    return s_new
 
 end
 
@@ -54,21 +53,22 @@ Filter using Gaussian in the frequency domain.
 
 # Returns
 
-- `s_filtered::NeuroAnalyzer.NEURO`
+- `s_new::Array{Float64, 3}`
 """
-function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)
+function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    s_filtered = similar(s)
+    s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_filtered[ch_idx, :, ep_idx] = @views filter_g(s[ch_idx, :, ep_idx], fs=fs, pad=pad, f=f, gw=gw)
+            s_new[ch_idx, :, ep_idx] = @views filter_g(s[ch_idx, :, ep_idx], fs=fs, pad=pad, f=f, gw=gw)
         end
     end
 
-    return s_filtered
+    return s_new
 
 end
 
@@ -89,7 +89,7 @@ Filter using Gaussian in the frequency domain.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)
+function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -113,8 +113,12 @@ Filter using Gaussian in the frequency domain.
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
+
+# Returns
+
+Nothing
 """
-function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)
+function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)::Nothing
 
     obj_new = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
     obj.data = obj_new.data

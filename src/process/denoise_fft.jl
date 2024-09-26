@@ -15,10 +15,10 @@ Perform FFT denoising.
 # Returns
 
 Named tuple containing:
-- `s::Vector{Float64}`
+- `s::Vector{Float64}`: denoised signal
 - `f_idx::BitVector`: index of components zeroed
 """
-function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)
+function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)::NamedTuple{(:s, :f_idx), Tuple{Vector{Float64}, BitVector}}
 
     s_fft = fft0(s, pad)
     s_pow = @. (abs(s_fft * conj(s_fft))) / length(s)
@@ -46,10 +46,11 @@ Perform FFT denoising.
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+- `s_new::Array{Float64, 3}`
 """
-function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)
+function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -88,7 +89,7 @@ Perform FFT denoising.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, t::Int64=100)
+function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, t::Int64=100)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -111,8 +112,12 @@ Perform FFT denoising.
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `t::Int64=100`: PSD threshold for keeping frequency components
+
+# Returns
+
+Nothing
 """
-function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, t::Int64=100)
+function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, t::Int64=100)::Nothing
 
     obj_new = denoise_fft(obj, ch=ch, pad=pad, t=t)
     obj.data = obj_new.data

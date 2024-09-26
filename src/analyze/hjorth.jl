@@ -58,6 +58,7 @@ Named tuple containing:
 """
 function hjorth(s::AbstractArray)::NamedTuple{(:h_act, :h_mob, :h_comp), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

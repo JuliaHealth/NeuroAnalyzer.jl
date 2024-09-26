@@ -16,8 +16,7 @@ Calculate mean of a segment (e.g. spectrogram).
 """
 function seg_mean(seg::AbstractArray)
 
-    @assert ndims(seg) == 3 "seg must have 3 dimensions."
-
+    _chk3d(seg)
     sm = reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
 
     return sm

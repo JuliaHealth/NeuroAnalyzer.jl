@@ -19,7 +19,7 @@ Perform discrete wavelet transformation (DWT).
 
 - `dt::Matrix{Float64}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0)::Matrix{Float64} where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
@@ -63,7 +63,9 @@ Perform discrete wavelet transformation (DWT).
 
 - `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
+
+    _chk3d(s)
 
     if l == 0
         l = maxtransformlevels(s[1, :, 1])
@@ -102,7 +104,7 @@ Perform discrete wavelet transformation (DWT).
 
 - `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T, type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     ch = get_channel(obj, ch=ch)
     dt = @views dw_trans(obj.data[ch, :, :], wt=wt, type=type, l=l)
@@ -128,9 +130,10 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 
 - `s_new::Vector{Float64}`: reconstructed signal
 """
-function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
+function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol)::Vector{Float64} where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
+    _chk3d(s)
 
     # reconstruct array of DWT coefficients as returned by Wavelets.jl functions
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))

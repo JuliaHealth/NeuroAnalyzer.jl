@@ -20,6 +20,8 @@ Named tuple containing:
 function ged(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:sged, :ress, :ress_norm), Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    _chk3d(s1)
+    _chk3d(s2)
 
     s1cov = cov(s1')
     s2cov = cov(s2')

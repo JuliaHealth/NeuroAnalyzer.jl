@@ -36,6 +36,7 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 """
 function symmetry(s::AbstractArray)::Matrix{Float64}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

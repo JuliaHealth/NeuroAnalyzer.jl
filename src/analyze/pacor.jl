@@ -100,6 +100,7 @@ Calculate partial auto-correlation.
 """
 function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

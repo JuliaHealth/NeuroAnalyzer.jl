@@ -74,6 +74,7 @@ Named tuple containing:
 """
 function phsd(s::AbstractArray; fs::Int64)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

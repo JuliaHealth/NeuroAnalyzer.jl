@@ -125,6 +125,7 @@ Normalize.
 function normalize(s::AbstractArray, n::Float64=1.0; bych::Bool=false, method::Symbol)
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :none], "method")
+    _chk3d(s)
 
     if method === :zscore
         return normalize_zscore(s, bych=bych)

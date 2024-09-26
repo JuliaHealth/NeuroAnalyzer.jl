@@ -79,6 +79,7 @@ Calculate covariance matrix.
 """
 function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)

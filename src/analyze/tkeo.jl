@@ -71,6 +71,7 @@ Calculate Teager-Kaiser energy-tracking operator
 """
 function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

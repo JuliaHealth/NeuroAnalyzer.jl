@@ -51,6 +51,7 @@ Named tuple containing:
 """
 function entropy(s::AbstractArray)::NamedTuple{(:ent, :sent, :leent), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -132,6 +133,7 @@ Calculate negentropy.
 """
 function negentropy(s::AbstractArray)::Matrix{Float64}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

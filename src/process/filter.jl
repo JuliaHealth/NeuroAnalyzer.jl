@@ -37,7 +37,7 @@ Create IIR or FIR filter.
 
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 """
-function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, w::Union{Nothing, AbstractVector, <:Real}=nothing)
+function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, w::Union{Nothing, AbstractVector, <:Real}=nothing)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
     if fprototype !== :iirnotch
@@ -326,9 +326,9 @@ Apply IIR or FIR filter.
 
 # Returns
 
-- `s_filtered::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
-function filter_apply(s::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)
+function filter_apply(s::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)::Vector{Float64}
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
@@ -377,7 +377,7 @@ Apply filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
 
@@ -455,8 +455,12 @@ Apply filtering.
 - `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
+
+# Returns
+
+Nothing
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Nothing
 
     if preview
         _warn("When `preview=true`, signal is not being filtered.")

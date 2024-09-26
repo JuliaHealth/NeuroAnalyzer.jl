@@ -13,8 +13,9 @@ Average all channels.
 
 - `average::AbstractArray`
 """
-function average(s::AbstractArray)
+function average(s::AbstractArray)::AbstractArray
 
+    _chk3d(s)
     return mean(s, dims=1)
 
 end
@@ -33,8 +34,10 @@ Averages two signals.
 
 - `average::Vector{Float64}`
 """
-function average(s1::AbstractArray, s2::AbstractArray)
+function average(s1::AbstractArray, s2::AbstractArray)::Vector{Float64}
 
+    _chk3d(s1)
+    _chk3d(s2)
     return mean(hcat(s1, s2), dims=2)
 
 end
@@ -53,7 +56,7 @@ Return the average signal of channels.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -76,8 +79,12 @@ Return the average signal of channels.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
+
+# Returns
+
+Nothing
 """
-function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = average(obj, ch=ch)
     obj.header = obj_new.header
@@ -123,4 +130,3 @@ function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
     return obj_new
 
 end
-

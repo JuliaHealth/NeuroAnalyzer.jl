@@ -126,6 +126,7 @@ Named tuple containing:
 """
 function psd_rel(s::AbstractArray; fs::Int64, db::Bool=false, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

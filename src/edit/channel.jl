@@ -276,6 +276,7 @@ Replace channel.
 """
 function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)
 
+    _chk3d(s)
     @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
 
     ch = get_channel(obj, ch=ch)[1]

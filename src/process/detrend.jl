@@ -23,7 +23,7 @@ Perform piecewise detrending.
 # Returns
 - `s_new::Vector{Float64}`
 """
-function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Vector{Float64}
 
     _check_var(type, [:ls, :linear, :mean, :constant, :poly, :loess, :hp], "type")
     @assert f > 0 "f must be > 0."
@@ -94,10 +94,11 @@ Perform piecewise detrending.
 
 # Returns
 
-- `s_new::Array`{Float64, 3}
+- `s_new::Array{Float64, 3}`
 """
-function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend(s::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -136,7 +137,7 @@ Perform piecewise detrending.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
 
@@ -168,8 +169,12 @@ Perform piecewise detrending.
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
+
+# Returns
+
+Nothing
 """
-function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Nothing
 
     obj_new = detrend(obj, ch=ch, type=type, offset=offset, order=order, f=f)
     obj.data = obj_new.data

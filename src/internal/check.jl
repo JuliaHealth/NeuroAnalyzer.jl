@@ -1,3 +1,18 @@
+function _chk2d(a::AbstractArray)::Nothing
+    @assert ndims(a) == 2 "Input array must have 2 dimensions."
+    return nothing
+end
+
+function _chk3d(a::AbstractArray)::Nothing
+    @assert ndims(a) == 3 "Input array must have 3 dimensions."
+    return nothing
+end
+
+function _chk4d(a::AbstractArray)::Nothing
+    @assert ndims(a) == 4 "Input array must have 4 dimensions."
+    return nothing
+end
+
 function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."

@@ -487,7 +487,7 @@ Plot EPRs stacked by channels or by epochs.
 """
 function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, AbstractVector}=nothing; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert ndims(s) == 2 "s must have 2 dimensions."
+    _chk2d(s)
     @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must be equal to length of t ($(length(t)))."
 
     if !isnothing(rt)

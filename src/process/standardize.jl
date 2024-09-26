@@ -17,6 +17,7 @@ Standardize channels.
 """
 function standardize(s::AbstractArray)
 
+    _chk3d(s)
     ep_n = size(s, 3)
 
     scaler = Vector{ZScoreTransform{Float64, Vector{Float64}}}()

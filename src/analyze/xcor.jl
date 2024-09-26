@@ -141,6 +141,8 @@ Calculate cross-correlation.
 function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    _chk3d(s1)
+    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)

@@ -71,6 +71,7 @@ Calculate peak frequency in a band.
 """
 function peak_frq(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     pf = zeros(ch_n, ep_n)

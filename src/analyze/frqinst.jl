@@ -39,6 +39,7 @@ function frqinst(s::AbstractArray)::Matrix{Float64}
 
     _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)

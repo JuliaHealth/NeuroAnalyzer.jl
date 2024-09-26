@@ -15,7 +15,7 @@ Perform convolution in the frequency domain.
 
 - `s_new::Vector{ComplexF64}`: convoluted signal
 """
-function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true)
+function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true)::Vector{ComplexF64}
 
     n_s = length(s)
     n_kernel = length(kernel)
@@ -51,7 +51,7 @@ Perform convolution in the frequency domain.
 
 - `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
-function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true)
+function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true)::Array{ComplexF64, 3}
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
@@ -90,7 +90,7 @@ Perform convolution in the frequency domain.
 
 - `s_new::Array{ComplexF64, 3}`: convoluted signal
 """
-function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector, norm::Bool=true)
+function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector, norm::Bool=true)::Array{ComplexF64, 3}
 
     ch = get_channel(obj, ch=ch)
     s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm)

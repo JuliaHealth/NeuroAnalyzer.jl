@@ -16,7 +16,7 @@ Remove segment from the signal.
 
 - `trim::Vector{Float64}`
 """
-function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, inverse::Bool=false)
+function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, inverse::Bool=false)::Vector{Float64}
 
     _check_segment(v, seg[1], seg[2])
 
@@ -41,9 +41,9 @@ Remove segment from the signal.
 
 # Returns
 
-- `trim::Array{Float64}`
+- `trim::Matrix{Float64}`
 """
-function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)
+function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)::Matrix{Float64}
 
     _check_segment(m[1, :], seg[1], seg[2])
 
@@ -52,6 +52,7 @@ function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)
     else
         return hcat(m[:, 1:(seg[1] - 1)], m[:, (seg[2] + 1):end])
     end
+
 end
 
 """
@@ -67,10 +68,11 @@ Remove segment from the signal.
 
 # Returns
 
-- `trim::Array{Float64}`
+- `trim::Array{Float64, 3}`
 """
-function trim(a::AbstractArray; seg::Tuple{Int64, Int64}, inverse::Bool=false)
+function trim(a::AbstractArray; seg::Tuple{Int64, Int64}, inverse::Bool=false)::Array{Float64, 3}
 
+    _chk3d(a)
     _check_segment(a[1, :, 1], seg[1], seg[2])
 
     if inverse
@@ -97,7 +99,7 @@ Trim signal by removing parts of the signal.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false, remove_epochs::Bool=true)
+function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false, remove_epochs::Bool=true)::NeuroAnalyzer.NEURO
 
     _check_segment(obj, seg)
 

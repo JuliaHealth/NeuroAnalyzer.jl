@@ -22,6 +22,7 @@ Named tuple containing:
 """
 function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Float64, Float64, Float64, Vector{Float64}}}
 
+    _chk3d(s)
     @assert t >= 1 "t must be ≥ 1."
     @assert t <= size(s, 2) "t must be ≤ $(size(s, 2))."
     @assert size(s, 1) == 1 "s must have 1 channel."
@@ -109,6 +110,7 @@ Named tuple containing:
 """
 function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Matrix{Float64}}}
 
+    _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
 
     ep_n = size(s, 3)

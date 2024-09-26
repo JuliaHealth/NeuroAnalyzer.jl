@@ -66,6 +66,7 @@ Named tuple containing:
 function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::NamedTuple{(:sn, :f), Tuple{Matrix{Float64}, Vector{Float64}}}
 
     _check_var(type, [:mean, :rms], "type")
+    _chk3d(s)
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)

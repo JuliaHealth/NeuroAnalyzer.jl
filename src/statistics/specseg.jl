@@ -64,6 +64,7 @@ Named tuple containing:
 """
 function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
 
+    _chk3d(sp)
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
     @assert ch in axes(sp, 3) "ch must be in [1, $(size(sp, 3))]."
@@ -137,8 +138,7 @@ Named tuple containing:
 """
 function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})
 
-    @assert ndims(p) == 4 "Input array must have 4 dimensions."
-
+    _chk4d(p)
     _check_tuple(seg, "seg", (t[1], t[end]))
 
     t1_idx = vsearch(seg[1], t)

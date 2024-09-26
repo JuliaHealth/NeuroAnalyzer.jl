@@ -15,7 +15,7 @@ Perform continuous wavelet transformation (CWT).
 
 - `ct::Matrix{Float64}`: CWT coefficients (by rows)
 """
-function cw_trans(s::AbstractVector; wt::T) where {T<:CWT}
+function cw_trans(s::AbstractVector; wt::T)::Matrix{Float64} where {T<:CWT}
 
     ct = Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
@@ -41,7 +41,7 @@ Perform inverse continuous wavelet transformation (iCWT).
 
 - `s::Vector{Float64}`: reconstructed signal
 """
-function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd) where {T<:CWT}
+function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::Vector{Float64} where {T<:CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 
@@ -68,8 +68,9 @@ Perform continuous wavelet transformation (CWT).
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cw_trans(s::AbstractArray; wt::T) where {T<:CWT}
+function cw_trans(s::AbstractArray; wt::T)::Array{Float64, 4} where {T<:CWT}
 
+    _chk3d(s)
     ch_n, ep_len, ep_n = size(s)
 
     l = size(ContinuousWavelets.cwt(s[1, :, 1], wt), 2)
@@ -100,7 +101,7 @@ Perform continuous wavelet transformation (CWT).
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T) where {T<:CWT}
+function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T)::Array{Float64, 4} where {T<:CWT}
 
     ch = get_channel(obj, ch=ch)
     ct = @views cw_trans(obj.data[ch, :, :], wt=wt)

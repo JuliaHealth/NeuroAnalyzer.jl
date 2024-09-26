@@ -8,8 +8,12 @@ Edit montage file in the OS editor.
 # Arguments
 
 - `file_name::String`: name of the file to load
+
+# Returns
+
+Nothing
 """
-function edit_montage(file_name::String)
+function edit_montage(file_name::String)::Nothing
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

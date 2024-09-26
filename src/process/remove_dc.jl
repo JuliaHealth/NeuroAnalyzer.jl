@@ -48,6 +48,7 @@ Remove mean value (DC offset).
 """
 function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

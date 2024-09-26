@@ -37,6 +37,8 @@ Calculate mutual information (channels of `s1` vs channels of `s2`).
 function mutual_information(s1::AbstractArray, s2::AbstractArray)::Array{Float64}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    _chk3d(s1)
+    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
@@ -68,6 +70,7 @@ Calculate mutual information (channels vs channels).
 """
 function mutual_information(s::AbstractArray)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

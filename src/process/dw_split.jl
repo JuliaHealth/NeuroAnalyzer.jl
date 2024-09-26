@@ -19,7 +19,7 @@ Split into bands using discrete wavelet transformation (DWT).
 
 - `b::Array{Float64, 4}`: bands from lowest to highest frequency (by rows)
 """
-function dw_split(obj::NeuroAnalyzer.NEURO; ch::String, wt::T, type::Symbol, n::Int64=0) where {T<:DiscreteWavelet}
+function dw_split(obj::NeuroAnalyzer.NEURO; ch::String, wt::T, type::Symbol, n::Int64=0)::Array{Float64, 4} where {T<:DiscreteWavelet}
 
     n -= 1
     if n == -1

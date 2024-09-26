@@ -36,6 +36,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 """
 function normpower(s::AbstractArray)
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

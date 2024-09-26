@@ -86,6 +86,7 @@ Named tuple containing:
 """
 function diss(s::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -135,6 +136,8 @@ Named tuple containing:
 function diss(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+    _chk3d(s1)
+    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)

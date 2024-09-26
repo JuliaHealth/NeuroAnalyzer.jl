@@ -14,7 +14,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `s_new::AbstractVector`
 """
-function derivative(s::AbstractVector)
+function derivative(s::AbstractVector)::AbstractVector
 
     @assert length(s) > 2 "Signal length must be > 2."
 
@@ -39,8 +39,9 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `s_new::Array{Float64, 3}`
 """
-function derivative(s::AbstractArray)
+function derivative(s::AbstractArray)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -69,7 +70,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -90,8 +91,12 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
+
+# Returns
+
+Nothing
 """
-function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = derivative(obj, ch=ch)
     obj.data = obj_new.data

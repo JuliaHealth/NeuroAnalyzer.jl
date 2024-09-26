@@ -22,7 +22,7 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-187
 Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clin Neurophysiol 2006;117(2):348-368
 """
-function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
+function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _has_locs(obj)
@@ -85,14 +85,13 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
 # Returns
 
-- `G::Matrix{Float64}`: transformation matrix (SP spline)
-- `H::Matrix{Float64}`: transformation matrix (CSD spline)
+Nothing
 
 # Source
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function csd!(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
+function csd!(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)::Nothing
 
     obj_new = csd(obj, m=m, n=n, lambda=lambda)
     obj.data = obj_new.data
@@ -125,7 +124,7 @@ Named tuple containing:
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function gh(locs::DataFrame; m::Int64=4, n::Int64=8)
+function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::NamedTuple{(:G, :H), Tuple{Matrix{Float64}, Matrix{Float64}}}
 
     @assert !(m < 2 || m > 10) "m must be in [2, 10]."
     @assert n >= 1 "n must be ≥ 1."

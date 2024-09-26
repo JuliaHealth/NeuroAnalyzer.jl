@@ -83,6 +83,7 @@ Calculate absolute band power between two frequencies.
 """
 function band_power(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::Matrix{Float64} where {T <: CWT}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     bp = zeros(ch_n, ep_n)

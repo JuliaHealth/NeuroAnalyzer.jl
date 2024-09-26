@@ -118,7 +118,7 @@ Average signal across trials.
 """
 function tavg(s::AbstractArray)::AbstractArray
 
-    @assert ndims(s) == 3 "Signal must have 3 dimensions."
+    _chk3d(s)
 
     return mean(s, dims=3)
 
