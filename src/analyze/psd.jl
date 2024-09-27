@@ -244,10 +244,10 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Returns
 
 Named tuple containing:
-- `p::Matrix{Float64}`: powers
+- `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::NamedTuple{(:p, :f), Tuple{Matrix{Float64}, Vector{Float64}}}
+function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::NamedTuple{(:p, :f), Tuple{Vector{Float64}, Vector{Float64}}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
@@ -299,10 +299,10 @@ Calculate power spectrum using Gaussian and Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `p::Matrix{Float64}`: powers
+- `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::NamedTuple{(:p, :f), Tuple{Matrix{Float64}, Vector{Float64}}}
+function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::NamedTuple{(:p, :f), Tuple{Vector{Float64}, Vector{Float64}}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -347,10 +347,10 @@ Calculate power spectrum using continuous wavelet transformation (CWT).
 # Returns
 
 Named tuple containing:
-- `p::Matrix{Float64}`: powers
+- `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::NamedTuple{(:p, :f), Tuple{Matrix{Float64}, Vector{Float64}}} where {T <: CWT}
+function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::NamedTuple{(:p, :f), Tuple{Vector{Float64}, Vector{Float64}}} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 

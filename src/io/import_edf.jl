@@ -265,7 +265,7 @@ function import_edf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                         handedness="",
                         weight=-1,
                         height=-1)
-    r = NeuroAnalyzer._create_recording_eeg(data_type=data_type,
+    r = _create_recording_eeg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,
                               file_type=file_type,
@@ -297,7 +297,6 @@ function import_edf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
-
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj

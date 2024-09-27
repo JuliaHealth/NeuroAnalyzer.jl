@@ -87,7 +87,7 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{St
         end
     end
 
-    return (pv=pv, sd=sd, phase_dif=phd, s1ph=s1ph, s2ph=s2ph)
+    return (pv=pv, sd=sd, phd=phd, s1ph=s1ph, s2ph=s2ph)
 
 end
 

@@ -111,7 +111,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
 
 end
 
-function _epochs_tps(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
+function _epochs_tps(obj::NeuroAnalyzer.NEURO)::Matrix{Float64}
     # return time borders of epochs
     tps = zeros(2, nepochs(obj))
     # epoch start

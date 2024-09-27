@@ -12,9 +12,9 @@ Perform Wiener deconvolution denoising.
 
 # Returns
 
-- `s_new::Vector{Float64}`
+- `s_new::AbstractArray`
 """
-function denoise_wien(s::AbstractArray)::Vector{Float64}
+function denoise_wien(s::AbstractArray)::AbstractArray
 
     _chk3d(s)
     ch_n, _, ep_n = size(s)

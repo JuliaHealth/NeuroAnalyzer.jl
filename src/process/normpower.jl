@@ -14,7 +14,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `s_new::Vector{Float64}`
 """
-function normpower(s::AbstractVector)
+function normpower(s::AbstractVector)::Vector{Float64}
 
     _, _, _, _, _, _, _, rms = amp(s)
     return s .* rms
@@ -34,7 +34,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `s_new::Array{Float64, 3}`
 """
-function normpower(s::AbstractArray)
+function normpower(s::AbstractArray)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -66,7 +66,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -87,8 +87,12 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
+
+# Returns
+
+Nothing
 """
-function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = normpower(obj, ch=ch)
     obj.data = obj_new.data

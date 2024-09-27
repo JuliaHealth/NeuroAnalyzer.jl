@@ -19,9 +19,9 @@ Calculate cross-covariance.
 
 # Returns
 
-- `xc::Matrix{Float64}`
+- `xc::Array{Float64, 3}`
 """
-function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Matrix{Float64}
+function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     _check_var(method, [:sum, :cov, :stat], "method")
 

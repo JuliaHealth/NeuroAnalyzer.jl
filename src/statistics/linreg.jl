@@ -19,14 +19,14 @@ To predict, use: `new_x = DataFrame(x = [3.5, 7]); predict(lr, new_x)
 
 Named tuple containing:
 - `lr::StatsModels.TableRegressionModel`: model
-- `radj::Flpoat64`: R^2
+- `radj::Float64`: R^2
 - `c::Vector{Float64}`: coefficients
 - `se::Vector{Float64}`: standard error for coefficients
 - `aic::Float64`:: Akaike’s Information Criterion (AIC)
 - `bic::Float64`:: Bayesian Information Criterion (BIC)
 - `lf::Vector{Float64}`: linear fit (plot(x, lf))
 """
-function linreg(x::AbstractVector, y::AbstractVector)
+function linreg(x::AbstractVector, y::AbstractVector)::NamedTuple{(:lr, :radj, :c, :se, :aic, :bic, :lf), Tuple{StatsModels.TableRegressionModel, Float64, Vector{Float64}, Vector{Float64}, Float64, Float64, Vector{Float64}}}
 
     df = DataFrame(:x=>x, :y=>y)
     lr = GLM.lm(@formula(y ~ x), df)
@@ -55,7 +55,7 @@ Named tuple containing:
 - `aic::Float64`
 - `bic::Float64`
 """
-function infcrit(m::T) where {T<:StatsModels.TableRegressionModel}
+function infcrit(m::T)::NamedTuple{(:aic, :bic), Tuple{Float64, Float64}} where {T<:StatsModels.TableRegressionModel}
 
     k = length(StatsKit.coef(m)) - 1
     n = length(MultivariateStats.predict(m))

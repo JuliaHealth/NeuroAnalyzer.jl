@@ -14,7 +14,7 @@ Calculate Jaccard similarity between two vectors.
 
 - `j::Float64`
 """
-function jaccard_similarity(x::AbstractVector, y::AbstractVector)
+function jaccard_similarity(x::AbstractVector, y::AbstractVector)::Float64
 
     i = float(length(intersect(x, y)))
     u = length(x) + length(y) - i

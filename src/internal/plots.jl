@@ -1,6 +1,6 @@
-_xlims(t::Union{AbstractVector, AbstractRange}) = floor(t[1], digits=2), ceil(t[end], digits=2)
+_xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} = floor(t[1], digits=2), ceil(t[end], digits=2)
 
-function _ylims(s::AbstractVector)
+function _ylims(s::AbstractVector)::Tuple{Real, Real}
     if maximum(abs.(s)) > 100
         n = 2
     elseif maximum(abs.(s)) >= 0
@@ -28,7 +28,7 @@ function _ylims(s::AbstractVector)
     end
 end
 
-function _ticks(t::Union{AbstractVector, AbstractRange})
+function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
     if length(t) >= 3
         if t[2] - t[1] == t[3] - t[2]
             tc = linspace(round(t[1]), round(t[end]), 11)
@@ -41,7 +41,7 @@ function _ticks(t::Union{AbstractVector, AbstractRange})
     return tc
 end
 
-function _ticks(t::Tuple{Real, Real})
+function _ticks(t::Tuple{Real, Real})::AbstractVector
     if typeof(t[1]) <: Int && typeof(t[2]) <: Int
         if length(t[1]:t[2]) <= 30
             return collect(t[1]:t[2])
@@ -59,11 +59,11 @@ function _ticks(t::Tuple{Real, Real})
     end
 end
 
-_erpticks(t::Union{AbstractVector, AbstractRange}) = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[end], digits=2), 9))[2:end])
+_erpticks(t::Union{AbstractVector, AbstractRange})::AbstractVector = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[end], digits=2), 9))[2:end])
 
-_erpticks(t::Tuple{Real, Real}) = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[2], digits=2), 9))[2:end])
+_erpticks(t::Tuple{Real, Real})::AbstractVector = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[2], digits=2), 9))[2:end])
 
-function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String, t::String)
+function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String, t::String)::Tuple{String, String, String}
     yl == "default" && (yl = y)
     xl == "default" && (xl = x)
     tt == "default" && (tt = t)

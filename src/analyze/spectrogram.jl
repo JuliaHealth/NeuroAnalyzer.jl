@@ -266,11 +266,11 @@ Calculate spectrogram. Default method is short time Fourier transform.
 # Returns
 
 Named tuple containing:
-- `p::Array{Float64, 3}`: powers
+- `p::Array{Float64, 4}`: powers
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::NamedTuple{(:p, :f, :t), Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}}} where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::NamedTuple{(:p, :f, :t), Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}} where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     ch = get_channel(obj, ch=ch)

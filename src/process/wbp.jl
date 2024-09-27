@@ -18,7 +18,7 @@ Perform wavelet band-pass filtering.
 
 - `s_new::Vector{Float64}`
 """
-function wbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6)
+function wbp(s::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6)::Vector{Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert frq > 0 "frq must be > 0."
@@ -51,9 +51,9 @@ Perform wavelet band-pass filtering.
 
 # Returns
 
-- `s_new::Array{Float64, 3`
+- `s_new::Array{Float64, 3}`
 """
-function wbp(s::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6)
+function wbp(s::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -87,7 +87,7 @@ Perform wavelet band-pass filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)
+function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -111,8 +111,12 @@ Perform wavelet band-pass filtering.
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
+
+# Returns
+
+Nothing
 """
-function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)
+function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)::Nothing
 
     obj_new = wbp(obj, ch=ch, pad=pad, frq=frq, ncyc=ncyc)
     obj.data = obj_new.data
@@ -122,4 +126,3 @@ function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::
     return nothing
 
 end
-

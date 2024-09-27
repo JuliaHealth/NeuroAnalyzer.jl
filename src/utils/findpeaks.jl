@@ -14,7 +14,7 @@ Find peaks.
 
 - `p_idx::Vector{Int64}`
 """
-function findpeaks(signal::AbstractVector; d::Int64=32)
+function findpeaks(signal::AbstractVector; d::Int64=32)::Vector{Int64}
 
     @assert d >= 1 "d must be ≥ 1."
 

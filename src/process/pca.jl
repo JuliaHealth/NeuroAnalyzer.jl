@@ -17,10 +17,10 @@ Calculate `n` first Primary Components (PCs).
 Named tuple containing:
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
-- `pcm::PCA{Float64}`: PC mean
+- `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(s::AbstractArray; n::Int64)
+function pca_decompose(s::AbstractArray; n::Int64)::NamedTuple{(:pc, :pcv, :pcm, :pc_model), Tuple{Array{Float64, 3}, Matrix{Float64}, Vector{Float64}, MultivariateStats.PCA{Float64}}}
 
     _chk3d(s)
     @assert n >= 1 "n must be ≥ 1."
@@ -77,12 +77,12 @@ Calculate `n` first Primary Components (PCs).
 # Returns
 
 Named tuple containing:
-- `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+- `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
 - `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)
+function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)::NamedTuple{(:pc, :pcv, :pcm, :pc_model), Tuple{Array{Float64, 3}, Matrix{Float64}, Vector{Float64}, MultivariateStats.PCA{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n=n)
@@ -105,7 +105,7 @@ Reconstructs signal using PCA components.
 
 - `s_new::Array{Float64, 3}`
 """
-function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::MultivariateStats.PCA{Float64})
+function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::MultivariateStats.PCA{Float64})::Array{Float64, 3}
 
     _chk3d(s)
     s_new = similar(s)
@@ -132,7 +132,7 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     @assert :pc in keys(obj.components) "OBJ does not contain :pc component. Perform pca_decompose() first."
     @assert :pc_model in keys(obj.components) "OBJ does not contain :pc_model component. Perform pca_decompose() first."
@@ -158,8 +158,12 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
+
+# Returns
+
+Nothing
 """
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = pca_reconstruct(obj, ch=ch)
     obj.data = obj_new.data
@@ -186,7 +190,7 @@ Reconstruct signal using external PCA components (`pc` and `pca`).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})
+function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -211,8 +215,12 @@ Reconstruct signals using external PCA components (`pc` and `pc_model`).
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
+
+# Returns
+
+Nothing
 """
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})
+function pca_reconstruct!(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}})::Nothing
 
     obj_new = pca_reconstruct(obj, pc, pc_model, ch=ch)
     obj.data = obj_new.data

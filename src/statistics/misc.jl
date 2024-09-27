@@ -496,10 +496,10 @@ Collect thresholded elements, e.g. in a topographical map.
 # Returns
 
 Named tuple containing:
-- `x_t::Int64`: thresholded matrix
+- `x_t::Matrix{Bool}`: thresholded matrix
 - `n::Int64`: number of elements
 """
-function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::NamedTuple{(:x_t, :n), Tuple{Int64, Int64}}
+function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::NamedTuple{(:x_t, :n), Tuple{Matrix{Bool}, Int64}}
 
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 
@@ -779,9 +779,9 @@ Permute signal data.
 
 # Returns
 
-- `s_new::Matrix{Float64}`
+- `s_new::Union{Array{Float64, 3}, Array{Float64, 4}}`
 """
-function permute(s::AbstractArray, n::Int64)::Matrix{Float64}
+function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
 
     @assert n > 0 "n must have > 0 epoch."
     @assert ndims(s) <= 3 "permute() only works for arrays of ≤ 3 dimensions."

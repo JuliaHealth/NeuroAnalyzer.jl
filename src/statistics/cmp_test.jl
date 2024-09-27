@@ -21,7 +21,7 @@ Named tuple containing for type !== `:perm`:
 - `t`: test results
 - `ts::Tuple{Float64, String}`: test statistics
 - `tc::Tuple{Float64, Float64}`: test statistics confidence interval
-- `df::Int64`: degrees of freedom
+- `df::Float64`: degrees of freedom
 - `p::Float64`: p-value
 
 Named tuple containing for type === `:perm`:
@@ -29,10 +29,10 @@ Named tuple containing for type === `:perm`:
 - `p1::Float64`: one-sided p-value
 - `p2::Float64`: two-sided p-value
 """
-function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000)
+function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000)::Union{NamedTuple{(:t, :ts, :tc, :df, :p), Tuple{OneSampleTTest, Tuple{Float64, String}, Tuple{Float64, Float64}, Float64, Float64}}, NamedTuple{(:t, :ts, :tc, :df, :p), Tuple{EqualVarianceTTest, Tuple{Float64, String}, Tuple{Float64, Float64}, Float64, Float64}}, NamedTuple{(:t, :ts, :tc, :df, :p), Tuple{ApproximateMannWhitneyUTest{Float64}, Tuple{Float64, String}, Float64, Float64, Float64}}, NamedTuple{(:t, :p1, :p2), Tuple{NamedTuple{(:perm_diff, :obs_diff), Tuple{Vector{Float64}, Float64}}, Float64, Float64}}}
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
-    paired && length(s1) != length(s2) && @error "For paired test both segments must have the same size."
+    paired && length(s1) != length(s2) && @error "For paired test both vectors must have the same size."
 
     ks = ApproximateTwoSampleKSTest(s1, s2)
     pks = pvalue(ks)

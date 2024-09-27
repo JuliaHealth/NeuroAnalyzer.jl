@@ -13,10 +13,10 @@ Calculate d' and response bias for two proportions.
 # Returns
 
 Named tuple containing:
-- `dprime::Float64`
+- `dp::Float64`
 - `rb::Float64`: response bias
 """
-function dprime(p1::Real, p2::Real)
+function dprime(p1::Real, p2::Real)::NamedTuple{(:dp, :rb), Tuple{Float64, Float64}}
 
     @assert !(p1 <= 0 || p1 >= 1) "p1 must be in [0, 1]."
     @assert !(p2 <= 0 || p2 >= 1) "p2 must be in [0, 1]."
@@ -24,6 +24,6 @@ function dprime(p1::Real, p2::Real)
     p1_zscore = quantile(Distributions.Normal(), p1)
     p2_zscore = quantile(Distributions.Normal(), p2)
 
-    return (dprime=(p1_zscore - p2_zscore), rb=(-(p1_zscore + p2_zscore) / 2))
+    return (dp=(p1_zscore - p2_zscore), rb=(-(p1_zscore + p2_zscore) / 2))
 
 end

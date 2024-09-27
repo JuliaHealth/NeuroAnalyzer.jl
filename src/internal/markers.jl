@@ -1,11 +1,11 @@
-function _delete_markers(markers::DataFrame, segment::Tuple{Int64, Int64}, fs::Int64)
+function _delete_markers(markers::DataFrame, segment::Tuple{Real, Real}, fs::Int64)::DataFrame
     for marker_idx in nrow(markers):-1:1
         round(Int64, fs * markers[marker_idx, :start]) in segment[1]:segment[2] && deleteat!(markers, marker_idx)
     end
     return markers
 end
 
-function _shift_markers(m::DataFrame, pos::Int64, offset::Int64, fs::Int64)
+function _shift_markers(m::DataFrame, pos::Real, offset::Real, fs::Int64)::DataFrame
     markers = deepcopy(m)
     for marker_idx in 1:nrow(markers)
         round(Int64, fs * markers[marker_idx, :start]) > pos && (markers[marker_idx, :start] -= (offset / fs))
@@ -13,11 +13,11 @@ function _shift_markers(m::DataFrame, pos::Int64, offset::Int64, fs::Int64)
     return markers
 end
 
-function _get_epoch_markers(obj::NeuroAnalyzer.NEURO)
+function _get_epoch_markers(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
     return round.(s2t.(collect(1:epoch_len(obj):epoch_len(obj) * nepochs(obj)), sr(obj)), digits=2)
 end
 
-function _has_markers(channel_types::Vector{String})
+function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
     markers = false
     markers_channel = 0
     if "mrk" in channel_types
@@ -30,9 +30,9 @@ function _has_markers(channel_types::Vector{String})
     return markers, markers_channel
 end
 
-_has_markers(obj::NeuroAnalyzer.NEURO) = nrow(obj.markers) > 0 ? true : false
+_has_markers(obj::NeuroAnalyzer.NEURO)::Bool = nrow(obj.markers) > 0 ? true : false
 
-function _a2df(annotations::Vector{String})
+function _a2df(annotations::Vector{String})::DataFrame
     # convert EDF/BDF annotations to markers DataFrame
     mrk = replace.(annotations, "\x14\x14\0" => "|")
     mrk = replace.(mrk, "\x14\x14" => "|")

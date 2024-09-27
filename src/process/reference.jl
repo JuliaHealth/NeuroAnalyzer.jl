@@ -26,7 +26,7 @@ Reference to common electrode(s). Only signal channels are processed.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)
+function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -74,8 +74,12 @@ Reference to common electrode(s). Only signal channels are processed.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
+
+# Returns
+
+Nothing
 """
-function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)
+function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)::Nothing
 
     obj_new = reference_ce(obj, ch=ch, med=med)
     obj.data = obj_new.data
@@ -105,7 +109,7 @@ Reference to averaged reference. Only signal channels are processed.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=false, average::Bool=true, med::Bool=false, weighted::Bool=false)
+function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=false, average::Bool=true, med::Bool=false, weighted::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -208,8 +212,12 @@ Reference to averaged reference. Only signal channels are processed.
 - `average::Bool=true`: average reference channels prior to subtracting, otherwise add all reference channels
 - `med::Bool=false`: use median instead of mean
 - `weighted::Bool=false`: use weighted reference channels (weights depend on the distance from the current electrode)
+
+# Returns
+
+Nothing
 """
-function reference_avg!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=false, average::Bool=true, med::Bool=false, weighted::Bool=false)
+function reference_avg!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=false, average::Bool=true, med::Bool=false, weighted::Bool=false)::Nothing
 
     obj_new = reference_avg(obj, exclude_fpo=exclude_fpo, exclude_current=exclude_current, average=average, med=med, weighted=weighted)
     obj.data = obj_new.data
@@ -239,7 +247,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
+function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
@@ -363,8 +371,12 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
     - `:i`: ipsilateral - A1 for left channels, A2 for right channels
     - `:c`: contraletral - A1 for right channels, A2 for left channels
 - `med::Bool=false`: use median instead of mean
+
+# Returns
+
+Nothing
 """
-function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
+function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)::Nothing
 
     obj_new = reference_a(obj, type=type, med=med)
     obj.data = obj_new.data
@@ -394,7 +406,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
+function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
@@ -518,8 +530,12 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
     - `:i`: ipsilateral - M1 for left channels, M2 for right channels
     - `:c`: contraletral - M1 for right channels, M2 for left channels
 - `med::Bool=false`: use median instead of mean
+
+# Returns
+
+Nothing
 """
-function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
+function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)::Nothing
 
     obj_new = reference_m(obj, type=type, med=med)
     obj.data = obj_new.data
@@ -547,7 +563,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)
+function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _has_locs(obj)
@@ -633,8 +649,12 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 - `nn::Int64=4`: use `nn` adjacent electrodes
 - `weighted::Bool=false`: use distance weights; use mean of nearest channels if false
 - `med::Bool=false`: use median instead of mean
+
+# Returns
+
+Nothing
 """
-function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)
+function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::Nothing
 
     obj_new = reference_plap(obj, nn=nn, weighted=weighted, med=med)
     obj.data = obj_new.data
@@ -672,7 +692,7 @@ Examples of montages:
 - bipolar longitudinal: ["Fz", "Cz", "Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], "longitudinal-BIP"
 - bipolar longitudinal: ["FPz-Fz", "Fz-Cz", "Cz-Pz", "Pz-Oz", "Fp1-F7", "Fp1-F3", "F7-T7", "F7-T3", "T7-P7", "T7-T5", "T3-P7", "T3-T5", "P7-O1", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "F8-T8", "F8-T4", "T8-P8", "T8-T6", "T4-P8", "T4-T6", "T6-O2", "P8-O2", "Fp2-F4", "F4-C4", "C4-P4", "P4-O2"], "longitudinal-BIP"
 """
-function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "F8-T4", "T4-T6", "T6-O2", "Fp2-F4", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="longitudinal-BIP")
+function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "F8-T4", "T4-T6", "T6-O2", "Fp2-F4", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="longitudinal-BIP")::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -741,8 +761,12 @@ Examples of montages:
 - bipolar transverse: ["Fp2-Fp1", "F8-Fp2", "F8-F4", "F4-Fz", "Fz-F3", "F3-F7", "Fp1-F7", "T4-C4", "C4-Cz", "Cz-C3", "C3-T3", "T6-P4", "P4-Pz", "Pz-P3", "P3-T5", "O2-O1"], "BIP ="
 - bipolar longitudinal: ["Fz", "Cz", "Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], "BIP ||"
 - bipolar longitudinal: ["Fp-Fz", "Fz-Cz", "Cz-Pz", "Pz-O", "Fp1-F7", "Fp1-F3", "F7-T7", "T7-P7", "P7-O1", "F3-C3", "C3-P3", "P3-O1", "Fp1-F7", "Fp2-F4", "F8-T8", "T8-P8", "P8-O2", "F4-C4", "C4-P4", "P4-O2"], "BIP ||"
+
+# Returns
+
+Nothing
 """
-function reference_custom!(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="BIP ||")
+function reference_custom!(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="BIP ||")::Nothing
 
     obj_new = reference_custom(obj, ref_list=ref_list, ref_name=ref_name)
     obj.data = obj_new.data

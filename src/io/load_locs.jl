@@ -40,7 +40,7 @@ Channel locations:
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)
+function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert length(obj.header.recording[:label]) > 0 "OBJ does not contain labels, use add_label() first."

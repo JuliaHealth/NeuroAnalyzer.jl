@@ -23,7 +23,7 @@ Named tuple containing:
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
+function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})::NamedTuple{(:segp, :segs, :tidx, :fidx), Tuple{Matrix{Float64}, Vector{Tuple{Float64, Float64}}, Tuple{Real, Real}, Tuple{Real, Real}}}
 
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
@@ -62,9 +62,8 @@ Named tuple containing:
 - `tidx::Tuple{Real, Real}`: time indices
 - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
+function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})::NamedTuple{(:segp, :segs, :tidx, :fidx), Tuple{Array{Float64, 3}, Vector{Tuple{Float64, Float64}}, Tuple{Real, Real}, Tuple{Real, Real}}}
 
-    _chk3d(sp)
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
     @assert ch in axes(sp, 3) "ch must be in [1, $(size(sp, 3))]."
@@ -97,7 +96,7 @@ Named tuple containing:
 - `p::AbstractArray`: powers
 - `f::AbstractVector`: frequencies
 """
-function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})
+function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})::NamedTuple{(:p, :f), Tuple{AbstractArray, AbstractVector}}
 
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
@@ -136,7 +135,7 @@ Named tuple containing:
 - `p::AbstractArray`: powers
 - `t::AbstractVector`: time points
 """
-function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})
+function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})::NamedTuple{(:p, :t), Tuple{AbstractArray, AbstractVector}}
 
     _chk4d(p)
     _check_tuple(seg, "seg", (t[1], t[end]))

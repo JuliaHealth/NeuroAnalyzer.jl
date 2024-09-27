@@ -1,7 +1,7 @@
-_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}}) = _find_bylabel(obj.locs, labels(obj)[ch])
-_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}) = _find_bylabel(obj.locs, labels(obj)[get_channel(obj, ch=ch)])
-_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}}) = obj.locs[_loc_idx(obj, ch), :label]
-_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}) = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
+_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{Int64, Vector{Int64}} = _find_bylabel(obj.locs, labels(obj)[ch])
+_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::Vector{Int64} = _find_bylabel(obj.locs, labels(obj)[get_channel(obj, ch=ch)])
+_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{String, Vector{String}} = obj.locs[_loc_idx(obj, ch), :label]
+_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::Vector{String} = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::DataFrame
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
@@ -17,7 +17,7 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::
     return locs
 end
 
-function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})::Vector{Int64}
+function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})::Union{Int64, Vector{Int64}}
     if isa(l, String)
         if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))) > 0
             return findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))[1]

@@ -17,7 +17,7 @@ Filter using moving average filter (with threshold).
 
 - `s_filtered::Vector{Float64}`
 """
-function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Vector{Float64}
 
     # check k
     @assert k in 1:length(s) "k must be in [1, signal length ($(length(s)))]."
@@ -55,9 +55,9 @@ Filter using moving average filter (with threshold).
 
 # Returns
 
-- `s_filtered::Array{Float64, 3}`: convoluted signal
+- `s_filtered::Array{Float64, 3}`
 """
-function filter_mavg(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mavg(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -90,13 +90,13 @@ Filter using moving average filter (with threshold).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+- `obj_new::NeuroAnalyzer.NEURO`
 
 # Source
 
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
 """
-function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     _info("Window length: $(2 * k + 1) samples")
@@ -124,8 +124,11 @@ Filter using moving average filter (with threshold).
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
+# Returns
+
+Nothing
 """
-function filter_mavg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mavg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Nothing
 
     obj_new = filter_mavg(obj, ch=ch, k=k, t=t, window=window)
     obj.data = obj_new.data

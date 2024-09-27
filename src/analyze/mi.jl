@@ -32,9 +32,9 @@ Calculate mutual information (channels of `s1` vs channels of `s2`).
 
 # Returns
 
-- `m::Array{Float64, 3}`
+- `m::Matrix{Float64}`
 """
-function mutual_information(s1::AbstractArray, s2::AbstractArray)::Array{Float64}
+function mutual_information(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -152,9 +152,9 @@ Calculate mutual information between two channels.
 
 # Returns
 
-- `m::Array{Float64, 3}`
+- `m::Matrix{Float64}`
 """
-function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::Array{Float64, 3}
+function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
 
     # check channels
     ch1 = get_channel(obj1, ch=ch1)

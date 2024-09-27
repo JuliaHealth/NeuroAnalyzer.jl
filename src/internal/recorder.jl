@@ -1,6 +1,7 @@
-function _beep()
+function _beep()::Nothing
     beep, fs = wavread(joinpath(res_path, "beep.wav"))
     wavplay(beep, fs)
+    return nothing
 end
 
 function _check_rpi()
@@ -12,7 +13,7 @@ function _check_rpi()
     return rpi
 end
 
-function _kbd_listener(c::Channel)
+function _kbd_listener(c::Channel)::Nothing
     # based on https://discourse.julialang.org/t/how-to-detect-key-down-events/95011/2
     # run listener as separate task using channels, put keypresses in channel for main loop
     t = REPL.TerminalMenus.terminal
@@ -22,16 +23,14 @@ function _kbd_listener(c::Channel)
         REPL.Terminals.raw!(t, false) || error("Unable to switch back from raw mode.")
         put!(c, keypress)
     end
+    return nothing
 end
 
-function _serial_open(port_name::String="/dev/ttyACM0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)
-
+function _serial_open(port_name::String="/dev/ttyACM0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)::SerialPort
     @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
-
     if Sys.isunix()
         @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
     end
-
     sp = nothing
     try
         sp = LibSerialPort.open(port_name, baudrate, mode=m)
@@ -39,12 +38,10 @@ function _serial_open(port_name::String="/dev/ttyACM0"; baudrate::Int64=115200, 
     catch
         error("Serial port $port_name cannot be opened.")
     end
-
     return sp
-
 end
 
-function _serial_listener(sp::LibSerialPort.SerialPort)
+function _serial_listener(sp::LibSerialPort.SerialPort)::Union{String, Nothing}
     if isopen(sp)
         if bytesavailable(sp) > 0
             return String(readline(sp))
@@ -54,19 +51,18 @@ function _serial_listener(sp::LibSerialPort.SerialPort)
     end
 end
 
-function _serial_close(sp::LibSerialPort.SerialPort)
+function _serial_close(sp::LibSerialPort.SerialPort)::Nothing
     isopen(sp) && close(sp)
     return nothing
 end
 
-function _serial_close(port_name::String)
+function _serial_close(port_name::String)::Nothing
     sp = LibSerialPort.open(port_name)
     isopen(sp) && close(sp)
     return nothing
 end
 
-function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)
-
+function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)::DataFrame
     # `blocks`: number of data blocks to record
     # `n`: number of records per block
     # `t`: recording time in seconds; if t > 0, blocks ignored and calculated based on recorded data

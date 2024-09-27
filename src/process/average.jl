@@ -11,11 +11,10 @@ Average all channels.
 
 # Returns
 
-- `average::Array{Float64, 3}`
+- `average::AbstractArray`
 """
-function average(s::AbstractArray)::Array{Float64, 3}
+function average(s::AbstractArray)::AbstractArray
 
-    _chk3d(s)
     return mean(s, dims=1)
 
 end
@@ -32,12 +31,10 @@ Averages two signals.
 
 # Returns
 
-- `average::Array{Float64, 3}`
+- `average::AbstractArray`
 """
-function average(s1::AbstractArray, s2::AbstractArray)::Array{Float64, 3}
+function average(s1::AbstractArray, s2::AbstractArray)::AbstractArray
 
-    _chk3d(s1)
-    _chk3d(s2)
     return mean(hcat(s1, s2), dims=2)
 
 end
@@ -110,7 +107,7 @@ Return the average signal of two objects.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
+function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
     @assert size(obj1.data) == size(obj2.data) "Both signals must have the same size."
 

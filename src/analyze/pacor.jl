@@ -16,13 +16,13 @@ Calculate partial auto-correlation.
 
 # Returns
 
-- `pac::Matrix{Float64}`
+- `pac::Array{Float64, 3}`
 
 # Notes
 
 If you get `ERROR: PosDefException: matrix is not positive definite; Cholesky factorization failed.`, try lowering `l` value or change method to `:yw`.
 """
-function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
+function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
 
     _check_var(method, [:reg, :yw], "method")
 
@@ -64,9 +64,9 @@ Calculate partial auto-correlation.
 
 # Returns
 
-- `pac::Matrix{Float64}`
+- `pac::Array{Float64, 3}`
 """
-function pacor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
+function pacor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
 
     ep_n = size(s, 2)
 
@@ -96,9 +96,9 @@ Calculate partial auto-correlation.
 
 # Returns
 
-- `pac::Matrix{Float64}`
+- `pac::Array{Float64, 3}`
 """
-function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Matrix{Float64}
+function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)

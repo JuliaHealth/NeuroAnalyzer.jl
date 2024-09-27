@@ -14,7 +14,7 @@ If H < 0.2 then the vector `x` is symmetrical.
 
 - `h::Float64`
 """
-function hildebrand_rule(x::AbstractVector)
+function hildebrand_rule(x::AbstractVector)::Float64
 
     return (mean(x) - median(x)) ./ std(x)
 

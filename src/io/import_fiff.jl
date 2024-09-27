@@ -234,7 +234,6 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
 
     # process blocks
     bidx, btypes = _get_blocks(fiff_blocks)
-
     project_info = Dict()
     fields = ["proj_id", "proj_name"]
     @inbounds for f in fields
@@ -367,7 +366,7 @@ Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.NEURO` o
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function import_fiff(file_name::String)
+function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

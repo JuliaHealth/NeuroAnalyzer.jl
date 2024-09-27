@@ -49,7 +49,7 @@ Normalize.
 
 - `normalized::AbstractVector`
 """
-function normalize(s::AbstractVector, n::Float64=1.0; method::Symbol)
+function normalize(s::AbstractVector, n::Float64=1.0; method::Symbol)::AbstractVector
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :mad, :rank, :none], "method")
 
@@ -122,7 +122,7 @@ Normalize.
 
 - `sn::AbstractArray`
 """
-function normalize(s::AbstractArray, n::Float64=1.0; bych::Bool=false, method::Symbol)
+function normalize(s::AbstractArray, n::Float64=1.0; bych::Bool=false, method::Symbol)::AbstractArray
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :none], "method")
 
@@ -173,7 +173,7 @@ Normalize by z-score.
 
 - `sn::AbstractVector`
 """
-function normalize_zscore(s::AbstractVector)
+function normalize_zscore(s::AbstractVector)::AbstractVector
 
     m = mean(s)
     sd = std(s)
@@ -200,7 +200,7 @@ end
 
 - `sn::AbstractArray`
 """
-function normalize_zscore(s::AbstractArray; bych::Bool=false)
+function normalize_zscore(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_zscore() only works for arrays of ≤ 3 dimensions."
 
@@ -245,7 +245,7 @@ Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0
 
 - `sn::AbstractVector`
 """
-function normalize_minmax(s::AbstractVector)
+function normalize_minmax(s::AbstractVector)::AbstractVector
 
     if length(unique(s)) == 1
         sn = ones(length(s))
@@ -274,7 +274,7 @@ Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0
 - `sn::AbstractArray`
 """
 
-function normalize_minmax(s::AbstractArray; bych::Bool=false)
+function normalize_minmax(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     length(unique(s)) == 1 && return ones(length(s))
 
@@ -317,7 +317,7 @@ Normalize in [0, n], default is [0, +1].
 
 - `sn::AbstractVector`
 """
-function normalize_n(s::AbstractVector, n::Real=1.0)
+function normalize_n(s::AbstractVector, n::Real=1.0)::AbstractVector
 
     if length(unique(s)) == 1
         sn = ones(length(s)) .* n
@@ -345,7 +345,7 @@ Normalize in [0, n], default is [0, +1].
 
 - `sn::AbstractArray`
 """
-function normalize_n(s::AbstractArray, n::Real=1.0; bych::Bool=false)
+function normalize_n(s::AbstractArray, n::Real=1.0; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_n() only works for arrays of ≤ 3 dimensions."
 
@@ -388,7 +388,7 @@ Normalize using log-transformation.
 
 - `sn::AbstractVector`
 """
-function normalize_log(s::AbstractVector)
+function normalize_log(s::AbstractVector)::AbstractVector
 
     m = abs(minimum(s))
     sn = @. log(1 + s + m)
@@ -411,7 +411,7 @@ Normalize using log-transformation.
 
 - `sn::AbstractArray`
 """
-function normalize_log(s::AbstractArray; bych::Bool=false)
+function normalize_log(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_log() only works for arrays of ≤ 3 dimensions."
 
@@ -450,7 +450,7 @@ Normalize to Gaussian.
 
 - `sn::AbstractVector`
 """
-function normalize_gauss(s::AbstractVector)
+function normalize_gauss(s::AbstractVector)::AbstractVector
 
     l = length(s) + 1
     sn = (tiedrank(s) ./ l .- 0.5) .* 2
@@ -480,7 +480,7 @@ Normalize to Gaussian.
 
 - `sn::AbstractArray`
 """
-function normalize_gauss(s::AbstractArray; bych::Bool=false)
+function normalize_gauss(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_gauss() only works for arrays of ≤ 3 dimensions."
 
@@ -520,7 +520,7 @@ Normalize using log10-transformation.
 
 - `sn::AbstractVector`
 """
-function normalize_log10(s::AbstractVector)
+function normalize_log10(s::AbstractVector)::AbstractVector
 
     m = 1 + abs(minimum(s))
     sn = @. log10(s + m)
@@ -543,7 +543,7 @@ Normalize using log10-transformation.
 
 - `sn::AbstractArray`
 """
-function normalize_log10(s::AbstractArray; bych::Bool=false)
+function normalize_log10(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_log10() only works for arrays of ≤ 3 dimensions."
 
@@ -583,7 +583,7 @@ Normalize to using -log-transformation.
 
 - `sn::Vector{Float64}`
 """
-function normalize_neglog(s::AbstractArray; bych::Bool=false)
+function normalize_neglog(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     sn = @. -log(s)
 
@@ -605,7 +605,7 @@ Normalize using -log10-transformation.
 
 - `sn::AbstractArray`
 """
-function normalize_neglog10(s::AbstractArray; bych::Bool=false)
+function normalize_neglog10(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     sn = @. -log10(s)
 
@@ -626,7 +626,7 @@ Normalize in [-∞, 0].
 
 - `sn::AbstractVector`
 """
-function normalize_neg(s::AbstractVector)
+function normalize_neg(s::AbstractVector)::AbstractVector
 
     m = maximum(s)
     sn = @. s - m
@@ -649,7 +649,7 @@ Normalize in [-∞, 0].
 
 - `sn::AbstractArray`
 """
-function normalize_neg(s::AbstractArray; bych::Bool=false)
+function normalize_neg(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_neg() only works for arrays of ≤ 3 dimensions."
 
@@ -688,7 +688,7 @@ Normalize in [0, +∞].
 
 - `sn::AbstractVector`
 """
-function normalize_pos(s::AbstractVector)
+function normalize_pos(s::AbstractVector)::AbstractVector
 
     m = abs(minimum(s))
     sn = @. s + m
@@ -711,7 +711,7 @@ Normalize in [0, +∞].
 
 - `sn::AbstractArray`
 """
-function normalize_pos(s::AbstractArray; bych::Bool=false)
+function normalize_pos(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_pos() only works for arrays of ≤ 3 dimensions."
 
@@ -750,7 +750,7 @@ Normalize in percentages.
 
 - `sn::AbstractVector`
 """
-function normalize_perc(s::AbstractVector)
+function normalize_perc(s::AbstractVector)::AbstractVector
 
     m1 = minimum(s)
     m2 = maximum(s)
@@ -780,7 +780,7 @@ Normalize in percentages.
 
 - `sn::AbstractArray`
 """
-function normalize_perc(s::AbstractArray; bych::Bool=false)
+function normalize_perc(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_perc() only works for arrays of ≤ 3 dimensions."
 
@@ -825,7 +825,7 @@ Normalize in inverse root (1/sqrt(x)).
 
 - `sn::AbstractVector`
 """
-function normalize_invroot(s::AbstractVector)
+function normalize_invroot(s::AbstractVector)::AbstractVector
 
     # make s > 0
     idx = findall(x -> isequal(x, 0), s)
@@ -850,7 +850,7 @@ Normalize in inverse root (1/sqrt(x)).
 
 - `sn::AbstractArray`
 """
-function normalize_invroot(s::AbstractArray; bych::Bool=false)
+function normalize_invroot(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_invroot() only works for arrays of ≤ 3 dimensions."
 
@@ -891,7 +891,7 @@ Softmax normalize: `exp(x_i) / sum(exp(x))`
 
 - `sn::AbstractArray`
 """
-function normalize_softmax(s::AbstractArray; bych::Bool=false)
+function normalize_softmax(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     return exp.(s) ./ sum(exp.(s))
 
@@ -909,9 +909,9 @@ Normalize using sigmoid function: `1 / (1 + e^-x_i)`
 
 # Returns
 
-- `sn::Vector{Float64}`
+- `sn::AbstractArray`
 """
-function normalize_sigmoid(s::AbstractArray; bych::Bool=false)
+function normalize_sigmoid(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     return @. 1 / (1 + exp(-s))
 
@@ -930,7 +930,7 @@ Normalize by MAD.
 
 - `sn::AbstractVector`
 """
-function normalize_mad(s::AbstractVector)
+function normalize_mad(s::AbstractVector)::AbstractVector
 
     m = median(s)
     md = 1.4826 * mad(s)
@@ -957,7 +957,7 @@ end
 
 - `sn::AbstractArray`
 """
-function normalize_mad(s::AbstractArray; bych::Bool=false)
+function normalize_mad(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_mad() only works for arrays of ≤ 3 dimensions."
 
@@ -1002,7 +1002,7 @@ Normalize using tiedranks.
 
 - `sn::AbstractVector`
 """
-function normalize_rank(s::AbstractVector)
+function normalize_rank(s::AbstractVector)::AbstractVector
 
     sn = tiedrank(s)
 
@@ -1024,8 +1024,7 @@ Normalize using tiedranks.
 
 - `sn::AbstractArray`
 """
-
-function normalize_rank(s::AbstractArray; bych::Bool=false)
+function normalize_rank(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     length(unique(s)) == 1 && return ones(length(s))
 
@@ -1065,7 +1064,7 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 - `sn::AbstractVector`
 """
-function normalize_fisher(s::AbstractVector)
+function normalize_fisher(s::AbstractVector)::AbstractVector
 
     sn = normalize_minmax(s)
     sn[sn .== -1] .= -1 + eps()
@@ -1090,8 +1089,7 @@ Normalize using Fisher z-transform. Converts uniform distribution into normal di
 
 - `sn::AbstractArray`
 """
-
-function normalize_fisher(s::AbstractArray; bych::Bool=false)
+function normalize_fisher(s::AbstractArray; bych::Bool=false)::AbstractArray
 
     sn = normalize_minmax(s)
     sn[sn .== -1] .= -1 + eps()
@@ -1118,7 +1116,7 @@ Normalize channel(s).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)
+function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -1153,8 +1151,12 @@ Normalize channel(s).
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
+
+# Returns
+
+Nothing
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)
+function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)::Nothing
 
     obj_new = normalize(obj, ch=ch, method=method, bych=bych)
     obj.data = obj_new.data

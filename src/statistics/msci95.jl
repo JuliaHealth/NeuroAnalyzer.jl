@@ -19,7 +19,7 @@ Named tuple containing:
 - `su::Float64`: upper 95% CI
 - `sl::Float64`: lower 95% CI
 """
-function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)
+function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Float64, Float64, Float64, Float64}}
 
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
@@ -70,7 +70,7 @@ Named tuple containing:
 - `su::Vector{Float64}`: upper 95% CI
 - `sl::Vector{Float64}`: lower 95% CI
 """
-function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)
+function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
 
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
@@ -116,12 +116,12 @@ Calculate mean, standard deviation and 95% confidence interval.
 # Returns
 
 Named tuple containing:
-- `sm::Array{Float64}`: mean
-- `ss::Array{Float64}`: standard deviation
-- `su::Array{Float64}`: upper 95% CI
-- `sl::Array{Float64}`: lower 95% CI
+- `sm::Matrix{Float64}`: mean
+- `ss::Matrix{Float64}`: standard deviation
+- `su::Matrix{Float64}`: upper 95% CI
+- `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)
+function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     _check_var(method, [:normal, :boot], "method")
 
@@ -161,7 +161,7 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI
 - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=3, method::Symbol=:normal)
+function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=3, method::Symbol=:normal)::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     sm, ss, su, sl = @views msci95(obj.data[ch, :, :], n=n, method=method)
@@ -188,7 +188,7 @@ Named tuple containing:
 - `su::Float64`: upper 95% CI
 - `sl::Float64`: lower 95% CI
 """
-function msci95(s1::AbstractVector, s2::AbstractVector)
+function msci95(s1::AbstractVector, s2::AbstractVector)::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Float64, Float64, Float64, Float64}}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -223,12 +223,12 @@ Calculate mean difference, standard deviation and 95% confidence interval.
 # Returns
 
 Named tuple containing:
-- `sm::Array{Float64}`: mean
-- `ss::Array{Float64}`: standard deviation
-- `su::Array{Float64}`: upper 95% CI
-- `sl::Array{Float64}`: lower 95% CI
+- `sm::Matrix{Float64}`: mean
+- `ss::Matrix{Float64}`: standard deviation
+- `su::Matrix{Float64}`: upper 95% CI
+- `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(s1::AbstractArray, s2::AbstractArray)
+function msci95(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -272,7 +272,7 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI bound
 - `sl::Matrix{Float64}`: lower 95% CI bound
 """
-function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))
+function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::NamedTuple{(:sm, :ss, :su, :sl), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     # check channels
     ch1 = get_channel(obj1, ch=ch1)

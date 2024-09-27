@@ -28,9 +28,9 @@ Return list of channel names of specified type or their numbers if names are spe
 
 # Returns
 
-- `ch::Vector{String}`
+- `ch::Union{Vector{String}, Vector{Int64}}`
 """
-function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String}}="", type::Union{String,Vector{String}}="all", wl::Real=0, exclude::Union{String,Vector{String}}="bad")::Vector{String}
+function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String,Vector{String}}="", type::Union{String,Vector{String}}="all", wl::Real=0, exclude::Union{String,Vector{String}}="bad")::Union{Vector{String}, Vector{Int64}}
 
     # return physical channel numbers
     if ch != ""

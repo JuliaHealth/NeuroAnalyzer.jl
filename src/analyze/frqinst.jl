@@ -33,9 +33,9 @@ Calculate instantaneous frequency.
 
 # Returns
 
-- `f::Matrix{Float64}`
+- `f::Array{Float64, 3}`
 """
-function frqinst(s::AbstractArray)::Matrix{Float64}
+function frqinst(s::AbstractArray)::Array{Float64, 3}
 
     _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 

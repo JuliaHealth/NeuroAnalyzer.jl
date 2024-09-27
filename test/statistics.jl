@@ -105,7 +105,7 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test c == [0.0, 0.0]
 
 @info "Test: dprime()"
-@test NeuroAnalyzer.dprime(0.5, 0.5) == (dprime=0.0, rb=-0.0)
+@test NeuroAnalyzer.dprime(0.5, 0.5) == (dp=0.0, rb=-0.0)
 
 @info "Test: norminv()"
 @test NeuroAnalyzer.norminv(0.5) == 0.0
@@ -124,8 +124,8 @@ _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
 @test round(NeuroAnalyzer.meanc([0.17453292519943295, 6.1086523819801535], rad=true)) == 0.0
 
 @info "Test: summary()"
-@test NeuroAnalyzer.summary(ones(10)) == (mm = 1.0, s = 0.0, me = 1.0, mo = 1.0)
-@test NeuroAnalyzer.summary(ones(10), ones(10)) == (mm1 = 1.0, mm2 = 1.0, s1 = 0.0, s2 = 0.0, me1 = 1.0, me2 = 1.0, mo1 = 1.0, mo2 = 1.0)
+@test NeuroAnalyzer.summary(ones(10)) == (mm = 1.0, s = 0.0, v=0.0, me = 1.0, mo = 1.0)
+@test NeuroAnalyzer.summary(ones(10), ones(10)) == (mm1 = 1.0, mm2 = 1.0, s1 = 0.0, s2 = 0.0, v1=0.0, v2=0.0, me1 = 1.0, me2 = 1.0, mo1 = 1.0, mo2 = 1.0)
 
 @info "Test: ci_median()"
 @test ci_median(collect(1:100)) == (42, 59)

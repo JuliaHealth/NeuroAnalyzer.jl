@@ -39,9 +39,9 @@ Perform inverse continuous wavelet transformation (iCWT).
 
 # Returns
 
-- `s::Vector{Float64}`: reconstructed signal
+- `s::AbstractArray`: reconstructed signal
 """
-function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::Vector{Float64} where {T<:CWT}
+function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::AbstractArray where {T<:CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 

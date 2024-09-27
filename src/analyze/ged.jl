@@ -7,8 +7,8 @@ Perform generalized eigendecomposition.
 
 # Arguments
 
-- `s1::AbstractArray`: signal to be analyzed
-- `s2::AbstractArray`: original signal
+- `s1::AbstractMatrix`: signal to be analyzed
+- `s2::AbstractMatrix`: original signal
 
 # Returns
 
@@ -17,11 +17,11 @@ Named tuple containing:
 - `ress::Vector{Float64}`
 - `ress_norm::Vector{Float64}`: RESS normalized to -1..1
 """
-function ged(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:sged, :ress, :ress_norm), Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}}
+function ged(s1::AbstractMatrix, s2::AbstractMatrix)::NamedTuple{(:sged, :ress, :ress_norm), Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    _chk3d(s1)
-    _chk3d(s2)
+    _chk2d(s1)
+    _chk2d(s2)
 
     s1cov = cov(s1')
     s2cov = cov(s2')

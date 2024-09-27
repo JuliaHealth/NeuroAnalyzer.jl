@@ -128,12 +128,11 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 
 # Returns
 
-- `s_new::Vector{Float64}`: reconstructed signal
+- `s_new::AbstractArray`: reconstructed signal
 """
-function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol)::Vector{Float64} where {T <: DiscreteWavelet}
+function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol)::AbstractArray where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
-    _chk3d(s)
 
     # reconstruct array of DWT coefficients as returned by Wavelets.jl functions
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))

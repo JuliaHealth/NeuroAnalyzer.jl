@@ -1,4 +1,4 @@
-function _wl2ext(wl::Real)
+function _wl2ext(wl::Real)::Vector{Float64}
 """
 Get molar extinction coefficient e in [cm-1/(moles/liter)].
 

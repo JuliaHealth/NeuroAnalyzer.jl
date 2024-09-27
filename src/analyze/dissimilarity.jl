@@ -32,9 +32,9 @@ Calculate signal normalized for GFP (Global Field Power).
 
 # Returns
 
-- `gfp_norm::Float64`
+- `gfp_norm::Vector{Float64}`
 """
-function gfp_norm(s::AbstractVector)::Float64
+function gfp_norm(s::AbstractVector)::Vector{Float64}
 
     return s ./ gfp(s)
 
@@ -130,10 +130,10 @@ Calculate DISS (global dissimilarity) and spatial correlation (channels vs chann
 # Returns
 
 Named tuple containing:
-- `gd::Array{Float64, 3}`: global dissimilarity
-- `sc::Array{Float64, 3}`: spatial correlation
+- `gd::Matrix{Float64}`: global dissimilarity
+- `sc::Matrix{Float64}`: spatial correlation
 """
-function diss(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
+function diss(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Matrix{Float64}, Matrix{Float64}}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -168,8 +168,8 @@ Calculate DISS (global dissimilarity) and spatial correlation (channels vs chann
 # Returns
 
 Named tuple containing:
-- `gd::Array{Float64, 3}`: global dissimilarity
-- `sc::Array{Float64, 3}`: spatial correlation
+- `gd::Matrix{Float64}`: global dissimilarity
+- `sc::Matrix{Float64}`: spatial correlation
 """
 function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
 

@@ -1,4 +1,4 @@
-function _cm(cm::Matrix{Int64})
+function _cm(cm::Matrix{Int64})::Nothing
     println("""
                      group
                     0     1
@@ -8,4 +8,5 @@ function _cm(cm::Matrix{Int64})
                1 │ $(lpad(cm[2], 3, " ")) │ $(lpad(cm[4], 3, " ")) │
                  └─────┴─────┘
              """)
+    return nothing
 end

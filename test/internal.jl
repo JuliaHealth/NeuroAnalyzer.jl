@@ -17,11 +17,11 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
-@test NeuroAnalyzer._check_channels(a1, 1)[1] === nothing
-@test NeuroAnalyzer._check_channels(a1, 2)[1] === nothing
+@test NeuroAnalyzer._check_channels(a1, 1) === nothing
+@test NeuroAnalyzer._check_channels(a1, 2) === nothing
 @test NeuroAnalyzer._check_channels(e10, "F3") === nothing
 @test NeuroAnalyzer._check_channels(e10, ["F3", "F4"]) === nothing
-@test NeuroAnalyzer._check_channels(1:19, 2)[1] === nothing
+@test NeuroAnalyzer._check_channels(1:19, 2) === nothing
 @test NeuroAnalyzer._check_epochs(e10, 1:10) === nothing
 @test NeuroAnalyzer._check_cidx(a1, 1) === nothing
 @test NeuroAnalyzer._check_segment(e10, 1, 256) === nothing
@@ -32,9 +32,9 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
 s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_eeg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false;;])
+r = NeuroAnalyzer._create_recording_eeg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false;;])
 @test r isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false;;])
+r = NeuroAnalyzer._create_recording_meg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false;;])
 @test r isa Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
 @test e isa Dict{Symbol, String}

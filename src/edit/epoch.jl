@@ -207,10 +207,10 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
 
     # update time points
     obj_new.epoch_time = ep_time[ep_start_idx:ep_end_idx]
-    obj_new.time_pts, _ = NeuroAnalyzer._get_t(obj_new)
+    obj_new.time_pts, _ = _get_t(obj_new)
 
     # delete markers outside epochs
-    ep_tps = NeuroAnalyzer._epochs_tps(obj)
+    ep_tps = _epochs_tps(obj)
     ep_tps[2, :] = ep_tps[1, :] .+ ep_end
     ep_tps[1, :] .+= ep_start
     mrk_start = obj.markers[!, :start]

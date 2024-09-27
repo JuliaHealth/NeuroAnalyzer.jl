@@ -25,7 +25,7 @@ Interpolate channel using planar interpolation.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)
+function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)::NeuroAnalyzer.NEURO
 
     channels = get_channel(obj, type=datatype(obj))
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
@@ -94,8 +94,12 @@ Interpolate channel using planar interpolation.
 - `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `ifactor::Int64=100`: interpolation quality
+
+# Returns
+
+Nothing
 """
-function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:shepard, ifactor::Int64=100)
+function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:shepard, ifactor::Int64=100)::Nothing
 
     obj_new = plinterpolate_channel(obj, ch=ch, ep=ep, imethod=imethod, ifactor=ifactor)
     obj.data = obj_new.data
@@ -129,11 +133,12 @@ Interpolate channel using planar interpolation.
 
 # Returns
 
+Named tuple containing:
 - `int_s::Matrix{Float64}`: interpolated signal
 - `int_x::Vector{Float64}`: X-axis coordinates
 - `int_y::Vector{Float64}`: Y-axis coordinates
 """
-function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)
+function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::Symbol=:sh, nmethod::Symbol=:minmax, cart::Bool=false, ifactor::Int64=100)::NamedTuple{(:int_s, :int_x, :int_y), Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}}
 
     @assert ch in axes(s, 1) "ch must be in [1, $(size(s, 1))"
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -156,6 +161,6 @@ function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::
 
     s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
 
-    return (int_s=s_interpolated, int_x = interpolated_x, int_y = interpolated_y)
+    return (int_s=s_interpolated, int_x=interpolated_x, int_y=interpolated_y)
 
 end

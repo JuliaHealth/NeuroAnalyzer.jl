@@ -683,7 +683,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
         end
     end
 
-    return (s_env=s_env, senv_t=st)
+    return (s_env=s_env, s_env_t=st)
 
 end
 

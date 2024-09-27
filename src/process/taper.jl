@@ -9,13 +9,13 @@ Taper the signal.
 # Arguments
 
 - `s::AbstractVector`
-- `t::Union{AbstractVector, Vector{ComplexF64}}`
+- `t::Vector{<:Real}`
 
 # Returns
 
-- `s_new::Vector{Union{Float64, ComplexF64}}`
+- `s_new::Vector{Float64}`
 """
-function taper(s::AbstractVector; t::Union{AbstractVector, Vector{ComplexF64}})
+function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 
     @assert length(t) == length(s) "Taper and signal lengths must be equal."
 
@@ -31,13 +31,13 @@ Taper the signal.
 # Arguments
 
 - `s::AbstractArray`
-- `t::Union{Vector{Real, Vector{ComplexF64}}`
+- `t::Vector{<:Real}`
 
 # Returns
 
-- `s_new::Array{Float64, 3`
+- `s_new::Array{Float64, 3}`
 """
-function taper(s::AbstractArray; t::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -64,13 +64,13 @@ Taper the signal.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `t::Union{Vector{Real, Vector{ComplexF64}}`
+- `t::Vector{<:Real}`
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function taper(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Vector{<:Real})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -91,9 +91,13 @@ Taper the signal.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `t::Union{Vector{<:Real}, Vector{ComplexF64}}`
+- `t::Vector{<:Real}`
+
+# Returns
+
+Nothing
 """
-function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Vector{<:Real})::Nothing
 
     obj_new = taper(obj, ch=ch, t=t)
     obj.data = obj_new.data

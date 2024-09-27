@@ -13,7 +13,7 @@ Calculate the prediction interval (95% CI adjusted for sample size)
 
 - `pi::Float64`
 """
-function pred_int(n::Int64)
+function pred_int(n::Int64)::Float64
 
     @assert n >= 1 "n must be ≥ 1."
 

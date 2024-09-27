@@ -14,7 +14,7 @@ Calculate SEM (standard error of the mean) for the difference of two means.
 
 - `sem_diff::Float64`
 """
-function sem_diff(x::AbstractVector, y::AbstractVector)
+function sem_diff(x::AbstractVector, y::AbstractVector)::Float64
 
     @assert length(x) == length(y) "Both vectors must have the same length."
 

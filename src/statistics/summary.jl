@@ -18,7 +18,7 @@ Named tuple containing:
 - `me::Float64`: median
 - `mo::Float64`: mode
 """
-function summary(x::AbstractVector; g::String="")
+function summary(x::AbstractVector; g::String="")::NamedTuple{(:mm, :s, :v, :me, :mo), Tuple{Float64, Float64, Float64, Float64, Float64}}
 
     mm = mean(x)
     v = var(x)
@@ -36,7 +36,7 @@ function summary(x::AbstractVector; g::String="")
                          "mode" mo])
     end
 
-    return (mm=mm, s=s, me=me, mo=mo)
+    return (mm=mm, s=s, v=v, me=me, mo=mo)
 
 end
 
@@ -66,7 +66,7 @@ Named tuple containing:
 - `mo1::Float64`: mode
 - `mo2::Float64`: mode
 """
-function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::String="2")
+function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::String="2")::NamedTuple{(:mm1, :mm2, :s1, :s2, :v1, :v2, :me1, :me2, :mo1, :mo2), Tuple{Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64}}
 
     mm1 = mean(x)
     v1 = var(x)
@@ -89,5 +89,6 @@ function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::Strin
                          "mode" mo1 mo2])
     end
 
-    return (mm1=mm1, mm2=mm2, s1=s1, s2=s2, me1=me1, me2=me2, mo1=mo1, mo2=mo2)
+    return (mm1=mm1, mm2=mm2, s1=s1, s2=s2, v1=v1, v2=v2, me1=me1, me2=me2, mo1=mo1, mo2=mo2)
+
 end

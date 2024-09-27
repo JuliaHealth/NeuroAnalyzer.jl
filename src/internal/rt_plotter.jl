@@ -1,6 +1,6 @@
 export rt_plotter
 
-function rt_plotter(; fs::Int64, l::Int64=5, duration::Int64=20)
+function rt_plotter(; fs::Int64, l::Int64=5, duration::Int64=20)::Plots.Plot{Plots.GRBackend}
 
     _wip()
 

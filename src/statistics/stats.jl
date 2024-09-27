@@ -24,7 +24,7 @@ Named tuple containing:
 - `e_max_dif::Vector{Float64}`: max difference
 - `e_dev_mean::Vector{Float64}`: deviation from channel mean
 """
-function epoch_stats(obj::NeuroAnalyzer.NEURO)
+function epoch_stats(obj::NeuroAnalyzer.NEURO)::NamedTuple{(:e_mean, :e_median, :e_std, :e_var, :e_kurt, :e_skew, :e_mean_diff, :e_median_diff, :e_max_dif, :e_dev_mean), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
 
     ep_n = nepochs(obj)
 
@@ -68,18 +68,18 @@ Calculate channels statistics per epoch.
 # Returns
 
 Named tuple containing:
-- `c_mean::Matrix(Float64)`: mean
-- `c_median::Matrix(Float64)`: median
-- `c_std::Matrix(Float64)`: standard deviation
-- `c_var::Matrix(Float64)`: variance
-- `c_kurt::Matrix(Float64)`: kurtosis
-- `c_skew::Matrix(Float64)`: skewness
-- `c_mean_diff::Matrix(Float64)`: mean diff value
-- `c_median_diff::Matrix(Float64)`: median diff value
-- `c_max_dif::Matrix(Float64)`: max difference
-- `c_dev_mean::Matrix(Float64)`: deviation from channel mean
+- `c_mean::Matrix{Float64}`: mean
+- `c_median::Matrix{Float64}`: median
+- `c_std::Matrix{Float64}`: standard deviation
+- `c_var::Matrix{Float64}`: variance
+- `c_kurt::Matrix{Float64}`: kurtosis
+- `c_skew::Matrix{Float64}`: skewness
+- `c_mean_diff::Matrix{Float64}`: mean diff value
+- `c_median_diff::Matrix{Float64}`: median diff value
+- `c_max_dif::Matrix{Float64}`: max difference
+- `c_dev_mean::Matrix{Float64}`: deviation from channel mean
 """
-function channel_stats(obj::NeuroAnalyzer.NEURO)
+function channel_stats(obj::NeuroAnalyzer.NEURO)::NamedTuple{(:c_mean, :c_median, :c_std, :c_var, :c_kurt, :c_skew, :c_mean_diff, :c_median_diff, :c_max_dif, :c_dev_mean), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
 
     ch_n = nchannels(obj)
     ep_n = nepochs(obj)
@@ -113,4 +113,3 @@ function channel_stats(obj::NeuroAnalyzer.NEURO)
     return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_skew=c_skew, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_max_dif=c_max_dif, c_dev_mean=c_dev_mean)
 
 end
-

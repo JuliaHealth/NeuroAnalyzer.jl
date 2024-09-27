@@ -180,14 +180,14 @@ function _read_fiff_tag(fid::IOStream)::Tuple{Int32, Int32, Int32, Any, Int32}
     return tag_kind, data_type, data_size, data, tag_next
 end
 
-function _get_fiff_block_type(fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64})::Int32
+function _get_fiff_block_type(fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Vector{UInt8}, Int64})::Vector{Int32}
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
     readbytes!(fid, buf, tag[4])
     return reinterpret(Int32, reverse(buf))
 end
 
-function _create_fiff_block(fid::IOStream)::Tuple{Vector{Vector{UInt8}}, Vector{Int64}, Vector{Int64}, Vector{Int64}, Vector{Int64}, Vector{Int64}, Vector{Int64}}
+function _create_fiff_block(fid::IOStream)::Tuple{Vector{Vector{UInt8}}, Matrix{Int64}}
 
     # read tags
     seek(fid, 0)
@@ -222,7 +222,7 @@ function _create_fiff_block(fid::IOStream)::Tuple{Vector{Vector{UInt8}}, Vector{
         tag_size[tag_idx] = tags[tag_idx][4]
         if tag_ids[tag_idx] == bs
             block_level[tag_idx:end] .+= 1
-            block_type_current = _get_fiff_block_type(fid, tags[tag_idx])[]
+            block_type_current = NeuroAnalyzer._get_fiff_block_type(fid, tags[tag_idx])[]
             push!(block_type, block_type_current)
         elseif tag_ids[tag_idx] == be
             push!(block_type, block_type_current)
@@ -255,9 +255,9 @@ function _get_fiff_data(d::Vector{Any}, id::Int64)::Any
     return data
 end
 
-function _get_blocks(b::Matrix{Int64})::Tuple{Vector{Int64}, Vector{Int64}}
+function _get_blocks(b::Matrix{Int64})::Tuple{Vector{Vector{Int64}}, Vector{Int64}}
     levels = unique(b[:, 5])
-    bidx = Int64[]
+    bidx = Vector{Int64}[]
     [push!(bidx, findall(isequal(levels[idx]), b[:, 5])) for idx in eachindex(levels)]
     btmp = Int64[]
     [push!(btmp, length(bidx[idx])) for idx in eachindex(bidx)]

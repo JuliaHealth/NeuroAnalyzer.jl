@@ -12,10 +12,10 @@ Standardize channels.
 
 # Returns
 
-- `s_new::NeuroAnalyzer.NEURO`:
-- `scaler::Vector{Any}`: standardizing matrix
+- `s_new::Array{Float64, 3}`:
+- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize(s::AbstractArray)
+function standardize(s::AbstractArray)::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
     _chk3d(s)
     ep_n = size(s, 3)
@@ -45,9 +45,9 @@ Standardize channels.
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
-- `scaler::Vector{Any}`: standardizing matrix
+- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})
+function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -71,9 +71,9 @@ Standardize channels.
 
 # Returns
 
-- `scaler::Matrix{Float64}`: standardizing matrix
+- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize!(obj::NeuroAnalyzer.NEURO)
+function standardize!(obj::NeuroAnalyzer.NEURO)::Vector{ZScoreTransform{Float64, Vector{Float64}}}
 
     obj_new, scaler = standardize(obj, ch=ch)
     obj.data = obj_new.data

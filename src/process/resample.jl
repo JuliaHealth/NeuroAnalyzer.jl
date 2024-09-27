@@ -20,7 +20,7 @@ Resample to `new_sr` sampling frequency.
 
 - `s_new::Vector{Float64}`
 """
-function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)
+function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)::Vector{Float64}
 
     @assert old_sr >= 1 "old_sr must be ≥ 1."
     @assert new_sr >= 1 "new_sr must be ≥ 1."
@@ -50,7 +50,7 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
 - `s_new::Array{Float64, 3}`
 """
-function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)
+function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64, 3}
 
     _chk3d(s)
     @assert new_sr >= 1 "new_sr must be ≥ 1."
@@ -84,7 +84,7 @@ Resample (up- or down-sample).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
+function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
     @assert new_sr >= 1 "new_sr must be ≥ 1."
 
@@ -103,8 +103,12 @@ Resample (up- or down-sample).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `new_sr::Int64`: new sampling rate
+
+# Returns
+
+Nothing
 """
-function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
+function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
     obj_new = resample(obj, new_sr=new_sr)
     obj.data = obj_new.data
@@ -132,7 +136,7 @@ Upsample.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
+function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
     new_sr / sr(obj) != new_sr ÷ sr(obj) && _warn("New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
 
@@ -161,8 +165,12 @@ Upsample.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `new_sr::Int64`: new sampling rate
+
+# Returns
+
+Nothing
 """
-function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
+function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
     obj_new = upsample(obj, new_sr=new_sr)
     obj.data = obj_new.data
@@ -190,7 +198,7 @@ Downsample.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
+function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
 
     new_sr < sr(obj) && _warn("To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(sr(obj) / 2) Hz).")
 
@@ -221,8 +229,12 @@ Downsample.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `new_sr::Int64`: new sampling rate
+
+# Returns
+
+Nothing
 """
-function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
+function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
     obj_new = downsample(obj, new_sr=new_sr)
     obj.data = obj_new.data

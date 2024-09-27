@@ -1,26 +1,23 @@
 _info(s::String) = verbose && @info s
-
 _warn(s::String) = verbose && @warn s
-
 _deprecated(s::String) = verbose && @error "Function $s() is deprecated."
 _deprecated(s1::String, s2::String) = verbose && @error "Function $s1() is deprecated, please use $s2() instead."
-
 _wip() = allow_wip ? (@warn "This function has the WIP (Work In Progress) status and is not ready for production use.") : (@error "This function has the WIP (Work In Progress) status and is not ready for production use.")
 
-_pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
+_pl(x::Union{AbstractRange, AbstractVector})::String = length(collect(x)) > 1 ? "s" : ""
 
-_pl(x::Real) = x > 1 ? "s" : ""
+_pl(x::Real)::String = x > 1 ? "s" : ""
 
 # _get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
-_get_range(signal::Union{AbstractVector, AbstractArray}) = round(rng(signal), digits=0)
+_get_range(s::Union{AbstractVector, AbstractArray})::Float64 = round(rng(s), digits=0)
 
-_c(n) = collect(1:n)
+_c(n)::Vector{Int64} = collect(1:n)
 
-_tuple_max(t::Tuple{Real, Real}) = abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1])) : (-abs(t[2]), abs(t[2]))
+_tuple_max(t::Tuple{Real, Real})::Tuple{Real, Real} = abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1])) : (-abs(t[2]), abs(t[2]))
 
-_s2v(s::Union{<:Number, Vector{<:Number}}) = typeof(s) <: Number ? [s] : s
+_s2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = typeof(s) <: Number ? [s] : s
 
-function _v2s(v::Vector{String})
+function _v2s(v::Vector{String})::String
     s = ""
     for idx in eachindex(v)
         s *= v[idx]
@@ -28,7 +25,7 @@ function _v2s(v::Vector{String})
     return s
 end
 
-function _v2s(x::Vector{<:Number})
+function _v2s(x::Vector{<:Number})::String
     s_tmp = string.(x)
     s = ""
     if length(s_tmp) > 1
@@ -40,7 +37,7 @@ function _v2s(x::Vector{<:Number})
     return s
 end
 
-function _copy_lt2ut(m::AbstractArray)
+function _copy_lt2ut(m::AbstractArray)::AbstractArray
     if ndims(m) == 2
         return m + m' - diagm(diag(m))
     else
@@ -51,9 +48,9 @@ function _copy_lt2ut(m::AbstractArray)
     end
 end
 
-_tlength(t::Tuple{Real, Real}) = length(t[1]:1:t[2])
+_tlength(t::Tuple{Real, Real})::Int64 = length(t[1]:1:t[2])
 
-function _s2i(s::String)
+function _s2i(s::String)::Union{Int64, Vector{Int64}}
     s = replace(s, " "=>"")
     if occursin(":", s)
         return collect(parse(Int64, split(s, ":")[1]):parse(Int64, split(s, ":")[2]))
@@ -66,7 +63,7 @@ function _s2i(s::String)
     end
 end
 
-function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})
+function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})::String
     !isa(s, Int64) && (s = collect(s))
     s = string(s)
     s = replace(s, "["=>"")
@@ -74,21 +71,21 @@ function _i2s(s::Union{Int64, Vector{Int64}, AbstractRange})
     return s
 end
 
-function _s2tf(s::String)
+function _s2tf(s::String)::Tuple{Float64, Float64}
     s = replace(s, " "=>"")
     s = replace(s, "("=>"")
     s = replace(s, ")"=>"")
     return (parse(Float64, split(s, ",")[1]), parse(Float64, split(s, ",")[2]))
 end
 
-function _s2ti(s::String)
+function _s2ti(s::String)::Tuple{Int64, Int64}
     s = replace(s, " "=>"")
     s = replace(s, "("=>"")
     s = replace(s, ")"=>"")
     return (parse(Int64, split(s, ",")[1]), parse(Int64, split(s, ",")[2]))
 end
 
-function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_type::String)
+function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_type::String)::String
     m = match.(r"(.+)\-(.+)", lowercase.(clabels[ch_type .== data_type]))
     if length(findall(!isnothing, m)) == length(clabels[ch_type .== data_type])
         r = String[]
@@ -121,7 +118,7 @@ function _detect_montage(clabels::Vector{String}, ch_type::Vector{String}, data_
     end
 end
 
-function _fread(fid, n, t)
+function _fread(fid, n, t)::Union{Int64, Float64, Vector{Int64}}
     (n > 1 && t === :c) && (t = :s)
     t === :s && (n = n)
     t === :c && (n = n)
@@ -158,14 +155,14 @@ function _fread(fid, n, t)
     t === :f64 && return Float64(map(ltoh, reinterpret(Float64, header))[1])
 end
 
-function _vint2str(x::Vector{Int64})
+function _vint2str(x::Vector{Int64})::String
     s = strip(String(Char.(x)))
     return replace(s, "\0"=>"")
 end
 
-_swap(x, y) = y, x
+_swap(x, y)::Tuple{Real, Real} = y, x
 
-function _veqlen(s1::AbstractVector, s2::AbstractVector)
+function _veqlen(s1::AbstractVector, s2::AbstractVector)::Tuple{AbstractVector, AbstractVector}
     if length(s1) > length(s2)
         n = length(s1) - length(s2)
         return s1, pad0(s2, n)

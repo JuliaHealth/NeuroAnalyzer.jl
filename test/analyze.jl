@@ -126,10 +126,6 @@ gd, sc = NeuroAnalyzer.diss(e10, ch="all")
 e, s, l = NeuroAnalyzer.entropy(rand(10))
 @test e < l
 @test s < l
-e, s, l = NeuroAnalyzer.entropy(rand(10, 10))
-@test size(e) == (10, 1)
-@test size(s) == (10, 1)
-@test size(l) == (10, 1)
 e, s, l = NeuroAnalyzer.entropy(e10, ch="all")
 @test size(e) == (24, 10)
 @test size(s) == (24, 10)
@@ -138,8 +134,6 @@ e, s, l = NeuroAnalyzer.entropy(e10, ch="all")
 @info "Test: negentropy()"
 n = NeuroAnalyzer.negentropy(rand(10))
 @test n < 0
-n = NeuroAnalyzer.negentropy(rand(10, 10))
-@test size(n) == (10, 1)
 n = NeuroAnalyzer.negentropy(eeg, ch="all")
 @test size(n) == (24, 1)
 
@@ -628,9 +622,6 @@ p, f = NeuroAnalyzer.psd_rel(e10, ch="Fp1", method=:cwt, frq_lim=(0, 1))
 lf, ls, pf = psd_slope(rand(100), fs=10, wlen=10, woverlap=0)
 @test length(lf) == 6
 @test pf == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-lf, ls, pf = psd_slope(rand(10, 100), fs=10, wlen=10, woverlap=0)
-@test size(lf) == (10, 6, 1)
-@test length(ls) == 10
 lf, ls, pf = psd_slope(rand(10, 100, 10), fs=10, wlen=10, woverlap=0)
 @test size(lf) == (10, 6, 10)
 @test size(ls) == (10, 10)
@@ -683,7 +674,6 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10, ch="all")
 
 @info "Test: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 1.0
-@test NeuroAnalyzer.rmse(m1, m2) == [0.0; 0.0;;]
 @test NeuroAnalyzer.rmse(a1, a2) == [0.0 0.0; 0.0 0.0]
 @test NeuroAnalyzer.rmse(e10, e10, ch1="Fp1", ch2="Fp2") == zeros(1, 10)
 
@@ -775,13 +765,13 @@ s = NeuroAnalyzer.stationarity(e10, ch="all", method=:var)
 
 @info "Test: channel_stats()"
 c = NeuroAnalyzer.channel_stats(e10)
-for idx in 1:length(c)
+for idx in eachindex(c)
     @test size(c[idx]) == (24, 10)
 end
 
 @info "Test: epoch_stats()"
 e = NeuroAnalyzer.epoch_stats(e10)
-for idx in 1:length(e)
+for idx in eachindex(e)
     @test length(e[idx]) == 10
 end
 
@@ -922,7 +912,6 @@ ph, f = phsd(e10, ch="all")
 
 @info "Test: symmetry()"
 @test symmetry(v) == 5
-@test symmetry(m1) == [3.0; 3.0;;]
 @test symmetry(e10, ch="Fp1") == [1.001563721657545 0.9527078565980168 1.0285261489698891 0.9452887537993921 1.0 0.970746728252502 0.9219219219219219 1.0496397117694156 1.0173364854215918 0.9393939393939394]
 
 true

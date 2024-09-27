@@ -75,9 +75,9 @@ Calculate covariance matrix.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix
+- `cm::Array{Float64, 4}`: covariance matrix
 """
-function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
+function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -125,9 +125,9 @@ Calculate covariance matrix of `signal * signal'`.
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix for each epoch
+- `cm::Array{Float64, 4}`: covariance matrix for each epoch
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 3}
+function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 4}
 
     ch = get_channel(obj, ch=ch)
 

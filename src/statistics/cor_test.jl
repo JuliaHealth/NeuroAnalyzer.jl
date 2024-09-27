@@ -16,11 +16,11 @@ Named tuple containing:
 - `t::CorrelationTest{Float64}`
 - `r::Float64`: correlation coefficient
 - `rc::Tuple{Float64, Float64}`: correlation coefficient confidence interval
-- `tt::Tuple{Float64, String}`: t-statistics
+- `ts::Tuple{Float64, String}`: t-statistics
 - `df::Int64`: degrees of freedom
 - `p::Float64`: p-value
 """
-function cor_test(s1::AbstractVector, s2::AbstractVector)
+function cor_test(s1::AbstractVector, s2::AbstractVector)::NamedTuple{(:t, :r, :rc, :ts, :df, :p), Tuple{CorrelationTest{Float64}, Float64, Tuple{Float64, Float64}, Tuple{Float64, String}, Int64, Float64}}
 
     @assert length(s1) == length(s2) "Both vectors must have the same length."
     t = CorrelationTest(s1, s2)

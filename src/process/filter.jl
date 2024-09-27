@@ -402,7 +402,6 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fpr
         ftype in [:bs, :bp] && @assert length(cutoff) == 2 "For :bp and :bs filters cutoff must contain two frequencies."
         flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=fs, order=order, rp=rp, rs=rs, bw=bw, w=w)
     end
-
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
@@ -460,7 +459,7 @@ Apply filtering.
 
 Nothing
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Nothing
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
 
     if preview
         _warn("When `preview=true`, signal is not being filtered.")

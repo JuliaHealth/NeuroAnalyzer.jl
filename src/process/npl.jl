@@ -14,7 +14,7 @@ Calculate non-phase-locked signal.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function npl(obj::NeuroAnalyzer.NEURO)
+function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
     @assert datatype(obj) == "erp" "OBJ must be ERP."
 
@@ -37,8 +37,12 @@ Calculate non-phase-locked signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: must be ERP object
+
+# Returns
+
+Nothing
 """
-function npl!(obj::NeuroAnalyzer.NEURO)
+function npl!(obj::NeuroAnalyzer.NEURO)::Nothing
 
     obj_new = npl(obj)
     obj.data = obj_new.data

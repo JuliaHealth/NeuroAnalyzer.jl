@@ -16,7 +16,7 @@ Multiply channel(s) by `factor`.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function scale(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, factor::Real)
+function scale(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, factor::Real)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -38,8 +38,12 @@ Multiply channel(s) by `factor`.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `factor::Real`: signal is multiplied by `factor`
+
+# Returns
+
+Nothing
 """
-function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, factor::Real)
+function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, factor::Real)::Nothing
 
     obj_new = scale(obj, ch=ch, factor=factor)
     obj.data = obj_new.data

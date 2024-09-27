@@ -16,7 +16,7 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))
+function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))::NeuroAnalyzer.NEURO
 
     @assert length(get_channel(obj, type="nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
@@ -100,7 +100,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get
 end
 
 """
-    od2conc(obj; <keyword arguments>)
+    od2conc!(obj; <keyword arguments>)
 
 Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 
@@ -109,8 +109,12 @@ Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT).
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_od"))`: list of channels, default is NIRS intensity channels
 - `ppf::Vector{Real}=ones(length(obj.header.recording[:wavelengths]))`: Partial path length factors for each wavelength. This is a vector of factors per wavelength. Typical value is ~6 for each wavelength if the absorption change is uniform over the volume of tissue measured. To approximate the partial volume effect of a small localized absorption change within an adult human head, this value could be as small as 0.1. Convention is becoming to set `ppf=1` and to not divide by the source-detector separation such that the resultant "concentration" is in units of Molar mm (or Molar cm if those are the spatial units). This is becoming wide spread in the literature but there is no fixed citation. Use a value of 1 to choose this option.
+
+# Returns
+
+Nothing
 """
-function od2conc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))
+function od2conc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_od"), ppf::Vector{<:Real}=ones(length(obj.header.recording[:wavelengths])))::Nothing
 
     obj_new = od2conc(obj, ch=ch, ppf=ppf)
     obj.data = obj_new.data

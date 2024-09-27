@@ -20,7 +20,7 @@ Return the positions of the value in the vector.
 - `idx::Int64`
 - `d::Real`: the difference between `y` and `x[idx]`
 """
-function vsearch(y::T, x::AbstractVector; acc::Bool=false)::Tuple{Int64, Real} where {T<:Real}
+function vsearch(y::Real, x::AbstractVector; acc::Bool=false)::Union{Int64, Tuple{Int64, Real}}
 
     d, idx = findmin(abs.(x .- y))
 
@@ -44,7 +44,7 @@ Return the positions of the value in the vector.
 - `idx::Int64`
 - `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
 """
-function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)::Tuple{Int64, Real}
+function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
 
     @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
 
@@ -85,6 +85,7 @@ function vsplit(x::AbstractVector, n::Int64=1)::Vector{AbstractVector}
     end
 
     return result
+
 end
 
 """

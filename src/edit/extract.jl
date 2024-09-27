@@ -17,9 +17,9 @@ Extract channel data.
 
 # Returns
 
-- `d::Vector{Float64}`
+- `d::Array{Float64, 3}`
 """
-function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Vector{Float64}
+function extract_channel(obj::NeuroAnalyzer.NEURO; ch::String)::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     d = reshape(obj.data[ch, :, :], 1, epoch_len(obj), nepochs(obj))
@@ -134,9 +134,9 @@ Extract time.
 
 # Returns
 
-- `tpts::Array{Float64, 3}`
+- `tpts::Vector{Float64}`
 """
-function extract_time(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
+function extract_time(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
 
     tpts = obj.time_pts
 
@@ -155,9 +155,9 @@ Extract epochs time.
 
 # Returns
 
-- `et::Array{Float64, 3}`
+- `et::Vector{Float64}`
 """
-function extract_eptime(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
+function extract_eptime(obj::NeuroAnalyzer.NEURO)::Vector{Float64}
 
     et = obj.epoch_time
 

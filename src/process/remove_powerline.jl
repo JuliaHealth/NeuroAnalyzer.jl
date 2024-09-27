@@ -24,7 +24,7 @@ Remove power line noise and its peaks above power line frequency.
 - `obj_new::NeuroAnalyzer.NEURO`
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
+function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
     @assert nepochs(obj) == 1 "remove_powerline() must be applied to a continuous signal."
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
@@ -177,7 +177,7 @@ Remove power line noise and harmonics.
 
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)
+function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::DataFrame
 
     obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data
@@ -202,7 +202,7 @@ Detect power line noise frequency.
 
 - `noise_frq::Float64`: peak noise frequency in Hz
 """
-function detect_powerline(s::AbstractVector; fs::Int64)
+function detect_powerline(s::AbstractVector; fs::Int64)::Float64
 
     n = length(s)
     t = linspace(0, n * 1/fs, n)
@@ -235,7 +235,7 @@ Detect power line noise frequency.
 
 - `noise_frq::Array{Float64, 3}`: peak noise frequency in Hz
 """
-function detect_powerline(obj::NeuroAnalyzer.NEURO)
+function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
 
     ch_n = size(obj, 1)
     ep_n = size(obj, 3)
@@ -258,7 +258,6 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)
 
 end
 
-
 """
     detect_powerline!(obj)
 
@@ -267,8 +266,12 @@ Detect power line noise frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+Nothing
 """
-function detect_powerline!(obj::NeuroAnalyzer.NEURO)
+function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
 
     ch_n = size(obj, 1)
     ep_n = size(obj, 3)

@@ -156,11 +156,11 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 # Returns
 
 Named tuple containing:
-- `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
-- `itpcz_s::Array{Float64, 3}`: spectrogram of ITPCZ values
+- `itpc_s::Matrix{Float64}`: spectrogram of ITPC values
+- `itpcz_s::Matrix{Float64}`: spectrogram of ITPCZ values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{(:itpc_s, :itpcz_s, :itpc_f), Tuple{Array{Float64, 3}, Array{Float64, 3}, Vector{Float64}}}
+function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{(:itpc_s, :itpcz_s, :itpc_f), Tuple{Matrix{Float64}, Matrix{Float64}, Vector{Float64}}}
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))

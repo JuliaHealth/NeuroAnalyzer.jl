@@ -15,7 +15,7 @@ Remove mean value (DC offset).
 
 - `s_new::Vector{Float64}`
 """
-function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}}=0)
+function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}}=0)::Vector{Float64}
 
     if isa(n, Int64)
         @assert n >=0 "n must be ≥ 0."
@@ -46,7 +46,7 @@ Remove mean value (DC offset).
 
 - `s::Array{Float64, 3}`
 """
-function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)
+function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -78,7 +78,7 @@ Remove mean value (DC offset).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)
+function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -100,8 +100,12 @@ Remove mean value (DC offset).
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+
+# Returns
+
+Nothing
 """
-function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)
+function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Union{Int64, Tuple{Int64, Int64}}=0)::Nothing
 
     obj_new = remove_dc(obj, ch=ch, n=n)
     obj.data = obj_new.data

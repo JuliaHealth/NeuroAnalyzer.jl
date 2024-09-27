@@ -17,7 +17,7 @@ Filter using moving median filter (with threshold).
 
 - `s_filtered::Vector{Float64}`
 """
-function filter_mmed(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mmed(s::AbstractVector; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Vector{Float64}
 
     # check k
     @assert k in eachindex(s) "k must be in [1, signal length ($(length(s)))]."
@@ -55,9 +55,9 @@ Filter using moving median filter (with threshold).
 
 # Returns
 
-- `s_filtered::Array{Float64, 3}`: convoluted signal
+- `s_filtered::Array{Float64, 3}`
 """
-function filter_mmed(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mmed(s::AbstractArray; k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -90,9 +90,9 @@ Filter using moving median filter (with threshold).
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+- `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     _info("Window length: $(2 * k + 1) samples")
@@ -119,8 +119,11 @@ Filter using moving median filter (with threshold).
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
 
+# Returns
+
+Nothing
 """
-function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
+function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Nothing
 
     obj_new = filter_mmed(obj, ch=ch, k=k, t=t, window=window)
     obj.data = obj_new.data

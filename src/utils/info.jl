@@ -646,9 +646,9 @@ Return channels belonging to a cluster of channels.
 
 # Returns
 
-- `ch::Vector{Int64}`: list of channel numbers belonging to a given cluster of channels
+- `ch::Vector{String}`: list of channel numbers belonging to a given cluster of channels
 """
-function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Int64}
+function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
 
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
