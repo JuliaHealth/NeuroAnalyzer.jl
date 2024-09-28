@@ -86,7 +86,7 @@ Calculate `charge`, `current_density` and `charge_ density` for tPCS stimulation
 - `pad_area::Real`: electrode pad area [cm²]
 - `duration::Real`: stimulation duration [s]
 - `pw::Real`: pulse width [ms]
-- `isi::Real`: interstimulus interval [ms] (pulse width + interval)
+- `isi::Real`: interstimulus interval [ms]
 
 # Returns
 
