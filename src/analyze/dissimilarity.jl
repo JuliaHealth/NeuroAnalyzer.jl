@@ -56,7 +56,7 @@ Named tuple containing:
 - `gd::Float64`: global dissimilarity
 - `sc::Float64`: spatial correlation
 """
-function diss(s1::AbstractVector, s2::AbstractVector)::NamedTuple{(:gd, :sc), Tuple{Float64, Float64}}
+function diss(s1::AbstractVector, s2::AbstractVector)::NamedTuple{gd::Float64, sc::Float64}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -84,7 +84,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(s::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
+function diss(s::AbstractArray)::NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -133,7 +133,7 @@ Named tuple containing:
 - `gd::Matrix{Float64}`: global dissimilarity
 - `sc::Matrix{Float64}`: spatial correlation
 """
-function diss(s1::AbstractArray, s2::AbstractArray)::NamedTuple{(:gd, :sc), Tuple{Matrix{Float64}, Matrix{Float64}}}
+function diss(s1::AbstractArray, s2::AbstractArray)::NamedTuple{gd::Matrix{Float64}, sc::Matrix{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -168,10 +168,10 @@ Calculate DISS (global dissimilarity) and spatial correlation (channels vs chann
 # Returns
 
 Named tuple containing:
-- `gd::Matrix{Float64}`: global dissimilarity
-- `sc::Matrix{Float64}`: spatial correlation
+- `gd::Array{Float64, 3}`: global dissimilarity
+- `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
+function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
 
     ch = get_channel(obj, ch=ch)
     gd, sc = diss(obj.data[ch, :, :])
@@ -199,7 +199,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::NamedTuple{(:gd, :sc), Tuple{Array{Float64, 3}, Array{Float64, 3}}}
+function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."

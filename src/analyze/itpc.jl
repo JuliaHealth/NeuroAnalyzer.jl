@@ -20,7 +20,7 @@ Named tuple containing:
 - `itpc_ang::Float64`: ITPC angle
 - `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Float64, Float64, Float64, Vector{Float64}}}
+function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
 
     _chk3d(s)
     @assert t >= 1 "t must be ≥ 1."
@@ -68,7 +68,7 @@ Named tuple containing:
 - `itpc_ang::Vector{Float64}`: ITPC angle
 - `itpc_ph::Matrix{Float64}`: phase difference (channel2 - channel1)
 """
-function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Matrix{Float64}}}
+function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -108,7 +108,7 @@ Named tuple containing:
 - `itpc_ang::Vector{Float64}`: ITPC angles
 - `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{(:itpc_val, :itpcz_val, :itpc_ang, :itpc_ph), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}, Matrix{Float64}}}
+function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
 
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
@@ -160,7 +160,7 @@ Named tuple containing:
 - `itpcz_s::Matrix{Float64}`: spectrogram of ITPCZ values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{(:itpc_s, :itpcz_s, :itpc_f), Tuple{Matrix{Float64}, Matrix{Float64}, Vector{Float64}}}
+function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, itpc_f::Vector{Float64}}
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))

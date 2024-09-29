@@ -21,7 +21,7 @@ Named tuple containing:
 - `energy::Float64`: total signal energy
 - `rms::Float64`: root mean square
 """
-function amp(s::AbstractVector)::NamedTuple{(:p, :r, :p2p, :semi_p2p, :msa, :rmsa, :energy, :rms), Tuple{Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64}}
+function amp(s::AbstractVector)::NamedTuple{p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, energy::Float64, rms::Float64}
 
     p = maximum(abs.(s))
     r = p / sqrt(2)
@@ -57,7 +57,7 @@ Named tuple containing:
 - `rmsa::Matrix{Float64}`: root mean square amplitude
 - `energy::Matrix{Float64}`: total signal energy
 """
-function amp(s::AbstractArray)::NamedTuple{(:p, :r, :p2p, :semi_p2p, :msa, :rmsa, :energy, :rms), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
+function amp(s::AbstractArray)::NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rms::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -103,7 +103,7 @@ Named tuple containing:
 - `rmsa::Matrix{Float64}`: root mean square amplitude
 - `energy::Matrix{Float64}`: total signal energy
 """
-function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{(:p, :r, :p2p, :semi_p2p, :msa, :rmsa, :energy, :rms), Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}}
+function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rms::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
 

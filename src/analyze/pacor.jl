@@ -137,7 +137,7 @@ Named tuple containing:
 - `pac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, method::Symbol=:yw)::NamedTuple{(:pac, :l), Tuple{Array{Float64, 3}, Vector{Float64}}}
+function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, method::Symbol=:yw)::NamedTuple{pac::Array{Float64, 3}, l::Vector{Float64}}
 
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
