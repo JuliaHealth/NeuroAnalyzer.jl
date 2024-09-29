@@ -62,7 +62,7 @@ Named tuple containing:
 - `k1::Float64`: sqrt(n)
 - `k2::Float64`: 1 + 3.222 * log10(n)
 """
-function k_categories(n::Int64)::NamedTuple{k1::Float64, k2::Float64}
+function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
 
     k1 = sqrt(n)
     k2 = 1 + 3.222 * log10(n)
@@ -195,7 +195,7 @@ Named tuple containing:
 - `m::Float64`: mean
 - `s::Float64`: standard deviation
 """
-function binom_stat(p::Float64, n::Int64)::NamedTuple{m::Float64, s::Float64}
+function binom_stat(p::Float64, n::Int64)::@NamedTuple{m::Float64, s::Float64}
 
     m = n * p
     s = sqrt(n * p * (1 - p))
@@ -499,7 +499,7 @@ Named tuple containing:
 - `x_t::Matrix{Bool}`: thresholded matrix
 - `n::Int64`: number of elements
 """
-function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::NamedTuple{x_t::Matrix{Bool}, n::Int64}
+function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 

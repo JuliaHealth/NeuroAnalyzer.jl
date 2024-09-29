@@ -63,7 +63,7 @@ Named tuple containing:
 - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
 - `f::Vector{Float64}`: frequencies
 """
-function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
+function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
 
     _check_var(type, [:mean, :rms], "type")
     _chk3d(s)
@@ -119,7 +119,7 @@ Named tuple containing:
 - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
 - `f::Vector{Float64}`: frequencies
 """
-function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:rms)::NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
+function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, type::Symbol=:rms)::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
 
     ch = get_channel(obj, ch=ch)
     sn, f = @views snr(obj.data[ch, :, :], t=obj.epoch_time, type=type)

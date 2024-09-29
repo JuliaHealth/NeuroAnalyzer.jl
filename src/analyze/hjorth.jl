@@ -24,7 +24,7 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(s::AbstractVector)::NamedTuple{h_act::Float64, h_mob::Float64, h_comp::Float64}
+function hjorth(s::AbstractVector)::@NamedTuple{h_act::Float64, h_mob::Float64, h_comp::Float64}
 
     h_act = var(s)
     h_mob = _h_mob(s)
@@ -56,7 +56,7 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(s::AbstractArray)::NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
+function hjorth(s::AbstractArray)::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -99,7 +99,7 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
+function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
 
 
     ch = get_channel(obj, ch=ch)

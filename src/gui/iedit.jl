@@ -1,58 +1,5 @@
 export iedit
 
-function _refresh_plots()::Nothing
-    Gtk.@sigatom begin
-        draw(can1)
-        draw(can2)
-        draw(can3)
-        draw(can4)
-    end
-    return nothing
-end
-
-function _refresh_locs()::Nothing
-    Gtk.@sigatom begin
-        if current_channel in ch_signal
-            set_gtk_property!(entry_loc_theta, :sensitive, true)
-            set_gtk_property!(entry_loc_radius, :sensitive, true)
-            set_gtk_property!(entry_loc_x, :sensitive, true)
-            set_gtk_property!(entry_loc_y, :sensitive, true)
-            set_gtk_property!(entry_loc_z, :sensitive, true)
-            set_gtk_property!(entry_loc_theta_sph, :sensitive, true)
-            set_gtk_property!(entry_loc_radius_sph, :sensitive, true)
-            set_gtk_property!(entry_loc_phi_sph, :sensitive, true)
-            if isa(NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel]), Int64)
-                set_gtk_property!(entry_loc_theta, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta])
-                set_gtk_property!(entry_loc_radius, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius])
-                set_gtk_property!(entry_loc_x, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x])
-                set_gtk_property!(entry_loc_y, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y])
-                set_gtk_property!(entry_loc_z, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z])
-                set_gtk_property!(entry_loc_theta_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph])
-                set_gtk_property!(entry_loc_radius_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph])
-                set_gtk_property!(entry_loc_phi_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph])
-            end
-        else
-            set_gtk_property!(entry_loc_theta, :sensitive, false)
-            set_gtk_property!(entry_loc_radius, :sensitive, false)
-            set_gtk_property!(entry_loc_x, :sensitive, false)
-            set_gtk_property!(entry_loc_y, :sensitive, false)
-            set_gtk_property!(entry_loc_z, :sensitive, false)
-            set_gtk_property!(entry_loc_theta_sph, :sensitive, false)
-            set_gtk_property!(entry_loc_radius_sph, :sensitive, false)
-            set_gtk_property!(entry_loc_phi_sph, :sensitive, false)
-            set_gtk_property!(entry_loc_theta, :value, 0)
-            set_gtk_property!(entry_loc_radius, :value, 0)
-            set_gtk_property!(entry_loc_x, :value, 0)
-            set_gtk_property!(entry_loc_y, :value, 0)
-            set_gtk_property!(entry_loc_z, :value, 0)
-            set_gtk_property!(entry_loc_theta_sph, :value, 0)
-            set_gtk_property!(entry_loc_radius_sph, :value, 0)
-            set_gtk_property!(entry_loc_phi_sph, :value, 0)
-        end
-    end
-    return nothing
-end
-
 """
     iedit(obj; <keyword arguments>)
 

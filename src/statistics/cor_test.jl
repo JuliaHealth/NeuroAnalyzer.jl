@@ -20,7 +20,7 @@ Named tuple containing:
 - `df::Int64`: degrees of freedom
 - `p::Float64`: p-value
 """
-function cor_test(s1::AbstractVector, s2::AbstractVector)::NamedTuple{t::CorrelationTest{Float64}, r::Float64, rc::Tuple{Float64, Float64}, ts::Tuple{Float64, String}, df::Int64, p::Float64}
+function cor_test(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{t::CorrelationTest{Float64}, r::Float64, rc::Tuple{Float64, Float64}, ts::Tuple{Float64, String}, df::Int64, p::Float64}
 
     @assert length(s1) == length(s2) "Both vectors must have the same length."
     t = CorrelationTest(s1, s2)

@@ -152,7 +152,7 @@ Named tuple containing:
 - `ac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
+function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
 
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."

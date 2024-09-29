@@ -28,7 +28,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     _check_var(method, [:stft, :mt], "method")
     @assert fs >= 1 "fs must be ≥ 1."
@@ -85,7 +85,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::NamedTuple{cs::Matrix{ComplexF64}, p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{cs::Matrix{ComplexF64}, p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be > 1."
 
@@ -156,7 +156,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -206,7 +206,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -270,7 +270,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
     ch = get_channel(obj, ch=ch)

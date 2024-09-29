@@ -17,7 +17,7 @@ Named tuple containing:
 - `sent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
 """
-function entropy(s::AbstractVector)::NamedTuple{ent::Float64, sent::Float64, leent::Float64}
+function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, sent::Float64, leent::Float64}
 
     n = length(s)
     maxmin_range = maximum(s) - minimum(s)
@@ -50,7 +50,7 @@ Named tuple containing:
 - `sent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
 """
-function entropy(s::AbstractArray)::NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
+function entropy(s::AbstractArray)::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -87,7 +87,7 @@ Named tuple containing:
 - `sent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
 """
-function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
+function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
     ent, sent, leent = @views entropy(obj.data[ch, :, :])

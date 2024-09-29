@@ -20,7 +20,7 @@ Named tuple containing:
 
 p-values are reported for each group and for the whole sample. If there is only one group, p-values are returned only for the whole sample p-values are reported.
 """
-function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
+function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::@NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
 
     groups = sort(unique(g))
 

@@ -17,7 +17,7 @@ Named tuple containing:
 - `ph::Vector{Float64}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)::NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
+function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
@@ -46,7 +46,7 @@ Named tuple containing:
 - `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(s::AbstractArray; fs::Int64)::NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
+function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -100,7 +100,7 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(s1::AbstractArray, s2::AbstractArray; fs::Int64)::NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+function cph(s1::AbstractArray, s2::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -138,7 +138,7 @@ Named tuple containing:
 - `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
+function cph(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
 
     ch = get_channel(obj, ch=ch)
 
@@ -167,7 +167,7 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+function cph(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."

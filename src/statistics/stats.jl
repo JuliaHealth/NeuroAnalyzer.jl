@@ -24,7 +24,7 @@ Named tuple containing:
 - `e_max_dif::Vector{Float64}`: max difference
 - `e_dev_mean::Vector{Float64}`: deviation from channel mean
 """
-function epoch_stats(obj::NeuroAnalyzer.NEURO)::NamedTuple{e_mean::Vector{Float64}, e_median::Vector{Float64}, e_std::Vector{Float64}, e_var::Vector{Float64}, e_kurt::Vector{Float64}, e_skew::Vector{Float64}, e_mean_diff::Vector{Float64}, e_median_diff::Vector{Float64}, e_max_dif::Vector{Float64}, e_dev_mean::Vector{Float64}}
+function epoch_stats(obj::NeuroAnalyzer.NEURO)::@NamedTuple{e_mean::Vector{Float64}, e_median::Vector{Float64}, e_std::Vector{Float64}, e_var::Vector{Float64}, e_kurt::Vector{Float64}, e_skew::Vector{Float64}, e_mean_diff::Vector{Float64}, e_median_diff::Vector{Float64}, e_max_dif::Vector{Float64}, e_dev_mean::Vector{Float64}}
 
     ep_n = nepochs(obj)
 
@@ -79,7 +79,7 @@ Named tuple containing:
 - `c_max_dif::Matrix{Float64}`: max difference
 - `c_dev_mean::Matrix{Float64}`: deviation from channel mean
 """
-function channel_stats(obj::NeuroAnalyzer.NEURO)::NamedTuple{c_mean::Matrix{Float64}, c_median::Matrix{Float64}, c_std::Matrix{Float64}, c_var::Matrix{Float64}, c_kurt::Matrix{Float64}, c_skew::Matrix{Float64}, c_mean_diff::Matrix{Float64}, c_median_diff::Matrix{Float64}, c_max_dif::Matrix{Float64}, c_dev_mean::Matrix{Float64}}
+function channel_stats(obj::NeuroAnalyzer.NEURO)::@NamedTuple{c_mean::Matrix{Float64}, c_median::Matrix{Float64}, c_std::Matrix{Float64}, c_var::Matrix{Float64}, c_kurt::Matrix{Float64}, c_skew::Matrix{Float64}, c_mean_diff::Matrix{Float64}, c_median_diff::Matrix{Float64}, c_max_dif::Matrix{Float64}, c_dev_mean::Matrix{Float64}}
 
     ch_n = nchannels(obj)
     ep_n = nepochs(obj)

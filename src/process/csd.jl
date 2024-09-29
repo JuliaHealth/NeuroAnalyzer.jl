@@ -124,7 +124,7 @@ Named tuple containing:
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::NamedTuple{G::Matrix{Float64}, H::Matrix{Float64}}
+function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::@NamedTuple{G::Matrix{Float64}, H::Matrix{Float64}}
 
     @assert !(m < 2 || m > 10) "m must be in [2, 10]."
     @assert n >= 1 "n must be ≥ 1."

@@ -20,7 +20,7 @@ Named tuple containing:
 - `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(s::AbstractArray; n::Int64)::NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
+function pca_decompose(s::AbstractArray; n::Int64)::@NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
 
     _chk3d(s)
     @assert n >= 1 "n must be ≥ 1."
@@ -82,7 +82,7 @@ Named tuple containing:
 - `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)::NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
+function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)::@NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
 
     ch = get_channel(obj, ch=ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n=n)

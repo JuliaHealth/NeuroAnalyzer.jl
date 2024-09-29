@@ -16,7 +16,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
+function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -64,7 +64,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
+function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
 
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."

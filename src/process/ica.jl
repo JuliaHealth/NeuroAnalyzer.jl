@@ -24,7 +24,7 @@ Named tuple containing:
 - `ic::Matrix{Float64}`: components IC(1)..IC(n) (W * data), components are sorted by decreasing variance
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
 """
-function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:tanh)::NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}}
+function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:tanh)::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}}
 
     _check_var(f, [:tanh, :gaus], "f")
     @assert n >= 1 "n must be ≥ 1."
@@ -107,7 +107,7 @@ Named tuple containing:
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n) (inv(W))
 - `ic_var::Vector{Float64}`: variance of components
 """
-function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)::NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_var::Vector{Float64}}
+function ica_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=length(ch), iter::Int64=100, f::Symbol=:tanh)::@NamedTuple{ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_var::Vector{Float64}}
 
     @assert nepochs(obj) == 1 "ica_decompose() must be applied to a continuous signal."
 

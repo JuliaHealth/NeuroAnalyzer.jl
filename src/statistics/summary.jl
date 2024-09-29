@@ -18,7 +18,7 @@ Named tuple containing:
 - `me::Float64`: median
 - `mo::Float64`: mode
 """
-function summary(x::AbstractVector; g::String="")::NamedTuple{mm::Float64, s::Float64, v::Float64, me::Float64, mo::Float64}
+function summary(x::AbstractVector; g::String="")::@NamedTuple{mm::Float64, s::Float64, v::Float64, me::Float64, mo::Float64}
 
     mm = mean(x)
     v = var(x)
@@ -66,7 +66,7 @@ Named tuple containing:
 - `mo1::Float64`: mode
 - `mo2::Float64`: mode
 """
-function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::String="2")::NamedTuple{mm1::Float64, mm2::Float64, s1::Float64, s2::Float64, v1::Float64, v2::Float64, me1::Float64, me1::Float64, mo1::Float64, mo2::Float64}
+function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::String="2")::@NamedTuple{mm1::Float64, mm2::Float64, s1::Float64, s2::Float64, v1::Float64, v2::Float64, me1::Float64, me1::Float64, mo1::Float64, mo2::Float64}
 
     mm1 = mean(x)
     v1 = var(x)

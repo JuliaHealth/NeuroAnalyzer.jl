@@ -58,7 +58,7 @@ Named tuple containing:
 
 https://www.statology.org/what-is-a-good-f1-score/
 """
-function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::NamedTuple{f1::Float64, p::Float64, r::Float64}
+function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float64, p::Float64, r::Float64}
 
     p = tp / (tp + fp)
     r = tp / (tp + fn)
@@ -90,7 +90,7 @@ Named tuple containing:
 
 https://www.statology.org/misclassification-rate/
 """
-function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::NamedTuple{mr::Float64, acc::Float64}
+function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Float64, acc::Float64}
 
     mr = (fp + fn) / (tp + tn + fp + fn)
     acc = 1 - mr

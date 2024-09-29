@@ -68,7 +68,7 @@ Named tuple containing:
 - `zmap::Matrix{Float64}`: array of Z-values
 - `bm::BitMatrix`: binarized mask of statistically significant positions
 """
-function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)::NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
+function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)::@NamedTuple{zmap::Matrix{Float64}, bm::BitMatrix}
 
     @assert size(a1) == size(a2) "Both arrays must have the same size"
     @assert perm_n > 0 "perm_n must be > 0."

@@ -163,7 +163,7 @@ Named tuple containing:
 - `hz::Vector{Float64}`
 - `nf::Float64`
 """
-function freqs(obj::NeuroAnalyzer.NEURO)::NamedTuple{hz::Vector{Float64}, nf::Float64}
+function freqs(obj::NeuroAnalyzer.NEURO)::@NamedTuple{hz::Vector{Float64}, nf::Float64}
 
     hz, nf = freqs(obj.data[1, :, 1], sr(obj))
 

@@ -16,7 +16,7 @@ Named tuple containing:
 - `nn_seg::Vector{Float64}`: list of NN segments [msec]
 - `r_idx::Vector{Float64}`: index of R peaks
 """
-function hrv_detect(obj::NeuroAnalyzer.NEURO)::NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Float64}}
+function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float64}, r_idx::Vector{Float64}}
 
     @assert "ecg" in obj.header.recording[:channel_type] "OBJ does not contain ECG channel."
     ch = get_channel(obj, type="ecg")
@@ -56,7 +56,7 @@ Named tuple containing:
 - `nn20::Float64`, the number of pairs of successive NNs that differ by more than 20 ms
 - `pnn20::Float64`, the proportion of NN20 divided by total number of NNs
 """
-function hrv_analyze(nn_seg::Vector{Float64})::NamedTuple{menn::Float64, mdnn::Float64, vnn::Float64, sdnn::Float64, rmssd::Float64, sdsd::Float64, nn50::Float64, pnn50::Float64, nn20::Float64, pnn20::Float64}
+function hrv_analyze(nn_seg::Vector{Float64})::@NamedTuple{menn::Float64, mdnn::Float64, vnn::Float64, sdnn::Float64, rmssd::Float64, sdsd::Float64, nn50::Float64, pnn50::Float64, nn20::Float64, pnn20::Float64}
 
     nn_diff = diff(nn_seg)
 

@@ -34,7 +34,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh, :cwt], "method")
     @assert nt >= 1 "nt must be ≥ 1."
@@ -120,7 +120,7 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::NamedTuple{p::Matrix{Float64}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}} where {T <: CWT}
 
     ch_n = size(s, 1)
     _, f = psd(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
@@ -166,7 +166,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -218,7 +218,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
+function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
 
     ch = get_channel(obj, ch=ch)
     p, f = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
@@ -247,7 +247,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
@@ -302,7 +302,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -350,7 +350,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
+function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 

@@ -26,7 +26,7 @@ Named tuple containing:
 - `bic::Float64`:: Bayesian Information Criterion (BIC)
 - `lf::Vector{Float64}`: linear fit (plot(x, lf))
 """
-function linreg(x::AbstractVector, y::AbstractVector)::NamedTuple{lr::StatsModels.TableRegressionModel, radj::Float64, c::Vector{Float64}, se::Vector{Float64}, aic::Float64, bic::Float64, lf::Vector{Float64}}
+function linreg(x::AbstractVector, y::AbstractVector)::@NamedTuple{lr::StatsModels.TableRegressionModel, radj::Float64, c::Vector{Float64}, se::Vector{Float64}, aic::Float64, bic::Float64, lf::Vector{Float64}}
 
     df = DataFrame(:x=>x, :y=>y)
     lr = GLM.lm(@formula(y ~ x), df)
@@ -55,7 +55,7 @@ Named tuple containing:
 - `aic::Float64`
 - `bic::Float64`
 """
-function infcrit(m::T)::NamedTuple{aic::Float64, bic::Float64} where {T<:StatsModels.TableRegressionModel}
+function infcrit(m::T)::@NamedTuple{aic::Float64, bic::Float64} where {T<:StatsModels.TableRegressionModel}
 
     k = length(StatsKit.coef(m)) - 1
     n = length(MultivariateStats.predict(m))
