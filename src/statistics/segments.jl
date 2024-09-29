@@ -39,7 +39,7 @@ Named tuple containing:
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg_mean(seg1::AbstractArray, seg2::AbstractArray)::NamedTuple{(:seg1, :seg2), Tuple{Vector{Float64}, Vector{Float64}}}
+function seg_mean(seg1::AbstractArray, seg2::AbstractArray)::NamedTuple{seg1::Vector{Float64}, seg2::Vector{Float64}}
 
     seg1 = seg_mean(seg1)
     seg2 = seg_mean(seg2)

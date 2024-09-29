@@ -19,7 +19,7 @@ Named tuple containing:
 - `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin
 - `Δ::Float64`: Glass' Δ
 """
-function effsize(x1::AbstractVector, x2::AbstractVector)::NamedTuple{(:d, :g, :Δ), Tuple{Float64, Float64, Float64}}
+function effsize(x1::AbstractVector, x2::AbstractVector)::NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
     d = (mean(x2) - mean(x1)) / pooledstd(x1, x2, type=:cohen)
     g = (mean(x2) - mean(x1)) / pooledstd(x1, x2, type=:hedges)

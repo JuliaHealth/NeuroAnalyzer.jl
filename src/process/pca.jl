@@ -15,12 +15,12 @@ Calculate `n` first Primary Components (PCs).
 # Returns
 
 Named tuple containing:
-- `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+- `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
 - `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(s::AbstractArray; n::Int64)::NamedTuple{(:pc, :pcv, :pcm, :pc_model), Tuple{Array{Float64, 3}, Matrix{Float64}, Vector{Float64}, MultivariateStats.PCA{Float64}}}
+function pca_decompose(s::AbstractArray; n::Int64)::NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
 
     _chk3d(s)
     @assert n >= 1 "n must be ≥ 1."
@@ -82,12 +82,13 @@ Named tuple containing:
 - `pcm::Vector{Float64}`: PC mean
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
-function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)::NamedTuple{(:pc, :pcv, :pcm, :pc_model), Tuple{Array{Float64, 3}, Matrix{Float64}, Vector{Float64}, MultivariateStats.PCA{Float64}}}
+function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64)::NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
 
     ch = get_channel(obj, ch=ch)
     pc, pcv, pcm, pc_model = @views pca_decompose(obj.data[ch, :, :], n=n)
 
     return (pc=pc, pcv=pcv, pcm=pcm, pc_model=pc_model)
+
 end
 
 """
@@ -116,6 +117,7 @@ function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::Multivar
     end
 
     return s_new
+
 end
 
 """

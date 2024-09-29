@@ -20,7 +20,7 @@ Named tuple containing:
 - `ref_list::Vector{String}`: list of channel pairs
 - `ref_name::String`: name of the montage
 """
-function import_montage(file_name::String)::NamedTuple{(:ref_list, :ref_name), Tuple{Vector{String}, String}}
+function import_montage(file_name::String)::NamedTuple{ref_list::Vector{String}, ref_name::String}
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 

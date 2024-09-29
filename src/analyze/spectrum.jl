@@ -20,7 +20,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
 """
-function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::NamedTuple{(:ft, :a, :p, :ph), Tuple{Vector{ComplexF64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
+function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::NamedTuple{ft::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     ft = rfft0(s, pad)
 
@@ -57,26 +57,26 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `hc::Vector{ComplexF64}`: Hilbert components
+- `c::Vector{ComplexF64}`: Hilbert components
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
 """
-function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::NamedTuple{(:hc, :a, :p, :ph), Tuple{Vector{ComplexF64}, Vector{Float64}, Vector{Float64}, Vector{Float64}}}
+function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
-    hc = hilbert(pad0(s, pad))
+    c = hilbert(pad0(s, pad))
 
     # amplitudes
-    a = abs.(hc)
+    a = abs.(c)
 
     # powers
     p = a.^2
     db && (p = pow2db.(p))
 
     # phases
-    ph = angle.(hc)
+    ph = angle.(c)
 
-    return (hc=hc, a=a, p=p, ph=ph)
+    return (c=c, a=a, p=p, ph=ph)
 
 end
 
@@ -94,30 +94,30 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `hc::Array{ComplexF64, 3}`: Hilbert components
+- `c::Array{ComplexF64, 3}`: Hilbert components
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}`: phases
 """
-function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::NamedTuple{(:hc, :a, :p, :ph), Tuple{Array{ComplexF64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
+function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
 
-    hc = zeros(ComplexF64, ch_n, ep_len, ep_n)
+    c = zeros(ComplexF64, ch_n, ep_len, ep_n)
     a = similar(s)
     p = similar(s)
     ph = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            hc[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
+            c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
 
-    return (hc=hc, a=a, p=p, ph=ph)
+    return (c=c, a=a, p=p, ph=ph)
 
 end
 
@@ -141,7 +141,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phase angles
 """
-function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::NamedTuple{(:c, :a, :p, :ph), Tuple{Array{ComplexF64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
+function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     h && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
@@ -194,7 +194,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phase angles
 """
-function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, h::Bool=false, db::Bool=false)::NamedTuple{(:c, :a, :p, :ph), Tuple{Array{ComplexF64, 3}, Array{Float64, 3}, Array{Float64, 3}, Array{Float64, 3}}}
+function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, h::Bool=false, db::Bool=false)::NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     ch = get_channel(obj, ch=ch)
     c, a, p, ph = spectrum(obj.data[ch, :, :], pad=pad, h=h, db=db)

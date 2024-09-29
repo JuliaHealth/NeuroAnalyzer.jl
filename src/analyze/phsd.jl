@@ -72,7 +72,7 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractArray; fs::Int64)::NamedTuple{(:ph, :f), Tuple{Array{Float64, 3}, Vector{Float64}}}
+function phsd(s::AbstractArray; fs::Int64)::NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)

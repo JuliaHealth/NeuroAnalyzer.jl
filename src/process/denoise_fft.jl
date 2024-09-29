@@ -18,7 +18,7 @@ Named tuple containing:
 - `s::Vector{Float64}`: denoised signal
 - `f_idx::BitVector`: index of components zeroed
 """
-function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)::NamedTuple{(:s, :f_idx), Tuple{Vector{Float64}, BitVector}}
+function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)::NamedTuple{s::Vector{Float64}, f_idx::BitVector}
 
     s_fft = fft0(s, pad)
     s_pow = @. (abs(s_fft * conj(s_fft))) / length(s)

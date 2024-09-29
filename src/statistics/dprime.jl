@@ -16,7 +16,7 @@ Named tuple containing:
 - `dp::Float64`
 - `rb::Float64`: response bias
 """
-function dprime(p1::Real, p2::Real)::NamedTuple{(:dp, :rb), Tuple{Float64, Float64}}
+function dprime(p1::Real, p2::Real)::NamedTuple{dp::Float64, rb::Float64}
 
     @assert !(p1 <= 0 || p1 >= 1) "p1 must be in [0, 1]."
     @assert !(p2 <= 0 || p2 >= 1) "p2 must be in [0, 1]."

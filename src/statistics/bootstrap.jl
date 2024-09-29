@@ -20,7 +20,7 @@ Named tuple containing:
 - `s_ci_l::Vector{Float64}`: lower bound of the confidence interval
 - `s_ci_h::Vector{Float64}`: upper bound of the confidence interval
 """
-function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, ci::Float64=0.95)::NamedTuple{(:s_avg, :s_ci_l, :s_ci_h), Tuple{Vector{Float64}, Vector{Float64}, Vector{Float64}}}
+function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, ci::Float64=0.95)::NamedTuple{s_avg::Vector{Float64}, s_ci_l::Vector{Float64}, s_ci_h::Vector{Float64}}
 
     @assert ci < 1.0 "ci must be < 1.0."
 
