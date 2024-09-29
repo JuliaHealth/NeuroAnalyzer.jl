@@ -20,7 +20,7 @@ Named tuple containing:
 - `l_seg::Int64`: length of segment before the pop that starts when signal crosses 0
 - `r_seg::Int64`: length of segment after the pop that ends when signal crosses 0
 """
-function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)::Union{Nothing, NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64}, NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}}
+function remove_pops(s::AbstractVector; r::Int64=20, repair::Bool=true)::Union{Nothing, @NamedTuple{s::Vector{Float64}, pop_loc::Int64, l_seg::Int64, r_seg::Int64}, @NamedTuple{pop_loc::Int64, l_seg::Int64, r_seg::Int64}}
 
     @assert length(s) >= 2 * r + 1 "s length must be ≥ $(2 * r + 1)."
 

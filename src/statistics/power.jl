@@ -93,7 +93,7 @@ Named tuple containing:
 - `n1::Int64`: group 1 sample size
 - `n2::Int64`: group 2 sample size
 """
-function size_p2g(; p1::Float64, p2::Float64, r::Int64=1, alpha::Float64=0.05, power::Float64=0.8)::@NamedTuple{n2::Int64, n2::Int64}
+function size_p2g(; p1::Float64, p2::Float64, r::Int64=1, alpha::Float64=0.05, power::Float64=0.8)::@NamedTuple{n1::Int64, n2::Int64}
 
     beta = 1 - power
     delta = abs(p2 - p1)

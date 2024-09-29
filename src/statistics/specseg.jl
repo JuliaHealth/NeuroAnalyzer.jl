@@ -93,10 +93,10 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 # Returns
 
 Named tuple containing:
-- `p::Array{Float64, 4}`: powers
+- `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})::@NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}}
+function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
 
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
@@ -104,14 +104,14 @@ function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})::
 
     f1_idx = vsearch(frq_lim[1], f)
     f2_idx = vsearch(frq_lim[2], f)
-    f_new = @views f[f1_idx:f2_idx]
+    f_new = f[f1_idx:f2_idx]
 
     if ndims(p) == 3
         # power spectrum
-        p_new = @views p[:, f1_idx:f2_idx, :]
+        p_new = p[:, f1_idx:f2_idx, :]
     else
         # spectrogram
-        p_new = @views p[f1_idx:f2_idx, :, :, :]
+        p_new = p[f1_idx:f2_idx, :, :, :]
     end
 
     return (p=p_new, f=f_new)
@@ -142,8 +142,8 @@ function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})::@Nam
 
     t1_idx = vsearch(seg[1], t)
     t2_idx = vsearch(seg[2], t)
-    t_new = @views t[t1_idx:t2_idx]
-    p_new = @views p[:, t1_idx:t2_idx, :, :]
+    t_new = t[t1_idx:t2_idx]
+    p_new = p[:, t1_idx:t2_idx, :, :]
 
     return (p=p_new, t=t_new)
 

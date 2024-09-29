@@ -62,21 +62,21 @@ Named tuple containing:
 - `v1::Float64`: variance
 - `v2::Float64`: variance
 - `me1::Float64`: median
-- `me1::Float64`: median
+- `me2::Float64`: median
 - `mo1::Float64`: mode
 - `mo2::Float64`: mode
 """
-function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::String="2")::@NamedTuple{mm1::Float64, mm2::Float64, s1::Float64, s2::Float64, v1::Float64, v2::Float64, me1::Float64, me1::Float64, mo1::Float64, mo2::Float64}
+function summary(x::AbstractVector, y::AbstractVector; g1::String="1", g2::String="2")::@NamedTuple{mm1::Float64, mm2::Float64, s1::Float64, s2::Float64, v1::Float64, v2::Float64, me1::Float64, me2::Float64, mo1::Float64, mo2::Float64}
 
     mm1 = mean(x)
-    v1 = var(x)
-    s1 = std(x)
-    me1 = median(x)
-    mo1 = mode(x)
     mm2 = mean(y)
+    v1 = var(x)
     v2 = var(y)
+    s1 = std(x)
     s2 = std(y)
+    me1 = median(x)
     me2 = median(y)
+    mo1 = mode(x)
     mo2 = mode(y)
 
     if verbose
