@@ -19,7 +19,7 @@ Named tuple containing:
 - `bn::Vector{Symbol}`: band names
 - `bf::Vector{Tuple{Real, Real}}`: band frequencies
 """
-function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, w::Union{Nothing, AbstractVector, <:Real}=nothing)::NamedTuple{s::Array{Float64, 4}, bn::Vector{Symbol}, bf::Vector{Tuple{Real, Real}}
+function bpsplit(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=8, w::Union{Nothing, AbstractVector, <:Real}=nothing)::NamedTuple{s::Array{Float64, 4}, bn::Vector{Symbol}, bf::Vector{Tuple{Real, Real}}}
 
     bn = [:delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 
