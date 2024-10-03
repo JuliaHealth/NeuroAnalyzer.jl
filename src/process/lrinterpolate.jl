@@ -37,20 +37,20 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, 
     train, test = _split(df, 0.80)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = lm(fm, train)
-    acc_r2 = r2(linear_regressor)
     prediction = GLM.predict(linear_regressor, test)
     accuracy_testdf = DataFrame(signal_actual = test[!, :x1], signal_predicted = prediction)
     accuracy_testdf.error = accuracy_testdf[!, :signal_actual]
     acc_rmse = sqrt(sum((accuracy_testdf.error).^2)) / length(accuracy_testdf.error)
     acc_mae = mean(abs.(accuracy_testdf.error))
-    aic, bic = infcrit(linear_regressor)
+    R2, R2adj, aic, bic = infcrit(linear_regressor)
 
     _info("Accuracy report:")
-    _info(" R²: $(round(acc_r2, digits=3))")
-    _info(" RMSE: $(round(acc_rmse, digits=3))")
-    _info(" MAE: $(round(acc_mae, digits=3))")
+    _info(" R²: $(round(R2, digits=3))")
+    _info(" R² adj: $(round(R2adj, digits=3))")
     _info(" AIC: $(round(aic, digits=3))")
     _info(" BIC: $(round(bic, digits=3))")
+    _info(" RMSE: $(round(acc_rmse, digits=3))")
+    _info(" MAE: $(round(acc_mae, digits=3))")
 
     # predict
     obj_new = deepcopy(obj)

@@ -11,7 +11,7 @@ Return the positions of the value in the vector.
 
 # Arguments
 
-- `y::T`: value of interest
+- `y::Real`: value of interest
 - `x::AbstractVector`: vector to search within
 - `acc::Bool=false`: if true, return the difference between `y` and `x[idx]`
 
