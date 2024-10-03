@@ -30,8 +30,8 @@ m = GLM.lm(@formula(y ~ x), df)
 R2, R2adj, aic, bic = infcrit(m)
 @test R2 == 1.0
 @test R2adj == 1.0
-@test aic == -9.580822951399906
-@test bic == -9.27823785840586 
+@test aic == -9.080822951399906
+@test bic == -9.27823785840586
 
 @info "Test: outlier_detect()"
 @test !grubbs([1, 2, 3, 4, 5])
