@@ -18,7 +18,7 @@ Interpolate channel using a machine-learning model.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function mlinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep), model::T) where {T <: MLJ.Model}
+function mlinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep), model::T)::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
 
     channels = get_channel(obj, type=datatype(obj))
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
@@ -75,7 +75,7 @@ Interpolate channel using linear regression.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function mlinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep), model::T) where {T <: MLJ.Model}
+function mlinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep), model::T)::Nothing where {T <: MLJ.Model}
 
     obj_new = mlinterpolate_channel(obj, ch=ch, ep=ep, ep_ref=ep_ref, model=model)
     obj.data = obj_new.data
