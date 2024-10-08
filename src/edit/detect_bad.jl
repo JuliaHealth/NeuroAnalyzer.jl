@@ -70,7 +70,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 s = @views obj.data[ch[ch_idx], :, ep_idx]
                 sm = Vector{Float64}()
                 for idx in 1:w:(length(s) - w)
@@ -94,10 +94,10 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
             rmse_ch = zeros(ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 rmse_ch[ch_idx] = @views rmse(obj.data[ch[ch_idx], :, ep_idx], ch_m)
             end
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 if rmse_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmse_ch))[1] || rmse_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
@@ -116,10 +116,10 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
             bad_chs = zeros(Bool, ch_n)
 
             rmsd_ch = zeros(ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 rmsd_ch[ch_idx] = @views Distances.rmsd(obj.data[ch[ch_idx], :, ep_idx], ch_m)
             end
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 if rmsd_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmsd_ch))[1] || rmsd_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
@@ -138,10 +138,10 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
             bad_chs = zeros(Bool, ch_n)
 
             ed_ch = zeros(ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 ed_ch[ch_idx] = @views Distances.euclidean(obj.data[ch[ch_idx], :, ep_idx], ch_m)
             end
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 if ed_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(ed_ch))[1] || ed_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
@@ -165,7 +165,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
             bad_chs = zeros(Bool, ch_n)
             ch_v = @views vec(var(obj.data[ch, :, ep_idx], dims=2))
             s_mv = vcat(s_mv, ch_v)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 #if ch_v[ch_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[ch_idx, ep_idx]
                 if o[ch_idx, ep_idx]
                     bad_chs_score += 1
@@ -182,7 +182,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 s = Vector{Float64}()
                 for length_idx in 1:w:(length(obj.data[ch[ch_idx], :, ep_idx]) - w)
                     @views push!(s, median(obj.data[ch[ch_idx], length_idx:(length_idx + w), ep_idx]))
@@ -212,7 +212,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 s = @views tkeo(obj.data[ch[ch_idx], :, ep_idx], obj.epoch_time, method=tkeo_method)
                 z_signal = vec(zscore(obj.data[ch[ch_idx], :, ep_idx]))
                 z_tkeo = vec(zscore(s))
@@ -247,7 +247,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 if bad_idx[ch_idx, ep_idx]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
@@ -275,7 +275,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 if bad_idx[ch_idx, ep_idx]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
@@ -298,7 +298,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 if bad_idx[ch_idx, ep_idx]
                     bad_chs_score += 1
                     bad_chs[ch_idx] = true
@@ -344,7 +344,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 _, nearest_idx = findmin(d[ch_idx, :])
                 y = @views s[ch_idx, :, ep_idx]
                 x = @views s[nearest_idx, :, ep_idx]
@@ -380,7 +380,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}},
         @inbounds for ep_idx in 1:ep_n
             bad_chs_score = 0
             bad_chs = zeros(Bool, ch_n)
-            Threads.@threads for ch_idx in 1:ch_n
+            for ch_idx in 1:ch_n
                 a = (amp(s[ch_idx, :, ep_idx])).p
                 if a > amp_t
                     bad_chs_score += 1
