@@ -27,9 +27,11 @@ x = 1:10
 y = 1:10
 df = DataFrame(:x=>x, :y=>y)
 m = GLM.lm(@formula(y ~ x), df)
-aic, bic = infcrit(m)
-@test aic == 2.0
-@test bic ≈ 2.302585092994046
+R2, R2adj, aic, bic = infcrit(m)
+@test R2 == 1.0
+@test R2adj == 1.0
+@test aic == -9.080822951399906
+@test bic == -9.27823785840586
 
 @info "Test: outlier_detect()"
 @test !grubbs([1, 2, 3, 4, 5])
