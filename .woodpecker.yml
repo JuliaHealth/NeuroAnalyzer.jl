@@ -1,6 +1,7 @@
 steps:
-  docs:
+  - name: docs:
     image: julia:1.10.5
+    pull: true
     when:
       - event: [push, manual]   # workflow should run if you execute it manually and on each push
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
@@ -35,8 +36,9 @@ steps:
       - git add --all
       - ./push_docs.sh
 
-  test:
-    image: julia
+  - name: test:
+    image: julia:1.10.5
+    pull: true
     when:
       - event: manual   # workflow should run if you execute it manually
     commands:
