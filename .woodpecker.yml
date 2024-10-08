@@ -10,6 +10,8 @@ steps:
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.add("CUDA"); using CUDA; @show CUDA.functional(); exit()"
+
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
 
