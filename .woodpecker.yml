@@ -7,6 +7,7 @@ steps:
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
     commands:
       - uname -a
+      - julia --version
       - julia -e "using Pkg; Pkg.add(\"GPUCompiler\"); using GPUCompiler; exit()"
       - julia -e "using Pkg; Pkg.add(\"CUDA\"); using CUDA; @show CUDA.functional(); exit()"
 
