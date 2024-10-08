@@ -1,5 +1,5 @@
 steps:
-  - name: docs:
+  docs:
     image: julia:1.10.5
     pull: true
     when:
@@ -36,7 +36,7 @@ steps:
       - git add --all
       - ./push_docs.sh
 
-  - name: test:
+  test:
     image: julia:1.10.5
     pull: true
     when:
