@@ -1,6 +1,6 @@
 steps:
   docs:
-    image: julia
+    image: julia latest
     when:
       - event: [push, manual]   # workflow should run if you execute it manually and on each push
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
