@@ -35,7 +35,7 @@ steps:
   test:
     image: julia
     when:
-      - event: manual        # workflow should run if you execute it manually
+      - event: [push, manual]   # workflow should run if you execute it manually and on each push
     commands:
       - mkdir ~/NeuroAnalyzer
       - mkdir ~/NeuroAnalyzer/plugins
