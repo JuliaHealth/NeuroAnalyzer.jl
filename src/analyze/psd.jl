@@ -354,7 +354,9 @@ function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, 
 
     @assert fs >= 1 "fs must be ≥ 1."
 
+    _log_off()
     p = abs.(ContinuousWavelets.cwt(s, wt)')
+    _log_on()
     p = vec(mean(p, dims=2))
 
     # scale
@@ -363,7 +365,9 @@ function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, 
         p = normalize_n(p, a)
     end
 
+    _log_off()
     f = cwtfrq(s, fs=fs, wt=wt)
+    _log_on()
 
     return (p=p, f=f)
 

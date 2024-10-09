@@ -18,7 +18,9 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 function cwtfrq(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
+    _log_off()
     f = round.(ContinuousWavelets.getMeanFreq(length(s), wt, fs), digits=2)
+    _log_on()
     f[1] = 0
 
     return f
@@ -44,7 +46,9 @@ function cwtfrq(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q
 
     _chk3d(s)
     @assert fs >= 1 "fs must be ≥ 1."
+    _log_off()
     f = round.(ContinuousWavelets.getMeanFreq(size(s, 2), wt, fs), digits=2)
+    _log_on()
     f[1] = 0
 
     return f

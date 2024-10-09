@@ -107,6 +107,7 @@ using LibSerialPort
 using LinearAlgebra
 using LinRegOutliers
 using Loess
+using Logging
 using MAT
 using MLJ
 using MultivariateStats

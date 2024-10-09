@@ -212,7 +212,9 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
 
     # w = w ? hanning(length(s)) : ones(length(s))
 
+    _log_off()
     p = abs.(ContinuousWavelets.cwt(s, wt)')
+    _log_on()
 
     # scale
     if norm

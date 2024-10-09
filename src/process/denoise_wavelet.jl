@@ -32,8 +32,8 @@ function denoise_cwt(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β
 
     # perform continuous wavelet transformation
     s_new = cw_trans(s, wt=wt)
-
     f = cwtfrq(s, fs=fs, wt=wt)
+
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)
     s_new[f_idx1:f_idx2, :] .= 0
@@ -83,7 +83,6 @@ function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=
 
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
-
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views denoise_cwt(s[ch_idx, :, ep_idx], fs=fs, wt=wt, nf=nf, w=w, type=type)
@@ -177,7 +176,9 @@ Perform denoising using discrete wavelet transformation (DWT).
 """
 function denoise_dwt(s::AbstractVector; wt::T)::Vector{Float64} where {T<:DiscreteWavelet}
 
+    _log_off()
     s_new = denoise(s, wt)
+    _log_on()
 
     return s_new
 

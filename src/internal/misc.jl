@@ -1,3 +1,8 @@
+# suppress console output
+_log_off() = Logging.disable_logging(Logging.Warn)
+# restore console output
+_log_on() = Logging.disable_logging(Logging.Debug)
+
 _info(s::String) = verbose && @info s
 _warn(s::String) = verbose && @warn s
 _deprecated(s::String) = verbose && @error "Function $s() is deprecated."

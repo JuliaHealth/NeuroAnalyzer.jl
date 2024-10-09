@@ -36,7 +36,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, 
     df = @views DataFrame(hcat(signal_ref[ch, :, 1], signal_ref[ch_ref, :, 1]'), :auto)
     train, test = _split(df, 0.80)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
-    linear_regressor = lm(fm, train)
+    linear_regressor = GLM.lm(fm, train)
     prediction = GLM.predict(linear_regressor, test)
     accuracy_testdf = DataFrame(signal_actual = test[!, :x1], signal_predicted = prediction)
     accuracy_testdf.error = accuracy_testdf[!, :signal_actual]

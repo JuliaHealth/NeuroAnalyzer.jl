@@ -66,9 +66,9 @@ function infcrit(m::T)::@NamedTuple{R2::Float64, R2adj::Float64, aic::Float64, b
 
     L = GLM.loglikelihood(m)
 
-    aic = 2 * k - 2 * log(L)
+    aic = 2 * k - 2 * L
     n/k < 40 && (aic = aic + (2 * k * (k + 1)) / (n - k - 1))
-    bic = k * log(n) - 2 * log(L)
+    bic = k * log(n) - 2 * L
 
     return (R2=R2, R2adj=R2adj, aic=aic, bic=bic)
 
