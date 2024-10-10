@@ -12,6 +12,7 @@ export plot_eros
 export plot_erop
 export plot_icatopo
 export plot_ci
+export plot_heatmap
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -26,6 +27,7 @@ Plot matrix.
 - `xlabel::String=""`
 - `ylabel::String=""`
 - `title::String=""`
+- `cb::Bool=true`: draw color
 - `cb_title::String=""`: color bar title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -34,7 +36,7 @@ Plot matrix.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb_title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(m, 1) == size(m, 2) "Matrix is not square."
     @assert length(xlabels) == length(ylabels) "Lengths of xlabels and ylabels must be equal."
@@ -54,6 +56,7 @@ function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vect
                       xticks=(1:n, xlabels),
                       yticks=(1:n, xlabels),
                       seriescolor=pal,
+                      cb=cb,
                       colorbar_title=cb_title,
                       size=(1200, 800),
                       left_margin=mar*Plots.px,
@@ -1244,6 +1247,63 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
                     t=:line,
                     c=:black,
                     lw=0.5)
+
+    Plots.plot(p)
+
+    return p
+
+end
+
+"""
+    plot_heatmap(m; <keyword arguments>)
+
+Bar heatmap.
+
+# Arguments
+
+- `m::AbstractMatrix`
+- `x::AbstractVector`
+- `y::AbstractVector`
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `cb::Bool=true`: draw color
+- `cb_title::String=""`: color bar title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) differ."
+    @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and y length ($(length(x))) differ."
+
+    pal = mono ? :grays : :darktest
+
+    p = Plots.heatmap(x,
+                      y,
+                      m,
+                      size=(1200, 800),
+                      margins=20Plots.px,
+                      legend=false,
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      palette=pal,
+                      xlims=_xlims(x),
+                      ylims=_xlims(y),
+                      xticks=_ticks(x),
+                      cb=cb,
+                      colorbar_title=cb_title,
+                      titlefontsize=8,
+                      xlabelfontsize=8,
+                      ylabelfontsize=8,
+                      xtickfontsize=8,
+                      ytickfontsize=8;
+                      kwargs=kwargs)
 
     Plots.plot(p)
 

@@ -250,4 +250,9 @@ p = NeuroAnalyzer.plot_coherence_avg(coh[:, :, 1], f)
 p = NeuroAnalyzer.plot_coherence_butterfly(coh[:, :, 1], f)
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_heatmap()"
+m = rand(nchannels(e10), epoch_len(e10))
+p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
