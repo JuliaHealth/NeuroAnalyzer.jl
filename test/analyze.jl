@@ -898,7 +898,7 @@ h_act, h_mob, h_comp = hjorth(e10, ch="all")
 @test size(h_mob) == (24, 10)
 @test size(h_comp) == (24, 10)
 
-@info "Test: hjorth()"
+@info "Test: peak_frq()"
 pf = peak_frq(e10, ch="all", f=(8, 13))
 @test size(pf) == (24, 10)
 
@@ -908,7 +908,13 @@ ph, f = phsd(e10, ch="all")
 @test length(f) == 1281
 
 @info "Test: band_asymmetry()"
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10)) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:welch) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:fft) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:mt) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:stft) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:mw) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:gh) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:cwt) == (ba = 0.0, ba_norm = 0.0)
 
 @info "Test: symmetry()"
 @test symmetry(v) == 5

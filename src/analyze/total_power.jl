@@ -15,8 +15,8 @@ Calculate total power.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
-    - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -56,8 +56,8 @@ Calculate total power.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
-    - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -102,8 +102,8 @@ Calculate total power.
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
-    - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -119,7 +119,9 @@ Calculate total power.
 function total_power(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
     ch = get_channel(obj, ch=ch)
+    _log_off()
     tp = @views total_power(obj.data[ch, :, :], fs=sr(obj), method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    _log_on()
 
     return tp
 

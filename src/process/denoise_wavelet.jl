@@ -71,16 +71,18 @@ function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-
     s_new = similar(s)
 
+    _log_off()
     f = cwtfrq(s, fs=fs, wt=wt)
+    _log_on()
     f_idx = vsearch(nf, f)
     f_idx1 = vsearch(nf - w, f)
     f_idx2 = vsearch(nf + w, f)
     _info("Noise at: $(f[f_idx]) Hz")
     _info("Noise width: $(f[f_idx1]) to $(f[f_idx2]) Hz")
 
+    _log_off()
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
     @inbounds for ep_idx in 1:ep_n
@@ -90,6 +92,7 @@ function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=
             progress_bar && next!(progbar)
         end
     end
+    _log_on()
 
     return s_new
 
@@ -176,9 +179,7 @@ Perform denoising using discrete wavelet transformation (DWT).
 """
 function denoise_dwt(s::AbstractVector; wt::T)::Vector{Float64} where {T<:DiscreteWavelet}
 
-    _log_off()
     s_new = denoise(s, wt)
-    _log_on()
 
     return s_new
 

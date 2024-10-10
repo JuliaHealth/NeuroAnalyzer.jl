@@ -221,7 +221,9 @@ Named tuple containing:
 function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
 
     ch = get_channel(obj, ch=ch)
+    _log_off()
     p, f = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    _log_on()
 
     return (p=p, f=f)
 
@@ -354,9 +356,7 @@ function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, 
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    _log_off()
     p = abs.(ContinuousWavelets.cwt(s, wt)')
-    _log_on()
     p = vec(mean(p, dims=2))
 
     # scale
@@ -365,9 +365,7 @@ function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, 
         p = normalize_n(p, a)
     end
 
-    _log_off()
     f = cwtfrq(s, fs=fs, wt=wt)
-    _log_on()
 
     return (p=p, f=f)
 

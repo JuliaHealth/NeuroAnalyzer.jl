@@ -29,13 +29,11 @@ function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0)::Matrix{Fl
         _info("Calculating DWT using maximum level: $l")
     end
 
-    _log_off()
     if type === :sdwt
         dwt_coefs = sdwt(s, wt, l)
     elseif type === :acdwt
         dwt_coefs = acdwt(s, wt, l)
     end
-    _log_on()
 
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
     dwt_c[1, :] = @view dwt_coefs[:, 1]
@@ -143,13 +141,11 @@ function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol)::AbstractArray
         dwt_c[:, idx] = @views dwt_coefs[(end - idx + 2), :]
     end
 
-    _log_off()
     if type === :sdwt
         s = isdwt(dwt_c, wt)
     elseif type === :acdwt
         s = iacdwt(dwt_c, wt)
     end
-    _log_on()
 
     return s
 

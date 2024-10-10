@@ -36,7 +36,9 @@ function eros(obj::NeuroAnalyzer.NEURO; ch::String, pad::Int64=0, method::Symbol
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
+    _log_off()
     s, f, t = NeuroAnalyzer.spectrogram(obj, ch=ch, method=method, nt=nt, pad=pad, db=db, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    _log_on()
 
     s = s[:, :, 1, :]
 

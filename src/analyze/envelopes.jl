@@ -645,7 +645,9 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
     elseif method === :gh
         sp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
+        _log_off()
         sp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs)
+        _log_on()
     end
     st = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
     st .+= obj.epoch_time[1]
@@ -664,7 +666,9 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
             elseif method === :gh
                 sp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
+                _log_off()
                 sp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs)
+                _log_on()
             end
 
             # maximize all powers above threshold (t)

@@ -16,6 +16,9 @@ Calculate band asymmetry: ln(channel 1 band power) - ln(channel 2 band power).
     - `:fft`: fast Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:stft`: short time Fourier transform
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
@@ -35,8 +38,10 @@ function band_asymmetry(obj::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{Stri
     ch1 = get_channel(obj, ch=ch1)
     ch2 = get_channel(obj, ch=ch2)
 
+    _log_off()
     bp1 = @views band_power(obj.data[ch1, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
     bp2 = @views band_power(obj.data[ch2, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    _log_on()
 
     ba = log(mean(bp1)) - log(mean(bp2))
     ba_norm = (mean(bp1) - mean(bp2)) / (mean(bp1) + mean(bp2))

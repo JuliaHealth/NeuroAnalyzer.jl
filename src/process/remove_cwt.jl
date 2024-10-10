@@ -78,7 +78,9 @@ function remove_cwt(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wavel
     _check_epochs(obj, ep)
 
     obj_new = deepcopy(obj)
+    _log_off()
     obj_new.data[ch, :, ep] = @views remove_cwt(obj.data[ch, :, ep], obj.epoch_time, fs=sr(obj), wt=wt, tseg=tseg, fseg=fseg, type=type)
+    _log_on()
     reset_components!(obj_new)
     push!(obj_new.history, "remove_cwt(OBJ, ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")
 

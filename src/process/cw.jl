@@ -17,9 +17,7 @@ Perform continuous wavelet transformation (CWT).
 """
 function cw_trans(s::AbstractVector; wt::T)::Matrix{Float64} where {T<:CWT}
 
-    _log_off()
     ct = Matrix(real.(ContinuousWavelets.cwt(s, wt))')
-    _log_on()
 
     return ct
 
@@ -50,7 +48,6 @@ function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::AbstractArray wh
     # reconstruct array of CWT coefficients as returned by ContinuousWavelets.jl functions
     ct = Matrix(ct')
 
-    _log_off()
     if type === :pd
         s = ContinuousWavelets.icwt(ct, wt, PenroseDelta())
     elseif type === :nd
@@ -58,7 +55,6 @@ function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::AbstractArray wh
     elseif type === :df
         s = ContinuousWavelets.icwt(ct, wt, DualFrames())
     end
-    _log_on()
 
     return s
 
@@ -83,7 +79,6 @@ function cw_trans(s::AbstractArray; wt::T)::Array{Float64, 4} where {T<:CWT}
     _chk3d(s)
     ch_n, ep_len, ep_n = size(s)
 
-    _log_off()
     l = size(ContinuousWavelets.cwt(s[1, :, 1], wt), 2)
     ct = zeros(ch_n, l, ep_len, ep_n)
 
@@ -92,7 +87,6 @@ function cw_trans(s::AbstractArray; wt::T)::Array{Float64, 4} where {T<:CWT}
             ct[ch_idx, :, :, ep_idx] = @views cw_trans(s[ch_idx, :, ep_idx], wt=wt)
         end
     end
-    _log_on()
 
     return ct
 
@@ -116,7 +110,9 @@ Perform continuous wavelet transformation (CWT).
 function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T)::Array{Float64, 4} where {T<:CWT}
 
     ch = get_channel(obj, ch=ch)
+    _log_off()
     ct = @views cw_trans(obj.data[ch, :, :], wt=wt)
+    _log_on()
 
     return ct
 

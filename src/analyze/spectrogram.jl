@@ -212,9 +212,7 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
 
     # w = w ? hanning(length(s)) : ones(length(s))
 
-    _log_off()
     p = abs.(ContinuousWavelets.cwt(s, wt)')
-    _log_on()
 
     # scale
     if norm
@@ -289,7 +287,9 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     elseif method === :gh
         p_tmp, _, f, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
+        _log_off()
         p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt, norm=db)
+        _log_on()
     end
 
     t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
@@ -309,7 +309,9 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
             elseif method === :gh
                 p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
+                _log_off()
                 p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt, norm=db)
+                _log_on()
             end
 
             # update progress bar
