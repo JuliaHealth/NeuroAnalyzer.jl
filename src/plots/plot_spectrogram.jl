@@ -20,13 +20,14 @@ Plot single-channel spectrogram.
 - `units::String=""`
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
@@ -72,6 +73,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
                       right_margin=20Plots.px,
                       left_margin=20Plots.px,
                       seriescolor=pal,
+                      cb=cb,
                       colorbar_title=cb_title,
                       titlefontsize=8,
                       xlabelfontsize=8,
@@ -104,13 +106,14 @@ Plot multiple-channel spectrogram.
 - `units::String=""`
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 1) == length(sch) "Size of powers ($(size(sp, 1))) and channels vector ($(length(sch))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
@@ -163,6 +166,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Fl
                       xtickfontsize=6,
                       ytickfontsize=6,
                       seriescolor=pal,
+                      cb=cb,
                       colorbar_title=cb_title;
                       kwargs...)
 
@@ -222,13 +226,14 @@ Plots spectrogram.
 - `markers::Bool`: draw markers if available
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
 
@@ -312,10 +317,10 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         st .+= t[1]
 
         if method === :cwt
-            p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb_title="Magnitude")
+            p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, cb_title="Magnitude")
         else
             db && (sp = pow2db.(sp))
-            p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, kwargs=kwargs)
+            p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, kwargs=kwargs)
         end
 
         # plot markers if available
@@ -407,13 +412,14 @@ Plots spectrogram of embedded or external component.
 - `units::String=""`
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `cb::Bool=true`: plot color bar
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
 
     @assert seg[1] != seg[2] "Signal is too short for analysis."
     @assert n > 0 "n must be ≥ 1."
@@ -502,7 +508,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         st .+= t[1]
 
-        p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, kwargs=kwargs)
+        p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, kwargs=kwargs)
 
         # plot markers if available
         # TODO: draw markers length
@@ -552,7 +558,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             title == "default" && (title = "CWT Scaleogram\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
 
-        p = plot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, kwargs=kwargs)
+        p = plot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, kwargs=kwargs)
     end
 
     Plots.plot(p)
