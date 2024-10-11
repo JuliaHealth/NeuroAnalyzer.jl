@@ -1279,7 +1279,7 @@ Bar heatmap.
 function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) differ."
-    @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and y length ($(length(x))) differ."
+    @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) differ."
 
     pal = mono ? :grays : :darktest
 
