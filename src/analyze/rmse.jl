@@ -7,14 +7,14 @@ Calculate Root Mean Square Error (RMSE).
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+- `s1::Vector{<:Real}`
+- `s2::Vector{<:Real}`
 
 # Returns
 
 - `r::Float64`: RMSE
 """
-function rmse(s1::AbstractVector, s2::AbstractVector)::Float64
+function rmse(s1::Vector{<:Real}, s2::Vector{<:Real})::Float64
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -32,18 +32,16 @@ Calculate Root Mean Square Error (RMSE).
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::Array{<:Real, 3}`
+- `s2::Array{<:Real, 3}`
 
 # Returns
 
 - `r::Matrix{Float64}`: RMSE
 """
-function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
+function rmse(s1::Array{<:Real, 3}, s2::Array{<:Real, 3})::Matrix{Float64}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    _chk3d(s1)
-    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
@@ -52,7 +50,7 @@ function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            r[ch_idx, ep_idx] = @views rmse(s1[ch_idx, :, ep_idx], s1[ch_idx, :, ep_idx])
+            r[ch_idx, ep_idx] = rmse(s1[ch_idx, :, ep_idx], s1[ch_idx, :, ep_idx])
         end
     end
 
@@ -70,14 +68,14 @@ Calculate Root Mean Square Error (RMSE).
 - `obj::NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}}: list of channels
 - `ch2::Union{String, Vector{String}}: list of channels
-- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
 - `r::Matrix{Float64}`: RMSE
 """
-function rmse(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
+function rmse(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
 
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
 
@@ -91,7 +89,7 @@ function rmse(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 
-    r = @views rmse(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
+    r = rmse(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 
     return r
 

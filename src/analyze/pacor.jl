@@ -7,7 +7,7 @@ Calculate partial auto-correlation.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::Vector{<:Real}`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `method::Symbol=:yw`: method of calculating auto-correlation:
@@ -22,7 +22,7 @@ Calculate partial auto-correlation.
 
 If you get `ERROR: PosDefException: matrix is not positive definite; Cholesky factorization failed.`, try lowering `l` value or change method to `:yw`.
 """
-function pacor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
+function pacor(s::Vector{<:Real}; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
 
     _check_var(method, [:reg, :yw], "method")
 
@@ -55,7 +55,7 @@ Calculate partial auto-correlation.
 
 # Arguments
 
-- `s::AbstractMatrix`
+- `s::Array{<:Real, 2}`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `method::Symbol=:yw`: method of calculating auto-correlation:
@@ -66,14 +66,14 @@ Calculate partial auto-correlation.
 
 - `pac::Array{Float64, 3}`
 """
-function pacor(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
+function pacor(s::Array{<:Real, 2}; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
 
     ep_n = size(s, 2)
 
     pac = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        pac[1, :, ep_idx] = @views reshape(pacor(s[:, ep_idx], l=l, demean=demean, method=method), 1, :, ep_n)
+        pac[1, :, ep_idx] = reshape(pacor(s[:, ep_idx], l=l, demean=demean, method=method), 1, :, ep_n)
     end
 
     return pac
@@ -87,7 +87,7 @@ Calculate partial auto-correlation.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `method::Symbol=:yw`: method of calculating auto-correlation:
@@ -98,9 +98,8 @@ Calculate partial auto-correlation.
 
 - `pac::Array{Float64, 3}`
 """
-function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
+function pacor(s::Array{<:Real, 3}; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, method::Symbol=:yw)::Array{Float64, 3}
 
-    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -108,7 +107,7 @@ function pacor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) -
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pac[ch_idx, :, ep_idx] = @views pacor(s[ch_idx, :, ep_idx], l=l, demean=demean, method=method)
+            pac[ch_idx, :, ep_idx] = pacor(s[ch_idx, :, ep_idx], l=l, demean=demean, method=method)
         end
     end
 
@@ -146,10 +145,10 @@ function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::R
     @assert l >= 0 "l must be ≥ 0."
 
     if datatype(obj) == "erp"
-        pac = @views pacor(obj.data[ch, :, 2:end], l=l, demean=demean, method=method)
+        pac = pacor(obj.data[ch, :, 2:end], l=l, demean=demean, method=method)
         pac = cat(mean(pac, dims=3), pac, dims=3)
     else
-        pac = @views pacor(obj.data[ch, :, :], l=l, demean=demean, method=method)
+        pac = pacor(obj.data[ch, :, :], l=l, demean=demean, method=method)
     end
 
     return (pac=pac, l=collect(-l:l) .* 1/sr(obj))

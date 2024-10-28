@@ -6,7 +6,7 @@ export phsd
 Calculate phase spectral density.
 
 # Arguments
-- `s::Vector{Float64}`
+- `s::Vector{<:Real}`
 - `fs::Int64`: sampling rate
 
 # Returns
@@ -15,7 +15,7 @@ Named tuple containing:
 - `ph::Vector{Float64}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
+function phsd(s::Vector{<:Real}; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -33,7 +33,7 @@ Calculate phase spectral density.
 
 # Arguments
 
-- `s::AbstractMatrix`
+- `s::Array{<:Real, 2}`
 - `fs::Int64`: sampling rate
 
 # Returns
@@ -42,11 +42,10 @@ Named tuple containing:
 - `ph::Matrix{Float64}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractMatrix; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
+function phsd(s::Array{<:Real, 2}; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
     _, f = phsd(s[1, :], fs=fs)
-
     ph = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
@@ -63,7 +62,7 @@ end
 Calculate phase spectral density.
 
 # Arguments
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 - `fs::Int64`: sampling rate
 
 # Returns
@@ -72,14 +71,11 @@ Named tuple containing:
 - `ph::Array{Float64, 3}`: phases
 - `f::Vector{Float64}`: frequencies
 """
-function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
+function phsd(s::Array{<:Real, 3}; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
 
-    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
-
     _, f = phsd(s[1, :, 1], fs=fs)
-
     ph = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n

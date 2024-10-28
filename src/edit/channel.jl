@@ -280,13 +280,13 @@ Replace channel.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::String`: channel name
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)::NeuroAnalyzer.NEURO
+function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{<:Real, 3})::NeuroAnalyzer.NEURO
 
     _chk3d(s)
     @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."

@@ -7,7 +7,7 @@ Calculate peak frequency in a band.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::Vector{<:Real}`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -26,7 +26,7 @@ Calculate peak frequency in a band.
 
 - `pf::Float64`: peak frequency
 """
-function peak_frq(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
+function peak_frq(s::Vector{<:Real}; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(f, "f", (0, fs / 2))
@@ -51,7 +51,7 @@ Calculate peak frequency in a band.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -69,16 +69,15 @@ Calculate peak frequency in a band.
 
 - `pf::Matrix{Float64}`: peak frequency
 """
-function peak_frq(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
+function peak_frq(s::Array{<:Real, 3}; fs::Int64, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
-    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
     pf = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pf[ch_idx, ep_idx] = @views peak_frq(s[ch_idx, :, ep_idx], fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            pf[ch_idx, ep_idx] = peak_frq(s[ch_idx, :, ep_idx], fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end
 
@@ -114,7 +113,7 @@ Calculate peak frequency in a band.
 function peak_frq(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, f::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
     ch = get_channel(obj, ch=ch)
-    pf = @views peak_frq(obj.data[ch, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    pf = peak_frq(obj.data[ch, :, :], fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     return pf
 

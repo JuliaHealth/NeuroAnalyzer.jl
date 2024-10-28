@@ -7,8 +7,8 @@ Calculate cross power spectral density (CPSD).
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+- `s1::Vector{<:Real}`
+- `s2::Vector{<:Real}`
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -27,7 +27,7 @@ Named tuple containing:
 - `pxy::Vector{Float64}`: cross-power spectrum
 - `f::Vector{Float64}`: frequencies
 """
-function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)::@NamedTuple{pxy::Vector{Float64}, f::Vector{Float64}}
+function cpsd(s1::Vector{<:Real}, s2::Vector{<:Real}; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)::@NamedTuple{pxy::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:mt, :fft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -75,8 +75,8 @@ Calculate cross power spectral density (CPSD).
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::Array{<:Real, 3}`
+- `s2::Array{<:Real, 3}`
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -95,11 +95,9 @@ Named tuple containing:
 - `pxy::Array{Float64, 3}`: cross-power spectrum
 - `f::Vector{Float64}`: frequencies
 """
-function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)::@NamedTuple{pxy::Array{Float64, 3}, f::Vector{Float64}}
+function cpsd(s1::Array{<:Real, 3}, s2::Array{<:Real, 3}; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, db::Bool=false)::@NamedTuple{pxy::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    _chk3d(s1)
-    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
@@ -116,7 +114,7 @@ function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int6
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pxy[ch_idx, :, ep_idx], _ = @views cpsd(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
+            pxy[ch_idx, :, ep_idx], _ = cpsd(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
         end
     end
 
@@ -167,7 +165,7 @@ function cpsd(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 
-    pxy, f = @views cpsd(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
+    pxy, f = cpsd(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
 
     return (pxy=pxy, f=f)
 

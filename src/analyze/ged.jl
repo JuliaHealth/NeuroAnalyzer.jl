@@ -7,8 +7,8 @@ Perform generalized eigendecomposition.
 
 # Arguments
 
-- `s1::AbstractMatrix`: signal to be analyzed
-- `s2::AbstractMatrix`: original signal
+- `s1::Array{<:Real, 2}`: signal to be analyzed
+- `s2::Array{<:Real, 2}`: original signal
 
 # Returns
 
@@ -17,11 +17,9 @@ Named tuple containing:
 - `ress::Vector{Float64}`
 - `ress_norm::Vector{Float64}`: RESS normalized to -1..1
 """
-function ged(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{sged::Matrix{Float64}, ress::Vector{Float64}, ress_norm::Vector{Float64}}
+function ged(s1::Array{<:Real, 2}, s2::Array{<:Real, 2})::@NamedTuple{sged::Matrix{Float64}, ress::Vector{Float64}, ress_norm::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    _chk2d(s1)
-    _chk2d(s2)
 
     s1cov = cov(s1')
     s2cov = cov(s2')
@@ -50,8 +48,8 @@ Perform generalized eigendecomposition.
 - `obj2::NeuroAnalyzer.NEURO`: original signal data
 - `ch1::Union{String, Vector{String}}: list of channels
 - `ch2::Union{String, Vector{String}}: list of channels
-- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
@@ -60,7 +58,7 @@ Named tuple containing:
 - `ress::Matrix{Float64}`
 - `ress_norm::Matrix{Float64}`: RESS normalized to -1..1
 """
-function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
+function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
 
     ch1 = get_channel(obj1, ch=ch1)
     ch2 = get_channel(obj2, ch=ch2)
@@ -81,7 +79,7 @@ function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{St
     ress_norm = zeros(ch_n, ep_n)
 
     Threads.@threads for ep_idx in 1:ep_n
-        @inbounds sged[:, :, ep_idx], ress[:, ep_idx], ress_norm[:, ep_idx] = @views ged(obj1.data[ch1, :, ep1[ep_idx]], obj2.data[ch2, :, ep2[ep_idx]])
+        @inbounds sged[:, :, ep_idx], ress[:, ep_idx], ress_norm[:, ep_idx] = ged(obj1.data[ch1, :, ep1[ep_idx]], obj2.data[ch2, :, ep2[ep_idx]])
     end
 
     return (sged=sged, ress=ress, ress_norm=ress_norm)

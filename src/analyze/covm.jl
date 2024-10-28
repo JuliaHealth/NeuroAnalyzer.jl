@@ -7,14 +7,14 @@ Calculate covariance matrix of `s * s'`.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::Vector{<:Real}`
 - `norm::Bool=false`: normalize covariance
 
 # Returns
 
 - `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
+function covm(s::Vector{<:Real}; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
     if CUDA.functional() && use_cuda
@@ -37,15 +37,15 @@ Calculate covariance matrix of `s1 * s2'`.
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+- `s1::Vector{<:Real}`
+- `s2::Vector{<:Real}`
 - `norm::Bool=false`: normalize covariance
 
 # Returns
 
 - `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{Float64}
+function covm(s1::Vector{<:Real}, s2::Vector{<:Real}; norm::Bool=false)::Matrix{Float64}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -70,16 +70,15 @@ Calculate covariance matrix.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 - `norm::Bool=false`: normalize covariance
 
 # Returns
 
 - `cm::Array{Float64, 4}`: covariance matrix
 """
-function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
+function covm(s::Array{<:Real, 3}; norm::Bool=false)::Array{Float64, 4}
 
-    _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
@@ -92,7 +91,7 @@ function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
         if use_cuda
             CUDA.synchronize()
             for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
+                @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
 
                 # update progress bar
                 progress_bar && next!(progbar)
@@ -100,7 +99,7 @@ function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
             CUDA.synchronize()
         else
             Threads.@threads for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
+                @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
 
                 # update progress bar
                 progress_bar && next!(progbar)
@@ -130,7 +129,6 @@ Calculate covariance matrix of `signal * signal'`.
 function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 4}
 
     ch = get_channel(obj, ch=ch)
-
     cm = covm(obj.data[ch, :, :], norm=norm)
 
     return cm

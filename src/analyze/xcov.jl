@@ -7,8 +7,8 @@ Calculate cross-covariance.
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+- `s1::Vector{<:Real}`
+- `s2::Vector{<:Real}`
 - `l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
@@ -21,7 +21,7 @@ Calculate cross-covariance.
 
 - `xc::Array{Float64, 3}`
 """
-function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
+function xcov(s1::Vector{<:Real}, s2::Vector{<:Real}; l::Int64=round(Int64, min(length(s1) - 1, 10 * log10(length(s1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     _check_var(method, [:sum, :cov, :stat], "method")
 
@@ -81,8 +81,8 @@ Calculate cross-covariance.
 
 # Arguments
 
-- `s1::AbstractMatrix`
-- `s2::AbstractMatrix`
+- `s1::Array{<:Real, 2}`
+- `s2::Array{<:Real, 2}`
 - `l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
@@ -95,16 +95,15 @@ Calculate cross-covariance.
 
 - `xc::Array{Float64, 3}`
 """
-function xcov(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
+function xcov(s1::Array{<:Real, 2}, s2::Array{<:Real, 2}; l::Int64=round(Int64, min(size(s1, 1), 10 * log10(size(s1, 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     ep_n = size(s1, 2)
-
     xc = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        xc[1, :, ep_idx] = @views xcov(s1[1, :, ep_idx], s2[1, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
+        xc[1, :, ep_idx] = xcov(s1[:, ep_idx], s2[:, ep_idx], l=l, demean=demean, biased=biased, method=method)
     end
 
     return xc
@@ -118,8 +117,8 @@ Calculate cross-covariance.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::Array{<:Real, 3}`
+- `s2::Array{<:Real, 3}`
 - `l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
@@ -132,20 +131,17 @@ Calculate cross-covariance.
 
 - `xc::Array{Float64, 3}`
 """
-function xcov(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
+function xcov(s1::Array{<:Real, 3}, s2::Array{<:Real, 3}; l::Int64=round(Int64, min(size(s1, 2), 10 * log10(size(s1, 2)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    _chk3d(s1)
-    _chk3d(s2)
 
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
-
     xc = zeros(ch_n, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xc[ch_idx, :, ep_idx] = @views xcov(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
+            xc[ch_idx, :, ep_idx] = xcov(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end
 
@@ -198,10 +194,10 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     @assert l >= 0 "l must be ≥ 0."
 
     if datatype(obj1) == "erp" && datatype(obj2) == "erp"
-        xc = @views xcov(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased, method=method)
+        xc = xcov(reshape(obj1.data[ch1, :, 2:end], length(ch1), :, (nepochs(obj1) - 1)), reshape(obj2.data[ch2, :, 2:end], length(ch2), :, (nepochs(obj2) - 1)), l=l, demean=demean, biased=biased, method=method)
         xc = cat(mean(xc, dims=3), xc, dims=3)
     else
-        xc = @views xcov(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased, method=method)
+        xc = xcov(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], l=l, demean=demean, biased=biased, method=method)
     end
 
     return (xc=xc, l=collect(-l:l) .* 1/sr(obj1))

@@ -8,7 +8,7 @@ Calculate FFT, amplitudes, powers and phases.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::Vector{<:Real}`
 - `pad::Int64=0`: number of zeros to add at the end of the signal
 - `db::Bool=false`: normalize powers to dB
 
@@ -20,7 +20,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
 """
-function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{ft::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+function spectrum(s::Vector{<:Real}; pad::Int64=0, db::Bool=false)::@NamedTuple{ft::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     ft = rfft0(s, pad)
 
@@ -50,7 +50,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::Vector{<:Real}`
 - `pad::Int64`: number of zeros to add at the end of the signal
 - `db::Bool=false`: normalize powers to dB
 
@@ -62,7 +62,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
 """
-function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+function hspectrum(s::Vector{<:Real}; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     c = hilbert(pad0(s, pad))
 
@@ -87,7 +87,7 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 - `pad::Int64`: number of zeros to add at the end of the signal
 - `db::Bool=false`: normalize powers to dB
 
@@ -99,9 +99,8 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}`: phases
 """
-function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+function hspectrum(s::Array{<:Real, 3}; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
-    _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
@@ -113,7 +112,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
+            c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
 
@@ -128,7 +127,7 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::Array{<:Real, 3}`
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 - `db::Bool=false`: normalize powers to dB
@@ -141,9 +140,8 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phase angles
 """
-function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+function spectrum(s::Array{<:Real, 3}; pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
-    _chk3d(s)
     h && _warn("hspectrum() uses Hilbert transform, the signal should be narrowband for best results.")
 
     ch_n = size(s, 1)
@@ -163,9 +161,9 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if h
-                c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
+                c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
             else
-                c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views spectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
+                c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = spectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
             end
         end
     end
