@@ -51,6 +51,7 @@ Various methods for modeling non-invasive brain stimulation protocols (tDCS/tACS
 NeuroAnalyzer contains a set of separate (high- and low-level) functions. Some interactive graphical user interface (GUI) functions are also available. NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This, combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of neurophysiological data.
 
 Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions are already available, while other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for processing neurophysiological data.
+
 1. Load neurophysiological recordings:
    - EEG (EDF, EDF+, BDF, BDF+, GDF, Alice4, DigiTrack, BrainVision, CSV, EEGLAB, NPY, Thymatron, NCS, CNT, XDF)
    - MEG (FIFF)
