@@ -23,15 +23,15 @@ Calculate upper envelope.
 
 # Arguments
 
-- `s::Vector{<:Real}`: signal
-- `x::Vector{<:Real}`: x-axis points
+- `s::AbstractVector`: signal
+- `x::AbstractVector`: x-axis points
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
 # Returns
 
 - `e::Vector{Float64}`: envelope
 """
-function env_up(s::Vector{<:Real}, x::Vector{<:Real}; d::Int64=32)::Vector{Float64}
+function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
     e = similar(s)
 
@@ -80,15 +80,15 @@ Calculate lower envelope.
 
 # Arguments
 
-- `s::Vector{<:Real}`: signal
-- `x::Vector{<:Real}`: x-axis points
+- `s::AbstractVector`: signal
+- `x::AbstractVector`: x-axis points
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
 # Returns
 
 - `e::Vector{Float64}`: envelope
 """
-function env_lo(s::Vector{<:Real}, x::Vector{<:Real}; d::Int64=32)::Vector{Float64}
+function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
     e = similar(s)
 
@@ -140,13 +140,13 @@ Calculate upper envelope using Hilbert transform.
 
 # Arguments
 
-- `s::Vector{<:Real}`: signal
+- `s::AbstractVector`: signal
 
 # Returns
 
 - `e::Vector{Float64}`: envelope
 """
-function henv_up(s::Vector{<:Real})::Vector{Float64}
+function henv_up(s::AbstractVector)::Vector{Float64}
 
     _, e, _, _ = hspectrum(s)
 
@@ -161,13 +161,13 @@ Calculate lower envelope using Hilbert transform.
 
 # Arguments
 
-- `s::Vector{<:Real}`: signal
+- `s::AbstractVector`: signal
 
 # Returns
 
 - `e::Vector{Float64}`: envelope
 """
-function henv_lo(s::Vector{<:Real})::Vector{Float64}
+function henv_lo(s::AbstractVector)::Vector{Float64}
 
     _, e, _, _ = hspectrum(-s)
 
@@ -203,7 +203,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            t_env[ch_idx, :, ep_idx] = env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
+            t_env[ch_idx, :, ep_idx] = @views env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
         end
     end
 
@@ -257,8 +257,8 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ep_idx in 1:ep_n
             t_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
-            t_env_u[:, ep_idx] = t_env_m[:, ep_idx] .+ s
-            t_env_l[:, ep_idx] = t_env_m[:, ep_idx] .- s
+            t_env_u[:, ep_idx] = @views @. t_env_m[:, ep_idx] + s
+            t_env_l[:, ep_idx] = @views @. t_env_m[:, ep_idx] - s
         end
     elseif dims == 2
         # mean over epochs
@@ -270,8 +270,8 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             t_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
-            t_env_u[:, ch_idx] = t_env_m[:, ch_idx] .+ s
-            t_env_l[:, ch_idx] = t_env_m[:, ch_idx] .- s
+            t_env_u[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] + s
+            t_env_l[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -404,17 +404,16 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
     ep_n = nepochs(obj)
     fs = sr(obj)
 
-    _log_off()
     pw, pf = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+
     p_env = zeros(ch_n, length(pw), ep_n)
+
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
             p_env[ch_idx, :, ep_idx] = env_up(pw, pf, d=d)
         end
     end
-    _log_on()
-
     return (p_env=p_env, p_env_frq=pf)
 
 end
@@ -476,8 +475,8 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ep_idx in 1:ep_n
             p_env_m[:, ep_idx] = @views mean(pw[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
-            p_env_u[:, ep_idx] = p_env_m[:, ep_idx] .+ s
-            p_env_l[:, ep_idx] = p_env_m[:, ep_idx] .- s
+            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + s
+            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - s
         end
     elseif dims == 2
         # mean over epochs
@@ -489,8 +488,8 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             p_env_m[:, ch_idx] = @views mean(pw[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
-            p_env_u[:, ch_idx] = p_env_m[:, ch_idx] .+ s
-            p_env_l[:, ch_idx] = p_env_m[:, ch_idx] .- s
+            p_env_u[:, ch_idx] = @views @. p_env_m[:, ch_idx] + s
+            p_env_l[:, ch_idx] = @views @. p_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -638,16 +637,16 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
     fs = sr(obj)
 
     if method === :stft
-        sp, _, _ = NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mt
-        sp, _, _ = NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        sp, _, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
-    _, sp, _, _ = NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+    _, sp, _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
     elseif method === :gh
-        sp, _, _ = NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        sp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
         _log_off()
-        sp, _ = NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs)
+        sp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs)
         _log_on()
     end
     st = linspace(0, (epoch_len(obj) / fs), size(sp, 2))
@@ -659,16 +658,16 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
         Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if method === :stft
-                sp, sf, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mt
-                sp, sf, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mw
-                _, sp, _, sf = NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+                _, sp, _, sf = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
             elseif method === :gh
-                sp, _, sf = NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                sp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
                 _log_off()
-                sp, sf = NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs)
+                sp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs)
                 _log_on()
             end
 
@@ -767,8 +766,8 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             s_env_m[:, ch_idx] = @views mean(sp[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
-            s_env_u[:, ch_idx] = s_env_m[:, ch_idx] .+ s
-            s_env_l[:, ch_idx] = s_env_m[:, ch_idx] .- s
+            s_env_u[:, ch_idx] = @views @. s_env_m[:, ch_idx] + s
+            s_env_l[:, ch_idx] = @views @. s_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs
@@ -902,7 +901,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
     ch = get_channel(obj, ch=ch)
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
-    _, hamp, _, _ = hspectrum(obj.data[ch, :, :])
+    _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])
 
     ch_n = size(hamp, 1)
     ep_n = size(hamp, 3)
@@ -912,7 +911,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s = hamp[ch_idx, :, ep_idx]
+            s = @view hamp[ch_idx, :, ep_idx]
             h_env[ch_idx, :, ep_idx] = env_up(s, s_t, d=d)
         end
     end
@@ -979,8 +978,8 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             h_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
-            h_env_u[:, ch_idx] = h_env_m[:, ch_idx] .+ s
-            h_env_l[:, ch_idx] = h_env_m[:, ch_idx] .- s
+            h_env_u[:, ch_idx] = @views @. h_env_m[:, ch_idx] + s
+            h_env_l[:, ch_idx] = @views @. h_env_m[:, ch_idx] - s
         end
     else
         # mean over channels and epochs

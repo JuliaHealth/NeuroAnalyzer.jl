@@ -61,7 +61,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                p[ch_idx, ep_idx] = obj.data[ch_idx, t_idx, ep_idx]
+                p[ch_idx, ep_idx] = @views obj.data[ch_idx, t_idx, ep_idx]
             end
         end
     else
@@ -74,7 +74,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
         p = zeros(ch_n)
 
         Threads.@threads for ch_idx in 1:ch_n
-            @inbounds p[ch_idx] = obj.data[ch_idx, t_idx, 1]
+            @inbounds p[ch_idx] = @views obj.data[ch_idx, t_idx, 1]
         end
     end
 

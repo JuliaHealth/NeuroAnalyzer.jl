@@ -10,13 +10,13 @@ Calculate phase stationarity using Hilbert transformation.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 
 # Returns
 
 - `stph::Vector{Float64}`
 """
-function stationarity_hilbert(s::Vector{<:Real})::Vector{Float64}
+function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
 
     stph = diff(DSP.unwrap(angle.(hilbert(s))))
 
@@ -31,14 +31,14 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `window::Int64`: time window in samples
 
 # Returns
 
 - `stm::Vector{Float64}`
 """
-function stationarity_mean(s::Vector{<:Real}; window::Int64)::Vector{Float64}
+function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
 
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= length(s) "window must be ≤ $(length(s))."
@@ -59,14 +59,14 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `window::Int64`: time window in samples
 
 # Returns
 
 - `stv::Vector{Float64}`
 """
-function stationarity_var(s::Vector{<:Real}; window::Int64)::Vector{Float64}
+function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
 
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= length(s) "window must be ≤ $(length(s))."
@@ -117,7 +117,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
+                s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
 
         end
@@ -130,7 +130,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window=window)
+                s[ch_idx, :, ep_idx] = @views stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
         end
         return s
@@ -142,7 +142,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = stationarity_hilbert(obj.data[ch[ch_idx], :, ep_idx])
+                s[ch_idx, :, ep_idx] = @views stationarity_hilbert(obj.data[ch[ch_idx], :, ep_idx])
             end
         end
 
@@ -162,7 +162,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         # create covariance matrices per each window
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for window_idx = 1:window_n
-                cov_mat[:, :, window_idx, ep_idx] = covm(obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx])
+                cov_mat[:, :, window_idx, ep_idx] = @views covm(obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx])
             end
         end
 

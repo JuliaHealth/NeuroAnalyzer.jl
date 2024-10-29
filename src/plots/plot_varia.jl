@@ -79,8 +79,8 @@ Plot cross/auto-covariance/correlation.
 
 # Arguments
 
-- `m::Vector{<:Real}`: covariance matrix
-- `lags::Vector{<:Real}`: covariance lags
+- `m::Abstractvector`: covariance matrix
+- `lags::AbstractVector`: covariance lags
 - `xlabel::String="lag"`
 - `ylabel::String=""`
 - `title::String=""`
@@ -92,7 +92,7 @@ Plot cross/auto-covariance/correlation.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_xac(m::Vector{<:Real}, lags::Vector{<:Real}; xlabel::String="lag [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     if minimum(m) >= -1.0 && maximum(m) <= 1.0
         ylim = (-1.0, 1.0)
@@ -135,10 +135,10 @@ Plot histogram.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `x::Union{Nothing, Real}=nothing`: value to plot against the histogram
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
-- `bins::Union{Int64, Symbol, Vector{<:Real}}=(length(s) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
+- `bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
 - `label::String=""`: channel label
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -152,7 +152,7 @@ Plot histogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_histogram(s::Vector{<:Real}, x::Union{Nothing, Real}=nothing; type::Symbol=:hist, bins::Union{Int64, Symbol, Vector{<:Real}}=(length(s) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, draw_mean::Bool=true, draw_median::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type::Symbol=:hist, bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, draw_mean::Bool=true, draw_median::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _check_var(type, [:hist, :kd], "type")
 
@@ -219,7 +219,7 @@ Bar plot.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -231,7 +231,7 @@ Bar plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_bar(s::Vector{<:Real}; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(s) == length(xlabels) "s length ($(length(s))) and xlabels length ($(length(xlabels))) differ."
 
@@ -273,7 +273,7 @@ Line plot.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -285,7 +285,7 @@ Line plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_line(s::Vector{<:Real}; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels ($(length(xlabels)))."
 
@@ -324,7 +324,7 @@ Line plot.
 
 # Arguments
 
-- `s::Array{<:Real, 2}`
+- `s::AbstractArray`
 - `rlabels::Vector{String}`: signal rows labels
 - `xlabels::Vector{String}`: x-ticks labels
 - `xlabel::String=""`: x-axis label
@@ -337,8 +337,9 @@ Line plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_line(s::Array{<:Real, 2}; rlabels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
+    _chk2d(s)
     @assert size(s, 1) == length(rlabels) "Number of s columns ($(size(s, 1))) must be equal to rlabels length ($(length(rlabels)))."
     @assert size(s, 2) == length(xlabels) "Number of s columns ($(size(s, 2))) must be equal to xlabels length ($(length(xlabels)))."
 
@@ -383,7 +384,7 @@ Box plot.
 
 # Arguments
 
-- `s::Array{<:Real, 2}`
+- `s::AbstractArray`
 - `glabels::Vector{String}`: group labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -395,8 +396,9 @@ Box plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_box(s::Array{<:Real, 2}; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
+    _chk2d(s)
     @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
 
     pal = mono ? :grays : :darktest
@@ -433,7 +435,7 @@ Violin plot.
 
 # Arguments
 
-- `s::Array{<:Real, 2}`
+- `s::AbstractArray`
 - `glabels::Vector{String}`: group labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -445,8 +447,9 @@ Violin plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_violin(s::Array{<:Real, 2}; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
+    _chk2d(s)
     @assert size(s, 1) == length(glabels) "Number of s columns ($(size(s, 1))) must be equal to glabels length ($(length(glabels)))."
 
     pal = mono ? :grays : :darktest
@@ -612,7 +615,7 @@ Polar plot.
 
 # Arguments
 
-- `s::Union{Vector{<:Real}, AbstractArray}`
+- `s::Union{AbstractVector, AbstractArray}`
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
@@ -622,7 +625,7 @@ Polar plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_polar(s::Union{Vector{<:Real}, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
     ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
@@ -696,9 +699,9 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 # Arguments
 
-- `s::Array{<:Real, 3}`: ERO spectrogram
-- `f::Vector{<:Real}`: ERO frequencies
-- `t::Vector{<:Real}`: ERO time
+- `s::AbstractArray`: ERO spectrogram
+- `f::AbstractVector`: ERO frequencies
+- `t::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y-axis
@@ -717,10 +720,11 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eros(s::Array{<:Real, 3}, f::Vector{<:Real}, t::Vector{<:Real}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(f[1], f[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(f[1], f[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(s, 1) == length(f) "f vector length does not match spectrogram."
     @assert size(s, 2) == length(t) "t vector length does not match spectrogram."
+    @assert ndims(s) == 3 "s must have 3 dimensions."
     @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
     @assert n > 0 "n must be ≥ 1."
 
@@ -892,8 +896,8 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 # Arguments
 
-- `p::Array{<:Real, 2}`: ERO powers
-- `f::Vector{<:Real}`: ERO frequencies
+- `p::AbstractArray`: ERO powers
+- `f::AbstractVector`: ERO frequencies
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `xlabel::String="default"`
 - `ylabel::String="default"`
@@ -912,9 +916,10 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erop(p::Array{<:Real, 2}, f::Vector{<:Real}; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(f[1], f[end]), ax::Symbol=:linlin, units::String="μV", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(f[1], f[end]), ax::Symbol=:linlin, units::String="μV", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(p, 1) == length(f) "f vector length does not match powers."
+    @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
 
     _check_tuple(frq_lim, "frq_lim")
@@ -1048,7 +1053,7 @@ Topographical plot of embedded ICA components.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component(s) to plot, default is all components
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component(s) to plot, default is all components
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `cb::Bool=false`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
@@ -1071,7 +1076,7 @@ Topographical plot of embedded ICA components.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_icatopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), cb::Bool=false, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_icatopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), cb::Bool=false, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
     @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
@@ -1117,7 +1122,7 @@ Topographical plot of external ICA components.
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component(s) to plot, default is all components
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component(s) to plot, default is all components
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `cb::Bool=false`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
@@ -1140,7 +1145,7 @@ Topographical plot of external ICA components.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), cb::Bool=false, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_icatopo(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}}, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), cb::Bool=false, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     # select component channels, default is all channels
     ic_idx == 0 && (ic_idx = _select_cidx(ic, ic_idx))
@@ -1178,10 +1183,10 @@ Dots plot.
 
 # Arguments
 
-- `s::Vector{<:Real}`: signal
-- `s_l::Vector{<:Real}`: CI lower bound
-- `s_u::Vector{<:Real}`: CI upper bound
-- `t::Vector{<:Real}`: time points
+- `s::AbstractVector`: signal
+- `s_l::AbstractVector`: CI lower bound
+- `s_u::AbstractVector`: CI upper bound
+- `t::AbstractVector`: time points
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -1192,7 +1197,7 @@ Dots plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_ci(s::Vector{<:Real}, s_l::Vector{<:Real}, s_u::Vector{<:Real}, t::Vector{<:Real}; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(s) == length(s_l) == length(s_u) "All input signals must be of the same length."
 
@@ -1252,13 +1257,13 @@ end
 """
     plot_heatmap(m; <keyword arguments>)
 
-Plot heatmap.
+Bar heatmap.
 
 # Arguments
 
-- `m::Array{<:Real, 2}`
-- `x::Vector{<:Real}`
-- `y::Vector{<:Real}`
+- `m::AbstractMatrix`
+- `x::AbstractVector`
+- `y::AbstractVector`
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -1271,7 +1276,7 @@ Plot heatmap.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_heatmap(m::Array{<:Real, 2}; x::Vector{<:Real}, y::Vector{<:Real}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) differ."
     @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) differ."

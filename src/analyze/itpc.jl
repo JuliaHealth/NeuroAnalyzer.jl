@@ -8,9 +8,9 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
 # Arguments
 
-- `s::Array{<:Real, 3}`: one channel over epochs
+- `s::AbstractArray`: one channel over epochs
 - `t::Int64`: time point (sample number) at which ITPC is calculated
-- `w::Union{Vector{<:Real}, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+- `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
@@ -20,8 +20,9 @@ Named tuple containing:
 - `itpc_ang::Float64`: ITPC angle
 - `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc(s::Array{<:Real, 3}; t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
+function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
 
+    _chk3d(s)
     @assert t >= 1 "t must be ≥ 1."
     @assert t <= size(s, 2) "t must be ≤ $(size(s, 2))."
     @assert size(s, 1) == 1 "s must have 1 channel."
@@ -35,10 +36,10 @@ function itpc(s::Array{<:Real, 3}; t::Int64, w::Union{Vector{<:Real}, Nothing}=n
 
     s_phase = zeros(size(s, 2), ep_n)
     @inbounds for ep_idx in 1:ep_n
-        _, _, _, s_phase[:, ep_idx] = hspectrum(s[1, :, ep_idx])
+        _, _, _, s_phase[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
 
-    itpc_ph = s_phase[t, :]
+    itpc_ph = @view s_phase[t, :]
     itpc_val = abs.(mean(exp.(1im .* itpc_ph .* w)))
     itpc_ang = angle.(mean(exp.(1im .* itpc_ph .* w)))
     itpcz_val = ep_n * itpc_val^2
@@ -82,7 +83,7 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t::In
     itpc_ph = zeros(ch_n, ep_n)
 
     Threads.@threads for ch_idx in 1:ch_n
-        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
+        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
     end
 
     return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
@@ -96,8 +97,8 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 # Arguments
 
-- `s::Array{<:Real, 3}`: one channel over epochs
-- `w::Union{Vector{<:Real}, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+- `s::AbstractArray`: one channel over epochs
+- `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
@@ -107,7 +108,7 @@ Named tuple containing:
 - `itpc_ang::Vector{Float64}`: ITPC angles
 - `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc_spec(s::Array{<:Real, 3}; w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
+function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
 
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
@@ -125,13 +126,13 @@ function itpc_spec(s::Array{<:Real, 3}; w::Union{Vector{<:Real}, Nothing}=nothin
     itpcz_val = zeros(size(s, 2))
 
     @inbounds for ep_idx in 1:ep_n
-        _, _, _, itpc_ph[:, ep_idx] = hspectrum(s[1, :, ep_idx])
+        _, _, _, itpc_ph[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
     end
 
     for idx in axes(itpc_ph, 1)
         itpc_val[idx] = @views abs.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
         itpc_ang[idx] = @views angle.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
-        itpcz_val[idx] = ep_n * itpc_val[idx]^2
+        itpcz_val[idx] = @views ep_n * itpc_val[idx]^2
     end
 
     return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)

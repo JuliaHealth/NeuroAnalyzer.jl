@@ -8,7 +8,7 @@ Calculate entropy.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 
 # Returns
 
@@ -17,7 +17,7 @@ Named tuple containing:
 - `sent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
 """
-function entropy(s::Vector{<:Real})::@NamedTuple{ent::Float64, sent::Float64, leent::Float64}
+function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, sent::Float64, leent::Float64}
 
     n = length(s)
     maxmin_range = maximum(s) - minimum(s)
@@ -41,7 +41,7 @@ Calculate entropy.
 
 # Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 
 # Returns
 
@@ -50,8 +50,9 @@ Named tuple containing:
 - `sent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
 """
-function entropy(s::Array{<:Real, 3})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
+function entropy(s::AbstractArray)::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -61,7 +62,7 @@ function entropy(s::Array{<:Real, 3})::@NamedTuple{ent::Matrix{Float64}, sent::M
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = entropy(s[ch_idx, :, ep_idx])
+            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views entropy(s[ch_idx, :, ep_idx])
         end
     end
 
@@ -89,7 +90,7 @@ Named tuple containing:
 function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
-    ent, sent, leent = entropy(obj.data[ch, :, :])
+    ent, sent, leent = @views entropy(obj.data[ch, :, :])
 
     return (ent=ent, sent=sent, leent=leent)
 
@@ -102,13 +103,13 @@ Calculate negentropy.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 
 # Returns
 
 - `negent::Float64`
 """
-function negentropy(signal::Vector{<:Real})::Float64
+function negentropy(signal::AbstractVector)::Float64
 
     s = remove_dc(signal)
 
@@ -125,14 +126,15 @@ Calculate negentropy.
 
 # Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 
 # Returns
 
 - `ne::Matrix{Float64}`
 """
-function negentropy(s::Array{<:Real, 3})::Matrix{Float64}
+function negentropy(s::AbstractArray)::Matrix{Float64}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -140,7 +142,7 @@ function negentropy(s::Array{<:Real, 3})::Matrix{Float64}
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ne[ch_idx, ep_idx] = negentropy(s[ch_idx, :, ep_idx])
+            ne[ch_idx, ep_idx] = @views negentropy(s[ch_idx, :, ep_idx])
         end
     end
 
@@ -165,7 +167,7 @@ Calculate negentropy.
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Matrix{Float64}
 
     ch = get_channel(obj, ch=ch)
-    ne = negentropy(obj.data[ch, :, :])
+    ne = @views negentropy(obj.data[ch, :, :])
 
     return ne
 

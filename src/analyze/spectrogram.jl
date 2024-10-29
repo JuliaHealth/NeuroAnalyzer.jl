@@ -10,7 +10,7 @@ Calculate spectrogram. Default method is short time Fourier transform.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `db::Bool=true`: normalize powers to dB
 - `method::Symbol=:stft`: method used to calculate PSD:
@@ -28,7 +28,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function spectrogram(s::Vector{<:Real}; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     _check_var(method, [:stft, :mt], "method")
     @assert fs >= 1 "fs must be ≥ 1."
@@ -69,7 +69,7 @@ Calculate spectrogram using wavelet convolution.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `pad::Int64`: pad with `pad` zeros
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
@@ -85,7 +85,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function mwspectrogram(s::Vector{<:Real}; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{cs::Matrix{ComplexF64}, p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{cs::Matrix{ComplexF64}, p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be > 1."
 
@@ -142,7 +142,7 @@ Calculate spectrogram using Gaussian and Hilbert transform.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=5`: Gaussian width in Hz
@@ -156,7 +156,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function ghspectrogram(s::Vector{<:Real}; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -194,7 +194,7 @@ Calculate scaleogram using continuous wavelet transformation (CWT).
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `norm::Bool=true`: normalize scaleogram to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
@@ -206,7 +206,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::Vector{<:Real}; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -279,16 +279,16 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     fs = sr(obj)
 
     if method === :stft
-        p_tmp, f, _ = NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mt
-        p_tmp, f, _ = NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        p_tmp, f, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     elseif method === :mw
-    _, p_tmp, _, f, _ = NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+    _, p_tmp, _, f, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
     elseif method === :gh
-        p_tmp, _, f, _ = NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        p_tmp, _, f, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
         _log_off()
-        p_tmp, f, _ = NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt, norm=db)
+        p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt, norm=db)
         _log_on()
     end
 
@@ -301,16 +301,16 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if method === :stft
-                p[:, :, ch_idx, ep_idx], _, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mt
-                p[:, :, ch_idx, ep_idx], _, _ = NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             elseif method === :mw
-                _, p[:, :, ch_idx, ep_idx], _, _ = NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
+                _, p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
             elseif method === :gh
-                p[:, :, ch_idx, ep_idx], _, _ = NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
                 _log_off()
-                p[:, :, ch_idx, ep_idx], _ = NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt, norm=db)
+                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt, norm=db)
                 _log_on()
             end
 

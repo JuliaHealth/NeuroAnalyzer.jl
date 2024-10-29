@@ -7,7 +7,7 @@ Calculate autocovariance.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing autocovariance
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -20,7 +20,7 @@ Calculate autocovariance.
 
 - `ac::Array{Float64, 3}`
 """
-function acov(s::Vector{<:Real}; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
+function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * log10(length(s)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     _check_var(method, [:sum, :cov, :stat], "method")
 
@@ -67,7 +67,7 @@ Calculate autocovariance.
 
 # Arguments
 
-- `s::Array{<:Real, 2}`
+- `s::AbstractMatrix`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing autocovariance
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -80,13 +80,14 @@ Calculate autocovariance.
 
 - `ac::Array{Float64, 3}`
 """
-function acov(s::Array{Float64, 2}; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
+function acov(s::AbstractMatrix; l::Int64=round(Int64, min(size(s[:, 1], 1) - 1, 10 * log10(size(s[:, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
     ep_n = size(s, 2)
+
     ac = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        ac[1, :, ep_idx] = reshape(acov(s[:, ep_idx], l=l, demean=demean, biased=biased, method=method), 1, :, ep_n)
+        ac[1, :, ep_idx] = @views reshape(acov(s[:, ep_idx], l=l, demean=demean, biased=biased, method=method), 1, :, ep_n)
     end
 
     return ac
@@ -100,7 +101,7 @@ Calculate autocovariance.
 
 # Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 - `l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1))))`: lags range is `0:l`
 - `demean::Bool=true`: demean signal before computing autocovariance
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -113,8 +114,9 @@ Calculate autocovariance.
 
 - `ac::Array{Float64, 3}`
 """
-function acov(s::Array{Float64, 3}; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
+function acov(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 1, 10 * log10(size(s[1, :, 1], 1)))), demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::Array{Float64, 3}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -122,7 +124,7 @@ function acov(s::Array{Float64, 3}; l::Int64=round(Int64, min(size(s[1, :, 1], 1
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ac[ch_idx, :, ep_idx] = acov(s[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
+            ac[ch_idx, :, ep_idx] = @views acov(s[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end
 
@@ -161,10 +163,10 @@ function acov(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Re
     ch = get_channel(obj, ch=ch)
 
     if datatype(obj) == "erp"
-        ac = acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased, method=method)
+        ac = @views acov(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased, method=method)
         ac = cat(mean(ac, dims=3), ac, dims=3)
     else
-        ac = acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased, method=method)
+        ac = @views acov(obj.data[ch, :, :], l=l, demean=demean, biased=biased, method=method)
     end
 
     return (ac=ac, l=collect(-l:l) .* 1/sr(obj))

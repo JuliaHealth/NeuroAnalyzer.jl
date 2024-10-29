@@ -7,7 +7,7 @@ Calculate total power.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -29,7 +29,7 @@ Calculate total power.
 
 - `tp::Float64`: total power
 """
-function total_power(s::Vector{<:Real}; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function total_power(s::AbstractVector; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
     pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
 
@@ -48,7 +48,7 @@ Calculate total power.
 
 `# Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -70,8 +70,9 @@ Calculate total power.
 
 - `tp::Matrix{Float64}`: total power
 """
-function total_power(s::Array{<:Real, 3}; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function total_power(s::AbstractArray; fs::Int64, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -79,7 +80,7 @@ function total_power(s::Array{<:Real, 3}; fs::Int64, method::Symbol=:welch, nt::
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            tp[ch_idx, ep_idx] = total_power(s[ch_idx, :, ep_idx], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+            tp[ch_idx, ep_idx] = @views total_power(s[ch_idx, :, ep_idx], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
         end
     end
 
@@ -119,7 +120,7 @@ function total_power(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}
 
     ch = get_channel(obj, ch=ch)
     _log_off()
-    tp = total_power(obj.data[ch, :, :], fs=sr(obj), method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    tp = @views total_power(obj.data[ch, :, :], fs=sr(obj), method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
     _log_on()
 
     return tp

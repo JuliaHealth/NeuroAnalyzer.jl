@@ -7,14 +7,14 @@ Detect peaks in auto-/cross- correlation/covariance and transform them into freq
 
 # Arguments
 
-- `c::Vector{<:Real}`: auto-/cross- correlation/covariance values
-- `l::Vector{<:Real}`: lags
+- `c::AbstractVector`: auto-/cross- correlation/covariance values
+- `l::AbstractVector`: lags
 
 # Returns
 
 - `frq::Vector{Float64}`: list of frequencies dominating in the auto-/cross- correlation/covariance
 """
-function axc2frq(c::Vector{<:Real}, l::Vector{<:Real})::Vector{Float64}
+function axc2frq(c::AbstractVector, l::AbstractVector)::Vector{Float64}
 
     p_idx = findpeaks(c, d=2)
     l_pts = l[p_idx]

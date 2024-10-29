@@ -7,8 +7,8 @@ Calculate PLI (Phase-Lag Index).
 
 # Arguments
 
-- `s1::Vector{<:Real}`
-- `s2::Vector{<:Real}`
+- `s1::AbstractVector`
+- `s2::AbstractVector`
 
 # Returns
 
@@ -19,7 +19,7 @@ Named tuple containing:
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
 """
-function pli(s1::Vector{<:Real}, s2::Vector{<:Real})::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
+function pli(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
@@ -46,8 +46,8 @@ Calculate PLI (Phase Lag Index).
 - `obj2::NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}}: list of channels
 - `ch2::Union{String, Vector{String}}: list of channels
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
@@ -58,7 +58,7 @@ Named tuple containing:
 - `s1ph::Array{Float64, 3}`: signal 1 phase
 - `s2ph::Array{Float64, 3}`: signal 2 phase
 """
-function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{pv::Matrix{Float64}, sd::Array{Float64, 3}, phd::Array{Float64, 3}, s1ph::Array{Float64, 3}, s2ph::Array{Float64, 3}}
+function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{pv::Matrix{Float64}, sd::Array{Float64, 3}, phd::Array{Float64, 3}, s1ph::Array{Float64, 3}, s2ph::Array{Float64, 3}}
 
     ch1 = get_channel(obj1, ch=ch1)
     ch2 = get_channel(obj2, ch=ch2)
@@ -83,7 +83,7 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{St
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pv[ch_idx, ep_idx], sd[ch_idx, :, ep_idx], phd[ch_idx, :, ep_idx], s1ph[ch_idx, :, ep_idx], s2ph[ch_idx, :, ep_idx] = pli(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            pv[ch_idx, ep_idx], sd[ch_idx, :, ep_idx], phd[ch_idx, :, ep_idx], s1ph[ch_idx, :, ep_idx], s2ph[ch_idx, :, ep_idx] = @views pli(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         end
     end
 
@@ -117,7 +117,7 @@ function pli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = pli(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
+                pv[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views pli(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
             end
         end
     end

@@ -7,7 +7,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `frq_lim[1]` to `frq_lim[2]`
 - `db::Bool=false`: normalize do dB
@@ -34,7 +34,7 @@ Named tuple containing:
 - `ls::Float64`: slopes of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::Vector{<:Real}; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function psd_slope(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
@@ -57,7 +57,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 # Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `frq_lim[1]` to `frq_lim[2]`
 - `db::Bool=false`: normalize do dB
@@ -84,8 +84,9 @@ Named tuple containing:
 - `s::Vector{Float64}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::Array{<:Real, 3}; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function psd_slope(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 

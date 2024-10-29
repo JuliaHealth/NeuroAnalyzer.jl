@@ -9,13 +9,13 @@ Calculate GFP (Global Field Power).
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 
 # Returns
 
 - `gfp::Float64`
 """
-function gfp(s::Vector{<:Real})::Float64
+function gfp(s::AbstractVector)::Float64
 
     return sum(s.^2) / length(s)
 
@@ -28,13 +28,13 @@ Calculate signal normalized for GFP (Global Field Power).
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 
 # Returns
 
 - `gfp_norm::Vector{Float64}`
 """
-function gfp_norm(s::Vector{<:Real})::Vector{Float64}
+function gfp_norm(s::AbstractVector)::Vector{Float64}
 
     return s ./ gfp(s)
 
@@ -47,8 +47,8 @@ Calculate DISS (global dissimilarity) and spatial correlation between `s1` and `
 
 # Arguments
 
-- `s1::Vector{<:Real}`
-- `s2::Vector{<:Real}`
+- `s1::AbstractVector`
+- `s2::AbstractVector`
 
 # Returns
 
@@ -56,7 +56,7 @@ Named tuple containing:
 - `gd::Float64`: global dissimilarity
 - `sc::Float64`: spatial correlation
 """
-function diss(s1::Vector{<:Real}, s2::Vector{<:Real})::@NamedTuple{gd::Float64, sc::Float64}
+function diss(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{gd::Float64, sc::Float64}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -76,7 +76,7 @@ Calculate DISS (global dissimilarity) and spatial correlation (channels vs chann
 
 # Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 
 # Returns
 
@@ -84,8 +84,9 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(s::Array{<:Real, 3})::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
+function diss(s::AbstractArray)::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -98,7 +99,7 @@ function diss(s::Array{<:Real, 3})::@NamedTuple{gd::Array{Float64, 3}, sc::Array
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
            for ch_idx2 in 1:ch_idx1
-                gd[ch_idx1, ch_idx2, ep_idx], sc[ch_idx1, ch_idx2, ep_idx] = diss(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx])
+                gd[ch_idx1, ch_idx2, ep_idx], sc[ch_idx1, ch_idx2, ep_idx] = @views diss(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx])
             end
 
         # update progress bar
@@ -123,8 +124,8 @@ Calculate DISS (global dissimilarity) and spatial correlation (channels vs chann
 
 # Arguments
 
-- `s1::Array{<:Real, 3}`
-- `s2::Array{<:Real, 3}`
+- `s1::AbstractArray`
+- `s2::AbstractArray`
 
 # Returns
 
@@ -132,7 +133,7 @@ Named tuple containing:
 - `gd::Matrix{Float64}`: global dissimilarity
 - `sc::Matrix{Float64}`: spatial correlation
 """
-function diss(s1::Array{<:Real, 3}, s2::Array{<:Real, 3})::@NamedTuple{gd::Matrix{Float64}, sc::Matrix{Float64}}
+function diss(s1::AbstractArray, s2::AbstractArray)::@NamedTuple{gd::Matrix{Float64}, sc::Matrix{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
     _chk3d(s1)
@@ -146,7 +147,7 @@ function diss(s1::Array{<:Real, 3}, s2::Array{<:Real, 3})::@NamedTuple{gd::Matri
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            gd[ch_idx, ep_idx], sc[ch_idx, ep_idx] = diss(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
+            gd[ch_idx, ep_idx], sc[ch_idx, ep_idx] = @views diss(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
         end
     end
 
@@ -189,8 +190,8 @@ Calculate DISS (global dissimilarity) and spatial correlation (`ch1` of `obj1` v
 - `obj::NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}}: list of channels
 - `ch2::Union{String, Vector{String}}: list of channels
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
@@ -198,7 +199,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
+function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
@@ -212,7 +213,7 @@ function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 
-    gd, sc = diss(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
+    gd, sc = @views diss(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 
     return (gd=gd, sc=sc)
 

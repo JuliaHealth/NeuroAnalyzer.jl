@@ -11,7 +11,7 @@ Interpolate channel using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -25,7 +25,7 @@ Interpolate channel using planar interpolation.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)::NeuroAnalyzer.NEURO
+function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, ifactor::Int64=100)::NeuroAnalyzer.NEURO
 
     channels = get_channel(obj, type=datatype(obj))
     @assert length(channels) > 1 "OBJ must contain > 1 signal channel."
@@ -91,7 +91,7 @@ Interpolate channel using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `ifactor::Int64=100`: interpolation quality
 
@@ -99,7 +99,7 @@ Interpolate channel using planar interpolation.
 
 Nothing
 """
-function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, ifactor::Int64=100)::Nothing
+function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:shepard, ifactor::Int64=100)::Nothing
 
     obj_new = plinterpolate_channel(obj, ch=ch, ep=ep, imethod=imethod, ifactor=ifactor)
     obj.data = obj_new.data

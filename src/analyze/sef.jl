@@ -7,7 +7,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `x::Float64=0.95`: threshold
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
@@ -27,7 +27,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 
 - `sef_frq::Float64`: spectral edge frequency
 """
-function sef(s::Vector{<:Real}; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
+function sef(s::AbstractVector; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(f, "f", (0, fs / 2))
@@ -65,7 +65,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 
 # Arguments
 
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 - `x::Float64=0.95`: threshold
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}=(0, fs / 2)`: lower and upper frequency bounds, default is total power
@@ -85,7 +85,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 
 - `sef_frq::Matrix{Float64}`: spectral edge frequency
 """
-function sef(s::Array{<:Real, 3}; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
+function sef(s::AbstractArray; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -94,7 +94,7 @@ function sef(s::Array{<:Real, 3}; x::Float64=0.95, fs::Int64, f::Tuple{Real, Rea
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            sef_frq[ch_idx, ep_idx] = sef(s[ch_idx, :, ep_idx], x=x, fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+            sef_frq[ch_idx, ep_idx] = @views sef(s[ch_idx, :, ep_idx], x=x, fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end
 
@@ -131,7 +131,7 @@ Calculate spectral edge frequency (SEF) -- the frequency below which x percent o
 function sef(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, x::Float64=0.95, f::Tuple{Real, Real}=(0, sr(obj) / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
     ch = get_channel(obj, ch=ch)
-    sef_frq = sef(obj.data[ch, :, :], x=x, fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
+    sef_frq = @views sef(obj.data[ch, :, :], x=x, fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
 
     return sef_frq
 

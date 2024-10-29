@@ -34,7 +34,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::Vector{<:Real}; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh, :cwt], "method")
     @assert nt >= 1 "nt must be ≥ 1."
@@ -96,7 +96,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
 
-- `s::Array{<:Real, 2}`
+- `s::AbstractMatrix`
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -120,7 +120,7 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::Array{<:Real, 2}; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}} where {T <: CWT}
 
     ch_n = size(s, 1)
     _, f = psd(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
@@ -141,7 +141,7 @@ end
 Calculate power spectrum density. Default method is Welch's periodogram.
 
 # Arguments
-- `s::Array{<:Real, 3}`
+- `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
@@ -166,8 +166,9 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::Array{<:Real, 3}; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
 
+    _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
@@ -235,7 +236,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `pad::Int64=0`: pad with `pad` zeros
 - `db::Bool=true`: normalize powers to dB
 - `fs::Int64`: sampling rate
@@ -248,7 +249,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function mwpsd(s::Vector{<:Real}; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert pad >= 0 "pad must be ≥ 0."
@@ -291,7 +292,7 @@ Calculate power spectrum using Gaussian and Hilbert transform.
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `db::Bool=true`: normalize powers to dB
 - `gw::Real=5`: Gaussian width in Hz
@@ -303,7 +304,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function ghpsd(s::Vector{<:Real}; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -340,7 +341,7 @@ Calculate power spectrum using continuous wavelet transformation (CWT).
 
 # Arguments
 
-- `s::Vector{<:Real}`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `norm::Bool=true`: normalize scaleogram to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
@@ -351,7 +352,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function cwtpsd(s::Vector{<:Real}; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
+function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 

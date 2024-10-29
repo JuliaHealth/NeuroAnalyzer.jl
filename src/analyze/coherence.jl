@@ -7,8 +7,8 @@ Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
-- `s1::Vector{<:Real}`
-- `s2::Vector{<:Real}`
+- `s1::AbstractVector`
+- `s2::AbstractVector`
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -27,7 +27,7 @@ Named tuple containing:
 - `mscoh::Vector{Float64}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
-function coherence(s1::Vector{<:Real}, s2::Vector{<:Real}; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{coh::Vector{Float64}, mscoh::Vector{Float64}, f::Vector{Float64}}
+function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{coh::Vector{Float64}, mscoh::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:mt, :fft], "method")
     s1, s2 = _veqlen(s1, s2)
@@ -40,8 +40,8 @@ function coherence(s1::Vector{<:Real}, s2::Vector{<:Real}; method::Symbol=:mt, f
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     if method === :mt
-        # multitaper
         w = w ? hanning(length(s1)) : nothing
+        # multitaper
         s = hcat(s1, s2)'
         n_samples = length(s1)
         c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=nothing, nw=((nt + 1) ÷ 2), ntapers=nt)
@@ -60,9 +60,9 @@ function coherence(s1::Vector{<:Real}, s2::Vector{<:Real}; method::Symbol=:mt, f
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)
         f = f[f1_idx:f2_idx]
-        s1s1 = s1s1[f1_idx:f2_idx]
-        s2s2 = s2s2[f1_idx:f2_idx]
-        s1s2 = s1s2[f1_idx:f2_idx]
+        s1s1 = @views s1s1[f1_idx:f2_idx]
+        s2s2 = @views s2s2[f1_idx:f2_idx]
+        s1s2 = @views s1s2[f1_idx:f2_idx]
         coh = @. abs(s1s2) / sqrt(s1s1 * s2s2)
         mscoh = @. (abs(s1s2))^2 / (s1s1 * s2s2)
     end
@@ -78,8 +78,8 @@ Calculate coherence and MSC (magnitude-squared coherence).
 
 # Arguments
 
-- `s1::Array{<:Real, 3}`
-- `s2::Array{<:Real, 3}`
+- `s1::AbstractArray`
+- `s2::AbstractArray`
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
@@ -97,10 +97,12 @@ Calculate coherence and MSC (magnitude-squared coherence).
 - `mscoh::Array{Float64, 3}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
-function coherence(s1::Array{<:Real, 3}, s2::Array{<:Real, 3}; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{coh::Array{Float64, 3}, mscoh::Array{Float64, 3}, f::Vector{Float64}}
+function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{coh::Array{Float64, 3}, mscoh::Array{Float64, 3}, f::Vector{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
+    _chk3d(s1)
+    _chk3d(s2)
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 
@@ -117,7 +119,7 @@ function coherence(s1::Array{<:Real, 3}, s2::Array{<:Real, 3}; method::Symbol=:m
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            coh[ch_idx, :, ep_idx], mscoh[ch_idx, :, ep_idx], _ = coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            coh[ch_idx, :, ep_idx], mscoh[ch_idx, :, ep_idx], _ = @views coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
 
@@ -168,7 +170,7 @@ function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Un
     length(ep1) == 1 && (ep1 = [ep1])
     length(ep2) == 1 && (ep2 = [ep2])
 
-    coh, mscoh, f = coherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    coh, mscoh, f = @views coherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     return (coh=coh, mscoh=mscoh, f=f)
 
