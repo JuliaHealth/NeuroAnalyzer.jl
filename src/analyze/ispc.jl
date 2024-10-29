@@ -89,8 +89,8 @@ Calculate ISPC (Inter-Site-Phase Clustering).
 - `obj2::NeuroAnalyzer.NEURO`
 - `ch1::Union{String, Vector{String}}: list of channels
 - `ch2::Union{String, Vector{String}}: list of channels
-- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
@@ -102,7 +102,7 @@ Named tuple containing:
 - `s1_phase::Array{Float64, 3}`: signal 1 phase
 - `s2_phase::Array{Float64, 3}`: signal 2 phase
 """
-function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{ispc_val::Matrix{Float64}, ispc_ang::Matrix{Float64}, s_diff::Array{Float64, 3}, ph_diff::Array{Float64, 3}, s1_phase::Array{Float64, 3}, s2_phase::Array{Float64, 3}}
+function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{ispc_val::Matrix{Float64}, ispc_ang::Matrix{Float64}, s_diff::Array{Float64, 3}, ph_diff::Array{Float64, 3}, s1_phase::Array{Float64, 3}, s2_phase::Array{Float64, 3}}
 
     ch1 = get_channel(obj1, ch=ch1)
     ch2 = get_channel(obj2, ch=ch2)

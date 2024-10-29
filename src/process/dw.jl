@@ -74,12 +74,14 @@ function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0)::Array{Floa
 
     ch_n, ep_len, ep_n = size(s)
 
+    _log_off()
     dt = zeros(ch_n, (l + 1), ep_len, ep_n)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             dt[ch_idx, :, :, ep_idx] = @views dw_trans(s[ch_idx, :, ep_idx], wt=wt, type=type, l=l)
         end
     end
+    _log_on()
 
     return dt
 

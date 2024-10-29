@@ -22,7 +22,7 @@ function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, 
     return nothing
 end
 
-function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
+function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
     isa(ch, Int64) && (ch = [ch])
     [@assert !(ch_idx < 1 || ch_idx > size(s, 1)) "ch must be in [1, $(size(s, 1))]." for ch_idx in ch]
     return nothing
@@ -47,14 +47,14 @@ function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String
     return nothing
 end
 
-function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
+function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
     for idx in epoch
         @assert !(idx < 1 || idx > nepochs(obj)) "epoch must be in [1, $(nepochs(obj))]."
     end
     return nothing
 end
 
-function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
+function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
     c, _ = _get_component(obj, c)
     if ndims(c) == 1
         @assert cc == 1 "cc must be 1."
@@ -66,7 +66,7 @@ function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vecto
     return nothing
 end
 
-function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc::Union{Int64, Vector{Int64}, <:AbstractRange})::Nothing
+function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
     if ndims(c) == 1
         @assert cc == 1 "cc must be in 1."
     else

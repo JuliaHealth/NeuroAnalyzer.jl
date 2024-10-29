@@ -95,7 +95,7 @@ Extract data.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}}`: channel name or list of channel names
-- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj)`: index of epochs, default is all epochs
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}=1:nepochs(obj)`: index of epochs, default is all epochs
 - `time::Bool=false`: return time vector
 - `etime::Bool=false`: return epoch time vector
 
@@ -105,7 +105,7 @@ Extract data.
 - `time::Vector{Float64}`
 - `etime::Vector{Float64}`
 """
-function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ep::Union{Int64, Vector{Int64}, <:AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)::Union{Array{Float64, 3}, Tuple{Array{Float64, 3}, Vector{Float64}}, Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}}}
+function extract_data(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, ep::Union{Int64, Vector{Int64}, AbstractRange}=1:nepochs(obj), time::Bool=false, etime::Bool=false)::Union{Array{Float64, 3}, Tuple{Array{Float64, 3}, Vector{Float64}}, Tuple{Array{Float64, 3}, Vector{Float64}, Vector{Float64}}}
 
     ch = get_channel(obj, ch=ch)
     _check_epochs(obj, ep)
