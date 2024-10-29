@@ -595,8 +595,8 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
             (idx === :left || idx === :l) && (pat = r"[z02468]$")
         end
         if typeof(pat) == Regex
-            for idx in length(clabels):-1:1
-                typeof(match(pat, clabels[idx])) == RegexMatch && deleteat!(channels, idx)
+            for idx in length(channels):-1:1
+                !isnothing(match(pat, clabels[idx])) && deleteat!(channels, idx)
             end
         end
 

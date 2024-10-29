@@ -104,7 +104,7 @@ function xcov(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
     xc = zeros(1, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        xc[1, :, ep_idx] = @views xcov(s1[1, :, ep_idx], s2[1, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
+        xc[1, :, ep_idx] = @views xcov(s1[1, ep_idx], s2[1, ep_idx], l=l, demean=demean, biased=biased, method=method)
     end
 
     return xc

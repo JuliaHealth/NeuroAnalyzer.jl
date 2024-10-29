@@ -40,8 +40,8 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     if method === :mt
-        w = w ? hanning(length(s1)) : nothing
         # multitaper
+        w = w ? hanning(length(s1)) : nothing
         s = hcat(s1, s2)'
         n_samples = length(s1)
         c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=nothing, nw=((nt + 1) ÷ 2), ntapers=nt)

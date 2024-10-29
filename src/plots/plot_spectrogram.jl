@@ -303,7 +303,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             sp, _, sf, st = NeuroAnalyzer.ghspectrogram(signal, fs=fs, db=false, gw=gw, w=w)
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf, st = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, norm=db)
+            _log_on()
             sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
             sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
             title == "default" && (title = "CWT Scaleogram\n[epoch: $ep, time window: $t_s1:$t_s2]")
@@ -317,7 +319,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         st .+= t[1]
 
         if method === :cwt
+            _log_off()
             p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, cb_title="Magnitude")
+            _log_on()
         else
             db && (sp = pow2db.(sp))
             p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, kwargs=kwargs)
@@ -356,7 +360,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             sp, sf = psd(signal, fs=fs, db=db, method=:gh, w=w, gw=gw)
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
             sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
             title == "default" && (title = "CWT Scaleogram\n[epoch: $ep, time window: $t_s1:$t_s2]")
@@ -499,7 +505,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, norm=db)
+            _log_on()
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
             sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
@@ -551,7 +559,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, norm=db)
+            _log_on()
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
             sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))

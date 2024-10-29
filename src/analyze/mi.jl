@@ -114,23 +114,7 @@ Calculate mutual information between channels.
 function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
-    ch_n = length(ch)
-    ep_n = nepochs(obj)
-
-    m = zeros(ch_n, ch_n, ep_n)
-
-    @inbounds for ep_idx in 1:ep_n
-        # create half of the matrix
-        Threads.@threads for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_idx1
-                m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
-            end
-        end
-
-    end
-
-    # copy to the other half
-    m = _copy_lt2ut(m)
+    m = @views mutual_information(obj.data[ch, :, :])
 
     return m
 

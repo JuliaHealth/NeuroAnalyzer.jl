@@ -102,15 +102,10 @@ function xcor(s1::AbstractMatrix, s2::AbstractMatrix; l::Int64=round(Int64, min(
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
-    ch_n = size(s1, 1)
     ep_n = size(s1, 2)
-
     xc = zeros(1, length(-l:l), ep_n)
-
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            xc[1, :, ep_idx] = @views xcor(s1[1, :, ep_idx], s2[1, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
-        end
+        xc[1, :, ep_idx] = @views xcor(s1[1, ep_idx], s2[1, ep_idx], l=l, demean=demean, biased=biased, method=method)
     end
 
     return xc

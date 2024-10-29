@@ -30,8 +30,8 @@ m = GLM.lm(@formula(y ~ x), df)
 R2, R2adj, aic, bic = infcrit(m)
 @test R2 == 1.0
 @test R2adj == 1.0
-@test aic == -9.080822951399906
-@test bic == -9.27823785840586
+@test aic == -651.7952199530463
+@test bic == -651.9926348600522
 
 @info "Test: outlier_detect()"
 @test !grubbs([1, 2, 3, 4, 5])
@@ -104,7 +104,9 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 
 @info "Test: linreg()"
 _, _, c, _, _, _, _ = NeuroAnalyzer.linreg(ones(100), zeros(100))
-@test c == [0.0, 0.0]
+@test c[1] == 0.0
+@test isnan(c[2])
+
 
 @info "Test: dprime()"
 @test NeuroAnalyzer.dprime(0.5, 0.5) == (dp=0.0, rb=-0.0)

@@ -257,8 +257,8 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ep_idx in 1:ep_n
             t_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
-            t_env_u[:, ep_idx] = @views @. t_env_m[:, ep_idx] + s
-            t_env_l[:, ep_idx] = @views @. t_env_m[:, ep_idx] - s
+            t_env_u[:, ep_idx] = @views t_env_m[:, ep_idx] .+ s
+            t_env_l[:, ep_idx] = @views t_env_m[:, ep_idx] .- s
         end
     elseif dims == 2
         # mean over epochs
@@ -270,8 +270,8 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             t_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
-            t_env_u[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] + s
-            t_env_l[:, ch_idx] = @views @views @. t_env_m[:, ch_idx] - s
+            t_env_u[:, ch_idx] = @views t_env_m[:, ch_idx] .+ s
+            t_env_l[:, ch_idx] = @views t_env_m[:, ch_idx] .- s
         end
     else
         # mean over channels and epochs
@@ -404,16 +404,17 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, d::In
     ep_n = nepochs(obj)
     fs = sr(obj)
 
+    _log_off()
     pw, pf = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
-
     p_env = zeros(ch_n, length(pw), ep_n)
-
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
             p_env[ch_idx, :, ep_idx] = env_up(pw, pf, d=d)
         end
     end
+    _log_on()
+
     return (p_env=p_env, p_env_frq=pf)
 
 end
@@ -475,8 +476,8 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ep_idx in 1:ep_n
             p_env_m[:, ep_idx] = @views mean(pw[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
-            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + s
-            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - s
+            p_env_u[:, ep_idx] = @views p_env_m[:, ep_idx] .+ s
+            p_env_l[:, ep_idx] = @views p_env_m[:, ep_idx] .- s
         end
     elseif dims == 2
         # mean over epochs
@@ -488,8 +489,8 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             p_env_m[:, ch_idx] = @views mean(pw[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
-            p_env_u[:, ch_idx] = @views @. p_env_m[:, ch_idx] + s
-            p_env_l[:, ch_idx] = @views @. p_env_m[:, ch_idx] - s
+            p_env_u[:, ch_idx] = @views p_env_m[:, ch_idx] .+ s
+            p_env_l[:, ch_idx] = @views p_env_m[:, ch_idx] .- s
         end
     else
         # mean over channels and epochs
@@ -753,8 +754,8 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ep_idx in 1:ep_n
             s_env_m[:, ep_idx] = @views mean(sp[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
-            s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + s
-            s_env_l[:, ep_idx] = @. s_env_m[:, ep_idx] - s
+            s_env_u[:, ep_idx] = s_env_m[:, ep_idx] .+ s
+            s_env_l[:, ep_idx] = s_env_m[:, ep_idx] .- s
         end
     elseif dims == 2
         # mean over epochs
@@ -766,8 +767,8 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             s_env_m[:, ch_idx] = @views mean(sp[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
-            s_env_u[:, ch_idx] = @views @. s_env_m[:, ch_idx] + s
-            s_env_l[:, ch_idx] = @views @. s_env_m[:, ch_idx] - s
+            s_env_u[:, ch_idx] = @views s_env_m[:, ch_idx] .+ s
+            s_env_l[:, ch_idx] = @views s_env_m[:, ch_idx] .- s
         end
     else
         # mean over channels and epochs
@@ -965,8 +966,8 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ep_idx in 1:ep_n
             h_env_m[:, ep_idx] = @views mean(s_a[:, :, ep_idx], dims=1)
             s = @views 1.96 * std(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
-            h_env_u[:, ep_idx] = @. h_env_m[:, ep_idx] + s
-            h_env_l[:, ep_idx] = @. h_env_m[:, ep_idx] - s
+            h_env_u[:, ep_idx] = h_env_m[:, ep_idx] .+ s
+            h_env_l[:, ep_idx] = h_env_m[:, ep_idx] .- s
         end
     elseif dims == 2
         # mean over epochs
@@ -978,8 +979,8 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         @inbounds for ch_idx in 1:ch_n
             h_env_m[:, ch_idx] = @views mean(s_a[ch_idx, :, :], dims=2)
             s = @views 1.96 * std(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
-            h_env_u[:, ch_idx] = @views @. h_env_m[:, ch_idx] + s
-            h_env_l[:, ch_idx] = @views @. h_env_m[:, ch_idx] - s
+            h_env_u[:, ch_idx] = @views h_env_m[:, ch_idx] .+ s
+            h_env_l[:, ch_idx] = @views h_env_m[:, ch_idx] .- s
         end
     else
         # mean over channels and epochs

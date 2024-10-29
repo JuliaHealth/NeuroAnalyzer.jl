@@ -783,7 +783,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
             title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             title == "default" && (title = "Absolute PSD (CWT)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
@@ -806,7 +808,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
             title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to total power\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             title == "default" && (title = "PSD (CWT) relative to total power\n[epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
@@ -829,7 +833,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
             title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             title == "default" && (title = "PSD (CWT) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end
@@ -1118,7 +1124,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
             title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             title == "default" && (title = "Absolute PSD (CWT)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
@@ -1141,7 +1149,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
             title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to total power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             title == "default" && (title = "PSD (CWT) relative to total power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     else
@@ -1164,7 +1174,9 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
             title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
+            _log_off()
             sp, sf = psd_rel(signal, fs=fs, db=db, method=:cwt, wt=wt)
+            _log_on()
             title == "default" && (title = "PSD (CWT) relative to $(replace(string(ref), "_"=>" ")) power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
     end

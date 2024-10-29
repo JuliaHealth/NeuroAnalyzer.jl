@@ -19,13 +19,10 @@ function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)
     _chk3d(s)
     _check_channels(s, ch)
 
-    ch_n = length(ch)
-    ep_n = size(s, 3)
-
     ad = similar(s)
 
-    @inbounds for ep_idx in 1:ep_n
-        for ch_idx in 1:ch_n
+    @inbounds for ep_idx in axes(s, 3)
+        for ch_idx in axes(s, 1)
             ref_ch = setdiff(ch, ch_idx)
             amp_ref = @views vec(mean(s[ref_ch, :, ep_idx], dims=1))
             ad[ch_idx, :, ep_idx] = @views s[ch[ch_idx], :, ep_idx] - amp_ref

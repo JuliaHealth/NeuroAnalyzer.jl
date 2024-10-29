@@ -40,14 +40,10 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
     _warn("frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 
     _chk3d(s)
-    ch_n = size(s, 1)
-    ep_len = size(s, 2)
-    ep_n = size(s, 3)
 
-    f = zeros(ch_n, ep_len, ep_n)
-
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+    f = similar(s)
+    @inbounds for ep_idx in axes(s, 3)
+        Threads.@threads for ch_idx in axes(s, 1)
             f[ch_idx, :, ep_idx] = @views frqinst(s[ch_idx, :, ep_idx])
         end
     end

@@ -39,8 +39,8 @@ Calculate RMS-based SNR.
 """
 function snr2(s::AbstractVector)::Float64
 
-    _, _, _, _, _, _, _, r = amp(s)
-    return (maximum(s) - minimum(s)) / r
+    a = amp(s)
+    return (maximum(s) - minimum(s)) / a.rms
 
 end
 
@@ -74,8 +74,8 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::@NamedTup
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 
     f, _ = freqs(t)
-    _, amp, _, _ = @views spectrum(s[1, :, 1])
-    amp = zeros(ch_n, length(amp), ep_n)
+    sp = @views spectrum(s[1, :, 1])
+    amp = zeros(ch_n, length(sp.a), ep_n)
     sn = zeros(ch_n, length(f))
 
     # create spectrum for each channel

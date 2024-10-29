@@ -22,32 +22,24 @@ function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method:
 
     _check_var(method, [:pow, :der, :amp], "method")
 
+    tk = nothing
+
     if method === :pow
         tk = zeros(length(s))
         tk[1] = s[1]
         tk[end] = s[end]
-
         @inbounds for idx in 2:(length(s) - 1)
             tk[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
         end
-
-        return tk
-
     elseif method === :der
-
         d1 = derivative(s)
         d2 = derivative(d1)
         tk = @. d1 - s * d2
-
-        return tk
-
     else
-
         tk = env_up(s, t, d=8).^2
-
-        return tk
-
     end
+
+    return tk
 
 end
 
@@ -72,13 +64,10 @@ Calculate Teager-Kaiser energy-tracking operator
 function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Array{Float64, 3}
 
     _chk3d(s)
-    ch_n = size(s, 1)
-    ep_n = size(s, 3)
 
     tk = similar(s)
-
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+    @inbounds for ep_idx in axes(s, 3)
+        Threads.@threads for ch_idx in axes(s, 1)
             tk[ch_idx, :, ep_idx] = @views tkeo(s[ch_idx, :, ep_idx], t, method=method)
         end
     end

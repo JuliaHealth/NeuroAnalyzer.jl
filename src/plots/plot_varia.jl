@@ -1257,7 +1257,7 @@ end
 """
     plot_heatmap(m; <keyword arguments>)
 
-Bar heatmap.
+Plots heatmap.
 
 # Arguments
 

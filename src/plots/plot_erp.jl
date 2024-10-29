@@ -761,16 +761,16 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, t
         if ch isa Int64
             pp = erp_peaks(obj)
             if !mono
-                Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
-                Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+                Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1], 1]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2], 1]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
-                Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[ch, 1]], obj.data[ch, pp[ch, 1], 1]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[ch, 2]], obj.data[ch, pp[ch, 2], 1]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[ch, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1]], digits=2)) $units")
+            _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[ch, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2]], digits=2)) $units")
+            _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1], digits=2)) $units")
         elseif (type === :butterfly && avg) || type === :mean
             erp_tmp = mean(mean(obj.data[ch, :, 2:end], dims=1), dims=3)
             obj_tmp = keep_channel(obj, ch=labels(obj)[1])
