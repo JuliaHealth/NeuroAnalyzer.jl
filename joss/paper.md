@@ -31,11 +31,11 @@ NeuroAnalyzer is a collaborative, non-commercial Julia toolbox developed for res
 
 # Background
 
-NeuroAnalyzer is a Julia [@bezanson_2017] toolbox for analyzing neurophysiological (EEG, MEP and EDA) data. Preliminary functionality is also available for MEG, NIRS, ECoG, SEEG and iEEG recordings. To my knowledge, there is no complete Julia solution for neurophysiology data analysis. There are some excellent packages to perform individual tasks, such as importing EDF/BDF data ([EDFPlus.jl](https://github.com/wherrera10/EDFPlus.jl), [BDF.jl](https://github.com/sam81/BDF.jl), [EDF.jl](https://beacon-biosignals.github.io/EDF.jl/stable/)), processing EEG data ([EEG.jl](https://github.com/JuliaPackageMirrors/EEG.jl) (abandoned)), ClusterDepth multiple comparison ([ClusterDepth.jl](https://github.com/s-ccs/ClusterDepth.jl)) performing linear/GAM/hierarchical/deconvolution regression on biological signals ([Unfold.jl](https://github.com/unfoldtoolbox/Unfold.jl)) or plotting topomaps ([TopoPlots.jl](https://github.com/MakieOrg/TopoPlots.jl)). Therefore, the development of `NeuroAnalyzer` was started in 2022 in order to provide researchers neuroscience/psychiatry/neurology a complete solution for importing, editing, processing, analyzing and visualizing of neurophysiological data.
+NeuroAnalyzer is a Julia [@bezanson_2017] toolbox for analyzing neurophysiological (such as EEG, MEG, MEP and EDA) data. To my knowledge, there is no complete Julia solution for neurophysiology data analysis. There are some available packages (some are not actively developed) to perform individual tasks, such as importing EDF/BDF data ([EDF.jl](https://beacon-biosignals.github.io/EDF.jl/stable/), [EDFPlus.jl](https://github.com/wherrera10/EDFPlus.jl), [BDF.jl](https://github.com/sam81/BDF.jl)), processing EEG data ([EEG.jl](https://github.com/JuliaPackageMirrors/EEG.jl), abandoned), ClusterDepth multiple comparison ([ClusterDepth.jl](https://github.com/s-ccs/ClusterDepth.jl)), performing linear/GAM/hierarchical/deconvolution regression on biological signals ([Unfold.jl](https://github.com/unfoldtoolbox/Unfold.jl)) or plotting topomaps ([TopoPlots.jl](https://github.com/MakieOrg/TopoPlots.jl)). Therefore, the development of `NeuroAnalyzer` was started in 2022 in order to provide researchers in the field of neuroscience/psychiatry/neurology a complete, complex (but still easy to use) solution for importing, editing, processing, analyzing and visualizing neurophysiological data.
 
 # Statement of need
 
-There are many excellent MATLAB and Python based EEG/MEG/NIRS applications (e.g. EEGLAB [@delorme_2011], Fieldtrip [@oostenveld_2011], Brainstorm, MNE [@gramfort_2013]). They have been in development for many years and are well established in the scientific community. Many state-of-the-art papers were published using data prepared using these programs. However, compared with Python and MATLAB, there are many advantages of Julia, which underlie my decision to start developing such a toolbox in Julia. I believe that Julia is the future of scientific computing and scientific data analysis [@selvaraj_2022]. Major advantages of Julia are listed in Julia documentation:
+There are many excellent MATLAB and Python based EEG/MEG/NIRS applications (e.g. EEGLAB [@delorme_2011], Fieldtrip [@oostenveld_2011], Brainstorm or MNE [@gramfort_2013]). They have been in development for many years and are well established in the scientific community. Many state-of-the-art papers were published using data prepared using these programs. However, compared with Python and MATLAB, there are many advantages of Julia, which underlie my decision to start developing such a toolbox in Julia. I believe that Julia is the future of scientific computing and scientific data analysis [@selvaraj_2022]. Major advantages of Julia are listed in Julia documentation:
 
 - Julia is fast [@bezanson_2018]. In many situations Julia is considerably faster than Python (without having to use numba/cython) and MATLAB. Moreover, Julia provides unlimited scalability. Julia programs can easily be ran on a large cluster or across distributed computers.
 - Julia is open-source and free. Increasing MATLAB licensing costs are prohibitive to individual researchers and many research institutions.
@@ -43,7 +43,7 @@ There are many excellent MATLAB and Python based EEG/MEG/NIRS applications (e.g.
 - Most of the Julia packages are written in pure Julia. It’s easier to understand and modify their code if you already know Julia.
 - Julia is beautifully designed, making programming in Julia a pure pleasure. This elegant design makes Julia easy to read and write.
 
-# Five years of Development
+# Three years of development
 
 Currently NeuroAnalyzer includes functions for importing, editing, processing, visualizing, and analyzing EEG, MEP and EDA data. Preliminary functionality is also available for MEG, NIRS, ECoG, SEEG and iEEG recordings.
 
@@ -51,7 +51,9 @@ Various methods for modeling non-invasive brain stimulation protocols (tDCS/tACS
 
 NeuroAnalyzer contains a set of separate (high- and low-level) functions. Some interactive graphical user interface (GUI) functions are also available. NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This, combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of neurophysiological data.
 
-Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions are already available, while other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for processing neurophysiological data.
+Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions are already available, while other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for processing and analysis of various types of neurophysiological data.
+
+The following list of already implemented functionalities is presented below, with many more to [come in the future releases](https://neuroanalyzer.org/roadmap.html).
 
 1. Load neurophysiological recordings:
    - EEG (EDF, EDF+, BDF, BDF+, GDF, Alice4, DigiTrack, BrainVision, CSV, EEGLAB, NPY, Thymatron, NCS, CNT, XDF)
@@ -62,7 +64,7 @@ Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions
    - electrode positions (CED, LOCS, ELC, TSV, SFP, CSD, GEO, MAT, TXT, DAT, ASC)
 2. Edit:
    - edit channel data (unit, type, label)
-   - edit location data (electrode location)
+   - edit electrode locations
    - trim (remove part of the signal)
    - resample (up/down)
    - divide into epochs (fixed and by event markers)
@@ -74,8 +76,7 @@ Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions
    - filter (FIR/IIR/Remez/moving average/moving median/polynomial filters), all types (HP, LP, BP, BS); with preview of filter response
    - remove power line noise
    - auto-detect and remove electrode pops
-   - ICA decompose/reconstruct
-   - PCA
+   - ICA/PCA decompose/reconstruct
    - convolution (in time and frequency domain)
    - create ERP (event-related potentials)
    - NIRS: convert raw light intensity to optical density and HbO/HbR/HbT concentrations
@@ -95,11 +96,11 @@ Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions
    - EROs (event-related oscillations): spectrogram, power spectrum
    - HRV (heart rate variability): time-domain analysis (MENN, MDNN, VNN, SDNN, RMSSD, SDSD, NN50, pNN50, NN20, pNN20)
    - MEPs: detect peaks, analyze amplitude and average amplitude
-5. Plot:
+5. Plotting:
    - signal (single-/multi-channel)
    - power spectrum (single-/multi-channel, 2D/3D)
    - spectrogram (single-/multi-channel)
-   - topographical maps
+   - topographical maps (various methods of interpolation)
    - weights at channel locations
    - weighted inter-channel connections
    - matrices (channel × channel)
@@ -108,7 +109,8 @@ Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions
    - ERPs: amplitude, topographical distribution
    - EROs: spectrogram, power spectrum
    - MEPs: amplitude
-   - interactive plots (amplitude, signal, spectrum, spectrogram, ICA, topographical map, channel details)
+
+Interactive (Gtk3-based) plotting (signal, power spectrum, spectrograms, topomaps, ICA components) and editing (signal, electrode positions) are also implemented.
 
 All computations are performed using the double-precision 64-bit floating point format. NeuroAnalyzer data is stored using standard Julia Array and can be easily exported as DataFrame. Thus, external processing of those data using Julia packages is readily available.
 
@@ -119,7 +121,9 @@ NeuroAnalyzer also includes NeuroRecorder, a set of functions for recording vari
 3. Two-point Pinch Test (TPT) -- using finger-worn accelerator attached to Raspberry Pi (in development)
 4. Angular Velocity Sensors (AVS) -- via Raspberry Pi (in development)
 
-We have extensive documentation and tutorials available at [https://www.neuroanalyzer.org/docs](https://www.neuroanalyzer.org/docs) and [https://neuroanalyzer.org/#tutorials](https://neuroanalyzer.org/#tutorials), respectively.
+Extensive documentation and tutorials are available at [https://www.neuroanalyzer.org/docs](https://www.neuroanalyzer.org/docs) and [https://neuroanalyzer.org/#tutorials](https://neuroanalyzer.org/#tutorials), respectively.
+
+NeuroAnalyzer functionality can be easily expanded using [plugins](https://neuroanalyzer.org/tut-plugins.html) (written in Julia).
 
 For common tasks (importing, filtering, referencing) NeuroAnalyzer performance in comparable with MNE and ~4× higher than EEGLAB. Benchmarks are available at [https://neuroanalyzer.org/benchmarks.html](https://neuroanalyzer.org/benchmarks.html).
 
