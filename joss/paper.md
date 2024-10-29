@@ -36,6 +36,7 @@ NeuroAnalyzer is a Julia [@bezanson_2017] toolbox for analyzing neurophysiologic
 # Statement of need
 
 There are many excellent MATLAB and Python based EEG/MEG/NIRS applications (e.g. EEGLAB [@delorme_2011], Fieldtrip [@oostenveld_2011], Brainstorm, MNE [@gramfort_2013]). They have been in development for many years and are well established in the scientific community. Many state-of-the-art papers were published using data prepared using these programs. However, compared with Python and MATLAB, there are many advantages of Julia, which underlie my decision to start developing such a toolbox in Julia. I believe that Julia is the future of scientific computing and scientific data analysis [@selvaraj_2022]. Major advantages of Julia are listed in Julia documentation:
+
 - Julia is fast [@bezanson_2018]. In many situations Julia is considerably faster than Python (without having to use numba/cython) and MATLAB. Moreover, Julia provides unlimited scalability. Julia programs can easily be ran on a large cluster or across distributed computers.
 - Julia is open-source and free. Increasing MATLAB licensing costs are prohibitive to individual researchers and many research institutions.
 - From its very beginning Julia is being focused on scientific computations. Currently only Julia, C, C++ and Fortran belong to the HPC (High Performance Computing) Petaflop Club. Julia is designed for distributed and parallel computations, making it great for distributed analyzes of large data sets.
@@ -112,10 +113,11 @@ Currently NeuroAnalyzer is focused on resting-state analysis. Some ERP functions
 All computations are performed using the double-precision 64-bit floating point format. NeuroAnalyzer data is stored using standard Julia Array and can be easily exported as DataFrame. Thus, external processing of those data using Julia packages is readily available.
 
 NeuroAnalyzer also includes NeuroRecorder, a set of functions for recording various neurophysiological signals:
-1. Finger Tapping Test (FTT) – using computer keyboard or external panel attached to Raspberry Pi
-2. Electrodermal Activity (EDA) = Galvanic Skin Response (GSR) – via Raspberry Pi
-3. Two-point Pinch Test (TPT) – using finger-worn accelerator attached to Raspberry Pi (in development)
-4. Angular Velocity Sensors (AVS) – via Raspberry Pi (in development)
+
+1. Finger Tapping Test (FTT) --using computer keyboard or external panel attached to Raspberry Pi
+2. Electrodermal Activity (EDA) = Galvanic Skin Response (GSR) -- via Raspberry Pi
+3. Two-point Pinch Test (TPT) -- using finger-worn accelerator attached to Raspberry Pi (in development)
+4. Angular Velocity Sensors (AVS) -- via Raspberry Pi (in development)
 
 We have extensive documentation and tutorials available at [https://www.neuroanalyzer.org/docs](https://www.neuroanalyzer.org/docs) and [https://neuroanalyzer.org/#tutorials](https://neuroanalyzer.org/#tutorials), respectively.
 
@@ -124,6 +126,7 @@ For common tasks (importing, filtering, referencing) NeuroAnalyzer performance i
 # Research projects using the software
 
 NeuroAnalyzer has been used in the preparation of the following publications:
+
 1. Wysokiński A, Szczepocka E, Szczakowska A. Improved cognitive performance, increased theta, alpha, beta and decreased delta powers after cognitive rehabilitation augmented with tDCS in a patient with post-COVID-19 cognitive impairment (brain-fog). Psychiatry Research Case Reports. 2023 DOI: 10.1016/j.psycr.2023.100164
 2. Sochal M. et al. The relationship between sleep quality measured by polysomnography and selected neurotrophic factors. Journal of Clinical Medicine. 2024 DOI: 10.3390/jcm13030893
 3. Sochal M. et al. Circadian Rhythm Genes and Their Association with Sleep and Sleep Restriction. International Journal of Molecular Sciences. 2024 DOI: 10.3390/ijms251910445
