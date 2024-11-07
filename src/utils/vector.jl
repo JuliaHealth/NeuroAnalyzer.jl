@@ -5,6 +5,31 @@ export maxat
 export vreduce
 
 """
+    vsearch(y, x)
+
+Return the positions of the string in the vector of strings.
+
+# Arguments
+
+- `y::String`: value of interest
+- `x::Vector{String}`: vector to search within
+
+# Returns
+
+- `idx::Union{Int64, Nothing}`
+"""
+function vsearch(y::String, x::Vector{String})::Union{Int64, Nothing}
+
+    idx = nothing
+    if y in x
+        idx = findfirst(isequal(y), x)
+    end
+
+    return idx
+
+end
+
+"""
     vsearch(y, x; <keyword arguments>)
 
 Return the positions of the value in the vector.

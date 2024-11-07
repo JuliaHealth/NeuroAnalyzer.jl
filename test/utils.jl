@@ -56,6 +56,8 @@ reset_components!(e10_tmp)
 @info "Test: vsearch()"
 @test vsearch(2.1, [1, 2, 3, 4]) == 2
 @test vsearch([2.1, 2.9], [1, 2, 3, 4]) == [2.0, 3.0]
+@test vsearch("a", ["a", "b", "c"]) == 1
+@test vsearch("d", ["a", "b", "c"]) === nothing
 
 @info "Test: trim()"
 @test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
