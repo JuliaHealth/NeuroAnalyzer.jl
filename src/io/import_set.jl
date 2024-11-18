@@ -134,7 +134,7 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         history[idx] == "" && deleteat!(history, idx)
     end
     history = string.(history)
-    length(history) == 0 && (history = "")
+    length(history) == 0 && (history = [""])
 
     # LOCS
     # locs["urchan"]
@@ -250,7 +250,7 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                               reference=ref,
                               clabels=clabels,
                               transducers=repeat([""], ch_n),
-                              units=repeat(["μV"], ch_n),
+                              units=units,
                               prefiltering=repeat([""], ch_n),
                               line_frequency=50,
                               sampling_rate=sampling_rate,
@@ -265,8 +265,6 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                          e)
 
     components = Dict()
-
-    history = history
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
     nrow(locs) == 0 && _initialize_locs!(obj)

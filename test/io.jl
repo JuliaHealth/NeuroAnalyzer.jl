@@ -224,4 +224,10 @@ meg = import_fiff(joinpath(testfiles_path, "meg-test-fiff.fif"));
 @test meg.header.recording[:data_type] == "meg"
 @test meg.header.recording[:file_type] == "FIFF"
 
+@info "Test: import_ft()"
+eeg = import_fiff(joinpath(testfiles_path, "eeg-test-fieldtrip.mat"));
+@test eeg isa NeuroAnalyzer.NEURO
+@test eeg.header.recording[:data_type] == "eeg"
+@test eeg.header.recording[:file_type] == "FT"
+
 true
