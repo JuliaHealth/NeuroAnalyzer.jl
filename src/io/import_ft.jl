@@ -32,16 +32,14 @@ function import_ft(file_name::String; type::Symbol=:eeg, detect_type::Bool=true)
     _info("Reading object: $(String.(keys(dataset))[1])")
     dataset = dataset[String.(keys(dataset))[1]]
 
-    @assert "hdr" in keys(dataset) "Dataset does not contain header."
+    @assert "cfg" in keys(dataset) "Dataset does not contain cfg field."
+    cfg = dataset["cfg"]
+    @assert "hdr" in keys(dataset) "Dataset does not contain header field."
     hdr = dataset["hdr"]
     @assert "nChans" in keys(hdr) "Dataset header does not contain nChans field."
     ch_n = Int64(hdr["nChans"])
     @assert "Fs" in keys(hdr) "Dataset header does not contain Fs field."
     sampling_rate = round(Int64, hdr["Fs"])
-
-# keys(dataset["cfg"]) = ["detrend", "paddir", "bpfiltdir", "bpfiltord", "usefftfilt", "groupchans", "refmethod", "leadfield", "removemcg", "bsfiltdir", "showlogo", "bpinstabilityfix", "dataformat", "plotfiltresp", "bsfiltdev", "bpfilter", "dftfreq", "method", "reref", "dftfilter", "polyorder", "bsfiltord", "lpfiltwintype", "bsfiltwintype", "bpfiltdf", "keepcfg", "padding", "baselinewindow", "lpfilter", "continuous", "hilbert", "updatesens", "hpfiltdev", "polyremoval", "callinfo", "rectify", "dataset", "headerformat", "lpfiltord", "medianfiltord", "refchannel", "hpinstabilityfix", "checkstring", "bpfiltwintype", "headerfile", "resample", "lpfiltdir", "bsfilter", "hpfiltord", "implicitref", "bsfiltdf", "previous", "bpfilttype", "lpfiltdev", "feedback", "medianfilter", "version", "subspace", "custom", "bsinstabilityfix", "hpfiltdf", "channel", "hpfiltwintype", "absdiff", "bsfilttype", "derivative", "conv", "standardize", "lpfiltdf", "montage", "removeeog", "hpfiltdir", "dftinvert", "precision", "hpfilter", "trl", "tracktimeinfo", "lpfilttype", "checkpath", "toolbox", "denoise", "boxcar", "hpfilttype", "lpinstabilityfix", "bpfiltdev", "outputfilepresent", "demean", "trackmeminfo", "padtype", "keepprevious", "datafile"]
-
-# keys(hdr["orig"]) = ["RID", "AS", "PID", "DigMin", "PhysMax", "HeadLen", "PhysMin", "NRec", "Cal", "Off", "PreFilt", "VERSION", "Dur", "PhysDim", "chansel", "Chan_Select", "DigMax", "Transducer", "T0", "Label", "ChanTyp", "NS", "SPR", "annotation", "FileName", "Calib", "SampleRate", "FILE"]
 
     # get channel labels, types and units
     if length(hdr["label"][:]) > 0 && length(vec(hdr["label"])) == ch_n
@@ -77,6 +75,7 @@ function import_ft(file_name::String; type::Symbol=:eeg, detect_type::Bool=true)
 
     # TO DO: get referencing
     if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
+        _info("Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
     else
         ref = _detect_montage(clabels, ch_type, data_type)
     end
