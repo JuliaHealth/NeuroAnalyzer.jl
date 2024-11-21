@@ -8,7 +8,7 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `type::Symbol=:eeg`: type of imported data
+- `type::Symbol`: type of imported data
     - `:eeg` - EEG
     - `:meg` - MEG
     - `:nirs` - fNIRS
@@ -20,7 +20,7 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
 - `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
 - `markers::DataFrame` - for events
 """
-function import_ft(file_name::String; type::Symbol=:eeg, detect_type::Bool=true)::Union{NeuroAnalyzer.NEURO, DataFrame}
+function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     _wip()
 
@@ -37,11 +37,20 @@ function import_ft(file_name::String; type::Symbol=:eeg, detect_type::Bool=true)
 
     if data_type == "events"
 
-        @assert "duration" in keys(dataset) "Dataset does not contain duration field."
-        id = dataset["type"][:]
-        duration = dataset["duration"][:]
-        offset = dataset["offset"][:]
-        start = Int64.(dataset["sample"][:])
+        f = "type"
+        @assert f in keys(dataset) "Dataset does not contain $f field."
+        id = dataset[f][:]
+        f = "duration"
+        @assert f in keys(dataset) "Dataset does not contain $f field."
+        duration = dataset[f][:]
+        f = "offset"
+        @assert f in keys(dataset) "Dataset does not contain $f field."
+        offset = dataset[f][:]
+        f = "sample"
+        @assert f in keys(dataset) "Dataset does not contain $f field."
+        start = dataset[f][:]
+        f = "value"
+        @assert f in keys(dataset) "Dataset does not contain $f field."
         description = dataset["value"][:]
 
         # find and remove empty records
