@@ -235,5 +235,8 @@ m = import_ft(joinpath(testfiles_path, "events-test-fieldtrip.mat"), type=:event
 @test m isa DataFrame
 m_new = markers_s2t(m, fs=256)
 @test m_new isa DataFrame
+eeg.markers = m
+markers_s2t!(eeg)
+@test eeg.markers isa DataFrame
 
 true
