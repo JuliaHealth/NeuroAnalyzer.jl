@@ -9,10 +9,10 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
 
 - `file_name::String`: name of the file to load
 - `type::Symbol`: type of imported data
-    - `:eeg` - EEG
-    - `:meg` - MEG
-    - `:nirs` - fNIRS
-    - `:events` - events
+    - `:eeg`: EEG
+    - `:meg`: MEG
+    - `:nirs`: fNIRS
+    - `:events`: events
 - `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
@@ -62,6 +62,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
             deleteat!(start, idx)
             deleteat!(description, idx)
         end
+
         markers = DataFrame(:id=>string.(id),
                             :start=>Float64.(start),
                             :length=>Float64.(duration),
