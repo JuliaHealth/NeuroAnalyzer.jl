@@ -6,8 +6,8 @@ git-tree-sha1 = "6f696f162cb48a93809736f4311ee729e58f4ee4"
     sha256 = "9ba60c01280e01ed1adc4c2d7c2c143a5eac57257b6dba10e3ad33a0884db336"
 
 [NeuroAnalyzer_test-files]
-git-tree-sha1 = "ad21c4aff4d1435644796802e2b950741a3052f7"
+git-tree-sha1 = "e0da50a2dc2ab292329b5d461b44619dae1def7f"
 
     [[NeuroAnalyzer_test-files.download]]
     url = "https://neuroanalyzer.org/artifacts/neuroanalyzer-test-files-devel.tar.gz"
-    sha256 = "ef81d54a1d7e64b6761c9d07cd43ce63eedcdefc264ce02f96cc344e232ce00c"
+    sha256 = "aea90e2b0482bb6c8e507279d84a4b48d346c2177651b47e4827961b83566ba3"
