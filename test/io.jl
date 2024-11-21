@@ -224,10 +224,16 @@ meg = import_fiff(joinpath(testfiles_path, "meg-test-fiff.fif"));
 @test meg.header.recording[:data_type] == "meg"
 @test meg.header.recording[:file_type] == "FIFF"
 
-@info "Test: import_ft()"
-eeg = import_fiff(joinpath(testfiles_path, "eeg-test-fieldtrip.mat"));
+@info "Test: import_ft() - EEG"
+eeg = import_ft(joinpath(testfiles_path, "eeg-test-fieldtrip.mat"), type=:eeg);
 @test eeg isa NeuroAnalyzer.NEURO
 @test eeg.header.recording[:data_type] == "eeg"
 @test eeg.header.recording[:file_type] == "FT"
+
+@info "Test: import_ft() - events"
+m = import_ft(joinpath(testfiles_path, "events-test-fieldtrip.mat"), type=:events);
+@test m isa DataFrame
+m_new = markers_s2t(m, fs=256)
+@test m_new isa DataFrame
 
 true
