@@ -425,7 +425,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     time_pts = round.(collect(0:1/sampling_rate:nums / sampling_rate)[1:end-1], digits=3)

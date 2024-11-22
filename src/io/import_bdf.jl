@@ -222,7 +222,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
     else
         markers = _a2df(annotations)

@@ -772,7 +772,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if markers && _has_markers(obj)
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
-        markers_desc = obj.markers[!, :description]
+        markers_desc = obj.markers[!, :value]
         p = Plots.vline!(p,
                          markers_pos,
                          linestyle=:dash,

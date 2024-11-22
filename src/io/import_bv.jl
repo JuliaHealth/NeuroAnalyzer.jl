@@ -233,7 +233,7 @@ function import_bv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEU
         markers = DataFrame(:id=>m_id,
                             :start=>(m_pos ./ sampling_rate),
                             :length=>round.(m_len ./ sampling_rate),
-                            :description=>m_desc,
+                            :value=>m_desc,
                             :channel=>m_ch)
         if markers[!, :id] == repeat([""], nrow(markers))
             markers[!, :id] == repeat(["mrk"], nrow(markers))
@@ -243,13 +243,13 @@ function import_bv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEU
         markers = DataFrame(:id=>repeat(["mrk"], nrow(vmrk)),
                             :start=>(vmrk[!, :sample] ./ sampling_rate),
                             :length=>round.(vmrk[!, :duration] ./ sampling_rate),
-                            :description=>(vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])),
+                            :value=>(vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])),
                             :channel=>m_ch)
     else
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
     end
 

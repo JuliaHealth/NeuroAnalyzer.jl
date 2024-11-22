@@ -24,7 +24,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     time_pts = Float64[]

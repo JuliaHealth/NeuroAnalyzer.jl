@@ -162,12 +162,12 @@ delete_marker!(eeg_mrk, n=40)
 @test nrow(eeg_mrk.markers) == 44
 
 @info "Test: add_marker()"
-add_marker!(eeg_mrk, id="test", start=1988, len=1, desc="test", ch=0)
+add_marker!(eeg_mrk, id="test", start=1988, len=1, value="test", ch=0)
 @test nrow(eeg_mrk.markers) == 45
 
 @info "Test: edit_marker()"
 @test eeg_mrk.markers[45, :id] == "test"
-edit_marker!(eeg_mrk, n=45, id="TEST", start=1989, len=1, desc="test", ch=0)
+edit_marker!(eeg_mrk, n=45, id="TEST", start=1989, len=1, value="test", ch=0)
 @test eeg_mrk.markers[45, :id] == "TEST"
 
 @info "Test: channel2marker()"

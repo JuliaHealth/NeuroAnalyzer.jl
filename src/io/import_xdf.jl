@@ -78,12 +78,12 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
     for idx in other_idx
         length(streams[s_names[idx]]["data"]) == 0 && break
         for data_idx in 1:streams[s_names[idx]]["nchannels"]
-            append!(markers, Dict(:id=>string.(data[idx][:, data_idx]), :start=>(time[idx] .- time[idx][1]), :length=>ones(length(time[idx])), :description=>repeat(["marker"], length(time[idx])), :channel=>zeros(Int64, length(time[idx]))))
+            append!(markers, Dict(:id=>string.(data[idx][:, data_idx]), :start=>(time[idx] .- time[idx][1]), :length=>ones(length(time[idx])), :value=>repeat(["marker"], length(time[idx])), :channel=>zeros(Int64, length(time[idx]))))
         end
     end
     sort!(markers, :start)

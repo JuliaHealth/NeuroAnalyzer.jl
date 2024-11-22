@@ -16,7 +16,7 @@ Image properties:
 
 # Arguments
 
-- `file_name::String`: name of the file to load
+- `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load
 - `dpi::Int64=100`: DPI of the scanned images
 
 # Returns
@@ -168,7 +168,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     locs = _initialize_locs()

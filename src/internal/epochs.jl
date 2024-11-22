@@ -90,7 +90,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
     end
 
     # keep only markers of the given type and shift their offsets
-    mrk_tmp = markers[markers[!, :description] .== marker, :]
+    mrk_tmp = markers[markers[!, :value] .== marker, :]
     mrk_tmp[1, :start] = offset / fs
     if nrow(markers) > 1
         @inbounds for idx in 2:nrow(mrk_tmp)

@@ -104,14 +104,14 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
     else
         s_n = size(s, 2)
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
         for idx1 in 1:s_n
             s_start = findall(s[:, idx1] .!= 0.0)
@@ -119,9 +119,9 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
                 push!(markers, ("", s_start[idx2], 0, "stim", 0))
             end
         end
-        desc = unique(markers[!, :description])
-        for idx1 in 1:nrow(markers), idx2 in eachindex(desc)
-            markers[idx1, :description] == desc[idx2] && (markers[idx1, :id] = string(idx2))
+        value = unique(markers[!, :value])
+        for idx1 in 1:nrow(markers), idx2 in eachindex(value)
+            markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
         end
     end
 

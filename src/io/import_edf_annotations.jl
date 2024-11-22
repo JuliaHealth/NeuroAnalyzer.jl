@@ -141,7 +141,7 @@ function import_edf_annotations(file_name::String)::DataFrame
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
     else
         markers = _a2df(annotations)

@@ -207,7 +207,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         [push!(stim_id, string(findfirst(isequal(1), events[idx, 2:end]))) for idx in axes(events, 1)]
     end
 
-    markers = isnothing(stim_onset) ? DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :description=>nothing, :channel=>nothing) : DataFrame(:id=>stim_id, :start=>stim_onset, :length=>repeat([1], length(stim_id)), :description=>repeat(["stim"], length(stim_id)), :channel=>zeros(Int64, length(stim_id)))
+    markers = isnothing(stim_onset) ? DataFrame(:id=>nothing, :start=>nothing, :length=>nothing, :value=>nothing, :channel=>nothing) : DataFrame(:id=>stim_id, :start=>stim_onset, :length=>repeat([1], length(stim_id)), :value=>repeat(["stim"], length(stim_id)), :channel=>zeros(Int64, length(stim_id)))
 
     # read data ???
     buf = readlines(splitext(file_name)[1] * ".dat")

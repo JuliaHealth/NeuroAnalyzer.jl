@@ -153,7 +153,7 @@ function _check_markers(markers::Vector{String}, marker::String)::Nothing
 end
 
 function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)::Nothing
-    @assert marker in unique(obj.markers[!, :description]) "Marker: $marker not found in markers."
+    @assert marker in unique(obj.markers[!, :value]) "Marker: $marker not found in markers."
     return nothing
 end
 

@@ -71,7 +71,7 @@ function _a2df(annotations::Vector{String})::DataFrame
             end
         end
         !all(isascii.(a_event)) && _warn("Unicode labels were not converted.")
-        return DataFrame(:id=>string.(collect(eachindex(a_event))), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+        return DataFrame(:id=>string.(collect(eachindex(a_event))), :start=>a_start, :length=>a_length, :value=>a_event, :channel=>zeros(Int64, length(a_event)))
     else
         for idx in eachindex(mrk)
             s = split(mrk[idx], "|")
@@ -95,6 +95,6 @@ function _a2df(annotations::Vector{String})::DataFrame
             end
         end
         !all(isascii.(a_event)) && _warn("Unicode labels were not converted.")
-        return DataFrame(:id=>string.(id), :start=>a_start, :length=>a_length, :description=>a_event, :channel=>zeros(Int64, length(a_event)))
+        return DataFrame(:id=>string.(id), :start=>a_start, :length=>a_length, :value=>a_event, :channel=>zeros(Int64, length(a_event)))
     end
 end

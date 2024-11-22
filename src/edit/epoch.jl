@@ -13,7 +13,7 @@ Split into epochs. Return signal that is split either by markers (if specified),
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `marker::String=""`: marker description to split at
+- `marker::String=""`: marker value to split at
 - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
@@ -44,8 +44,8 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
         _check_markers(obj, marker)
 
         # get marker positions
-        @assert any(obj_new.markers[!, :description] .== marker) "OBJ does not contain marker $marker."
-        mrk_idx = getindex.(findall(obj_new.markers[!, :description] .== marker))
+        @assert any(obj_new.markers[!, :value] .== marker) "OBJ does not contain marker $marker."
+        mrk_idx = getindex.(findall(obj_new.markers[!, :value] .== marker))
         mrk_start = obj_new.markers[mrk_idx, :start]
         mrk_len = obj_new.markers[mrk_idx, :length]
 
@@ -104,7 +104,7 @@ Split into epochs. Return signal that is split either by markers (if specified),
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `marker::String=""`: marker description to split at
+- `marker::String=""`: marker value to split at
 - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds

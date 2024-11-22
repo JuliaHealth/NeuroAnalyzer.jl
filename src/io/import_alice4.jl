@@ -225,7 +225,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
     else
         markers = _a2df(annotations)

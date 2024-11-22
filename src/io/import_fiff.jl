@@ -470,7 +470,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     # MaxShield

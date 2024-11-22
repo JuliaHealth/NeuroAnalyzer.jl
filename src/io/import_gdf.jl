@@ -437,7 +437,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     if file_type_ver < 2.0
@@ -465,7 +465,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             start = Float64[]
             len = Float64[]
             id = String[]
-            desc = String[]
+            value = String[]
             ch = Int[]
             for idx in 1:etp_number
                 push!(id, "event")
@@ -477,7 +477,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             for idx in 1:etp_number
                 event = _gdf_etp(etp[1:2])
                 deleteat!(etp, 1:2)
-                push!(desc, event)
+                push!(value, event)
             end
             if etp_mode == 3
                 for idx in 1:etp_number
@@ -493,13 +493,13 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                 markers = DataFrame(:id=>id,
                                     :start=>round.(start ./ sampling_rate, digits=3),
                                     :length=>round.(len ./ sampling_rate, digits=3),
-                                    :description=>desc,
+                                    :value=>value,
                                     :channel=>ch)
             else
                 markers = DataFrame(:id=>id,
                                     :start=>round.(start ./ etp_sr, digits=3),
                                     :length=>round.(len ./ sampling_rate, digits=3),
-                                    :description=>desc,
+                                    :value=>value,
                                     :channel=>ch)
             end
         end
@@ -528,7 +528,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             start = Float64[]
             len = Float64[]
             id = String[]
-            desc = String[]
+            value = String[]
             ch = Int[]
             for idx in 1:etp_number
                 push!(id, "event")
@@ -540,7 +540,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             for idx in 1:etp_number
                 event = _gdf_etp(etp[1:2])
                 deleteat!(etp, 1:2)
-                push!(desc, event)
+                push!(value, event)
             end
             if etp_mode == 3
                 for idx in 1:etp_number
@@ -556,13 +556,13 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                 markers = DataFrame(:id=>id,
                                     :start=>round.(start ./ sampling_rate, digits=3),
                                     :length=>round.(len ./ sampling_rate, digits=3),
-                                    :description=>desc,
+                                    :value=>value,
                                     :channel=>ch)
             else
                 markers = DataFrame(:id=>id,
                                     :start=>round.(start ./ etp_sr, digits=3),
                                     :length=>round.(len ./ sampling_rate, digits=3),
-                                    :description=>desc,
+                                    :value=>value,
                                     :channel=>ch)
             end
         end

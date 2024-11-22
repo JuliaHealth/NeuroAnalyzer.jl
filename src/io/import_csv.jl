@@ -54,7 +54,7 @@ function import_csv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
@@ -62,7 +62,7 @@ function import_csv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)

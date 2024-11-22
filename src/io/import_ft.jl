@@ -43,36 +43,41 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
         f = "duration"
         @assert f in keys(dataset) "Dataset does not contain $f field."
         duration = dataset[f][:]
+        for idx in axes(duration, 1)
+            size(duration[idx]) == (0, 0) && (duration[idx] = 0.0)
+        end
         f = "offset"
         @assert f in keys(dataset) "Dataset does not contain $f field."
         offset = dataset[f][:]
+        for idx in axes(offset, 1)
+            size(offset[idx]) == (0, 0) && (offset[idx] = 0.0)
+        end
         f = "sample"
         @assert f in keys(dataset) "Dataset does not contain $f field."
         start = dataset[f][:]
         f = "value"
         @assert f in keys(dataset) "Dataset does not contain $f field."
-        description = dataset["value"][:]
+        value = dataset["value"][:]
 
         # find and remove empty records
-        description_idx = findall(x -> length(x) == 0, description)
-        for idx in length(description_idx):-1:1
-            deleteat!(id, idx)
-            deleteat!(duration, idx)
-            deleteat!(offset, idx)
-            deleteat!(start, idx)
-            deleteat!(description, idx)
-        end
+        value_idx = findall(x -> length(x) != 0, value)
+        id = id[value_idx]
+        duration = duration[value_idx]
+        offset = offset[value_idx]
+        start = start[value_idx]
+        value = value[value_idx]
 
         markers = DataFrame(:id=>string.(id),
                             :start=>Float64.(start),
                             :length=>Float64.(duration),
-                            :description=>string.(description),
+                            :value=>strip.(string.(value)),
                             :channel=>zeros(Int64, length(id)))
         _info("Imported: $(nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds")
 
         return markers
 
     else
+
         @assert "cfg" in keys(dataset) "Dataset does not contain cfg field."
         cfg = dataset["cfg"]
         @assert "hdr" in keys(dataset) "Dataset does not contain hdr field."
@@ -138,13 +143,11 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
             time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
         end
 
-        # TODO: import events and other data
-
-        # MARKERS
+        # FieldTrip markers are in a separate object, must be imported and added manually
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
-                            :description=>String[],
+                            :value=>String[],
                             :channel=>Int64[])
 
         if data_type == "eeg"

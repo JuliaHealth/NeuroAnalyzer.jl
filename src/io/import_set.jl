@@ -185,7 +185,7 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     markers = DataFrame(:id=>String[],
                         :start=>Float64[],
                         :length=>Float64[],
-                        :description=>String[],
+                        :value=>String[],
                         :channel=>Int64[])
 
     if "event" in keys(dataset)
@@ -199,7 +199,7 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             len = zeros(length(start))
             desc = String.(events["type"][:])
             id = repeat(["stim"], length(start))
-            markers = DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>zeros(Int64, length(start)))
+            markers = DataFrame(:id=>id, :start=>start, :length=>len, :value=>desc, :channel=>zeros(Int64, length(start)))
         end
     end
     # dataset["eventdescription"]
