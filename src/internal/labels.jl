@@ -18,6 +18,9 @@ function _clean_labels(clabels::Vector{String})::Vector{String}
     l = replace.(l, "BDF " => "")
     l = replace.(l, ".." => "")
     l = replace.(l, "." => "")
+    l = replace.(l, "MEG" => "MEG ")
+    l = replace.(l, "MEG 0" => "MEG ")
+    l = replace.(l, "  " => " ")
     return l
 end
 

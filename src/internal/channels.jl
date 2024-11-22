@@ -171,9 +171,9 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
 
         in(lowercase(clabels[idx]), ref_channels) && (channel_type[idx] = "ref")
 
-        occursin("meg", lowercase(clabels[idx])) && (channel_type[idx] = "meg")
         occursin("mag", lowercase(clabels[idx])) && (channel_type[idx] = "mag")
         occursin("grad", lowercase(clabels[idx])) && (channel_type[idx] = "grad")
+        occursin("meg", lowercase(clabels[idx])) && (channel_type[idx] = "meg")
 
         # eeg channels should have priority, e.g. C3A1 (C3 referenced to A1 should be of eeg type, not ref)
         in(lowercase(clabels[idx]), channel_names) && (channel_type[idx] = "eeg")
@@ -200,8 +200,12 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
         occursin("plr", lowercase(clabels[idx])) && (channel_type[idx] = "other")
         occursin("body", lowercase(clabels[idx])) && (channel_type[idx] = "other")
         occursin("ux", lowercase(clabels[idx])) && (channel_type[idx] = "other")
+        occursin("ias", lowercase(clabels[idx])) && (channel_type[idx] = "other")
+        occursin("sys", lowercase(clabels[idx])) && (channel_type[idx] = "other")
+
         occursin("acc", lowercase(clabels[idx])) && (channel_type[idx] = "accel")
 
+        occursin("sti", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("stim", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("mark", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("marker", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")

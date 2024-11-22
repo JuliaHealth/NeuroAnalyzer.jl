@@ -230,6 +230,12 @@ eeg = import_ft(joinpath(testfiles_path, "eeg-test-fieldtrip.mat"), type=:eeg);
 @test eeg.header.recording[:data_type] == "eeg"
 @test eeg.header.recording[:file_type] == "FT"
 
+@info "Test: import_ft() - MEG"
+meg = import_ft(joinpath(testfiles_path, "meg-test-fieldtrip.mat"), type=:meg);
+@test meg isa NeuroAnalyzer.NEURO
+@test meg.header.recording[:data_type] == "meg"
+@test meg.header.recording[:file_type] == "FT"
+
 @info "Test: import_ft() - events"
 m = import_ft(joinpath(testfiles_path, "events-test-fieldtrip.mat"), type=:events);
 @test m isa DataFrame

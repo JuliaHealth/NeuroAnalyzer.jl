@@ -15,7 +15,7 @@ Load recording file and return `NeuroAnalyzer.NEURO` object. Supported formats:
 - XDF (Extensible Data Format)
 - NWB (Neurodata Without Borders)
 - NCS (Neuralinx Continuously Sampled Channels (CSC))
-- FIFF (MEG or EEG data)
+- FIFF (Neuromag)
 - MAT (FieldTrip)
 - SNIRF
 - NIRS

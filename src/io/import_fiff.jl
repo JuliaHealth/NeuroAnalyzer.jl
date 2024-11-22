@@ -4,7 +4,7 @@ export import_fiff
 """
     load_fiff(file_name)
 
-Load FIFF (Functional Image File Format) file and return FIFF object.
+Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and return FIFF object.
 
 # Arguments
 
@@ -356,7 +356,7 @@ end
 """
     import_fiff(file_name)
 
-Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.NEURO` object.
+Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -404,12 +404,13 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         if units[ch_idx] == "T"
             @views data[ch_idx, :, 1] .*= 10^15
             units[ch_idx] = "fT"
-        end
-        if units[ch_idx] == "T/m"
+        elseif units[ch_idx] == "T/m"
             @views data[ch_idx, :, 1] .*= (10^15 / 100)
             units[ch_idx] = "fT/cm"
-        end
-        if units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
+        elseif units[ch_idx] == "T/cm"
+            @views data[ch_idx, :, 1] .*= 10^15
+            units[ch_idx] = "fT/cm"
+        elseif units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
             @views data[ch_idx, :, 1] .*= 10^6
             units[ch_idx] = "μV"
         end
@@ -521,11 +522,23 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     lp = fiff[:meas_info][:lowpass]
-    isnothing(lp) && (lp = 0)
+    if isnothing(lp)
+        lp = 0
+    else
+        lp = round(lp, digits=1)
+    end
     hp = fiff[:meas_info][:highpass]
-    isnothing(hp) && (hp = 0)
+    if isnothing(hp)
+        hp = 0
+    else
+        hp = round(hp, digits=1)
+    end
     lf = fiff[:meas_info][:line_freq]
-    isnothing(lf) && (lf = 0)
+    if isnothing(lf)
+        lf = 0
+    else
+        lf = round(lf, digits=1)
+    end
 
     s = _create_subject(id=id,
                         first_name=first_name,
@@ -548,7 +561,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
                               reference="",
                               clabels=clabels,
                               units=units,
-                              prefiltering=repeat(["LP: $lp Hz; HP: $hp, digits=1)) Hz"], ch_n),
+                              prefiltering=repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
                               line_frequency=lf,
                               sampling_rate=sampling_rate,
                               magnetometers=magnetometers,

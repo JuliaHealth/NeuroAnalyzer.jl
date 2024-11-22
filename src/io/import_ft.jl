@@ -20,7 +20,7 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
 - `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
 - `markers::DataFrame` - for events
 """
-function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Union{NeuroAnalyzer.NEURO, DataFrame}
+function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     _wip()
 
@@ -82,14 +82,14 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
         cfg = dataset["cfg"]
         @assert "hdr" in keys(dataset) "Dataset does not contain hdr field."
         hdr = dataset["hdr"]
+        @assert "fsample" in keys(dataset) "Dataset does not contain fsample field."
+        sampling_rate = round(Int64, dataset["fsample"])
         @assert "nChans" in keys(hdr) "Dataset header does not contain nChans field."
         ch_n = Int64(hdr["nChans"])
-        @assert "Fs" in keys(hdr) "Dataset header does not contain Fs field."
-        sampling_rate = round(Int64, hdr["Fs"])
 
         # get channel labels, types and units
         if length(hdr["label"][:]) > 0 && length(vec(hdr["label"])) == ch_n
-            clabels = string.(hdr["label"][:])
+            clabels = string.(strip.(string.(hdr["label"])))[:]
         else
             clabels = String[]
             for idx in 1:ch_n
@@ -99,9 +99,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
         clabels = _clean_labels(clabels)
 
         if detect_type
-            ch_type = _set_channel_types(clabels, "eeg")
+            ch_type = NeuroAnalyzer._set_channel_types(clabels)
             if "chanunit" in keys(hdr)
-                units = string.(hdr["chanunit"][:])
+                units = strip.(string.(hdr["chanunit"][:]))
                 units = replace.(units, "uV"=>"μV")
             else
                 units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
@@ -110,7 +110,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
             if "chantype" in keys(hdr)
                 ch_type = string.(hdr["chantype"][:])
             else
-                ch_type = repeat(["eeg"], ch_n)
+                ch_type = repeat([data_type], ch_n)
             end
             if "chanunit" in keys(hdr)
                 units = string.(hdr["chanunit"][:])
@@ -130,9 +130,15 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
 
         if "time" in keys(dataset)
             if ep_n == 1
-                epoch_time = round.(dataset["time"][1][:], digits=3)
+                epoch_time = dataset["time"][1][:]
+                sign(epoch_time[1]) == 1.0 && (epoch_time .-= (epoch_time[1]))
                 time_pts = dataset["time"][1][:]
-                time_pts .+= abs(time_pts[1])
+                if sign(time_pts[1]) == 1.0
+                    time_pts .-= (time_pts[1])
+                else
+                    time_pts .+= abs(time_pts[1])
+                end
+                epoch_time = round.(epoch_time, digits=3)
                 time_pts = round.(time_pts, digits=3)
             else
                 epoch_time = round.(dataset["time"][1][:], digits=3)
@@ -143,7 +149,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
             time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
         end
 
-        # FieldTrip markers are in a separate object, must be imported and added manually
+        _info("FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`")
         markers = DataFrame(:id=>String[],
                             :start=>Float64[],
                             :length=>Float64[],
@@ -159,6 +165,14 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
                 ref = _detect_montage(clabels, ch_type, data_type)
             end
 
+            # convert data to standard units
+            @inbounds for ch_idx in 1:ch_n
+                if units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
+                    @views data[ch_idx, :, 1] .*= 10^6
+                    units[ch_idx] = "μV"
+                end
+            end
+
             r = _create_recording_eeg(data_type=data_type,
                                       file_name=file_name,
                                       file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
@@ -171,9 +185,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
                                       channel_order=_sort_channels(ch_type),
                                       reference=ref,
                                       clabels=clabels,
-                                      transducers="Transducer" in keys(hdr["orig"]) ? string.(hdr["orig"]["Transducer"]) : repeat([""], ch_n),
+                                      transducers="Transducer" in keys(hdr["orig"]) ? strip.(string.(hdr["orig"]["Transducer"])) : repeat([""], ch_n),
                                       units=units,
-                                      prefiltering="PreFilt" in keys(hdr["orig"]) ? string.(hdr["orig"]["PreFilt"]) : repeat([""], ch_n),
+                                      prefiltering="PreFilt" in keys(hdr["orig"]) ? strip.(string.(hdr["orig"]["PreFilt"])) : repeat([""], ch_n),
                                       line_frequency=50,
                                       sampling_rate=sampling_rate,
                                       gain=ones(ch_n),
@@ -181,35 +195,67 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
 
         elseif data_type == "meg"
 
-            # Internal Active Shielding (IAS)
-            ias_channels = .!(isnothing.(match.(r"IAS.*", clabels)))
-            ias_labels = nothing
-            ias_data = nothing
-            if any(ias_channels)
-                ias_labels = clabels[ias_channels]
-                clabels = clabels[.!(ias_channels)]
-                ias_data = data[ias_channels, :, :]
-                data = data[.!(ias_channels), :, :]
-            end
+            @assert "grad" in keys(dataset) "Dataset does not contain grad field."
+            @assert "chantype" in keys(dataset["grad"]) "Dataset does not contain chantype field."
+            meg_channels = occursin.(r"meg", lowercase.(clabels))[:]
+            coil_type = repeat([""], ch_n)
+            mag_idx = occursin.(r".*mag.*", lowercase.(ch_type))
+            coil_type[mag_idx] .= "mag"
+            grad_idx = occursin.(r".*grad.*", lowercase.(ch_type))
+            coil_type[grad_idx] .= "grad"
+            pgrad_idx = occursin.(r".*planar.*", lowercase.(ch_type))
+            coil_type[pgrad_idx] .= "pgrad"
+            agrad_idx = occursin.(r".*axial.*", lowercase.(ch_type)) .|| occursin.(r".*ctf.*", lowercase.(ch_type))
+            coil_type[agrad_idx] .= "agrad"
+            grad_idx .+= pgrad_idx
+            grad_idx .+= agrad_idx
+            magnetometers = collect(1:length(ch_type))[mag_idx]
+            gradiometers = collect(1:length(ch_type))[grad_idx]
+            ch_type[magnetometers] .= "mag"
+            ch_type[gradiometers] .= "grad"
 
+            # Internal Active Shielding (IAS)
+            ch_type[occursin.("ias", lowercase.(clabels))] .= "other"
+            ch_type[occursin.("sti", lowercase.(clabels))] .= "mrk"
+            ch_type[occursin.("sys", lowercase.(clabels))] .= "other"
+
+            # convert data to standard units
+            @inbounds for ch_idx in 1:ch_n
+                if units[ch_idx] == "T"
+                    @views data[ch_idx, :, 1] .*= 10^15
+                    units[ch_idx] = "fT"
+                elseif units[ch_idx] == "T/m"
+                    @views data[ch_idx, :, 1] .*= (10^15 / 100)
+                    units[ch_idx] = "fT/cm"
+                elseif units[ch_idx] == "T/cm"
+                    @views data[ch_idx, :, 1] .*= 10^15
+                    units[ch_idx] = "fT/cm"
+                elseif units[ch_idx] == "V"
+                    @views data[ch_idx, :, 1] .*= 10^6
+                    units[ch_idx] = "μV"
+                end
+            end
+            lp = "lowpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["lowpass"][1], digits=1)) : "?"
+            hp = "highpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["highpass"][1], digits=1)) : "?"
             r = _create_recording_meg(data_type=data_type,
                                       file_name=file_name,
                                       file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
-                                      file_type=file_type,
-                                      recording="RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
+                                      file_type="FT",
+                                      recording="dataformat" in keys(dataset["cfg"]) ? string(dataset["cfg"]["dataformat"]) : "",
                                       recording_date="",
                                       recording_time="",
                                       recording_notes="",
                                       channel_type=ch_type,
                                       channel_order=_sort_channels(ch_type),
-                                      reference=ref,
+                                      reference="",
                                       clabels=clabels,
-                                      transducers="Transducer" in keys(hdr["orig"]) ? string.(hdr["orig"]["Transducer"]) : repeat([""], ch_n),
                                       units=units,
-                                      prefiltering="PreFilt" in keys(hdr["orig"]) ? string.(hdr["orig"]["PreFilt"]) : repeat([""], ch_n),
+                                      prefiltering=repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
                                       line_frequency=50,
                                       sampling_rate=sampling_rate,
-                                      gain=ones(ch_n),
+                                      magnetometers=magnetometers,
+                                      gradiometers=gradiometers,
+                                      coil_type=coil_type,
                                       bad_channels=zeros(Bool, size(data, 1), ep_n))
 
         elseif data_type == "nirs"
@@ -255,9 +301,17 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=true)::Uni
         components = Dict()
         history = [""]
 
-        locs = _initialize_locs()
-        obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
-        _initialize_locs!(obj)
+        if data_type == "meg"
+            locs = _initialize_locs()
+            obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+            _initialize_locs!(obj)
+            l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+            add_locs!(obj, locs=l)
+        else
+            locs = _initialize_locs()
+            obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+            _initialize_locs!(obj)
+        end
 
         _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
