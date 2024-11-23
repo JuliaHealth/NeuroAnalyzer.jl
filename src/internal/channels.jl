@@ -202,6 +202,7 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
         occursin("ux", lowercase(clabels[idx])) && (channel_type[idx] = "other")
         occursin("ias", lowercase(clabels[idx])) && (channel_type[idx] = "other")
         occursin("sys", lowercase(clabels[idx])) && (channel_type[idx] = "other")
+        occursin("aux", lowercase(clabels[idx])) && (channel_type[idx] = "other")
 
         occursin("acc", lowercase(clabels[idx])) && (channel_type[idx] = "accel")
 
@@ -218,6 +219,7 @@ function _set_channel_types(clabels::Vector{String}, default::String="other")::V
         occursin("annotation", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("annotations", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("status", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
+        occursin("nm", lowercase(clabels[idx])) && (channel_type[idx] = "nirs_od")
     end
     return channel_type
 end

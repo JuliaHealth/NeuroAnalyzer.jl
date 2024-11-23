@@ -236,6 +236,12 @@ meg = import_ft(joinpath(testfiles_path, "meg-test-fieldtrip.mat"), type=:meg);
 @test meg.header.recording[:data_type] == "meg"
 @test meg.header.recording[:file_type] == "FT"
 
+@info "Test: import_ft() - fNIRS"
+nirs = import_ft(joinpath(testfiles_path, "fnirs-test-fieldtrip.mat"), type=:nirs);
+@test nirs isa NeuroAnalyzer.NEURO
+@test nirs.header.recording[:data_type] == "nirs"
+@test meg.header.recording[:file_type] == "FT"
+
 @info "Test: import_ft() - events"
 m = import_ft(joinpath(testfiles_path, "events-test-fieldtrip.mat"), type=:events);
 @test m isa DataFrame

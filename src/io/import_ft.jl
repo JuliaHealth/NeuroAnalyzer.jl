@@ -13,7 +13,7 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
     - `:meg`: MEG
     - `:nirs`: fNIRS
     - `:events`: events
-- `detect_type::Bool=true`: detect channel type based on its label
+- `detect_type::Bool=false`: detect channel type based on its label
 
 # Returns
 
@@ -27,6 +27,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
     _check_var(type, [:eeg, :meg, :nirs, :events], "type")
     file_type = "FT"
     data_type = String(type)
+    locs = nothing
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     dataset = matread(file_name)
@@ -99,7 +100,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
         clabels = _clean_labels(clabels)
 
         if detect_type
-            ch_type = NeuroAnalyzer._set_channel_types(clabels)
+            ch_type = _set_channel_types(clabels)
             if "chanunit" in keys(hdr)
                 units = strip.(string.(hdr["chanunit"][:]))
                 units = replace.(units, "uV"=>"μV")
@@ -119,6 +120,8 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 units = repeat(["μV"], ch_n)
             end
         end
+        ch_type = replace.(ch_type, "nirs"=>"nirs_od")
+        ch_type = replace.(ch_type, "stimulus"=>"mrk")
 
         @assert "trial" in keys(dataset) "Dataset does not contain trial field."
         ep_n = "trial" in keys(dataset) ? size(dataset["trial"], 2) : 1
@@ -185,9 +188,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                                       channel_order=_sort_channels(ch_type),
                                       reference=ref,
                                       clabels=clabels,
-                                      transducers="Transducer" in keys(hdr["orig"]) ? strip.(string.(hdr["orig"]["Transducer"])) : repeat([""], ch_n),
+                                      transducers="Transducer" in keys(hdr["orig"]) ? string.(strip.(hdr["orig"]["Transducer"])) : repeat([""], ch_n),
                                       units=units,
-                                      prefiltering="PreFilt" in keys(hdr["orig"]) ? strip.(string.(hdr["orig"]["PreFilt"])) : repeat([""], ch_n),
+                                      prefiltering="PreFilt" in keys(hdr["orig"]) ? string.(strip.(hdr["orig"]["PreFilt"])) : repeat([""], ch_n),
                                       line_frequency=50,
                                       sampling_rate=sampling_rate,
                                       gain=ones(ch_n),
@@ -235,6 +238,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                     units[ch_idx] = "μV"
                 end
             end
+
             lp = "lowpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["lowpass"][1], digits=1)) : "?"
             hp = "highpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["highpass"][1], digits=1)) : "?"
             r = _create_recording_meg(data_type=data_type,
@@ -260,26 +264,72 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
         elseif data_type == "nirs"
 
+
+            clabels = replace.(clabels, ".0"=>"")
+            clabels = replace.(clabels, " ["=>" ")
+            clabels = replace.(clabels, "nm]"=>"")
+
+            @assert "opto" in keys(dataset) "Dataset does not contain opto field."
+            opto = dataset["opto"]
+            wavelengths = opto["wavelength"][:]
+            wavelength_index = Int64[]
+            for idx1 in eachindex(ch_type)
+                if ch_type[idx1] == "nirs"
+                    for idx2 in eachindex(wavelengths)
+                        occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1]) && push!(wavelength_index, idx2)
+                    end
+                end
+            end
+
+            nirs_channels_idx = ch_type .== "nirs_od"
+            nirs_channels = count(nirs_channels_idx)
+            # source and detector names
+            source_index = opto["optotype"] .== "transmitter"
+            detector_index = opto["optotype"] .== "receiver"
+            src_labels = string.(opto["optolabel"][:][source_index])
+            det_labels = string.(opto["optolabel"][:][detector_index])
+            opt_labels = string.(opto["optolabel"][:])
+
+            # collect channel pairs
+            opt_pairs = zeros(Int64, nirs_channels, 2)
+            pairs = opto["label"][:]
+            for idx in eachindex(pairs)
+                p = match(r"(S\d+)-(D\d+)(.*)", pairs[idx])
+                if !isnothing(p)
+                    opt_pairs[idx, 1] = findfirst(isequal(p[1]), src_labels)
+                    opt_pairs[idx, 2] = findfirst(isequal(p[2]), det_labels)
+                end
+            end
+
+            # optode locations
+            x = opto["optopos"][:, 1]
+            y = opto["optopos"][:, 2]
+            z = opto["optopos"][:, 3]
+            global locs = DataFrame(:label=>opt_labels, :loc_radius=>zeros(length(opt_labels)), :loc_theta=>zeros(length(opt_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(opt_labels)), :loc_theta_sph=>zeros(length(opt_labels)), :loc_phi_sph=>zeros(length(opt_labels)))
+            locs_normalize!(locs)
+            locs_cart2sph!(locs)
+            locs_cart2pol!(locs)
+
             r = _create_recording_nirs(data_type=data_type,
                                        file_name=file_name,
                                        file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
                                        file_type=file_type,
-                                       recording="RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
+                                       recording="",
                                        recording_date="",
                                        recording_time="",
                                        recording_notes="",
+                                       wavelengths=wavelengths,
+                                       wavelength_index=wavelength_index,
+                                       optode_pairs=opt_pairs,
                                        channel_type=ch_type,
                                        channel_order=_sort_channels(ch_type),
-                                       reference=ref,
                                        clabels=clabels,
-                                       transducers="Transducer" in keys(hdr["orig"]) ? string.(hdr["orig"]["Transducer"]) : repeat([""], ch_n),
                                        units=units,
-                                       prefiltering="PreFilt" in keys(hdr["orig"]) ? string.(hdr["orig"]["PreFilt"]) : repeat([""], ch_n),
-                                       line_frequency=50,
+                                       src_labels=src_labels,
+                                       det_labels=det_labels,
+                                       opt_labels=opt_labels,
                                        sampling_rate=sampling_rate,
-                                       gain=ones(ch_n),
                                        bad_channels=zeros(Bool, size(data, 1), ep_n))
-
         end
 
         s = _create_subject(id="",
@@ -301,15 +351,15 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
         components = Dict()
         history = [""]
 
-        if data_type == "meg"
+        if data_type == "meg" || data_type == "eeg"
             locs = _initialize_locs()
-            obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+        end
+        obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+        if data_type == "meg"
             _initialize_locs!(obj)
             l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
             add_locs!(obj, locs=l)
-        else
-            locs = _initialize_locs()
-            obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+        elseif data_type == "eeg"
             _initialize_locs!(obj)
         end
 
