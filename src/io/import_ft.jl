@@ -121,6 +121,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
             end
         end
         ch_type = replace.(ch_type, "nirs"=>"nirs_od")
+        ch_type = replace.(ch_type, "aux"=>"other")
         ch_type = replace.(ch_type, "stimulus"=>"mrk")
 
         @assert "trial" in keys(dataset) "Dataset does not contain trial field."
@@ -290,11 +291,12 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
             det_labels = string.(opto["optolabel"][:][detector_index])
             opt_labels = string.(opto["optolabel"][:])
 
-            # collect channel pairs
+            # collect opotode pairs = channels
             opt_pairs = zeros(Int64, nirs_channels, 2)
             pairs = opto["label"][:]
             for idx in eachindex(pairs)
-                p = match(r"(S\d+)-(D\d+)(.*)", pairs[idx])
+                # TO DO: use opto.optolabel to match labels in pairs
+                p = match(r"(.+)-(.+) (.*)", pairs[idx])
                 if !isnothing(p)
                     opt_pairs[idx, 1] = findfirst(isequal(p[1]), src_labels)
                     opt_pairs[idx, 2] = findfirst(isequal(p[2]), det_labels)
