@@ -86,6 +86,9 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
+    head12 = false
+    maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5 && (head12 = true)
+
     if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
         xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.2, 1.2, 25), digits=1)))
         yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.2, -1.2, 25), digits=1)))
@@ -161,11 +164,11 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape),
-                           right_margin=-100*Plots.px,
-                           bottom_margin=-100*Plots.px,
-                           top_margin=-100*Plots.px,
-                           left_margin=-100*Plots.px,
+                           size=head12 ? size(head_shape) : size(head_shape) .+ 50,
+                           right_margin=head12 ? -100*Plots.px : 10*Plots.px,
+                           bottom_margin=head12 ? -100*Plots.px : 0*Plots.px,
+                           top_margin=head12 ? -100*Plots.px : 10*Plots.px,
+                           left_margin=head12 ? -100*Plots.px : 0*Plots.px,
                            ticks_fontsize=font_size,
                            xticks=xt,
                            yticks=yt,
@@ -179,11 +182,11 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
                            border=:none,
                            palette=pal,
                            aspect_ratio=1,
-                           size=size(head_shape),
-                           right_margin=-10*Plots.px,
-                           bottom_margin=-30*Plots.px,
-                           top_margin=-20*Plots.px,
-                           left_margin=-40*Plots.px,
+                           size=head12 ? size(head_shape) : size(head_shape) .+ 7,
+                           right_margin=head12 ? -10*Plots.px : -10*Plots.px,
+                           bottom_margin=head12 ? -30*Plots.px : -30*Plots.px,
+                           top_margin=head12 ? -20*Plots.px : -20*Plots.px,
+                           left_margin=head12 ? -40*Plots.px : -30*Plots.px,
                            xticks=xt,
                            yticks=yt,
                            xlims=xl,
@@ -611,7 +614,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
 
     if head_labels
         fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in eachindex(NeuroAnalyzer.fiducial_points)
+        for idx in 1:length(NeuroAnalyzer.fiducial_points)
             Plots.annotate!(NeuroAnalyzer.fiducial_points[idx][1],
                             NeuroAnalyzer.fiducial_points[idx][2],
                             NeuroAnalyzer.fiducial_points[idx][3],

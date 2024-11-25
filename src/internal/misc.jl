@@ -1,14 +1,3 @@
-# suppress console output
-_log_off() = Logging.disable_logging(Logging.Warn)
-# restore console output
-_log_on() = Logging.disable_logging(Logging.Debug)
-
-_info(s::String) = verbose && @info s
-_warn(s::String) = verbose && @warn s
-_deprecated(s::String) = verbose && @error "Function $s() is deprecated."
-_deprecated(s1::String, s2::String) = verbose && @error "Function $s1() is deprecated, please use $s2() instead."
-_wip() = allow_wip ? (@warn "This function has the WIP (Work In Progress) status and is not ready for production use.") : (@error "This function has the WIP (Work In Progress) status and is not ready for production use.")
-
 _pl(x::Union{AbstractRange, AbstractVector})::String = length(collect(x)) > 1 ? "s" : ""
 
 _pl(x::Real)::String = x > 1 ? "s" : ""

@@ -96,8 +96,8 @@ end
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}=1:nrow(locs)`: channel(s) to plot, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+- `ch::Union{String, Vector{String}}`: channel(s) to plot
+- `selected::Union{String, Vector{String}}=""`: selected channel(s) to plot
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
@@ -108,11 +108,19 @@ end
 
 Nothing
 """
-function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=1:nrow(obj.locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
+function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
 
     # select channels, default is all channels
-    _check_channels(obj, ch, obj.header.recording[:data_type])
-    selected != 0 && _check_channels(obj, selected)
+    ch = get_channel(obj, ch=ch)
+
+    # get selected channels
+    if selected == ""
+        selected = 0
+    else
+        selected = get_channel(obj, ch=selected)
+        selected = intersect(locs[!, :label], labels(obj)[selected])
+        selected = _find_bylabel(locs, selected)
+    end
 
     p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
     win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
@@ -130,7 +138,7 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     y_pos_last = 0
 
     @guarded draw(can) do widget
-        p = NeuroAnalyzer.plot_locs3d(obj.locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart);
+        p = plot_locs3d(obj.locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, mono=mono);
         img = read_from_png(io)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)

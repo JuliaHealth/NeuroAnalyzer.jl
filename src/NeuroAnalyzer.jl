@@ -180,42 +180,35 @@ FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
 # load NA functions
-
 include("utils/na.jl")
 
-function __init__()::Nothing
+# load preferences
+global use_cuda = @load_preference("use_cuda", false)
+global progress_bar = @load_preference("progress_bar", true)
+global verbose = @load_preference("verbose", true)
+na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose)
 
-    global use_cuda = @load_preference("use_cuda", false)
-    global progress_bar = @load_preference("progress_bar", true)
-    global verbose = @load_preference("verbose", true)
-    na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose)
+# be verbose
+_info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
+_info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
+_info("Preferences loaded:")
+_info(" Use CUDA: $use_cuda")
+_info(" Progress bar: $progress_bar")
+_info(" Verbose: $verbose")
 
-    _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
-    _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
+# setup resources
+_info("Preparing resources")
+global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
 
-    # load preferences)
-    _info("Preferences loaded:")
-    _info(" Use CUDA: $use_cuda")
-    _info(" Progress bar: $progress_bar")
-    _info(" Verbose: $verbose")
-
-    # setup resources
-    _info("Preparing resources")
-    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
-
-    # load plugins
-    global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-    if isdir(plugins_path)
-        if length(readdir(plugins_path)) > 0
-            _info("Loading plugins:")
-            na_plugins_reload()
-        end
-    else
-        mkpath(plugins_path)
+# load plugins
+global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
+if isdir(plugins_path)
+    if length(readdir(plugins_path)) > 0
+        _info("Loading plugins:")
+        na_plugins_reload()
     end
-
-    return nothing
-
+else
+    mkpath(plugins_path)
 end
 
 # load sub-modules

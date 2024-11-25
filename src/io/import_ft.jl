@@ -240,6 +240,22 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 end
             end
 
+            if "chanpos" in keys(dataset["grad"])
+                meg_labels = @. clabels[ch_type == "meg" || ch_type == "mag" || ch_type == "grad"]
+                x = dataset["grad"]["chanpos"][:, 1]
+                y = dataset["grad"]["chanpos"][:, 2]
+                z = dataset["grad"]["chanpos"][:, 3]
+                global locs = DataFrame(:label=>meg_labels, :loc_radius=>zeros(length(meg_labels)), :loc_theta=>zeros(length(meg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(meg_labels)), :loc_theta_sph=>zeros(length(meg_labels)), :loc_phi_sph=>zeros(length(meg_labels)))
+                locs_normalize!(locs)
+                locs[:, :loc_x] .*= 1.5
+                locs[:, :loc_y] .*= 1.5
+                locs[:, :loc_z] .*= 1.5
+                locs_cart2sph!(locs)
+                locs_sph2pol!(locs)
+            else
+                locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+            end
+
             lp = "lowpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["lowpass"][1], digits=1)) : "?"
             hp = "highpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["highpass"][1], digits=1)) : "?"
             r = _create_recording_meg(data_type=data_type,
@@ -353,17 +369,11 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
         components = Dict()
         history = [""]
 
-        if data_type == "meg" || data_type == "eeg"
-            locs = _initialize_locs()
-        end
+        data_type == "eeg" && (locs = _initialize_locs())
+
         obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
-        if data_type == "meg"
-            _initialize_locs!(obj)
-            l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
-            add_locs!(obj, locs=l)
-        elseif data_type == "eeg"
-            _initialize_locs!(obj)
-        end
+
+        data_type == "eeg" && _initialize_locs!(obj)
 
         _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
