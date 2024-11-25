@@ -224,6 +224,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     combo_origin_transform = GtkComboBoxText()
     [push!(combo_origin_transform, idx) for idx in axes]
     set_gtk_property!(combo_origin_transform, :active, 0)
+    set_gtk_property!(combo_origin_transform, :tooltip_text, "Axis along which origin is moved")
     bt_normalize = GtkButton("Normalize")
     set_gtk_property!(bt_normalize, :tooltip_text, "Normalize channel locations to fit the unit sphere")
     bt_transform = GtkButton("Transform")
