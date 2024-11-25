@@ -217,6 +217,13 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     entry_scale = GtkSpinButton(0.1, 10.00, 0.1)
     set_gtk_property!(entry_scale, :tooltip_text, "Scaling factor")
     set_gtk_property!(entry_scale, :value, 1.0)
+    bt_origin_transform = GtkButton("Move origin")
+    origin_transform = GtkSpinButton(-1.0, 1.0, 0.05)
+    set_gtk_property!(bt_origin_transform, :tooltip_text, "Move origin")
+    set_gtk_property!(origin_transform, :value, 0.0)
+    combo_origin_transform = GtkComboBoxText()
+    [push!(combo_origin_transform, idx) for idx in axes]
+    set_gtk_property!(combo_origin_transform, :active, 0)
     bt_normalize = GtkButton("Normalize")
     set_gtk_property!(bt_normalize, :tooltip_text, "Normalize channel locations to fit the unit sphere")
     bt_transform = GtkButton("Transform")
@@ -305,18 +312,21 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     g_opts[1, 19] = bt_scale
     g_opts[2, 19] = entry_scale
     g_opts[3, 19] = bt_normalize
-    g_opts[1, 20] = bt_transform
-    g_opts[2, 20] = combo_transform
-    g_opts[1:3, 21] = GtkLabel("Locs operations")
-    g_opts[1, 22] = bt_generate
-    g_opts[2, 22] = bt_load
-    g_opts[3, 22] = bt_save
-    g_opts[1, 23] = lab_hdlab
-    g_opts[2, 23] = cb_hdlab
-    g_opts[1, 24] = lab_cart
-    g_opts[2, 24] = cb_plot_cart
-    g_opts[1, 25] = bt_apply
-    g_opts[2, 25] = bt_cancel
+    g_opts[1, 20] = bt_origin_transform
+    g_opts[2, 20] = combo_origin_transform
+    g_opts[3, 20] = origin_transform
+    g_opts[1, 21] = bt_transform
+    g_opts[2, 21] = combo_transform
+    g_opts[1:3, 22] = GtkLabel("Locs operations")
+    g_opts[1, 23] = bt_generate
+    g_opts[2, 23] = bt_load
+    g_opts[3, 23] = bt_save
+    g_opts[1, 24] = lab_hdlab
+    g_opts[2, 24] = cb_hdlab
+    g_opts[1, 25] = lab_cart
+    g_opts[2, 25] = cb_plot_cart
+    g_opts[1, 26] = bt_apply
+    g_opts[2, 26] = bt_cancel
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -609,6 +619,17 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         locs_tmp = obj_tmp.locs
         locs_normalize!(locs_tmp, polar=get_gtk_property(cb_polar, :active, Bool), cart=get_gtk_property(cb_cartesian, :active, Bool), spherical=get_gtk_property(cb_spherical, :active, Bool))
         locs[_find_bylabel(locs_tmp, locs_tmp[!, :label]), :] = locs_tmp
+        refresh = false
+        _refresh_locs()
+        refresh = true
+        _refresh_plots()
+    end
+
+    signal_connect(bt_origin_transform, "clicked") do widget
+        origin_axis = get_gtk_property(combo_origin_transform, :active, Int64)
+        origin_axis == 0 && locs_origin!(locs, x=get_gtk_property(origin_transform, :value, Float64))
+        origin_axis == 1 && locs_origin!(locs, y=get_gtk_property(origin_transform, :value, Float64))
+        origin_axis == 2 && locs_origin!(locs, z=get_gtk_property(origin_transform, :value, Float64))
         refresh = false
         _refresh_locs()
         refresh = true

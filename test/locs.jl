@@ -141,7 +141,7 @@ locs2 = locs_rotx(locs, a=20)
 @test locs2[1, :loc_theta_sph] == 108.95
 @test locs2[1, :loc_phi_sph] == 17.27
 
-@info "Test 22/24: locs_roty()"
+@info "Test: locs_roty()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.02
@@ -152,7 +152,7 @@ locs2 = locs_roty(locs, a=20)
 @test locs2[1, :loc_theta_sph] == 107.61
 @test locs2[1, :loc_phi_sph] == 4.47
 
-@info "Test 23/24: locs_rotz()"
+@info "Test: locs_rotz()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.02
@@ -163,10 +163,13 @@ locs2 = locs_rotz(locs, a=20)
 @test locs2[1, :loc_theta_sph] == 132.1
 @test locs2[1, :loc_phi_sph] == -1.87
 
-@info "Test 24/24: locs_generate()"
+@info "Test: locs_generate()"
 locs_tmp = locs_generate(locs_tmp)
 eeg_tmp = locs_generate(eeg_tmp)
 @test locs_tmp isa DataFrame
 @test eeg_tmp isa NeuroAnalyzer.NEURO
+
+@info "Test: locs_origin()"
+@test locs_origin(locs, y=0.2) isa DataFrame
 
 true
