@@ -284,8 +284,14 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 ssp_channels_tmp = replace.(ssp_channels_tmp, "EOG 0" => "EOG ")
                 ssp_channels_tmp = replace.(ssp_channels_tmp, "EMG 0" => "EMG ")
                 ssp_channels = zeros(Bool, ch_n)
-                for idx in 1:ch_n
-                    ssp_channels[idx] = clabels[idx] in ssp_channels_tmp
+                ssp_sorting_idx = Int64[]
+                for idx in eachindex(ssp_channels_tmp)
+                    push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels))
+                end
+                ssp_channels[ssp_sorting_idx] .= true
+                ssp_sorting_idx = Int64[]
+                for idx in eachindex(ssp_channels_tmp)
+                    push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels[ssp_channels]))
                 end
                 ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
                 @inbounds for idx in axes(ssp_data, 1)
