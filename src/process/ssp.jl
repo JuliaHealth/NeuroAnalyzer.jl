@@ -52,7 +52,6 @@ function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Ve
 
 end
 
-
 """
     apply_ssp_projectors(obj; <keyword arguments>)
 
