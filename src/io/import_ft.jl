@@ -99,7 +99,6 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 push!(clabels, "ch_$idx")
             end
         end
-        clabels = _clean_labels(clabels)
 
         if detect_type
             ch_type = _set_channel_types(clabels)
@@ -201,6 +200,16 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
         elseif data_type == "meg"
 
+            clabels = replace.(clabels, "MEG" => "MEG ")
+            clabels = replace.(clabels, "EEG" => "EEG ")
+            clabels = replace.(clabels, "EOG" => "EOG ")
+            clabels = replace.(clabels, "EMG" => "EMG ")
+            clabels = replace.(clabels, "  " => " ")
+            clabels = replace.(clabels, "MEG 0" => "MEG ")
+            clabels = replace.(clabels, "EEG 0" => "EEG ")
+            clabels = replace.(clabels, "EOG 0" => "EOG ")
+            clabels = replace.(clabels, "EMG 0" => "EMG ")
+
             @assert "grad" in keys(dataset) "Dataset does not contain grad field."
             @assert "chantype" in keys(dataset["grad"]) "Dataset does not contain chantype field."
             meg_channels = occursin.(r"meg", lowercase.(clabels))[:]
@@ -258,8 +267,35 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
             end
 
+            # projections
+            ssp_labels = [""]
+            ssp_data = Matrix{Float64}[]
+            if "projs" in keys(hdr["orig"])
+                projs = hdr["orig"]["projs"]
+                ssp_labels = string.(projs["desc"][:])
+                ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "MEG" => "MEG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "EEG" => "EEG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "EOG" => "EOG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "EMG" => "EMG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "  " => " ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "MEG 0" => "MEG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "EEG 0" => "EEG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "EOG 0" => "EOG ")
+                ssp_channels_tmp = replace.(ssp_channels_tmp, "EMG 0" => "EMG ")
+                ssp_channels = zeros(Bool, ch_n)
+                for idx in 1:ch_n
+                    ssp_channels[idx] = clabels[idx] in ssp_channels_tmp
+                end
+                ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
+                @inbounds for idx in axes(ssp_data, 1)
+                    ssp_data[idx, :] = projs["data"][idx]["data"][:]
+                end
+            end
+
             lp = "lowpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["lowpass"][1], digits=1)) : "?"
             hp = "highpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["highpass"][1], digits=1)) : "?"
+
             r = _create_recording_meg(data_type=data_type,
                                       file_name=file_name,
                                       file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
@@ -279,7 +315,10 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                                       magnetometers=magnetometers,
                                       gradiometers=gradiometers,
                                       coil_type=coil_type,
-                                      bad_channels=zeros(Bool, size(data, 1), ep_n))
+                                      bad_channels=zeros(Bool, size(data, 1), ep_n),
+                                      ssp_labels=ssp_labels,
+                                      ssp_channels=ssp_channels,
+                                      ssp_data=ssp_data)
 
         elseif data_type == "nirs"
 

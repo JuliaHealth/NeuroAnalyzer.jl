@@ -379,6 +379,20 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
             println("         Reference type: $(obj.header.recording[:reference])")
         end
     end
+    if datatype(obj) == "meg"
+        ssp_labels = obj.header.recording[:ssp_labels]
+        if length(ssp_labels) > 0
+            if length(ssp_labels) == 1
+                println("       SSP projection: $(obj.header.recording[:ssp_labels][1])")
+            else
+                print("        SSP projections: ")
+                for idx in 1:(length(ssp_labels) - 1)
+                    print("$(obj.header.recording[:ssp_labels][idx]), ")
+                end
+                println("$(obj.header.recording[:ssp_labels][end])")
+            end
+        end
+    end
     if datatype(obj) in ["eeg", "meg", "ecog", "seeg"]
         println("         Line frequency: $(obj.header.recording[:line_frequency]) Hz")
     end

@@ -86,7 +86,7 @@ function _create_recording_ecog(; data_type::String, file_name::String, file_siz
 
 end
 
-function _create_recording_meg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Real, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String}, bad_channels::Matrix{Bool})::Dict
+function _create_recording_meg(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, reference::String, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, line_frequency::Real, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, coil_type::Vector{String}, bad_channels::Matrix{Bool}, ssp_labels::Vector{String}, ssp_channels::Vector{Bool}, ssp_data::Matrix{Float64})::Dict
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -108,6 +108,9 @@ function _create_recording_meg(; data_type::String, file_name::String, file_size
                 :gradiometers=>gradiometers,
                 :coil_type=>coil_type,
                 :bad_channel=>bad_channels,
+                :ssp_labels=>ssp_labels,
+                :ssp_channels=>ssp_channels,
+                :ssp_data=>ssp_data,
                 :epoch_id=>"")
 
 end

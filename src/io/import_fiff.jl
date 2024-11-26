@@ -521,6 +521,11 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         rec_t = string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date))
     end
 
+    # SSP
+    ssp_labels = [""]
+    ssp_channels = Vector{Bool}[]
+    ssp_data = Matrix{Float64}(nothing, 0, 0)
+
     lp = fiff[:meas_info][:lowpass]
     if isnothing(lp)
         lp = 0
@@ -567,7 +572,10 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
                               magnetometers=magnetometers,
                               gradiometers=gradiometers,
                               coil_type=coil_type,
-                              bad_channels=bad_channels)
+                              bad_channels=bad_channels,
+                              ssp_labels=ssp_labels,
+                              ssp_channels=ssp_channels,
+                              ssp_data=ssp_data)
     e = _create_experiment(name=project_info, notes="", design="")
     hdr = _create_header(s,
                          r,
