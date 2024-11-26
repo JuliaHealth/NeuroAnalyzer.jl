@@ -1,4 +1,3 @@
-
 # suppress console output
 _log_off() = Logging.disable_logging(Logging.Warn)
 # restore console output
@@ -14,7 +13,7 @@ function _load_functions(f::String)
     @assert isdir("src/$f") "Directory src/$f does not exist."
     files = readdir("src/$f")
     if length(files) > 0
-        _info("Loading functions: $f")
+        _info("Loading sub-module: $f")
         for idx in files
             include("$f/$idx")
         end

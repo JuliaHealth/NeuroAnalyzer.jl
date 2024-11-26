@@ -32,9 +32,11 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
     @assert isfile(file_name) "File $file_name cannot be loaded."
     dataset = matread(file_name)
 
-    @assert length(keys(dataset)) == 1 "Datasets containing > 1 object are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
+    @assert length(keys(dataset)) == 1 "Files containing > 1 dataset are not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     _info("Reading object: $(string.(keys(dataset))[1])")
     dataset = dataset[string.(keys(dataset))[1]]
+
+    # TO DO: add detecting data type
 
     if data_type == "events"
 
@@ -280,7 +282,6 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                                       bad_channels=zeros(Bool, size(data, 1), ep_n))
 
         elseif data_type == "nirs"
-
 
             clabels = replace.(clabels, ".0"=>"")
             clabels = replace.(clabels, " ["=>" ")
