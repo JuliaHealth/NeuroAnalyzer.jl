@@ -1,9 +1,27 @@
 export generate_ssp_projectors
 export apply_ssp_projectors
+export apply_ssp_projectors!
 
-function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; projectors::Union{Int64, Vector{Int64}}=0)::@NamedTuple{ssp_projectors::Array{Float64, 2}, U::Array{Float64, 2}}
+"""
+    generate_ssp_projectors(obj; <keyword arguments>)
 
-    @assert size(obj.header.recording[:ssp_data], 1) > 0 "OBJ does not have SSP projectors."
+Generate SSP projectors from embedded projections.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `projectors::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors
+
+# Returns
+
+Named tuple containing:
+- `ssp_projectors::Matrix{Float64}` : projectors
+- `U::Matrix{Float64}}`: SVD U orthogonal matrix
+"""
+function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; projectors::Union{Int64, Vector{Int64}}=0)::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
+
+    @assert "ssp_data" in keys(obj.header.recording) "OBJ does not contain SSP projectors."
+    @assert size(obj.header.recording[:ssp_data], 1) > 0 "OBJ does not contain SSP projectors."
 
     if projectors == 0
         projectors = 1:size(obj.header.recording[:ssp_data], 1)
@@ -33,6 +51,21 @@ function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; projectors::Union{Int
 
 end
 
+
+"""
+    apply_ssp_projectors(obj; <keyword arguments>)
+
+Apply SSP projectors from embedded projections.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `projectors::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
 function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; projectors::Union{Int64, Vector{Int64}}=0)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
@@ -43,6 +76,34 @@ function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; projectors::Union{Int64,
     # apply
     _info("Applying $(size(U, 2)) SSP projectors")
     obj_new.data[obj.header.recording[:ssp_channels], :, 1] = ssp_projectors * obj.data[obj.header.recording[:ssp_channels], :, 1]
+
+    reset_components!(obj_new)
+    push!(obj_new.history, "apply_ssp_projectors(OBJ, projectors=$projectors)")
+
+    return obj_new
+
+end
+
+"""
+    apply_ssp_projectors!(obj; <keyword arguments>)
+
+Apply SSP projectors from embedded projections.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `projectors::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors
+
+# Returns
+
+Nothing
+"""
+function apply_ssp_projectors!(obj::NeuroAnalyzer.NEURO; projectors::Union{Int64, Vector{Int64}}=0)::Nothing
+
+    obj_new = apply_ssp_projectors(obj, projectors=projectors)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return obj_new
 
