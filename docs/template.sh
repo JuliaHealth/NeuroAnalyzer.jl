@@ -2,6 +2,13 @@ echo "# NeuroAnalyzer.jl documentation"
 echo ""
 echo "This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/)."
 echo ""
+echo "## neuroAnalyzer"
+echo ""
+echo "\`\`\`@docs"
+cat ../src/utils/setup.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/utils/plugins.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+echo "\`\`\`"
+echo ""
 echo "## Utils"
 echo ""
 echo "\`\`\`@docs"
