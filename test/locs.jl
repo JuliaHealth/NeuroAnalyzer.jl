@@ -130,7 +130,7 @@ locs2 = locs_swapxy(locs)
 @test locs2[1, :loc_theta] == 198.0
 @test locs2[1, :loc_theta_sph] == -161.93
 
-@info "Test 21/24: locs_rotx()"
+@info "Test: locs_rotx()"
 @test locs[1, :loc_radius] == 1.0
 @test locs[1, :loc_theta] == 108.0
 @test locs[1, :loc_theta_sph] == 108.02
