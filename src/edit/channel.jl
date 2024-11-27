@@ -290,7 +290,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)
 
     _chk3d(s)
     @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
-    size(obj.header.recording[:ssp_data]) != (0,) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     ch = get_channel(obj, ch=ch)[1]
     obj_new = deepcopy(obj)
@@ -411,7 +411,7 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::U
         @assert type[idx] in channel_types "Unknown channel type $(type[idx])."
     end
 
-    size(obj.header.recording[:ssp_data]) != (0,) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     obj_new = deepcopy(obj)
     if length(obj.data) > 0

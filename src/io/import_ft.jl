@@ -260,26 +260,29 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
             end
 
             # projections
-            ssp_labels = [""]
-            ssp_data = Matrix{Float64}[]
+            ssp_labels = String[]
+            ssp_channels = Bool[]
+            ssp_data = Matrix{Float64}(undef, 0, 0)
             if "projs" in keys(hdr["orig"])
                 projs = hdr["orig"]["projs"]
-                ssp_labels = string.(projs["desc"][:])
-                ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])                
-                ssp_channels_tmp = _clean_meg_labels(ssp_channels_tmp)
-                ssp_channels = zeros(Bool, ch_n)
-                ssp_sorting_idx = Int64[]
-                for idx in eachindex(ssp_channels_tmp)
-                    push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels))
-                end
-                ssp_channels[ssp_sorting_idx] .= true
-                ssp_sorting_idx = Int64[]
-                for idx in eachindex(ssp_channels_tmp)
-                    push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels[ssp_channels]))
-                end
-                ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
-                @inbounds for idx in axes(ssp_data, 1)
-                    ssp_data[idx, :] = projs["data"][idx]["data"][:]
+                if length(projs["desc"]) != 0
+                    ssp_labels = string.(projs["desc"][:])
+                    ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])                
+                    ssp_channels_tmp = _clean_meg_labels(ssp_channels_tmp)
+                    ssp_channels = zeros(Bool, ch_n)
+                    ssp_sorting_idx = Int64[]
+                    for idx in eachindex(ssp_channels_tmp)
+                        push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels))
+                    end
+                    ssp_channels[ssp_sorting_idx] .= true
+                    ssp_sorting_idx = Int64[]
+                    for idx in eachindex(ssp_channels_tmp)
+                        push!(ssp_sorting_idx, findfirst(isequal(ssp_channels_tmp[idx]), clabels[ssp_channels]))
+                    end
+                    ssp_data = zeros(length(ssp_labels), projs["data"][1]["ncol"])
+                    @inbounds for idx in axes(ssp_data, 1)
+                        ssp_data[idx, :] = projs["data"][idx]["data"][:]
+                    end
                 end
             end
 

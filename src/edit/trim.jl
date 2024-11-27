@@ -105,7 +105,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
 
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    size(obj.header.recording[:ssp_data]) != (0,) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     if remove_epochs
         @assert nepochs(obj) > 1 "OBJ has only one epoch, cannot use remove_epochs=true."

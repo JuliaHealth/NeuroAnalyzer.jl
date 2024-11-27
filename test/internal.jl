@@ -34,7 +34,7 @@ s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", las
 @test s isa Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_eeg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false;;])
 @test r isa Dict{Symbol, Any}
-r = NeuroAnalyzer._create_recording_meg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false;;])
+r = NeuroAnalyzer._create_recording_meg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], units=["a"], prefiltering=["a"], sampling_rate=1, magnetometers=[0], gradiometers=[0], coil_type=[""], channel_order=[1], line_frequency=50, bad_channels=[false;;], ssp_labels=String[], ssp_data=Array{Float64}(undef, 0, 0), ssp_channels=Bool[])
 @test r isa Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(name="a", notes="a", design="a")
 @test e isa Dict{Symbol, String}

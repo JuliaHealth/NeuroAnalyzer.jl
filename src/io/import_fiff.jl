@@ -485,12 +485,12 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     # MRI
 
     # SSP
-    ssp_labels = [""]
-    ssp_channels = Vector{Bool}[]
-    ssp_data = Matrix{Float64}[]
+    ssp_labels = String[]
+    ssp_channels = Bool[]
+    ssp_data = Matrix{Float64}(undef, 0, 0)
     if :ssp in keys(fiff[:meas_info])
         ssp = fiff[:meas_info][:ssp]
-        if :xfit_proj_item in keys(ssp)
+        if !isnothing(ssp[:nchan][:nchan])
             xfit_proj_item = ssp[:xfit_proj_item]
             xfit_proj_vecs = Vector{Vector{Float64}}()
             idx = 1
