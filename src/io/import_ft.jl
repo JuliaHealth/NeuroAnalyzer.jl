@@ -200,15 +200,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
         elseif data_type == "meg"
 
-            clabels = replace.(clabels, "MEG" => "MEG ")
-            clabels = replace.(clabels, "EEG" => "EEG ")
-            clabels = replace.(clabels, "EOG" => "EOG ")
-            clabels = replace.(clabels, "EMG" => "EMG ")
-            clabels = replace.(clabels, "  " => " ")
-            clabels = replace.(clabels, "MEG 0" => "MEG ")
-            clabels = replace.(clabels, "EEG 0" => "EEG ")
-            clabels = replace.(clabels, "EOG 0" => "EOG ")
-            clabels = replace.(clabels, "EMG 0" => "EMG ")
+            clabels = _clean_meg_labels(clabels)
 
             @assert "grad" in keys(dataset) "Dataset does not contain grad field."
             @assert "chantype" in keys(dataset["grad"]) "Dataset does not contain chantype field."
@@ -273,16 +265,8 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
             if "projs" in keys(hdr["orig"])
                 projs = hdr["orig"]["projs"]
                 ssp_labels = string.(projs["desc"][:])
-                ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "MEG" => "MEG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "EEG" => "EEG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "EOG" => "EOG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "EMG" => "EMG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "  " => " ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "MEG 0" => "MEG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "EEG 0" => "EEG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "EOG 0" => "EOG ")
-                ssp_channels_tmp = replace.(ssp_channels_tmp, "EMG 0" => "EMG ")
+                ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])                
+                ssp_channels_tmp = _clean_meg_labels(ssp_channels_tmp)
                 ssp_channels = zeros(Bool, ch_n)
                 ssp_sorting_idx = Int64[]
                 for idx in eachindex(ssp_channels_tmp)

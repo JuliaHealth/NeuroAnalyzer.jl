@@ -78,7 +78,7 @@ function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vecto
     ssp_projectors, U = generate_ssp_projectors(obj, proj=proj)
 
     # apply
-    _info("Applying $(size(U, 2)) SSP projections")
+    _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
     obj_new.data[obj.header.recording[:ssp_channels], :, 1] = ssp_projectors * obj.data[obj.header.recording[:ssp_channels], :, 1]
 
     reset_components!(obj_new)

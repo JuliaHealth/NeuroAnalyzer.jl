@@ -495,17 +495,9 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
                 push!(xfit_proj_vecs, xfit_proj_item[Symbol("proj_item_vectors_$idx")][:])
                 idx += 1
             end
-            # we assume that all ch_name_list is the same
+            # we assume that the content of all ch_name_list is the same; this might not be true for some recordings
             ssp_labels = string.(split(xfit_proj_item[:proj_item_ch_name_list_1], ':'))
-            ssp_labels = replace.(ssp_labels, "MEG" => "MEG ")
-            ssp_labels = replace.(ssp_labels, "EEG" => "EEG ")
-            ssp_labels = replace.(ssp_labels, "EOG" => "EOG ")
-            ssp_labels = replace.(ssp_labels, "EMG" => "EMG ")
-            ssp_labels = replace.(ssp_labels, "  " => " ")
-            ssp_labels = replace.(ssp_labels, "MEG 0" => "MEG ")
-            ssp_labels = replace.(ssp_labels, "EEG 0" => "EEG ")
-            ssp_labels = replace.(ssp_labels, "EOG 0" => "EOG ")
-            ssp_labels = replace.(ssp_labels, "EMG 0" => "EMG ")
+            ssp_labels = _clean_meg_labels(ssp_labels)
             ssp_channels = zeros(Bool, ch_n)
             ssp_sorting_idx = Int64[]
             ssp_data = zeros(length(xfit_proj_vecs), length(xfit_proj_vecs[1]))

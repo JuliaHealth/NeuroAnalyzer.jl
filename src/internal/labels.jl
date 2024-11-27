@@ -24,6 +24,20 @@ function _clean_labels(clabels::Vector{String})::Vector{String}
     return l
 end
 
+function _clean_meg_labels(clabels::Vector{String})::Vector{String}
+        l = deepcopy(clabels)
+        l = replace.(l, "MEG" => "MEG ")
+        l = replace.(l, "EEG" => "EEG ")
+        l = replace.(l, "EOG" => "EOG ")
+        l = replace.(l, "EMG" => "EMG ")
+        l = replace.(l, "  " => " ")
+        l = replace.(l, "MEG 0" => "MEG ")
+        l = replace.(l, "EEG 0" => "EEG ")
+        l = replace.(l, "EOG 0" => "EOG ")
+        l = replace.(l, "EMG 0" => "EMG ")
+    return l
+end
+
 function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)::Vector{String}
     c = _get_component(obj, c)
     clabels = Vector{String}()
