@@ -15,7 +15,7 @@ Generate SSP projectors from embedded projections.
 # Returns
 
 Named tuple containing:
-- `ssp_projectors::Matrix{Float64}` : projectors
+- `ssp_projectors::Matrix{Float64}`: projectors
 - `U::Matrix{Float64}}`: SVD U orthogonal matrix
 """
 function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}

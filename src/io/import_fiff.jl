@@ -453,19 +453,22 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
 
     # HPI
     # fiff[:meas_info][:hpi]
+    id = Int64[]
     p = Int64[]
     x = Float64[]
     y = Float64[]
     z = Float64[]
     for (k, v) in fiff[:meas_info][:hpi][:isotrak]
+        push!(id, parse(Int64, match(r"(.+)_(\d+)", string(k)).captures[2]))
         push!(p, v[2])
         push!(x, v[3])
         push!(y, v[4])
         push!(z, v[5])
     end
-    dp = DataFrame(:point=>p, :x=>x, :y=>y, :z=>z)
+    hpi = DataFrame(:id=>id, :p=>p, :x=>x, :y=>y, :z=>z)
+    hpi = sort(hpi, :id)
 
-    # events
+    # markers
     # fiff[:meas_info][:events]
     events_ch = fiff[:meas_info][:events][:event_channels]
     # number of sample, before, after
