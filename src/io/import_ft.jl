@@ -245,7 +245,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 elseif units[ch_idx] == "T/cm"
                     @views data[ch_idx, :, 1] .*= 10^15
                     units[ch_idx] = "fT/cm"
-                elseif units[ch_idx] == "V"
+                elseif units[ch_idx] == "V" && ch_type[ch_idx] in ["eeg", "emg", "eog", "ref"]
                     @views data[ch_idx, :, 1] .*= 10^6
                     units[ch_idx] = "μV"
                 end

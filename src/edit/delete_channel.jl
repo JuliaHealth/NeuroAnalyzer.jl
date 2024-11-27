@@ -26,6 +26,8 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
     @assert length(ch) < ch_n "Number of channels to delete ($(length(ch))) must be smaller than number of all channels ($ch_n)."
     obj_new = deepcopy(obj)
 
+    size(obj.header.recording[:ssp_data]) != (0,) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+
     # update headers
     for idx in ch
         # remove channel locations

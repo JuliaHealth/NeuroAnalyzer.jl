@@ -11,6 +11,7 @@ export optode_labels
 export source_labels
 export detector_labels
 export chtypes
+export header
 export info
 export channel_info
 export channel_pick
@@ -329,6 +330,119 @@ function chtypes(obj::NeuroAnalyzer.NEURO)::Vector{String}
     cht = obj.header.recording[:channel_type]
 
     return cht
+
+end
+
+"""
+    header(obj; <keyword arguments>)
+
+Show object header.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+
+# Returns
+
+Nothing
+"""
+function header(obj::NeuroAnalyzer.NEURO)::Nothing
+
+    println("              Data type: $(uppercase(obj.header.recording[:data_type]))")
+    println("            File format: $(obj.header.recording[:file_type])")
+    println("            Source file: $(obj.header.recording[:file_name])")
+    println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
+    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
+    if length(obj.header.subject[:id]) > 0
+        println("                Subject: $(obj.header.subject[:id] * ": " * obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+    else
+        println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
+    end
+    println("              Recording: $(obj.header.recording[:recording])")
+    println("        Recording notes: $(obj.header.recording[:recording_notes])")
+    println("         Recording date: $(obj.header.recording[:recording_date])")
+    println("         Recording time: $(obj.header.recording[:recording_time])")
+    println("     Sampling rate (Hz): $(sr(obj))")
+    println("Signal length [samples]: $(signal_len(obj))")
+    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
+    println("     Number of channels: $(nchannels(obj))")
+    if !(datatype(obj) in ["mep", "sensors", "eda"])
+        println("              Epochs ID: $(obj.header.recording[:epoch_id])")
+        println("       Number of epochs: $(nepochs(obj))")
+        println(" Epoch length [samples]: $(epoch_len(obj))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+    end
+    if datatype(obj) == "eeg"
+        if obj.header.recording[:reference] == ""
+            println("         Reference type: unknown")
+        else
+            println("         Reference type: $(obj.header.recording[:reference])")
+        end
+    end
+    if datatype(obj) == "meg"
+        ssp_labels = obj.header.recording[:ssp_labels]
+        if length(ssp_labels) > 0
+            if length(ssp_labels) == 1
+                println("       SSP projection: $(obj.header.recording[:ssp_labels][1])")
+            else
+                print("        SSP projections: ")
+                for idx in 1:(length(ssp_labels) - 1)
+                    print("$(obj.header.recording[:ssp_labels][idx]), ")
+                end
+                println("$(obj.header.recording[:ssp_labels][end])")
+            end
+        end
+    end
+    if datatype(obj) in ["eeg", "meg", "ecog", "seeg"]
+        println("         Line frequency: $(obj.header.recording[:line_frequency]) Hz")
+    end
+    if datatype(obj) == "nirs"
+        println("        Wavelength [nm]: $(obj.header.recording[:wavelengths])")
+    end
+    if !(datatype(obj) in ["mep", "sensors", "eda"])
+        if _has_markers(obj)
+            println("                Markers: yes")
+        else
+            println("                Markers: no")
+        end
+        if nrow(obj.locs) > 0
+            println("      Channel locations: yes")
+        else
+            println("      Channel locations: no")
+        end
+    end
+    if length(keys(obj.components)) > 0
+        print("             Components: ")
+        c = list_components(obj)
+        if length(c) == 1
+            println(c[1])
+        else
+            for idx in 1:(length(c) - 1)
+                print(c[idx], ", ")
+            end
+            println(c[end])
+        end
+    else
+        println("             Components: no")
+    end
+    if datatype(obj) in ["eeg", "ecog", "seeg", "ieeg", "erp"]
+        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        println(" Number of EEG channels: $nch")
+    elseif datatype(obj) in ["meg", "erf"]
+        nch = count(x -> isequal(x, "mag"), obj.header.recording[:channel_type])
+        println(" Number of MAG channels: $nch")
+        nch = count(x -> isequal(x, "grad"), obj.header.recording[:channel_type])
+        println("Number of GRAD channels: $nch")
+        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        println(" Number of EEG channels: $nch")
+    elseif datatype(obj) == "nirs"
+        nch = count(x -> isequal(x, "nirs"), obj.header.recording[:channel_type])
+        println("Number of NIRS channels: $nch")
+        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        println(" Number of EEG channels: $nch")
+    end
+
+    return nothing
 
 end
 

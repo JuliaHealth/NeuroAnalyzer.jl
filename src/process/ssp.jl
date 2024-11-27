@@ -20,7 +20,9 @@ Named tuple containing:
 """
 function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
 
-    @assert "ssp_data" in keys(obj.header.recording) "OBJ does not contain SSP projections."
+    _check_datatype(obj, "meg")
+
+    @assert :ssp_data in keys(obj.header.recording) "OBJ does not contain SSP projections."
     @assert size(obj.header.recording[:ssp_data], 1) > 0 "OBJ does not contain SSP projections."
 
     # by default use all available projections
@@ -67,6 +69,8 @@ Apply SSP projectors from embedded projections.
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::NeuroAnalyzer.NEURO
+
+    _check_datatype(obj, "meg")
 
     obj_new = deepcopy(obj)
 

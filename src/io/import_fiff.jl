@@ -388,16 +388,22 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         ch_type[ch] == "syst" && (ch_type[ch] = "other")
         range = v[4]
         cal = v[5]
-        coil_type[ch] = NeuroAnalyzer._find_fiff_coiltype(v[6])
+        coil_type[ch] = _find_fiff_coiltype(v[6])
         units[ch] = v[19]
         unit_mul = 10^v[20]
         clabels[ch] = uppercase(v[3]) * " " * string(v[2])
         @views data[ch, :, 1] .*= (range * cal * unit_mul)
     end
 
-    clabels = replace.(clabels, "MEG"=> "MEG ")
-    clabels = replace.(clabels, "  "=> " ")
-    clabels = replace.(clabels, " 0"=> " ")
+    clabels = replace.(clabels, "MEG" => "MEG ")
+    clabels = replace.(clabels, "EEG" => "EEG ")
+    clabels = replace.(clabels, "EOG" => "EOG ")
+    clabels = replace.(clabels, "EMG" => "EMG ")
+    clabels = replace.(clabels, "  " => " ")
+    clabels = replace.(clabels, "MEG 0" => "MEG ")
+    clabels = replace.(clabels, "EEG 0" => "EEG ")
+    clabels = replace.(clabels, "EOG 0" => "EOG ")
+    clabels = replace.(clabels, "EMG 0" => "EMG ")
 
     # convert data to standard units
     @inbounds for ch_idx in 1:ch_n
@@ -459,9 +465,6 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     end
     dp = DataFrame(:point=>p, :x=>x, :y=>y, :z=>z)
 
-    # SSS, PCA
-    # fiff[:meas_info][:ssp]
-
     # events
     # fiff[:meas_info][:events]
     events_ch = fiff[:meas_info][:events][:event_channels]
@@ -477,6 +480,48 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
     # MaxShield
 
     # MRI
+
+    # SSP
+    ssp_labels = [""]
+    ssp_channels = Vector{Bool}[]
+    ssp_data = Matrix{Float64}[]
+    if :ssp in keys(fiff[:meas_info])
+        ssp = fiff[:meas_info][:ssp]
+        if :xfit_proj_item in keys(ssp)
+            xfit_proj_item = ssp[:xfit_proj_item]
+            xfit_proj_vecs = Vector{Vector{Float64}}()
+            idx = 1
+            while Symbol("proj_item_vectors_$idx") in keys(xfit_proj_item)
+                push!(xfit_proj_vecs, xfit_proj_item[Symbol("proj_item_vectors_$idx")][:])
+                idx += 1
+            end
+            # we assume that all ch_name_list is the same
+            ssp_labels = string.(split(xfit_proj_item[:proj_item_ch_name_list_1], ':'))
+            ssp_labels = replace.(ssp_labels, "MEG" => "MEG ")
+            ssp_labels = replace.(ssp_labels, "EEG" => "EEG ")
+            ssp_labels = replace.(ssp_labels, "EOG" => "EOG ")
+            ssp_labels = replace.(ssp_labels, "EMG" => "EMG ")
+            ssp_labels = replace.(ssp_labels, "  " => " ")
+            ssp_labels = replace.(ssp_labels, "MEG 0" => "MEG ")
+            ssp_labels = replace.(ssp_labels, "EEG 0" => "EEG ")
+            ssp_labels = replace.(ssp_labels, "EOG 0" => "EOG ")
+            ssp_labels = replace.(ssp_labels, "EMG 0" => "EMG ")
+            ssp_channels = zeros(Bool, ch_n)
+            ssp_sorting_idx = Int64[]
+            ssp_data = zeros(length(xfit_proj_vecs), length(xfit_proj_vecs[1]))
+            @inbounds for idx in eachindex(xfit_proj_vecs)
+                ssp_data[idx, :] = xfit_proj_vecs[idx]
+            end
+            for idx in eachindex(ssp_labels)
+                push!(ssp_sorting_idx, findfirst(isequal(ssp_labels[idx]), clabels))
+            end
+            ssp_channels[ssp_sorting_idx] .= true
+            ssp_labels = Vector{String}()
+            for idx in eachindex(xfit_proj_vecs)
+                push!(ssp_labels, "PCA-v$(lpad(idx, 2, '0'))")
+            end
+        end
+    end
 
     # create signal details
     time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
@@ -520,11 +565,6 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         rec_d = string(Dates.day(date)) * "-" * string(Dates.month(date)) * "-" * string(Dates.year(date))
         rec_t = string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date))
     end
-
-    # SSP
-    ssp_labels = [""]
-    ssp_channels = Vector{Bool}[]
-    ssp_data = Matrix{Float64}(nothing, 0, 0)
 
     lp = fiff[:meas_info][:lowpass]
     if isnothing(lp)
