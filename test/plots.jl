@@ -51,7 +51,7 @@ p = NeuroAnalyzer.plot_locs(e10, ch="eeg")
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", threed=true, interactive=false)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", d=3, interactive=false)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_psd()"

@@ -644,7 +644,7 @@ Preview of channel locations.
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `threed::Bool=false`: 3-dimensional plot
+- `d::Int64=2`: 2- or 3-dimensional plot
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
@@ -670,9 +670,10 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, threed::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, d::Int64=2, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
 
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
+    @assert (d == 2 || d == 3) "d must be 2 or 3."
 
     ch = get_channel(obj, ch=ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
@@ -705,7 +706,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, 
         return p
     end
 
-    if threed
+    if d == 3
         if interactive
             iplot_locs3d(locs,
                          ch=ch,

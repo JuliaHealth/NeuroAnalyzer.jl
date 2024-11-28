@@ -270,9 +270,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 z = dataset["elec"]["chanpos"][:, 3]
                 eeg_locs = DataFrame(:label=>eeg_labels, :loc_radius=>zeros(length(eeg_labels)), :loc_theta=>zeros(length(eeg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(eeg_labels)), :loc_theta_sph=>zeros(length(eeg_labels)), :loc_phi_sph=>zeros(length(eeg_labels)))
                 locs_normalize!(eeg_locs)
-                eeg_locs[:, :loc_x] .*= 1.2
-                eeg_locs[:, :loc_y] .*= 1.2
-                eeg_locs[:, :loc_z] .*= 1.2
+                eeg_locs[:, :loc_x] .*= 1.5
+                eeg_locs[:, :loc_y] .*= 1.5
+                eeg_locs[:, :loc_z] .*= 1.5
                 locs_cart2sph!(eeg_locs)
                 locs_sph2pol!(eeg_locs)
                 global locs = vcat(meg_locs, eeg_locs)
