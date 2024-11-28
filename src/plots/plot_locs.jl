@@ -97,7 +97,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         !head && (loc_y .= -loc_y)
         origin = size(head_shape) ./ 2 .+ 1
         if large
-            marker_size = length(ch) > 64 ? 5 : 10
+            marker_size = length(ch) > 64 ? 3 : 6
             font_size = 6
             loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
             loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
@@ -121,7 +121,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         !head && (loc_y .= -loc_y)
         origin = size(head_shape) ./ 2 .+ 1
         if large
-            marker_size = length(ch) > 64 ? 5 : 10
+            marker_size = length(ch) > 64 ? 3 : 6
             font_size = 6
             loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
             loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
@@ -434,20 +434,23 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         end
     end
 
+    label_offset_y = -10
+
     if ch_labels
         for idx in eachindex(locs[!, :label])
             if idx in ch
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            end
+#=            if idx in selected
                 Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
-            if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
-            end
+=#
         end
     end
     if sch_labels
         for idx in eachindex(locs[!, :label])
             if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] - 10, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
     end

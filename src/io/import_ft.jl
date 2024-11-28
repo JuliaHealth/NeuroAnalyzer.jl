@@ -253,11 +253,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 z = dataset["grad"]["chanpos"][:, 3]
                 meg_locs = DataFrame(:label=>meg_labels, :loc_radius=>zeros(length(meg_labels)), :loc_theta=>zeros(length(meg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(meg_labels)), :loc_theta_sph=>zeros(length(meg_labels)), :loc_phi_sph=>zeros(length(meg_labels)))
                 locs_normalize!(meg_locs)
-                meg_locs[:, :loc_x] .*= 1.5
-                meg_locs[:, :loc_y] .*= 1.5
-                meg_locs[:, :loc_z] .*= 1.5
                 locs_cart2sph!(meg_locs)
                 locs_sph2pol!(meg_locs)
+                locs_scale!(meg_locs, r=1.5)
             else
                 locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
             end
@@ -270,11 +268,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 z = dataset["elec"]["chanpos"][:, 3]
                 eeg_locs = DataFrame(:label=>eeg_labels, :loc_radius=>zeros(length(eeg_labels)), :loc_theta=>zeros(length(eeg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(eeg_labels)), :loc_theta_sph=>zeros(length(eeg_labels)), :loc_phi_sph=>zeros(length(eeg_labels)))
                 locs_normalize!(eeg_locs)
-                eeg_locs[:, :loc_x] .*= 1.5
-                eeg_locs[:, :loc_y] .*= 1.5
-                eeg_locs[:, :loc_z] .*= 1.5
                 locs_cart2sph!(eeg_locs)
                 locs_sph2pol!(eeg_locs)
+                locs_scale!(eeg_locs, r=1.5)
                 global locs = vcat(meg_locs, eeg_locs)
             end
 
