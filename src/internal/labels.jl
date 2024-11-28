@@ -35,6 +35,10 @@ function _clean_meg_labels(clabels::Vector{String})::Vector{String}
         l = replace.(l, "EEG 0" => "EEG ")
         l = replace.(l, "EOG 0" => "EOG ")
         l = replace.(l, "EMG 0" => "EMG ")
+        l = replace.(l, "MEG 0" => "MEG ")
+        l = replace.(l, "EEG 0" => "EEG ")
+        l = replace.(l, "EOG 0" => "EOG ")
+        l = replace.(l, "EMG 0" => "EMG ")
     return l
 end
 

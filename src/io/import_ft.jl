@@ -124,6 +124,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
         ch_type = replace.(ch_type, "nirs"=>"nirs_od")
         ch_type = replace.(ch_type, "aux"=>"other")
         ch_type = replace.(ch_type, "stimulus"=>"mrk")
+        ch_type = replace.(ch_type, "analog trigger"=>"mrk")
+        ch_type = replace.(ch_type, "digital trigger"=>"mrk")
+        ch_type = replace.(ch_type, "unknown"=>"other")
 
         @assert "trial" in keys(dataset) "Dataset does not contain trial field."
         ep_n = "trial" in keys(dataset) ? size(dataset["trial"], 2) : 1
@@ -248,15 +251,38 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 x = dataset["grad"]["chanpos"][:, 1]
                 y = dataset["grad"]["chanpos"][:, 2]
                 z = dataset["grad"]["chanpos"][:, 3]
-                global locs = DataFrame(:label=>meg_labels, :loc_radius=>zeros(length(meg_labels)), :loc_theta=>zeros(length(meg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(meg_labels)), :loc_theta_sph=>zeros(length(meg_labels)), :loc_phi_sph=>zeros(length(meg_labels)))
-                locs_normalize!(locs)
-                locs[:, :loc_x] .*= 1.5
-                locs[:, :loc_y] .*= 1.5
-                locs[:, :loc_z] .*= 1.5
-                locs_cart2sph!(locs)
-                locs_sph2pol!(locs)
+                meg_locs = DataFrame(:label=>meg_labels, :loc_radius=>zeros(length(meg_labels)), :loc_theta=>zeros(length(meg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(meg_labels)), :loc_theta_sph=>zeros(length(meg_labels)), :loc_phi_sph=>zeros(length(meg_labels)))
+                locs_normalize!(meg_locs)
+                meg_locs[:, :loc_x] .*= 1.5
+                meg_locs[:, :loc_y] .*= 1.5
+                meg_locs[:, :loc_z] .*= 1.5
+                locs_cart2sph!(meg_locs)
+                locs_sph2pol!(meg_locs)
             else
                 locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
+            end
+
+            # EEG
+            if "elec" in keys(dataset)
+                eeg_labels = @. clabels[ch_type == "eeg"]
+                x = dataset["elec"]["chanpos"][:, 1]
+                y = dataset["elec"]["chanpos"][:, 2]
+                z = dataset["elec"]["chanpos"][:, 3]
+                eeg_locs = DataFrame(:label=>eeg_labels, :loc_radius=>zeros(length(eeg_labels)), :loc_theta=>zeros(length(eeg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(eeg_labels)), :loc_theta_sph=>zeros(length(eeg_labels)), :loc_phi_sph=>zeros(length(eeg_labels)))
+                locs_normalize!(eeg_locs)
+                eeg_locs[:, :loc_x] .*= 1.2
+                eeg_locs[:, :loc_y] .*= 1.2
+                eeg_locs[:, :loc_z] .*= 1.2
+                locs_cart2sph!(eeg_locs)
+                locs_sph2pol!(eeg_locs)
+                global locs = vcat(meg_locs, eeg_locs)
+            end
+
+            # TO DO: get referencing
+            if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
+                _info("Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+            else
+                ref = _detect_montage(clabels, ch_type, data_type)
             end
 
             # projections
