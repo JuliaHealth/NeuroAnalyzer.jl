@@ -3,12 +3,12 @@ export lat_idx
 """
     lat_idx(obj, ch, method, nt, wlen, woverlap, w, ncyc, gw, wt)
 
-Calculate lateralization index (log(A / B), where A is average power at given frequency (default is 10 Hz, α) for the right hemisphere and B is average power at that frequency for the left hemisphere.
+Calculate lateralization index (log(A / B), where A is average power at given frequency (default is 10 Hz, α) for the right hemisphere and B is average power at that frequency for the left hemisphere).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `frq::Real=10`: frequency at which the index is calculated
+- `frq::Union{Real, Tuple{<:Real, <:Real}}=10`: frequency at which the index is calculated; if range is provided, than averaged index across the range is calculated
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -31,15 +31,21 @@ Calculate lateralization index (log(A / B), where A is average power at given fr
 """
 function lat_idx(obj::NeuroAnalyzer.NEURO; frq::Union{Real, Tuple{<:Real, <:Real}}=10, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::Float64 where {T <: CWT}
 
+    _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
+
     @assert length(channel_pick(obj, p=:l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
     @assert length(channel_pick(obj, p=:r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
 
     # left
     ch = channel_pick(obj, p=:l)
     _log_off()
-    p_left, f = psd(obj.data[ch, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    if datatype(obj) in ["erp", "erf"]
+        p_left, f = psd(obj.data[ch, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    else
+        p_left, f = psd(obj.data[ch, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    end
     # average across epochs
-    nepochs(obj) > 1 && (p_left = mean(p_left, dims=3))
+    size(p_left, 3) > 1 && (p_left = mean(p_left, dims=3))
     # average across channels
     p_left = mean(p_left, dims=1)
     _log_on()
@@ -47,9 +53,13 @@ function lat_idx(obj::NeuroAnalyzer.NEURO; frq::Union{Real, Tuple{<:Real, <:Real
     # right
     ch = channel_pick(obj, p=:r)
     _log_off()
-    p_right, _ = psd(obj.data[ch, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    if datatype(obj) in ["erp", "erf"]
+        p_right, _ = psd(obj.data[ch, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    else
+        p_right, _ = psd(obj.data[ch, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    end
     # average across epochs
-    nepochs(obj) > 1 && (p_right = mean(p_right, dims=3))
+    size(p_left, 3) > 1 && (p_right = mean(p_right, dims=3))
     # average across channels
     p_right = mean(p_right, dims=1)
     _log_on()
