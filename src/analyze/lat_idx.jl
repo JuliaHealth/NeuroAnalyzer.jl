@@ -36,33 +36,33 @@ function lat_idx(obj::NeuroAnalyzer.NEURO; frq::Union{Real, Tuple{<:Real, <:Real
     @assert length(channel_pick(obj, p=:l)) > 0 "Could not detect left hemisphere channels, check OBJ labels."
     @assert length(channel_pick(obj, p=:r)) > 0 "Could not detect right hemisphere channels, check OBJ labels."
 
-    # left
-    ch = channel_pick(obj, p=:l)
+    ch_l = channel_pick(obj, p=:l)
+    ch_r = channel_pick(obj, p=:r)
+
     _log_off()
+
+    # left PSDs
     if datatype(obj) in ["erp", "erf"]
-        p_left, f = psd(obj.data[ch, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p_left, f = psd(obj.data[ch_l, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
     else
-        p_left, f = psd(obj.data[ch, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p_left, f = psd(obj.data[ch_l, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
     end
-    # average across epochs
-    size(p_left, 3) > 1 && (p_left = mean(p_left, dims=3))
-    # average across channels
-    p_left = mean(p_left, dims=1)
+
+    # right PSDs
+    if datatype(obj) in ["erp", "erf"]
+        p_right, _ = psd(obj.data[ch_r, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    else
+        p_right, _ = psd(obj.data[ch_r, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    end
+
     _log_on()
 
-    # right
-    ch = channel_pick(obj, p=:r)
-    _log_off()
-    if datatype(obj) in ["erp", "erf"]
-        p_right, _ = psd(obj.data[ch, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
-    else
-        p_right, _ = psd(obj.data[ch, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
-    end
     # average across epochs
-    size(p_left, 3) > 1 && (p_right = mean(p_right, dims=3))
+    size(p_left, 3) > 1 && (p_left = mean(p_left, dims=3))
+    size(p_right, 3) > 1 && (p_right = mean(p_right, dims=3))
     # average across channels
+    p_left = mean(p_left, dims=1)
     p_right = mean(p_right, dims=1)
-    _log_on()
 
     if length(frq) == 1
         frq_idx = vsearch(frq, f)
