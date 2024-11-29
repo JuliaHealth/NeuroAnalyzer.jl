@@ -663,7 +663,7 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 # Returns
 
-- `chs::Vector{Int64}`: channel numbers
+- `channels::Vector{Int64}`: channel numbers
 """
 function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}})::Vector{Int64}
 
