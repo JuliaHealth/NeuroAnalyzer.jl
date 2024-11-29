@@ -19,14 +19,14 @@ Reference to common electrode(s). Only signal channels are processed.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)::NeuroAnalyzer.NEURO
+function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
 
@@ -72,14 +72,14 @@ Reference to common electrode(s). Only signal channels are processed.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
 Nothing
 """
-function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, med::Bool=false)::Nothing
+function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool=false)::Nothing
 
     obj_new = reference_ce(obj, ch=ch, med=med)
     obj.data = obj_new.data

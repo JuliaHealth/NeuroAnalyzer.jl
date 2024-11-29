@@ -130,7 +130,7 @@ Calculate cross-phases.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -138,7 +138,7 @@ Named tuple containing:
 - `ph::Array{Float64, 4}`: cross-power spectrum phase (in radians)
 - `f::Vector{Float64}`: cross-power spectrum frequencies
 """
-function cph(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
+function cph(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ph::Array{Float64, 4}, f::Vector{Float64}}
 
     ch = get_channel(obj, ch=ch)
 

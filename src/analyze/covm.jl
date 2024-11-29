@@ -120,14 +120,14 @@ Calculate covariance matrix of `signal * signal'`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}: list of channels
+- `ch::Union{String, Vector{String}, Regex}: list of channels
 - `norm::Bool=false`: normalize matrix
 
 # Returns
 
 - `cm::Array{Float64, 4}`: covariance matrix for each epoch
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 4}
+function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 4}
 
     ch = get_channel(obj, ch=ch)
 

@@ -41,13 +41,13 @@ Calculate amplitude difference between each channel and mean amplitude of refere
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: index of reference channels
+- `ch::Union{String, Vector{String}, Regex}`: index of reference channels
 
 # Returns
 
 - `ad::Array{Float64, 3}`
 """
-function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
+function ampdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
 

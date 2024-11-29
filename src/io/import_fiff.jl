@@ -395,15 +395,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         @views data[ch, :, 1] .*= (range * cal * unit_mul)
     end
 
-    clabels = replace.(clabels, "MEG" => "MEG ")
-    clabels = replace.(clabels, "EEG" => "EEG ")
-    clabels = replace.(clabels, "EOG" => "EOG ")
-    clabels = replace.(clabels, "EMG" => "EMG ")
-    clabels = replace.(clabels, "  " => " ")
-    clabels = replace.(clabels, "MEG 0" => "MEG ")
-    clabels = replace.(clabels, "EEG 0" => "EEG ")
-    clabels = replace.(clabels, "EOG 0" => "EOG ")
-    clabels = replace.(clabels, "EMG 0" => "EMG ")
+    clabels = _clean_meg_labels(clabels)
 
     # convert data to standard units
     @inbounds for ch_idx in 1:ch_n

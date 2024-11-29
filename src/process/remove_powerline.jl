@@ -11,7 +11,7 @@ Remove power line noise and its peaks above power line frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
 - `method::Symbol=:iir`:
     - `:iir`: use IIR filter
@@ -24,7 +24,7 @@ Remove power line noise and its peaks above power line frequency.
 - `obj_new::NeuroAnalyzer.NEURO`
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
+function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
     @assert nepochs(obj) == 1 "remove_powerline() must be applied to a continuous signal."
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
@@ -166,7 +166,7 @@ Remove power line noise and harmonics.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency, default is read from the OBJ header
 - `method::Symbol=:iir`: use IIR filter
 - `pr::Real=2.0`: prominence of noise peaks in dB
@@ -177,7 +177,7 @@ Remove power line noise and harmonics.
 
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::DataFrame
+function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::DataFrame
 
     obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data

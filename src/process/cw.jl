@@ -102,14 +102,14 @@ Perform continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T)::Array{Float64, 4} where {T<:CWT}
+function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T)::Array{Float64, 4} where {T<:CWT}
 
     ch = get_channel(obj, ch=ch)
     ct = @views cw_trans(obj.data[ch, :, :], wt=wt)

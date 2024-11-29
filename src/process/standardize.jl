@@ -40,14 +40,14 @@ Standardize channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -67,7 +67,7 @@ Standardize channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 

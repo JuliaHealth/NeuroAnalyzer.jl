@@ -78,7 +78,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -87,7 +87,7 @@ Perform wavelet band-pass filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)::NeuroAnalyzer.NEURO
+function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, frq::Real, ncyc::Int64=6)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -107,7 +107,7 @@ Perform wavelet band-pass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -116,7 +116,7 @@ Perform wavelet band-pass filtering.
 
 Nothing
 """
-function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real, ncyc::Int64=6)::Nothing
+function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, frq::Real, ncyc::Int64=6)::Nothing
 
     obj_new = wbp(obj, ch=ch, pad=pad, frq=frq, ncyc=ncyc)
     obj.data = obj_new.data

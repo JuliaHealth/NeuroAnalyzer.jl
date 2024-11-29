@@ -45,7 +45,7 @@ Calculate ISPCs (Inter-Site-Phase Clustering).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -53,7 +53,7 @@ Named tuple containing:
 - `ispc_val::Array{Float64, 3}`: ISPC value matrices over epochs
 - `ispc_ang::Array{Float64, 3}`: ISPC angle matrices over epochs
 """
-function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{ispc_val::Array{Float64, 3}, ispc_ang::Array{Float64, 3}}
+function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ispc_val::Array{Float64, 3}, ispc_ang::Array{Float64, 3}}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)

@@ -99,13 +99,13 @@ Calculate PLIs (Phase Lag Index).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 - `pv::Array{Float64, 3}`: PLI value matrices over epochs
 """
-function pli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
+function pli(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)

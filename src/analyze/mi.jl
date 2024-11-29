@@ -105,13 +105,13 @@ Calculate mutual information between channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}: list of channels
+- `ch::Union{String, Vector{String}, Regex}: list of channels
 
 # Returns
 
 - `m::Array{Float64, 3}`
 """
-function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Array{Float64, 3}
+function mutual_information(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     m = @views mutual_information(obj.data[ch, :, :])

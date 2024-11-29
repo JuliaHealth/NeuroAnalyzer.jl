@@ -38,7 +38,7 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 
@@ -46,7 +46,7 @@ Perform convolution bandpass filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real)::NeuroAnalyzer.NEURO
+function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, frq::Real)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     ep_n = nepochs(obj)
@@ -74,7 +74,7 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Tuple{Real, Real}`: filter frequency
 
@@ -82,7 +82,7 @@ Perform convolution bandpass filtering.
 
 Nothing
 """
-function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, frq::Real)::Nothing
+function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, frq::Real)::Nothing
 
     obj_new = cbp(obj, ch=ch, pad=pad, frq=frq)
     obj.data = obj_new.data

@@ -119,7 +119,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: index of reference channels
+- `ch::Union{String, Vector{String}, Regex}`: index of reference channels
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged
     - `:signal`: signals are averaged prior to phase calculation
@@ -130,7 +130,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 - `phd::Array{Float64, 3}`
 """
-function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)::Array{Float64, 3}
+function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)::Array{Float64, 3}
 
     ch = get_channel(obj, ch=ch)
     phd = @views phdiff(obj.data[ch, :, :], avg=avg, pad=pad, h=h)

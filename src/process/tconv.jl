@@ -76,14 +76,14 @@ Perform convolution in the time domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `kernel::AbstractVector`: convolution kernel
 
 # Returns
 
 - `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
 """
-function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector)::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
+function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector)::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -109,10 +109,10 @@ Perform convolution in the time domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `kernel::AbstractVector`: convolution kernel
 """
-function tconv!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, kernel::AbstractVector)::Union{Nothing, Array{ComplexF64, 3}}
+function tconv!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector)::Union{Nothing, Array{ComplexF64, 3}}
 
     if eltype(kernel) == ComplexF64
         return tconv(obj.data, ch=ch, kernel=kernel)

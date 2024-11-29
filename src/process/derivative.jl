@@ -64,13 +64,13 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
+function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -90,13 +90,13 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 Nothing
 """
-function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
+function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
     obj_new = derivative(obj, ch=ch)
     obj.data = obj_new.data

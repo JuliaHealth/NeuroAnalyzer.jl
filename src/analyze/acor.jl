@@ -137,7 +137,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -152,7 +152,7 @@ Named tuple containing:
 - `ac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
+function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, l::Real=1, demean::Bool=true, biased::Bool=true, method::Symbol=:sum)::@NamedTuple{ac::Array{Float64, 3}, l::Vector{Float64}}
 
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."

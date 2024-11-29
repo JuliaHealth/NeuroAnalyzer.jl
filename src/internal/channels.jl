@@ -72,7 +72,16 @@ end
 
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String = _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
-function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}})::Vector{Int64}
+function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{String}, Regex})::Vector{Int64}
+    if isa(l, Regex)
+        m = match.(l, cl)
+        m = m[.!isnothing.(m)]
+        l = String[]
+        for idx in m
+            push!(l, idx.match)
+        end
+        length(l) == 0 && (l = "")
+    end
     l == "" && return Int64[]
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
@@ -86,9 +95,18 @@ function _ch_idx(cl::Union{String, Vector{String}}, l::Union{String, Vector{Stri
     return unique(ch)
 end
 
-function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}})::Vector{Int64}
-    l == "" && return Int64[]
+function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Regex})::Vector{Int64}
     cl = labels(obj)
+    if isa(l, Regex)
+        m = match.(l, cl)
+        m = m[.!isnothing.(m)]
+        l = String[]
+        for idx in m
+            push!(l, idx.match)
+        end
+        length(l) == 0 && (l = "")
+    end
+    l == "" && return Int64[]
     isa(l, String) && (l = [l])
     isa(cl, String) && (cl = [l])
     any(occursin.("all", l)) && (l = cl)

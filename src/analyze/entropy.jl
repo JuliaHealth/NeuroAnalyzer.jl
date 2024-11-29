@@ -78,7 +78,7 @@ Calculate entropy.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -87,7 +87,7 @@ Named tuple containing:
 - `sent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
 """
-function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
+function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
     ent, sent, leent = @views entropy(obj.data[ch, :, :])
@@ -158,13 +158,13 @@ Calculate negentropy.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 - `ne::Matrix{Float64}`
 """
-function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Matrix{Float64}
+function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
     ch = get_channel(obj, ch=ch)
     ne = @views negentropy(obj.data[ch, :, :])

@@ -8,7 +8,7 @@ Calculate variance F-test.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}: list of channels
+- `ch::Union{String, Vector{String}, Regex}: list of channels
 
 # Returns
 
@@ -16,7 +16,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
+function vartest(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{f::Array{Float64, 3}, p::Array{Float64, 3}}
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)

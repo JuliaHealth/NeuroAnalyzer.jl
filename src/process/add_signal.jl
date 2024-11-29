@@ -31,14 +31,14 @@ Add signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `s::AbstractVector`: signal to be added to each channel
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)::NeuroAnalyzer.NEURO
+function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -66,14 +66,14 @@ Add signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `s::AbstractVector`: signal to be added to each channel
 
 # Returns
 
 Nothing
 """
-function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, s::AbstractVector)::Nothing
+function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
 
     obj_new = add_signal(obj, ch=ch, s=s)
     obj.data = obj_new.data

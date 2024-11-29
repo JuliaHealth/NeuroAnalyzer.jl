@@ -88,7 +88,7 @@ Calculate stationarity.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}: list of channels
+- `ch::Union{String, Vector{String}, Regex}: list of channels
 - `window::Int64=10`: time window in samples
 - `method::Symbol=:euclid`: stationarity method:
     - `:mean`: mean across `window`-long windows
@@ -101,7 +101,7 @@ Calculate stationarity.
 
 - `s::Union{Matrix{Float64}, Array{Float64, 3}}`
 """
-function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, window::Int64=10, method::Symbol=:hilbert)::Union{Matrix{Float64}, Array{Float64, 3}}
+function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64=10, method::Symbol=:hilbert)::Union{Matrix{Float64}, Array{Float64, 3}}
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     @assert window >= 1 "window must be ≥ 1."

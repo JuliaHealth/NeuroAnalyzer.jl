@@ -187,6 +187,7 @@ s = generate_morlet_fwhm(100, 10)
 
 @info "Test: get_channel()"
 @test length(get_channel(e10, type=["eeg", "eeg", "ecg", "mrk"])) == 20
+@test length(get_channel(e10, ch=r"Fp.*")) == 2
 
 @info "Test: cwtfrq()"
 s = rand(100)

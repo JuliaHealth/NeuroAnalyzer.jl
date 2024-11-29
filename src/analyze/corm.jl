@@ -121,14 +121,14 @@ Calculate correlation matrix.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}: list of channels
+- `ch::Union{String, Vector{String}, Regex}: list of channels
 - `norm::Bool=true`: normalize matrix
 
 # Returns
 
 - `cm::Array{Float64, 4}`: correlation matrix for each epoch
 """
-function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, norm::Bool=false)::Array{Float64, 4}
+function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 4}
 
     ch = get_channel(obj, ch=ch)
 

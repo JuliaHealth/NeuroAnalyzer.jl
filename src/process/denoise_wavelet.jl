@@ -106,7 +106,7 @@ Perform denoising using continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
 - `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
@@ -119,7 +119,7 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd)::NeuroAnalyzer.NEURO where {T <: CWT}
+function denoise_cwt(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, w::Int64=5, type::Symbol=:nd)::NeuroAnalyzer.NEURO where {T <: CWT}
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -139,7 +139,7 @@ Perform denoising using continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `nf::Real`: noise frequency in Hz
 - `w::Int64=5`: width (in Hz) of the area surrounding noise (from `nf - w` to `nf + w`)
@@ -152,7 +152,7 @@ Perform denoising using continuous wavelet transformation (CWT).
 
 Nothing
 """
-function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, type::Symbol=:nd)::Nothing where {T <: CWT}
+function denoise_cwt!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(Morlet(2π), β=32, Q=128), nf::Real, type::Symbol=:nd)::Nothing where {T <: CWT}
 
     obj_new = denoise_cwt(obj, ch=ch, wt=wt, nf=nf, type=type)
     obj.data = obj_new.data
@@ -225,14 +225,14 @@ Perform denoising using discrete wavelet transformation (DWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_dwt(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T)::NeuroAnalyzer.NEURO where {T<:DiscreteWavelet}
+function denoise_dwt(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T)::NeuroAnalyzer.NEURO where {T<:DiscreteWavelet}
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -252,14 +252,14 @@ Perform denoising using discrete wavelet transformation (DWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 Nothing
 """
-function denoise_dwt!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, wt::T)::Nothing where {T<:DiscreteWavelet}
+function denoise_dwt!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T)::Nothing where {T<:DiscreteWavelet}
 
     obj_new = denoise_dwt(obj, ch=ch, wt=wt)
     obj.data = obj_new.data

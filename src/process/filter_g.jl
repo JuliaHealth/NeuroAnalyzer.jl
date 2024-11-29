@@ -80,7 +80,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
@@ -89,7 +89,7 @@ Filter using Gaussian in the frequency domain.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)::NeuroAnalyzer.NEURO
+function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, f::Real, gw::Real=5)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -109,7 +109,7 @@ Filter using Gaussian in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
@@ -118,7 +118,7 @@ Filter using Gaussian in the frequency domain.
 
 Nothing
 """
-function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, f::Real, gw::Real=5)::Nothing
+function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, f::Real, gw::Real=5)::Nothing
 
     obj_new = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
     obj.data = obj_new.data

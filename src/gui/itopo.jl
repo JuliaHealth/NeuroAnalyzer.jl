@@ -9,13 +9,13 @@ Interactive topographical map of continuous signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: channels to plot
+- `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
 
 Nothing
 """
-function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
+function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
     redraw = true
 
@@ -344,13 +344,13 @@ Interactive topographical map of epoched signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}}`: channels to plot
+- `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
 
 Nothing
 """
-function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
+function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
     @assert nepochs(obj) > 1 "itopo() must be used for continuous object."
 

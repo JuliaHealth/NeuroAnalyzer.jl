@@ -1108,7 +1108,7 @@ Normalize channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
 
@@ -1116,7 +1116,7 @@ Normalize channel(s).
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)::NeuroAnalyzer.NEURO
+function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -1148,7 +1148,7 @@ Normalize channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `method::Symbol`: method for normalization, see `normalize()` for details
 - `bych::Bool=false`: if true, normalize each channel separately
 
@@ -1156,7 +1156,7 @@ Normalize channel(s).
 
 Nothing
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, method::Symbol, bych::Bool=false)::Nothing
+function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false)::Nothing
 
     obj_new = normalize(obj, ch=ch, method=method, bych=bych)
     obj.data = obj_new.data

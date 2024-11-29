@@ -84,7 +84,7 @@ Calculate Hjorths parameters.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -99,7 +99,7 @@ Named tuple containing:
 - Mobility: an estimate of the mean frequency
 - Complexity: indicates the similarity of the shape of the signal to a pure sine wave
 """
-function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
+function hjorth(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{h_act::Matrix{Float64}, h_mob::Matrix{Float64}, h_comp::Matrix{Float64}}
 
 
     ch = get_channel(obj, ch=ch)

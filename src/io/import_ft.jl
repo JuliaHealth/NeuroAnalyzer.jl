@@ -166,6 +166,8 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
         if data_type == "eeg"
 
+            clabels = _clean_eeg_labels(clabels)
+
             # TO DO: get referencing
             if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
                 _info("Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")

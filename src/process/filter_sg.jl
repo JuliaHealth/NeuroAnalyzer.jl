@@ -70,7 +70,7 @@ Filter using Savitzky-Golay filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
@@ -78,7 +78,7 @@ Filter using Savitzky-Golay filter.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)::NeuroAnalyzer.NEURO
+function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64=6, window::Int64=11)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -98,7 +98,7 @@ Filter using Savitzky-Golay filter.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `order::Int64=6`: order of the polynomial used to fit the samples; must be less than `window`
 - `window::Int64=11`: length of the filter window (i.e., the number of coefficients); must be an odd number
 
@@ -106,7 +106,7 @@ Filter using Savitzky-Golay filter.
 
 Nothing
 """
-function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, order::Int64=6, window::Int64=11)::Nothing
+function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64=6, window::Int64=11)::Nothing
 
     obj_new = filter_sg(obj, ch=ch, order=order, window=window)
     obj.data = obj_new.data

@@ -11,14 +11,14 @@ Delete channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channels to be removed
+- `ch::Union{String, Vector{String}, Regex}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)::NeuroAnalyzer.NEURO
+function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, del_opt::Bool=false)::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     ch = get_channel(obj, ch=ch)
@@ -84,14 +84,14 @@ Delete channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channels to be removed
+- `ch::Union{String, Vector{String}, Regex}`: channels to be removed
 - `del_opt::Bool=false`: for NIRS data is set as `true` if called from `remove_optode()`
 
 # Returns
 
 Nothing
 """
-function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, del_opt::Bool=false)::Nothing
+function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, del_opt::Bool=false)::Nothing
 
     obj_new = delete_channel(obj, ch=ch, del_opt=del_opt)
     obj.header = obj_new.header
@@ -112,13 +112,13 @@ Keep channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channels to keep
+- `ch::Union{String, Vector{String}, Regex}`: channels to keep
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
+function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
     ch_n = nchannels(obj)
     chs_to_remove = labels(obj)[setdiff(_c(ch_n), get_channel(obj, ch=ch))]
@@ -138,13 +138,13 @@ Keep channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channels to keep
+- `ch::Union{String, Vector{String}, Regex}`: channels to keep
 
 # Returns
 
 Nothing
 """
-function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Nothing
+function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
     obj_new = keep_channel(obj, ch=ch)
     obj.header = obj_new.header

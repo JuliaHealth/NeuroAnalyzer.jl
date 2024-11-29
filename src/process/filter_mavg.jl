@@ -83,7 +83,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
@@ -96,7 +96,7 @@ Filter using moving average filter (with threshold).
 
 1. https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
 """
-function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::NeuroAnalyzer.NEURO
+function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     _info("Window length: $(2 * k + 1) samples")
@@ -119,7 +119,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`)
 - `window::Union{Nothing, AbstractVector}=nothing`: weighting window
@@ -128,7 +128,7 @@ Filter using moving average filter (with threshold).
 
 Nothing
 """
-function filter_mavg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Nothing
+function filter_mavg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))::Nothing
 
     obj_new = filter_mavg(obj, ch=ch, k=k, t=t, window=window)
     obj.data = obj_new.data

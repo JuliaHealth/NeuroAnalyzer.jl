@@ -149,7 +149,7 @@ Calculate mean, standard deviation and 95% confidence interval.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
@@ -161,7 +161,7 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI
 - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
     sm, ss, su, sl = @views msci95(obj.data[ch, :, :], n=n, method=method)

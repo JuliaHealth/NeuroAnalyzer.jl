@@ -31,13 +31,13 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
+- `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))::NeuroAnalyzer.NEURO
+function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))::NeuroAnalyzer.NEURO
 
     @assert length(get_channel(obj, type="nirs_int")) > 0 "OBJ does not contain NIRS intensity channels."
 
@@ -73,13 +73,13 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
+- `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
 
 # Returns
 
 Nothing
 """
-function intensity2od!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}=get_channel(obj, type="nirs_int"))::Nothing
+function intensity2od!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))::Nothing
 
     obj_new = intensity2od(obj, ch=ch)
     obj.data = obj_new.data

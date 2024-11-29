@@ -28,17 +28,17 @@ function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, Abstr
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::Nothing
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Nothing
     _check_channels(get_channel(obj, type="all"), ch)
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}}, type::String)::Nothing
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex}, type::String)::Nothing
     _check_channels(get_channel(obj, type=type), ch)
     return nothing
 end
 
-function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}})::Nothing
+function _check_channels(ch_ref::Union{String, Vector{String}}, ch::Union{String, Vector{String}, Regex})::Nothing
     isa(ch_ref, String) && (ch_ref = [ch_ref])
     isa(ch, String) && (ch = [ch])
     @assert length(ch) > 0 "ch is empty."

@@ -163,7 +163,7 @@ Calculate DISS (global dissimilarity) and spatial correlation (channels vs chann
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -171,7 +171,7 @@ Named tuple containing:
 - `gd::Array{Float64, 3}`: global dissimilarity
 - `sc::Array{Float64, 3}`: spatial correlation
 """
-function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
+function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
 
     ch = get_channel(obj, ch=ch)
     gd, sc = diss(obj.data[ch, :, :])

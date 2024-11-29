@@ -1,7 +1,7 @@
 _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{Int64, Vector{Int64}} = _find_bylabel(obj.locs, labels(obj)[ch])
-_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::Vector{Int64} = _find_bylabel(obj.locs, labels(obj)[get_channel(obj, ch=ch)])
+_loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{Int64} = _find_bylabel(obj.locs, labels(obj)[get_channel(obj, ch=ch)])
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{String, Vector{String}} = obj.locs[_loc_idx(obj, ch), :label]
-_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::Vector{String} = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
+_idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{String} = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::DataFrame
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
@@ -10,7 +10,7 @@ function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Da
     return locs
 end
 
-function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}})::DataFrame
+function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::DataFrame
     chs = intersect(obj.locs[!, :label], ch)
     locs = Base.filter(:label => in(chs), obj.locs)
     @assert length(ch) == nrow(locs) "Some channels do not have locations."

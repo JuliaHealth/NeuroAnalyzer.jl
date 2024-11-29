@@ -81,7 +81,7 @@ Perform FFT denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `t::Int64=100`: PSD threshold for keeping frequency components
 
@@ -89,7 +89,7 @@ Perform FFT denoising.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, t::Int64=100)::NeuroAnalyzer.NEURO
+function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, t::Int64=100)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
@@ -109,7 +109,7 @@ Perform FFT denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `t::Int64=100`: PSD threshold for keeping frequency components
 
@@ -117,7 +117,7 @@ Perform FFT denoising.
 
 Nothing
 """
-function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, pad::Int64=0, t::Int64=100)::Nothing
+function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, t::Int64=100)::Nothing
 
     obj_new = denoise_fft(obj, ch=ch, pad=pad, t=t)
     obj.data = obj_new.data

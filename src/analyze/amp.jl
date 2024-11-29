@@ -90,7 +90,7 @@ Calculate amplitudes.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -103,7 +103,7 @@ Named tuple containing:
 - `rmsa::Matrix{Float64}`: root mean square amplitude
 - `energy::Matrix{Float64}`: total signal energy
 """
-function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rms::Matrix{Float64}}
+function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rms::Matrix{Float64}}
 
     ch = get_channel(obj, ch=ch)
 

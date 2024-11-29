@@ -124,7 +124,7 @@ Calculate partial auto-correlation. For ERP return trial-averaged auto-correlati
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `l::Real=1`: lags range is `-l:l`
 - `demean::Bool=true`: demean signal before computing auto-correlation
 - `method::Symbol=:yw`: method of calculating auto-correlation:
@@ -137,7 +137,7 @@ Named tuple containing:
 - `pac::Array{Float64, 3}`
 - `l::Vector{Float64}`: lags [s]
 """
-function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}}, l::Real=1, demean::Bool=true, method::Symbol=:yw)::@NamedTuple{pac::Array{Float64, 3}, l::Vector{Float64}}
+function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, l::Real=1, demean::Bool=true, method::Symbol=:yw)::@NamedTuple{pac::Array{Float64, 3}, l::Vector{Float64}}
 
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
