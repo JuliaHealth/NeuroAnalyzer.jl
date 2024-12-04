@@ -222,3 +222,24 @@ function _create_recording_eda(; data_type::String, file_name::String, file_size
                 :bad_channel=>bad_channels)
 
 end
+
+function _create_recording_tpt(; data_type::String, file_name::String, file_size_mb::Real, file_type::String, recording::String, recording_date::String, recording_time::String, recording_notes::String, channel_type::Vector{String}, channel_order::Vector{Int64}, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, bad_channels::Matrix{Bool})::Dict
+
+    return Dict(:data_type=>data_type,
+                :file_name=>file_name,
+                :file_size_mb=>file_size_mb,
+                :file_type=>file_type,
+                :recording=>recording,
+                :recording_date=>recording_date,
+                :recording_time=>recording_time,
+                :recording_notes=>recording_notes,
+                :channel_type=>channel_type,
+                :channel_order=>channel_order,
+                :label=>clabels,
+                :unit=>units,
+                :prefiltering=>prefiltering,
+                :sampling_rate=>sampling_rate,
+                :epoch_id=>"",
+                :bad_channel=>bad_channels)
+
+end

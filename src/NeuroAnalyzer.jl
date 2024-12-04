@@ -23,7 +23,8 @@ const data_types = ["eeg",
                     "eda",
                     "mep",
                     "erp",
-                    "erf"]
+                    "erf",
+                    "tpt"]
 const channel_types = ["all",
                        "eeg", "ecog", "seeg", "ieeg",
                        "csd",
@@ -243,7 +244,6 @@ include("internal/ml.jl")
 include("internal/plots.jl")
 include("internal/recorder.jl")
 include("internal/reflect_chop.jl")
-include("internal/rt_plotter.jl")
 include("internal/select.jl")
 include("internal/statistics.jl")
 include("internal/tester.jl")
@@ -496,6 +496,8 @@ include("study/info.jl")
 # recorder
 include("recorder/eda.jl")
 include("recorder/ftt.jl")
+include("recorder/tpt.jl")
+include("recorder/rt_plotter.jl")
 
 # stim
 include("stim/ect.jl")

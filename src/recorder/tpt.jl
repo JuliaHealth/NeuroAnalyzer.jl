@@ -1,14 +1,16 @@
-export ieda
-export eda
+export itpt
+export tpt
 
 """
-    ieda(; <keyword arguments>)
+    itpt(; <keyword arguments>)
 
-Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or skin conductance, in GUI mode. EDA is recorded using Groove GSR sensor via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
+Record Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 accelerometer via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
+- `duration::Int64=20`: single trial duration in seconds
+- `trials::Int64=2`: number of trials
+- `interval::Int64=2`: interval between trials in seconds
 - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
@@ -16,7 +18,7 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 - `obj_new::NeuroAnalyzer.NEURO`
 - `Nothing` if recording fails
 """
-function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{NeuroAnalyzer.NEURO, Nothing}
+function itpt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, port_name::String="/dev/ttyUSB0")::Union{NeuroAnalyzer.NEURO, Nothing}
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) @info "Serial port $port_name is not available"
@@ -24,7 +26,12 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
     t = collect(0:1/fs:duration)
-    eda_signal = repeat([NaN], length(t))
+    tpt_ch_x = repeat([NaN], length(t))
+    tpt_ch_y = repeat([NaN], length(t))
+    tpt_ch_z = repeat([NaN], length(t))
+    tpt_ch_accx = repeat([NaN], length(t))
+    tpt_ch_accy = repeat([NaN], length(t))
+    tpt_ch_accz = repeat([NaN], length(t))
 
     p = Plots.plot(ylims=(0, 10),
                    xlims=(t[1], t[end]),
@@ -37,7 +44,7 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
                    xtickfontsize=8,
                    ytickfontsize=8)
 
-    win = GtkWindow("NeuroRecorder: ieda()", p.attr[:size][1], p.attr[:size][2] + 40)
+    win = GtkWindow("NeuroRecorder: itpt()", p.attr[:size][1], p.attr[:size][2] + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -69,12 +76,10 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
 
     @guarded draw(can) do widget
         p = Plots.plot(t,
-                       eda_signal,
-                       mc=:black,
+                       tpt_ch_x,
                        ms=0.5,
                        lw=0.5,
-                       lc=:black,
-                       ylims=(0, 10),
+                       ylims=(0, 20),
                        xlims=(t[1], t[end]),
                        legend=false,
                        palette=:darktest,
@@ -84,6 +89,16 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
                        ylabelfontsize=8,
                        xtickfontsize=8,
                        ytickfontsize=8)
+        p = Plots.plot!(t,
+                        tpt_ch_y)
+        p = Plots.plot!(t,
+                        tpt_ch_z)
+        p = Plots.plot!(t,
+                        tpt_ch_accx)
+        p = Plots.plot!(t,
+                        tpt_ch_accy)
+        p = Plots.plot!(t,
+                        tpt_ch_accz)
         ctx = getgc(can)
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
@@ -103,17 +118,22 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
             set_gtk_property!(lb_status2, :label, "RECORDING")
             t_refresh = time()
             idx = 1
-            while idx <= length(eda_signal)
+            while idx <= length(tpt_ch_x)
                 if time() - t_refresh >= 0.1
                     draw(can)
                     t_refresh = time()
                 end
                 sp_signal = _serial_listener(sp)
                 if !isnothing(sp_signal)
-                    m = match(r"(gsr\:)([0-9]+\.[0-9]+)", sp_signal)
+                    m = match(r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)", sp_signal)
                     if !isnothing(m)
-                        if length(m.captures) == 2
-                            eda_signal[idx] = parse(Float64, m.captures[2])
+                        if length(m.captures) == 7
+                            tpt_ch_x[idx] = parse(Float64, m.captures[2])
+                            tpt_ch_y[idx] = parse(Float64, m.captures[3])
+                            tpt_ch_z[idx] = parse(Float64, m.captures[4])
+                            tpt_ch_accx[idx] = parse(Float64, m.captures[5])
+                            tpt_ch_accy[idx] = parse(Float64, m.captures[6])
+                            tpt_ch_accz[idx] = parse(Float64, m.captures[7])
                             idx += 1
                         end
                     end
@@ -140,12 +160,18 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
     @async Gtk.gtk_main()
     wait(cnd)
 
-    if length(eda_signal) > 0
-        eda_signal = eda_signal[1:(end - 1)]
+    if length(tpt_ch_x) > 0
+        tpt_ch_x = tpt_ch_x[1:(end - 1)]
+        tpt_ch_y = tpt_ch_y[1:(end - 1)]
+        tpt_ch_z = tpt_ch_z[1:(end - 1)]
+        tpt_ch_accx = tpt_ch_accx[1:(end - 1)]
+        tpt_ch_accy = tpt_ch_accy[1:(end - 1)]
+        tpt_ch_accz = tpt_ch_accz[1:(end - 1)]
         t = round.(t[1:(end - 1)], digits=3)
-        eda_signal = reshape(eda_signal, 1, :, 1)
-        obj = create_object(data_type="eda")
-        add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
+        tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
+        tpt_signal = reshape(tpt_signal, 6, :, 1)
+        obj = create_object(data_type="tpt")
+        add_channel!(obj, data=tpt_signal, label=["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"], type=["orient", "orient", "orient", "accel", "accel", "accel"], unit=["", "", "", "m/s²", "m/s²", "m/s²"])
         create_time!(obj, fs=fs)
         return obj
     else
@@ -155,7 +181,7 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
 end
 
 """
-    eda(; <keyword arguments>)
+    tpt(; <keyword arguments>)
 
 Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or skin conductance, in CLI mode. EDA is recorded using Groove GSR sensor via Arduino attached to the PC via USB cable (virtual serial port).
 
@@ -167,14 +193,13 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
-- `Nothing` if recording fails
 """
-function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{NeuroAnalyzer.NEURO, Nothing}
+function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) "Serial port $port_name is not available"
 
-    println("NeuroRecorder: EDA")
+    println("NeuroRecorder: TPT")
     println("==================")
     println("   Duration: $duration [seconds]")
     println("Serial port: $port_name")

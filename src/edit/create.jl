@@ -11,7 +11,7 @@ Create an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `data_type::String`: data type of the new object ("eeg", "ecog", "seeg", "meg", "nirs", "mep", "eda", "sensors")
+- `data_type::String`: data type of the new object
 
 # Returns
 
@@ -178,7 +178,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
                                   markers_neg=Int64[],
                                   bad_channels=[false;; ])
     elseif data_type == "eda"
-        r = _create_recording_eda(data_type="mep",
+        r = _create_recording_eda(data_type="eda",
                                   file_name="",
                                   file_size_mb=0,
                                   file_type="",
@@ -193,6 +193,22 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
                                   prefiltering=String[],
                                   sampling_rate=0,
                                   bad_channels=[false;; ])
+    elseif data_type == "tpt"
+        r = _create_recording_eda(data_type="tpt",
+                                  file_name="",
+                                  file_size_mb=0,
+                                  file_type="",
+                                  recording="",
+                                  recording_date="",
+                                  recording_time="",
+                                  recording_notes="",
+                                  channel_type=String[],
+                                  channel_order=Int64[],
+                                  clabels=String[],
+                                  units=String[],
+                                  prefiltering=String[],
+                                  sampling_rate=0,
+                                  bad_channels=zeros(Bool, 6, 1))
     end
     e = _create_experiment(name="", notes="", design="")
 

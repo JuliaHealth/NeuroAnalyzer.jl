@@ -4,7 +4,7 @@ double gsr_average = 0;
 double impedance = 0;
 
 int calibration = 270;  // this may differ for different sensors, see https://wiki.seeedstudio.com/Grove-GSR_Sensor/ for details
-int n = 10;             // length of moving avergae filter
+int n = 10;             // length of moving average filter
 long sum;
 int fs = 20;            // 20 ms per loop, so sampling rate is 50 Hz
 unsigned long t1;

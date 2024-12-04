@@ -20,7 +20,7 @@ Interactive view of continuous signal.
 """
 function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
 
-    obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
+    obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -1230,7 +1230,7 @@ Nothing
 """
 function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
 
-    (signal_len(obj1) / sr(obj1)) < zoom && (zoom = obj1.time_pts[end])
+    (signal_len(obj1) / sr(obj1)) < zoom && (zoom = round(obj1.time_pts[end]) / 2)
 
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
