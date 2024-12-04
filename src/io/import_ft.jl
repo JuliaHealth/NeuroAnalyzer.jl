@@ -27,7 +27,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
     _check_var(type, [:eeg, :meg, :nirs, :events], "type")
     file_type = "FT"
     data_type = String(type)
-    locs = nothing
+    locs = _initialize_locs()
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     dataset = matread(file_name)
@@ -291,7 +291,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 projs = hdr["orig"]["projs"]
                 if length(projs["desc"]) != 0
                     ssp_labels = string.(projs["desc"][:])
-                    ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])                
+                    ssp_channels_tmp = string.(projs["data"][1]["col_names"][:])
                     ssp_channels_tmp = _clean_meg_labels(ssp_channels_tmp)
                     ssp_channels = zeros(Bool, ch_n)
                     ssp_sorting_idx = Int64[]
@@ -425,8 +425,6 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
         components = Dict()
         history = [""]
-
-        data_type == "eeg" && (locs = _initialize_locs())
 
         obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
 
