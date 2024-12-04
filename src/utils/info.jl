@@ -774,7 +774,7 @@ Return channels belonging to a cluster of channels.
 
 # Returns
 
-- `ch::Vector{String}`: list of channel numbers belonging to a given cluster of channels
+- `ch::Vector{String}`: list of channel names belonging to a given cluster of channels
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
 
