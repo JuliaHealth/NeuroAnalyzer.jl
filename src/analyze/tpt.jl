@@ -67,8 +67,8 @@ function tpt_analyze(obj::NeuroAnalyzer.NEURO)::@NamedTuple{n::Int64, t_mean::Fl
     t_diff = round.(diff(t), digits=2)
     t_mean = round(mean(t_diff), digits=2)
     t_median = round(median(t_diff), digits=2)
-    t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=3)
-    t_sdsd = round(std(t_diff), digits=3)
+    t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=2)
+    t_sdsd = round(std(t_diff), digits=2)
 
     return(n=n, t_mean=t_mean, t_median=t_median, t_rmssd=t_rmssd, t_sdsd=t_sdsd)
 
