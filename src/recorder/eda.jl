@@ -1,8 +1,8 @@
-export ieda
-export eda
+export iedar
+export edar
 
 """
-    ieda(; <keyword arguments>)
+    iedar(; <keyword arguments>)
 
 Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or skin conductance, in GUI mode. EDA is recorded using Groove GSR sensor via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
 
@@ -14,9 +14,8 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
-- `Nothing` if recording fails
 """
-function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{NeuroAnalyzer.NEURO, Nothing}
+function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) @info "Serial port $port_name is not available"
@@ -37,7 +36,7 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
                    xtickfontsize=8,
                    ytickfontsize=8)
 
-    win = GtkWindow("NeuroRecorder: ieda()", p.attr[:size][1], p.attr[:size][2] + 40)
+    win = GtkWindow("NeuroRecorder: iedar()", p.attr[:size][1], p.attr[:size][2] + 40)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
@@ -140,22 +139,20 @@ function ieda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neu
     @async Gtk.gtk_main()
     wait(cnd)
 
-    if length(eda_signal) > 0
-        eda_signal = eda_signal[1:(end - 1)]
-        t = round.(t[1:(end - 1)], digits=3)
-        eda_signal = reshape(eda_signal, 1, :, 1)
-        obj = create_object(data_type="eda")
-        add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
-        create_time!(obj, fs=fs)
-        return obj
-    else
-        return nothing
-    end
+    eda_signal = eda_signal[1:(end - 1)]
+    t = round.(t[1:(end - 1)], digits=3)
+    eda_signal = reshape(eda_signal, 1, :, 1)
+
+    obj = create_object(data_type="eda")
+    add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
+    create_time!(obj, fs=fs)
+
+    return obj
 
 end
 
 """
-    eda(; <keyword arguments>)
+    edar(; <keyword arguments>)
 
 Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or skin conductance, in CLI mode. EDA is recorded using Groove GSR sensor via Arduino attached to the PC via USB cable (virtual serial port).
 
@@ -167,9 +164,8 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
-- `Nothing` if recording fails
 """
-function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{NeuroAnalyzer.NEURO, Nothing}
+function edar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) "Serial port $port_name is not available"
@@ -232,16 +228,14 @@ function eda(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::Union{Neur
     println()
     println("Recording finished.")
 
-    if length(eda_signal) > 0
-        eda_signal = eda_signal[1:(end - 1)]
-        t = round.(t[1:(end - 1)], digits=3)
-        eda_signal = reshape(eda_signal, 1, :, 1)
-        obj = create_object(data_type="eda")
-        add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
-        create_time!(obj, fs=fs)
+    eda_signal = eda_signal[1:(end - 1)]
+    t = round.(t[1:(end - 1)], digits=3)
+    eda_signal = reshape(eda_signal, 1, :, 1)
+
+    obj = create_object(data_type="eda")
+    add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
+    create_time!(obj, fs=fs)
+
         return obj
-    else
-        return nothing
-    end
 
 end
