@@ -497,9 +497,11 @@ include("study/info.jl")
 
 # recorder
 include("recorder/eda.jl")
-include("recorder/ftt.jl")
-include("recorder/tpt.jl")
 include("recorder/rt_plotter.jl")
+
+# tester
+include("tester/ftt.jl")
+include("tester/tpt.jl")
 
 # stim
 include("stim/ect.jl")

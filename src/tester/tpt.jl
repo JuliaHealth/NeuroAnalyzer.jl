@@ -1,10 +1,10 @@
-export itptr
-export tptr
+export itpt
+export tpt
 
 """
-    itptr(; <keyword arguments>)
+    itpt(; <keyword arguments>)
 
-Record Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 accelerometer via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
+Perform Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 accelerometer via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
 
 # Arguments
 
@@ -15,39 +15,31 @@ Record Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 acc
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function itptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
+function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) @info "Serial port $port_name is not available"
 
+    img1 = read_from_png(joinpath(res_path, "finger_nopinch.png"))
+    img2 = read_from_png(joinpath(res_path, "finger_pinch.png"))
+
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
     t = collect(0:1/fs:duration)
-    tpt_ch_x = repeat([NaN], length(t))
-    tpt_ch_y = repeat([NaN], length(t))
-    tpt_ch_z = repeat([NaN], length(t))
-    tpt_ch_accx = repeat([NaN], length(t))
-    tpt_ch_accy = repeat([NaN], length(t))
-    tpt_ch_accz = repeat([NaN], length(t))
+    tpt_ch_x = zeros(length(t))
+    tpt_ch_y = zeros(length(t))
+    tpt_ch_z = zeros(length(t))
+    tpt_ch_accx = zeros(length(t))
+    tpt_ch_accy = zeros(length(t))
+    tpt_ch_accz = zeros(length(t))
 
-    p = Plots.plot(ylims=(0, 10),
-                   xlims=(t[1], t[end]),
-                   legend=false,
-                   palette=:darktest,
-                   size=(800, 400),
-                   margins=20Plots.px,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=8,
-                   ytickfontsize=8)
-
-    win = GtkWindow("NeuroRecorder: itptr()", p.attr[:size][1], p.attr[:size][2] + 40)
+    win = GtkWindow("NeuroRecorder: itpt()", img1.width, img1.height + 100)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    can = GtkCanvas(img1.width, img1.height)
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 5)
@@ -72,34 +64,8 @@ function itptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
     showall(win)
 
     @guarded draw(can) do widget
-        p = Plots.plot(t,
-                       tpt_ch_x,
-                       ms=0.5,
-                       lw=0.5,
-                       ylims=(0, 20),
-                       xlims=(t[1], t[end]),
-                       legend=false,
-                       palette=:darktest,
-                       size=(800, 400),
-                       margins=20Plots.px,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8)
-        p = Plots.plot!(t,
-                        tpt_ch_y)
-        p = Plots.plot!(t,
-                        tpt_ch_z)
-        p = Plots.plot!(t,
-                        tpt_ch_accx)
-        p = Plots.plot!(t,
-                        tpt_ch_accy)
-        p = Plots.plot!(t,
-                        tpt_ch_accz)
         ctx = getgc(can)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
+        Cairo.set_source_surface(ctx, img1, 0, 0)
         Cairo.paint(ctx)
     end
 
@@ -112,14 +78,14 @@ function itptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
                 _serial_listener(sp)
             end
             _beep()
+            @guarded draw(can) do widget
+                ctx = getgc(can)
+                Cairo.set_source_surface(ctx, img2, 0, 0)
+                Cairo.paint(ctx)
+            end
             set_gtk_property!(lb_status2, :label, "RECORDING")
-            t_refresh = time()
             idx = 1
             while idx <= length(tpt_ch_x)
-                if time() - t_refresh >= 0.1
-                    draw(can)
-                    t_refresh = time()
-                end
                 sp_signal = _serial_listener(sp)
                 if !isnothing(sp_signal)
                     m = match(r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)", sp_signal)
@@ -136,12 +102,15 @@ function itptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
                     end
                 end
             end
-            draw(can)
             _serial_close(sp)
-            set_gtk_property!(lb_status2, :label, "FINISHED")
             _beep()
+            set_gtk_property!(lb_status2, :label, "FINISHED")
+            @guarded draw(can) do widget
+                ctx = getgc(can)
+                Cairo.set_source_surface(ctx, img1, 0, 0)
+                Cairo.paint(ctx)
+            end
             sleep(2)
-
             # Interacting with GTK from a thread other than the main thread is
             # generally not allowed, so we register an idle callback instead.
             Gtk.GLib.g_idle_add(nothing) do user_data
@@ -157,13 +126,6 @@ function itptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
     @async Gtk.gtk_main()
     wait(cnd)
 
-    tpt_ch_x = tpt_ch_x[1:(end - 1)]
-    tpt_ch_y = tpt_ch_y[1:(end - 1)]
-    tpt_ch_z = tpt_ch_z[1:(end - 1)]
-    tpt_ch_accx = tpt_ch_accx[1:(end - 1)]
-    tpt_ch_accy = tpt_ch_accy[1:(end - 1)]
-    tpt_ch_accz = tpt_ch_accz[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits=3)
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)
 
@@ -176,9 +138,9 @@ function itptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
 end
 
 """
-    tptr(; <keyword arguments>)
+    tpt(; <keyword arguments>)
 
-Record Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 accelerometer via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
+Perform Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 accelerometer via Arduino attached to the PC via USB cable (virtual serial port). Sampling rate is 50 Hz.
 
 # Arguments
 
@@ -189,17 +151,17 @@ Record Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 acc
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function tptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
+function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
     sp = _serial_open(port_name, baudrate=19200)
     @assert !isnothing(sp) "Serial port $port_name is not available"
 
-    println("NeuroRecorder: TPT")
-    println("==================")
+    println("NeuroTester: TPT")
+    println("================")
     println("   Duration: $duration [seconds]")
     println("Serial port: $port_name")
     println()
-    println("Ready to start, press SPACEBAR to begin recording")
+    println("Ready to start, press SPACEBAR to begin the test")
     println()
 
     while true
@@ -214,14 +176,14 @@ function tptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
         end
     end
 
-    println("The recording will start after a beep")
+    println("The test will start after a beep")
     ts = time()
     while time() - ts <= 2
         _serial_listener(sp)
     end
     println()
     _beep()
-    print("Recording .")
+    print("   Pinch the thumb and the index finger as quickly as possible")
 
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
@@ -234,7 +196,6 @@ function tptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     tpt_ch_accz = zeros(length(t))
 
     idx = 1
-    ts = time()
     while idx <= length(tpt_ch_x)
         sp_signal = _serial_listener(sp)
         if !isnothing(sp_signal)
@@ -251,24 +212,13 @@ function tptr(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
                 end
             end
         end
-        if time() - ts >= 1.0
-            print(".")
-            ts = time()
-        end
     end
     _serial_close(sp)
     _beep()
     println()
     println()
-    println("Recording finished.")
+    println("Testing completed.")
 
-    tpt_ch_x = tpt_ch_x[1:(end - 1)]
-    tpt_ch_y = tpt_ch_y[1:(end - 1)]
-    tpt_ch_z = tpt_ch_z[1:(end - 1)]
-    tpt_ch_accx = tpt_ch_accx[1:(end - 1)]
-    tpt_ch_accy = tpt_ch_accy[1:(end - 1)]
-    tpt_ch_accz = tpt_ch_accz[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits=3)
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)
 

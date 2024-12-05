@@ -8,7 +8,7 @@ Perform Finger Tapping Test (FTT) in GUI mode. Use computer keyboard (SPACEBAR k
 
 # Arguments
 
-- `duration::Int64=5`: single trial duration in seconds
+- `duration::Int64=20`: single trial duration in seconds
 - `trials::Int64=2`: number of trials
 - `interval::Int64=2`: interval between trials in seconds
 - `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
@@ -24,7 +24,7 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
+function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
@@ -177,22 +177,24 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
                     push!(t_kp, t_kp_tmp)
                     push!(d_kp, d_kp_tmp)
                     result[idx] = length(t_kp_tmp)
-                    @guarded draw(can) do widget
-                        ctx = getgc(can)
-                        Cairo.set_source_surface(ctx, img1, 0, 0)
-                        Cairo.paint(ctx)
+                    if interval > 0
+                        @guarded draw(can) do widget
+                            ctx = getgc(can)
+                            Cairo.set_source_surface(ctx, img1, 0, 0)
+                            Cairo.paint(ctx)
+                        end
+                        set_gtk_property!(lb_status2, :label, "INTERVAL")
+                        set_gtk_property!(lb_trial2, :label, "-")
+                        l = strip(string(idx) * " of " * string(trials))
+                        set_gtk_property!(lb_interval2, :label, l)
+                        t1 = time()
+                        push!(int_idx, t1)
+                        while time() <= t1 + interval
+                        end
+                        push!(int_t_kp, int_t_kp_tmp)
+                        push!(int_d_kp, int_d_kp_tmp)
+                        int_result[idx] = length(int_t_kp_tmp)
                     end
-                    set_gtk_property!(lb_status2, :label, "INTERVAL")
-                    set_gtk_property!(lb_trial2, :label, "-")
-                    l = strip(string(idx) * " of " * string(trials))
-                    set_gtk_property!(lb_interval2, :label, l)
-                    t1 = time()
-                    push!(int_idx, t1)
-                    while time() <= t1 + interval
-                    end
-                    push!(int_t_kp, int_t_kp_tmp)
-                    push!(int_d_kp, int_d_kp_tmp)
-                    int_result[idx] = length(int_t_kp_tmp)
                 end
 
                 # Interacting with GTK from a thread other than the main thread is
@@ -249,41 +251,43 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
                         pop!(t_kp)
                         result[idx] -= 1
                     end
-                    @guarded draw(can) do widget
-                        ctx = getgc(can)
-                        Cairo.set_source_surface(ctx, img1, 0, 0)
-                        Cairo.paint(ctx)
-                    end
-                    set_gtk_property!(lb_status2, :label, "INTERVAL")
-                    set_gtk_property!(lb_trial2, :label, "-")
-                    l = strip(string(idx) * " of " * string(trials))
-                    set_gtk_property!(lb_interval2, :label, l)
-                    key_pressed = false
-                    sp = _serial_open(port_name)
-                    t_2 = time()
-                    while time() - t_2 <= interval
-                        t = time() - t_2
-                        serial_key = _serial_listener(sp)
-                        if serial_key == "$gpio:1"
-                            if !key_pressed
-                                # key is pressed
-                                push!(int_t_kp, t)
-                                int_result[idx] += 1
-                                key_pressed = true
-                            end
-                        elseif serial_key == "$gpio:0"
-                            if key_pressed
-                                # key is released
-                                push!(int_d_kp, t)
-                                key_pressed = false
-                            end
+                    if interval > 0
+                        @guarded draw(can) do widget
+                            ctx = getgc(can)
+                            Cairo.set_source_surface(ctx, img1, 0, 0)
+                            Cairo.paint(ctx)
                         end
-                        sleep(0.1)
-                    end
-                    _serial_close(sp)
-                    if length(int_d_kp) < sum(int_result)
-                        pop!(int_t_kp)
-                        int_result[idx] -= 1
+                        set_gtk_property!(lb_status2, :label, "INTERVAL")
+                        l = strip(string(idx) * " of " * string(trials))
+                        set_gtk_property!(lb_interval2, :label, l)
+                        set_gtk_property!(lb_trial2, :label, "-")
+                        key_pressed = false
+                        sp = _serial_open(port_name)
+                        t_2 = time()
+                        while time() - t_2 <= interval
+                            t = time() - t_2
+                            serial_key = _serial_listener(sp)
+                            if serial_key == "$gpio:1"
+                                if !key_pressed
+                                    # key is pressed
+                                    push!(int_t_kp, t)
+                                    int_result[idx] += 1
+                                    key_pressed = true
+                                end
+                            elseif serial_key == "$gpio:0"
+                                if key_pressed
+                                    # key is released
+                                    push!(int_d_kp, t)
+                                    key_pressed = false
+                                end
+                            end
+                            sleep(0.1)
+                        end
+                        _serial_close(sp)
+                        if length(int_d_kp) < sum(int_result)
+                            pop!(int_t_kp)
+                            int_result[idx] -= 1
+                        end
                     end
                 end
                 # Interacting with GTK from a thread other than the main thread is
@@ -343,6 +347,7 @@ function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int
         end
 
         return (taps=result, tap_t=t_kp, tap_d=d_kp, taps_int=int_result, tap_t_int=int_t_kp, tap_d_int=int_d_kp)
+
     elseif !isnothing(sp)
         # format time points
         d_kp = round.((d_kp .- t_kp) .* 1000, digits=1)
@@ -442,7 +447,7 @@ Perform Finger Tapping Test (FTT) in CLI mode. Use computer keyboard (SPACEBAR k
 
 # Arguments
 
-- `duration::Int64=5`: single trial duration in seconds
+- `duration::Int64=20`: single trial duration in seconds
 - `trials::Int64=2`: number of trials
 - `interval::Int64=2`: interval between trials in seconds
 - `gpio::Int64=-1`: Raspberry Pi GPIO to which the switch is connected (e.g. `gpio=23` is Pi board pin 16); set to -1 to disable using GPIO
@@ -458,7 +463,7 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
+function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
@@ -485,8 +490,8 @@ function ftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int6
         rpi = false
     end
 
-    println("NeuroRecorder: FTT")
-    println("==================")
+    println("NeuroTester: FTT")
+    println("================")
     println("  Trials: $trials")
     println("Duration: $duration [seconds]")
     println("Interval: $interval [seconds]")

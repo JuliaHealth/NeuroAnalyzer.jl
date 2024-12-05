@@ -682,14 +682,14 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     end
     @async Gtk.gtk_main()
     wait(cnd)
-    if !quit
-        time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-        time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
-        seg = (time1, time2)
-        return seg
-    else
-        return nothing
-    end
+
+    seg = nothing
+    time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
+    time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
+    seg = (time1, time2)
+    seg == (0.0, 0.0) && (seg = nothing)
+
+    return seg
 
 end
 

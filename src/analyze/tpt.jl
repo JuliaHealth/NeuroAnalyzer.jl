@@ -53,22 +53,22 @@ Analyze pinches in TPT recording.
 
 Named tuple containing:
 - `n::Int64`: number of pinches
-- `t_mean::Float64`: mean interval between pinches [s]
-- `t_median::Float64`: median interval between pinches [s]
-- `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches
-- `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches
+- `t_mean::Float64`: mean interval between pinches [ms]
+- `t_median::Float64`: median interval between pinches [ms]
+- `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches [ms]
+- `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches [ms]
 """
 function tpt_analyze(obj::NeuroAnalyzer.NEURO)::@NamedTuple{n::Int64, t_mean::Float64, t_median::Float64, t_rmssd::Float64, t_sdsd::Float64}
 
     p_idx = tpt_detect(obj)
-    t = obj.time_pts[p_idx]
+    t = obj.time_pts[p_idx] .* 1000
 
     n = length(p_idx)
-    t_diff = round.(diff(t), digits=2)
-    t_mean = round(mean(t_diff), digits=2)
-    t_median = round(median(t_diff), digits=2)
-    t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=2)
-    t_sdsd = round(std(t_diff), digits=2)
+    t_diff = round.(diff(t), digits=1)
+    t_mean = round(mean(t_diff), digits=1)
+    t_median = round(median(t_diff), digits=1)
+    t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=1)
+    t_sdsd = round(std(t_diff), digits=1)
 
     return(n=n, t_mean=t_mean, t_median=t_median, t_rmssd=t_rmssd, t_sdsd=t_sdsd)
 
