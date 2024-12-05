@@ -62,6 +62,14 @@ If you would like to support the project financially, we have the Liberapay acco
 
 If you use this toolbox, please acknowledge us by citing our [paper](https://neuroanalyzer.org#how-to-cite).
 
+## Support
+
+Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, typos, etc.) to the project is highly welcomed.
+
+Bugs, suggestions and questions should be reported using the Codeberg [AdamWysokinski/NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/issues) (preferred method) or Github [JuliaHealth/NeuroAnalyzer.jl](https://github.com/JuliaHealth/NeuroAnalyzer.jl/issues) issues page.
+
+You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags/neuroanalyzer).
+
 ## Contributors
 
 Below is the list of contributors and their affiliations.
