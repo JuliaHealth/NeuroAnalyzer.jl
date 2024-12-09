@@ -496,7 +496,7 @@ include("study/create.jl")
 include("study/info.jl")
 
 # recorder
-include("recorder/eda.jl")
+include("recorder/edar.jl")
 include("recorder/rt_plotter.jl")
 
 # tester
