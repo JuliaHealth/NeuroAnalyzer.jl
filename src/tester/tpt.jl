@@ -217,7 +217,7 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
     _beep()
     println()
     println()
-    println("Testing completed.")
+    println("Testing completed")
 
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)

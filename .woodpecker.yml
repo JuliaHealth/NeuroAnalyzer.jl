@@ -1,15 +1,18 @@
 steps:
   docs:
-    image: julia:1.10.5
+    image: julia:1.11
     pull: true
     when:
       - event: [push, manual]   # workflow should run if you execute it manually and on each push
-    secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
+    environment:
+      TOKEN_ENV:
+        from_secret: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
     commands:
       - export CI="1"
 
       - mkdir ~/NeuroAnalyzer
       - mkdir ~/NeuroAnalyzer/plugins
+
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
@@ -36,14 +39,17 @@ steps:
       - ./push_docs.sh
 
   test:
-    image: julia:1.10.5
+    image: julia:1.11
     pull: true
     when:
       - event: manual   # workflow should run if you execute it manually
     commands:
       - export CI="1"
+
       - mkdir ~/NeuroAnalyzer
       - mkdir ~/NeuroAnalyzer/plugins
+
       - apt-get update
       - apt-get install -y xvfb
+
       - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"

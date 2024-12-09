@@ -769,7 +769,7 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
     end
 
     println()
-    println("Testing completed.")
+    println("Testing completed")
 
     # format time points
     if rpi isa PiGPIO.Pi || !isnothing(sp)
