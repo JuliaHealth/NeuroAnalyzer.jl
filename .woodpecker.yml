@@ -5,8 +5,16 @@ steps:
     when:
       - event: [push, manual]   # workflow should run if you execute it manually and on each push
     environment:
-      TOKEN_ENV:
-        from_secret: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
+      FTP:
+        from_secret: ftp
+      FTP_USER:
+        from_secret: ftp_user
+      FTP_PASS:
+        from_secret: ftp_pass
+      CBMAIL:
+        from_secret: cbmail
+      CBTOKEN:
+        from_secret: cbtoken
     commands:
       - export CI="1"
 
