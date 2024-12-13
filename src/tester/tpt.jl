@@ -188,6 +188,7 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
     t = collect(0:1/fs:duration)
+    t = t[1:(end - 1)]
     tpt_ch_x = zeros(length(t))
     tpt_ch_y = zeros(length(t))
     tpt_ch_z = zeros(length(t))
@@ -218,7 +219,6 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
     println()
     println()
     println("Testing completed")
-
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)
 

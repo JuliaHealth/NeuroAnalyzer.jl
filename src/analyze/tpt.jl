@@ -25,14 +25,19 @@ function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     acc_y = obj.data[5, :, :][:]
     acc_z = obj.data[6, :, :][:]
 
-    p_idx_x, _ = findpeaks1d(pos_x, distance=(sr(obj) ÷ 2), height=mean(pos_x) + 2*std(pos_x))
-    p_idx_y, _ = findpeaks1d(pos_y, distance=(sr(obj) ÷ 2), height=mean(pos_y) + 2*std(pos_y))
-    p_idx_z, _ = findpeaks1d(pos_z, distance=(sr(obj) ÷ 2), height=mean(pos_z) + 2*std(pos_z))
-    p_idx_acc_x, _ = findpeaks1d(acc_x, distance=(sr(obj) ÷ 2), height=mean(acc_x) + 2*std(acc_x))
-    p_idx_acc_y, _ = findpeaks1d(acc_y, distance=(sr(obj) ÷ 2), height=mean(acc_y) + 2*std(acc_y))
-    p_idx_acc_z, _ = findpeaks1d(acc_z, distance=(sr(obj) ÷ 2), height=mean(acc_z) + 2*std(acc_z))
+    t = obj.time_pts
 
-    p_idx = round.(Int64, p_idx_x)
+    p_idx_x = _tpt_peaks(pos_x, t)
+    p_idx_y = _tpt_peaks(pos_y, t)
+    p_idx_z = _tpt_peaks(pos_z, t)
+    p_idx_acc_x = _tpt_peaks(acc_x, t)
+    p_idx_acc_y = _tpt_peaks(acc_y, t)
+    p_idx_acc_z = _tpt_peaks(acc_z, t)
+
+    p_idx = unique(sort(union(p_idx_x, p_idx_y, p_idx_acc_x, p_idx_acc_y)))
+    tx = t[p_idx]
+    tx = [tx[1]; diff(tx)]
+    p_idx = p_idx[tx .>= 0.2]
 
     _info("Detected pinches: $(length(p_idx))")
 

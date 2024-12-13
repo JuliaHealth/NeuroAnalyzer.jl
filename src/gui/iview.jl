@@ -1230,7 +1230,7 @@ Nothing
 """
 function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
 
-    (signal_len(obj1) / sr(obj1)) < zoom && (zoom = round(obj1.time_pts[end]) / 2)
+    obj1.time_pts[end] < zoom && (zoom = round(obj1.time_pts[end]) / 2)
 
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
