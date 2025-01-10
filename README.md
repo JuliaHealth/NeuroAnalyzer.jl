@@ -14,6 +14,8 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
 
+You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags/neuroanalyzer).
+
 Note: this toolbox is under active development and is subject to change without prior notice.
 
 ## Quickstart
@@ -62,13 +64,24 @@ If you would like to support the project financially, we have the Liberapay acco
 
 If you use this toolbox, please acknowledge us by citing our [paper](https://neuroanalyzer.org#how-to-cite).
 
-## Support
+## Contributing
 
-Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, typos, etc.) to the project is highly welcomed.
+Every contribution (bug reports, fixes, new ideas, feature requests or additions, speed optimization, better code, documentation improvements, typos, etc.) to the project is highly welcomed.
 
-Bugs, suggestions and questions should be reported using the Codeberg [AdamWysokinski/NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/issues) (preferred method) or Github [JuliaHealth/NeuroAnalyzer.jl](https://github.com/JuliaHealth/NeuroAnalyzer.jl/issues) issues page.
+You are very welcome to raise issues and start pull requests. Bugs, suggestions and questions should be reported using the Codeberg [AdamWysokinski/NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/issues) (preferred method) or Github [JuliaHealth/NeuroAnalyzer.jl](https://github.com/JuliaHealth/NeuroAnalyzer.jl/issues) issues page.
 
-You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags/neuroanalyzer).
+If you notice any bugs, such as crashing code, incorrect results or speed issues, please raise a Codeberg/GitHub issue. Before filing an issue please:
+
+- check that there are no similar existing issues already
+- check that your versions are up to date
+
+If you want to report a bug, include your version and system information, and all relevant information. If possible, condense your bug into the shortest example possible that the maintainers can replicate, a so called "minimal working example" or MWE.
+
+If you want to suggest a new feature, for example functionality that other plotting packages offer already, include supplementary material such as example images if possible, so it's clear what you are asking for.
+
+When opening a pull request, please add a short but meaningful description of the changes/features you implemented. Moreover, please add tests (where appropriate) to ensure that your code is working as expected.
+
+For each feature you want to contribute, please file a separate PR to keep the complexity down and time to merge short. Add PRs in draft mode if you want to discuss your approach first.
 
 ## Contributors
 
