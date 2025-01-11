@@ -116,7 +116,7 @@ All computations are performed using the double-precision 64-bit floating point 
 
 NeuroAnalyzer also includes NeuroRecorder, a set of functions for recording various neurophysiological signals:
 
-1. Finger Tapping Test (FTT) --using computer keyboard or external panel attached to Raspberry Pi
+1. Finger Tapping Test (FTT) -- using computer keyboard or external panel attached to Raspberry Pi
 2. Electrodermal Activity (EDA) = Galvanic Skin Response (GSR) -- via Raspberry Pi
 3. Two-point Pinch Test (TPT) -- using finger-worn accelerator attached to Raspberry Pi (in development)
 4. Angular Velocity Sensors (AVS) -- via Raspberry Pi (in development)
@@ -125,7 +125,7 @@ Extensive documentation and tutorials are available at [https://www.neuroanalyze
 
 NeuroAnalyzer functionality can be easily expanded using [plugins](https://neuroanalyzer.org/tut-plugins.html) (written in Julia).
 
-For common tasks (importing, filtering, referencing) NeuroAnalyzer performance in comparable with MNE and ~4× higher than EEGLAB. Benchmarks are available at [https://neuroanalyzer.org/benchmarks.html](https://neuroanalyzer.org/benchmarks.html).
+For common tasks (importing, filtering, referencing) NeuroAnalyzer performance is comparable with MNE and ~4× higher than EEGLAB. Benchmarks are available at [https://neuroanalyzer.org/benchmarks.html](https://neuroanalyzer.org/benchmarks.html).
 
 # Research projects using the software
 
@@ -134,7 +134,8 @@ NeuroAnalyzer has been used in the preparation of the following publications:
 1. Wysokiński A, Szczepocka E, Szczakowska A. Improved cognitive performance, increased theta, alpha, beta and decreased delta powers after cognitive rehabilitation augmented with tDCS in a patient with post-COVID-19 cognitive impairment (brain-fog). Psychiatry Research Case Reports. 2023 DOI: 10.1016/j.psycr.2023.100164
 2. Sochal M. et al. The relationship between sleep quality measured by polysomnography and selected neurotrophic factors. Journal of Clinical Medicine. 2024 DOI: 10.3390/jcm13030893
 3. Sochal M. et al. Circadian Rhythm Genes and Their Association with Sleep and Sleep Restriction. International Journal of Molecular Sciences. 2024 DOI: 10.3390/ijms251910445
-4. Wysokiński A, Pazdrak M. Complete resolution of auditory verbal hallucinations (AVH) in a patient with schizophrenia after transcranial direct current stimulation (tDCS) therapy. Psychiatria i Psycholologia Kliniczna. 2024 (in press)
+4. Dataseris G, Zelko J. Physiological signal analysis and open science using the Julia language and associated software. Frontiers in Network Physiology. 2024 DOI: 10.3389/fnetp.2024.1478280
+5. Wysokiński A, Pazdrak M. Complete resolution of auditory verbal hallucinations (AVH) in a patient with schizophrenia after transcranial direct current stimulation (tDCS) therapy. Psychiatria i Psycholologia Kliniczna. 2024 (in press)
 
 In the Department of Old Age Psychiatry and Psychotic Disorders (Medical University of Lodz, Poland) we are using NeuroAnalyzer for analyzing EEG data to analyze EEG data from our research projects on functional (EEG-based) connectivity in schizophrenia and EEG markers of tDCS stimulation.
 
