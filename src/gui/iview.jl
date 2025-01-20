@@ -1317,11 +1317,11 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         time2 = time1 + zoom
         time2 > obj1.time_pts[end] && (time2 = obj1.time_pts[end])
         ctx = getgc(can)
-         p = NeuroAnalyzer.plot(obj1, obj2,
-                                ch=cl[ch_first:ch_last],
-                                seg=(time1, time2),
-                                title="",
-                                scale=scale)
+        p = NeuroAnalyzer.plot(obj1, obj2,
+                               ch=cl[ch_first:ch_last],
+                               seg=(time1, time2),
+                               title="",
+                               scale=scale)
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)

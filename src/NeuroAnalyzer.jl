@@ -456,6 +456,7 @@ include("plots/plot_varia.jl")
 
 # gui
 include("gui/iedit.jl")
+include("gui/ifilter.jl")
 include("gui/iplot_locs3d.jl")
 include("gui/ipsd.jl")
 include("gui/iselect_seg.jl")

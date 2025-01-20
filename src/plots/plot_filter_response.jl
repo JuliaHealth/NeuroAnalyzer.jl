@@ -55,10 +55,10 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
 
         if fprototype !== :iirnotch
             fname = titlecase(String(fprototype))
-            title = "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\n\nFrequency response"
+            title = "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\n\nFrequency response"
         else
             fname = "IIR notch"
-            title = "Filter: $(fname), cutoff: $cutoff Hz, band width: $bw\n\nFrequency response"
+            title = "Filter: $(fname), cutoff: $(round.(cutoff, digits=1)) Hz, band width: $bw\n\nFrequency response"
         end
 
         p1 = Plots.plot(w,
@@ -197,11 +197,11 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
         if fprototype === :fir
-            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, taps: $(length(flt)), attenuation: $(order * 15) dB\nFrequency response"
+            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, taps: $(length(flt)), attenuation: $(order * 15) dB\nFrequency response"
         elseif fprototype === :firls
-            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $(length(flt))\nFrequency response"
+            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $(length(flt))\nFrequency response"
         elseif fprototype === :remez
-            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, taps: $(length(flt))\nFrequency response"
+            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, taps: $(length(flt))\nFrequency response"
         end
         p1 = Plots.plot(w,
                         H,
