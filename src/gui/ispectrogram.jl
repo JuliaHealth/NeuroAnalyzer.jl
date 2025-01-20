@@ -1004,6 +1004,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
+
         if k == 0x0000ff50 # home
             Gtk.@sigatom begin
                 set_gtk_property!(entry_epoch, :value, 1)
@@ -1015,7 +1016,8 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             end
             draw(can)
         end
-        if s == 0x00000004
+
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 0x00000068 # h

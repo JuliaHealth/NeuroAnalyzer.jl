@@ -571,8 +571,9 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                 draw(can)
             end
         end
+
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 quit = true
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1072,6 +1073,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
+
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
@@ -1109,6 +1111,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 set_gtk_property!(entry_epoch, :value, nepochs(obj))
             end
         end
+
         if s == 0x00000008 || s == 0x00000010 # alt
             if k == 0x00000073 # s
                 scale = !scale
@@ -1118,8 +1121,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 draw(can)
             end
         end
+
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 quit = true
                 Gtk.destroy(win)
             elseif k == 104 # h
@@ -1459,6 +1463,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
+
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
@@ -1513,6 +1518,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
             end
             draw(can)
         end
+
         if s == 0x00000008 || s == 0x00000010 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
@@ -1541,8 +1547,9 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
                 draw(can)
             end
         end
+
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
                 info_dialog(help)
@@ -1813,7 +1820,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
             end
         end
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
                 info_dialog(help)
@@ -2097,6 +2104,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
+
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
@@ -2154,6 +2162,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
             end
             draw(can)
         end
+
         if s == 0x00000008 || s == 0x00000010 # alt
             if k == 0x0000002c # ,
                 time_current = get_gtk_property(entry_time, :value, Float64)
@@ -2185,8 +2194,9 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
                 draw(can)
             end
         end
+
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
                 info_dialog(help)
@@ -2419,6 +2429,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
+
         if k == 0x0000ff55 # Page Up
             if ch_first > 1
                 ch_first -= 1
@@ -2455,8 +2466,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
                 draw(can)
             end
         end
+
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             elseif k == 104 # h
                 info_dialog(help)
@@ -2531,7 +2543,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000004
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
@@ -2547,7 +2559,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
                             warn_dialog("Incorrect filename!")
                         end
                     end
-            elseif k == 113 # q
+            elseif k == 0x00000071 # q
                 Gtk.destroy(win)
             end
         end
@@ -2606,8 +2618,8 @@ function iview(file_name::String)::Nothing
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000004
-            if k == 113 # q
+        if s == 0x00000004 || s == 0x00000014 # ctrl
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             end
         end
@@ -2675,7 +2687,7 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
                             warn_dialog("Incorrect filename!")
                         end
                     end
-            elseif k == 113 # q
+            elseif k == 0x00000071 # q
                 Gtk.destroy(win)
             end
         end

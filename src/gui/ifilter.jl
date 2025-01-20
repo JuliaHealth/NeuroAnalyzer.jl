@@ -19,7 +19,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
     fprototype = fprototypes[1]
     ftypes = [:lp, :hp, :bs, :bp]
     ftype = ftypes[1]
-    cutoff = 0.01
+    cutoff = 0.1
     order = 8
     rp = 2
     rs = 20
@@ -46,6 +46,9 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
     set_gtk_property!(g, :row_spacing, 5)
     set_gtk_property!(g_opts, :row_spacing, 5)
     set_gtk_property!(g_opts, :column_spacing, 5)
+
+    bt_refresh = GtkButton("Refresh")
+    set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
     bt_close = GtkButton("Close")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
@@ -78,7 +81,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
 
     entry_order = GtkSpinButton(2, 256, 2)
     set_gtk_property!(entry_order, :value, order)
-    set_gtk_property!(entry_order, :tooltip_text, "Filter order (6 dB/octave) for IIR filters, number of taps for REMEZ filter, attenuation (× 4 dB) for FIR filter")
+    set_gtk_property!(entry_order, :tooltip_text, "Filter order (6 dB/octave) for IIR filters\nNumber of taps for REMEZ filter\nAttenuation (× 4 dB) for FIR filter")
 
     entry_rp = GtkSpinButton(0.0025, 256.0, 0.0025)
     set_gtk_property!(entry_rp, :value, rp)
@@ -129,7 +132,8 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
     g_opts[2, 7] = entry_rs
     g_opts[2, 8] = entry_bw
     g_opts[2, 9] = cb_mono
-    g_opts[1:2, 10] = bt_close
+    g_opts[1:2, 10] = bt_refresh
+    g_opts[1:2, 11] = bt_close
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -140,31 +144,39 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
     showall(win)
 
     @guarded draw(can) do widget
-        ctx = getgc(can)
-        mono = get_gtk_property(cb_mono, :active, Bool)
-        cutoff1 = get_gtk_property(entry_cutoff1, :value, Float64)
-        cutoff2 = get_gtk_property(entry_cutoff2, :value, Float64)
-        order = get_gtk_property(entry_order, :value, Int64)
-        rp = get_gtk_property(entry_rp, :value, Float64)
-        rs = get_gtk_property(entry_rs, :value, Float64)
-        bw = get_gtk_property(entry_bw, :value, Float64)
-        fprototype = fprototypes[get_gtk_property(combo_fprototype, :active, Int64) + 1]
-        ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
-        fprototype === :iirnotch && (ftype = :bs)
-        if ftype === :bp || ftype === :bs
-            if fprototype !== :iirnotch
-                cutoff = (cutoff1, cutoff2)
+        if mod(get_gtk_property(entry_order, :value, Int64), 2) != 0
+            warn_dialog("Order must be even!")
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_order, :value, order)
+            end
+        else
+            ctx = getgc(can)
+            mono = get_gtk_property(cb_mono, :active, Bool)
+            cutoff1 = get_gtk_property(entry_cutoff1, :value, Float64)
+            cutoff2 = get_gtk_property(entry_cutoff2, :value, Float64)
+            order = get_gtk_property(entry_order, :value, Int64)
+            order = get_gtk_property(entry_order, :value, Int64)
+            rp = get_gtk_property(entry_rp, :value, Float64)
+            rs = get_gtk_property(entry_rs, :value, Float64)
+            bw = get_gtk_property(entry_bw, :value, Float64)
+            fprototype = fprototypes[get_gtk_property(combo_fprototype, :active, Int64) + 1]
+            ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
+            fprototype === :iirnotch && (ftype = :bs)
+            if ftype === :bp || ftype === :bs
+                if fprototype !== :iirnotch
+                    cutoff = (cutoff1, cutoff2)
+                else
+                    cutoff = cutoff1
+                end
             else
                 cutoff = cutoff1
             end
-        else
-            cutoff = cutoff1
+            p = plot_filter_response(fs=fs, n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
-        p = plot_filter_response(fs=fs, n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
     end
 
     signal_connect(combo_fprototype, "changed") do widget
@@ -190,7 +202,6 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
     end
 
     signal_connect(entry_cutoff1, "changed") do widget
-        @show get_gtk_property(entry_cutoff2, :value, Float64)
         Gtk.@sigatom begin
             GAccessor.range(entry_cutoff2, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1), fs / 2)
             set_gtk_property!(entry_cutoff2, :value, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1))
@@ -218,9 +229,24 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Nothing
         draw(can)
     end
 
+    signal_connect(bt_refresh, "clicked") do widget
+        draw(can)
+    end
+
     signal_connect(bt_close, "clicked") do widget
         Gtk.destroy(win)
         return nothing
+    end
+
+    signal_connect(win, "key-press-event") do widget, event
+        k = event.keyval
+        s = event.state
+        if s == 0x00000004 || s == 0x00000014 # ctrl
+            if k == 0x00000071 # q
+                Gtk.destroy(win)
+                return nothing
+            end
+        end
     end
 
     cnd = Condition()

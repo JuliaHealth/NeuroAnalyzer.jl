@@ -527,7 +527,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         k = event.keyval
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             end
         end

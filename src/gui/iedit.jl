@@ -724,7 +724,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         k = event.keyval
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 113 # q
+            if k == 0x00000071 # q
                 Gtk.destroy(win)
             end
         end

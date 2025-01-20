@@ -115,7 +115,7 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000014
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000073 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
@@ -131,9 +131,6 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
                 x = nothing
                 y = nothing
             end
-        end
-        if k == 65293
-            Gtk.destroy(win)
         end
     end
 
