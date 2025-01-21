@@ -24,7 +24,7 @@ Plot filter response.
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
 - `n::Int64=2560`: signal length in samples
 - `fs::Int64`: sampling rate
-- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
+- `order::Int64=4`: filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` (for these filters is multiplied by two since must be even), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
@@ -43,6 +43,10 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, w=w)
+
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        order *= 2
+    end
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
         H, w = freqresp(flt)
@@ -72,6 +76,7 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         label="",
                         top_margin=10Plots.px,
                         bottom_margin=10Plots.px,
+                        left_margin=40Plots.px,
                         titlefontsize=8,
                         xlabelfontsize=6,
                         ylabelfontsize=6,
@@ -116,6 +121,7 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         xlabel="Frequency [Hz]",
                         label="",
                         bottom_margin=10Plots.px,
+                        left_margin=40Plots.px,
                         titlefontsize=8,
                         xlabelfontsize=6,
                         ylabelfontsize=6,
@@ -213,6 +219,7 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         xlabel="Frequency [Hz]",
                         label="",
                         bottom_margin=10Plots.px,
+                        left_margin=40Plots.px,
                         titlefontsize=8,
                         xlabelfontsize=6,
                         ylabelfontsize=6,

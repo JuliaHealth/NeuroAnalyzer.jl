@@ -1,4 +1,5 @@
 export filter_apply
+export filter_apply!
 export filter_create
 export filter
 export filter!
@@ -27,7 +28,7 @@ Create IIR or FIR filter.
 - `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
 - `n::Int64`: signal length in samples
 - `fs::Int64`: sampling rate
-- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
+- `order::Int64=4`: filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` (for these filters is multiplied by two since must be even), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
@@ -37,7 +38,7 @@ Create IIR or FIR filter.
 
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 """
-function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, w::Union{Nothing, AbstractVector, <:Real}=nothing)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=4, rp::Real=-1, rs::Real=-1, bw::Real=-1, w::Union{Nothing, AbstractVector, <:Real}=nothing)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
     if fprototype !== :iirnotch
@@ -46,11 +47,11 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     end
 
     @assert fs >= 1 "fs must be ≥ 1."
-    fprototype !== :iirnotch && @assert order > 1 "order must be > 1."
+
+    !(fprototype in [:iirnotch, :remez, :fir]) && @assert order > 1 "order must be > 1."
     @assert order <= n "order must be ≤ signal length ($n)."
-    if !(fprototype in [:iirnotch, :remez, :fir])
-        @assert order >= 2 "order must be ≥ 2."
-        @assert iseven(order) "order must be even."
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        order *= 2
     end
 
     if isa(w, AbstractVector)
@@ -339,6 +340,92 @@ function filter_apply(s::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGai
 end
 
 """
+    filter_apply(obj; <keyword arguments>)
+
+Apply IIR or FIR filter.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+    - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function filter_apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)::NeuroAnalyzer.NEURO
+
+    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
+
+    ch = get_channel(obj, ch=ch)
+    ep_n = nepochs(obj)
+    fs = sr(obj)
+
+    ep_n > 1 && _warn("filter() should be applied to a continuous signal.")
+    _info("Signal should be tapered prior to filtering to reduce edge artifacts")
+
+    obj_new = deepcopy(obj)
+
+    # initialize progress bar
+    progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
+
+    @inbounds for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in eachindex(ch)
+            obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
+            # update progress bar
+            progress_bar && next!(progbar)
+        end
+    end
+
+    reset_components!(obj_new)
+    push!(obj_new.history, "filter(OBJ, ch=$ch, dir=$dir)")
+
+    return obj_new
+
+end
+
+"""
+    filter_apply!(obj; <keyword arguments>)
+
+Apply IIR or FIR filter.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
+- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+    - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
+
+# Returns
+
+Nothing
+"""
+function filter_apply!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)::Nothing
+
+    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
+
+    obj_new = NeuroAnalyzer.filter_apply(obj,
+                                         ch=ch,
+                                         flt=flt,
+                                         dir=dir)
+
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
+
+    return nothing
+
+end
+
+"""
     filter(obj; <keyword arguments>)
 
 Apply filtering.
@@ -369,7 +456,7 @@ Apply filtering.
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
-- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
+- `order::Int64=4`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
 
@@ -377,7 +464,7 @@ Apply filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::NeuroAnalyzer.NEURO
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=4, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::NeuroAnalyzer.NEURO
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
 
@@ -402,6 +489,7 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Rege
         ftype in [:bs, :bp] && @assert length(cutoff) == 2 "For :bp and :bs filters cutoff must contain two frequencies."
         flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=fs, order=order, rp=rp, rs=rs, bw=bw, w=w)
     end
+
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
@@ -451,7 +539,7 @@ Apply filtering.
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
-- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
+- `order::Int64=4`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
 - `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
 
@@ -459,7 +547,7 @@ Apply filtering.
 
 Nothing
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=4, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
 
     if preview
         _warn("When `preview=true`, signal is not being filtered.")
