@@ -180,9 +180,13 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
                 end
             end
         end
-        if fprototype in [:iirnotch, :remez, :fir]
+        if fprototype in [:iirnotch, :fir]
             Gtk.@sigatom begin
                 GAccessor.range(entry_order, 1, 256)
+            end
+        elseif fprototype === :remez
+            Gtk.@sigatom begin
+                GAccessor.range(entry_order, 4, 256)
             end
         else
             Gtk.@sigatom begin

@@ -48,7 +48,8 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    !(fprototype in [:iirnotch, :remez, :fir]) && @assert order > 1 "order must be > 1."
+    !(fprototype in [:iirnotch, :fir]) && @assert order > 1 "order must be > 1."
+    !(fprototype in [:remez]) && @assert order > 1 "order must be > 3."
     @assert order <= n "order must be ≤ signal length ($n)."
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         order *= 2
