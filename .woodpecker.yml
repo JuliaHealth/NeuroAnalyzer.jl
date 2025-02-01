@@ -22,7 +22,10 @@ steps:
       - mkdir ~/NeuroAnalyzer/plugins
 
       - apt-get update
-      - apt-get install -y xvfb ncftp git
+      - apt-get install -y xvfb ncftp git libpcre3
+
+      - cd /usr/lib/x86_64-linux-gnu
+      - ln -s libpcre.so.3 libpcre.so.1
 
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
