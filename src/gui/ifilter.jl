@@ -12,6 +12,10 @@ Interactive filter design.
 # Returns
 
 - `flt::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
+
+# Notes
+
+The returned filter is based on sampling rate and epoch length of the OBJ used for designing the filter, it should not be applied for objects of different sampling rate or epoch length.
 """
 function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
@@ -26,9 +30,10 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     bw = 2
     w = nothing
 
+    n=epoch_len(obj)
     fs = sr(obj)
 
-    p = plot_filter_response(fs=fs, n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
+    p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
 
     win = GtkWindow("NeuroAnalyzer: ifilter()", 1300, 800)
     set_gtk_property!(win, :border_width, 5)
@@ -164,7 +169,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         else
             cutoff = cutoff1
         end
-        p = plot_filter_response(fs=fs, n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
+        p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
         show(io, MIME("image/png"), p)
         img = read_from_png(io)
         set_source_surface(ctx, img, 0, 0)
@@ -269,6 +274,6 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     @async Gtk.gtk_main()
     wait(cnd)
 
-    return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=fs, order=order, rp=rp, rs=rs, bw=bw)
+    return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
 
 end
