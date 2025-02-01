@@ -15,7 +15,7 @@ Interactive filter design.
 
 # Notes
 
-The returned filter is based on sampling rate and epoch length of the OBJ used for designing the filter, it should not be applied for objects of different sampling rate or epoch length.
+The returned filter is based on sampling rate and epoch length of the OBJ used for designing the filter. Therefore, it should not be applied for objects of different sampling rate or epoch length.
 """
 function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
