@@ -37,11 +37,13 @@ NeuroAnalyzer is a Julia [@bezanson_2017] toolbox for analyzing neurophysiologic
 
 There are many excellent MATLAB and Python based EEG/MEG/NIRS applications (e.g. EEGLAB [@delorme_2011], Fieldtrip [@oostenveld_2011], Brainstorm or MNE [@gramfort_2013]). They have been in development for many years and are well established in the scientific community. Many state-of-the-art papers were published using data prepared using these programs. However, compared with Python and MATLAB, there are many advantages of Julia, which underlie my decision to start developing such a toolbox in Julia. I believe that Julia is the future of scientific computing and scientific data analysis [@selvaraj_2022]. Major advantages of Julia are listed in Julia documentation:
 
-- Julia is fast [@bezanson_2018]. In many situations Julia is considerably faster than Python (without having to use numba/cython) and MATLAB. Moreover, Julia provides unlimited scalability. Julia programs can easily be ran on a large cluster or across distributed computers.
+- Julia is fast [@bezanson_2018]. In many situations Julia is considerably faster than Python (without having to use numba/cython) and MATLAB (see https://benchmarksgame-team.pages.debian.net/benchmarksgame/index.html for example benchmarks). Moreover, Julia provides unlimited scalability. Julia programs can easily be ran on a large cluster or across distributed computers.
 - Julia is open-source and free. Increasing MATLAB licensing costs are prohibitive to individual researchers and many research institutions.
-- From its very beginning Julia is being focused on scientific computations. Currently only Julia, C, C++ and Fortran belong to the HPC (High Performance Computing) Petaflop Club. Julia is designed for distributed and parallel computations, making it great for distributed analyzes of large data sets.
+- From its very beginning Julia is being focused on scientific computations [@bezanson_2014]. Currently only Julia, C, C++ and Fortran belong to the HPC (High Performance Computing) Petaflop Club. Julia is designed for distributed and parallel computations, making it great for distributed analyzes of large data sets.
 - Most of the Julia packages are written in pure Julia. It’s easier to understand and modify their code if you already know Julia.
-- Julia is beautifully designed, making programming in Julia a pure pleasure. This elegant design makes Julia easy to read and write.
+- Julia is beautifully designed (multiple dispatches, metaprogramming capabilities, user-friendly syntax and readability, integrated packages management), making programming in Julia a pure pleasure [@pal_2024]. This elegant design makes Julia easy to read and write.
+
+To sum it up, the target audience of this software are neuroscientists looking for highly performant and complete toolbox for collecting, editing and analyzing neurophysiological data.
 
 # Three years of development
 
@@ -134,7 +136,7 @@ NeuroAnalyzer has been used in the preparation of the following publications:
 1. Wysokiński A, Szczepocka E, Szczakowska A. Improved cognitive performance, increased theta, alpha, beta and decreased delta powers after cognitive rehabilitation augmented with tDCS in a patient with post-COVID-19 cognitive impairment (brain-fog). Psychiatry Research Case Reports. 2023 DOI: 10.1016/j.psycr.2023.100164
 2. Sochal M. et al. The relationship between sleep quality measured by polysomnography and selected neurotrophic factors. Journal of Clinical Medicine. 2024 DOI: 10.3390/jcm13030893
 3. Sochal M. et al. Circadian Rhythm Genes and Their Association with Sleep and Sleep Restriction. International Journal of Molecular Sciences. 2024 DOI: 10.3390/ijms251910445
-4. Dataseris G, Zelko J. Physiological signal analysis and open science using the Julia language and associated software. Frontiers in Network Physiology. 2024 DOI: 10.3389/fnetp.2024.1478280
+4. Datseris G, Zelko J. Physiological signal analysis and open science using the Julia language and associated software. Frontiers in Network Physiology. 2024 DOI: 10.3389/fnetp.2024.1478280
 5. Wysokiński A, Pazdrak M. Complete resolution of auditory verbal hallucinations (AVH) in a patient with schizophrenia after transcranial direct current stimulation (tDCS) therapy. Psychiatria i Psycholologia Kliniczna. 2024 (in press)
 
 In the Department of Old Age Psychiatry and Psychotic Disorders (Medical University of Lodz, Poland) we are using NeuroAnalyzer for analyzing EEG data to analyze EEG data from our research projects on functional (EEG-based) connectivity in schizophrenia and EEG markers of tDCS stimulation.
