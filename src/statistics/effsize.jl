@@ -5,7 +5,7 @@ export pooledstd
 """
     effsize(x1, x2)
 
-Calculate Cohen's d and Hedges g effect sizes.
+Calculate effect sizes.
 
 # Arguments
 
@@ -30,9 +30,33 @@ function effsize(x1::AbstractVector, x2::AbstractVector)::@NamedTuple{d::Float64
 end
 
 """
+    effsize_p1g(p)
+
+Calculate Cohen's h effect size for one proportion.
+
+# Arguments
+
+- `p::Float64`: proportion
+
+# Returns
+
+- `h::Float64`
+"""
+function effsize_p2g(p1::Float64, p2::Float64)::Float64
+
+    @assert p <= 1.0 "p must be ≤ 1.0."
+    @assert p >= 0.0 "p must be ≥ 1.0."
+
+    h = 2 * asin(sqrt(p))
+
+    return h
+
+end
+
+"""
     effsize_p2g(p1, p2)
 
-Calculate effect size for two proportions `p1` and `p2`.
+Calculate Cohen's h effect size for two proportions `p1` and `p2`.
 
 # Arguments
 
@@ -41,15 +65,15 @@ Calculate effect size for two proportions `p1` and `p2`.
 
 # Returns
 
-- `e::Float64`
+- `h::Float64`
 """
 function effsize_p2g(p1::Float64, p2::Float64)::Float64
 
     @assert p1 + p2 == 1.0 "Proportions must add to 1.0."
 
-    e = 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
+    h = 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
 
-    return e
+    return h
 
 end
 

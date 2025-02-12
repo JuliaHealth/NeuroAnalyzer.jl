@@ -80,6 +80,9 @@ _, _, _, _, df, _ = cor_test(ones(5), zeros(5))
 @info "Test: meanw()"
 @test meanw(ones(5), [1,2,3,4,5]) == 1.0
 
+@info "Test: effsize_p1g()"
+@test effsize_p1g(0.5) == 1.5707963267948968
+
 @info "Test: effsize_p2g()"
 @test effsize_p2g(0.5, 0.5) == 0.0
 
