@@ -54,7 +54,7 @@ function effsize_p2g(p1::Float64, p2::Float64)::Float64
 end
 
 """
-    effsize_p2g(p1, p2)
+    effsize_p2g(p1, p2; nd)
 
 Calculate Cohen's h effect size for two proportions `p1` and `p2`.
 
@@ -62,18 +62,19 @@ Calculate Cohen's h effect size for two proportions `p1` and `p2`.
 
 - `p1::Float64`: 1st proportion, e.g. 0.7
 - `p2::Float64`: 2nd proportion, e.g. 0.3
+- `nd::Bool=false`: if true, calculate non-directional h value
 
 # Returns
 
 - `h::Float64`
 """
-function effsize_p2g(p1::Float64, p2::Float64)::Float64
+function effsize_p2g(p1::Float64, p2::Float64; nd::Bool=false)::Float64
 
     @assert p1 + p2 == 1.0 "Proportions must add to 1.0."
 
     h = 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
 
-    return h
+    return nd ? abs(h) : h
 
 end
 
