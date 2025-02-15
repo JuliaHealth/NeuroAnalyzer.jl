@@ -424,22 +424,6 @@ iv, izv, f = NeuroAnalyzer.itpc_spec(e10, ch="Fp1", frq_lim=(0, 4), frq_n=5)
 @test f == [0.01, 0.045, 0.2, 0.894, 4.0]
 
 @info "Test: mdiff()"
-st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:absdiff)
-@test length(st) == 6
-@test sts == 3.0
-@test p in [0.0, 1.0]
-st, sts, p = NeuroAnalyzer.mdiff(a1, a2, method=:absdiff)
-@test size(st) == (2, 6)
-@test sts == [1.0, 1.0]
-@test p == [0.0, 0.0]
-st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:diff2int)
-@test length(st) == 6
-@test sts == 4.666666666666666
-@test p == 1.0 || p == 0.0
-st, sts, p = NeuroAnalyzer.mdiff(a1, a2, method=:diff2int)
-@test size(st) == (2, 6)
-@test sts == [2.0, 2.0]
-@test p == [0.0, 0.0]
 st, sts, p = NeuroAnalyzer.mdiff(e10, e10, ch1="Fp1", ch2="Fp1", method=:absdiff)
 @test size(st) == (10, 3)
 @test sts == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -459,10 +443,6 @@ m = NeuroAnalyzer.mutual_information(e10, e10, ch1="Fp1", ch2="Fp2")
 @test size(m) == (1, 10)
 
 @info "Test: msci95()"
-@test NeuroAnalyzer.msci95(v1) == (sm = 3.0, ss = 0.7071067811865476, su = 4.385929291125633, sl = 1.6140707088743669)
-@test NeuroAnalyzer.msci95(v2) == (sm = 4.0, ss = 0.7071067811865476, su = 5.385929291125633, sl = 2.614070708874367)
-@test NeuroAnalyzer.msci95(m1) == (sm = [2.5, 3.5, 4.5], ss = [1.4999999999999998, 1.4999999999999998, 1.4999999999999998], su = [5.4399999999999995, 6.4399999999999995, 7.4399999999999995], sl = [-0.4399999999999995, 0.5600000000000005, 1.5600000000000005])
-@test NeuroAnalyzer.msci95(a1) == (sm = [1.0 1.0 1.0; 1.0 1.0 1.0], ss = [0.0 0.0 0.0; 0.0 0.0 0.0], su = [1.0 1.0 1.0; 1.0 1.0 1.0], sl = [1.0 1.0 1.0; 1.0 1.0 1.0])
 sm, ss, su, sl = NeuroAnalyzer.msci95(e10, ch="all")
 @test size(sm) == (10, 2560)
 @test size(ss) == (10, 2560)
@@ -473,9 +453,6 @@ sm, ss, su, sl = NeuroAnalyzer.msci95(e10, ch="all", method=:boot)
 @test size(ss) == (10, 2560)
 @test size(su) == (10, 2560)
 @test size(sl) == (10, 2560)
-@test NeuroAnalyzer.msci95(v1, v2) == (sm = -1.0, ss = 1.0, su = 0.96, sl = -2.96)
-@test NeuroAnalyzer.msci95(m1, m2) == (sm = [-4.0; 2.0;;], ss = [0.8164965809277261; 0.8164965809277261;;], su = [-2.3996667013816566; 3.6003332986183434;;], sl = [-5.600333298618343; 0.39966670138165683;;])
-@test NeuroAnalyzer.msci95(a1, a2) == (sm = [1.0 1.0; 1.0 1.0], ss = [0.0 0.0; 0.0 0.0], su = [1.0 1.0; 1.0 1.0], sl = [1.0 1.0; 1.0 1.0])
 sm, ss, su, sl = NeuroAnalyzer.msci95(e10, e10, ch1="Fp1", ch2="Fp2")
 @test size(sm) == (1, 10)
 @test size(ss) == (1, 10)
@@ -923,5 +900,46 @@ ph, f = phsd(e10, ch="all")
 @info "Test: lat_idx()"
 @test lat_idx(e10) isa Float64
 @test lat_idx(e10, frq=(1, 3.5)) isa Float64
+
+@info "Test: vartest()"
+f, p = NeuroAnalyzer.vartest(e10, ch="all")
+@test size(f) == (24, 24, 10)
+@test size(p) == (24, 24, 10)
+f, p = NeuroAnalyzer.vartest(e10, e10, ch1="all", ch2="all")
+@test size(f) == (24, 24, 10)
+@test size(p) == (24, 24, 10)
+
+@info "Test: seg_mean()"
+@test seg_mean(ones(5,5,5)) == ones(5)
+@test seg_mean(ones(5,5,5), ones(5, 5, 5)) == (seg1=ones(5), seg2=ones(5))
+
+@info "Test: flim()"
+p = ones(10, 100, 5)
+f = collect(1:100)
+p2, f2 = flim(p, f, frq_lim=(5, 10))
+@test size(p2) == (10, 6, 5)
+@test length(f2) == 6
+p = ones(100, 200, 10, 5)
+f = collect(1:100)
+p2, f2 = flim(p, f, frq_lim=(5, 10))
+@test size(p2) == (6, 200, 10, 5)
+@test length(f2) == 6
+
+@info "Test: tlim()"
+p = ones(100, 200, 10, 5)
+t = collect(1:200)
+p2, t2 = tlim(p, t, seg=(5, 10))
+@test size(p2) == (100, 6, 10, 5)
+@test length(t2) == 6
+
+@info "Test: seg_extract()"
+x = ones(100, 100)
+@test seg_extract(x, (10, 10, 20, 20)) == ones(11, 11)
+@test seg_extract(x, (10, 10, 20, 20), v=true) == ones(11 * 11)
+@test seg_extract(x, (10, 10, 20, 20), c=true) == ones(496)
+
+@info "Test: std()"
+s = std(e10)
+@test size(s) == (24, 2560)
 
 true

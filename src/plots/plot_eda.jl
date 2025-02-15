@@ -264,7 +264,7 @@ function plot_eda_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = msci95(s)
+    s_m, _, s_u, s_l = NeuroStats.msci95(s)
 
     # get limits
     ylim = (0, round(minimum(s) * 1.5, digits=-2))

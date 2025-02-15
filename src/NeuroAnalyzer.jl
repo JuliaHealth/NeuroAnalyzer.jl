@@ -70,7 +70,7 @@ use_cuda = nothing
 progress_bar = nothing
 verbose = nothing
 
-# add dependencies
+# load dependencies
 
 using Artifacts
 using Cairo
@@ -112,6 +112,7 @@ using Logging
 using MAT
 using MLJ
 using MultivariateStats
+using NeuroStats
 using NPZ
 using PiGPIO
 using Pkg
@@ -262,7 +263,6 @@ include("utils/generate.jl")
 include("utils/gradient.jl")
 include("utils/info.jl")
 include("utils/labels.jl")
-include("utils/make_table.jl")
 include("utils/matrix.jl")
 include("utils/misc.jl")
 include("utils/note.jl")
@@ -274,6 +274,7 @@ include("utils/to_df.jl")
 include("utils/vector.jl")
 include("utils/view_header.jl")
 include("utils/wavelets.jl")
+include("utils/fwhm.jl")
 
 # io
 include("io/export_csv.jl")
@@ -433,6 +434,13 @@ include("analyze/ftt.jl")
 include("analyze/total_power.jl")
 include("analyze/xcor.jl")
 include("analyze/xcov.jl")
+include("analyze/vartest.jl")
+include("analyze/segments.jl")
+include("analyze/specseg.jl")
+include("analyze/stats.jl")
+include("analyze/std.jl")
+include("analyze/mdiff.jl")
+include("analyze/msci95.jl")
 
 # plots
 include("plots/cairo.jl")
@@ -464,34 +472,6 @@ include("gui/ispectrogram.jl")
 include("gui/itopo.jl")
 include("gui/iview_ica.jl")
 include("gui/iview.jl")
-
-# statistics
-include("statistics/bootstrap.jl")
-include("statistics/cmp_test.jl")
-include("statistics/cor_test.jl")
-include("statistics/dprime.jl")
-include("statistics/effsize.jl")
-include("statistics/friedman.jl")
-include("statistics/hildebrand_rule.jl")
-include("statistics/jaccard_similarity.jl")
-include("statistics/linreg.jl")
-include("statistics/mdiff.jl")
-include("statistics/means.jl")
-include("statistics/misc.jl")
-include("statistics/ml.jl")
-include("statistics/msci95.jl")
-include("statistics/norminv.jl")
-include("statistics/outliers.jl")
-include("statistics/power.jl")
-include("statistics/pred_int.jl")
-include("statistics/ranks.jl")
-include("statistics/res_norm.jl")
-include("statistics/segments.jl")
-include("statistics/sem_diff.jl")
-include("statistics/specseg.jl")
-include("statistics/stats.jl")
-include("statistics/summary.jl")
-include("statistics/vartest.jl")
 
 # study
 include("study/create.jl")

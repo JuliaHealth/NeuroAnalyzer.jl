@@ -236,7 +236,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = msci95(sp)
+    s_m, _, s_u, s_l = NeuroStats.msci95(sp)
 
     if frq === :lin
         xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)

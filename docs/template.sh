@@ -43,7 +43,8 @@ echo ""
 echo "## Analyze"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/analyze/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/analyze/*.jl | grep ^function | grep Statistics. | sed s/"function Statistics."/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/analyze/*.jl | grep ^function | grep -v Statistics. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "## Plot"
@@ -56,13 +57,6 @@ echo "## GUI"
 echo ""
 echo "\`\`\`@docs"
 cat ../src/gui/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
-echo "\`\`\`"
-echo ""
-echo "## Statistics"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/statistics/*.jl | grep ^function | grep Statistics. | sed s/"function Statistics."/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
-cat ../src/statistics/*.jl | grep ^function | grep -v Statistics. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "## Study"

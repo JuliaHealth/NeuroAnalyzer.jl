@@ -47,6 +47,7 @@ Return the positions of the value in the vector.
 """
 function vsearch(y::Real, x::AbstractVector; acc::Bool=false)::Union{Int64, Tuple{Int64, Real}}
 
+    @assert length(x) > 0 "Length of x must be > 0."
     d, idx = findmin(abs.(x .- y))
 
     return acc ? (idx, d) : idx
@@ -71,6 +72,7 @@ Return the positions of the value in the vector.
 """
 function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
 
+    @assert length(x) > 0 "Length of x must be > 0."
     @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
 
     idx = zeros(length(y))
@@ -100,6 +102,7 @@ Splits vector into pieces.
 """
 function vsplit(x::AbstractVector, n::Int64=1)::Vector{AbstractVector}
 
+    @assert length(x) > 0 "Length of x must be > 0."
     @assert n >= 1 "n must be ≥ 1."
     @assert length(x) % n == 0 "Length of x must be a multiple of n."
 
@@ -130,6 +133,8 @@ Find minimum value of one vector and return value at its index from another vect
 """
 function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
+    @assert length(x) > 0 "Length of x must be > 0."
+    @assert length(y) > 0 "Length of y must be > 0."
     @assert length(x) == length(x) "x and y length must be equal."
 
     idx = vsearch(minimum(x), x)
@@ -156,7 +161,9 @@ Find maximum value of one vector and return value at its index from another vect
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
-    @assert length(x) == length(x) "x and y length must be equal."
+    @assert length(x) > 0 "Length of x must be > 0."
+    @assert length(y) > 0 "Length of y must be > 0."
+    @assert length(x) == length(x) "Lengths of x and y must be equal."
 
     idx = vsearch(maximum(x), x)
     value = y[idx]
@@ -183,7 +190,9 @@ Reduce two vectors at indices of the second vector being multiplications of a co
 """
 function vreduce(x::AbstractVector, f::AbstractVector; n::Float64=0.5)::Tuple{AbstractVector, AbstractVector}
 
-    @assert length(x) == length(f) "Length of both vectors must be equal."
+    @assert length(x) > 0 "Length of x must be > 0."
+    @assert length(f) > 0 "Length of f must be > 0."
+    @assert length(x) == length(f) "Lengths of x and f must be equal."
 
     f1_idx = vsearch(round(f[1]), f)
     f2_idx = vsearch(round(f[end]), f)

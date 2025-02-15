@@ -219,7 +219,7 @@ function plot_phsd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = msci95(sp)
+    s_m, _, s_u, s_l = NeuroStats.msci95(sp)
 
     if ax === :linlin
         xt = _ticks(frq_lim)

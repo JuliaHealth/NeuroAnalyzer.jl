@@ -214,8 +214,8 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
             bad_chs = zeros(Bool, ch_n)
             for ch_idx in 1:ch_n
                 s = @views tkeo(obj.data[ch[ch_idx], :, ep_idx], obj.epoch_time, method=tkeo_method)
-                z_signal = vec(zscore(obj.data[ch[ch_idx], :, ep_idx]))
-                z_tkeo = vec(zscore(s))
+                z_signal = vec(NeuroStats.zscore(obj.data[ch[ch_idx], :, ep_idx]))
+                z_tkeo = vec(NeuroStats.zscore(s))
                 # scan in 10-sample windows
                 w = length(s) ÷ 10
                 bad_windows = 0

@@ -1,4 +1,5 @@
 using NeuroAnalyzer
+using NeuroStats
 using Test
 using Artifacts
 
@@ -29,9 +30,6 @@ global testfiles_path = joinpath(artifact"NeuroAnalyzer_test-files", "neuroanaly
 
     @info "Running plots.jl tests"
     @test include("plots.jl")
-
-    @info "Running statistics.jl tests"
-    @test include("statistics.jl")
 
     @info "Running study.jl tests"
     @test include("study.jl")
