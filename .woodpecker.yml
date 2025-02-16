@@ -1,6 +1,6 @@
 steps:
   docs:
-    image: julia:1.11
+    image: julia
     pull: true
     when:
       - event: [push, manual]   # workflow should run if you execute it manually and on each push
@@ -24,8 +24,7 @@ steps:
       - apt-get update
       - apt-get install -y xvfb ncftp git libpcre3
 
-      - cd /usr/lib/x86_64-linux-gnu
-      - ln -s libpcre.so.3 libpcre.so.1
+      - ln -s /usr/lib/x86_64-linux-gnu/libpcre.so.3 /usr/lib/x86_64-linux-gnu/libpcre.so.1
 
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
@@ -50,7 +49,7 @@ steps:
       - ./push_docs.sh
 
   test:
-    image: julia:1.11
+    image: julia
     pull: true
     when:
       - event: manual   # workflow should run if you execute it manually
