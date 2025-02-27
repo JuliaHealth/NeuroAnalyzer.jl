@@ -62,7 +62,7 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true)::Array
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm)
 
             # update progress bar

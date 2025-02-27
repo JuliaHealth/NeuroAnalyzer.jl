@@ -63,7 +63,7 @@ function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     ispc_ang = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
+        Threads.@threads :static for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
                 ispc_val[ch_idx1, ch_idx2, ep_idx], ispc_ang[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views ispc(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
             end
@@ -127,7 +127,7 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     s2_phase = zeros(ch_n, epoch_len(obj1), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             ispc_val[ch_idx, ep_idx], ispc_ang[ch_idx, ep_idx], s_diff[ch_idx, :, ep_idx], ph_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views ispc(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         end
     end

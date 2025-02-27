@@ -54,7 +54,7 @@ function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)::Ar
 
     s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views remove_dc(s[ch_idx, :, ep_idx], n)
         end
     end

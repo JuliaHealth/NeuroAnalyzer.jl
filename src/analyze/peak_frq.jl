@@ -77,7 +77,7 @@ function peak_frq(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, method::Sym
     pf = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             pf[ch_idx, ep_idx] = @views peak_frq(s[ch_idx, :, ep_idx], fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end

@@ -70,7 +70,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
             # pl_wdth = peakwidths1d(p_tmp, peaks)[1][vsearch(pl_amp, peaks)]
 
             v = zeros(length(bw_values))
-            Threads.@threads for bw_idx in eachindex(bw_values)
+            for bw_idx in eachindex(bw_values)
                 obj_tmp = NeuroAnalyzer.filter(obj_new, ch=clabels[ch_idx], fprototype=:iirnotch, cutoff=pl_frq, bw=bw_values[bw_idx])
                 p, f = psd(obj_tmp, ch=clabels[ch_idx], db=true)
                 f1 = vsearch(pl_frq - d, f)
@@ -106,7 +106,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
                 best_bw = zeros(n)
                 @inbounds for peak_idx in eachindex(pks_frq)
                     v = zeros(length(bw_values))
-                    Threads.@threads for bw_idx in eachindex(bw_values)
+                    for bw_idx in eachindex(bw_values)
                         obj_tmp = NeuroAnalyzer.filter(obj_new, ch=clabels[ch_idx], fprototype=:iirnotch, cutoff=pks_frq[peak_idx], bw=bw_values[bw_idx])
                         p, f = psd(obj_tmp, ch=clabels[ch_idx], db=true)
                         f1 = vsearch(pks_frq[peak_idx] - d / 2, f)

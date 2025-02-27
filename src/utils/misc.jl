@@ -153,7 +153,7 @@ function cums(signal::Array{<:Real, 3})::Array{Float64, 3}
     signal_cs = similar(signal)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             signal_cs[ch_idx, :, ep_idx] = @views cumsum(signal[ch_idx, :, ep_idx])
         end
     end

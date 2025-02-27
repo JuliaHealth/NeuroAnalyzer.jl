@@ -96,7 +96,7 @@ function channel_stats(obj::NeuroAnalyzer.NEURO)::@NamedTuple{c_mean::Matrix{Flo
     c_dev_mean = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             c_mean[ch_idx, ep_idx] = @views mean(obj.data[ch_idx, :, ep_idx])
             c_median[ch_idx, ep_idx] = @views median(obj.data[ch_idx, :, ep_idx])
             c_std[ch_idx, ep_idx] = @views std(obj.data[ch_idx, :, ep_idx])

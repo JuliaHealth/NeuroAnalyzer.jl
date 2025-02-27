@@ -97,7 +97,7 @@ function diss(s::AbstractArray)::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Fl
     sc = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
+        Threads.@threads :static for ch_idx1 in 1:ch_n
            for ch_idx2 in 1:ch_idx1
                 gd[ch_idx1, ch_idx2, ep_idx], sc[ch_idx1, ch_idx2, ep_idx] = @views diss(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx])
             end
@@ -146,7 +146,7 @@ function diss(s1::AbstractArray, s2::AbstractArray)::@NamedTuple{gd::Matrix{Floa
     sc = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             gd[ch_idx, ep_idx], sc[ch_idx, ep_idx] = @views diss(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
         end
     end

@@ -86,7 +86,7 @@ function denoise_cwt(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views denoise_cwt(s[ch_idx, :, ep_idx], fs=fs, wt=wt, nf=nf, w=w, type=type)
             # update progress bar
             progress_bar && next!(progbar)
@@ -208,7 +208,7 @@ function denoise_dwt(s::AbstractArray; wt::T)::Array{Float64, 3} where {T<:Discr
     s_new = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views denoise_dwt(s[ch_idx, :, ep_idx], wt=wt)
         end
     end

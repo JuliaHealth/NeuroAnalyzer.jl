@@ -46,7 +46,7 @@ function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
 
     obj_new = deepcopy(obj)
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
+        Threads.@threads :static for ch_idx in 1:ch_n
             @views obj_new.data[ch[ch_idx], :, ep_idx] = add_signal(obj_new.data[ch[ch_idx], :, ep_idx], s)
         end
     end
