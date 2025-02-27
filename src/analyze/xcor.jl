@@ -145,7 +145,7 @@ function xcor(s1::AbstractArray, s2::AbstractArray; l::Int64=round(Int64, min(si
     xc = zeros(ch_n, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             xc[ch_idx, :, ep_idx] = @views xcor(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end

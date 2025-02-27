@@ -182,7 +182,7 @@ function na_set_verbose(value::Bool)::Nothing
 end
 
 """
-    na_set_prefs(use_cuda, progress_bar, verbose)
+    na_set_prefs(; use_cuda, progress_bar, verbose, scheduler)
 
 Save NeuroAnalyzer preferences.
 

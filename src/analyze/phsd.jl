@@ -83,7 +83,7 @@ function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f
     ph = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             ph[ch_idx, :, ep_idx], _ = phsd(s[ch_idx, :, ep_idx], fs=fs)
         end
     end

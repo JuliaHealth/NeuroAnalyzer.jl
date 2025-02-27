@@ -89,7 +89,7 @@ function band_power(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, met
     bp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             bp[ch_idx, ep_idx] = @views band_power(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
         end
     end

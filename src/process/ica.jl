@@ -319,7 +319,7 @@ function ica_remove(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix
 
     obj_new = deepcopy(obj)
     @inbounds for ica_idx in eachindex(ic_idx)
-        Threads.@threads :static for ch_idx in eachindex(ch)
+        Threads.@threads :greedy for ch_idx in eachindex(ch)
             obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=labels(obj)[ch[ch_idx]], ic_idx=ic_idx[ica_idx], keep=true)
             obj_new.data[ch[ch_idx], :, 1] = @views obj_new.data[ch[ch_idx], :, 1] - obj_tmp.data[ch[ch_idx], :, 1]
         end

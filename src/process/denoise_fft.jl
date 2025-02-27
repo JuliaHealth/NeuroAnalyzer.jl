@@ -64,7 +64,7 @@ function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)::Array{Float64, 
             end
             CUDA.synchronize()
         else
-            Threads.@threads :static for ch_idx in 1:ch_n
+            Threads.@threads :greedy for ch_idx in 1:ch_n
                 s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad=pad, t=t)
             end
         end

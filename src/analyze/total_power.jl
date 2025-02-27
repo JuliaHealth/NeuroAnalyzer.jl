@@ -79,7 +79,7 @@ function total_power(s::AbstractArray; fs::Int64, method::Symbol=:welch, nt::Int
     tp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             tp[ch_idx, ep_idx] = @views total_power(s[ch_idx, :, ep_idx], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
         end
     end

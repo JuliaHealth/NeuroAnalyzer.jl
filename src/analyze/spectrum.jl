@@ -112,7 +112,7 @@ function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{
     ph = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
@@ -161,7 +161,7 @@ function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)
     p = zeros(ch_n, fft_size, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             if h
                 c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, db=db)
             else

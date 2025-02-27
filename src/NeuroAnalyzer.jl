@@ -5,7 +5,7 @@ https://neuroanalyzer.org
 """
 module NeuroAnalyzer
 
-@assert VERSION >= v"1.10.0" "NeuroAnalyzer requires Julia 1.10.0 or above."
+@assert VERSION >= v"1.11.0" "NeuroAnalyzer requires Julia 1.11.0 or above."
 
 # set constants
 

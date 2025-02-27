@@ -120,7 +120,7 @@ function acor(s::AbstractArray; l::Int64=round(Int64, min(size(s[1, :, 1], 1) - 
     ac = zeros(ch_n, length(-l:l), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             ac[ch_idx, :, ep_idx] = @views acor(s[ch_idx, :, ep_idx], l=l, demean=demean, biased=biased, method=method)
         end
     end

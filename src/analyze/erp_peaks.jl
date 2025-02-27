@@ -60,7 +60,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
         p = zeros(ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :static for ch_idx in 1:ch_n
+            Threads.@threads :greedy for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = @views obj.data[ch_idx, t_idx, ep_idx]
             end
         end
@@ -73,7 +73,7 @@ function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
         ch_n = size(obj)[1]
         p = zeros(ch_n)
 
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = @views obj.data[ch_idx, t_idx, 1]
         end
     end
@@ -111,7 +111,7 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         p = zeros(ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :static for ch_idx in 1:ch_n
+            Threads.@threads :greedy for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
             end
         end
@@ -126,7 +126,7 @@ function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         ch_n = size(obj)[1]
         p = zeros(ch_n)
 
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = mean(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
@@ -164,7 +164,7 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         p = zeros(ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :static for ch_idx in 1:ch_n
+            Threads.@threads :greedy for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, ep_idx])
             end
         end
@@ -179,7 +179,7 @@ function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         ch_n = size(obj)[1]
         p = zeros(ch_n)
 
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = maximum(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end
@@ -217,7 +217,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         p = zeros(ch_n, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :static for ch_idx in 1:ch_n
+            Threads.@threads :greedy for ch_idx in 1:ch_n
                 p[ch_idx, ep_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
             end
         end
@@ -232,7 +232,7 @@ function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float
         ch_n = size(obj)[1]
         p = zeros(ch_n)
 
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             @inbounds p[ch_idx] = minimum(obj.data[ch_idx, t_idx1:t_idx2, 1])
         end
     end

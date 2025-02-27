@@ -32,7 +32,7 @@ function dw_split(obj::NeuroAnalyzer.NEURO; ch::String, wt::T, type::Symbol, n::
     ep_n = nepochs(obj)
 
     dt = zeros((n + 1), epoch_len(obj), ep_n)
-    Threads.@threads :static for ep_idx in 1:ep_n
+    Threads.@threads :greedy for ep_idx in 1:ep_n
         @inbounds dt[:, :, ep_idx] = @views dw_trans(obj.data[ch, :, ep_idx], wt=wt, type=type, l=n)
     end
 

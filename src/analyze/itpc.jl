@@ -82,7 +82,7 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     itpc_ang = zeros(ch_n)
     itpc_ph = zeros(ch_n, ep_n)
 
-    Threads.@threads :static for ch_idx in 1:ch_n
+    Threads.@threads :greedy for ch_idx in 1:ch_n
         @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
     end
 
@@ -184,7 +184,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Re
     # initialize progress bar
     progress_bar && (progbar = Progress(frq_n, dt=1, barlen=20, color=:white))
 
-    Threads.@threads :static for frq_idx in 1:frq_n
+    Threads.@threads :greedy for frq_idx in 1:frq_n
         # create Morlet wavelet
         kernel = generate_morlet(sr(obj), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1

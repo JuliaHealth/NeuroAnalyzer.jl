@@ -59,7 +59,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx1 in 1:ch_n
+        Threads.@threads :greedy for ch_idx1 in 1:ch_n
            for ch_idx2 in 1:ch_idx1
                 ph[ch_idx1, ch_idx2, :, ep_idx], _ = @views cph(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx], fs=fs)
             end
@@ -70,7 +70,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     end
 
     @inbounds for cph_idx in axes(ph, 3)
-        Threads.@threads :static for ep_idx in 1:ep_n
+        Threads.@threads :greedy for ep_idx in 1:ep_n
             for ch_idx1 in 1:(ch_n - 1)
                 for ch_idx2 in (ch_idx1 + 1):ch_n
                     ph[ch_idx1, ch_idx2, cph_idx, ep_idx] = @views ph[ch_idx2, ch_idx1, cph_idx, ep_idx]
@@ -113,7 +113,7 @@ function cph(s1::AbstractArray, s2::AbstractArray; fs::Int64)::@NamedTuple{ph::A
     ph = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             ph[ch_idx, :, ep_idx], _ = @views cph(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], fs=fs)
         end
     end

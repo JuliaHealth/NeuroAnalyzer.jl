@@ -93,7 +93,7 @@ function sef(s::AbstractArray; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=
     sef_frq = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             sef_frq[ch_idx, ep_idx] = @views sef(s[ch_idx, :, ep_idx], x=x, fs=fs, f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end

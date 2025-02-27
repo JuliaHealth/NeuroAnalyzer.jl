@@ -118,7 +118,7 @@ function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs:
     mscoh = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :static for ch_idx in 1:ch_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
             coh[ch_idx, :, ep_idx], mscoh[ch_idx, :, ep_idx], _ = @views coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end

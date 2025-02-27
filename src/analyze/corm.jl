@@ -100,7 +100,7 @@ function corm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
             end
             CUDA.synchronize()
         else
-            Threads.@threads :static for s_idx in 1:ep_len
+            Threads.@threads :greedy for s_idx in 1:ep_len
                 @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
 
                 # update progress bar
