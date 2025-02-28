@@ -13,7 +13,7 @@ Calculate `n` first Independent Components using FastICA algorithm.
 
 - `s::AbstractMatrix`
 - `n::Int64`: number of ICs
-- `iter::Int64=100`: maximum number of iterations
+- `iter::Int64=100`: maximum number of iterations per each tolerance value (`[0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]`)
 - `f::Symbol=:tanh`: neg-entropy functor:
     - `:tanh`
     - `:gaus`
@@ -95,7 +95,7 @@ Perform independent component analysis (ICA) using FastICA algorithm.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `n::Int64=length(ch)`: number of ICs, default is the number of channels
-- `iter::Int64=100`: maximum number of iterations
+- `iter::Int64=100`: maximum number of iterations per each tolerance value (`[0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99]`); hence 100 iterations will produce 900 steps
 - `f::Symbol=:tanh`: neg-entropy functor:
     - `:tanh`
     - `:gaus`
@@ -146,7 +146,7 @@ Reconstruct signal using ICA components.
 
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove or keep
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
@@ -212,7 +212,7 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove or keep
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
@@ -241,7 +241,7 @@ Reconstruct signals using external ICA components.
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove or keep
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
@@ -275,7 +275,7 @@ Reconstruct signals using external ICA components.
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove or keep
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
 - `keep::Bool=false`: if `true`, then the ICs are kept instead of removed
 
 # Returns
@@ -304,7 +304,7 @@ Remove external ICA components from the signal.
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove
 
 # Returns
 
@@ -343,7 +343,7 @@ Remove external ICA components from the signal.
 - `ic::Matrix{Float64}`: components IC(1)..IC(n)
 - `ic_mw::Matrix{Float64}`: weighting matrix IC(1)..IC(n)
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove or keep
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove or keep
 
 # Returns
 
@@ -369,7 +369,7 @@ Remove embedded ICA components (`:ic` and `:ic_mw`).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove
 
 # Returns
 
