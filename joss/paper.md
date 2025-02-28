@@ -127,7 +127,7 @@ Extensive documentation and tutorials are available at [https://www.neuroanalyze
 
 NeuroAnalyzer functionality can be easily expanded using [plugins](https://neuroanalyzer.org/tut-plugins.html) (written in Julia).
 
-For common tasks (importing, filtering, referencing) NeuroAnalyzer performance is comparable with MNE and ~4× higher than EEGLAB. Benchmarks are available at [https://neuroanalyzer.org/benchmarks.html](https://neuroanalyzer.org/benchmarks.html).
+For common tasks (importing, filtering, referencing) NeuroAnalyzer performance is ~1.7× higher than MNE and ~3× higher than EEGLAB. Benchmarks are available at [https://neuroanalyzer.org/benchmarks.html](https://neuroanalyzer.org/benchmarks.html).
 
 # Research projects using the software
 
