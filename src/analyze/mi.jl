@@ -100,7 +100,7 @@ end
 """
     mutual_information(obj; <keyword arguments>)
 
-Calculate mutual information between channels.
+Calculate mutual information between channels. Currently only one estimator (maximum likelihood) is available. Internally it uses `InformationMeasures.get_mutual_information()`.
 
 # Arguments
 
@@ -123,7 +123,7 @@ end
 """
     mutual_information(obj1, obj2; <keyword arguments>)
 
-Calculate mutual information between two channels.
+Calculate mutual information between two channels. Currently only one estimator (maximum likelihood) is available. Internally it uses `InformationMeasures.get_mutual_information()`.
 
 # Arguments
 

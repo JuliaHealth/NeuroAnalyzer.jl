@@ -16,6 +16,12 @@ Named tuple containing:
 - `ent::Float64`
 - `sent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
+
+# Note
+
+Entropy of the signal is calculated using its histogram bins (number of bins is calculated using the Freedman-Diaconis formula) using the formulas `p = n / sum(n)` and `entropy = -sum(p .* log2(p))`, where `p` is the probability of each bin and `n` are bins' weights.
+
+Shannon entropy and log energy entropy are calculated using `Wavelets.coefentropy()`.
 """
 function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, sent::Float64, leent::Float64}
 
@@ -29,8 +35,8 @@ function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, sent::Float64, le
 
     # convert histograms to probability values
     return (ent=-sum(hdat1 .* log2.(hdat1 .+ eps())),
-            sent=coefentropy(s, ShannonEntropy()),
-            leent=coefentropy(s, LogEnergyEntropy()))
+            sent=Wavelets.coefentropy(s, ShannonEntropy()),
+            leent=Wavelets.coefentropy(s, LogEnergyEntropy()))
 
 end
 
