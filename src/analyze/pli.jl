@@ -18,6 +18,10 @@ Named tuple containing:
 - `phd::Vector{Float64}`: phase difference (s2 - s1)
 - `s1ph::Vector{Float64}`: signal 1 phase
 - `s2ph::Vector{Float64}`: signal 2 phase
+
+# Source
+
+1. Stam CJ, Nolte G, Daffertshofer A. Phase lag index: assessment of functional connectivity from multi channel EEG and MEG with diminished bias from common sources. Hum Brain Mapp. 2007 Nov;28(11):1178-93
 """
 function pli(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{pv::Float64, sd::Vector{Float64}, phd::Vector{Float64}, s1ph::Vector{Float64}, s2ph::Vector{Float64}}
 

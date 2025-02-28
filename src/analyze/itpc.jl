@@ -19,6 +19,10 @@ Named tuple containing:
 - `itpcz_val::Float64`: Rayleigh's ITPC z value
 - `itpc_ang::Float64`: ITPC angle
 - `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
+
+# Source
+
+1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
 function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
 
