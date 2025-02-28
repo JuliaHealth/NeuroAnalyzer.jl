@@ -94,7 +94,7 @@ end
 """
     pli(obj; <keyword arguments>)
 
-Calculate PLIs (Phase Lag Index).
+Calculate PLI (Phase Lag Index).
 
 # Arguments
 

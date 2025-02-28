@@ -105,7 +105,7 @@ Calculate mutual information between channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}: list of channels
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
@@ -129,8 +129,8 @@ Calculate mutual information between two channels.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}: list of channels
-- `ch2::Union{String, Vector{String}}: list of channels
+- `ch1::Union{String, Vector{String}}`: channel name or list of channel names
+- `ch2::Union{String, Vector{String}}`: channel name or list of channel names
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
 - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
