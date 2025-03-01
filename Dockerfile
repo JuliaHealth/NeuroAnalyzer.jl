@@ -19,8 +19,8 @@ RUN mkdir -p ~/.julia/config
 
 ENV DISPLAY :0
 
-RUN xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -O3 -g0 --cpu-target=native install.jl
+RUN xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -O2 -g0 --cpu-target=native install.jl
 
 COPY misc/startup.jl /root/.julia/config
 
-CMD ["bash", "-c", "julia -q --color=yes -O3 -g0 --cpu-target=native"]
+CMD ["bash", "-c", "julia -q --color=yes -O2 -g0 --cpu-target=native"]
