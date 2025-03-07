@@ -21,7 +21,7 @@ Plot matrix.
 
 # Arguments
 
-- `m::Array{<:Real, 2}`
+- `m::Matrix{<:Real}`
 - `xlabels::Vector{String}`
 - `ylabels::Vector{String}`
 - `xlabel::String=""`
@@ -29,6 +29,7 @@ Plot matrix.
 - `title::String=""`
 - `cb::Bool=true`: draw color
 - `cb_title::String=""`: color bar title
+- `xrot::Int64=0`: rotate xlabels by xrot degrees
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
 
@@ -36,31 +37,32 @@ Plot matrix.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", xrot::Int64=0, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert size(m, 1) == size(m, 2) "Matrix is not square."
+    @assert size(m, 1) == size(m, 2) "Matrix must be square."
     @assert length(xlabels) == length(ylabels) "Lengths of xlabels and ylabels must be equal."
     @assert length(xlabels) == size(m, 1) "Length of xlabels and matrix size must be equal."
     @assert length(ylabels) == size(m, 2) "Length of ylabels and matrix size must be equal."
 
     n = size(m, 1)
-    r = maximum(length.(xlabels)) > 10 ? 45 : 0
-    mar = maximum(length.(xlabels)) > 10 ? 40 : 0
-    pal = mono ? :grays : :darktest
+    xmar = maximum(length.(xlabels)) * 2
+    ymar = maximum(length.(ylabels)) * 2
+    pal = mono ? :grays : :bluesreds
 
     p = Plots.heatmap(m,
                       title=title,
                       xlabel=xlabel,
                       ylabel=ylabel,
-                      xaxis=(tickfontrotation=r),
+                      xaxis=(tickfontrotation=xrot),
                       xticks=(1:n, xlabels),
-                      yticks=(1:n, xlabels),
+                      yticks=(1:n, ylabels),
                       seriescolor=pal,
                       cb=cb,
                       colorbar_title=cb_title,
-                      size=(1200, 800),
-                      left_margin=mar*Plots.px,
-                      bottom_margin=mar*Plots.px,
+                      size=(800, 800),
+                      left_margin=(20 + ymar)*Plots.px,
+                      right_margin=40*Plots.px,
+                      bottom_margin=(xrot > 0 ? xmar*Plots.px : 0*Plots.px),
                       titlefontsize=8,
                       xlabelfontsize=8,
                       ylabelfontsize=8,
