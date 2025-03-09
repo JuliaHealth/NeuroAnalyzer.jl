@@ -42,44 +42,43 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
     pal = mono ? :grays : :darktest
-    locs = locs[ch, :]
     sch_labels = ch_labels
 
     if plane === :xy
         head_shape = large ? FileIO.load(joinpath(res_path, "head_t_large.png")) : FileIO.load(joinpath(res_path, "head_t_small.png"))
         if !cart
-            loc_x = zeros(nrow(locs))
-            loc_y = zeros(nrow(locs))
-            for idx in 1:nrow(locs)
-                loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+            loc_x = zeros(length(ch))
+            loc_y = zeros(length(ch))
+            for idx in 1:length(ch)
+                loc_x[idx], loc_y[idx] = pol2cart(locs[ch, :loc_radius][idx], locs[ch, :loc_theta][idx])
             end
         else
-            loc_x = locs[!, :loc_x]
-            loc_y = locs[!, :loc_y]
+            loc_x = locs[ch, :loc_x]
+            loc_y = locs[ch, :loc_y]
         end
     elseif plane === :xz
         head_shape = large ? FileIO.load(joinpath(res_path, "head_f_large.png")) : FileIO.load(joinpath(res_path, "head_f_small.png"))
         if !cart
-            loc_x = zeros(nrow(locs))
-            loc_y = zeros(nrow(locs))
-            for idx in 1:nrow(locs)
-                loc_x[idx], _, loc_y[idx] = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
+            loc_x = zeros(length(ch))
+            loc_y = zeros(length(ch))
+            for idx in 1:length(ch)
+                loc_x[idx], _, loc_y[idx] = sph2cart(locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx], locs[ch, :loc_phi_sph][idx])
             end
         else
-            loc_x = locs[!, :loc_x]
-            loc_y = locs[!, :loc_z]
+            loc_x = locs[ch, :loc_x]
+            loc_y = locs[ch, :loc_z]
         end
     elseif plane === :yz
         head_shape = large ? FileIO.load(joinpath(res_path, "head_s_large.png")) : FileIO.load(joinpath(res_path, "head_s_small.png"))
         if !cart
-            loc_x = zeros(nrow(locs))
-            loc_y = zeros(nrow(locs))
-            for idx in 1:nrow(locs)
-                _, loc_x[idx], loc_y[idx] = sph2cart(locs[!, :loc_radius_sph][idx], locs[!, :loc_theta_sph][idx], locs[!, :loc_phi_sph][idx])
+            loc_x = zeros(length(ch))
+            loc_y = zeros(length(ch))
+            for idx in 1:length(ch)
+                _, loc_x[idx], loc_y[idx] = sph2cart(locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx], locs[ch, :loc_phi_sph][idx])
             end
         else
-            loc_x = locs[!, :loc_y]
-            loc_y = locs[!, :loc_z]
+            loc_x = locs[ch, :loc_y]
+            loc_y = locs[ch, :loc_z]
         end
     end
 

@@ -99,7 +99,7 @@ function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRB
     if file_name != ""
         Cairo.write_to_png(c, file_name)
     else
-        view && iview_plot(c)
+        view && iview(c)
     end
 
     return c
