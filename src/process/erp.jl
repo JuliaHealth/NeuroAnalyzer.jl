@@ -84,7 +84,7 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 Nothing
 """
-function average_epochs!(average_epochs::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::Nothing
+function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::Nothing
 
     obj_new = average_epochs(obj, bl=bl, blfirst=blfirst)
     obj.data = obj_new.data
