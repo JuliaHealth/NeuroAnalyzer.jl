@@ -44,7 +44,6 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
         _check_markers(obj, marker)
 
         # get marker positions
-        @assert any(obj_new.markers[!, :value] .== marker) "OBJ does not contain marker $marker."
         mrk_idx = getindex.(findall(obj_new.markers[!, :value] .== marker))
         mrk_start = obj_new.markers[mrk_idx, :start]
         mrk_len = obj_new.markers[mrk_idx, :length]
@@ -60,7 +59,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
         @assert offset + ep_len >= maximum(mrk_len) "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."
 
         # split into epochs
-        epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
+        epochs, obj_new.markers = NeuroAnalyzer._make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
 
     else
         if ep_len !== nothing

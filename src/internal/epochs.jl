@@ -71,6 +71,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
             deleteat!(ep_end, mrk_idx)
         end
     end
+
     mrk_n = length(ep_start)
 
     epochs = zeros(size(s, 1), ep_len, mrk_n)
@@ -84,7 +85,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
     @inbounds for mrk_idx in nrow(markers):-1:1
         within_epoch = false
         for ep_idx in 1:mrk_n
-            markers[mrk_idx, :start] * fs in ep_start[ep_idx]:ep_end[ep_idx] && (within_epoch = true)
+            _in(markers[mrk_idx, :start] * fs, (ep_start[ep_idx], ep_end[ep_idx])) && (within_epoch = true)
         end
         !within_epoch && deleteat!(markers, mrk_idx)
     end

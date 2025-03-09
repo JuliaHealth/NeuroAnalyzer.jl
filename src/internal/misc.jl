@@ -168,4 +168,5 @@ function _veqlen(s1::AbstractVector, s2::AbstractVector)::Tuple{AbstractVector, 
     end
 end
 
-_between(x::Real, a::Real, b::Real) = return x >= a && x <= b
+_in(x::Real, r::Tuple{Real, Real}) = return x >= r[1] && x <= r[2]
+_bin(x::Real, r::Tuple{Real, Real}) = return x > r[1] && x < r[2]
