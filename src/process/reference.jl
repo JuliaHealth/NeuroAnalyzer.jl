@@ -733,6 +733,8 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
     obj_new.header.recording[:prefiltering] = vcat(repeat([obj.header.recording[:prefiltering][1]], length(ref_list)), obj_new.header.recording[:prefiltering])
     obj_new.header.recording[:transducers] = vcat(repeat([obj.header.recording[:transducers][1]], length(ref_list)), obj_new.header.recording[:transducers])
     obj_new.header.recording[:gain] = vcat(repeat([obj.header.recording[:gain][1]], length(ref_list)), obj_new.header.recording[:gain])
+    _info("Bad channels matrix will be reset")
+    obj_new.header.recording[:bad_channel] = zeros(size(obj_new))
 
     reset_components!(obj_new)
     push!(obj_new.history, "reference_custom(OBJ, ref_list=$ref_list, ref_name=$ref_name)")
