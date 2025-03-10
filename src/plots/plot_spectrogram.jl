@@ -432,6 +432,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt], "method")
 
+    units = "A.U."
+
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
