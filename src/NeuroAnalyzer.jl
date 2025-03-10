@@ -190,16 +190,18 @@ include("na/plugins.jl")
 global use_cuda = @load_preference("use_cuda", false)
 global progress_bar = @load_preference("progress_bar", true)
 global verbose = @load_preference("verbose", true)
-na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose)
+global exclude_bads = @load_preference("exclude_bads", false)
+na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads)
 
 # be verbose
 
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
-_info("Preferences loaded:")
-_info(" Use CUDA: $use_cuda")
-_info(" Progress bar: $progress_bar")
-_info(" Verbose: $verbose")
+_info(" Preferences:")
+_info("    Use CUDA: $use_cuda (use_cuda)")
+_info("Progress bar: $progress_bar (progress_bar)")
+_info("     Verbose: $verbose (verbose)")
+_info("Exclude bads: $exclude_bads (exclude_bads)")
 
 # setup resources
 

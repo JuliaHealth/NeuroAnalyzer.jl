@@ -141,7 +141,7 @@ function pacor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
     @assert (l > 1 && method === :yw) "For :yw method, l must be > 1."
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 

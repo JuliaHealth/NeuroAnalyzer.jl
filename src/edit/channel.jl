@@ -24,13 +24,13 @@ Return list of channel names of specified type or their numbers if names are spe
 - `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
 - `type::Union{String, Vector{String}}="all"`: channels types
 - `wl::Real`: return NIRS channels for wavelength (in nm)
-- `exclude::Union{String, Vector{String}, Regex}="bad"`: channel name or list of channel names to exclude from the list
+- `exclude::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names to exclude from the list
 
 # Returns
 
 - `ch::Union{Vector{String}, Vector{Int64}}`
 """
-function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", type::Union{String, Vector{String}}="all", wl::Real=0, exclude::Union{String, Vector{String}, Regex}="bad")::Union{Vector{String}, Vector{Int64}}
+function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", type::Union{String, Vector{String}}="all", wl::Real=0, exclude::Union{String, Vector{String}, Regex}="")::Union{Vector{String}, Vector{Int64}}
 
     # return physical channel numbers
     if ch != ""
@@ -68,8 +68,11 @@ function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         end
     end
 
-    exclude != "" && (exclude = _ch_idx(obj, exclude))
-    return setdiff(ch, labels(obj)[exclude])
+    exclude = exclude == "" ? Int64[] : _ch_idx(obj, exclude)
+    ch = exclude == [] ? ch : setdiff(ch, labels(obj)[exclude])
+    ch = unique(ch)
+
+    return ch
 
 end
 

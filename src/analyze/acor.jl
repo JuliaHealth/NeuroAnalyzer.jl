@@ -157,7 +157,7 @@ function acor(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     @assert l <= size(obj, 2) "l must be ≤ $(size(obj, 2))."
     @assert l >= 0 "l must be ≥ 0."
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
 
     if datatype(obj) == "erp"
         ac = @views acor(obj.data[ch, :, 2:end], l=l, demean=demean, biased=biased, method=method)

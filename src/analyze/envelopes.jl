@@ -194,7 +194,7 @@ Named tuple containing:
 """
 function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=32)::@NamedTuple{t_env::Array{Float64, 3}, s_t::Vector{Float64}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     s_t = obj.epoch_time
@@ -399,7 +399,7 @@ Named tuple containing:
 """
 function penv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=8, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::@NamedTuple{p_env::Array{Float64, 3}, p_env_frq::Vector{Float64}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -632,7 +632,7 @@ Named tuple containing:
 """
 function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=2, t::Union{Real, Nothing}=nothing, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{s_env::Array{Float64, 3}, s_env_t::Vector{Float64}} where {T <: CWT}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     fs = sr(obj)
@@ -899,7 +899,7 @@ Named tuple containing:
 """
 function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, d::Int64=32)::@NamedTuple{h_env::Array{Float64, 3}, s_t::Vector{Float64}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
     _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])

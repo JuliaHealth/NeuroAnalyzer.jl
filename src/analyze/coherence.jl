@@ -163,8 +163,8 @@ function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Un
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    ch1 = get_channel(obj1, ch=ch1)
-    ch2 = get_channel(obj2, ch=ch2)
+    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
+    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     length(ep1) == 1 && (ep1 = [ep1])

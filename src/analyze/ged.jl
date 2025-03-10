@@ -62,8 +62,8 @@ Named tuple containing:
 """
 function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{sged::Array{Float64, 3}, ress::Matrix{Float64}, ress_norm::Matrix{Float64}}
 
-    ch1 = get_channel(obj1, ch=ch1)
-    ch2 = get_channel(obj2, ch=ch2)
+    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
+    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
 
     _check_epochs(obj1, ep1)

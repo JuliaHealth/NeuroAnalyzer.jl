@@ -196,7 +196,7 @@ Named tuple containing:
 """
 function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     c, a, p, ph = spectrum(obj.data[ch, :, :], pad=pad, h=h, db=db)
 
     return (c=c, a=a, p=p, ph=ph)

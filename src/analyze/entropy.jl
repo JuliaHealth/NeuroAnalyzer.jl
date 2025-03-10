@@ -95,7 +95,7 @@ Named tuple containing:
 """
 function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ent, sent, leent = @views entropy(obj.data[ch, :, :])
 
     return (ent=ent, sent=sent, leent=leent)
@@ -172,7 +172,7 @@ Calculate negentropy.
 """
 function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ne = @views negentropy(obj.data[ch, :, :])
 
     return ne

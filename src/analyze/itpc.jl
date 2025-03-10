@@ -74,7 +74,7 @@ Named tuple containing:
 """
 function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     @assert t >= 1 "t must be ≥ 1."
@@ -177,7 +177,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Re
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    ch = get_channel(obj, ch=ch)[1]
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")[1]
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."

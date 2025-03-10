@@ -96,7 +96,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 """
 function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol=:pow)::Array{Float64, 3}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method=method)
 
     return tk

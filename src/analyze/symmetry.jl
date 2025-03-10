@@ -68,7 +68,7 @@ Calculate signal symmetry (ratio of positive to negative amplitudes). Perfectly 
 """
 function symmetry(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     sym = @views symmetry(obj.data[ch, :, :])
 
     return sym

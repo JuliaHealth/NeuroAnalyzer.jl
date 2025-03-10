@@ -3,6 +3,7 @@ export na_set_use_cuda
 export na_set_progress_bar
 export na_set_prefs
 export na_set_verbose
+export na_set_exclude_bads
 export na_version
 
 """
@@ -191,16 +192,18 @@ Save NeuroAnalyzer preferences.
 - `use_cuda::Bool`
 - `progress_bar::Bool`
 - `verbose::Bool`
+- `exclude_bads::Bool`
 
 # Returns
 
 Nothing
 """
-function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool)::Nothing
+function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool, exclude_bads::Bool)::Nothing
 
     @set_preferences!("use_cuda" => use_cuda)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
+    @set_preferences!("exclude_bads" => exclude_bads)
 
     return nothing
 
@@ -224,5 +227,28 @@ function na_version()::String
     VER = string(Int(NeuroAnalyzer.VER.major)) * "." * string(Int(NeuroAnalyzer.VER.minor)) * "." * string(Int(NeuroAnalyzer.VER.patch))
 
     return VER
+
+end
+
+
+"""
+    na_set_exclude_bads(value)
+
+Change `exclude_bads` preference.
+
+# Arguments
+
+- `value::Bool`: value
+
+# Returns
+
+Nothing
+"""
+function na_set_exclude_bads(value::Bool)::Nothing
+
+    @set_preferences!("exclude_bads" => value)
+    _info("New option value set, restart your Julia session for this change to take effect")
+
+    return nothing
 
 end

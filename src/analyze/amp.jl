@@ -105,7 +105,7 @@ Named tuple containing:
 """
 function amp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float64}, p2p::Matrix{Float64}, semi_p2p::Matrix{Float64}, msa::Matrix{Float64}, rmsa::Matrix{Float64}, energy::Matrix{Float64}, rms::Matrix{Float64}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
 
     p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = @views amp(obj.data[ch, :, :])
 

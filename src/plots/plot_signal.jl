@@ -600,7 +600,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     end
 
     # check channels
-    ch = get_channel(obj, ch=ch, exclude="")
+    ch = get_channel(obj, ch=ch)
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -617,7 +617,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     xl, yl, tt = "", "", ""
 
-    ch_init = ch
     bm = obj.header.recording[:bad_channel]
     ctypes = obj.header.recording[:channel_type]
     clabels = labels(obj)
@@ -1024,8 +1023,8 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # check channels
-    _ = get_channel(obj2, ch=ch, exclude="")
-    ch = get_channel(obj1, ch=ch, exclude="")
+    _ = get_channel(obj2, ch=ch)
+    ch = get_channel(obj1, ch=ch)
     clabels = labels(obj1)
 
     # get time vector
