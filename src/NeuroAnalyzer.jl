@@ -198,10 +198,10 @@ na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, excl
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
 _info(" Preferences:")
-_info("    Use CUDA: $use_cuda (use_cuda)")
-_info("Progress bar: $progress_bar (progress_bar)")
-_info("     Verbose: $verbose (verbose)")
-_info("Exclude bads: $exclude_bads (exclude_bads)")
+_info("    Use CUDA: $use_cuda")
+_info("Progress bar: $progress_bar")
+_info("     Verbose: $verbose")
+_info("Exclude bads: $exclude_bads")
 
 # setup resources
 
