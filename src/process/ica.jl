@@ -167,12 +167,8 @@ function ica_reconstruct(; ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::
         @assert !(ic_idx < 1 || ic_idx > size(ic_mw, 2)) "ic_idx must be in [1, $(size(ic_mw, 2))]."
     end
 
-    if !keep
-        ic_idx = setdiff(axes(ic_mw, 2), ic_idx)
-        s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]
-    else
-        s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]'
-    end
+    !keep && (ic_idx = setdiff(axes(ic_mw, 2), ic_idx))
+    s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]
 
     return s_new
 

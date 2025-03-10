@@ -13,10 +13,9 @@ Performs convolution in the time domain.
 
 # Returns
 
-- `s_new::Vector{Float64}`: convoluted signal
+- `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
-function tconv(s::AbstractVector; kernel::AbstractVector)::Vector{Float64}
-
+function tconv(s::AbstractVector; kernel::AbstractVector)::Union{Vector{Float64}, Vector{ComplexF64}}
     s_new = DSP.conv(s, kernel)
 
     half_kernel = floor(Int, length(kernel) / 2)
@@ -42,9 +41,9 @@ Perform convolution in the time domain.
 
 # Returns
 
-- `s_new::Array{Float64, 3}`: convoluted signal
+- `s_new::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function tconv(s::AbstractArray; kernel::AbstractVector)::Array{Float64, 3}
+function tconv(s::AbstractArray; kernel::AbstractVector)::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
