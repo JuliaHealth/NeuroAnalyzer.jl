@@ -168,7 +168,11 @@ function ica_reconstruct(; ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::
     end
 
     !keep && (ic_idx = setdiff(axes(ic_mw, 2), ic_idx))
-    s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]
+    if length(ic_idx) == 1
+        s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]'
+    else
+        s_new = @views ic_mw[:, ic_idx] * ic[ic_idx, :]
+    end
 
     return s_new
 
