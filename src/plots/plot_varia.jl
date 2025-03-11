@@ -1283,7 +1283,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
     @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) differ."
     @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) differ."
 
-    pal = mono ? :grays : :darktest
+    pal = mono ? :grays : :bluesreds
 
     p = Plots.heatmap(x,
                       y,

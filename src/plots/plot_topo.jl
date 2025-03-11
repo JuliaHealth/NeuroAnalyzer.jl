@@ -35,7 +35,7 @@ Plot topographical view.
 """
 function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    pal = mono ? :grays : :darktest
+    pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
     locs = locs[ch, :]
@@ -219,7 +219,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
     p = Plots.plot!(interpolated_x,
                     interpolated_y,
                     s_interpolated,
-                    fill=:darktest,
+                    fill=:bluesreds,
                     seriestype=:heatmap,
                     seriescolor=pal,
                     levels=10,
@@ -229,7 +229,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         p = Plots.plot!(interpolated_x,
                         interpolated_y,
                         s_interpolated,
-                        fill=:darktest,
+                        fill=:bluesreds,
                         seriestype=:contour,
                         seriescolor=pal,
                         colorbar_title=cb_label,
