@@ -34,10 +34,12 @@ function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     p_idx_acc_y = _tpt_peaks(acc_y, t)
     p_idx_acc_z = _tpt_peaks(acc_z, t)
 
-    p_idx = unique(sort(union(p_idx_x, p_idx_y, p_idx_acc_x, p_idx_acc_y)))
+    p_idx = unique(sort(union(p_idx_x, p_idx_y, p_idx_z, p_idx_acc_x, p_idx_acc_y, p_idx_acc_z)))
     tx = t[p_idx]
     tx = [tx[1]; diff(tx)]
     p_idx = p_idx[tx .>= 0.2]
+    @show p_idx
+    @show t[p_idx]
 
     _info("Detected pinches: $(length(p_idx))")
 

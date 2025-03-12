@@ -153,11 +153,15 @@ List component names.
 
 # Returns
 
-- `components::Vector{Symbol}`
+- `components::Union{Vector{Symbol}, Nothing}`
 """
-function list_component(obj::NeuroAnalyzer.NEURO)::Vector{Symbol}
+function list_component(obj::NeuroAnalyzer.NEURO)::Union{Vector{Symbol}, Nothing}
 
-    return keys(obj.components)
+    if length(obj.components) > 0
+        return keys(obj.components)
+    else
+        return nothing
+    end
 
 end
 
