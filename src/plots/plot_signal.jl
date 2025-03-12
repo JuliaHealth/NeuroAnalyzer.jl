@@ -117,7 +117,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; 
     r = Float64[]
     @inbounds for ch_idx in eachindex(ctypes_uni)
         push!(r, round(_get_range(s[ctypes .== ctypes_uni[ch_idx], :])))
-        s[ctypes .== ctypes_uni[ch_idx], :] = @views normalize(s[ctypes .== ctypes_uni[ch_idx], :], method=:minmax)
+        s[ctypes .== ctypes_uni[ch_idx], :] = @views normalize_minmax(s[ctypes .== ctypes_uni[ch_idx], :])
     end
     # reverse so 1st channel is on top
     s = @views reverse(s[:, eachindex(t)], dims = 1)
@@ -451,8 +451,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray,
     r = Float64[]
     @inbounds for ch_idx in eachindex(ctypes_uni)
         push!(r, round(_get_range(s1[ctypes .== ctypes_uni[ch_idx], :])))
-        s1[ctypes .== ctypes_uni[ch_idx], :] = @views normalize(s1[ctypes .== ctypes_uni[ch_idx], :], method=:minmax)
-        s2[ctypes .== ctypes_uni[ch_idx], :] = @views normalize(s2[ctypes .== ctypes_uni[ch_idx], :], method=:minmax)
+        s1[ctypes .== ctypes_uni[ch_idx], :] = @views normalize_minmax(s1[ctypes .== ctypes_uni[ch_idx], :])
+        s2[ctypes .== ctypes_uni[ch_idx], :] = @views normalize_minmax(s2[ctypes .== ctypes_uni[ch_idx], :])
     end
     # reverse so 1st channel is on top
     s1 = @views reverse(s1[:, eachindex(t)], dims = 1)

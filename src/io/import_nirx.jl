@@ -271,7 +271,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     # swap x and y
     # x, y = y, x
     # normalize to a unit-sphere
-    z = normalize(z, method=:n)
+    z = normalize_n(z)
     x, y = _locs_norm(x, y)
     radius = zeros(length(opt_labels))
     theta = zeros(length(opt_labels))

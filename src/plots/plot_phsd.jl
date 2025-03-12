@@ -129,7 +129,7 @@ function plot_phsd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
     # each channel is between -1.0 and +1.0
     for idx in 1:ch_n
         # scale by 0.5 so maxima do not overlap
-        sp[idx, :] = @views normalize(sp[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+        sp[idx, :] = @views normalize_minmax(sp[idx, :]) .* 0.5 .+ (idx - 1)
     end
 
     if ax === :linlin
