@@ -49,6 +49,7 @@ function na_info()::Nothing
             "Cairo",
             "ColorSchemes",
             "ContinuousWavelets",
+            "Crayons",
             "CSV",
             "CubicSplines",
             "CUDA",

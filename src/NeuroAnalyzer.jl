@@ -76,6 +76,7 @@ using Artifacts
 using Cairo
 using ColorSchemes
 using ContinuousWavelets
+using Crayons.Box
 using CSV
 using CubicSplines
 using CUDA
