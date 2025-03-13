@@ -158,7 +158,7 @@ List component names.
 function list_component(obj::NeuroAnalyzer.NEURO)::Union{Vector{Symbol}, Nothing}
 
     if length(obj.components) > 0
-        return keys(obj.components)
+        return Symbol.(keys(obj.components))
     else
         return nothing
     end
