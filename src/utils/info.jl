@@ -652,7 +652,6 @@ Return set of channel indices corresponding to a set of electrodes ("pick", e.g.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `p::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
-    - `:list`
     - `:central` (or `:c`)
     - `:left` (or `:l`)
     - `:right` (or `:r`)
@@ -673,7 +672,7 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
 
     if p isa Vector{Symbol}
         for idx in p
-            _check_var(idx, [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p")
+            _check_var(idx, [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p")
         end
 
         # convert picks to channel labels
@@ -727,7 +726,6 @@ function channel_pick(obj::NeuroAnalyzer.NEURO; p::Union{Symbol, Vector{Symbol}}
                 !isnothing(match(pat, clabels[idx])) && deleteat!(channels, idx)
             end
         end
-
         return channels
     else
         _check_var(p, [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "p")
@@ -774,9 +772,9 @@ Return channels belonging to a cluster of channels.
 
 # Returns
 
-- `ch::Vector{String}`: list of channel names belonging to a given cluster of channels
+- `ch::Vector{Int64}`: channel numbers
 """
-function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{String}
+function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Int64}
 
     @assert length(labels(obj)) != 0 "OBJ does not contain channel labels."
 
@@ -798,7 +796,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)::Vector{Stri
         idx in clabels && push!(ch, idx)
     end
 
-    return ch
+    return get_channel(obj, ch=ch)
 
 end
 

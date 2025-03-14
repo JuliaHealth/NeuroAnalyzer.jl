@@ -201,7 +201,7 @@ s = rand(100)
 @test length(labels(e10)) == 24
 
 @info "Test: channel_cluster()"
-@test channel_cluster(e10, cluster=:f1) == ["Fp1", "F3", "F7"]
+@test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
 
 @info "Test: band_frq()"
 @test band_frq(256, band=:alpha) == (8.0, 13.0)

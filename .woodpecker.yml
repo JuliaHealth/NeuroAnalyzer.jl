@@ -27,7 +27,7 @@ steps:
       - ln -s /usr/lib/x86_64-linux-gnu/libpcre.so.3 /usr/lib/x86_64-linux-gnu/libpcre.so.1
 
       - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
-      - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
+      - git clone --depth 1 https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
 
       - cd NeuroAnalyzer.jl/docs
       - cat header.md > src/index.md
