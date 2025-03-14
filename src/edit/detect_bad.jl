@@ -220,7 +220,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                 w = length(s) ÷ 10
                 bad_windows = 0
                 for idx in 1:w:length(s)
-                    count(abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .> ci2z(p)) > 1 && (bad_windows += 1)
+                    count(abs.(z_signal[idx:(idx + w - 1)]) - abs.(z_tkeo[idx:(idx + w - 1)]) .> cl2z(p)) > 1 && (bad_windows += 1)
                 end
                 # mark channel as bad if there is at least one bad window per epoch
                 if bad_windows > 1
