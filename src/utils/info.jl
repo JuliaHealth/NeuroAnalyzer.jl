@@ -426,7 +426,10 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
         println("             Components: no")
     end
     if datatype(obj) in ["eeg", "ecog", "seeg", "ieeg", "erp"]
-        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        nch = 0
+        for idx in ["eeg", "ecog", "seeg", "ieeg", "erp"]
+            nch += count(x -> isequal(x, idx), obj.header.recording[:channel_type])
+        end
         println(" Number of EEG channels: $nch")
     elseif datatype(obj) in ["meg", "erf"]
         nch = count(x -> isequal(x, "mag"), obj.header.recording[:channel_type])
@@ -540,7 +543,10 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
         println("             Components: no")
     end
     if datatype(obj) in ["eeg", "ecog", "seeg", "ieeg", "erp"]
-        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
+        nch = 0
+        for idx in ["eeg", "ecog", "seeg", "ieeg", "erp"]
+            nch += count(x -> isequal(x, idx), obj.header.recording[:channel_type])
+        end
         println(" Number of EEG channels: $nch")
     elseif datatype(obj) in ["meg", "erf"]
         nch = count(x -> isequal(x, "mag"), obj.header.recording[:channel_type])
