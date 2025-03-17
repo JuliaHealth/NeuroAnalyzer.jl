@@ -20,12 +20,13 @@ function hrv_detect(obj::NeuroAnalyzer.NEURO)::@NamedTuple{nn_seg::Vector{Float6
 
     @assert "ecg" in obj.header.recording[:channel_type] "OBJ does not contain ECG channel."
     ch = get_channel(obj, type="ecg")
-    _info("ECG channel found: $(labels(obj)[ch])")
+    _info("ECG channel found: $(ch[1])")
+    ch = get_channel(obj, ch=ch)
     ecg = obj.data[ch, :, :][:]
     r_idx, _ = findpeaks1d(ecg, height=mean(ecg) + 2*std(ecg))
 
     # convert to ms
-    nn_seg = diff(r_idx) ./ sr(eeg) * 1000
+    nn_seg = diff(r_idx) ./ sr(obj) * 1000
 
     _info("Detected NN segments: $(length(nn_seg))")
 
