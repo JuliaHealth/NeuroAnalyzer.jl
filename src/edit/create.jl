@@ -318,9 +318,10 @@ function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int6
     clabels = repeat(["ch-"], size(data, 1))
     clabels = clabels .* string.(collect(axes(data, 1)))
     obj_new.header.recording[:label] = clabels
-    obj_new.header.recording[:unit] = repeat([_ch_units(type)])
+    obj_new.header.recording[:unit] = repeat([_ch_units(type)], size(data, 1))
     obj_new.header.recording[:sampling_rate] = fs
     obj_new.header.recording[:channel_type] = repeat([type], size(data, 1))
+    obj_new.header.recording[:bad_channel] = zeros(Bool, size(data, 1), 1)
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     reset_components!(obj_new)
     push!(obj_new.history, "create_data(OBJ, data, fs=$fs)")

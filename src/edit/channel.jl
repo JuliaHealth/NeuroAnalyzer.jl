@@ -423,12 +423,14 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::U
         obj_new.header.recording[:channel_type] = [obj.header.recording[:channel_type]; string.(type)]
         obj_new.header.recording[:unit] = [obj.header.recording[:unit]; unit]
         obj_new.header.recording[:channel_order] = [obj_new.header.recording[:channel_order]; collect(maximum(obj_new.header.recording[:channel_order]):maximum(obj_new.header.recording[:channel_order]) + size(data, 1))]
+        obj_new.header.recording[:bad_channel] = m_pad0(obj_new.header.recording[:bad_channel], size(data))
     else
         obj_new.data = data
         obj_new.header.recording[:label] = label
         obj_new.header.recording[:channel_type] = string.(type)
         obj_new.header.recording[:unit] = unit
         obj_new.header.recording[:channel_order] = collect(1:size(data, 1))
+        obj_new.header.recording[:bad_channel] = zeros(Bool, size(data))
     end
 
     push!(obj_new.history, "add_channel(OBJ, data, label=$label, type=$type, unit=$unit)")

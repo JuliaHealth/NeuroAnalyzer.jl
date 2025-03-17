@@ -20,19 +20,55 @@ Pad matrix with zeros to make it square.
 """
 function m_pad0(m::AbstractMatrix)::AbstractMatrix
 
-    nr, nc = size(m)
+    mr, mc = size(m)
 
-    if nr > nc
+    if mr > mc
         # horizontal
-        return hcat(m, repeat(zeros(eltype(m), 1), nr, nr - nc))
-    elseif nr < nc
+        return hcat(m, repeat(zeros(eltype(m), 1), mr, mr - mc))
+    elseif mr < mc
         # vertical
-        return vcat(m, repeat(zeros(eltype(m), 1), nc - nr, nc))
+        return vcat(m, repeat(zeros(eltype(m), 1), mc - mr, mc))
     else
         return m
     end
 
 end
+
+"""
+    m_pad0(m, r, c)
+
+Pad matrix with zeros to make its size r × c.
+
+# Arguments
+
+- `m::AbstractMatrix`
+- `r::Int64`: number of rows
+- `c::Int64`: number of columns
+
+# Returns
+
+- `m::AbstractMatrix`
+"""
+function m_pad0(m::AbstractMatrix, r::Int64, c::Int64)::AbstractMatrix
+
+    @assert (r, c) > size(m) "New matrix dimensions ($r × $c) must be larger than the source matrix dimensions ($(size(m, 1)) × $(size(m, 2)))."
+
+    mr, mc = size(m)
+
+    # add rows
+    if r > mr
+        m = vcat(m, repeat(zeros(eltype(m), 1), r - mr, mc))
+    end
+
+    # add columns
+    if c > mc
+        m = hcat(m, repeat(zeros(eltype(m), 1), r, c - mc))
+    end
+
+    return m
+
+end
+
 
 """
     m_sortperm(m; <keyword arguments>)

@@ -209,6 +209,7 @@ s = rand(100)
 
 @info "Test: m_pad0()"
 @test m_pad0(m1) == [1 2 3; 4 5 6; 0 0 0]
+@test size(m_pad0(m1, 6, 5)) == (6, 5)
 
 @info "Test: m_sortperm()"
 @test m_sortperm(m1) == [1 1 1; 2 2 2]
