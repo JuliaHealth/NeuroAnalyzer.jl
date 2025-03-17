@@ -595,7 +595,7 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
                 repeat("-", 7) * " " *
                 repeat("-", 12))
         for idx in eachindex(obj.header.recording[:label])
-            if obj.header.recording[:channel_type][idx] !== "nirs_aux"
+            if !(obj.header.recording[:channel_type][idx] in ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"])
                 println(rpad(" $idx", 8) *
                         rpad("$(obj.header.recording[:label][idx])", 16) *
                         rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *

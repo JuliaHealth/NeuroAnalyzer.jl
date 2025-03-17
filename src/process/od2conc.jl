@@ -21,9 +21,9 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     @assert length(get_channel(obj, type="nirs_od")) > 0 "OBJ does not contain NIRS OD channels, use intensity2od() first."
     @assert length(ppf) == length(obj.header.recording[:wavelengths]) "ppf length does not correspond to the number of wavelengths."
 
-    ch = get_channel(obj, ch=ch)
     _check_datatype(obj, "nirs")
     _check_channels(get_channel(obj, type="nirs_od"), ch)
+    ch = get_channel(obj, ch=ch)
 
     obj_new = deepcopy(obj)
 
@@ -83,7 +83,9 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     for idx in axes(dc, 3)
         obj_new.header.recording[:label] = vcat(obj_new.header.recording[:label], ["$(split((obj.header.recording[:label][idx]), ' ')[1]) HbO", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbR", "$(split((obj.header.recording[:label][idx]), ' ')[1]) HbT"])
     end
+    obj_new.header.recording[:channel_order] = vcat(obj_new.header.recording[:channel_order], collect(obj_new.header.recording[:channel_order][end]+1:size(obj_new.data, 1)))
     obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0"=>"")
+    obj_new.header.recording[:bad_channel] = m_pad0(obj_new.header.recording[:bad_channel], size(obj_new.data, 1), size(obj_new.data, 3))
 
     #=
     for idx in axes(dc, 3)
