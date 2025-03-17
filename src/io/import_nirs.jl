@@ -36,6 +36,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
 
     # time points
     time_pts = nirs["t"][:]
+    time_pts .-= time_pts[1]
     epoch_time = time_pts
     sampling_rate = round(Int64, 1 / (time_pts[2] - time_pts[1]))
 

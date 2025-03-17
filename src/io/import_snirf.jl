@@ -185,6 +185,7 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
         sampling_rate = 1 / time_pts[2]
         time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
     end
+    time_pts .-= time_pts[1]
     epoch_time = time_pts
 
     ch_n = size(data, 1)

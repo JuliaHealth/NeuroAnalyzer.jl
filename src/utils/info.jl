@@ -439,10 +439,11 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
         nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
         println(" Number of EEG channels: $nch")
     elseif datatype(obj) == "nirs"
-        nch = count(x -> isequal(x, "nirs"), obj.header.recording[:channel_type])
+        nch = 0
+        for idx in ["nirs", "nirs_int", "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux"]
+            nch += count(x -> isequal(x, idx), obj.header.recording[:channel_type])
+        end
         println("Number of NIRS channels: $nch")
-        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
-        println(" Number of EEG channels: $nch")
     end
 
     return nothing
@@ -556,10 +557,11 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
         nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
         println(" Number of EEG channels: $nch")
     elseif datatype(obj) == "nirs"
-        nch = count(x -> isequal(x, "nirs"), obj.header.recording[:channel_type])
+        nch = 0
+        for idx in ["nirs", "nirs_int", "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux"]
+            nch += count(x -> isequal(x, idx), obj.header.recording[:channel_type])
+        end
         println("Number of NIRS channels: $nch")
-        nch = count(x -> isequal(x, "eeg"), obj.header.recording[:channel_type])
-        println(" Number of EEG channels: $nch")
     end
     println()
     println("Channels:")
@@ -582,24 +584,24 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
                     rpad("$(obj.header.recording[:bad_channel][idx])", 8))
         end
     else
-        if obj.header.recording[:channel_type][idx] !== "nirs_aux"
-            println(rpad(" ch", 8) *
-                    rpad("label", 16) *
-                    rpad("type", 12) *
-                    rpad("unit", 8) *
-                    rpad("wavelength", 8))
-            for idx in eachindex(obj.header.recording[:label])
+        println(rpad(" ch", 8) *
+                rpad("label", 16) *
+                rpad("type", 12) *
+                rpad("unit", 8) *
+                rpad("wavelength", 8))
+        println(" " * repeat("-", 6) * " " *
+                repeat("-", 15) * " " *
+                repeat("-", 11) * " " *
+                repeat("-", 7) * " " *
+                repeat("-", 12))
+        for idx in eachindex(obj.header.recording[:label])
+            if obj.header.recording[:channel_type][idx] !== "nirs_aux"
                 println(rpad(" $idx", 8) *
                         rpad("$(obj.header.recording[:label][idx])", 16) *
                         rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12) *
                         rpad("$(obj.header.recording[:unit][idx])", 8) *
-                        rpad("$(obj.header.recording[:wavelength_index][idx])", 8))
-            end
-        else
-            println(rpad(" ch", 8) *
-                    rpad("label", 16) *
-                    rpad("type", 12))
-            for idx in eachindex(obj.header.recording[:label])
+                        rpad("$(obj.header.recording[:wavelengths][obj.header.recording[:wavelength_index][idx]])", 8))
+            else
                 println(rpad(" $idx", 8) *
                         rpad("$(obj.header.recording[:label][idx])", 16) *
                         rpad("$(uppercase(obj.header.recording[:channel_type][idx]))", 12))
