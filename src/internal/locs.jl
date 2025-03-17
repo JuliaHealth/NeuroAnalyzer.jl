@@ -19,15 +19,15 @@ end
 
 function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})::Union{Int64, Vector{Int64}}
     if isa(l, String)
-        if length(findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))) > 0
-            return findall(occursin.(lowercase(l), lowercase.(locs[!, :label])))[1]
+        if !isnothing(findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label]))))
+            return findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label])))
         else
             return Int64[]
         end
     else
         l_idx = Vector{Int64}()
         for idx in l
-            lowercase(idx) in lowercase.(locs[!, :label]) && push!(l_idx, findall(occursin.(lowercase(idx), lowercase.(locs[!, :label])))[1])
+            lowercase(idx) in lowercase.(locs[!, :label]) && push!(l_idx, findfirst(isequal.(lowercase(idx), lowercase.(locs[!, :label]))))
         end
         return l_idx
     end
