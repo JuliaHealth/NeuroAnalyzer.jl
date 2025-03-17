@@ -233,9 +233,9 @@ Detect power line noise frequency.
 
 # Returns
 
-- `noise_frq::Array{Float64, 3}`: peak noise frequency in Hz
+- `noise_frq::Array{Float64, 2}`: peak noise frequency in Hz for channels × epochs
 """
-function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
+function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 2}
 
     ch_n = size(obj, 1)
     ep_n = size(obj, 3)
@@ -246,7 +246,7 @@ function detect_powerline(obj::NeuroAnalyzer.NEURO)::Array{Float64, 3}
     progress_bar && (progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
-        @Threads.threads for ch_idx in 1:ch_n
+        @Threads.threads :greedy for ch_idx in 1:ch_n
             noise_frq[ch_idx, ep_idx] = @views detect_powerline(obj.data[ch_n, :, ep_n], fs=sr(obj))
         end
 
@@ -282,7 +282,7 @@ function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
     progress_bar && (progbar = Progress(ch_n * ep_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
-        @Threads.threads for ch_idx in 1:ch_n
+        @Threads.threads :greedy for ch_idx in 1:ch_n
             noise_frq[ch_idx, ep_idx] = @views detect_powerline(obj.data[ch_n, :, ep_n], fs=sr(obj))
         end
 
