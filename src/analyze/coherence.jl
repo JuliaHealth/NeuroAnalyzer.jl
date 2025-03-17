@@ -167,8 +167,8 @@ function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Un
     ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    length(ep1) == 1 && (ep1 = [ep1])
-    length(ep2) == 1 && (ep2 = [ep2])
+    isa(ep1, Int64) && (ep1 = [ep1])
+    isa(ep2, Int64) && (ep2 = [ep2])
 
     coh, mscoh, f = @views coherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 

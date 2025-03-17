@@ -74,8 +74,8 @@ function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Unio
     ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    length(ep1) == 1 && (ep1 = [ep1])
-    length(ep2) == 1 && (ep2 = [ep2])
+    isa(ep1, Int64) && (ep1 = [ep1])
+    isa(ep2, Int64) && (ep2 = [ep2])
 
     ep_n = length(ep1)
     ch_n = length(ch1)

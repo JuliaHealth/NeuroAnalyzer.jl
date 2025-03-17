@@ -113,8 +113,8 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
-    length(ep1) == 1 && (ep1 = [ep1])
-    length(ep2) == 1 && (ep2 = [ep2])
+    isa(ep1, Int64) && (ep1 = [ep1])
+    isa(ep2, Int64) && (ep2 = [ep2])
 
     ep_n = length(ep1)
     ch_n = length(ch1)
