@@ -4,7 +4,7 @@ export add_topmargin_canvas
 export add_to_canvas
 
 """
-    plot2canvas(c)
+    plot2canvas(p)
 
 Convert Plots.Plot to CairoSurfaceBase.
 
