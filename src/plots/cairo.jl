@@ -111,8 +111,7 @@ function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfac
     if file_name != ""
         ext = lowercase(splitext(file_name)[2])
         @assert ext == ".png" "Filename extension must be .png"
-
-        (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
+        isfile(file_name) && _warn("File $file_name will be overwritten.")
     end
 
     c = CairoRGBSurface(c1.width, c1.height)
