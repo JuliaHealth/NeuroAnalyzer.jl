@@ -876,7 +876,11 @@ h_act, h_mob, h_comp = hjorth(e10, ch="all")
 @test size(h_comp) == (24, 10)
 
 @info "Test: peak_frq()"
-pf = peak_frq(e10, ch="all", f=(8, 13))
+pf = peak_frq(e10, ch="all", frq_lim=(8, 13))
+@test size(pf) == (24, 10)
+
+@info "Test: peak_amp()"
+pf = peak_frq(e10, ch="all", frq_lim=(8, 13))
 @test size(pf) == (24, 10)
 
 @info "Test: phsd()"
