@@ -3,7 +3,7 @@ export band_mpower
 """
     band_mpower(s; <keyword arguments>)
 
-Calculate mean and maximum band power and its frequency.
+Calculate mean and maximum band power and its frequency and amplitude.
 
 # Arguments
 
@@ -31,8 +31,9 @@ Named tuple containing:
 - `mbp::Float64`: mean band power
 - `maxfrq::Float64`: frequency of maximum band power
 - `maxbp::Float64`: power at maximum band frequency
+- `maxba::Float64`: power at maximum band frequency
 """
-function band_mpower(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64} where {T <: CWT}
+function band_mpower(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
@@ -44,14 +45,15 @@ function band_mpower(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}, m
     mbp = mean(pw[f1_idx:f2_idx])
     maxfrq = pf[f1_idx:f2_idx][findmax(pw[f1_idx:f2_idx])[2]]
     maxbp = pw[vsearch(maxfrq, pf)]
+    maxba = sqrt(maxbp)
 
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
+    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)
 end
 
 """
     band_mpower(s; <keyword arguments>)
 
-Calculate absolute band power between two frequencies.
+Calculate mean and maximum band power and its frequency and amplitude.
 
 # Arguments
 
@@ -79,8 +81,9 @@ Named tuple containing:
 - `mbp::Matrix{Float64}`: mean band power per channel per epoch
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
+- `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
-function band_mpower(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}} where {T <: CWT}
+function band_mpower(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}} where {T <: CWT}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -88,21 +91,22 @@ function band_mpower(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, me
     mbp = zeros(ch_n, ep_n)
     maxfrq = zeros(ch_n, ep_n)
     maxbp = zeros(ch_n, ep_n)
+    maxba = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx], maxba[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
         end
     end
 
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
+    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)
 
 end
 
 """
     band_mpower(obj; <keyword arguments>)
 
-Calculate mean and maximum band power and its frequency.
+Calculate mean and maximum band power and its frequency and amplitude.
 
 # Arguments
 
@@ -130,15 +134,16 @@ Named tuple containing:
 - `mbp::Matrix{Float64}`: mean band power per channel per epoch
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
+- `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
-function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}} where {T <: CWT}
+function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}} where {T <: CWT}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
 
     _log_off()
-    mbp, maxfrq, maxbp = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    mbp, maxfrq, maxbp, maxba = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
     _log_on()
 
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
+    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)
 
 end
