@@ -880,8 +880,12 @@ pf = peak_frq(e10, ch="all", frq_lim=(8, 13))
 @test size(pf) == (24, 10)
 
 @info "Test: peak_amp()"
-pf = peak_frq(e10, ch="all", frq_lim=(8, 13))
-@test size(pf) == (24, 10)
+pa = peak_amp(e10, ch="all", frq_lim=(8, 13))
+@test size(pa) == (24, 10)
+
+@info "Test: peak_pow()"
+pp = peak_pow(e10, ch="all", frq_lim=(8, 13))
+@test size(pp) == (24, 10)
 
 @info "Test: phsd()"
 ph, f = phsd(e10, ch="all")
