@@ -18,6 +18,8 @@ Nothing
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
+    obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
+
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 

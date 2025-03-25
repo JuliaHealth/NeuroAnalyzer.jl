@@ -54,7 +54,10 @@ function tpt_analyze(obj::NeuroAnalyzer.NEURO)::Union{@NamedTuple{n::Int64, t_me
     t = obj.time_pts[p_idx] .* 1000
 
     n = length(p_idx)
-    if n > 0
+    if n == 1
+        _warn("Only 1 pinch was detected, intervals cannot be calculated.")
+        return nothing
+    elseif n > 0
         t_diff = round.(diff(t), digits=1)
         t_mean = round(mean(t_diff), digits=1)
         t_median = round(median(t_diff), digits=1)
