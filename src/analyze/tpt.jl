@@ -18,8 +18,10 @@ function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 
     _check_datatype(obj, "tpt")
 
-    p_idx = _tpt_peaks(obj.data, obj.time_pts)
-
+    p_idx1 = NeuroAnalyzer._tpt_peaks(obj.data[4, :, 1])
+    p_idx2 = NeuroAnalyzer._tpt_peaks(obj.data[5, :, 1])
+    p_idx3 = NeuroAnalyzer._tpt_peaks(.-obj.data[6, :, 1])
+    p_idx = sort(union(p_idx1, p_idx2, p_idx3))
     _info("Detected pinches: $(length(p_idx))")
 
     return p_idx
@@ -63,7 +65,7 @@ function tpt_analyze(obj::NeuroAnalyzer.NEURO)::Union{@NamedTuple{n::Int64, t_me
         t_median = round(median(t_diff), digits=1)
         t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=1)
         t_sdsd = round(std(t_diff), digits=1)
-        return (n=n, t_mean=t_mean, t_median=t_median, t_rmssd=t_rmssd, t_sdsd=t_sdsd)        
+        return (n=n, t_mean=t_mean, t_median=t_median, t_rmssd=t_rmssd, t_sdsd=t_sdsd)
     else
         return nothing
     end

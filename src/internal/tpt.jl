@@ -1,38 +1,20 @@
-function _tpt_peaks(x::AbstractArray, t::AbstractVector)::Vector{Int64}
+function _tpt_peaks(x::AbstractVector)::Vector{Int64}
     x = detrend(x, type=:loess)
-    x = x[:, :, 1]
-    q2_x = 3.166866296141654
-    q2_y = 4.0740732957574375
-    q2_z = 5.614191777055647
-    q2_x_acc = 1.5005706677814734
-    q2_y_acc = 1.9154153635212732
-    q2_z_acc = 2.620307540507893
-    p_idx = Vector{Vector{Int64}}()
-    verbose_tmp = NeuroAnalyzer.verbose
-    NeuroAnalyzer.verbose = false
-    f = filter_create(fprototype=:fir, ftype=:lp, cutoff=5, n=length(x[1, :]), fs=50, order=12)
-    for idx in 1:6
-        tmp = x[idx, :]
-        tmp = filter_apply(tmp, flt=f)
-        p, f, t = spectrogram(tmp, fs=50)
-        tmp[tmp .< 0] .= 0
-        idx == 1 && (h = q2_x)
-        idx == 2 && (h = q2_y)
-        idx == 3 && (h = q2_z)
-        idx == 4 && (h = q2_x_acc)
-        idx == 5 && (h = q2_y_acc)
-        idx == 6 && (h = q2_z_acc)
-        p_tmp, _ = findpeaks1d(tmp, distance=12, prominence=(h/2, h))
-        # p_tmp, _ = findpeaks1d(tmp, distance=20)
-        # p_tmp, _ = findpeaks1d(tmp, prominence=(1, h))
-        push!(p_idx, p_tmp)
+    x = derivative(x)
+    # number of windows
+    # 50 is sampling rate
+    # 0.5 is window length in second, 25 in samples
+    wlen = 25
+    n = round(Int64, length(x) / (50 * 0.5))
+    p_idx = Int64[]
+    for idx in 1:n
+        w = (idx - 1) * wlen + 1:idx  * wlen
+        t1 = w[1]
+        t2 = w[end]
+        p_idx_tmp, _ = findpeaks1d(x[t1:t2], prominence=4)
+        length(p_idx_tmp) > 0 && push!(p_idx, t1 + vsearch(maximum(x[t1:t2][p_idx_tmp]), x[t1:t2]))
     end
-    NeuroAnalyzer.verbose = verbose_tmp
-    m = zeros(Int64, 6, length(x[1, :]))
-    for idx in 1:6
-        m[idx, p_idx[idx]] .= 1
-    end
-    p_idx = sum(m, dims=1)[:]
-    p_idx, _ = findpeaks1d(p_idx, distance=25, height=0.2)
+
     return p_idx
+
 end
