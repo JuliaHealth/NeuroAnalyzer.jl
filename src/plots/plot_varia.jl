@@ -920,6 +920,8 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 """
 function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(f[1], f[end]), ax::Symbol=:linlin, units::String="μV", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
+    _in(frq_lim[1], (f[1], f[end]))
+    _in(frq_lim[2], (f[1], f[end]))
     @assert size(p, 1) == length(f) "f vector length does not match powers."
     @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
@@ -1022,7 +1024,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
                         title=tt,
                         xlabel=xl,
                         ylabel=yl,
-                        ylims=frq_lim,
+                        xlims=frq_lim,
                         xticks=xt,
                         xscale=xsc,
                         yscale=ysc,

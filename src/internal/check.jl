@@ -1,3 +1,6 @@
+_in(x::Real, r::Tuple{Real, Real}) = return x >= r[1] && x <= r[2]
+_bin(x::Real, r::Tuple{Real, Real}) = return x > r[1] && x < r[2]
+
 function _chk2d(a::AbstractArray)::Nothing
     @assert ndims(a) == 2 "Input array must have 2 dimensions."
     return nothing
