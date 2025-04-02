@@ -334,8 +334,6 @@ function filter_apply(s::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGai
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
-    dir === :twopass && _info("Filter is applied twice, the effective filter order is doubled")
-
     dir === :onepass && (return filt(flt, s))
     dir === :twopass && (return filtfilt(flt, s))
     dir === :reverse && (return filt(flt, reverse(s)))
@@ -563,6 +561,8 @@ function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
         Plots.plot(p)
         return p
     end
+
+    dir === :twopass && _info("Filter is applied twice, the effective filter order is doubled")
 
     obj_new = NeuroAnalyzer.filter(obj,
                                    ch=ch,
