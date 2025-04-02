@@ -1,6 +1,33 @@
+export topo_var
 export gfp
 export gfp_norm
 export diss
+
+"""
+    topo_var(obj; <keyword arguments>)
+
+Calculate topographical variance (variance calculated at each time point across all channels).
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}}`: channels to analyze
+
+# Returns
+
+Named tuple containing:
+- `tv::Vector{Float64}`: topographical variance
+"""
+function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
+
+    @assert datatype(obj) in ["erp", "erf"] "topo_var() should be applied for ERP or ERF object only."
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+
+    tv = @views var(obj.data[ch, :, 1], dims=1)[:]
+
+    return tv
+
+end
 
 """
     gfp(s)
@@ -9,15 +36,21 @@ Calculate GFP (Global Field Power).
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractMatrix`
 
 # Returns
 
-- `gfp::Float64`
+- `g::Vector{Float64}`: GFP values over time points
 """
-function gfp(s::AbstractVector)::Float64
+function gfp(s::AbstractMatrix)::Vector{Float64}
 
-    return sum(s.^2) / length(s)
+    ch_n = size(s, 1)
+    g = zeros(size(s, 2))
+    Threads.@threads :greedy for tp_idx in axes(s, 2)
+        g[tp_idx] = @views sum(s[:, tp_idx] .^2) / ch_n
+    end
+
+    return g
 
 end
 
@@ -28,153 +61,105 @@ Calculate signal normalized for GFP (Global Field Power).
 
 # Arguments
 
-- `s::AbstractVector`
+- `s::AbstractMatrix`
 
 # Returns
 
-- `gfp_norm::Vector{Float64}`
+- `gn::Matrix{Float64}`: normalized signal
 """
-function gfp_norm(s::AbstractVector)::Vector{Float64}
+function gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 
-    return s ./ gfp(s)
-
-end
-
-"""
-    diss(s1, s2)
-
-Calculate DISS (global dissimilarity) and spatial correlation between `s1` and `s2`.
-
-# Arguments
-
-- `s1::AbstractVector`
-- `s2::AbstractVector`
-
-# Returns
-
-Named tuple containing:
-- `gd::Float64`: global dissimilarity
-- `sc::Float64`: spatial correlation
-"""
-function diss(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{gd::Float64, sc::Float64}
-
-    @assert length(s1) == length(s2) "s1 and s2 must have the same length."
-
-    gfp_norm1 = gfp_norm(s1)
-    gfp_norm2 = gfp_norm(s2)
-    gd = sqrt(sum((gfp_norm1 .- gfp_norm2).^2) / length(s1))
-    sc = 0.5 * (2 - gd^2)
-
-    return (gd=gd, sc=sc)
-
-end
-
-"""
-    diss(s)
-
-Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels).
-
-# Arguments
-
-- `s::AbstractArray`
-
-# Returns
-
-Named tuple containing:
-- `gd::Array{Float64, 3}`: global dissimilarity
-- `sc::Array{Float64, 3}`: spatial correlation
-"""
-function diss(s::AbstractArray)::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
-
-    _chk3d(s)
-    ch_n = size(s, 1)
-    ep_n = size(s, 3)
-
-    # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
-
-    gd = zeros(ch_n, ch_n, ep_n)
-    sc = zeros(ch_n, ch_n, ep_n)
-
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx1 in 1:ch_n
-           for ch_idx2 in 1:ch_idx1
-                gd[ch_idx1, ch_idx2, ep_idx], sc[ch_idx1, ch_idx2, ep_idx] = @views diss(s[ch_idx1, :, ep_idx], s[ch_idx2, :, ep_idx])
-            end
-
-        # update progress bar
-        progress_bar && next!(progbar)
-        end
+    g = gfp(s)
+    gn = similar(s)
+    Threads.@threads :greedy for tp_idx in axes(s, 2)
+        @views gn[:, tp_idx] = s[:, tp_idx] ./ g[tp_idx]
     end
 
-    # copy lower triangle to upper triangle
-    @inbounds for ep_idx in 1:ep_n
-        gd[:, :, ep_idx] = gd[:, :, ep_idx] + gd[:, :, ep_idx]' - diagm(diag(gd[:, :, ep_idx]))
-        sc[:, :, ep_idx] = sc[:, :, ep_idx] + sc[:, :, ep_idx]' - diagm(diag(sc[:, :, ep_idx]))
-    end
-
-    return (gd=gd, sc=sc)
+    return gn
 
 end
 
 """
-    diss(s1, s2)
+    gfp(obj; <keyword arguments>)
 
-Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels).
-
-# Arguments
-
-- `s1::AbstractArray`
-- `s2::AbstractArray`
-
-# Returns
-
-Named tuple containing:
-- `gd::Matrix{Float64}`: global dissimilarity
-- `sc::Matrix{Float64}`: spatial correlation
-"""
-function diss(s1::AbstractArray, s2::AbstractArray)::@NamedTuple{gd::Matrix{Float64}, sc::Matrix{Float64}}
-
-    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
-    _chk3d(s1)
-    _chk3d(s2)
-
-    ch_n = size(s1, 1)
-    ep_n = size(s1, 3)
-
-    gd = zeros(ch_n, ep_n)
-    sc = zeros(ch_n, ep_n)
-
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
-            gd[ch_idx, ep_idx], sc[ch_idx, ep_idx] = @views diss(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
-        end
-    end
-
-    return (gd=gd, sc=sc)
-
-end
-
-"""
-    diss(obj; <keyword arguments>)
-
-Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels).
+Calculate global field power (GFP). This works for ERP/ERF object only and calculates GFP for the first epoch (ERP/ERF) only.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `ch::Union{String, Vector{String}}`: channels to analyze
+
+# Returns
+
+- `g::Vector{Float64}`: GFP values over time points
+"""
+function gfp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
+
+    @assert datatype(obj) in ["erp", "erf"] "gfp() should be applied for ERP or ERF object only."
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+
+    g = @views gfp(obj.data[ch, :, 1])[:]
+
+    return g
+
+end
+
+"""
+    gfp_norm(obj; <keyword arguments>)
+
+Calculate signal normalized for GFP (Global Field Power). This works for ERP/ERF object only and normalizes the first epoch (ERP/ERF) only.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}}`: channels to analyze
 
 # Returns
 
 Named tuple containing:
-- `gd::Array{Float64, 3}`: global dissimilarity
-- `sc::Array{Float64, 3}`: spatial correlation
+- `gn::Vector{Float64}`: normalized signal
 """
-function diss(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
+function gfp_norm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
 
+    @assert datatype(obj) in ["erp", "erf"] "gfp() should be applied for ERP or ERF object only."
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    gd, sc = diss(obj.data[ch, :, :])
+
+    gn = @views gfp_norm(obj.data[ch, :, 1])
+
+    return gn
+
+end
+
+"""
+    diss(s1, s2)
+
+Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels).
+
+# Arguments
+
+- `s1::AbstractMatrix`
+- `s2::AbstractMatrix`
+
+# Returns
+
+Named tuple containing:
+- `gd::Vector{Float64}`: global dissimilarity
+- `sc::Vector{Float64}`: spatial correlation
+"""
+function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
+
+    @assert size(s1) == size(s2) "s1 and s2 must have the same size."
+
+    n_ch = size(s1, 1)
+    gfp_norm1 = gfp_norm(s1)
+    gfp_norm2 = gfp_norm(s2)
+
+    gd = zeros(size(s1, 2))
+    sc = zeros(size(s1, 2))
+    Threads.@threads :greedy for tp_idx in axes(s1, 2)
+        gd[tp_idx] = sqrt(sum((gfp_norm1[:, tp_idx] .- gfp_norm2[:, tp_idx]).^2) / n_ch)
+        sc[tp_idx] = 0.5 * (2 - gd[tp_idx]^2)
+    end
 
     return (gd=gd, sc=sc)
 
@@ -183,7 +168,7 @@ end
 """
     diss(obj1, obj2; <keyword arguments>)
 
-Calculate DISS (global dissimilarity) and spatial correlation (`ch1` of `obj1` vs `ch2` of `obj2`)..
+Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels). This works for ERP/ERF objects only and calculates DISS for the first epoch (ERP/ERF) only.
 
 # Arguments
 
@@ -196,24 +181,21 @@ Calculate DISS (global dissimilarity) and spatial correlation (`ch1` of `obj1` v
 # Returns
 
 Named tuple containing:
-- `gd::Array{Float64, 3}`: global dissimilarity
-- `sc::Array{Float64, 3}`: spatial correlation
+- `gd::Vector{Float64}`: global dissimilarity
+- `sc::Vector{Float64}`: spatial correlation
 """
-function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{gd::Array{Float64, 3}, sc::Array{Float64, 3}}
+function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}})::@NamedTuple{gd::Vector{Float64}, sc::Vector{Float64}}
 
+    @assert datatype(obj1) in ["erp", "erf"] "diss() should be applied for ERP or ERF object only."
+    @assert datatype(obj2) in ["erp", "erf"] "diss() should be applied for ERP or ERF object only."
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
-    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
     ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
     ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
-    _check_epochs(obj1, ep1)
-    _check_epochs(obj2, ep2)
-    isa(ep1, Int64) && (ep1 = [ep1])
-    isa(ep2, Int64) && (ep2 = [ep2])
 
-    gd, sc = @views diss(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
+    gd, sc = @views diss(obj1.data[ch1, :, 1], obj2.data[ch2, :, 1])
 
     return (gd=gd, sc=sc)
 

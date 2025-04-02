@@ -119,7 +119,6 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
             Threads.@threads :greedy for ch_idx in 1:ch_n
                 s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
-
         end
         return s
     end

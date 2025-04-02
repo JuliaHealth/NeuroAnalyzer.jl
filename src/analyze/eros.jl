@@ -3,7 +3,7 @@ export eros
 """
     eros(obj; <keyword arguments>)
 
-Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP, `eros()` returns two epochs: ERP spectrogram (`s[:, :, 1]`) and averaged spectrograms of all ERP epochs (`s[:, :, 2]`). Otherwise, `eros()` returns averaged spectrograms of all `obj` epochs (`s[:, :, 1]`)
+Calculate ERO (Event-Related Oscillations) spectrogram. If `obj` is ERP or ERF, `eros()` returns two epochs: ERP spectrogram (`s[:, :, 1]`) and averaged spectrograms of all ERP epochs (`s[:, :, 2]`). Otherwise, `eros()` returns averaged spectrograms of all `obj` epochs (`s[:, :, 1]`)
 
 # Arguments
 
@@ -42,7 +42,7 @@ function eros(obj::NeuroAnalyzer.NEURO; ch::String, pad::Int64=0, method::Symbol
 
     s = s[:, :, 1, :]
 
-    if datatype(obj) == "erp"
+    if datatype(obj) in ["erp", "erf"]
         s = cat(s[:, :, 1], mean(s, dims=3), dims=3)
     else
         s = mean(s, dims=3)

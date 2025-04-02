@@ -3,7 +3,7 @@ export erop
 """
     erop(obj; <keyword arguments>)
 
-Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP, `erop()` returns two epochs: ERP power-spectrum (`s[:, 1]`) and averaged power-spectra of all ERP epochs (`s[:, 2]`). Otherwise, `erop()` returns averaged power-spectra of all `obj` epochs (`s[:, 1]`)
+Calculate ERO (Event-Related Oscillations) power-spectrum. If `obj` is ERP or ERF, `erop()` returns two epochs: ERP power-spectrum (`s[:, 1]`) and averaged power-spectra of all ERP epochs (`s[:, 2]`). Otherwise, `erop()` returns averaged power-spectra of all `obj` epochs (`s[:, 1]`)
 
 # Arguments
 

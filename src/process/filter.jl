@@ -321,9 +321,9 @@ Apply IIR or FIR filter.
 
 - `s::AbstractVector`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
-    - `:twopass`
-    - `:onepass`
+- `dir:Symbol=:twopass`: filter direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass, use for for causal filter
     - `:reverse`: one pass, reverse direction
 
 # Returns
@@ -334,8 +334,10 @@ function filter_apply(s::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGai
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
-    dir === :twopass && (return filtfilt(flt, s))
+    dir === :twopass && _info("Filter is applied twice, the effective filter order is doubled")
+
     dir === :onepass && (return filt(flt, s))
+    dir === :twopass && (return filtfilt(flt, s))
     dir === :reverse && (return filt(flt, reverse(s)))
 
 end

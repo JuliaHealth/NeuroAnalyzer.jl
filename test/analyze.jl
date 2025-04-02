@@ -119,16 +119,6 @@ ph, f = NeuroAnalyzer.cph(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=
 @test size(ph) == (2, 2049, 1)
 @test length(f) == 2049
 
-@info "Test: diss()"
-@test NeuroAnalyzer.diss(v1, v2) == (gd = 0.21320071635561044, sc = 0.9772727272727273)
-@test NeuroAnalyzer.diss(a1) == (gd = [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0], sc = [1.0 1.0; 1.0 1.0;;; 1.0 1.0; 1.0 1.0])
-gd, sc = NeuroAnalyzer.diss(a1, a2)
-@test size(gd) == (2, 2)
-@test size(sc) == (2, 2)
-gd, sc = NeuroAnalyzer.diss(e10, ch="all")
-@test size(gd) == (24, 24, 10)
-@test size(sc) == (24, 24, 10)
-
 @info "Test: entropy()"
 e, s, l = NeuroAnalyzer.entropy(rand(10))
 @test e < l
@@ -956,5 +946,16 @@ x = ones(100, 100)
 @info "Test: std()"
 s = std(e10)
 @test size(s) == (24, 2560)
+
+@info "Test: topo_var()"
+erp = average_epochs(e10)
+s = topo_var(erp, ch="eeg")
+@test length(s) == 2560
+
+@info "Test: diss()"
+erp = average_epochs(e10)
+gd, sc = NeuroAnalyzer.diss(erp, erp, ch1="all", ch2="all")
+@test gd == zeros(2560)
+@test sc == ones(2560)
 
 true
