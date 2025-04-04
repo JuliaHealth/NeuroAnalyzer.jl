@@ -942,6 +942,15 @@ x = ones(100, 100)
 @test NeuroAnalyzer.seg_extract(x, (10, 10, 20, 20)) == ones(11, 11)
 @test NeuroAnalyzer.seg_extract(x, (10, 10, 20, 20), v=true) == ones(11 * 11)
 @test NeuroAnalyzer.seg_extract(x, (10, 10, 20, 20), c=true) == ones(496)
+x = ones(10, 10)
+x[4:6, 4:6] .+= 1
+@test length(NeuroAnalyzer.seg_extract(x, threshold=1, threshold_type=:eq)[1]) == 91
+@test length(NeuroAnalyzer.seg_extract(x, threshold=1, threshold_type=:neq)[1]) == 9
+@test length(NeuroAnalyzer.seg_extract(x, threshold=1.1, threshold_type=:leq)[1]) == 91
+@test length(NeuroAnalyzer.seg_extract(x, threshold=1.1, threshold_type=:geq)[1]) == 9
+@test length(NeuroAnalyzer.seg_extract(x, threshold=1.1, threshold_type=:g)[1]) == 9
+@test length(NeuroAnalyzer.seg_extract(x, threshold=1.1, threshold_type=:l)[1]) == 91
+@test x[NeuroAnalyzer.seg_extract(x, threshold=1, threshold_type=:neq)[1]] == ones(9) .* 2
 
 @info "Test: std()"
 s = std(e10)

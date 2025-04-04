@@ -97,3 +97,51 @@ function seg_extract(m::AbstractMatrix, rc::NTuple{4, Int64}; v::Bool=false, c::
     return seg
 
 end
+
+"""
+    seg_extract(m; <keyword arguments>)
+
+Extract segment from a matrix using thresholding.
+
+# Arguments
+
+- `m::AbstractMatrix`
+- `threshold::Real=0`: threshold
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: return equal to threshold
+    - `:neq`: return not equal to threshold
+    - `:geq`: return ≥ to threshold
+    - `:leq`: return ≤ to threshold
+    - `:g`: return > to threshold
+    - `:l`: return < to threshold
+
+# Returns
+
+Named tuple containing:
+- `idx::Vector{CartesianIndex{2}}`: Cartesian coordinates of matrix elements
+- `bm::Matrix{Bool}`: map of the segment
+"""
+function seg_extract(m::AbstractMatrix; threshold::Real=0, threshold_type::Symbol=:neq)::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
+
+    _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
+
+    if threshold_type === :eq
+        idx = findall(x->x == threshold, m)
+    elseif threshold_type === :neq
+        idx = findall(x->x != threshold, m)
+    elseif threshold_type === :geq
+        idx = findall(x->x >= threshold, m)
+    elseif threshold_type === :leq
+        idx = findall(x->x <= threshold, m)
+    elseif threshold_type === :g
+        idx = findall(x->x > threshold, m)
+    elseif threshold_type === :l
+        idx = findall(x->x < threshold, m)
+    end
+
+    bm = zeros(Bool, size(m))
+    bm[idx] .= true
+
+    return (idx=idx, bm=bm)
+
+end

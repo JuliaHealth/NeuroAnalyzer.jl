@@ -13,6 +13,7 @@ export plot_erop
 export plot_icatopo
 export plot_ci
 export plot_heatmap
+export plot_region
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -1274,13 +1275,22 @@ Plots heatmap.
 - `mono::Bool=false`: use color or gray palette
 - `cb::Bool=true`: draw color
 - `cb_title::String=""`: color bar title
+- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold_type::Symbol=:neq`: rule for thresholding:
+    - `:eq`: return equal to threshold
+    - `:neq`: return not equal to threshold
+    - `:geq`: return ≥ to threshold
+    - `:leq`: return ≤ to threshold
+    - `:g`: return > to threshold
+    - `:l`: return < to threshold
+
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) differ."
     @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) differ."
@@ -1308,6 +1318,53 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                       xtickfontsize=8,
                       ytickfontsize=8;
                       kwargs=kwargs)
+
+    if !isnothing(threshold)
+        _, bm = seg_extract(m, threshold=threshold, threshold_type=threshold_type)
+        reg = ones(size(m)) .* minimum(m)
+        reg[bm] .= maximum(m)
+        p = Plots.plot!(x,
+                        y,
+                        reg,
+                        seriestype=:contour,
+                        levels=1,
+                        linecolor=:black,
+                        colorbar_entry=false,
+                        linewidth=2;
+                        kwargs=kwargs)
+    end
+
+    Plots.plot(p)
+
+    return p
+
+end
+
+
+"""
+    plot_region(p, b; <keyword arguments>)
+
+Plots region over heatmap.
+
+# Arguments
+
+- `p::Plots.Plot{Plots.GRBackend}`: heatmap plot
+- `bm::Matrix{Float64}`: map of the selected area
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_region(p::Plots.Plot{Plots.GRBackend}, bm::Matrix{Float64}; kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    p = Plots.plot!(p,
+                    bm,
+                    seriestype=:contour,
+                    levels=1,
+                    linecolor=:black,
+                    linewidth=2;
+                    kwargs=kwargs)
 
     Plots.plot(p)
 

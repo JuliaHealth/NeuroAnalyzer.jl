@@ -15,7 +15,6 @@ Calculate topographical variance (variance calculated at each time point across 
 
 # Returns
 
-Named tuple containing:
 - `tv::Vector{Float64}`: topographical variance
 """
 function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
@@ -116,7 +115,6 @@ Calculate signal normalized for GFP (Global Field Power). This works for ERP/ERF
 
 # Returns
 
-Named tuple containing:
 - `gn::Vector{Float64}`: normalized signal
 """
 function gfp_norm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
