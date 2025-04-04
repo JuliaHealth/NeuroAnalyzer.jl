@@ -29,12 +29,12 @@ Plot topographical view.
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: return equal to threshold
-    - `:neq`: return not equal to threshold
-    - `:geq`: return ≥ to threshold
-    - `:leq`: return ≤ to threshold
-    - `:g`: return > to threshold
-    - `:l`: return < to threshold
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -332,12 +332,12 @@ Topographical plot.
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: return equal to threshold
-    - `:neq`: return not equal to threshold
-    - `:geq`: return ≥ to threshold
-    - `:leq`: return ≤ to threshold
-    - `:g`: return > to threshold
-    - `:l`: return < to threshold
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -448,12 +448,12 @@ Topographical plot of embedded or external component.
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: return equal to threshold
-    - `:neq`: return not equal to threshold
-    - `:geq`: return ≥ to threshold
-    - `:leq`: return ≤ to threshold
-    - `:g`: return > to threshold
-    - `:l`: return < to threshold
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
 - `kwargs`: optional arguments for plot() function
 
 # Returns

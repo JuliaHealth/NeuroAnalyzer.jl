@@ -26,12 +26,12 @@ Preview channel locations.
 - `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
 - `threshold::Real=0`: threshold for plotting, see below
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: plot if connection weight is equal to threshold
-    - `:neq`: plot if connection weight is not equal to threshold
-    - `:geq`: plot if connection weight is ≥ to threshold
-    - `:leq`: plot if connection weight is ≤ to threshold
-    - `:g`: plot if connection weight is > to threshold
-    - `:l`: plot if connection weight is < to threshold
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
 - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
 
 # Returns
@@ -660,12 +660,12 @@ Preview of channel locations.
 - `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
 - `threshold::Real=0`: threshold for plotting, see below
 - `threshold_type::Symbol=:neq`: rule for thresholding:
-    - `:eq`: plot if connection weight is equal to threshold
-    - `:neq`: plot if connection weight is not equal to threshold
-    - `:geq`: plot if connection weight is ≥ to threshold
-    - `:leq`: plot if connection weight is ≤ to threshold
-    - `:g`: plot if connection weight is > to threshold
-    - `:l`: plot if connection weight is < to threshold
+    - `:eq`: draw region is values are equal to threshold
+    - `:neq`: draw region is values are not equal to threshold
+    - `:geq`: draw region is values are ≥ to threshold
+    - `:leq`: draw region is values are ≤ to threshold
+    - `:g`: draw region is values are > to threshold
+    - `:l`: draw region is values are < to threshold
 - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
 
 # Returns
