@@ -1262,7 +1262,7 @@ end
 """
     plot_heatmap(m; <keyword arguments>)
 
-Plots heatmap.
+Plot heatmap.
 
 # Arguments
 
@@ -1283,7 +1283,6 @@ Plots heatmap.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-
 - `kwargs`: optional arguments for plot() function
 
 # Returns
