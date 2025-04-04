@@ -69,6 +69,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
                    ytickfontsize=8;
                    kwargs=kwargs)
 
+    # draw connections
     m_norm = NeuroStats.normalize_minmax(m)
     s = size(m, 1)
     for idx1 in 1:s
@@ -96,6 +97,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
         end
     end
 
+    # draw markers
     for idx in axes(m, 1)
         p = Plots.scatter!((pos_x[idx], pos_y[idx]),
                            mc=:black,
