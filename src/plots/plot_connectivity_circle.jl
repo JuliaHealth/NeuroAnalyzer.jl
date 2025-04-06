@@ -41,7 +41,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
     @assert size(m, 1) >= 2 "m must contain data for ≥ 2 channels."
     @assert size(m, 1) == size(m, 2) "m must be a square matrix."
 
-    t = linspace(-pi, pi, size(m, 1) + 1)
+    t = linspace(pi, -pi, size(m, 1) + 1)
     pos_x = zeros(size(m, 1))
     pos_y = zeros(size(m, 1))
     for idx in axes(m, 1)
@@ -109,9 +109,14 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
                            ms=5)
     end
 
+    ang = round.(rad2deg.(t[1:end-1]), digits=2)
     # draw labels
     for idx in axes(clabels, 1)
-        p = Plots.plot!(annotations=(pos_x[idx] * 1.1, pos_y[idx] * 1.1, Plots.text(clabels[idx], pointsize=8)))
+        if _bin(ang[idx], (-90, 90))
+            p = Plots.plot!(annotations=(pos_x[idx] * 1.1, pos_y[idx] * 1.1, Plots.text(" " * clabels[idx], pointsize=8, rotation=ang[idx])))
+        else
+            p = Plots.plot!(annotations=(pos_x[idx] * 1.1, pos_y[idx] * 1.1, Plots.text(clabels[idx] * " ", pointsize=8, rotation=ang[idx] + 180)))
+        end
     end
 
     Plots.plot(p)
