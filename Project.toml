@@ -76,7 +76,7 @@ XDF = "31bc19ec-0089-417f-990e-a2b5e7515868"
 
 [compat]
 CSV = "≥0.10"
-CUDA = "≥4"
+CUDA = "4.3.0, ≥5.7.3"
 Cairo = "≥1"
 ColorSchemes = "≥3"
 ContinuousWavelets = "≥1"
