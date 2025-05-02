@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM julia
+FROM julia:latest
 
 LABEL maintainer="Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"
 
@@ -17,10 +17,10 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir ~/NeuroAnalyzer
 RUN mkdir -p ~/.julia/config
 
-ENV DISPLAY :0
-
-RUN xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -O2 -g0 --cpu-target=native install.jl
+ENV DISPLAY=:0
+ENV install='using Pkg; Pkg.add("Revise"); Pkg.add("NeuroAnalyzer"); Pkg.instantiate(); Pkg.resolve(); Pkg.update()'
+RUN xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -e "$install"
 
 COPY misc/startup.jl /root/.julia/config
 
-CMD ["bash", "-c", "julia -q --color=yes -O2 -g0 --cpu-target=native"]
+CMD ["bash", "-c", "julia -q --color=yes"]
