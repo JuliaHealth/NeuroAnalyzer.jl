@@ -28,7 +28,6 @@ using ContinuousWavelets
 @test length(ifft0(ones(20), 10)) == 10
 @test nextpow2(5) == 8
 @test vsplit(ones(4), 2) == [[1.0, 1.0], [1.0, 1.0]]
-@test length(rms(ones(10))) == 1
 @test length(generate_sine(2, collect(1:10))) == 10
 @test length(generate_csine(2, collect(1:10))) == 10
 @test length(generate_square(collect(1:10), 0.5)) == 10

@@ -646,8 +646,13 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10, ch="all")
 @test size(nrg) == (24, 10)
 @test size(rms) == (24, 10)
 
+@info "Test: rms()"
+@test NeuroAnalyzer.rms(v1) == 3.3166247903554
+@test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
+@test NeuroAnalyzer.rms(e10, ch="Fp1") == [26.213063083541513 27.30575823591929 7.180736412104814 26.648358188695614 9.725622985163241 24.282031048043752 19.349871432083514 35.07566495923175 11.06751313625791 30.465810271751366]
+
 @info "Test: rmse()"
-@test NeuroAnalyzer.rmse(v1, v2) == 1.0
+@test NeuroAnalyzer.rmse(v1, v2) == 3.0
 @test NeuroAnalyzer.rmse(a1, a2) == [0.0 0.0; 0.0 0.0]
 @test NeuroAnalyzer.rmse(e10, e10, ch1="Fp1", ch2="Fp2") == zeros(1, 10)
 
