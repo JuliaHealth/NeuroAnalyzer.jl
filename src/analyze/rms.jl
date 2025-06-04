@@ -1,7 +1,6 @@
 export rms
 export rmse
 
-
 """
     rms(s)
 
@@ -17,7 +16,8 @@ Calculate Root Mean Square (RMS).
 """
 function rms(s::AbstractVector)::Float64
 
-    r = sqrt(mean(s.^2))
+    # r = sqrt(1/length(s) * sum(s.^2))
+    # r = sqrt(mean(s.^2))
     r = norm(s) / sqrt(length(s))
 
     return r
@@ -136,7 +136,7 @@ function rmse(s1::AbstractArray, s2::AbstractArray)::Matrix{Float64}
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            r[ch_idx, ep_idx] = @views rmse(s1[ch_idx, :, ep_idx], s1[ch_idx, :, ep_idx])
+            r[ch_idx, ep_idx] = @views rmse(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
         end
     end
 

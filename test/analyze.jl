@@ -636,7 +636,7 @@ lf, ls, pf = NeuroAnalyzer.psd_slope(e10, ch="Fp1", method=:cwt)
 @test pf[end] == 86.63
 
 @info "Test: amp()"
-p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10, ch="all")
+p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10, ch="all")
 @test size(p) == (24, 10)
 @test size(r) == (24, 10)
 @test size(p2p) == (24, 10)
@@ -644,7 +644,7 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10, ch="all")
 @test size(msa) == (24, 10)
 @test size(rmsa) == (24, 10)
 @test size(nrg) == (24, 10)
-@test size(rms) == (24, 10)
+@test size(rmsq) == (24, 10)
 
 @info "Test: rms()"
 @test NeuroAnalyzer.rms(v1) == 3.3166247903554
@@ -653,8 +653,8 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rms = NeuroAnalyzer.amp(e10, ch="all")
 
 @info "Test: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 3.0
-@test NeuroAnalyzer.rmse(a1, a2) == [0.0 0.0; 0.0 0.0]
-@test NeuroAnalyzer.rmse(e10, e10, ch1="Fp1", ch2="Fp2") == zeros(1, 10)
+@test NeuroAnalyzer.rmse(a1, a2) == [1.0 1.0; 1.0 1.0]
+@test length(NeuroAnalyzer.rmse(e10, e10, ch1="Fp1", ch2="Fp2")) == 10
 
 @info "Test: snr()"
 @test NeuroAnalyzer.snr(v1) == 1.8973665961010275

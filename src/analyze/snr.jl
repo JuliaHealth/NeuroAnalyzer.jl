@@ -40,7 +40,7 @@ Calculate RMS-based SNR.
 function snr2(s::AbstractVector)::Float64
 
     a = amp(s)
-    return (maximum(s) - minimum(s)) / a.rms
+    return (maximum(s) - minimum(s)) / a.rmsq
 
 end
 
