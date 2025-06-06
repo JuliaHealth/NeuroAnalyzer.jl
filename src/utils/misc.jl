@@ -194,7 +194,7 @@ end
 """
     ntapers(obj; df)
 
-Return recommended number of tapers for multi-taper power spectrum analysis.
+Return recommended number of Slepian tapers for multi-taper power spectrum analysis.
 
 # Arguments
 
