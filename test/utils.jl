@@ -352,4 +352,7 @@ x2, f2 = areduce(x, f)
 @info "Test: describe()"
 @test isa(NeuroAnalyzer.describe(e10, df=true), DataFrame)
 
+@info "Test: ntapers()"
+@test ntapers(e10, df=1) == 9
+
 true

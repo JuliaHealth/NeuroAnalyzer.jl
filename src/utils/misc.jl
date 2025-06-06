@@ -5,6 +5,7 @@ export cmin
 export tuple_order
 export cums
 export f_nearest
+export ntapers
 
 """
     linspace(start, stop, length)
@@ -187,5 +188,30 @@ function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64
     end
 
     return (findmin(d)[2][1], findmin(d)[2][2])
+
+end
+
+"""
+    ntapers(obj; df)
+
+Return recommended number of tapers for multi-taper power spectrum analysis.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `df::Real`: frequency resolution (bandwidth); smallest distance between frequency peaks that we want to observe (e.g. 1 Hz)
+
+# Returns
+
+- `nt::Int64`
+"""
+function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
+
+    _bin(df, (0, sr(obj) / 2))
+
+    n = epoch_len(obj) / sr(obj)
+    nt = round(Int64, df * n) - 1
+
+    return nt
 
 end
