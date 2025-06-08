@@ -444,6 +444,7 @@ include("analyze/stats.jl")
 include("analyze/std.jl")
 include("analyze/mdiff.jl")
 include("analyze/msci95.jl")
+include("analyze/sumsim.jl")
 
 # plots
 include("plots/cairo.jl")

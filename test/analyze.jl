@@ -972,4 +972,9 @@ gd, sc = NeuroAnalyzer.diss(erp, erp, ch1="all", ch2="all")
 @test gd == zeros(2560)
 @test sc == ones(2560)
 
+@info "Test: sumsim()"
+@test sumsim(v1, v2, theta=1) == 0.0012208548944264495
+@test sumsim(a1, a2, theta=1) == [0.17692120631776423 0.17692120631776423; 0.17692120631776423 0.17692120631776423]
+@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.7311632246234553;;]
+
 true
