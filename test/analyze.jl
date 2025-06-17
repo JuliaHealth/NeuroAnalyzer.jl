@@ -120,13 +120,17 @@ ph, f = NeuroAnalyzer.cph(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=
 @test length(f) == 2049
 
 @info "Test: entropy()"
-e, s, l = NeuroAnalyzer.entropy(rand(10))
+e, sh, l, s, ns = NeuroAnalyzer.entropy(rand(100))
 @test e < l
-@test s < l
-e, s, l = NeuroAnalyzer.entropy(e10, ch="all")
+@test sh < l
+@test s > ns
+
+e, sh, l, s, ns = NeuroAnalyzer.entropy(e10, ch="all")
 @test size(e) == (24, 10)
-@test size(s) == (24, 10)
+@test size(sh) == (24, 10)
 @test size(l) == (24, 10)
+@test size(s) == (24, 10)
+@test size(ns) == (24, 10)
 
 @info "Test: negentropy()"
 n = NeuroAnalyzer.negentropy(rand(10))
@@ -395,8 +399,8 @@ iv, ia = NeuroAnalyzer.ispc(e10, ch="all")
 @test size(iv) == (24, 24, 10)
 @test size(ia) == (24, 24, 10)
 iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer.ispc(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test iv ≈ [0.1649363573346739;;]
-@test ia ≈ [-2.757457461687163;;]
+@test iv ≈ [0.17788686412100269;;]
+@test ia ≈ [-2.6185880107001522;;]
 @test size(sd) == (1, 2560, 1)
 @test size(pd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -409,10 +413,10 @@ iv, izv, ia, ip = NeuroAnalyzer.itpc(ones(1, 10, 10), t=1)
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 iv, izv, ia, ip = NeuroAnalyzer.itpc(e10, ch="Fp1", t=256)
-@test iv ≈ [0.3987026452273473]
-@test izv ≈ [1.5896379931128393]
-@test ia ≈ [2.636121475719976]
-@test ip[1] ≈ 1.6921361543218993
+@test iv ≈ [0.3985502708093351]
+@test izv ≈ [1.5884231836219433]
+@test ia ≈ [2.6367250215324236]
+@test ip[1] ≈ 1.692178021812872
 
 @info "Test: itpc_spec()"
 iv, izv, f = NeuroAnalyzer.itpc_spec(e10, ch="Fp1", frq_lim=(0, 4), frq_n=5)
@@ -498,7 +502,7 @@ pv, phd, s1ph, s2ph = pli(v1, v2)
 pv = NeuroAnalyzer.pli(e10, ch="all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = NeuroAnalyzer.pli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.1390625;;]
+@test pv == [0.17421875;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -649,7 +653,7 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10, ch="all")
 @info "Test: rms()"
 @test NeuroAnalyzer.rms(v1) == 3.3166247903554
 @test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
-@test NeuroAnalyzer.rms(e10, ch="Fp1") == [26.213063083541513 27.30575823591929 7.180736412104814 26.648358188695614 9.725622985163241 24.282031048043752 19.349871432083514 35.07566495923175 11.06751313625791 30.465810271751366]
+@test NeuroAnalyzer.rms(e10, ch="Fp1") == [26.3583818053152 27.47847315721561 7.624655429448963 26.861953531022724 10.10298341567004 24.51072968378096 19.790744974837178 35.32409783853301 11.67271804180004 30.763635959367605]
 
 @info "Test: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 3.0
@@ -660,6 +664,8 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10, ch="all")
 @test NeuroAnalyzer.snr(v1) == 1.8973665961010275
 @test NeuroAnalyzer.snr2(v1) == 1.2060453783110545
 sn, f = NeuroAnalyzer.snr(e10, ch="all", type=:rms)
+@test size(sn) == (24, 1281)
+@test length(f) == 1281
 sn, f = NeuroAnalyzer.snr(e10, ch="all", type=:mean)
 @test size(sn) == (24, 1281)
 @test length(f) == 1281
@@ -905,7 +911,7 @@ ph, f = NeuroAnalyzer.phsd(e10, ch="all")
 
 @info "Test: symmetry()"
 @test NeuroAnalyzer.symmetry(v) == 5
-@test NeuroAnalyzer.symmetry(e10, ch="Fp1") == [1.001563721657545 0.9527078565980168 1.0285261489698891 0.9452887537993921 1.0 0.970746728252502 0.9219219219219219 1.0496397117694156 1.0173364854215918 0.9393939393939394]
+@test NeuroAnalyzer.symmetry(e10, ch="Fp1") == [1.02052091554854 0.96771714066103 1.0285261489698891 1.0285261489698891 1.0189274447949528 0.9291635267520724 0.96771714066103 1.0578778135048232 1.0611916264090178 0.9662058371735791]
 
 @info "Test: lat_idx()"
 @test NeuroAnalyzer.lat_idx(e10) isa Float64
@@ -975,7 +981,7 @@ gd, sc = NeuroAnalyzer.diss(erp, erp, ch1="all", ch2="all")
 @info "Test: sumsim()"
 @test sumsim(v1, v2, theta=1) == 0.0012208548944264495
 @test sumsim(a1, a2, theta=1) == [0.17692120631776423 0.17692120631776423; 0.17692120631776423 0.17692120631776423]
-@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.7311632246234553;;]
+@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.7303479422560654;;]
 
 @info "Test: hfd()"
 @test hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 0.8604486476012065

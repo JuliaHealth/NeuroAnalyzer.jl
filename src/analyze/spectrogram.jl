@@ -121,7 +121,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
         cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=true)
         # alternative: a[frq_idx, :] = LinearAlgebra.norm.(real.(cs[frq_idx, :]), imag.(cs[frq_idx]))
         p[frq_idx, :] = @views @. abs(cs[frq_idx, :])^2
-        ph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
+        ph[frq_idx, :] = @views @. NeuroStats.angle(cs[frq_idx, :])
     end
 
     p[p .== -Inf] .= minimum(p[p .!== -Inf])

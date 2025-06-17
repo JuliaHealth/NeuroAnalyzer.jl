@@ -75,6 +75,7 @@ verbose = nothing
 using Artifacts
 using Cairo
 using ColorSchemes
+using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
 using CSV

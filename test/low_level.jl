@@ -73,7 +73,10 @@ p, f = psd(ones(100), fs=10)
 @test stationarity_var(ones(10), window=1) == [0.0]
 @test trim(ones(10), segment=(1,5)) == ones(5)
 @test mutual_information(ones(10), ones(10)) == 0.0
-@test entropy([1.0, 2.0, 3.0]) == (ent = 1.5849625007211552, sent = 0.8304717124362917, leent = 4.333653050389665)
+e = entropy([1.0, 2.0, 3.0])
+@test e.ent == 1.5849625007211552
+@test e.shent == 0.8304717124362917
+@test e.leent == 4.333653050389665
 @test negentropy([1, 2, 3]) == -0.16602396751648252
 @test average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]

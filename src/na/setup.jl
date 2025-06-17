@@ -48,6 +48,7 @@ function na_info()::Nothing
         required_packages = [
             "Cairo",
             "ColorSchemes",
+            "ComplexityMeasures",
             "ContinuousWavelets",
             "Crayons",
             "CSV",

@@ -31,7 +31,7 @@ function ispc(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{ispc_val::Flo
     ph_diff = s2_phase - s1_phase
 
     ispc_val = abs(mean(exp.(1im .* ph_diff)))
-    ispc_ang = angle(mean(exp.(1im .* ph_diff)))
+    ispc_ang = NeuroStats.angle(mean(exp.(1im .* ph_diff)))
 
     return (ispc_val=ispc_val, ispc_ang=ispc_ang, s_diff=s_diff, ph_diff=ph_diff, s1_phase=s1_phase, s2_phase=s2_phase)
 

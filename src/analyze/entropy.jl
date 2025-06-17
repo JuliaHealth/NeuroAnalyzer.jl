@@ -14,16 +14,20 @@ Calculate entropy.
 
 Named tuple containing:
 - `ent::Float64`
-- `sent::Float64`: Shanon entropy
+- `shent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
+- `sent::Float64`: sample entropy
+- `nsent::Float64`: normalized sample entropy
 
 # Note
 
 Entropy of the signal is calculated using its histogram bins (number of bins is calculated using the Freedman-Diaconis formula) using the formulas `p = n / sum(n)` and `entropy = -sum(p .* log2(p))`, where `p` is the probability of each bin and `n` are bins' weights.
 
 Shannon entropy and log energy entropy are calculated using `Wavelets.coefentropy()`.
+
+Completely regular signals should have sample entropy approaching zero, while less regular signals should have higher sample entropy.
 """
-function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, sent::Float64, leent::Float64}
+function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, shent::Float64, leent::Float64, sent::Float64, nsent::Float64}
 
     n = length(s)
     maxmin_range = maximum(s) - minimum(s)
@@ -35,8 +39,10 @@ function entropy(s::AbstractVector)::@NamedTuple{ent::Float64, sent::Float64, le
 
     # convert histograms to probability values
     return (ent=-sum(hdat1 .* log2.(hdat1 .+ eps())),
-            sent=Wavelets.coefentropy(s, ShannonEntropy()),
-            leent=Wavelets.coefentropy(s, LogEnergyEntropy()))
+            shent=Wavelets.coefentropy(s, ShannonEntropy()),
+            leent=Wavelets.coefentropy(s, LogEnergyEntropy()),
+            sent=ComplexityMeasures.complexity(SampleEntropy(s), s),
+            nsent=ComplexityMeasures.complexity_normalized(SampleEntropy(s), s))
 
 end
 
@@ -53,26 +59,30 @@ Calculate entropy.
 
 Named tuple containing:
 - `ent::Matrix{Float64}`
-- `sent::Matrix{Float64}`: Shanon entropy
+- `shent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
+- `sent::Matrix{Float64}`: sample entropy
+- `nsent::Matrix{Float64}`: normalized sample entropy
 """
-function entropy(s::AbstractArray)::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
+function entropy(s::AbstractArray)::@NamedTuple{ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
     ent = zeros(ch_n, ep_n)
-    sent = zeros(ch_n, ep_n)
+    shent = zeros(ch_n, ep_n)
     leent = zeros(ch_n, ep_n)
+    sent = zeros(ch_n, ep_n)
+    nsent = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views entropy(s[ch_idx, :, ep_idx])
+            ent[ch_idx, ep_idx], shent[ch_idx, ep_idx], leent[ch_idx, ep_idx], sent[ch_idx, ep_idx], nsent[ch_idx, ep_idx] = @views entropy(s[ch_idx, :, ep_idx])
         end
     end
 
-    return (ent=ent, sent=sent, leent=leent)
+    return (ent=ent, shent=shent, leent=leent, sent=sent, nsent=nsent)
 
 end
 
@@ -90,15 +100,17 @@ Calculate entropy.
 
 Named tuple containing:
 - `ent::Matrix{Float64}`
-- `sent::Matrix{Float64}`: Shanon entropy
+- `shent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
+- `sent::Matrix{Float64}`: sample entropy
+- `nsent::Matrix{Float64}`: normalized sample entropy
 """
-function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ent::Matrix{Float64}, sent::Matrix{Float64}, leent::Matrix{Float64}}
+function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ent::Matrix{Float64}, shent::Matrix{Float64}, leent::Matrix{Float64}, sent::Matrix{Float64}, nsent::Matrix{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    ent, sent, leent = @views entropy(obj.data[ch, :, :])
+    ent, shent, leent, sent, nsent = @views entropy(obj.data[ch, :, :])
 
-    return (ent=ent, sent=sent, leent=leent)
+    return (ent=ent, shent=shent, leent=leent, sent=sent, nsent=nsent)
 
 end
 

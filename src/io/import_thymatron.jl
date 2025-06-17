@@ -91,7 +91,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
         for idx in 1:dimy
             signal[idx] = dimx - findfirst(isequal(1), img_bin[:, idx])
         end
-        s = round.(Int64, CubicSplineInterpolation(t, signal))
+        s = round.(Int64, cubic_spline_interpolation(t, signal))
         img_bin = zeros(Int64, size(img_bin))
         for idx in 1:dimy
             img_bin[(dimx - s[idx]), idx] = 1

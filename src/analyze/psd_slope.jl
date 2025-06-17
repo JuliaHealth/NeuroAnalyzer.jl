@@ -42,7 +42,7 @@ function psd_slope(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, 
 
     f1_idx = vsearch(frq_lim[1], pf)
     f2_idx = vsearch(frq_lim[2], pf)
-    lr = linreg(pf[f1_idx:f2_idx], pw[f1_idx:f2_idx])
+    lr = NeuroStats.linreg(pf[f1_idx:f2_idx], pw[f1_idx:f2_idx])
     lf = lr.lf
     ls = lf[2] - lf[1]
 

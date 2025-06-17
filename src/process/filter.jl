@@ -268,16 +268,16 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     if ftype === :lp
         @assert length(cutoff) == 1 "For :lp filter one frequency must be given."
-        responsetype = Lowpass(cutoff; fs=fs)
+        responsetype = Lowpass(cutoff)
     elseif ftype === :hp
         @assert length(cutoff) == 1 "For :hp filter one frequency must be given."
-        responsetype = Highpass(cutoff; fs=fs)
+        responsetype = Highpass(cutoff)
     elseif ftype === :bp
         @assert length(cutoff) == 2 "For :bp filter two frequencies must be given."
-        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
+        responsetype = Bandpass(cutoff[1], cutoff[2])
     elseif ftype === :bs
         @assert length(cutoff) == 2 "For :bs filter two frequencies must be given."
-        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
+        responsetype = Bandstop(cutoff[1], cutoff[2])
     end
 
     if fprototype === :butterworth
@@ -305,7 +305,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
         ftype === :bs && (w = [(0, cutoff[1] - bw / 2) => 1, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 0, (cutoff[2] + bw / 2, fs / 2) => 1])
         flt = remez(order, w, Hz=fs)
     else
-        flt = digitalfilter(responsetype, prototype)
+        flt = digitalfilter(responsetype, prototype, fs=fs)
     end
 
     return flt

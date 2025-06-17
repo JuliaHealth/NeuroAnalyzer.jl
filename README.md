@@ -20,7 +20,16 @@ Note: this toolbox is under active development and is subject to change without 
 
 ## Quickstart
 
-Add NeuroAnalyzer from the [Pkg REPL](https://docs.julialang.org/en/v1/stdlib/REPL/#Pkg-mode): `pkg> add NeuroAnalyzer`.
+Install FIRLSFilterDesign.jl from https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl:
+```julia
+using Pkg
+Pkg.add("https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
+```
+
+Start NeuroAnalyzer:
+```julia
+using NeuroAnalyzer
+```
 
 ## Documentation
 
