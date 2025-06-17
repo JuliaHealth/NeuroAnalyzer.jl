@@ -80,7 +80,7 @@ NeuroAnalyzer.l2
 NeuroAnalyzer.labels
 NeuroAnalyzer.linspace
 NeuroAnalyzer.list_component
-NeuroAnalyzer.logspace
+NeuroAnalyzer.log10space
 NeuroAnalyzer.make_table
 NeuroAnalyzer.maxat
 NeuroAnalyzer.minat

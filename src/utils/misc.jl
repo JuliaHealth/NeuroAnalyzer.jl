@@ -1,5 +1,6 @@
 export linspace
-export logspace
+export log10space
+export log2space
 export cmax
 export cmin
 export tuple_order
@@ -31,7 +32,7 @@ function linspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
 end
 
 """
-    logspace(start, stop, n)
+    log10space(start, stop, n)
 
 Generates a sequence of log10-spaced numbers between `start` and `stop`.
 
@@ -45,11 +46,34 @@ Generates a sequence of log10-spaced numbers between `start` and `stop`.
 
 - `range::Vector{Float64}`
 """
-function logspace(start::Number, stop::Number, n::Int64)::Vector{Float64}
+function log10space(start::Number, stop::Number, n::Int64)::Vector{Float64}
 
     @assert n >= 2 "n must be ≥ 2."
 
     return collect(exp10.(range(start, stop, n)))
+
+end
+
+"""
+    log2space(start, stop, n)
+
+Generates a sequence of log2-spaced numbers between `start` and `stop`.
+
+# Arguments
+
+- `start::Number`
+- `stop::Number`
+- `n::Int64`: sequence length
+
+# Returns
+
+- `range::Vector{Float64}`
+"""
+function log2space(start::Number, stop::Number, n::Int64)::Vector{Float64}
+
+    @assert n >= 2 "n must be ≥ 2."
+
+    return collect(exp2.(range(start, stop, n)))
 
 end
 

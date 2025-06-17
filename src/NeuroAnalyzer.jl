@@ -91,6 +91,7 @@ using FileIO
 using FindPeaks1D
 using FIRLSFilterDesign
 using FourierTools
+using FractalDimensions
 using GeometryBasics
 using Git
 using GLM
@@ -445,6 +446,7 @@ include("analyze/std.jl")
 include("analyze/mdiff.jl")
 include("analyze/msci95.jl")
 include("analyze/sumsim.jl")
+include("analyze/hfd.jl")
 
 # plots
 include("plots/cairo.jl")

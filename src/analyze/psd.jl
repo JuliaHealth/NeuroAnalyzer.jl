@@ -268,7 +268,7 @@ function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::
     else
         @assert ncyc[1] >= 1 "ncyc[1] must be ≥ 1"
         @assert ncyc[2] >= 1 "ncyc[2] must be ≥ 1"
-        ncyc = round.(Int64, logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n))
+        ncyc = round.(Int64, log10space(log10(ncyc[1]), log10(ncyc[2]), frq_n))
     end
 
     p = zeros(length(f))

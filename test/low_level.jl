@@ -12,10 +12,10 @@ using ContinuousWavelets
 @test round.(corm(rand(2), rand(2))) == ones(2, 2)
 
 @test linspace(1, 10, 10) == 1.0:10.0
-@test logspace(0, 1, 3) == [1.0, 3.1622776601683795, 10.0]
+@test log10space(0, 1, 3) == [1.0, 3.1622776601683795, 10.0]
 @test length(pad0(ones(3), 1)) == 4
 @test size(pad0(ones(3, 3), 1)) == (3, 4)
-@test length(pad2(ones(10))) == 16
+@test length(pad2(ones(10))) == 16w
 @test size(pad2(ones(3, 3))) == (3, 4)
 @test size(m_pad0(ones(3, 4))) == (4, 4)
 @test vsearch([1, 2], [1, 2, 3, 4]) == [1, 2]

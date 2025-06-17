@@ -61,7 +61,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        yt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        yt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
     p = Plots.heatmap(st,
                       sf,
@@ -170,7 +170,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Fl
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
     ch = collect(eachindex(sch)) .- 0.5
     ch_n = length(ch)

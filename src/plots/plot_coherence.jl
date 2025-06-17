@@ -42,9 +42,9 @@ function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
         ysc = :identity
@@ -150,9 +150,9 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
         ysc = :identity
@@ -282,9 +282,9 @@ function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::V
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
         ysc = :identity
@@ -397,9 +397,9 @@ function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clab
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
         ysc = :identity

@@ -63,6 +63,7 @@ function na_info()::Nothing
             "FindPeaks1D",
             "FIRLSFilterDesign",
             "FourierTools",
+            "FractalDimensions",
             "GeometryBasics",
             "Git",
             "GLM",

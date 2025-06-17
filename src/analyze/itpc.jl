@@ -172,7 +172,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Re
     if frq === :log
         frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
         frq_lim = (frq_lim[1], frq_lim[2])
-        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=3)
+        frq_list = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=3)
     else
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end

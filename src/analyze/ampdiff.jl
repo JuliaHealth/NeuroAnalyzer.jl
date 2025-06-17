@@ -22,7 +22,7 @@ function ampdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1)
     ad = similar(s)
 
     @inbounds for ep_idx in axes(s, 3)
-        for ch_idx in axes(s, 1)
+        Threads.@threads :greedy for ch_idx in axes(s, 1)
             ref_ch = setdiff(ch, ch_idx)
             amp_ref = @views vec(mean(s[ref_ch, :, ep_idx], dims=1))
             ad[ch_idx, :, ep_idx] = @views s[ch[ch_idx], :, ep_idx] - amp_ref

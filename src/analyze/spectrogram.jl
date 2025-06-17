@@ -112,7 +112,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     if ncyc isa Int64
         ncyc = repeat([ncyc], frq_n)
     else
-        ncyc = round.(Int64, logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n))
+        ncyc = round.(Int64, log10space(log10(ncyc[1]), log10(ncyc[2]), frq_n))
     end
 
     @inbounds for frq_idx in 1:frq_n

@@ -44,7 +44,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_l
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
     end
 
@@ -136,7 +136,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
     end
 
@@ -195,7 +195,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
             p = Plots.plot!(annotations=(xt[idx], (-1.5), Plots.text("$(xt_s[idx])", pointsize=6, halign=:center, valign=:center)), label=false)
         end
         if xsc == :log10
-            p = Plots.plot!(annotations=((logspace(log10(xt[1]), log10(xt[end]), 3)[2]), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
+            p = Plots.plot!(annotations=((log10space(log10(xt[1]), log10(xt[end]), 3)[2]), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
         else
             p = Plots.plot!(annotations=((mean(xt)), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
         end
@@ -247,7 +247,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
     end
 
@@ -343,7 +343,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
     end
 
@@ -428,7 +428,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
     end
 
@@ -565,7 +565,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
         xsc = :log10
     end
 

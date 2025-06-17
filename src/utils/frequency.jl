@@ -141,7 +141,7 @@ function freqs(s::AbstractVector, fs::Int64)::Tuple{Vector{Float64}, Float64}
     # Nyquist frequency
     nf = fs / 2
     # frequency array
-    # hz = linspace(0, nf, floor(Int64, length(s) / 2))
+    # hz = linspace(0, nf, floor(Int64, length(s) / 2) + 1)
     hz = round.(Vector(rfftfreq(length(s), fs)), digits=3)
 
     return hz, nf

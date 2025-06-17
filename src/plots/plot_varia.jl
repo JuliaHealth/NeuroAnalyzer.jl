@@ -745,9 +745,9 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            yt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            yt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            yt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         ysc = :log10
     end
@@ -941,9 +941,9 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
         ysc = :identity
@@ -956,9 +956,9 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
             frq_lim = (0.001, frq_lim[2])
             _warn("Lower frequency bound truncated to 0.001 Hz")
             f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         else
-            xt = (round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
         end
         xsc = :log10
         ysc = !db ? :log10 : :identity
