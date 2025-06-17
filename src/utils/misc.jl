@@ -7,6 +7,7 @@ export tuple_order
 export cums
 export f_nearest
 export ntapers
+export trtm
 
 """
     linspace(start, stop, length)
@@ -237,5 +238,34 @@ function ntapers(obj::NeuroAnalyzer.NEURO; df::Real)::Int64
     nt = round(Int64, df * n) - 1
 
     return nt
+
+end
+
+"""
+    trtm(obj; <keyword arguments>)
+
+Return signal channel in the form trials × time.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::String`: channel name
+- `ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj))`: epoch numbers; default use all epochs
+
+# Returns
+
+- `s::Matrix{Float64}`
+"""
+function trtm(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj)))::Matrix{Float64}
+
+    _check_epochs(obj, ep)
+    ch = get_channel(obj, ch=ch)
+
+    s = zeros(length(ep), epoch_len(obj))
+    @inbounds for ep_idx in eachindex(ep)
+        s[ep_idx, :] = @views obj.data[ch, :, ep_idx]
+    end
+
+    return s
 
 end
