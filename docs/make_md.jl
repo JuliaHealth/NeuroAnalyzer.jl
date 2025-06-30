@@ -1,7 +1,7 @@
 @info "Generate Markdown documentation"
 
 using Pkg
-Pkg.add("https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
 Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
 Pkg.activate("..")
 Pkg.instantiate()
