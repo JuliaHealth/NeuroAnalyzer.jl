@@ -106,7 +106,7 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
         end
 
         phi, w = phaseresp(flt)
-        phi = rad2deg.(angle.(phi))
+        phi = rad2deg.(DSP.angle.(phi))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         x_max = w[end]

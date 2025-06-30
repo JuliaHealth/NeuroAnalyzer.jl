@@ -18,7 +18,7 @@ Calculate phase stationarity using Hilbert transformation.
 """
 function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
 
-    stph = diff(DSP.unwrap(angle.(hilbert(s))))
+    stph = diff(DSP.unwrap(DSP.angle.(hilbert(s))))
 
     return stph
 

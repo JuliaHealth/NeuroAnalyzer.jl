@@ -37,7 +37,7 @@ function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{
     db && (p = pow2db.(p))
 
     # phases
-    ph = angle.(ft)
+    ph = DSP.angle.(ft)
 
     return (ft=ft, a=a, p=p, ph=ph)
 
@@ -74,7 +74,7 @@ function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple
     db && (p = pow2db.(p))
 
     # phases
-    ph = angle.(c)
+    ph = DSP.angle.(c)
 
     return (c=c, a=a, p=p, ph=ph)
 

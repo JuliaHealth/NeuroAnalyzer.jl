@@ -45,7 +45,7 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
 
     itpc_ph = @view s_phase[t, :]
     itpc_val = abs.(mean(exp.(1im .* itpc_ph .* w)))
-    itpc_ang = angle.(mean(exp.(1im .* itpc_ph .* w)))
+    itpc_ang = DSP.angle.(mean(exp.(1im .* itpc_ph .* w)))
     itpcz_val = ep_n * itpc_val^2
 
     return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
@@ -135,7 +135,7 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing):
 
     for idx in axes(itpc_ph, 1)
         itpc_val[idx] = @views abs.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
-        itpc_ang[idx] = @views angle.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
+        itpc_ang[idx] = @views DSP.angle.(mean(exp.(1im .* itpc_ph[idx, :] .* w)))
         itpcz_val[idx] = @views ep_n * itpc_val[idx]^2
     end
 

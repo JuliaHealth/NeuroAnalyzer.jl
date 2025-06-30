@@ -320,7 +320,7 @@ function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=
     @inbounds for frq_idx in eachindex(f)
         s_tmp = filter_g(s .* w, fs=fs, f=f[frq_idx], gw=gw)
         p[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
-        ph[frq_idx, :] = angle.(hilbert(s_tmp))
+        ph[frq_idx, :] = DSP.angle.(hilbert(s_tmp))
     end
 
     p[p .== -Inf] .= minimum(p[p .!== -Inf])

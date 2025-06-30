@@ -23,7 +23,7 @@ function cph(s1::AbstractVector, s2::AbstractVector; fs::Int64)::@NamedTuple{ph:
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     p = mt_cross_power_spectra(hcat(s1, s2)', fs=fs)
-    ph = angle.(imag.(p.power))[1, 2, :]
+    ph = DSP.angle.(imag.(p.power))[1, 2, :]
     f = Vector(p.freq)
 
     return (ph=ph, f=f)

@@ -1,7 +1,7 @@
 name = "NeuroAnalyzer"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@neuroanalyzer.org>"]
-version = "0.25.7-dev"
+version = "0.25.7"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -120,7 +120,7 @@ MAT = "0.10"
 MLJ = "0.20"
 MultivariateStats = "0.10"
 NPZ = "0.4"
-NeuroStats = "0.2.4"
+NeuroStats = "0.2.5"
 PiGPIO = "0.2"
 Plots = "1.40"
 Polynomials = "4"

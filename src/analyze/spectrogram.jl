@@ -121,7 +121,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
         cs[frq_idx, :] = fconv(s .* w, kernel=kernel, norm=true)
         # alternative: a[frq_idx, :] = LinearAlgebra.norm.(real.(cs[frq_idx, :]), imag.(cs[frq_idx]))
         p[frq_idx, :] = @views @. abs(cs[frq_idx, :])^2
-        ph[frq_idx, :] = @views @. NeuroStats.angle(cs[frq_idx, :])
+        ph[frq_idx, :] = @views @. DSP.angle(cs[frq_idx, :])
     end
 
     p[p .== -Inf] .= minimum(p[p .!== -Inf])
@@ -172,7 +172,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
     @inbounds for frq_idx in eachindex(f)
         s_tmp = filter_g(s .* w, fs=fs, f=f[frq_idx], gw=gw)
         p[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
-        ph[frq_idx, :] = angle.(hilbert(s_tmp))
+        ph[frq_idx, :] = DSP.angle.(hilbert(s_tmp))
     end
 
     p[p .== -Inf] .= minimum(p[p .!== -Inf])

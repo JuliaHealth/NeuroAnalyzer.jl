@@ -15,6 +15,6 @@ Calculate phases.
 """
 function phases(s::AbstractVector)::Vector{Float64}
 
-    return angle.(hilbert(s))
+    return DSP.angle.(hilbert(s))
 
 end
