@@ -33,7 +33,7 @@ steps:
       - cd NeuroAnalyzer.jl/docs
       - cat header.md > src/index.md
       - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' "using Pkg; Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")"
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")"
       - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_md.jl
       - cp build/index.md ../../NA-docs/Documentation.md
       - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_html.jl
