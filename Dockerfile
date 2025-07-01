@@ -18,7 +18,7 @@ RUN mkdir ~/NeuroAnalyzer
 RUN mkdir -p ~/.julia/config
 
 ENV DISPLAY=:0
-ENV install='using Pkg; Pkg.add("Revise"); Pkg.add("NeuroAnalyzer"); Pkg.instantiate(); Pkg.resolve(); Pkg.update()'
+ENV install='using Pkg; Pkg.add("Revise"); Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl"); Pkg.add("NeuroAnalyzer"); Pkg.instantiate(); Pkg.resolve(); Pkg.update()'
 RUN xvfb-run -s '-screen 0 1024x768x24' julia -q --color=yes -e "$install"
 
 COPY misc/startup.jl /root/.julia/config
