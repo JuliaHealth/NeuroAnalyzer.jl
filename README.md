@@ -33,10 +33,7 @@ using NeuroAnalyzer
 
 ## Documentation
 
-Documentation is available in the following formats:
-
-- [HTML](https://neuroanalyzer.org/docs)
-- [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs/src/branch/main/Documentation.md)
+Documentation is available at [https://neuroanalyzer.org/docs](https://neuroanalyzer.org/docs)
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.html](https://neuroanalyzer.org/changelog.html).
 
