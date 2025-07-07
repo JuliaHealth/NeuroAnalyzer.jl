@@ -93,12 +93,12 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
             col = :black
             m[idx1, idx2] < 0 && (col = :blue)
             m[idx1, idx2] > 0 && (col = :red)
-            plot!(x_vals,
-                  y_vals,
-                  color=col,
-                  lw=10 * abs(m_norm[idx1, idx2]),
-                  alpha=0.5,
-                  label="")
+            Plots.plot!(x_vals,
+                        y_vals,
+                        color=col,
+                        lw=10 * abs(m_norm[idx1, idx2]),
+                        alpha=0.5,
+                        label="")
         end
     end
 

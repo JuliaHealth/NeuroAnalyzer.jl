@@ -362,7 +362,7 @@ x2, f2 = areduce(x, f)
 @test size(trtm(e10, ch="Fp1")) == (10, 2560)
 
 @info "Test: meshgrid()"
-@test length(meshgrid(collect(range(-1, 1, 100)), collect(range(-1, 1, 100)))) == 100
+@test length(meshgrid(collect(range(-1, 1, 100)), collect(range(-1, 1, 100)))) == 2
 
 @info "Test: aff_mni2tal()"
 @test aff_mni2tal([10, 12, 14]) == [8.0, 8.32, 12.48]

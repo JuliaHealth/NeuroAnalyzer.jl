@@ -97,6 +97,7 @@ using GeometryBasics
 using Git
 using GLM
 using GLMakie
+using GR
 using Gtk
 using HypothesisTests
 using Images
@@ -174,8 +175,9 @@ end
 
 # set package options
 
+GR.setarrowsize(0.4)
 Plots.gr_cbar_width[] = 0.01
-GR.setarrowsize(0.5)
+Plots.gr_set_arrowstyle
 if Sys.islinux() && Sys.ARCH === :x86_64
     FFTW.set_provider!("mkl")
 else

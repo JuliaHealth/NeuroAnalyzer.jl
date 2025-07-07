@@ -69,6 +69,7 @@ function na_info()::Nothing
             "Git",
             "GLM",
             "GLMakie",
+            "GR",
             "Gtk",
             "HypothesisTests",
             "Images",
