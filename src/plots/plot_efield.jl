@@ -1,8 +1,28 @@
 export plot_efield2d
 
-function plot_efield2d(q::Vector{Int64}, qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, x::Vector{Float64}, y::Vector{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}, d::Int64=2)
+"""
+    plot_efield2d(; <keyword arguments>)
+
+Plot 2-dimensional electric field.
+
+# Arguments
+
+- `q::Vector{Int64}`: charges values, qy::Vector{Int64}::String`: anode location
+- `qq::Vector{Vector{Float64}}`: charges positions
+- `norm_e::Matrix{Float64}`: normalized electric field
+- `ex::Matrix{Float64}`: electric field X axis vector
+- `ey::Matrix{Float64}`: electric field Y axis vector
+- `d::Int64=2`: density of field vectors
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_efield2d(q::Vector{Int64}, qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}, d::Int64=2)::Plots.Plot{Plots.GRBackend}
 
     m, n = size(norm_e)
+    x = round.(collect(range(-1, 1, m)), digits=3)
+    y = round.(collect(range(-1, 1, n)), digits=3)
     nq = length(q)
 
     c = floor.(Int64, NeuroAnalyzer.normalize_n(norm_e, 15)) .+ 1
@@ -26,9 +46,10 @@ function plot_efield2d(q::Vector{Int64}, qq::Vector{Vector{Float64}}, norm_e::Ma
         end
     end
 
+    qs = sqrt.(abs.(q))
     for idx in 1:nq
         p = Plots.scatter!((qq[idx][2], qq[idx][1]),
-                           ms=NeuroAnalyzer.normalize_n(abs.(q), 7)[idx]+3,
+                           ms=qs[idx],
                            color=q[idx] > 0 ? :red : :blue,
                            markerstrokewidth=0,
                            markerstrokealpha=0)

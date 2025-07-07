@@ -1,19 +1,37 @@
 export efield2d
 
-function efield2d(; q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64})
+"""
+    efield2d(; <keyword arguments>)
 
-    _wip()
-    m = 100
-    n = 100
+Create model of 2-dimensional electric field.
+
+# Arguments
+
+- `q::Vector{Int64}`: charges values, qy::Vector{Int64}::String`: anode location
+- `qx::Vector{Int64}`: charges X positions (1 to 100)
+- `qy::Vector{Int64}`: charges Y positions (1 to 100)
+
+# Returns
+
+Named tuple containing:
+- `qq::Vector{Vector{Float64}}`: charges positions
+- `norm_e::Matrix{Float64}`: normalized electric field
+- `ex::Matrix{Float64}`: electric field X axis vector
+- `ey::Matrix{Float64}`: electric field Y axis vector
+"""
+function efield2d(; q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64})::@NamedTuple{qq::Vector{Vector{Float64}}, norm_e::Matrix{Float64}, ex::Matrix{Float64}, ey::Matrix{Float64}}
 
     @assert length(qx) == length(q) "Length of qx and number of charges must be equal."
     @assert length(qx) == length(q) "Length of qy and number of charges must be equal."
 
+    m = 100
+    n = 100
+
     # number of charges
     nq = length(q)
     for idx in eachindex(q)
-        NeuroAnalyzer._in(qx[idx], (1, m))
-        NeuroAnalyzer._in(qy[idx], (1, n))
+        _in(qx[idx], (1, m))
+        _in(qy[idx], (1, n))
     end
 
     x = round.(collect(range(-1, 1, m)), digits=3)
@@ -44,6 +62,6 @@ function efield2d(; q::Vector{Int64}, qx::Vector{Int64}, qy::Vector{Int64})
     ex = ex ./ norm_e
     ey = ey ./ norm_e
 
-    return (qq=qq, norm_e=norm_e, x=x, y=y, ex=ex, ey=ey)
+    return (qq=qq, norm_e=norm_e, ex=ex, ey=ey)
 
 end
