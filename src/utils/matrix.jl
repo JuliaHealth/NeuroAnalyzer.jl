@@ -4,6 +4,7 @@ export m_sort
 export m_norm
 export vec2mat
 export arr2mat
+export meshgrid
 
 """
     m_pad0(m)
@@ -221,5 +222,37 @@ function arr2mat(x::AbstractArray)::AbstractMatrix
     end
 
     return m
+
+end
+
+"""
+    meshgrid(x)
+
+Create mesh grid (pair of x and y coordinates) from two vectors.
+
+# Arguments
+
+- `x::Vector{Float64}`
+- `y::Vector{Float64}`
+
+# Returns
+
+- `m::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}`
+"""
+function meshgrid(x::Vector{Float64}, y::Vector{Float64})::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}
+
+    xn = length(x)
+    yn = length(y)
+
+    mx = Vector{Vector{Float64}}()
+    my = Vector{Vector{Float64}}()
+    @inbounds for _ in 1:yn
+        push!(mx, x)
+    end
+    @inbounds for idx in 1:yn
+        push!(my, repeat([y[idx]], xn))
+    end
+
+    return (mx, my)
 
 end

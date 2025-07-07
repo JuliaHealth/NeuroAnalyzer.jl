@@ -96,6 +96,7 @@ using FractalDimensions
 using GeometryBasics
 using Git
 using GLM
+using GLMakie
 using Gtk
 using HypothesisTests
 using Images
@@ -174,6 +175,7 @@ end
 # set package options
 
 Plots.gr_cbar_width[] = 0.01
+GR.setarrowsize(0.5)
 if Sys.islinux() && Sys.ARCH === :x86_64
     FFTW.set_provider!("mkl")
 else
@@ -280,6 +282,7 @@ include("utils/vector.jl")
 include("utils/view_header.jl")
 include("utils/wavelets.jl")
 include("utils/fwhm.jl")
+include("utils/mri_coordinates.jl")
 
 # io
 include("io/export_csv.jl")
@@ -469,6 +472,7 @@ include("plots/plot_signal.jl")
 include("plots/plot_spectrogram.jl")
 include("plots/plot_topo.jl")
 include("plots/plot_varia.jl")
+include("plots/plot_efield.jl")
 
 # gui
 include("gui/iedit.jl")
@@ -496,6 +500,9 @@ include("tester/tpt.jl")
 # stim
 include("stim/ect.jl")
 include("stim/tes.jl")
-include("stim/tes_model.jl")
+
+# modeling
+include("model/efield.jl")
+include("model/tes_model.jl")
 
 end # NeuroAnalyzer

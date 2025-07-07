@@ -361,4 +361,19 @@ x2, f2 = areduce(x, f)
 @info "Test: trtm()"
 @test size(trtm(e10, ch="Fp1")) == (10, 2560)
 
+@info "Test: meshgrid()"
+@test length(meshgrid(collect(range(-1, 1, 100)), collect(range(-1, 1, 100)))) == 100
+
+@info "Test: aff_mni2tal()"
+@test aff_mni2tal([10, 12, 14]) == [8.0, 8.32, 12.48]
+
+@info "Test: mni2tal()"
+@test mni2tal([10, 12, 14]) == [9.9, 12.2696, 12.2826]
+
+@info "Test: aff_tal2mni()"
+@test aff_tal2mni([9.9, 12.2692, 12.2826]) == [12.15909090909091, 16.071340206185567, 13.544355670103092]
+
+@info "Test: tal2mni()"
+@test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]
+
 true

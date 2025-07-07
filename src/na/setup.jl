@@ -68,6 +68,7 @@ function na_info()::Nothing
             "GeometryBasics",
             "Git",
             "GLM",
+            "GLMakie",
             "Gtk",
             "HypothesisTests",
             "Images",

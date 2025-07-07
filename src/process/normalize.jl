@@ -21,7 +21,7 @@ Normalize channel(s).
     - `:perc`: in percentages
     - `:gauss`: to Gaussian
     - `:invroot`: to inverse root: 1/sqrt(x)
-    - `:n`: in [0, n], default is [0, 1]; <keyword arguments>) .+ n1`
+    - `:n`: in [0, n], default is [0, 1]
     - `:softmax`: using softmax function: exp(x_i) / sum(exp(x))
     - `:sigmoid`: using sigmoid function: 1 /  1 + exp(-x_i)
     - `:mad`: by MAD
