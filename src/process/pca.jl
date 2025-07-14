@@ -17,7 +17,7 @@ Calculate `n` first Primary Components (PCs).
 Named tuple containing:
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
-- `pcm::Vector{Float64}`: PC mean
+- `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pca_decompose(s::AbstractArray; n::Int64)::@NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
@@ -79,7 +79,7 @@ Calculate `n` first Primary Components (PCs).
 Named tuple containing:
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
-- `pcm::Vector{Float64}`: PC mean
+- `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
 function pca_decompose(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64)::@NamedTuple{pc::Array{Float64, 3}, pcv::Matrix{Float64}, pcm::Vector{Float64}, pc_model::MultivariateStats.PCA{Float64}}
@@ -99,8 +99,8 @@ Reconstructs signal using PCA components.
 # Arguments
 
 - `s::AbstractArray`
-- `pc::AbstractArray:`: IC(1)..IC(n) × epoch
-- `pc_model::MultivariateStats.PCA{Float64}:`: PC model
+- `pc::AbstractArray`: IC(1)..IC(n) × epoch
+- `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
 # Returns
 
@@ -184,7 +184,7 @@ Reconstruct signal using external PCA components (`pc` and `pca`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+- `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
@@ -214,7 +214,7 @@ Reconstruct signals using external PCA components (`pc` and `pc_model`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+- `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
