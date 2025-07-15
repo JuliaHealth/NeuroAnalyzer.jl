@@ -16,7 +16,7 @@ Calculate `n` first Primary Components (PCs).
 
 Named tuple containing:
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
-- `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
+- `pcv::Matrix{Float64}`: PC(1)..PC(n) variances (fraction of total variance explained)
 - `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
@@ -32,7 +32,7 @@ function pca_decompose(s::AbstractArray; n::Int64)::@NamedTuple{pc::Array{Float6
     pc_tmp = []
     n_tmp = n
     @inbounds for ep_idx in 1:ep_n
-        pc_tmp = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n)
+        pc_tmp = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n, pratio=1)
         size(pc_tmp)[2] < n_tmp && (n_tmp = size(pc_tmp)[2])
     end
     (n_tmp < n && verbose) && _warn("Only $n_tmp PCs were generated.")
@@ -50,7 +50,7 @@ function pca_decompose(s::AbstractArray; n::Int64)::@NamedTuple{pc::Array{Float6
         # eig_vec = m_sort(eig_vec, eig_val_idx)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        pc_model = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n)
+        pc_model = @views MultivariateStats.fit(PCA, s[:, :, ep_idx], maxoutdim=n, pratio=1)
         v = MultivariateStats.principalvars(pc_model) ./ MultivariateStats.var(pc_model) * 100
 
         for idx in 1:n
@@ -78,7 +78,7 @@ Calculate `n` first Primary Components (PCs).
 
 Named tuple containing:
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
-- `pcv::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch (% of total variance)
+- `pcv::Matrix{Float64}`: PC variances (fraction of total variance explained)
 - `pcm::Vector{Float64}`: PC means
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 """
