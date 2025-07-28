@@ -32,7 +32,7 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Returns
 
-- `hd::Matrix{Float64}`: peak amplitude
+- `hd::Matrix{Float64}`
 """
 function hfd(s::AbstractArray)::Matrix{Float64}
 

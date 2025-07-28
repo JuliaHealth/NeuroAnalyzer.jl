@@ -987,4 +987,8 @@ gd, sc = NeuroAnalyzer.diss(erp, erp, ch1="all", ch2="all")
 @test hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 0.8604486476012065
 @test size(hfd(e10, ch="all")) == (24, 10)
 
+@info "Test: dirinrg()"
+@test dirinrg([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 212.5
+@test size(dirinrg(e10, ch="all")) == (24, 10)
+
 true
