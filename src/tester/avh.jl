@@ -236,7 +236,7 @@ function avh(lang::Symbol=:en)::Nothing
             end
             println(f, "\"distance L\",$d_l")
             println(f, "\"distance R\",$d_r")
-            println(f, "\"volume\",$vol")
+            print(f, "\"volume\",$vol")
             close(f)
         end
     end
