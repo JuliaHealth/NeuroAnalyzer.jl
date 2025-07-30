@@ -351,7 +351,6 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
             selected == Int64[] && (selected = 0)
             p = plot_locs(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xy, grid=true)
-            img = read_from_png(io)
             ctx = getgc(can1)
             if !already_scaled1
                 Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -376,7 +375,6 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             selected == Int64[] && (selected = 0)
             obj_new.locs = locs
             p = plot_locs(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:xz, grid=true)
-            img = read_from_png(io)
             ctx = getgc(can2)
             if !already_scaled2
                 Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -400,7 +398,6 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
             selected == Int64[] && (selected = 0)
             p = plot_locs(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart, plane=:yz, grid=true)
-            img = read_from_png(io)
             ctx = getgc(can3)
             if !already_scaled3
                 Cairo.scale(ctx, scaling_ratio, scaling_ratio)
@@ -424,7 +421,6 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             current_channel in ch_signal && (selected = _find_bylabel(locs, ch_labels[current_channel]))
             selected == Int64[] && (selected = 0)
             p = plot_locs3d(locs, selected=selected, ch_labels=false, head_labels=hdlab, cart=cart);
-            img = read_from_png(io)
             ctx = getgc(can4)
             if !already_scaled4
                 Cairo.scale(ctx, scaling_ratio, scaling_ratio)

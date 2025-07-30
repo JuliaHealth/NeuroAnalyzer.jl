@@ -141,7 +141,7 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
     @async Gtk.gtk_main()
     wait(cnd)
 
-    if x == nothing && y == nothing
+    if x === nothing && y === nothing
         return nothing
     end
 
