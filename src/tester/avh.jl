@@ -1,10 +1,15 @@
+export avh
+
 function avh(lang::Symbol=:en)::Nothing
 
     _check_var(lang, [:en, :de, :pl, :es], "lang")
 
     info_dialog("Please use headphones for the best results.")
 
+    d_l = 0
+    d_r = 0
     vol = 1.0
+    snd_whisper = wavread(joinpath(res_path, "avh/wav/whisper_2s01fifo.wav"))
     snd_noise = wavread(joinpath(res_path, "avh/wav/noise_2s01fifo.wav"))
     snd_sine = wavread(joinpath(res_path, "avh/wav/sine_8k2s01fifo.wav"))
     if lang === :en
@@ -12,7 +17,7 @@ function avh(lang::Symbol=:en)::Nothing
     elseif lang === :pl
     elseif lang === :es
     end
-    snd = deepcopy(snd_noise)
+    snd = deepcopy(snd_whisper)
     snd_tmp = deepcopy(snd)
 
     img = read_from_png(joinpath(res_path, "avh/head.png"))
@@ -22,7 +27,7 @@ function avh(lang::Symbol=:en)::Nothing
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)
     set_gtk_property!(win, :window_position, 3)
-    set_gtk_property!(win, :startup_id, "org.avh")
+    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     can = GtkCanvas(800, 800)
 
@@ -35,12 +40,7 @@ function avh(lang::Symbol=:en)::Nothing
     set_gtk_property!(g_opts, :column_spacing, 10)
     set_gtk_property!(g_opts, :row_spacing, 10)
 
-    lab_patient = GtkLabel("Patient")
-    set_gtk_property!(lab_patient, :halign, 2)
-    entry_patient = GtkEntry()
-    set_gtk_property!(entry_patient, :tooltip_text, "Patient's ID or name and surname")
-
-    lab_character = GtkLabel("Character")
+    lab_character = GtkLabel("Emotional aspect")
     set_gtk_property!(lab_character, :halign, 2)
     characters = ["negative", "neutral", "positive"]
     combo_character = GtkComboBoxText()
@@ -48,11 +48,11 @@ function avh(lang::Symbol=:en)::Nothing
         push!(combo_character, idx)
     end
     set_gtk_property!(combo_character, :active, 0)
-    set_gtk_property!(combo_character, :tooltip_text, "AVH content emotional character")
+    set_gtk_property!(combo_character, :tooltip_text, "AVH content emotional aspect")
 
     lab_type = GtkLabel("Type")
     set_gtk_property!(lab_type, :halign, 2)
-    types = ["voice", "noise", "ringing"]
+    types = ["voice", "whisper", "noise", "ringing"]
     combo_type = GtkComboBoxText()
     for idx in uppercase.(String.(types))
         push!(combo_type, idx)
@@ -70,15 +70,18 @@ function avh(lang::Symbol=:en)::Nothing
     set_gtk_property!(combo_gender, :active, 0)
     set_gtk_property!(combo_gender, :tooltip_text, "AVH voice gender characteristic")
 
-    lab_vol_up = GtkLabel("Volume up")
+    lab_vol_up = GtkLabel("Volume")
     set_gtk_property!(lab_vol_up, :halign, 2)
-    lab_vol_down = GtkLabel("Volume down")
+    lab_vol_down = GtkLabel("Volume")
     set_gtk_property!(lab_vol_down, :halign, 2)
     bt_vol_up = GtkButton("+")
     vol == 1 && set_gtk_property!(bt_vol_up, :sensitive, 0)
     set_gtk_property!(bt_vol_up, :tooltip_text, "Increase volume")
     bt_vol_down = GtkButton("-")
     set_gtk_property!(bt_vol_down, :tooltip_text, "Decrease volume")
+
+    bt_play = GtkButton("Play")
+    set_gtk_property!(bt_play, :tooltip_text, "Play the sound with current settings")
 
     bt_save = GtkButton("Save")
     set_gtk_property!(bt_save, :tooltip_text, "Save results")
@@ -97,9 +100,11 @@ function avh(lang::Symbol=:en)::Nothing
     g_opts[1, 5] = lab_vol_down
     g_opts[2, 5] = bt_vol_down
     g_opts[1:2, 6] = ""
-    g_opts[1:2, 7] = bt_save
+    g_opts[1:2, 7] = bt_play
     g_opts[1:2, 8] = ""
-    g_opts[1:2, 9] = bt_close
+    g_opts[1:2, 9] = bt_save
+    g_opts[1:2, 10] = ""
+    g_opts[1:2, 11] = bt_close
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -111,8 +116,8 @@ function avh(lang::Symbol=:en)::Nothing
 
     @guarded draw(can) do widget
         ctx = getgc(widget)
-        h = height(can)
-        w = width(can)
+        h = Cairo.height(can)
+        w = Cairo.width(can)
         Cairo.rectangle(ctx, 0, 0, w, h)
         Cairo.set_source_rgb(ctx, 1, 1, 1)
         Cairo.fill(ctx)
@@ -124,17 +129,18 @@ function avh(lang::Symbol=:en)::Nothing
         type = types[get_gtk_property(combo_type, :active, Int64) + 1]
         if type == "voice"
             snd = snd_noise
-            set_gtk_property!(combo_lng, :sensitive, 1)
             set_gtk_property!(combo_character, :sensitive, 1)
             set_gtk_property!(combo_gender, :sensitive, 1)
-        elseif type == "noise"
-            snd = snd_noise
-            set_gtk_property!(combo_lng, :sensitive, 0)
+        elseif type == "whisper"
+            snd = snd_whisper
             set_gtk_property!(combo_character, :sensitive, 0)
             set_gtk_property!(combo_gender, :sensitive, 0)
-        else
+        elseif type == "noise"
+            snd = snd_noise
+            set_gtk_property!(combo_character, :sensitive, 0)
+            set_gtk_property!(combo_gender, :sensitive, 0)
+        elseif type == "ringing"
             snd = snd_sine
-            set_gtk_property!(combo_lng, :sensitive, 0)
             set_gtk_property!(combo_character, :sensitive, 0)
             set_gtk_property!(combo_gender, :sensitive, 0)
         end
@@ -143,16 +149,30 @@ function avh(lang::Symbol=:en)::Nothing
 
     signal_connect(bt_vol_up, "clicked") do widget
         vol < 1.0 && (vol += 0.1)
-        vol > 0.0 && set_gtk_property!(bt_vol_down, :sensitive, 1)
+        vol > 0.1 && set_gtk_property!(bt_vol_down, :sensitive, 1)
         vol == 1.0 && set_gtk_property!(bt_vol_up, :sensitive, 0)
         vol = round(vol, digits=1)
+
+        snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
+        snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
+        wavplay(snd_tmp[1], snd_tmp[2])
     end
 
     signal_connect(bt_vol_down, "clicked") do widget
-        vol > 0.0 && (vol -= 0.1)
-        vol == 0.0 && set_gtk_property!(bt_vol_down, :sensitive, 0)
+        vol > 0.1 && (vol -= 0.1)
+        vol == 0.1 && set_gtk_property!(bt_vol_down, :sensitive, 0)
         vol < 1.0 && set_gtk_property!(bt_vol_up, :sensitive, 1)
         vol = round(vol, digits=1)
+
+        snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
+        snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
+        wavplay(snd_tmp[1], snd_tmp[2])
+    end
+
+    signal_connect(bt_play, "clicked") do widget
+        snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
+        snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
+        wavplay(snd_tmp[1], snd_tmp[2])
     end
 
     can.mouse.button1press = @guarded (widget, event) -> begin
@@ -161,8 +181,8 @@ function avh(lang::Symbol=:en)::Nothing
         Threads.@spawn begin
             @guarded draw(can) do widget
                 ctx = getgc(widget)
-                h = height(can)
-                w = width(can)
+                h = Cairo.height(can)
+                w = Cairo.width(can)
                 Cairo.rectangle(ctx, 0, 0, w, h)
                 Cairo.set_source_rgb(ctx, 1, 1, 1)
                 Cairo.fill(ctx)
@@ -203,24 +223,21 @@ function avh(lang::Symbol=:en)::Nothing
     end
 
     signal_connect(bt_save, "clicked") do widget
-        fname = save_dialog("Save as...", Null(), (GtkFileFilter("*.txt", name="All supported formats"), "*.txt"))
-        if file_name != ""
-            if isfile(fname)
-                @show ask_dialog("File exists. Overwrite?", "No", "Yes")
-                f = open(fname, "w")
-                println(f, "AH type: $(types[get_gtk_property(combo_type, :active, Int64) + 1])")
-                if get_gtk_property(combo_type, :active, Int64) == 0
-                    println(f, "AVH gender: $(genders[get_gtk_property(combo_character, :active, Int64) + 1])")
-                    println(f, "AVH character: $(characters[get_gtk_property(combo_gender, :active, Int64) + 1])")
-                else
-                    println(f, "AVH gender: NA")
-                    println(f, "AVH character: NA")
-                end
-                println(f, "distance L: $d_l")
-                println(f, "distance R: $d_r")
-                println(f, "volume: $vol")
-                close(f)
+        fname = save_dialog("Save as...", GtkNullContainer(), (GtkFileFilter("*.csv", name="All supported formats"), "*.txt"))
+        if fname != ""
+            f = open(fname, "w")
+            println(f, "\"AH type\",$(types[get_gtk_property(combo_type, :active, Int64) + 1])")
+            if get_gtk_property(combo_type, :active, Int64) == 0
+                println(f, "\"AVH gender\",$(genders[get_gtk_property(combo_character, :active, Int64) + 1])")
+                println(f, "\"AVH emotional aspect\",$(characters[get_gtk_property(combo_gender, :active, Int64) + 1])")
+            else
+                println(f, "\"AVH gender\",NA")
+                println(f, "\"AVH emotional aspect\",NA")
             end
+            println(f, "\"distance L\",$d_l")
+            println(f, "\"distance R\",$d_r")
+            println(f, "\"volume\",$vol")
+            close(f)
         end
     end
 
