@@ -1,6 +1,6 @@
-export avh
+export iavh
 
-function avh(lang::Symbol=:en)::Nothing
+function iavh(lang::Symbol=:en)::Nothing
 
     _check_var(lang, [:en, :de, :pl, :es], "lang")
 
