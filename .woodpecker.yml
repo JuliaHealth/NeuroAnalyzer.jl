@@ -32,7 +32,7 @@ steps:
       - cd NeuroAnalyzer.jl/docs
       - cat header.md > src/index.md
       - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia make_html.jl
+      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia --project make_html.jl
       - mv build docs
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
       - sed -i 's///g' docs/index.html

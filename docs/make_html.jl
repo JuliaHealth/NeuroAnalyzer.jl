@@ -1,5 +1,9 @@
 @info "Generating HTML documentation"
 
+using Documenter
+using NeuroAnalyzer
+
+#=
 using Pkg
 Pkg.add(["Documenter", "Plots", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
 Pkg.activate("..")
@@ -25,5 +29,13 @@ using MultivariateStats
 @info "Loading package: NeuroAnalyzer"
 using NeuroAnalyzer
 println()
+=#
 
-makedocs(sitename="NeuroAnalyzer.jl", remotes=nothing, clean=true)
+makedocs(sitename="NeuroAnalyzer.jl",
+         modules=[NeuroAnalyzer],
+         authors="Adam Wysokiński",
+         linkcheck=false,
+         remotes=nothing,
+         warnonly=true,
+         clean=true,
+         format=Documenter.HTML(size_threshold=268435456))

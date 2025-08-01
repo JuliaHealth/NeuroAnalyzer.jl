@@ -1,5 +1,20 @@
 export rt_plotter
 
+"""
+    rt_plotter(; <keyword arguments>)
+
+Plot recorded signal in real time.
+
+# Arguments
+
+- `fs::Int64`
+- `l::Int64=5`: displayed segment length (in seconds)
+- `duration::Int64=20`: duration of recording (in seconds)
+
+# Returns
+
+- `Plots.Plot{Plots.GRBackend}`
+"""
 function rt_plotter(; fs::Int64, l::Int64=5, duration::Int64=20)::Plots.Plot{Plots.GRBackend}
 
     _wip()

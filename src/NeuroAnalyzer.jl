@@ -523,10 +523,6 @@ include("gui/itopo.jl")
 include("gui/iview_ica.jl")
 include("gui/iview.jl")
 
-# study
-include("study/create.jl")
-include("study/info.jl")
-
 # recorder
 include("recorder/edar.jl")
 include("recorder/rt_plotter.jl")

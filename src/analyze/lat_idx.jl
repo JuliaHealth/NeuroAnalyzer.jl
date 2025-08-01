@@ -1,7 +1,7 @@
 export lat_idx
 
 """
-    lat_idx(obj, ch, method, nt, wlen, woverlap, w, ncyc, gw, wt)
+    lat_idx(obj; <keyword arguments>)
 
 Calculate lateralization index (log(A / B), where A is average power at given frequency (default is 10 Hz, α) for the right hemisphere and B is average power at that frequency for the left hemisphere).
 
