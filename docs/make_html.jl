@@ -1,9 +1,6 @@
 @info "Generating HTML documentation"
 
 using Documenter
-
-using Pkg
-Pkg.activate("..")
 using NeuroAnalyzer
 
 makedocs(sitename="NeuroAnalyzer.jl",
