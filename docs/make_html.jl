@@ -1,15 +1,13 @@
-@info "Generate HTML documentation"
+@info "Generating HTML documentation"
 
 using Pkg
-Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
-Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
+Pkg.add(["Documenter", "Plots", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
 Pkg.activate("..")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
 Pkg.instantiate()
 
 @info "Loading package: Documenter"
 using Documenter
-@info "Loading package: DocumenterMarkdown"
-using DocumenterMarkdown
 @info "Loading package: Plots"
 using Plots
 @info "Loading package: Cairo"
@@ -28,4 +26,4 @@ using MultivariateStats
 using NeuroAnalyzer
 println()
 
-makedocs(sitename="NeuroAnalyzer.jl", clean=true)
+makedocs(sitename="NeuroAnalyzer.jl", remotes=nothing, clean=true)

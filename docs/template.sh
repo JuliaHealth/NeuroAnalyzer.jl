@@ -16,6 +16,12 @@ cat ../src/utils/*.jl | grep ^function | grep Base. | sed s/"function Base."/"Ne
 cat ../src/utils/*.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
+echo "## Stats"
+echo ""
+echo "\`\`\`@docs"
+cat ../src/stats/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+echo "\`\`\`"
+echo ""
 echo "## IO"
 echo ""
 echo "\`\`\`@docs"
