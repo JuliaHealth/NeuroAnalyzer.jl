@@ -1,9 +1,9 @@
-export jaccard
+export jaccsim
 export sdi
 export cosim
 
 """
-    jaccard(x, y)
+    jaccsim(x, y)
 
 Calculate Jaccard similarity between two vectors.
 
@@ -20,13 +20,14 @@ Calculate Jaccard similarity between two vectors.
 
 To compute Jaccard distance, use `1 - jaccard(x, y)`
 """
-function jaccard(x::AbstractVector, y::AbstractVector)::Float64
+function jaccsim(x::AbstractVector, y::AbstractVector)::Float64
 
     i = float(length(intersect(x, y)))
     u = length(x) + length(y) - i
     u == 0 && @error "Length of x + length of y - $i must not be 0."
+    j = i / u
 
-    return i / u
+    return j
 
 end
 

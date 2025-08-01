@@ -14,8 +14,8 @@ a2 = zeros(2, 3, 2)
 @info "Test: hildebrand_rule()"
 @test hildebrand_rule([1, 2, 3]) == 0.0
 
-@info "Test: jaccard()"
-@test jaccard(ones(3), zeros(3)) == 0.0
+@info "Test: jaccsim()"
+@test jaccsim(ones(3), zeros(3)) == 0.0
 
 @info "Test: zscore()"
 @test NeuroAnalyzer.zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
