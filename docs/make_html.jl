@@ -26,4 +26,4 @@ using MultivariateStats
 using NeuroAnalyzer
 println()
 
-makedocs(sitename="NeuroAnalyzer.jl", clean=true)
+makedocs(sitename="NeuroAnalyzer.jl", remotes=nothing, clean=true)
