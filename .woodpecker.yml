@@ -3,7 +3,7 @@ steps:
     image: julia
     pull: true
     when:
-      - event: [push, manual]   # workflow should run if you execute it manually and on each push
+      - event: [manual]   # workflow should run if you execute it manually
         branch: main
     environment:
       FTP:
@@ -12,10 +12,6 @@ steps:
         from_secret: ftp_user
       FTP_PASS:
         from_secret: ftp_pass
-      CBMAIL:
-        from_secret: cbmail
-      CBTOKEN:
-        from_secret: cbtoken
     commands:
       - export CI="1"
 
