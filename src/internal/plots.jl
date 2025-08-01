@@ -73,3 +73,15 @@ function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String,
     tt == "default" && (tt = t)
     return xl, yl, tt
 end
+
+_bernstein(i, n; steps=50) = [binomial(n, i) * t^i * (1 - t)^(n - i) for t in LinRange(0, 1, steps)]
+
+function _bernstein_poly(px, py; steps=50)
+    # the code is based on https://opensourc.es/blog/bezier-curve/
+    n = length(px) - 1
+    b = [_bernstein(i, n) for i in 0:n]
+    x_vals = [sum(px[k] * b[k][t] for k in 1:(n + 1)) for t in 1:steps]
+    y_vals = [sum(py[k] * b[k][t] for k in 1:(n + 1)) for t in 1:steps]
+    return x_vals, y_vals
+end
+

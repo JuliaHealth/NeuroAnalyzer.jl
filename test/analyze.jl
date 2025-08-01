@@ -425,6 +425,22 @@ iv, izv, f = itpc_spec(e10, ch="Fp1", frq_lim=(0, 4), frq_n=5)
 @test f == [0.01, 0.045, 0.2, 0.894, 4.0]
 
 @info "Test: mdiff()"
+st, sts, p = mdiff(m1, m2, method=:absdiff)
+@test length(st) == 6
+@test sts == 3.0
+@test p in [0.0, 1.0]
+st, sts, p = mdiff(a1, a2, method=:absdiff)
+@test size(st) == (2, 6)
+@test sts == [1.0, 1.0]
+@test p == [0.0, 0.0]
+st, sts, p = mdiff(m1, m2, method=:diff2int)
+@test length(st) == 6
+@test sts == 4.666666666666666
+@test p == 1.0 || p == 0.0
+st, sts, p = mdiff(a1, a2, method=:diff2int)
+@test size(st) == (2, 6)
+@test sts == [2.0, 2.0]
+@test p == [0.0, 0.0]
 st, sts, p = mdiff(e10, e10, ch1="Fp1", ch2="Fp1", method=:absdiff)
 @test size(st) == (10, 3)
 @test sts == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -444,6 +460,13 @@ m = NeuroAnalyzer.mutual_information(e10, e10, ch1="Fp1", ch2="Fp2")
 @test size(m) == (1, 10)
 
 @info "Test: msci95()"
+@test msci95(v1) == (sm = 3.0, ss = 0.7071067811865476, su = 4.385929291125633, sl = 1.6140707088743669)
+@test msci95(v2) == (sm = 4.0, ss = 0.7071067811865476, su = 5.385929291125633, sl = 2.614070708874367)
+@test msci95(m1) == (sm = [2.5, 3.5, 4.5], ss = [1.4999999999999998, 1.4999999999999998, 1.4999999999999998], su = [5.4399999999999995, 6.4399999999999995, 7.4399999999999995], sl = [-0.4399999999999995, 0.5600000000000005, 1.5600000000000005])
+@test msci95(a1) == (sm = [1.0 1.0 1.0; 1.0 1.0 1.0], ss = [0.0 0.0 0.0; 0.0 0.0 0.0], su = [1.0 1.0 1.0; 1.0 1.0 1.0], sl = [1.0 1.0 1.0; 1.0 1.0 1.0])
+@test msci95(v1, v2) == (sm = -1.0, ss = 1.0, su = 0.96, sl = -2.96)
+@test msci95(m1, m2) == (sm = [-4.0; 2.0;;], ss = [0.8164965809277261; 0.8164965809277261;;], su = [-2.3996667013816566; 3.6003332986183434;;], sl = [-5.600333298618343; 0.39966670138165683;;])
+@test msci95(a1, a2) == (sm = [1.0 1.0; 1.0 1.0], ss = [0.0 0.0; 0.0 0.0], su = [1.0 1.0; 1.0 1.0], sl = [1.0 1.0; 1.0 1.0])
 sm, ss, su, sl = msci95(e10, ch="all")
 @test size(sm) == (10, 2560)
 @test size(ss) == (10, 2560)
