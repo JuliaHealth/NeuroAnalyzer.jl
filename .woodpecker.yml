@@ -27,8 +27,6 @@ steps:
 
       - ln -s /usr/lib/x86_64-linux-gnu/libpcre.so.3 /usr/lib/x86_64-linux-gnu/libpcre.so.1
 
-      - DISPLAY=:0 xvfb-run -a -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.add(url=\"https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl\")"
-
       - git clone --depth 1 https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
 
       - cd NeuroAnalyzer.jl/docs
