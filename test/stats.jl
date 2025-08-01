@@ -290,20 +290,20 @@ y = ones(10) .+ 0.5
 @info "Test: logit()"
 @test NeuroAnalyzer.logit(0.8) == 1.3862943611198908
 
-@info "Test: ss()"
-@test ss(1:5) == 10
+@info "Test: sumsq()"
+@test sumsq(1:5) == 10
 
 @info "Test: varp()"
-@test var(0.5, 10) == 0.025
+@test varp(0.5, 10) == 0.025
 
 @info "Test: varc()"
-@test var([0, 1, 2, 3], [2, 8, 27, 45]) == 15.804878048780488
+@test varc([0, 1, 2, 3], [2, 8, 27, 45]) == 15.804878048780488
 
 @info "Test: stdp()"
-@test std(0.5, 10) == 0.15811388300841897
+@test stdp(0.5, 10) == 0.15811388300841897
 
 @info "Test: stdc()"
-@test std([0, 1, 2, 3], [2, 8, 27, 45]) == 3.9755349386944756
+@test stdc([0, 1, 2, 3], [2, 8, 27, 45]) == 3.9755349386944756
 
 @info "Test: meanp()"
 @test meanp(0.5, 10) == 5
@@ -416,11 +416,11 @@ y = ones(10) .+ 0.5
 @test crit_chi(10) == 3.94029913611906
 
 @info "Test: cis()"
-@test cis([1, 2, 3, 4]) == (0.7313348599303633, 4.813533834942627)
+@test NeuroAnalyzer.cis([1, 2, 3, 4]) == (0.7313348599303633, 4.813533834942627)
 
 @info "Test: civ()"
-@test civ([1, 2, 3, 4]) == (0.5348506773493641, 23.17010798013747)
-@test cis([1, 2, 3, 4]) == sqrt.(civ([1, 2, 3, 4]))
+@test NeuroAnalyzer.civ([1, 2, 3, 4]) == (0.5348506773493641, 23.17010798013747)
+@test NeuroAnalyzer.cis([1, 2, 3, 4]) == sqrt.(NeuroAnalyzer.civ([1, 2, 3, 4]))
 
 @info "Test: meant()"
 @test NeuroAnalyzer.meant([-100, 2, 3, 4, 5, 6, 7, 8, 9, 100]) == 5.5
@@ -436,7 +436,7 @@ y = ones(10) .+ 0.5
 @test NeuroAnalyzer.df(rand(10)) == 9
 
 @info "Test: center()"
-@test center([1, 2, 3, 4]) == [-1.5, -0.5, 0.5, 1.5]
+@test NeuroAnalyzer.center([1, 2, 3, 4]) == [-1.5, -0.5, 0.5, 1.5]
 
 @info "Test: p2o()"
 @test p2o(0.5) == 1.0

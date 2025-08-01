@@ -1,3 +1,4 @@
+export meanp
 export meanc
 export meang
 export meanh

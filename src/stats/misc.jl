@@ -5,7 +5,7 @@ export count_thresh
 export cmp_stat
 export permute
 export logit
-export ss
+export sumsq
 export na
 export df
 export center
@@ -252,7 +252,7 @@ function logit(p::Float64)::Float64
 end
 
 """
-    ss(x)
+    sumsq(x)
 
 Calculate sum of squares.
 
@@ -264,7 +264,7 @@ Calculate sum of squares.
 
 - `s::Float64`
 """
-function ss(x::AbstractVector)::Float64
+function sumsq(x::AbstractVector)::Float64
 
     m = mean(x)
     s = sum((x .- m).^2)

@@ -120,12 +120,12 @@ ph, f = cph(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=1, ep2=1)
 @test length(f) == 2049
 
 @info "Test: entropy()"
-e, sh, l, s, ns = entropy(rand(100))
+e, sh, l, s, ns = NeuroAnalyzer.entropy(rand(100))
 @test e < l
 @test sh < l
 @test s > ns
 
-e, sh, l, s, ns = entropy(e10, ch="all")
+e, sh, l, s, ns = NeuroAnalyzer.entropy(e10, ch="all")
 @test size(e) == (24, 10)
 @test size(sh) == (24, 10)
 @test size(l) == (24, 10)
@@ -133,9 +133,9 @@ e, sh, l, s, ns = entropy(e10, ch="all")
 @test size(ns) == (24, 10)
 
 @info "Test: negentropy()"
-n = negentropy(rand(10))
+n = NeuroAnalyzer.negentropy(rand(10))
 @test n < 0
-n = negentropy(eeg, ch="all")
+n = NeuroAnalyzer.negentropy(eeg, ch="all")
 @test size(n) == (24, 1)
 
 @info "Test: tenv()"
@@ -314,29 +314,29 @@ p = erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "Test: coherence()"
-c, msc, f = coherence(rand(100), rand(100), fs=10, method=:mt)
+c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:mt)
 @test length(c) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, msc, f = coherence(rand(100), rand(100), fs=10, method=:fft)
+c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:fft)
 @test length(c) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, msc, f = coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
+c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
 @test size(c) == (1, 2049, 1)
 @test size(msc) == (1, 2049, 1)
 @test length(f) == 2049
-c, msc, f = coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
+c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
 @test size(c) == (1, 2049, 1)
 @test size(msc) == (1, 2049, 1)
 @test length(f) == 2049
 
 @info "Test: frqinst()"
-f = frqinst(rand(100))
+f = NeuroAnalyzer.frqinst(rand(100))
 @test length(f) == 100
-f = frqinst(rand(10, 100, 10))
+f = NeuroAnalyzer.frqinst(rand(10, 100, 10))
 @test size(f) == (10, 100, 10)
-f = frqinst(e10, ch="all")
+f = NeuroAnalyzer.frqinst(e10, ch="all")
 @test size(f) == (24, 2560, 10)
 
 @info "Test: ged()"
@@ -435,12 +435,12 @@ st, sts, p = mdiff(e10, e10, ch1="Fp1", ch2="Fp1", method=:diff2int)
 @test p == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 @info "Test: mutual_information()"
-@test mutual_information(v1, v2) ≈ 0.4199730940219748
-@test mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
-@test mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0]
-m = mutual_information(e10, ch="all")
+@test NeuroAnalyzer.mutual_information(v1, v2) ≈ 0.4199730940219748
+@test NeuroAnalyzer.mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
+@test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0]
+m = NeuroAnalyzer.mutual_information(e10, ch="all")
 @test size(m) == (24, 24, 10)
-m = mutual_information(e10, e10, ch1="Fp1", ch2="Fp2")
+m = NeuroAnalyzer.mutual_information(e10, e10, ch1="Fp1", ch2="Fp2")
 @test size(m) == (1, 10)
 
 @info "Test: msci95()"
@@ -737,15 +737,15 @@ c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, ch="all", h=true)
 @test size(sph) == (24, 2560, 10)
 
 @info "Test: stationarity()"
-s = stationarity(e10, ch="all", method=:adf)
+s = NeuroAnalyzer.stationarity(e10, ch="all", method=:adf)
 @test size(s) == (24, 2, 10)
-s = stationarity(e10, ch="all", method=:cov)
+s = NeuroAnalyzer.stationarity(e10, ch="all", method=:cov)
 @test size(s) == (257, 10)
-s = stationarity(e10, ch="all", method=:hilbert)
+s = NeuroAnalyzer.stationarity(e10, ch="all", method=:hilbert)
 @test size(s) == (24, 2559, 10)
-s = stationarity(e10, ch="all", method=:mean)
+s = NeuroAnalyzer.stationarity(e10, ch="all", method=:mean)
 @test size(s) == (24, 10, 10)
-s = stationarity(e10, ch="all", method=:var)
+s = NeuroAnalyzer.stationarity(e10, ch="all", method=:var)
 @test size(s) == (24, 10, 10)
 
 @info "Test: channel_stats()"
