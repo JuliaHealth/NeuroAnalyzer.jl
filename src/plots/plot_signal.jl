@@ -1,7 +1,6 @@
 export plot_signal
 export plot_signal_avg
 export plot_signal_butterfly
-export plot_2signals
 export plot
 
 """
@@ -285,7 +284,7 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArr
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = NeuroStats.msci95(s)
+    s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s)
 
     # get limits
     ylim = (round(minimum(s_l) * 1.5, digits=0), round(maximum(s_u) * 1.5, digits=0))

@@ -99,8 +99,7 @@ a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_n=100)
 @test NeuroAnalyzer._get_epoch_markers(e10) == 0.0:10.0:90.0
 @test NeuroAnalyzer._tuple_max((2, 1)) == (-2, 2)
 @test NeuroAnalyzer._s2v(1) == [1]
-df = DataFrame(:a=>1:10)
-df1, df2 = NeuroAnalyzer._split(df)
+df1, df2 = NeuroAnalyzer._split(DataFrame(:a=>1:10))
 @test nrow(df1) == 8
 @test nrow(df2) == 2
 @test NeuroAnalyzer._set_defaults("default", "default", "default", "a", "b", "c") == ("a", "b", "c")
@@ -154,7 +153,6 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._set_defaults("a", "b", "c", "d", "e", "f") == ("a", "b", "c")
 @test NeuroAnalyzer._set_defaults("default", "default", "default", "d", "e", "f") == ("d", "e", "f")
 @test NeuroAnalyzer._midxy(1, 1, 4, 4) == (2.5, 2.5)
-@test NeuroAnalyzer._in(1, (1, 2.0)) == true
 @test NeuroAnalyzer._in(1, (1, 2.0)) == true
 @test NeuroAnalyzer._bin(1, (1, 2.0)) == false
 @test NeuroAnalyzer._bin(0.9, (1.0, 2)) == false

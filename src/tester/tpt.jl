@@ -33,7 +33,7 @@ function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     tpt_ch_accy = zeros(length(t))
     tpt_ch_accz = zeros(length(t))
 
-    win = GtkWindow("NeuroRecorder: itpt()", img1.width, img1.height + 100)
+    win = GtkWindow("NeuroTester: itpt()", img1.width, img1.height + 100)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)

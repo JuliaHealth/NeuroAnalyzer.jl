@@ -42,7 +42,7 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     img1 = read_from_png(joinpath(res_path, "finger_noclick.png"))
     img2 = read_from_png(joinpath(res_path, "finger_click.png"))
 
-    win = GtkWindow("NeuroRecorder: iftt()", img1.width, img1.height + 100)
+    win = GtkWindow("NeuroTester: iftt()", img1.width, img1.height + 100)
     set_gtk_property!(win, :border_width, 20)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)

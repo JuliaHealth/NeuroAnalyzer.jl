@@ -86,7 +86,6 @@ function na_info()::Nothing
             "MAT",
             "MLJ",
             "MultivariateStats",
-            "NeuroStats",
             "NPZ",
             "PiGPIO",
             "Plots",

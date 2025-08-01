@@ -23,7 +23,7 @@ Named tuple containing:
 function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    sm, ss, su, sl = @views NeuroStats.msci95(obj.data[ch, :, :], n=n, method=method)
+    sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj.data[ch, :, :], n=n, method=method)
 
     return (sm=sm, ss=ss, su=su, sl=sl)
 
@@ -67,7 +67,7 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    sm, ss, su, sl = @views NeuroStats.msci95(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
+    sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 
     return (sm=sm, ss=ss, su=su, sl=sl)
 

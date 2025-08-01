@@ -2671,7 +2671,7 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
-        if s == 0x00000004
+        if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 115 # s
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""

@@ -47,15 +47,15 @@ e10_tmp = ch_zero(e10)
 
 @info "Test: cw_trans()"
 s = rand(100)
-NeuroAnalyzer._log_off()
+_log_off()
 ct = cw_trans(s, wt=wavelet(Morlet(π), β=32, Q=128))
-NeuroAnalyzer._log_on()
+_log_on()
 @test size(ct) == (130, 100)
 ct = cw_trans(e10, ch="Fp1", wt=wavelet(Morlet(π), β=32, Q=128));
 @test size(ct) == (1, 131, 2560, 10)
 
 @info "Test: icw_trans()"
-NeuroAnalyzer._log_off()
+_log_off()
 ct = cw_trans(s, wt=wavelet(Morlet(π), β=32, Q=128))
 s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:nd)
 @test length(s_new) == 100
@@ -63,7 +63,7 @@ s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:pd)
 @test length(s_new) == 100
 s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:df)
 @test length(s_new) == 100
-NeuroAnalyzer._log_on()
+_log_on()
 
 @info "Test: denoise_fft()"
 s = rand(100)
@@ -86,9 +86,9 @@ e10_tmp = denoise_wien(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: derivative()"
-@test NeuroAnalyzer.derivative(v1) == [1, 1, 1, 1, 1]
-@test NeuroAnalyzer.derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
-e10_tmp = NeuroAnalyzer.derivative(e10, ch="all")
+@test derivative(v1) == [1, 1, 1, 1, 1]
+@test derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
+e10_tmp = derivative(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: detrend()"
@@ -105,26 +105,26 @@ e10_tmp = detrend(e10, ch="all", type=:loess)
 @test size(e10_tmp) == size(e10)
 
 @info "Test: dw_trans()"
-NeuroAnalyzer._log_off()
+_log_off()
 s = rand(100)
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
 @test size(dt) == (3, 100)
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:acdwt)
 @test size(dt) == (3, 100)
-NeuroAnalyzer._log_on()
+_log_on()
 dt = dw_trans(e10, ch="all", wt=wavelet(WT.haar), type=:sdwt)
 @test size(dt) == (24, 10, 2560, 10)
 dt = dw_trans(e10, ch="all", wt=wavelet(WT.haar), type=:acdwt)
 @test size(dt) == (24, 10, 2560, 10)
 
 @info "Test: idw_trans()"
-NeuroAnalyzer._log_off()
+_log_off()
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
 s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:sdwt)
 @test length(s_new) == 100
 s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
 @test length(s_new) == 100
-NeuroAnalyzer._log_on()
+_log_on()
 
 @info "Test: dw_split()"
 s = dw_split(e10, ch="Fp1", wt=wavelet(WT.haar), type=:sdwt)
@@ -377,8 +377,8 @@ pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2), n=2)
 @test size(pcv) == (2, 2)
 @test length(pcm) == 4
 pc, pcv, pcm, _ = pca_decompose(e10, ch="all", n=4)
-@test size(pc) == (2, 2560, 10)
-@test size(pcv) == (2, 10)
+@test size(pc) == (4, 2560, 10)
+@test size(pcv) == (4, 10)
 @test length(pcm) == 24
 
 @info "Test: pca_reconstruct()"

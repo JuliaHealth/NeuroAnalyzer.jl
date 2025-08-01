@@ -37,6 +37,6 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
 
     s_interpolated = rotl90(s_interpolated)
 
-    return NeuroStats.normalize(s_interpolated, method=nmethod), interpolated_x, interpolated_y
+    return NeuroAnalyzer.normalize(s_interpolated, method=nmethod), interpolated_x, interpolated_y
 
 end

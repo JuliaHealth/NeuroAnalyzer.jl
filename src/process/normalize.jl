@@ -43,11 +43,11 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     if bych
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads :greedy for ch_idx in 1:ch_n
-                @views obj_new.data[ch[ch_idx], :, ep_idx] = NeuroStats.normalize(obj_new.data[ch[ch_idx], :, ep_idx], method=method)
+                @views obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(obj_new.data[ch[ch_idx], :, ep_idx], method=method)
             end
         end
     else
-        obj_new.data[ch, :, :] = NeuroStats.normalize(obj_new.data[ch, :, :], method=method, bych=false)
+        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], method=method, bych=false)
     end
 
     reset_components!(obj_new)

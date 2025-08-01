@@ -21,7 +21,7 @@ function plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)::Nothing
 
     (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
     try
-        savefig(p, file_name)
+        Plots.savefig(p, file_name)
     catch err
         if isa(err, SystemError)
             @error "File $file_name cannot be written."

@@ -82,7 +82,7 @@ p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 
 @info "Test: plot_save()"
 p = NeuroAnalyzer.plot(e10, ch="Fp1")
-plot_save(p, file_name="test.png")
+NeuroAnalyzer.plot_save(p, file_name="test.png")
 @test isfile("test.png")
 isfile("test.png") && rm("test.png")
 
@@ -223,7 +223,7 @@ p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:stack)
 @info "Test: plot_ci()"
 s = eeg.data[1, 1:100, :]
 t = eeg.epoch_time[1:100]
-s_avg, s_l, s_u = NeuroStats.bootstrap_ci(s, cl=0.95)
+s_avg, s_l, s_u = NeuroAnalyzer.bootstrap_ci(s, cl=0.95)
 p = plot_ci(s_avg, s_l, s_u, t)
 @test p isa Plots.Plot{Plots.GRBackend}
 

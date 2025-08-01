@@ -3,6 +3,9 @@ Julia toolbox for analyzing neurophysiological data.
 
 https://neuroanalyzer.org
 """
+
+__precompile__(true)
+
 module NeuroAnalyzer
 
 @assert VERSION >= v"1.11.0" "NeuroAnalyzer requires Julia 1.11.0 or above."
@@ -78,14 +81,11 @@ using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
-using CSV
 using CubicSplines
 using CUDA
-using DataFrames
 using Dates
 using Deconvolution
 using DICOM
-using Distances
 using DSP
 using FFTW
 using FileIO
@@ -95,11 +95,9 @@ using FourierTools
 using FractalDimensions
 using GeometryBasics
 using Git
-using GLM
 using GLMakie
 using GR
 using Gtk
-using HypothesisTests
 using Images
 using ImageBinarization
 using ImageFiltering
@@ -112,12 +110,9 @@ using JSON
 using LibSerialPort
 using LinearAlgebra
 using LinRegOutliers
-using Loess
 using Logging
 using MAT
 using MLJ
-using MultivariateStats
-using NeuroStats
 using NPZ
 using PiGPIO
 using Pkg
@@ -173,19 +168,6 @@ mutable struct DIPOLE
     mag::Tuple{Real, Real, Real}
 end
 
-# set package options
-
-GR.setarrowsize(0.4)
-Plots.gr_cbar_width[] = 0.01
-Plots.gr_set_arrowstyle
-if Sys.islinux() && Sys.ARCH === :x86_64
-    FFTW.set_provider!("mkl")
-else
-    FFTW.set_provider!("fftw")
-end
-FFTW.set_num_threads(Sys.CPU_THREADS)
-BLAS.set_num_threads(Sys.CPU_THREADS)
-
 # load NA functions
 
 include("na/internal.jl")
@@ -204,11 +186,31 @@ na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, excl
 
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
-_info(" Preferences:")
-_info("    Use CUDA: $use_cuda")
-_info("Progress bar: $progress_bar")
-_info("     Verbose: $verbose")
-_info("Exclude bads: $exclude_bads")
+_info("    Preferences:")
+_info("       Use CUDA: $use_cuda")
+_info("   Progress bar: $progress_bar")
+_info("        Verbose: $verbose")
+_info("   Exclude bads: $exclude_bads")
+
+# set package options
+
+GR.setarrowsize(0.4)
+Plots.gr_cbar_width[] = 0.01
+Plots.gr_set_arrowstyle
+if Sys.islinux() && Sys.ARCH === :x86_64
+    FFTW.set_provider!("mkl")
+    _info("  FFTW provider: MKL")
+else
+    FFTW.set_provider!("fftw")
+    _info("  FFTW provider: FFTW")
+end
+FFTW.set_num_threads(Sys.CPU_THREADS)
+BLAS.set_num_threads(Sys.CPU_THREADS)
+# do not use Wayland under Linux
+if Sys.islinux() && Sys.ARCH === :x86_64
+    ENV["QT_QPA_PLATFORM"]="xcb"
+    _info("QT_QPA_PLATFORM: xcb")
+end
 
 # setup resources
 
@@ -393,6 +395,42 @@ include("process/standardize.jl")
 include("process/taper.jl")
 include("process/tconv.jl")
 include("process/wbp.jl")
+
+# stats
+include("stats/ba.jl")
+include("stats/binom.jl")
+include("stats/bootstrap.jl")
+include("stats/ci.jl")
+include("stats/cmp_test.jl")
+include("stats/correlation.jl")
+include("stats/crit.jl")
+include("stats/cvar.jl")
+include("stats/dap.jl")
+include("stats/descriptive.jl")
+include("stats/dprime.jl")
+include("stats/effsize.jl")
+include("stats/friedman.jl")
+include("stats/hildebrand_rule.jl")
+include("stats/linreg.jl")
+include("stats/make_table.jl")
+include("stats/mdiff.jl")
+include("stats/means.jl")
+include("stats/misc.jl")
+include("stats/ml.jl")
+include("stats/msci95.jl")
+include("stats/normalize.jl")
+include("stats/outliers.jl")
+include("stats/p.jl")
+include("stats/pca.jl")
+include("stats/power.jl")
+include("stats/pred_int.jl")
+include("stats/ranks.jl")
+include("stats/res_norm.jl")
+include("stats/se.jl")
+include("stats/similarity.jl")
+include("stats/summary.jl")
+include("stats/vector.jl")
+include("stats/zscore.jl")
 
 # analyze
 include("analyze/acor.jl")

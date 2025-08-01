@@ -70,7 +70,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
                    kwargs=kwargs)
 
     # draw connections
-    m_norm = NeuroStats.normalize_minmax(m)
+    m_norm = NeuroAnalyzer.normalize_minmax(m)
     c = (0.0, 0.0)
     s = size(m, 1)
     for idx1 in 1:s

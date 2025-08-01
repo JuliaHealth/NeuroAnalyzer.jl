@@ -1,5 +1,14 @@
 export iavh
 
+"""
+    iavh()
+
+Interactive tool for subjective recreation of auditory hallucinations. Four languages are available (English, German, Spanish and Polish). Four types of auditory hallucinations are available: speech (Auditory Verbal Hallucinations), whispers, noise and ringing (8000 Hz).
+
+Patient may locate the sounds in space to recreate how distant or close they are. Also, volume of the auditory experiences may be modified. In case of AVH, emotional content (negative, neutral or positive) and voice gender (male or female) may be chosen.
+
+When done, patient's settings may be easily exported to a CSV file for further analysis.
+"""
 function iavh()::Nothing
 
     info_dialog("Please use headphones for the best results.")
@@ -48,7 +57,7 @@ function iavh()::Nothing
 
     img = read_from_png(joinpath(res_path, "avh/head.png"))
 
-    win = GtkWindow("AVH", 1100, 820)
+    win = GtkWindow("NeuroTester: iavh", 1100, 820)
     set_gtk_property!(win, :border_width, 10)
     set_gtk_property!(win, :resizable, false)
     set_gtk_property!(win, :has_resize_grip, false)

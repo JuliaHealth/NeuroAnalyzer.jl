@@ -39,7 +39,7 @@ function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    st, sts, p = @views NeuroStats.mdiff(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], n=n, method=method)
+    st, sts, p = @views NeuroAnalyzer.mdiff(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], n=n, method=method)
 
     return (st=st, sts=sts, p=p)
 end

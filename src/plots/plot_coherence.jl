@@ -268,7 +268,7 @@ function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::V
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = NeuroStats.msci95(coh)
+    s_m, _, s_u, s_l = NeuroAnalyzer.msci95(coh)
 
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(coh, 1)))

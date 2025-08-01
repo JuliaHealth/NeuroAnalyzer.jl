@@ -1,5 +1,17 @@
-_in(x::Real, r::Tuple{Real, Real}) = return x >= r[1] && x <= r[2]
-_bin(x::Real, r::Tuple{Real, Real}) = return x > r[1] && x < r[2]
+_in(x::Real, r::Tuple{Real, Real})::Bool = x >= r[1] && x <= r[2]
+_bin(x::Real, r::Tuple{Real, Real})::Bool = x > r[1] && x < r[2]
+
+function _in(x::Real, r::Tuple{Real, Real}, v::String)::Nothing
+    @assert x >= r[1] "$v must be ≥ $(r[1])."
+    @assert x <= r[2] "$v must be ≤ $(r[2])."
+    return nothing
+end
+
+function _bin(x::Real, r::Tuple{Real, Real}, v::String)::Nothing
+    @assert x > r[1] "$v must be > $(r[1])."
+    @assert x < r[2] "$v must be < $(r[2])."
+    return nothing
+end
 
 function _chk2d(a::AbstractArray)::Nothing
     @assert ndims(a) == 2 "Input array must have 2 dimensions."

@@ -125,15 +125,15 @@ Calculate negentropy.
 
 # Returns
 
-- `negent::Float64`
+- `ne::Float64`
 """
 function negentropy(signal::AbstractVector)::Float64
 
     s = remove_dc(signal)
 
-    negent = 0.5 * log(2 * pi * exp(1) * var(s)) - entropy(s)[1]
+    ne = 0.5 * log(2 * pi * exp(1) * var(s)) - entropy(s)[1]
 
-    return negent
+    return ne
 
 end
 
