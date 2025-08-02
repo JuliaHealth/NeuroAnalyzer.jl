@@ -372,7 +372,7 @@ end
 """
     penv(obj; <keyword arguments>)
 
-Calculate power (in dB) envelope.
+Calculate power spectrum (in dB) envelope.
 
 # Arguments
 
@@ -422,7 +422,7 @@ end
 """
     penv_mean(obj; <keyword arguments>)
 
-Calculate power (in dB) envelope: mean and 95% CI.
+Calculate power spectrum (in dB) envelope: mean and 95% CI.
 
 # Arguments
 
@@ -511,7 +511,7 @@ end
 """
     penv_median(obj; <keyword arguments>)
 
-Calculate power (in dB) envelope: median and 95% CI.
+Calculate power spectrum (in dB) envelope: median and 95% CI.
 
 # Arguments
 
