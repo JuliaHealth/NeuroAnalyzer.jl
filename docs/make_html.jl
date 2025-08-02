@@ -5,6 +5,7 @@ Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git")
 Pkg.instantiate()
 using Documenter
+using NeuroAnalyzer
 
 makedocs(sitename="NeuroAnalyzer.jl",
          modules=[NeuroAnalyzer],
