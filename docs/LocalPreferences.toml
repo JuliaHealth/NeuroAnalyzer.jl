@@ -1,8 +1,0 @@
-[FFTW]
-provider = "mkl"
-
-[NeuroAnalyzer]
-exclude_bads = false
-progress_bar = true
-use_cuda = false
-verbose = true
