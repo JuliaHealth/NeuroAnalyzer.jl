@@ -1,5 +1,8 @@
 @info "Generating HTML documentation"
 
+using Pkg
+Pkg.instantiate()
+
 using Documenter
 using NeuroAnalyzer
 
