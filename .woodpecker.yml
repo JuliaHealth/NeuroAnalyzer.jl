@@ -3,7 +3,7 @@ steps:
     image: julia
     pull: true
     when:
-      - event: [manual]   # workflow should run if you execute it manually
+      - event: [push, manual]   # workflow should run if you execute it manually and on each push
         branch: main
     environment:
       FTP:
