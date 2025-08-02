@@ -5,8 +5,8 @@ echo ""
 echo "## NeuroAnalyzer"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/na/setup.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
-cat ../src/na/plugins.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/na/setup.jl | grep ^function | grep -v ^"function _" | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/na/plugins.jl | grep ^function | grep -v ^"function _" | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -14,8 +14,8 @@ echo ""
 echo "## Utils"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/utils/*.jl | grep ^function | grep Base. | sed s/"function Base."/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
-cat ../src/utils/*.jl | grep ^function | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/utils/*.jl | grep ^function | grep -v ^"function _" | grep Base. | sed s/"function Base."/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/utils/*.jl | grep ^function | grep -v ^"function _" | grep -v Base. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -23,7 +23,7 @@ echo ""
 echo "## Stats"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/stats/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/stats/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -31,7 +31,7 @@ echo ""
 echo "## IO"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/io/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/io/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -39,7 +39,7 @@ echo ""
 echo "## Edit"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/edit/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/edit/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -47,7 +47,7 @@ echo ""
 echo "## Process"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/process/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/process/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -63,8 +63,8 @@ echo ""
 echo "## Analyze"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/analyze/*.jl | grep ^function | grep Statistics. | sed s/"function Statistics."/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
-cat ../src/analyze/*.jl | grep ^function | grep -v Statistics. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/analyze/*.jl | grep ^function | grep -v ^"function _" | grep Statistics. | sed s/"function Statistics."/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/analyze/*.jl | grep ^function | grep -v ^"function _" | grep -v Statistics. | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -72,7 +72,7 @@ echo ""
 echo "## Plot"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/plots/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/plots/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -80,7 +80,7 @@ echo ""
 echo "## GUI"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/gui/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/gui/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -88,7 +88,7 @@ echo ""
 echo "## NeuroRecorder"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/recorder/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/recorder/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -96,7 +96,7 @@ echo ""
 echo "## NeuroStim"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/stim/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/stim/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
 echo ""
 echo "---"
@@ -104,5 +104,5 @@ echo ""
 echo "## NeuroTester"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/tester/*.jl | grep ^function | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
+cat ../src/tester/*.jl | grep ^function | grep -v ^"function _" | sed s/"function "/"NeuroAnalyzer."/g | sed s/"(.*)"//g | sed s/" where {.*}"//g | sed s/"::.*$"//g | sort -u
 echo "\`\`\`"
