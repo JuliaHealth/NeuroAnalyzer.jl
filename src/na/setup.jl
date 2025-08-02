@@ -3,6 +3,7 @@ export na_set_use_cuda
 export na_set_progress_bar
 export na_set_prefs
 export na_set_verbose
+export na_set_colors
 export na_set_exclude_bads
 export na_version
 
@@ -33,6 +34,8 @@ function na_info()::Nothing
     println("    Resources path: $res_path")
     println(" Show progress bar: $progress_bar")
     println("           Verbose: $verbose")
+    println("      Exclude bads: $exclude_bads")
+    println("            Colors: $colors")
     println("           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
     println()
     Threads.nthreads() < length(Sys.cpu_info()) || println("For best performance, environment variable `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))")
@@ -187,9 +190,31 @@ function na_set_verbose(value::Bool)::Nothing
 end
 
 """
-    na_set_prefs(; use_cuda, progress_bar, verbose, scheduler)
+    na_set_colors(value)
 
-Save NeuroAnalyzer preferences.
+Change `colors` preference.
+
+# Arguments
+
+- `value::Bool`: value
+
+# Returns
+
+Nothing
+"""
+function na_set_colors(value::Bool)::Nothing
+
+    @set_preferences!("colors" => value)
+    _info("New option value set, restart your Julia session for this change to take effect")
+
+    return nothing
+
+end
+
+"""
+    na_set_prefs(; use_cuda, progress_bar, verbose, exclude_bads, colors)
+
+Set and save NeuroAnalyzer preferences.
 
 # Arguments
 
@@ -197,17 +222,19 @@ Save NeuroAnalyzer preferences.
 - `progress_bar::Bool`
 - `verbose::Bool`
 - `exclude_bads::Bool`
+- `colors::Bool`
 
 # Returns
 
 Nothing
 """
-function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool, exclude_bads::Bool)::Nothing
+function na_set_prefs(; use_cuda::Bool, progress_bar::Bool, verbose::Bool, exclude_bads::Bool, colors::Bool)::Nothing
 
     @set_preferences!("use_cuda" => use_cuda)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
     @set_preferences!("exclude_bads" => exclude_bads)
+    @set_preferences!("colors" => colors)
 
     return nothing
 
@@ -233,7 +260,6 @@ function na_version()::String
     return VER
 
 end
-
 
 """
     na_set_exclude_bads(value)
