@@ -180,7 +180,8 @@ global use_cuda = @load_preference("use_cuda", false)
 global progress_bar = @load_preference("progress_bar", true)
 global verbose = @load_preference("verbose", true)
 global exclude_bads = @load_preference("exclude_bads", false)
-na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads)
+global colors = @load_preference("colors", false)
+na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
 
 # be verbose
 
@@ -191,6 +192,7 @@ _info("       Use CUDA: $use_cuda")
 _info("   Progress bar: $progress_bar")
 _info("        Verbose: $verbose")
 _info("   Exclude bads: $exclude_bads")
+_info("         Colors: $colors")
 
 # set package options
 
