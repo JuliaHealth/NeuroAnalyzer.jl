@@ -1,5 +1,7 @@
 @info "Generating HTML documentation"
 
+using Pkg
+Pkg.add(["Documenter", "NeuroAnalyzer"])
 using Documenter
 using NeuroAnalyzer
 
