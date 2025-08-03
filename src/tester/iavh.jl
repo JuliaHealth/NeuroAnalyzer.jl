@@ -9,7 +9,7 @@ Patient may locate the sounds in space to recreate how distant or close they are
 
 When done, patient's settings may be easily exported to a CSV file for further analysis.
 
-$ Arguments
+# Arguments
 
 Nothing
 
