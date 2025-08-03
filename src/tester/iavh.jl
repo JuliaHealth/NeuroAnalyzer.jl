@@ -8,6 +8,14 @@ Interactive tool for subjective recreation of auditory hallucinations. Four lang
 Patient may locate the sounds in space to recreate how distant or close they are. Also, volume of the auditory experiences may be modified. In case of AVH, emotional content (negative, neutral or positive) and voice gender (male or female) may be chosen.
 
 When done, patient's settings may be easily exported to a CSV file for further analysis.
+
+# Arguments
+
+Nothing
+
+# Returns
+
+Nothing
 """
 function iavh()::Nothing
 
