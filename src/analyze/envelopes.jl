@@ -54,7 +54,7 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
             try
                 e = model(x)
             catch
-                @warn "CubicSpline error, using Loess."
+                _warn("CubicSpline error, using Loess.")
                 model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
                 e = Loess.predict(model, x)
             end
@@ -114,7 +114,7 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
             try
                 e = model(x)
             catch
-                @warn "CubicSpline error, using Loess."
+                _warn("CubicSpline error, using Loess.")
                 model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
                 e = Loess.predict(model, x)
             end

@@ -18,10 +18,10 @@ Named tuple containing:
 - `semi_p2p::Float64`: half of the peak-to-peak amplitude
 - `msa::Float64`: mean square amplitude
 - `rmsa::Float64`: root mean square amplitude
-- `energy::Float64`: total signal energy
+- `es::Float64`: total signal energy
 - `rmsq::Float64`: root mean square
 """
-function amp(s::AbstractVector)::@NamedTuple{p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, energy::Float64, rmsq::Float64}
+function amp(s::AbstractVector)::@NamedTuple{p::Float64, r::Float64, p2p::Float64, semi_p2p::Float64, msa::Float64, rmsa::Float64, es::Float64, rmsq::Float64}
 
     p = maximum(abs.(s))
     r = p / sqrt(2)
@@ -29,10 +29,10 @@ function amp(s::AbstractVector)::@NamedTuple{p::Float64, r::Float64, p2p::Float6
     semi_p2p = p2p / 2
     msa = 1/length(s) * sum(s.^2)
     rmsa = p2p / sqrt(2)
-    nrg = sum(s.^2)
+    es = sum(s.^2)
     rmsq = rms(s)
 
-    return (p=p, r=r, p2p=p2p, semi_p2p=semi_p2p, msa=msa, rmsa=rmsa, energy=nrg, rmsq=rmsq)
+    return (p=p, r=r, p2p=p2p, semi_p2p=semi_p2p, msa=msa, rmsa=rmsa, es=es, rmsq=rmsq)
 
 end
 

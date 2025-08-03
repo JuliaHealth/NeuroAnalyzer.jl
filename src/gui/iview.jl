@@ -2593,7 +2593,7 @@ function iview(file_name::String)::Nothing
 
     @assert isfile(file_name) "File $file_name cannot be opened."
     if splitext(file_name)[2] != ".png"
-        @error "Incorrect filename!"
+        _error("Incorrect filename!")
         return nothing
     end
 

@@ -28,11 +28,12 @@ function na_info()::Nothing
     if CUDA.functional()
         println("              CUDA: $(CUDA.runtime_version()) (use_cuda = $use_cuda)")
     else
-        println("              CUDA: not available (use_cuda = $use_cuda)")
+        println("              CUDA: not available")
     end
     println("      Plugins path: $plugins_path")
     println("    Resources path: $res_path")
     println(" Show progress bar: $progress_bar")
+    println("          Use CUDA: $use_cuda")
     println("           Verbose: $verbose")
     println("      Exclude bads: $exclude_bads")
     println("            Colors: $colors")
@@ -116,7 +117,7 @@ function na_info()::Nothing
             println("$pkg $pkg_ver")
         end
     else
-        @warn "Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages."
+        _warn("Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages.")
     end
 
     return nothing
