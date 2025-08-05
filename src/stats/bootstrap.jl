@@ -39,7 +39,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, cl::Flo
         s_avg[idx1, :] = vec(mean(s_tmp, dims=2))
 
         # update progress bar
-        next!(progbar)
+        progress_bar && next!(progbar)
     end
 
     s_ci_l = zeros(size(s_avg, 2))
@@ -107,7 +107,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::St
         out[idx1] = eval(Meta.parse(f_tmp))
 
         # update progress bar
-        next!(progbar)
+        progress_bar && next!(progbar)
     end
 
     return out

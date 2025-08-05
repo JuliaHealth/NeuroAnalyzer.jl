@@ -111,7 +111,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
             perm_diff[idx] = mean(g[f_idx .== 0]) - mean(g[f_idx .== 1])
 
             # update progress bar
-            next!(progbar)
+            progress_bar && next!(progbar)
         end
         observed_difference = mean(g[g_idx .== 0]) - mean(g[g_idx .== 1])
         observed_difference = round(observed_difference, digits=3)
