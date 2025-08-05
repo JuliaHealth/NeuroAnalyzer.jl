@@ -13,8 +13,8 @@ Calculate cross-covariance.
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
 - `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s[1:end - l] .* s[1+l:end])`
-    - `:cov`: `xcf = cov(s[1:end - l], s[1+l:end])`
+    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
+    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
     - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
 
 # Returns
@@ -57,10 +57,10 @@ function xcov(s1::AbstractVector, s2::AbstractVector; l::Int64=round(Int64, min(
         end
     elseif method === :cov
         for idx in 0:l
-            xc[idx + 1] = @views cov(s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)])
+            xc[idx + 1] = @views cov(s1_tmp[(1 + idx):end], s2_tmp[1:(end - idx)], corrected=biased)
         end
         for idx in 0:l
-            xc_neg[idx + 1] = @views cov(s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end])
+            xc_neg[idx + 1] = @views cov(s1_tmp[1:(end - idx)], s2_tmp[(1 + idx):end], corrected=biased)
         end
     elseif method === :stat
         xc = crosscov(s1, s2, 0:l, demean=demean)
@@ -87,8 +87,8 @@ Calculate cross-covariance.
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
 - `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s[1:end - l] .* s[1+l:end])`
-    - `:cov`: `xcf = cov(s[1:end - l], s[1+l:end])`
+    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
+    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
     - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
 
 # Returns
@@ -124,8 +124,8 @@ Calculate cross-covariance.
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
 - `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s[1:end - l] .* s[1+l:end])`
-    - `:cov`: `xcf = cov(s[1:end - l], s[1+l:end])`
+    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
+    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
     - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
 
 # Returns
@@ -170,8 +170,8 @@ Calculate cross-covariance. For ERP return trial-averaged cross-covariance.
 - `demean::Bool=true`: demean signal before computing cross-covariance
 - `biased::Bool=true`: calculate biased or unbiased cross-covariance
 - `method::Symbol=:sum`: method of calculating cross-covariance:
-    - `:sum`: `xcf = Σ(s[1:end - l] .* s[1+l:end])`
-    - `:cov`: `xcf = cov(s[1:end - l], s[1+l:end])`
+    - `:sum`: `xcf = Σ(s1[1:end - l] .* s2[1+l:end])`
+    - `:cov`: `xcf = cov(s1[1:end - l], s2[1+l:end])`
     - `:stat`: use StatsBase `crosscov()`, `biased` value is ignored
 
 # Returns

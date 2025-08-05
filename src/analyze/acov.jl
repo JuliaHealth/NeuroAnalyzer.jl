@@ -50,7 +50,7 @@ function acov(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
             end
         end
     elseif method === :stat
-        ac = autocov(s, 0:l, demean=demean)
+        ac = StatsBase.autocov(s, 0:l, demean=demean)
     end
 
     ac = round.(ac, digits=3)

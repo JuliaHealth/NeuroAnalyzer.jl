@@ -237,6 +237,7 @@ end
 include("internal/channels.jl")
 include("internal/check.jl")
 include("internal/components.jl")
+include("internal/convolution.jl")
 include("internal/create_header.jl")
 include("internal/draw_head.jl")
 include("internal/epochs.jl")
