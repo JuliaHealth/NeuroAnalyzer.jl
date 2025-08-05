@@ -102,7 +102,7 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         perm_diff = zeros(nperm)
 
         # initialize progress bar
-        progbar = Progress(nperm, dt=1, barlen=20, color=:white)
+        progress_bar && (progbar = Progress(nperm, dt=1, barlen=20, color=:white))
 
         @inbounds for idx in 1:nperm
             f_idx = randperm(n1 + n2)
