@@ -27,19 +27,18 @@ function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
     ac = zeros(l + 1)
 
     if method === :sum
-        ac = acor(s, l=l, demean=demean, biased=biased, method=:sum)
+        ac = acov(s, l=l, demean=demean, biased=biased, method=:sum)[1, :, 1]
         # normalize by the variance of s
-        ac = round.(ac ./ var(s), digits=3)
+        ac = round.(ac ./ StatsBase.var(s), digits=3)
     elseif method === :cor
-        ac = acor(s, l=l, demean=demean, biased=biased, method=:cor)
+        ac = acov(s, l=l, demean=demean, biased=biased, method=:cov)[1, :, 1]
         # normalize by the variance of s
-        ac = round.(ac ./ var(s), digits=3)
+        ac = round.(ac ./ StatsBase.var(s), digits=3)
     elseif method === :stat
         ac = StatsBase.autocor(s, 0:l, demean=demean)
+        ac = round.(ac, digits=3)
+        ac = vcat(reverse(ac), ac[2:end])
     end
-
-    ac = round.(ac, digits=3)
-    ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
 

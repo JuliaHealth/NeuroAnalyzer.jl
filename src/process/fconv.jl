@@ -17,9 +17,8 @@ Perform convolution in the frequency domain.
 """
 function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true)::Vector{ComplexF64}
 
-    n_s = length(s)
-    s_fft = fft0(s, n_kernel - 1)
-    kernel_fft = fft0(kernel, n_s - 1)
+    s_fft = fft0(s, length(kernel) - 1)
+    kernel_fft = fft0(kernel, length(s) - 1)
     norm && (kernel_fft ./= cmax(kernel_fft))
     s_conv = ifft0(s_fft .* kernel_fft)
     s_new = _remove_kernel(s_conv, kernel)

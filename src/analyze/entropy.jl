@@ -158,9 +158,15 @@ function negentropy(s::AbstractArray)::Matrix{Float64}
 
     ne = zeros(ch_n, ep_n)
 
+    # initialize progress bar
+    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
             ne[ch_idx, ep_idx] = @views negentropy(s[ch_idx, :, ep_idx])
+
+        # update progress bar
+        progress_bar && next!(progbar)
         end
     end
 
