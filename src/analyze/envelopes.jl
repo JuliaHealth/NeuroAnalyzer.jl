@@ -33,6 +33,8 @@ Calculate upper envelope.
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
+    @assert length(s) == length(x) "Length of s and length of x must be equal."
+
     e = similar(s)
 
     # find peaks
@@ -89,6 +91,8 @@ Calculate lower envelope.
 - `e::Vector{Float64}`: envelope
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
+
+    @assert length(s) == length(x) "Length of s and length of x must be equal."
 
     e = similar(s)
 
