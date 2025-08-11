@@ -1014,4 +1014,10 @@ gd, sc = diss(erp, erp, ch1="all", ch2="all")
 @test dirinrg([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 212.5
 @test size(dirinrg(e10, ch="all")) == (24, 10)
 
+@info "Test: emd()"
+@test length(emd(e10.data[1, :, 1], e10.epoch_time, n=2)) == 3
+@test length(emd(e10.data[1, :, 1], e10.epoch_time, epsilon=1.0)) == 19
+@test length(emd(e10, ch="Fp1", ep=1, n=2)) == 3
+@test length(emd(e10, ch="Fp1", ep=1, epsilon=1.0)) == 19
+
 true
