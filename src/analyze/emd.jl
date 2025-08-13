@@ -9,59 +9,89 @@ Perform Empirical Mode Decomposition (EMD).
 
 - `s::AbstractVector`: signal
 - `x::AbstractVector`: x-axis points (e.g. time points)
-- `epsilon::Union{Real, Nothing}=nothing`: decomposition stops when sum of the difference is lower than `epsilon`
-- `n::Union{Int64, Nothing}=nothing`: decomposition stops when `n` IMFs are created
+- `epsilon::Real=0.01`: decomposition stops when sum of the difference is lower than `epsilon`
 
 # Returns
 
-- `imf::Vector{Vector{Float64}}`: intrinsic mode functions (IMF) and residue (last vector in the set)
+- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) (by rows) and residue (last row in the matrix)
 """
-function emd(s::AbstractVector, x::AbstractVector; epsilon::Union{Real, Nothing}=nothing, n::Union{Int64, Nothing}=nothing)::Vector{Vector{Float64}}
+function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.01)::Matrix{Float64}
 
-    @assert !(epsilon isa Nothing && n isa Nothing) "Use either epsilon or n."
-    epsilon isa Real && @assert n isa Nothing "Use either epsilon or n."
-    n isa Int64 && @assert epsilon isa Nothing "Use either epsilon or n."
+    @assert epsilon > 0 "epsilon must be > 0."
 
     # s must not contain 0s
     s_tmp = deepcopy(s)
     s_tmp[s_tmp .== 0] .= eps()
 
-    imf = Vector{Float64}[]
+    imf_v = Vector{Float64}[]
 
     if epsilon isa Real
         sd = Inf
+        n_sieves = 1
         while sd > epsilon
-            # cubic spline envelopes of local extremas
-            e_up = env_up(s_tmp, x, d=2)
-            e_lo = env_lo(s_tmp, x, d=2)
-            e_m = @. (e_up + e_lo) / 2
-            imf_tmp = @. s_tmp - e_m
+            # cubic spline envelopes of all local extremas
+            e_max = env_up(s_tmp, x, d=2)
+            e_min = env_lo(s_tmp, x, d=2)
+            e_avg = @. (e_max + e_min) / 2
+            imf_tmp = @. s_tmp - e_avg
+
+            roots = NeuroAnalyzer._zeros(imf_tmp)
+            maxs = findpeaks(imf_tmp, d=2)
+            mins = findpeaks(NeuroAnalyzer._flipx(imf_tmp), d=2)
+
+            n_roots = length(roots)
+            n_extrema = length(maxs) + length(mins)
+
             res = @. s_tmp - imf_tmp
+
             # calculate stopping criterion
             sd = sum( @. abs2(res - s_tmp) / s_tmp^2 )
+
+            # check IMF basic conditions
+            if n_roots >= n_extrema - 1 &&
+                n_roots <= n_extrema + 1 &&
+                n_extrema >= n_roots - 1 &&
+                n_extrema <= n_roots + 1 &&
+                n_roots > 1 &&
+                n_extrema > 1
+                # also: e_avg should be near zero at any point
+                push!(imf_v, imf_tmp)
+                NeuroAnalyzer._info("IMF found: $(length(imf_v)), sieve: $(lpad(n_sieves, 3, '0')) SD: $(round(sd, digits=2))")
+            end
+
+            # check stopping criterion
             if sd > epsilon
                 s_tmp = res
-                push!(imf, imf_tmp)
             else
-                # last IMF is the residue
-                push!(imf, res)
+                # add the residue to the set
+                push!(imf_v, res)
             end
+            n_sieves += 1
         end
     else
         # use n sifting
         res = nothing
         for _ in 1:n
-            # cubic spline envelopes of local extremas
-            e_up = env_up(s_tmp, x, d=2)
-            e_lo = env_lo(s_tmp, x, d=2)
-            e_m = @. (e_up + e_lo) / 2
-            imf_tmp = @. s_tmp - e_m
+            # cubic spline envelopes of all local extremas
+            e_max = env_up(s_tmp, x, d=1)
+            e_min = env_lo(s_tmp, x, d=1)
+            e_avg = @. (e_max + e_min) / 2
+            imf_tmp = @. s_tmp - e_avg
             res = @. s_tmp - imf_tmp
             s_tmp = res
-            push!(imf, imf_tmp)
+            push!(imf_v, imf_tmp)
         end
         # last IMF is the residue
-        push!(imf, res)
+        push!(imf_v, res)
+    end
+
+    if length(imf_v) > 0
+        imf = zeros(length(imf_v), length(imf_v[1]))
+        for idx in eachindex(imf_v)
+            imf[idx, :] = imf_v[idx]
+        end
+    else
+        imf = Matrxi{Float64}[]
     end
 
     return imf
@@ -78,19 +108,18 @@ Perform Empirical Mode Decomposition (EMD).
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::String`: channel name
 - `ep::Int64`: epoch number
-- `epsilon::Union{Real, Nothing}=nothing`: decomposition stops when sum of the difference is lower than `epsilon`
-- `n::Union{Int64, Nothing}=nothing`: decomposition stops when `n` IMFs are created
+- `epsilon::Real=0.01`: decomposition stops when sum of the difference is lower than `epsilon`
 
 # Returns
 
-- `imf::Vector{Vector{Float64}}`: intrinsic mode functions (IMF) and residue (last vector in the set)
+- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) (by rows) and residue (last row in the matrix)
 """
-function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Union{Real, Nothing}=nothing, n::Union{Int64, Nothing}=nothing)::Vector{Vector{Float64}}
+function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real=0.01)::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad")[1] : get_channel(obj, ch=ch, exclude="")[1]
     _check_epochs(obj, ep)
-    imf = @views emd(obj.data[ch, :, ep], obj.epoch_time, epsilon=epsilon, n=n)
-    _info("$(length(imf) - 1) IMFs were calculated")
+    imf = @views emd(obj.data[ch, :, ep], obj.epoch_time, epsilon=epsilon)
+    _info("$(size(imf, 1) - 1) IMFs were calculated")
 
     return imf
 

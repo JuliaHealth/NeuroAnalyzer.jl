@@ -81,11 +81,11 @@ using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
-using CubicSplines
 using CUDA
 using Dates
 using Deconvolution
 using DICOM
+using Dierckx
 using DSP
 using FFTW
 using FileIO
@@ -265,6 +265,7 @@ include("internal/statistics.jl")
 include("internal/tester.jl")
 include("internal/time.jl")
 include("internal/wl2ext.jl")
+include("internal/vec.jl")
 
 # utils
 include("utils/apply.jl")

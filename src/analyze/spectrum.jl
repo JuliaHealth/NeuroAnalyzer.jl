@@ -15,7 +15,7 @@ Calculate FFT, amplitudes, powers and phases.
 # Returns
 
 Named tuple containing:
-- `ft::Vector{ComplexF64}`: Fourier transforms
+- `ft::Vector{ComplexF64}`: Fourier transform
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases
@@ -31,13 +31,12 @@ function spectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{
     # amplitudes
     a = abs.(ft)
 
-    # power
-    p = abs.(ft .* conj(ft))       # p = a .^ 2;
-
+    # powers
+    p = abs2.(ft)       # p = a .^ 2 = abs.(ft .* conj(ft))
     db && (p = pow2db.(p))
 
     # phases
-    ph = DSP.angle.(ft)
+    ph = DSP.unwrap(DSP.angle.(ft))
 
     return (ft=ft, a=a, p=p, ph=ph)
 
@@ -57,24 +56,25 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `c::Vector{ComplexF64}`: Hilbert components
-- `a::Vector{Float64}`: amplitudes
-- `p::Vector{Float64}`: powers
-- `ph::Vector{Float64}`: phases
+- `c::Vector{ComplexF64}`: analytic signal (Hilbert transform)
+- `a::Vector{Float64}`: instantaneous amplitudes
+- `p::Vector{Float64}`: instantaneous powers
+- `ph::Vector{Float64}`: instantaneous phases
 """
 function hspectrum(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
-    c = hilbert(pad0(s, pad))
+    # analytic signal
+    c = DSP.hilbert(pad0(s, pad))
 
-    # amplitudes
+    # instantaneous amplitudes
     a = abs.(c)
 
-    # powers
-    p = a.^2
+    # instantaneous powers
+    p = abs2.(c)
     db && (p = pow2db.(p))
 
-    # phases
-    ph = DSP.angle.(c)
+    # instantaneous phases
+    ph = DSP.unwrap(DSP.angle.(c))
 
     return (c=c, a=a, p=p, ph=ph)
 
@@ -83,7 +83,7 @@ end
 """
     hspectrum(s; <keyword arguments>)
 
-Calculate amplitudes, powers and phases using Hilbert transform.
+Calculate instantaneous amplitudes, powers and phases using Hilbert transform.
 
 # Arguments
 
@@ -94,10 +94,10 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `c::Array{ComplexF64, 3}`: Hilbert components
-- `a::Array{Float64, 3}`: amplitudes
-- `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}`: phases
+- `c::Array{ComplexF64, 3}`: analytic signal (Hilbert transform)
+- `a::Array{Float64, 3}`: instantaneous amplitudes
+- `p::Array{Float64, 3}`: instantaneous powers
+- `ph::Array{Float64, 3}`: instantaneous phases
 """
 function hspectrum(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
@@ -136,10 +136,10 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 # Returns
 
 Named tuple containing:
-- `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
+- `c::Array{ComplexF64, 3}`: Fourier or Hilbert transform
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}: phase angles
+- `ph::Array{Float64, 3}: phases
 """
 function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
@@ -189,10 +189,10 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 # Returns
 
 Named tuple containing:
-- `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
+- `c::Array{ComplexF64, 3}`: Fourier or Hilbert transform
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}: phase angles
+- `ph::Array{Float64, 3}: phases
 """
 function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 

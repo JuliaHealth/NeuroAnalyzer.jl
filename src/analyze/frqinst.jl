@@ -16,7 +16,7 @@ Calculate instantaneous frequency.
 function frqinst(s::AbstractVector)::Vector{Float64}
 
     _, _, _, pha = hspectrum(s)
-    f = 1 / (2 * pi) * derivative(DSP.unwrap(pha))
+    f = derivative(pha) / (2 * pi)
 
     return f
 
@@ -69,7 +69,7 @@ Calculate instantaneous frequency.
 function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    f = @views frqinst(obj.data[ch, :, :])
+    f = @views frqinst(obj.data[ch, :, :]) .* sr(obj)
 
     return f
 

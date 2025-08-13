@@ -171,7 +171,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
 
     @inbounds for frq_idx in eachindex(f)
         s_tmp = filter_g(s .* w, fs=fs, f=f[frq_idx], gw=gw)
-        p[frq_idx, :] = (abs.(hilbert(s_tmp))).^2
+        p[frq_idx, :] = abs2.(hilbert(s_tmp))
         ph[frq_idx, :] = DSP.angle.(hilbert(s_tmp))
     end
 
@@ -181,7 +181,6 @@ function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, 
 
     t = 0:1/fs:(length(s) / fs)
     t = linspace(t[1], t[end - 1], size(p, 2))
-
 
     return (p=p, ph=ph, f=f, t=t)
 

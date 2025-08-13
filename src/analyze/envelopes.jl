@@ -35,14 +35,13 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
 
     @assert length(s) == length(x) "Length of s and length of x must be equal."
 
-    e = similar(s)
+    e = zeros(length(s))
 
     # find peaks
     p_idx = findpeaks(s, d=d)
 
-    if length(p_idx) == 0
-        _info("Envelope is not interpolated, all elements have the same value")
-        e = s
+    if length(p_idx) < 2
+        _info("Envelope cannot be not interpolated, less than 2 peaks detected")
     else
         # add first time-point
         p_idx[1] != 1 && pushfirst!(p_idx, 1)
@@ -50,25 +49,9 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
         # add last time-point
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
-        # interpolate peaks using cubic spline or loess
-        if length(p_idx) >= 5
-            model = CubicSpline(x[p_idx], s[p_idx])
-            try
-                e = model(x)
-            catch
-                _warn("CubicSpline error, using Loess.")
-                model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-                e = Loess.predict(model, x)
-            end
-        else
-            _info("Less than 5 peaks detected, using Loess")
-            model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-            e = Loess.predict(model, x)
-        end
-
-        e[1] = e[2]
-
-        length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
+        # interpolate peaks using cubic spline
+        model = Spline1D(x[p_idx], s[p_idx], bc="extrapolate")
+        e = model(x)
     end
 
     return e
@@ -94,17 +77,16 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
 
     @assert length(s) == length(x) "Length of s and length of x must be equal."
 
-    e = similar(s)
+    e = zeros(length(s))
+
+    # flip the signal along the X axis
+    s_tmp = _flipx(s)
 
     # find peaks
-    p_idx = Int64[]
-    for idx in 1:d:(length(s) - d)
-        push!(p_idx, idx + vsearch(minimum(s[idx:(idx + (d - 1))]), s[idx:(idx + (d - 1))]) - 1)
-    end
+    p_idx = findpeaks(s_tmp, d=d)
 
-    if length(p_idx) == 0
-        _info("Envelope is not interpolated, all elements have the same value")
-        e = s
+    if length(p_idx) < 2
+        _info("Envelope cannot be not interpolated, less than 2 peaks detected")
     else
         # add first time-point
         p_idx[1] != 1 && pushfirst!(p_idx, 1)
@@ -112,25 +94,9 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
         # add last time-point
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
-        # interpolate peaks using cubic spline or loess
-        if length(p_idx) >= 5
-            model = CubicSpline(x[p_idx], s[p_idx])
-            try
-                e = model(x)
-            catch
-                _warn("CubicSpline error, using Loess.")
-                model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-                e = Loess.predict(model, x)
-            end
-        else
-            _info("Less than 5 peaks detected, using Loess")
-            model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-            e = Loess.predict(model, x)
-        end
-
-        e[1] = e[2]
-
-        length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
+        # interpolate peaks using cubic spline
+        model = Spline1D(x[p_idx], s[p_idx], bc="extrapolate")
+        e = model(x)
     end
 
     return e
