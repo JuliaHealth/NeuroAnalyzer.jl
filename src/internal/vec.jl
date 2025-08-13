@@ -8,11 +8,4 @@ function _flipx(s::AbstractVector)::Vector{Float64}
     return s_new
 end
 
-function _zeros(s::AbstractVector)::Vector{Int64}
-    z = Int64[]
-    for idx in 2:length(s)
-        @views s[idx - 1] > 0 && s[idx] < 0 && push!(z, idx)
-        @views s[idx - 1] < 0 && s[idx] > 0 && push!(z, idx)
-    end
-    return z
-end
+_zeros(s::AbstractVector)::Int64 = count(diff(sign.(diff(s))) .!= 0)
