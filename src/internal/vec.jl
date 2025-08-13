@@ -8,4 +8,4 @@ function _flipx(s::AbstractVector)::Vector{Float64}
     return s_new
 end
 
-_zeros(s::AbstractVector)::Int64 = count(diff(sign.(diff(s))) .!= 0)
+_zeros(s::AbstractVector)::Int64 = count(abs.(diff(sign.(s))) .!= 0)

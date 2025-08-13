@@ -19,9 +19,7 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Fl
 
     @assert epsilon > 0 "epsilon must be > 0."
 
-    # s must not contain 0s
     s_tmp = deepcopy(s)
-    s_tmp[s_tmp .== 0] .= eps()
 
     imf_v = Vector{Float64}[]
     res = zeros(length(s))
@@ -29,6 +27,8 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Fl
     sd = Inf
     n_sieves = 1
     while sd > epsilon
+        # s_tmp must not contain 0s
+        s_tmp[s_tmp .== 0] .= eps()
         # cubic spline envelopes of all local extremas
         e_max = env_up(s_tmp, x, d=2)
         e_min = env_lo(s_tmp, x, d=2)
@@ -42,7 +42,7 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Fl
         n_roots = NeuroAnalyzer._zeros(imf_tmp)
 
         res = @. s_tmp - imf_tmp
-        sd = sum( @. abs2.(s_tmp - imf_tmp) / s_tmp^2 )
+        sd = sum(@. abs2(s_tmp - imf_tmp) / s_tmp^2 )
 
         # check IMF basic conditions
         if n_roots >= n_extrema - 1 &&
@@ -51,11 +51,10 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Fl
             n_extrema <= n_roots + 1 &&
             n_roots > 1 &&
             n_extrema > 1
-            # also: e_avg should be near zero at any point
 
             # calculate stopping criterion
             push!(imf_v, imf_tmp)
-            _info("IMF found: $(length(imf_v)), # sieves: $n_sieves, SD: $(round(sd, digits=2))")
+            _info("IMF found: $(length(imf_v)), sieves: $n_sieves, SD: $(round(sd, digits=2))")
             s_tmp = res
             n_sieves = 1
         else
@@ -104,7 +103,7 @@ function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real=0.3)
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad")[1] : get_channel(obj, ch=ch, exclude="")[1]
     _check_epochs(obj, ep)
     imf = @views emd(obj.data[ch, :, ep], obj.epoch_time, epsilon=epsilon)
-    _info("$(size(imf, 1) - 1) IMFs were calculated")
+    size(imf, 1) > 0 && _info("$(size(imf, 1) - 1) IMFs were calculated")
 
     return imf
 
