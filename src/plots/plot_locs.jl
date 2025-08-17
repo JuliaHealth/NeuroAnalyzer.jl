@@ -754,16 +754,23 @@ end
 
 Plot a simplified plot of 10-20 EEG channels on a grid.
 
+# Arguments
+
+- `mono::Bool=false`: use color or gray palette
+
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_gridlocs()::Plots.Plot{Plots.GRBackend}
+function plot_gridlocs(; mono::Bool=false)::Plots.Plot{Plots.GRBackend}
+
+    pal = mono ? :grays : :darktest
 
     p = Plots.plot(grid=false,
+                   aspect_ratio=1,
+                   palette=pal,
                    framestyle=:box,
                    border=:none,
-                   aspect_ratio = :equal,
                    margins=0Plots.px,
                    xlims=(-1.2, 1.2),
                    ylims=(-1.2, 1.2),
