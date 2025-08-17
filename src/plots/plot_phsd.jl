@@ -732,25 +732,25 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         end
         if ndims(sp) == 1
             p = plot_phsd(sf,
-                         sp,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         frq_lim=frq_lim,
-                         ax=ax,
-                         mono=mono;
-                         kwargs...)
+                          sp,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          frq_lim=frq_lim,
+                          ax=ax,
+                          mono=mono;
+                          kwargs...)
         else
             p = plot_phsd(sf,
-                         sp,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         clabels=clabels,
-                         title=title,
-                         frq_lim=frq_lim,
-                         ax=ax,
-                         mono=mono;
-                         kwargs...)
+                          sp,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          clabels=clabels,
+                          title=title,
+                          frq_lim=frq_lim,
+                          ax=ax,
+                          mono=mono;
+                          kwargs...)
         end
     elseif type === :butterfly
         ch_t = obj.header.recording[:channel_type]
@@ -759,15 +759,15 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
         title = replace(title, "channel" => "channels")
         p = plot_phsd_butterfly(sf,
-                               sp,
-                               clabels=clabels,
-                               xlabel=xlabel,
-                               ylabel=ylabel,
-                               title=title,
-                               frq_lim=frq_lim,
-                               ax=ax,
-                               mono=mono;
-                               kwargs...)
+                                sp,
+                                clabels=clabels,
+                                xlabel=xlabel,
+                                ylabel=ylabel,
+                                title=title,
+                                frq_lim=frq_lim,
+                                ax=ax,
+                                mono=mono;
+                                kwargs...)
     elseif type === :mean
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
@@ -776,14 +776,14 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         title = replace(title, "PHSD" => "PHSD [mean ± 95%CI]")
         title = replace(title, "channel" => "averaged channels")
         p = plot_phsd_avg(sf,
-                         sp,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         frq_lim=frq_lim,
-                         ax=ax,
-                         mono=mono;
-                         kwargs...)
+                          sp,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          frq_lim=frq_lim,
+                          ax=ax,
+                          mono=mono;
+                          kwargs...)
     elseif type === :w3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
@@ -794,17 +794,17 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         zlabel == "default" && (zlabel = "Phase [rad]")
         title = replace(title, "channel" => "channels")
         p = plot_phsd_3d(sf,
-                        sp,
-                        clabels=clabels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        zlabel=zlabel,
-                        title=title,
-                        frq_lim=frq_lim,
-                        ax=ax,
-                        mono=mono,
-                        variant=:w;
-                        kwargs...)
+                         sp,
+                         clabels=clabels,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         title=title,
+                         frq_lim=frq_lim,
+                         ax=ax,
+                         mono=mono,
+                         variant=:w;
+                         kwargs...)
     elseif type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
@@ -815,17 +815,17 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         zlabel == "default" && (zlabel = "Phase [rad]")
         title = replace(title, "channel" => "channels")
         p = plot_phsd_3d(sf,
-                        sp,
-                        clabels=clabels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        zlabel=zlabel,
-                        title=title,
-                        frq_lim=frq_lim,
-                        ax=ax,
-                        mono=mono,
-                        variant=:s;
-                        kwargs...)
+                         sp,
+                         clabels=clabels,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         title=title,
+                         frq_lim=frq_lim,
+                         ax=ax,
+                         mono=mono,
+                         variant=:s;
+                         kwargs...)
     elseif type === :topo
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
@@ -836,17 +836,17 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         ylabel == "default" && (ylabel = "")
         title = replace(title, "channel" => "channels")
         p = plot_phsd_topo(obj.locs,
-                          sf,
-                          sp,
-                          ch=ch,
-                          clabels=clabels,
-                          xlabel=xlabel,
-                          ylabel=ylabel,
-                          title=title,
-                          frq_lim=frq_lim,
-                          ax=ax,
-                          mono=mono;
-                          kwargs...)
+                           sf,
+                           sp,
+                           ch=ch,
+                           clabels=clabels,
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title,
+                           frq_lim=frq_lim,
+                           ax=ax,
+                           mono=mono;
+                           kwargs...)
     end
 
     Plots.plot(p)
