@@ -1418,7 +1418,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                    kwargs...)
     push!(p_imf, p)
     p = Plots.plot(t,
-                   imf[end - 1, :],
+                   s_restored,
                    xlabel="time [s]",
                    ylabel="",
                    xlims=_xlims(t),
@@ -1427,8 +1427,8 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                    yticks=yticks,
                    title="Reconstruced signal",
                    palette=pal,
-                   # size=(500, 150),
-                   margins=0Plots.px,
+                   size=(500, 250),
+                   margins=10Plots.px,
                    label=false,
                    line_width=0.5,
                    titlefontsize=6,
