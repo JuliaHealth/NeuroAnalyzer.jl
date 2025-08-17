@@ -261,4 +261,8 @@ m = rand(-10:0.1:10, length(l), length(l))
 p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_gridlocs()"
+p = NeuroAnalyzer.plot_gridlocs()
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
