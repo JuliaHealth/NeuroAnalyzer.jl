@@ -13,6 +13,7 @@ export plot_erop
 export plot_icatopo
 export plot_ci
 export plot_heatmap
+export plot_imf
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -1333,6 +1334,113 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
     end
 
     Plots.plot(p)
+
+    return p
+
+end
+
+"""
+    plot_imf(imf; <keyword arguments>)
+
+Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
+
+# Arguments
+
+- `imf::Matrix{Float64}`: IMFs
+- `n::Int64=size(imf, 1) - 1`: number of IMFs to plot
+- `t::AbstractVector`: time points
+- `mono::Bool=false`: use color or gray palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVector, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    @assert n > 0 "n must be ≥ 1."
+    @assert n + 1 <= size(imf, 1) "n must be ≤ $(size(imf, 1) - 1)."
+    @assert size(imf, 2) == length(t) "Length of t must be $(size(imf, 2))."
+
+    pal = mono ? :grays : :darktest
+
+    s_restored = sum(imf, dims=1)[:]
+    imf = vcat(imf, s_restored')
+
+    ylim = (floor(minimum(imf), digits=0), ceil(maximum(imf), digits=0))
+    ylim = _tuple_max(ylim)
+    yticks = [ylim[1], 0, ylim[2]]
+
+    # prepare plots
+    p_imf = Vector{Plots.Plot{Plots.GRBackend}}()
+    for idx in 1:n
+        p = Plots.plot(t,
+                       imf[idx, :],
+                       xlabel="time [s]",
+                       ylabel="",
+                       xlims=_xlims(t),
+                       xticks=_ticks(t),
+                       ylims=ylim,
+                       yticks=yticks,
+                       title="IMF: $idx",
+                       palette=pal,
+                       size=(500, 250),
+                       margins=10Plots.px,
+                       label=false,
+                       line_width=0.5,
+                       titlefontsize=6,
+                       xlabelfontsize=6,
+                       ylabelfontsize=6,
+                       xtickfontsize=4,
+                       ytickfontsize=4;
+                       kwargs...)
+        push!(p_imf, p)
+    end
+    p = Plots.plot(t,
+                   imf[end - 1, :],
+                   xlabel="time [s]",
+                   ylabel="",
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title="Residual",
+                   palette=pal,
+                   size=(500, 250),
+                   margins=10Plots.px,
+                   label=false,
+                   line_width=0.5,
+                   titlefontsize=6,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
+                   xtickfontsize=4,
+                   ytickfontsize=4;
+                   kwargs...)
+    push!(p_imf, p)
+    p = Plots.plot(t,
+                   imf[end - 1, :],
+                   xlabel="time [s]",
+                   ylabel="",
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title="Reconstruced signal",
+                   palette=pal,
+                   # size=(500, 150),
+                   margins=0Plots.px,
+                   label=false,
+                   line_width=0.5,
+                   titlefontsize=6,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
+                   xtickfontsize=4,
+                   ytickfontsize=4;
+                   kwargs...)
+    push!(p_imf, p)
+    mod(n + 2, 2) != 0 && push!(p_imf, plot_empty())
+
+    p = plot_compose(p_imf, layout=(ceil(Int64, (n + 2) / 2), 2))
 
     return p
 

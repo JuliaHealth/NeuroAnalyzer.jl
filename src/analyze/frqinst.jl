@@ -3,7 +3,7 @@ export frqinst
 """
     frqinst(s; <keyword arguments>)
 
-Calculate instantaneous frequency.
+Calculate instantaneous frequencies.
 
 # Arguments
 
@@ -11,12 +11,13 @@ Calculate instantaneous frequency.
 
 # Returns
 
-- `f::Vector{Float64}`
+- `f::Vector{Float64}`: instantaneous frequencies (in rad/s)
 """
 function frqinst(s::AbstractVector)::Vector{Float64}
 
-    _, _, _, pha = hspectrum(s)
-    f = derivative(pha) / (2 * pi)
+    _, _, _, ph = htransform(s)
+
+    f = NeuroAnalyzer.derivative(DSP.unwrap(ph)) / (2 * pi)
 
     return f
 
@@ -25,7 +26,7 @@ end
 """
     frqinst(s; <keyword arguments>)
 
-Calculate instantaneous frequency.
+Calculate instantaneous frequencies.
 
 # Arguments
 
@@ -33,7 +34,7 @@ Calculate instantaneous frequency.
 
 # Returns
 
-- `f::Array{Float64, 3}`
+- `f::Array{Float64, 3}`: instantaneous frequencies (in rad/s)
 """
 function frqinst(s::AbstractArray)::Array{Float64, 3}
 
@@ -55,7 +56,7 @@ end
 """
     frqinst(obj; <keyword arguments>)
 
-Calculate instantaneous frequency.
+Calculate instantaneous frequencies.
 
 # Arguments
 
@@ -64,7 +65,7 @@ Calculate instantaneous frequency.
 
 # Returns
 
-- `f::Array{Float64, 3}`
+- `f::Array{Float64, 3}`: instantaneous frequencies (in Hz)
 """
 function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

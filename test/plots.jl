@@ -261,4 +261,10 @@ m = rand(-10:0.1:10, length(l), length(l))
 p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_imf()"
+imf = rand(5, 100)
+t = collect(1:100)
+p = NeuroAnalyzer.plot_imf(imf, t=t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true

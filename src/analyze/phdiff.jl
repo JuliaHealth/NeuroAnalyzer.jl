@@ -20,11 +20,11 @@ Named tuple containing:
 function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=false)::Vector{Float64}
 
     if h
-        _, _, _, ph1 = hspectrum(s1, pad=pad)
-        _, _, _, ph2 = hspectrum(s2, pad=pad)
+        _, _, _, ph1 = NeuroAnalyzer.htransform(s1, pad=pad)
+        _, _, _, ph2 = NeuroAnalyzer.htransform(s2, pad=pad)
     else
-        _, _, _, ph1 = spectrum(s1, pad=pad)
-        _, _, _, ph2 = spectrum(s2, pad=pad)
+        _, _, _, ph1 = NeuroAnalyzer.transform(s1, pad=pad)
+        _, _, _, ph2 = NeuroAnalyzer.transform(s2, pad=pad)
     end
 
     phd = ph1 - ph2
@@ -80,9 +80,9 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
 
                 for ref_idx in eachindex(ref_channels)
                     if h
-                        _, _, _, ph = @views hspectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views NeuroAnalyzer.htransform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     else
-                        _, _, _, ph = @views spectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views NeuroAnalyzer.transform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     end
                     ph_ref[ref_idx, :] = ph
                 end
@@ -90,9 +90,9 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
                 ph_ref = vec(mean(ph_ref, dims=1))
 
                 if h
-                    _, _, _, ph = @views hspectrum(s[ch[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views NeuroAnalyzer.htransform(s[ch[ch_idx], :, ep_idx], pad=pad)
                 else
-                    _, _, _, ph = @views spectrum(s[ch[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views NeuroAnalyzer.transform(s[ch[ch_idx], :, ep_idx], pad=pad)
                 end
 
                 phd[ch_idx, :, ep_idx] = ph - ph_ref

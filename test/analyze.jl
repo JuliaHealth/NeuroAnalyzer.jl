@@ -722,43 +722,6 @@ sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
 @test t == (1, 30)
 @test f == (1, 11)
 
-@info "Test: spectrum()"
-c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(100))
-@test length(c) == 51
-@test length(sa) == 51
-@test length(sp) == 51
-@test length(sph) == 51
-c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(100))
-@test length(c) == 100
-@test length(sa) == 100
-@test length(sp) == 100
-@test length(sph) == 100
-c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10))
-@test size(c) == (10, 51, 10)
-@test size(sa) == (10, 51, 10)
-@test size(sp) == (10, 51, 10)
-@test size(sph) == (10, 51, 10)
-c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(10, 100, 10))
-@test size(c) == (10, 100, 10)
-@test size(sa) == (10, 100, 10)
-@test size(sp) == (10, 100, 10)
-@test size(sph) == (10, 100, 10)
-c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10), h=true)
-@test size(c) == (10, 100, 10)
-@test size(sa) == (10, 100, 10)
-@test size(sp) == (10, 100, 10)
-@test size(sph) == (10, 100, 10)
-c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, ch="all")
-@test size(c) == (24, 1281, 10)
-@test size(sa) == (24, 1281, 10)
-@test size(sp) == (24, 1281, 10)
-@test size(sph) == (24, 1281, 10)
-c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, ch="all", h=true)
-@test size(c) == (24, 2560, 10)
-@test size(sa) == (24, 2560, 10)
-@test size(sp) == (24, 2560, 10)
-@test size(sph) == (24, 2560, 10)
-
 @info "Test: stationarity()"
 s = NeuroAnalyzer.stationarity(e10, ch="all", method=:adf)
 @test size(s) == (24, 2, 10)

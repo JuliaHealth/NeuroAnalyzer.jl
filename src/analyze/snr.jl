@@ -74,14 +74,14 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::@NamedTup
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
 
     f, _ = freqs(t)
-    sp = @views spectrum(s[1, :, 1])
+    sp = @views NeuroAnalyzer.transform(s[1, :, 1])
     amp = zeros(ch_n, length(sp.a), ep_n)
     sn = zeros(ch_n, length(f))
 
     # create spectrum for each channel
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            _, amp[ch_idx, :, ep_idx], _, _ = @views spectrum(s[ch_idx, :, ep_idx])
+            _, amp[ch_idx, :, ep_idx], _, _ = @views NeuroAnalyzer.transform(s[ch_idx, :, ep_idx])
         end
     end
 

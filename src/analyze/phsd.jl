@@ -19,7 +19,7 @@ function phsd(s::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f:
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    _, _, _, sph = spectrum(s)
+    _, _, _, sph = NeuroAnalyzer.transform(s)
     f, _ = freqs(s, fs)
 
     return (ph=sph, f=f)
