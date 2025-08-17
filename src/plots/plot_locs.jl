@@ -771,7 +771,8 @@ function plot_gridlocs(; mono::Bool=false)::Plots.Plot{Plots.GRBackend}
                    palette=pal,
                    framestyle=:box,
                    border=:none,
-                   margins=0Plots.px,
+                   size=(900, 900),
+                   margins=-50Plots.px,
                    xlims=(-1.2, 1.2),
                    ylims=(-1.2, 1.2),
                    legend=false)
@@ -802,9 +803,9 @@ function plot_gridlocs(; mono::Bool=false)::Plots.Plot{Plots.GRBackend}
     loc_x = [-0.5, 0, 0.5, -1, -0.5, 0, 0.5, 1, -1, -0.5, 0, 0.5, 1, -1, -0.5, 0, 0.5, 1, -0.5, 0, 0.5]
     loc_y = [1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0, -0.5, -0.5, -0.5, -0.5, -0.5, -1, -1, -1]
     loc_lab = ["Fp1", "Fpz", "Fp2", "F7", "F3", "Fz", "F4", "F8", "T3", "C3", "Cz", "C4", "T4", "T5", "P3", "Pz", "P4", "T6", "O1", "Oz", "O2"]
-    font_size = 5
-    label_offset_x = -0.075
-    label_offset_y = 0.03
+    font_size = 6
+    label_offset_x = -0.05
+    label_offset_y = 0.02
     for idx in eachindex(loc_x)
         p = Plots.scatter!((loc_x[idx], loc_y[idx]), ms=3.0, mc=:black, mf=:black)
         p = Plots.plot!(annotations=(loc_x[idx] + label_offset_x, loc_y[idx] + label_offset_y, Plots.text(loc_lab[idx], pointsize=font_size)))
