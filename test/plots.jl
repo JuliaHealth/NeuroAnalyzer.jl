@@ -267,4 +267,8 @@ t = collect(1:100)
 p = NeuroAnalyzer.plot_imf(imf, t=t)
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_gridlocs()"
+p = NeuroAnalyzer.plot_gridlocs()
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
