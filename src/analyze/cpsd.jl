@@ -52,9 +52,10 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         f = f[f1_idx:f2_idx]
         pxy = @views abs.(pxy[1, 2, f1_idx:f2_idx])
     elseif method === :fft
+        w = w ? hanning(length(s1)) : ones(length(s1))
         # fft
-        ss1, _, _, _ = ftransform(s1)
-        ss2, _, _, _ = ftransform(s2)
+        ss1 = fft(s1 .* w)
+        ss2 = fft(s2 .* w)
         f = freqs(s1, fs)
         pxy = conj.(ss1) .* ss2
         f1_idx = vsearch(frq_lim[1], f)
