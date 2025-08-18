@@ -20,25 +20,36 @@ Named tuple containing:
 - `ft::Vector{ComplexF64}`: Fourier transform
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
-- `ph::Vector{Float64}`: phases
+- `ph::Vector{Float64}`: phases (in radians)
+
+# Notes
+
+To get frequencies for the signal, use `f, _ = freqs(s, fs)`.
 """
 function ftransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{ft::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
+    # this will only return positive frequencies
     ft = rfft0(s, pad)
 
     # normalize
     ft ./= length(s)
+
+    # multiple by 2 to compensate removed negative frequencies
     ft[2:end] .*= 2
 
-    # amplitudes
+    # amplitudes per frequencies
     a = abs.(ft)
 
     # powers
-    p = abs2.(ft)       # p = a .^ 2 = abs.(ft .* conj(ft))
+    p = abs2.(ft)               # p = a .^ 2 = abs.(ft .* conj(ft))
     db && (p = pow2db.(p))
 
-    # phases
-    ph = DSP.unwrap(DSP.angle.(ft))
+    # remove very small values of |ft|, since they will affect calculations
+    ft[abs.(ft) .< eps()] .= 0
+
+    # phase
+    ph = DSP.angle.(ft)         # ph = atan.(imag(ft), real(ft))
+    # ph = DSP.unwrap(ph)
 
     return (ft=ft, a=a, p=p, ph=ph)
 
@@ -61,12 +72,9 @@ Named tuple containing:
 - `ht::Vector{ComplexF64}`: Hilbert transform
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
-- `ph::Vector{Float64}`: phases
+- `ph::Vector{Float64}`: phases (in radians)
 """
 function htransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{ht::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
-
-    n = length(s)
-    t = collect(1:n)
 
     # Hilbert transform
     ht = DSP.hilbert(pad0(s, pad))
@@ -102,7 +110,7 @@ Named tuple containing:
 - `ft::Array{ComplexF64, 3}`: Fourier transform
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}`: phases
+- `ph::Array{Float64, 3}`: phases (in radians)
 """
 function ftransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{ht::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
@@ -143,7 +151,7 @@ Named tuple containing:
 - `ht::Array{ComplexF64, 3}`: Hilbert transform
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}`: phases
+- `ph::Array{Float64, 3}`: phases (in radians)
 """
 function htransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{ht::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
@@ -185,7 +193,7 @@ Named tuple containing:
 - `t::Array{ComplexF64, 3}`: Fourier or Hilbert transform
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}: phases
+- `ph::Array{Float64, 3}: phases (in radians)
 """
 function transform(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{t::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
@@ -238,7 +246,7 @@ Named tuple containing:
 - `t::Array{ComplexF64, 3}`: Fourier or Hilbert transform
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
-- `ph::Array{Float64, 3}: phases
+- `ph::Array{Float64, 3}: phases (in radians)
 """
 function transform(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{t::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 

@@ -1,5 +1,6 @@
 export generate_window
 export generate_sine
+export generate_cosine
 export generate_csine
 export generate_sinc
 export generate_morlet
@@ -84,14 +85,14 @@ end
 """
     generate_sine(f, t, a, p)
 
-Generates sine wave.
+Generate sine wave.
 
 # Arguments
 
 - `f::Real`: frequency [Hz]
 - `t::Union{AbstractVector, AbstractRange}`: time vector
 - `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
-- `p::Real`: initial phase [degrees]
+- `p::Real`: phase shift [degrees]
 
 # Returns
 
@@ -106,9 +107,33 @@ function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real
 end
 
 """
+    generate_cosine(f, t, a, p)
+
+Generate cosine wave.
+
+# Arguments
+
+- `f::Real`: frequency [Hz]
+- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
+- `p::Real`: phase shift [degrees]
+
+# Returns
+
+- s::Vector{Float64}`
+"""
+function generate_cosine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)::Vector{Float64}
+
+    s = @. a * cos(2 * pi * f * t + deg2rad(p))
+
+    return s
+
+end
+
+"""
     generate_csine(f, t, a)
 
-Generates complex sine wave.
+Generate complex sine wave.
 
 # Arguments
 
@@ -313,7 +338,7 @@ end
 """
     generate_square(t, a, p, w, offset)
 
-Generates square wave.
+Generate square wave.
 
 # Arguments
 
@@ -337,7 +362,7 @@ end
 """
     generate_triangle(t, a)
 
-Generates triangle wave.
+Generate triangle wave.
 
 # Arguments
 

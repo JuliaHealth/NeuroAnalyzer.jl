@@ -398,7 +398,6 @@ include("process/ssp.jl")
 include("process/standardize.jl")
 include("process/taper.jl")
 include("process/tconv.jl")
-include("process/transform.jl")
 include("process/wbp.jl")
 
 # stats
@@ -494,6 +493,7 @@ include("analyze/mdiff.jl")
 include("analyze/msci95.jl")
 include("analyze/sumsim.jl")
 include("analyze/hfd.jl")
+include("analyze/transform.jl")
 
 # plots
 include("plots/cairo.jl")

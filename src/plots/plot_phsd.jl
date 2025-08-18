@@ -650,7 +650,7 @@ Plot phase spectral density.
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is Phase [rad]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
-- `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
+- `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
 - `kwargs`: optional arguments for plot() function
@@ -716,7 +716,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     # _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
 
     sp, sf = phsd(signal, fs=fs)
-    title == "default" && (title = "PHSD [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_v2r(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
+    title == "default" && (title = "PHSD [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $ep, time window: $t_s1:$t_s2]")
 
     # set labels
     if type !== :w3d && type !== :s3d && type !== :topo
@@ -872,7 +872,7 @@ Plot phase spectral density of embedded or external component.
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is Phase [rad]
 - `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
-- `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
+- `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
 - `units::String=""`

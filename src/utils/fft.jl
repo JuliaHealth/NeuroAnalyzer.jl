@@ -4,7 +4,6 @@ export ifft0
 export nextpow2
 export rfft0
 export rfft2
-export fft_transform
 
 """
     fft0(x, n)
@@ -171,69 +170,5 @@ function rfft2(x::AbstractVector)::Vector{ComplexF64}
     n = nextpow2(length(x)) - length(x)
 
     return rfft0(x, n)
-
-end
-
-"""
-    fft_transform(x; <keyword arguments>)
-
-Perform FFT transformation.
-
-# Arguments
-
-- `x::AbstractVector`
-- `fs::Int64`: sampling rate
-- `wlen::Int64=fs`: window length
-- `woverlap::Int64=round(Int64, wlen * 0.97)`:
-- `w::Bool=false`: if true, apply Hanning window per segment
-- `demean::Bool=false`: if true, demean each segment
-- `nfft::Int64=0`: length of input vector to the FFT; if nfft > n_samples, then the input signal will be zero-padded until it is of length nfft
-- `mode::Symbol=:r`:
-    - `:r`: use one-sided FFT (rfft)
-    - `:f`: use two-sided FFT (fft)
-
-# Returns
-
-- `mf::Vector{ComplexF64}`: Fourier coefficients
-- `f::Vector{Float64}`: frequencies
-"""
-function fft_transform(x::AbstractVector; fs::Int64, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=false, nfft::Int64=nextpow(2, wlen), demean::Bool=false, pad::Int64=0, mode::Symbol=:r)::Tuple{Vector{ComplexF64}, Vector{Float64}}
-
-    _check_var(mode, [:r, :f], "mode")
-    @assert fs > 0 "fs must be > 0."
-    @assert pad >= 0 "pad must be ≥ 0."
-
-    # split into segments
-    m = vec2mat(x, wlen=wlen, woverlap=woverlap)
-
-    # remove mean by segments
-    demean && (m = delmean(m, dims=2))
-
-    # pad each segment with zeros
-    n = size(m, 2)
-    nfft > n && (m = pad0(m, nfft - n))
-
-    # apply window per segment
-    w = w ? hanning(size(m, 2)) : ones(size(m, 2))
-    for idx in axes(m, 1)
-        m[idx, :] = @views m[idx, :] .* w
-    end
-
-    # calculate FFT
-    mf = nothing
-    if mode === :r
-        mf = vec(reshape(rfft(m, 2), 1, :))
-        f = round.(rfftfreq(((length(mf) * 2) - 1), fs), digits=3)
-        mf .*= 2
-    elseif mode === :f
-        mf = vec(reshape(fft(m, 2), 1, :))
-        f = round.(fftfreq(length(m), fs), digits=3)
-    end
-
-    # scale
-    # s = 1.0 / length(x)
-    # mf .*= s
-
-    return mf, f
 
 end

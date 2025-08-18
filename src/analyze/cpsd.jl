@@ -53,8 +53,9 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         pxy = @views abs.(pxy[1, 2, f1_idx:f2_idx])
     elseif method === :fft
         # fft
-        ss1, f = fft_transform(s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, mode=:r)
-        ss2, f = fft_transform(s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, mode=:r)
+        ss1, _, _, _ = ftransform(s1)
+        ss2, _, _, _ = ftransform(s2)
+        f = freqs(s1, fs)
         pxy = conj.(ss1) .* ss2
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)

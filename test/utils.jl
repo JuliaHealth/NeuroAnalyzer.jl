@@ -146,6 +146,10 @@ s = generate_window(:exp, 100)
 s = generate_sine(10, 1:100)
 @test length(s) == 100
 
+@info "Test: generate_cosine()"
+s = generate_cosine(10, 1:100)
+@test length(s) == 100
+
 @info "Test: generate_csine()"
 s = generate_csine(10, 1:100)
 @test length(s) == 100
