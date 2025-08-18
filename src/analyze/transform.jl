@@ -17,7 +17,7 @@ Calculate Fourier transformation.
 # Returns
 
 Named tuple containing:
-- `ft::Vector{ComplexF64}`: Fourier transform
+- `c::Vector{ComplexF64}`: Fourier coefficients
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases (in radians)
@@ -26,7 +26,7 @@ Named tuple containing:
 
 To get frequencies for the signal, use `f, _ = freqs(s, fs)`.
 """
-function ftransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{ft::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+function ftransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     # this will only return positive frequencies
     ft = rfft0(s, pad)
@@ -51,7 +51,7 @@ function ftransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTupl
     ph = DSP.angle.(ft)         # ph = atan.(imag(ft), real(ft))
     # ph = DSP.unwrap(ph)
 
-    return (ft=ft, a=a, p=p, ph=ph)
+    return (c=ft, a=a, p=p, ph=ph)
 
 end
 
@@ -69,12 +69,12 @@ Calculate Hilbert transformation.
 # Returns
 
 Named tuple containing:
-- `ht::Vector{ComplexF64}`: Hilbert transform
+- `c::Vector{ComplexF64}`: Hilbert coefficients
 - `a::Vector{Float64}`: amplitudes
 - `p::Vector{Float64}`: powers
 - `ph::Vector{Float64}`: phases (in radians)
 """
-function htransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{ht::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
+function htransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Vector{ComplexF64}, a::Vector{Float64}, p::Vector{Float64}, ph::Vector{Float64}}
 
     # Hilbert transform
     ht = DSP.hilbert(pad0(s, pad))
@@ -89,7 +89,7 @@ function htransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTupl
     p = abs2.(ht)
     db && (p = pow2db.(ht))
 
-    return (ht=ht, a=a, p=p, ph=ph)
+    return (c=ht, a=a, p=p, ph=ph)
 
 end
 
@@ -107,30 +107,30 @@ Calculate Fourier transformation.
 # Returns
 
 Named tuple containing:
-- `ft::Array{ComplexF64, 3}`: Fourier transform
+- `c::Array{ComplexF64, 3}`: Fourier coefficients
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}`: phases (in radians)
 """
-function ftransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{ht::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+function ftransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
 
-    ft = zeros(ComplexF64, ch_n, ep_len, ep_n)
+    c = zeros(ComplexF64, ch_n, ep_len, ep_n)
     a = similar(s)
     p = similar(s)
     ph = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            ft[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.ftransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
+            c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.ftransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
 
-    return (ft=ft, a=a, p=p, ph=ph)
+    return (c=c, a=a, p=p, ph=ph)
 
 end
 
@@ -148,30 +148,30 @@ Calculate Hilbert transformation.
 # Returns
 
 Named tuple containing:
-- `ht::Array{ComplexF64, 3}`: Hilbert transform
+- `c::Array{ComplexF64, 3}`: Hilbert coefficients
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}`: phases (in radians)
 """
-function htransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{ht::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+function htransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_len = size(s, 2)
     ep_n = size(s, 3)
 
-    ht = zeros(ComplexF64, ch_n, ep_len, ep_n)
+    c = zeros(ComplexF64, ch_n, ep_len, ep_n)
     a = similar(s)
     p = similar(s)
     ph = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            ht[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.htransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
+            c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.htransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
 
-    return (ht=ht, a=a, p=p, ph=ph)
+    return (c=c, a=a, p=p, ph=ph)
 
 end
 
@@ -190,12 +190,12 @@ Calculate Fourier/Hilbert transformation.
 # Returns
 
 Named tuple containing:
-- `t::Array{ComplexF64, 3}`: Fourier or Hilbert transform
+- `c::Array{ComplexF64, 3}`: Fourier or Hilbert coefficients
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phases (in radians)
 """
-function transform(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{t::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+function transform(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     _chk3d(s)
     h && _warn("htransform() uses Hilbert transform, the signal should be narrowband for best results.")
@@ -209,7 +209,7 @@ function transform(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false
         fft_size = size(s, 2) + pad
     end
 
-    t = zeros(ComplexF64, ch_n, fft_size, ep_n)
+    c = zeros(ComplexF64, ch_n, fft_size, ep_n)
     ph = zeros(ch_n, fft_size, ep_n)
     a = zeros(ch_n, fft_size, ep_n)
     p = zeros(ch_n, fft_size, ep_n)
@@ -217,14 +217,14 @@ function transform(s::AbstractArray; pad::Int64=0, h::Bool=false, db::Bool=false
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
             if h
-                t[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.htransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
+                c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.htransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
             else
-                t[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.transform(s[ch_idx, :, ep_idx], pad=pad, db=db)
+                c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.transform(s[ch_idx, :, ep_idx], pad=pad, db=db)
             end
         end
     end
 
-    return (t=t, a=a, p=p, ph=ph)
+    return (c=c, a=a, p=p, ph=ph)
 end
 
 """
@@ -243,17 +243,17 @@ Calculate Fourier/Hilbert transformation.
 # Returns
 
 Named tuple containing:
-- `t::Array{ComplexF64, 3}`: Fourier or Hilbert transform
+- `c::Array{ComplexF64, 3}`: Fourier or Hilbert coefficients
 - `a::Array{Float64, 3}`: amplitudes
 - `p::Array{Float64, 3}`: powers
 - `ph::Array{Float64, 3}: phases (in radians)
 """
-function transform(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{t::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
+function transform(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, h::Bool=false, db::Bool=false)::@NamedTuple{c::Array{ComplexF64, 3}, a::Array{Float64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    t, a, p, ph = NeuroAnalyzer.transform(obj.data[ch, :, :], pad=pad, h=h, db=db)
+    c, a, p, ph = NeuroAnalyzer.transform(obj.data[ch, :, :], pad=pad, h=h, db=db)
 
-    return (t=t, a=a, p=p, ph=ph)
+    return (c=c, a=a, p=p, ph=ph)
 
 end
 
