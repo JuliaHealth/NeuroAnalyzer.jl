@@ -56,7 +56,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         # fft
         ss1 = fft(s1 .* w)
         ss2 = fft(s2 .* w)
-        f = freqs(s1, fs)
+        f, _ = freqs(s1, fs)
         pxy = conj.(ss1) .* ss2
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)

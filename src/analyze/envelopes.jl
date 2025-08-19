@@ -23,7 +23,7 @@ Calculate upper envelope.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 - `x::AbstractVector`: x-axis points (e.g. time points)
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
@@ -65,7 +65,7 @@ Calculate lower envelope.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 - `x::AbstractVector`: x-axis points (e.g. time points)
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
@@ -110,7 +110,7 @@ Calculate upper envelope using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 
 # Returns
 
@@ -131,7 +131,7 @@ Calculate lower envelope using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 
 # Returns
 

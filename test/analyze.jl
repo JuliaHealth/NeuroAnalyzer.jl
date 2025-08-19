@@ -751,8 +751,8 @@ pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
 @test size(pxy) == (1, 2049, 1)
 @test length(f) == 2049
 pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
-@test size(pxy) == (1, 1290, 1)
-@test length(f) == 1290
+@test size(pxy) == (1, 1281, 1)
+@test length(f) == 1281
 
 @info "Test: tkeo()"
 @test tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]

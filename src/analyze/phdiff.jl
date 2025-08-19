@@ -10,7 +10,7 @@ Calculate phase difference between signals.
 - `s1::AbstractVector`
 - `s2::AbstractVector`
 - `pad::Int64=0`: number of zeros to add
-- `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
+- `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
 
@@ -23,8 +23,8 @@ function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=fa
         _, _, _, ph1 = NeuroAnalyzer.htransform(s1, pad=pad)
         _, _, _, ph2 = NeuroAnalyzer.htransform(s2, pad=pad)
     else
-        _, _, _, ph1 = NeuroAnalyzer.transform(s1, pad=pad)
-        _, _, _, ph2 = NeuroAnalyzer.transform(s2, pad=pad)
+        _, _, _, ph1 = NeuroAnalyzer.ftransform(s1, pad=pad)
+        _, _, _, ph2 = NeuroAnalyzer.ftransform(s2, pad=pad)
     end
 
     phd = ph1 - ph2
@@ -46,7 +46,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
     - `:phase`: phase is calculated for each reference channel separately and then averaged
     - `:signal`: signals are averaged prior to phase calculation
 - `pad::Int64=0`: pad signals with 0s
-- `h::Bool=false`: use FFT or Hilbert transformation
+- `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
 
@@ -82,7 +82,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
                     if h
                         _, _, _, ph = @views NeuroAnalyzer.htransform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     else
-                        _, _, _, ph = @views NeuroAnalyzer.transform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views NeuroAnalyzer.ftransform(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     end
                     ph_ref[ref_idx, :] = ph
                 end
@@ -92,7 +92,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
                 if h
                     _, _, _, ph = @views NeuroAnalyzer.htransform(s[ch[ch_idx], :, ep_idx], pad=pad)
                 else
-                    _, _, _, ph = @views NeuroAnalyzer.transform(s[ch[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views NeuroAnalyzer.ftransform(s[ch[ch_idx], :, ep_idx], pad=pad)
                 end
 
                 phd[ch_idx, :, ep_idx] = ph - ph_ref
@@ -124,7 +124,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
     - `:phase`: phase is calculated for each reference channel separately and then averaged
     - `:signal`: signals are averaged prior to phase calculation
 - `pad::Int64=0`: pad signals with 0s
-- `h::Bool=false`: use FFT or Hilbert transformation
+- `h::Bool=false`: use Hilbert transform, otherwise use Fourier transform
 
 # Returns
 

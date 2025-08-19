@@ -46,8 +46,8 @@ Perform generalized eigendecomposition.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: signal data to be analyzed
-- `obj2::NeuroAnalyzer.NEURO`: original signal data
+- `obj1::NeuroAnalyzer.NEURO`: object to be analyzed
+- `obj2::NeuroAnalyzer.NEURO`: original object
 - `ch1::Union{String, Vector{String}}: list of channels
 - `ch2::Union{String, Vector{String}}: list of channels
 - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
