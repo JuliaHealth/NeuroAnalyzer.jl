@@ -69,6 +69,9 @@ function ifft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
         x = ifft(x)
     end
 
+    # normalize
+    x .*= length(x)
+
     return x[1:(length(x) - n)]
 
 end

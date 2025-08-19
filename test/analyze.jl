@@ -978,22 +978,27 @@ gd, sc = diss(erp, erp, ch1="all", ch2="all")
 @test size(dirinrg(e10, ch="all")) == (24, 10)
 
 @info "Test: transform()"
-c, a, p, ph = NeuroAnalyzer.transform(rand(100))
+c, a, p, ph = NeuroAnalyzer.ftransform(rand(100))
 @test length(c) == 51
 @test length(a) == 51
 @test length(p) == 51
 @test length(ph) == 51
+c, a, p, ph = NeuroAnalyzer.transform(rand(100), nf=true)
+@test length(c) == 100
+@test length(a) == 100
+@test length(p) == 100
+@test length(ph) == 100
 c, a, p, ph = NeuroAnalyzer.htransform(rand(100))
 @test length(c) == 100
 @test length(a) == 100
 @test length(p) == 100
 @test length(ph) == 100
-c, a, p, ph = NeuroAnalyzer.transform(rand(10, 100, 10))
+c, a, p, ph = NeuroAnalyzer.transform(rand(10, 100, 10), h=false, nf=false)
 @test size(c) == (10, 51, 10)
 @test size(a) == (10, 51, 10)
 @test size(p) == (10, 51, 10)
 @test size(ph) == (10, 51, 10)
-c, a, p, ph = NeuroAnalyzer.htransform(rand(10, 100, 10))
+c, a, p, ph = NeuroAnalyzer.transform(rand(10, 100, 10), h=false, nf=true)
 @test size(c) == (10, 100, 10)
 @test size(a) == (10, 100, 10)
 @test size(p) == (10, 100, 10)
@@ -1008,6 +1013,11 @@ c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all")
 @test size(a) == (24, 1281, 10)
 @test size(p) == (24, 1281, 10)
 @test size(ph) == (24, 1281, 10)
+c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all", nf=true)
+@test size(c) == (24, 2560, 10)
+@test size(a) == (24, 2560, 10)
+@test size(p) == (24, 2560, 10)
+@test size(ph) == (24, 2560, 10)
 c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all", h=true)
 @test size(c) == (24, 2560, 10)
 @test size(a) == (24, 2560, 10)
