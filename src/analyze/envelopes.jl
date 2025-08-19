@@ -118,7 +118,7 @@ Calculate upper envelope using Hilbert transform.
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
 
-    _, e, _, _ = hspectrum(s)
+    _, e, _, _ = htransform(s)
 
     return e
 
@@ -139,7 +139,7 @@ Calculate lower envelope using Hilbert transform.
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
 
-    _, e, _, _ = hspectrum(-s)
+    _, e, _, _ = htransform(-s)
 
     return -e
 
@@ -872,7 +872,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
-    _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])
+    _, hamp, _, _ = @views htransform(obj.data[ch, :, :])
 
     ch_n = size(hamp, 1)
     ep_n = size(hamp, 3)

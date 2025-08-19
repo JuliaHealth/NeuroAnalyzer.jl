@@ -983,7 +983,7 @@ c, a, p, ph = NeuroAnalyzer.ftransform(rand(100))
 @test length(a) == 51
 @test length(p) == 51
 @test length(ph) == 51
-c, a, p, ph = NeuroAnalyzer.transform(rand(100), nf=true)
+c, a, p, ph = NeuroAnalyzer.ftransform(rand(100), nf=true)
 @test length(c) == 100
 @test length(a) == 100
 @test length(p) == 100

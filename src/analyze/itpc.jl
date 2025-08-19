@@ -40,7 +40,7 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
 
     s_phase = zeros(size(s, 2), ep_n)
     @inbounds for ep_idx in 1:ep_n
-        _, _, _, s_phase[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
+        _, _, _, s_phase[:, ep_idx] = @views htransform(s[1, :, ep_idx])
     end
 
     itpc_ph = @view s_phase[t, :]
@@ -130,7 +130,7 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing):
     itpcz_val = zeros(size(s, 2))
 
     @inbounds for ep_idx in 1:ep_n
-        _, _, _, itpc_ph[:, ep_idx] = @views hspectrum(s[1, :, ep_idx])
+        _, _, _, itpc_ph[:, ep_idx] = @views htransform(s[1, :, ep_idx])
     end
 
     for idx in axes(itpc_ph, 1)

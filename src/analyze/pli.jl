@@ -27,8 +27,8 @@ function pli(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{pv::Float64, s
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
-    _, _, _, s1ph = hspectrum(s1)
-    _, _, _, s2ph = hspectrum(s2)
+    _, _, _, s1ph = htransform(s1)
+    _, _, _, s2ph = htransform(s2)
 
     sd = s2 - s1
     phd = s2ph - s1ph

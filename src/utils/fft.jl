@@ -57,7 +57,7 @@ Perform IFFT of zero-padded vector.
 
 - `ifft0::Vector{ComplexF64}`: reconstructed signal trimmed to original length
 """
-function ifft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
+function ifft0(x::AbstractVector, n::Int64=0, cnorm::Bool=false)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
@@ -68,9 +68,6 @@ function ifft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
     else
         x = ifft(x)
     end
-
-    # normalize
-    x .*= length(x)
 
     return x[1:(length(x) - n)]
 
