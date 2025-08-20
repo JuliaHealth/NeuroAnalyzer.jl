@@ -23,7 +23,7 @@ Calculate upper envelope.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 - `x::AbstractVector`: x-axis points (e.g. time points)
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
@@ -65,7 +65,7 @@ Calculate lower envelope.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 - `x::AbstractVector`: x-axis points (e.g. time points)
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
@@ -110,7 +110,7 @@ Calculate upper envelope using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 
 # Returns
 
@@ -118,7 +118,7 @@ Calculate upper envelope using Hilbert transform.
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
 
-    _, e, _, _ = hspectrum(s)
+    _, e, _, _ = htransform(s)
 
     return e
 
@@ -131,7 +131,7 @@ Calculate lower envelope using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 
 # Returns
 
@@ -139,7 +139,7 @@ Calculate lower envelope using Hilbert transform.
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
 
-    _, e, _, _ = hspectrum(-s)
+    _, e, _, _ = htransform(-s)
 
     return -e
 
@@ -872,7 +872,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
-    _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])
+    _, hamp, _, _ = @views htransform(obj.data[ch, :, :])
 
     ch_n = size(hamp, 1)
     ep_n = size(hamp, 3)

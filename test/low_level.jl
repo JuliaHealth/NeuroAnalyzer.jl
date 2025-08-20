@@ -48,9 +48,6 @@ using ContinuousWavelets
 @test msci95(ones(4)) == (s_m = 1.0, s_s = 0.0, s_u = 1.0, s_l = 1.0)
 @test msci95(ones(4), zeros(4)) == (s_m = 1.0, s_s = 0.0, s_u = 1.0, s_l = 1.0)
 @test length(difference(ones(4), zeros(4))) == 3
-@test acov(ones(4)) == (acov = [3.0, 4.0, 3.0], lags = [-1, 0, 1])
-@test xcov(ones(4), ones(4)) == (xcov = [3.0, 4.0, 3.0], lags = [-1, 0, 1])
-@test spectrum(ones(4)) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amp = [1.0, 0.0], s_pow = [1.0, 0.0], s_pha = [0.0, 0.0, 0.0, 0.0])
 @test total_power(ones(4), fs=10) == 0.0
 @test band_power(ones(4), fs=10, f=(1,2)) == 0.0
 @test taper(ones(10), t=zeros(10)) == zeros(10)

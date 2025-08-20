@@ -7,7 +7,7 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 - `t::AbstractVector=collect(1:length(s))`: time points
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
@@ -50,7 +50,7 @@ Calculate Teager-Kaiser energy-tracking operator
 
 # Arguments
 
-- `s::AbstractArray`: signal
+- `s::AbstractArray`
 - `t::AbstractArray=collect(1:length(s))`: time points
 - `method::Symbol=:pow`:
     - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)

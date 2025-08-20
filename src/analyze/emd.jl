@@ -7,7 +7,7 @@ Perform Empirical Mode Decomposition (EMD).
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 - `x::AbstractVector`: x-axis points (e.g. time points)
 - `epsilon::Real=0.3`: decomposition stops when sum of the difference is lower than `epsilon`
 

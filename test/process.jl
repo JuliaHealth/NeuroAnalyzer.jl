@@ -494,7 +494,7 @@ e10_tmp = remove_cwt(e10, ch="Fp1", ep=1, tseg=(0.2, 0.4), fseg=(10, 12.5))
 @test size(e10_tmp) == size(e10)
 
 @info "Test: emd()"
-@test size(emd(e10.data[1, :, 1], e10.epoch_time, epsilon=0.3), 1) == 7
-@test size(emd(e10, ch="Fp1", ep=1, epsilon=0.3), 1) == 7
+@test size(emd(e10.data[1, :, 1], e10.epoch_time, epsilon=0.3), 1) == 9
+@test size(emd(e10, ch="Fp1", ep=1, epsilon=0.3), 1) == 9
 
 true

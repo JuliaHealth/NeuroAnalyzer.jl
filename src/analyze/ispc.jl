@@ -24,8 +24,8 @@ function ispc(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{ispc_val::Flo
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
-    _, _, _, s1_phase = hspectrum(s1)
-    _, _, _, s2_phase = hspectrum(s2)
+    _, _, _, s1_phase = htransform(s1)
+    _, _, _, s2_phase = htransform(s2)
 
     s_diff = s2 - s1
     ph_diff = s2_phase - s1_phase
