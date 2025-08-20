@@ -260,7 +260,7 @@ end
 """
     hanalytic(s)
 
-Calculate analytic signal using Hilbert transformation.
+Calculate complex analytic signal using Hilbert transformation.
 
 # Arguments
 
@@ -282,7 +282,7 @@ end
 """
     hanalytic(s; <keyword arguments>)
 
-Calculate analytic signal using Hilbert transformation.
+Calculate complex analytic signal using Hilbert transformation.
 
 # Arguments
 
@@ -315,7 +315,7 @@ end
 """
     hanalytic(obj; <keyword arguments>)
 
-Calculate analytic signal using Hilbert transformation.
+Calculate complex analytic signal using Hilbert transformation.
 
 # Arguments
 
