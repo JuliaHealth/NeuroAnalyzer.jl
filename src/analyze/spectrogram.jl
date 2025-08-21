@@ -143,7 +143,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
                 _log_on()
             elseif method === :hht
                 imf = emd(obj.data[ch[ch_idx], :, ep_idx], obj.epoch_time)[1:(end - 1), :]
-                p[:, :, ch_idx, ep_idx], _, _, _ = @views NeuroAnalyzer.hspectrogram(imf, fs=fs, db=db)
+                p[:, :, ch_idx, ep_idx], _, _, _ = @views NeuroAnalyzer.hhtspectrogram(imf, fs=fs, db=db)
             end
 
             # update progress bar
