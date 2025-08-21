@@ -85,20 +85,21 @@ function f2t(f::Real)::Float64
 end
 
 """
-    freqs(t)
+    freqs(t; nf)
 
 Return vector of frequencies and Nyquist frequency for time vector.
 
 # Arguments
 
 - `t::AbstractVector, AbstractRange}`: time vector
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
 - `hz::Vector{Float64}`
-- `nf::Float64`
+- `nqf::Float64`
 """
-function freqs(t::Union{AbstractVector, AbstractRange})::Tuple{Vector{Float64}, Float64}
+function freqs(t::Union{AbstractVector, AbstractRange}; nf::Bool=false)::Tuple{Vector{Float64}, Float64}
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
@@ -109,18 +110,22 @@ function freqs(t::Union{AbstractVector, AbstractRange})::Tuple{Vector{Float64}, 
     fs = round(Int64, 1 / dt)
 
     # Nyquist frequency
-    nf = fs / 2
+    nqf = fs / 2
 
     # frequency array
     # hz = linspace(0, nf, floor(Int64, length(t) / 2))
-    hz = Vector(rfftfreq(length(t), fs))
+    if nf
+        hz = fftshift(Vector(fftfreq(length(t), fs)))
+    else
+        hz = Vector(rfftfreq(length(t), fs))
+    end
 
-    return hz, nf
+    return hz, nqf
 
 end
 
 """
-    freqs(s, fs)
+    freqs(s, fs; nf)
 
 Return vector of frequencies and Nyquist frequency for signal.
 
@@ -128,45 +133,51 @@ Return vector of frequencies and Nyquist frequency for signal.
 
 - `s::AbstractVector`
 - `fs::Int64`
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
 - `hz::Vector{Float64`: signal vector
-- `nf::Float64`
+- `nqf::Float64`
 """
-function freqs(s::AbstractVector, fs::Int64)::Tuple{Vector{Float64}, Float64}
+function freqs(s::AbstractVector, fs::Int64; nf::Bool=false)::Tuple{Vector{Float64}, Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
     # Nyquist frequency
-    nf = fs / 2
+    nqf = fs / 2
     # frequency array
     # hz = linspace(0, nf, floor(Int64, length(s) / 2) + 1)
-    hz = round.(Vector(rfftfreq(length(s), fs)), digits=3)
+    if nf
+        hz = fftshift(round.(Vector(fftfreq(length(s), fs)), digits=3))
+    else
+        hz = round.(Vector(rfftfreq(length(s), fs)), digits=3)
+    end
 
-    return hz, nf
+    return hz, nqf
 
 end
 
 """
-    freqs(obj)
+    freqs(obj; nf)
 
 Return vector of frequencies and Nyquist frequency.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
 
 # Returns
 
 Named tuple containing:
 - `hz::Vector{Float64}`
-- `nf::Float64`
+- `nqf::Float64`
 """
-function freqs(obj::NeuroAnalyzer.NEURO)::@NamedTuple{hz::Vector{Float64}, nf::Float64}
+function freqs(obj::NeuroAnalyzer.NEURO; nf::Bool=false)::@NamedTuple{hz::Vector{Float64}, nqf::Float64}
 
-    hz, nf = freqs(obj.data[1, :, 1], sr(obj))
+    hz, nqf = freqs(obj.data[1, :, 1], sr(obj), nf=nf)
 
-    return (hz=hz, nf=nf)
+    return (hz=hz, nqf=nqf)
 
 end

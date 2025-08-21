@@ -117,11 +117,20 @@ x[10] *= 1000
 f, nf = NeuroAnalyzer.freqs(0:1/10:10)
 @test length(f) == 51
 @test nf == 5
+f, nf = NeuroAnalyzer.freqs(0:1/10:10, nf=true)
+@test length(f) == 101
+@test nf == 5
 f, nf = NeuroAnalyzer.freqs(rand(100), 10)
 @test length(f) == 51
 @test nf == 5
+f, nf = NeuroAnalyzer.freqs(rand(100), 10, nf=true)
+@test length(f) == 100
+@test nf == 5
 f, nf = NeuroAnalyzer.freqs(e10)
 @test length(f) == 1281
+@test nf == 128
+f, nf = NeuroAnalyzer.freqs(e10, nf=true)
+@test length(f) == 2560
 @test nf == 128
 
 @info "Test: generate_window()"
