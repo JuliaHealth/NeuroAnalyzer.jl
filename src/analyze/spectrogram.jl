@@ -1,8 +1,8 @@
 export spectrogram
 export mwspectrogram
-export ghspectrogram
+export ghtspectrogram
 export cwtspectrogram
-export hhspectrogram
+export hhtspectrogram
 
 """
     spectrogram(s; <keyword arguments>)
@@ -111,14 +111,14 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     elseif method === :mw
     _, p_tmp, _, f, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
     elseif method === :gh
-        p_tmp, _, f, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        p_tmp, _, f, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
         _log_off()
         p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt, norm=db)
         _log_on()
     elseif method === :hht
         imf = emd(obj.data[1, :, 1], obj.epoch_time)[1:(end - 1), :]
-        p_tmp, _, f, _ = @views NeuroAnalyzer.hhspectrogram(imf, fs=fs, db=db)
+        p_tmp, _, f, _ = @views NeuroAnalyzer.hhtspectrogram(imf, fs=fs, db=db)
     end
 
     t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
@@ -136,7 +136,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
             elseif method === :mw
                 _, p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
             elseif method === :gh
-                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
                 _log_off()
                 p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt, norm=db)
@@ -233,7 +233,7 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
 end
 
 """
-    ghspectrogram(s; <keyword arguments>)
+    ghtspectrogram(s; <keyword arguments>)
 
 Calculate spectrogram using Gaussian and Hilbert transform.
 
@@ -253,7 +253,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function ghspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function ghtspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -336,7 +336,7 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
 end
 
 """
-    hhspectrogram(s; <keyword arguments>)
+    hhtspectrogram(s; <keyword arguments>)
 
 Calculate spectrogram using Hilbert-Huang transform.
 
@@ -354,7 +354,7 @@ Named tuple containing:
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function hhspectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
+function hhtspectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true)::@NamedTuple{p::Matrix{Float64}, ph::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
