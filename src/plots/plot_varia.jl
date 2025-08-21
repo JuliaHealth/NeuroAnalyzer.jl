@@ -14,6 +14,7 @@ export plot_icatopo
 export plot_ci
 export plot_heatmap
 export plot_imf
+export plot_hs
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -64,6 +65,8 @@ function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector
                       left_margin=(20 + ymar)*Plots.px,
                       right_margin=40*Plots.px,
                       bottom_margin=(xrot > 0 ? xmar*Plots.px : 0*Plots.px),
+                      ytick_direction=:out,
+                      xtick_direction=:out,
                       titlefontsize=8,
                       xlabelfontsize=8,
                       ylabelfontsize=8,
@@ -120,6 +123,8 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
                    legend=false,
                    top_margin=10*Plots.px,
                    bottom_margin=30*Plots.px,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    titlefontsize=6,
                    xlabelfontsize=6,
                    ylabelfontsize=6,
@@ -191,6 +196,7 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
                    margins=10Plots.px,
                    xticks=xticks,
                    yticks=false,
+                   xtick_direction=:out,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -255,6 +261,8 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
                    title=title,
                    color=color,
                    palette=pal,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    linewidth=0.5,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -306,6 +314,8 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
                    title=title,
                    color=color,
                    palette=pal,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    linewidth=0.5,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -358,6 +368,8 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
                    xticks=(eachindex(xlabels), xlabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title=title,
                    color=color,
                    palette=pal,
@@ -415,6 +427,8 @@ function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", 
                    xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title=title,
                    color=color,
                    palette=pal,
@@ -466,6 +480,8 @@ function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="
                    xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title=title,
                    color=color,
                    palette=pal,
@@ -513,6 +529,8 @@ function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xla
                    xticks=(eachindex(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title=title,
                    palette=pal,
                    linewidth=0.5,
@@ -579,6 +597,8 @@ function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, x
                    title=title,
                    palette=pal,
                    linewidth=0.5,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -781,6 +801,8 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
                           xticks=_ticks(t),
                           yticks=yt,
                           yscale=ysc,
+                          ytick_direction=:out,
+                          xtick_direction=:out,
                           seriescolor=pal,
                           cb=cb,
                           colorbar_title=cb_title,
@@ -814,6 +836,8 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
                            ylims=frq_lim,
                            xticks=_ticks(t),
                            yticks=yt,
+                           ytick_direction=:out,
+                           xtick_direction=:out,
                            yscale=ysc,
                            seriescolor=pal,
                            cb=cb,
@@ -854,6 +878,8 @@ function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::B
                            ylims=frq_lim,
                            xticks=_ticks(t),
                            yticks=yt,
+                           ytick_direction=:out,
+                           xtick_direction=:out,
                            yscale=ysc,
                            seriescolor=pal,
                            colorbar_title=cb_title,
@@ -977,6 +1003,8 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
                        ylabel=yl,
                        xlims=frq_lim,
                        xticks=xt,
+                       ytick_direction=:out,
+                       xtick_direction=:out,
                        xscale=xsc,
                        yscale=ysc,
                        seriescolor=pal,
@@ -1002,6 +1030,8 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
                         ylabel=yl,
                         xlims=frq_lim,
                         xticks=xt,
+                        ytick_direction=:out,
+                        xtick_direction=:out,
                         xscale=xsc,
                         yscale=ysc,
                         seriescolor=pal,
@@ -1027,6 +1057,8 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
                         ylabel=yl,
                         xlims=frq_lim,
                         xticks=xt,
+                        ytick_direction=:out,
+                        xtick_direction=:out,
                         xscale=xsc,
                         yscale=ysc,
                         seriescolor=pal,
@@ -1219,6 +1251,8 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
                    xticks=_ticks(t),
                    ylims=ylim,
                    yticks=yticks,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title=title,
                    palette=pal,
                    size=(1200, 500),
@@ -1309,6 +1343,8 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                       xlims=_xlims(x),
                       ylims=_xlims(y),
                       xticks=_ticks(x),
+                      ytick_direction=:out,
+                      xtick_direction=:out,
                       cb=cb,
                       colorbar_title=cb_title,
                       titlefontsize=8,
@@ -1383,6 +1419,8 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                        xticks=_ticks(t),
                        ylims=ylim,
                        yticks=yticks,
+                       ytick_direction=:out,
+                       xtick_direction=:out,
                        title="IMF: $idx",
                        palette=pal,
                        size=(500, 250),
@@ -1405,6 +1443,8 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                    xticks=_ticks(t),
                    ylims=ylim,
                    yticks=yticks,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title="Residual",
                    palette=pal,
                    size=(500, 250),
@@ -1426,6 +1466,8 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                    xticks=_ticks(t),
                    ylims=ylim,
                    yticks=yticks,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
                    title="Reconstruced signal",
                    palette=pal,
                    size=(500, 250),
@@ -1442,6 +1484,69 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
     mod(n + 2, 2) != 0 && push!(p_imf, plot_empty())
 
     p = plot_compose(p_imf, layout=(ceil(Int64, (n + 2) / 2), 2))
+
+    return p
+
+end
+
+"""
+    plot_hs(sf, sp; <keyword arguments>)
+
+Plot Hilbert spectrum.
+
+# Arguments
+
+- `sp::Vector{Float64}`: Hilbert transform powers
+- `st::Vector{Float64}`: time
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    @assert length(sp) == length(st) "Length of powers vector must equal length of time points vector."
+
+    pal = mono ? :grays : :darktest
+
+    xl, yl, tt = _set_defaults(xlabel,
+                               ylabel,
+                               title,
+                               "Time [s]",
+                               "Power [μV^2/Hz]",
+                               "")
+
+    # prepare plot
+    p = Plots.plot(xlabel=xl,
+                   ylabel=yl,
+                   legend=false,
+                   xlims=_xlims(st),
+                   xticks=_ticks(st),
+                   ytick_direction=:out,
+                   xtick_direction=:out,
+                   title=tt,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 800),
+                   margins=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6)
+
+    # plot powers
+    p = Plots.plot!(st,
+                    sp,
+                    linewidth=1,
+                    label="",
+                    color=:black)
 
     return p
 
