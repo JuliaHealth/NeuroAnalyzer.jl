@@ -90,8 +90,8 @@ mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:c
 
 @info "Test: corm()"
 @test corm(v) ≈ ones(5, 5)
-@test size(corm(a1)) == (2, 2, 3, 2)
-@test size(corm(e10, ch="all")) == (24, 24, 2560, 10)
+@test size(corm(a1)) == (2, 2, 2)
+@test size(corm(e10, ch="all")) == (24, 24, 10)
 
 @info "Test: covm()"
 @test covm(v) == [ 2.5  5.0  7.5 10.0 12.5;
@@ -99,8 +99,8 @@ mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:c
                                  7.5 15.0 22.5 30.0 37.5;
                                 10.0 20.0 30.0 40.0 50.0;
                                 12.5 25.0 37.5 50.0 62.5]
-@test size(covm(a1)) == (2, 2, 3, 2)
-@test size(covm(e10, ch="all")) == (24, 24, 2560, 10)
+@test size(covm(a1)) == (2, 2, 2)
+@test size(covm(e10, ch="all")) == (24, 24, 10)
 
 @info "Test: cph()"
 ph, f = cph(rand(10), rand(10), fs=1)

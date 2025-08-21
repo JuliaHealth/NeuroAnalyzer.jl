@@ -12,7 +12,7 @@ Calculate correlation matrix of `s * s'`.
 
 # Returns
 
-- `cm::Matrix{Float64}`
+- `cm::Matrix{Float64}`: correlation matrix
 """
 function corm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
@@ -43,7 +43,7 @@ Calculate correlation matrix of `s1 * s2'`.
 
 # Returns
 
-- `cm::Matrix{Float64}`
+- `cm::Matrix{Float64}`: correlation matrix
 """
 function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
@@ -54,6 +54,37 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{
         cm = Matrix(cor(CuVector(s1) * CuVector(s2)'))
     else
         cm = cor(s1 * s2')
+    end
+
+    # normalize
+    norm && (cm = m_norm(cm))
+
+    return cm
+
+end
+
+
+"""
+    corm(s; <keyword arguments>)
+
+Calculate corelation matrix of channels × time points matrix.
+
+# Arguments
+
+- `s::AbstractMatrix`
+- `norm::Bool=false`: normalize correlation
+
+# Returns
+
+- `cm::Matrix{Float64}`: corelation matrix
+"""
+function corm(s::AbstractMatrix; norm::Bool=false)::Matrix{Float64}
+
+    # channels-vs-channels
+    if CUDA.functional() && use_cuda
+        cm = Matrix(cov(CuVector(s)'))
+    else
+        cm = cor(s')
     end
 
     # normalize
@@ -75,9 +106,9 @@ Calculate correlation matrix.
 
 # Returns
 
-- `cm::Array{Float64, 4}`
+- `cm::Array{Float64, 3}`: correlation matrix for each epoch
 """
-function corm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
+function corm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -87,25 +118,21 @@ function corm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
     # initialize progress bar
     progress_bar && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
 
-    cm = zeros(ch_n, ch_n, ep_len, ep_n)
+    cm = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         if use_cuda
             CUDA.synchronize()
-            for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
+            @views @inbounds cm[:, :, ep_idx] = corm(s[:, :, ep_idx], norm=norm)
 
-                # update progress bar
-                progress_bar && next!(progbar)
-            end
+            # update progress bar
+            progress_bar && next!(progbar)
             CUDA.synchronize()
         else
-            Threads.@threads :greedy for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, s_idx, ep_idx] = corm(s[:, s_idx, ep_idx], norm=norm)
+            @views @inbounds cm[:, :, ep_idx] = corm(s[:, :, ep_idx], norm=norm)
 
-                # update progress bar
-                progress_bar && next!(progbar)
-            end
+            # update progress bar
+            progress_bar && next!(progbar)
         end
     end
 
@@ -126,9 +153,9 @@ Calculate correlation matrix.
 
 # Returns
 
-- `cm::Array{Float64, 4}`: correlation matrix for each epoch
+- `cm::Array{Float64, 3}`: correlation matrix for each epoch
 """
-function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 4}
+function corm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
 
