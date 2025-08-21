@@ -198,6 +198,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            left_margin=head12 ? -20*Plots.px : -20*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
+                           colorbar_titlefontsize=font_size - 2,
                            colorbar_title=cb_label,
                            colorbar_ticks=false,
                            xlims=xl,

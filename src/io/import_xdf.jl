@@ -135,7 +135,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, eeg_data, components, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
 
     return obj
 

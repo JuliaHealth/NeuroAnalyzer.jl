@@ -83,7 +83,7 @@ Convert time in samples to seconds.
 """
 function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)::Float64
 
-    return round(s / sr(obj), digits=2)
+    return round(s / sr(obj), digits=3)
 
 end
 
@@ -104,8 +104,8 @@ Convert markers start and length from samples to seconds.
 function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
 
     m_new = deepcopy(m)
-    m_new[:, :start] = round.(m[:, :start] ./ fs, digits=2)
-    m_new[:, :length] = round.(m[:, :length] ./ fs, digits=2)
+    m_new[:, :start] = round.(m[:, :start] ./ fs, digits=3)
+    m_new[:, :length] = round.(m[:, :length] ./ fs, digits=3)
 
     return m_new
 
@@ -127,8 +127,8 @@ Nothing
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
 
-    m[:, :start] = round.(m[:, :start] ./ fs, digits=2)
-    m[:, :length] = round.(m[:, :length] ./ fs, digits=2)
+    m[:, :start] = round.(m[:, :start] ./ fs, digits=3)
+    m[:, :length] = round.(m[:, :length] ./ fs, digits=3)
 
     return nothing
 
@@ -172,8 +172,8 @@ Nothing
 """
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
 
-    obj.markers[:, :start] = round.(obj.markers[:, :start] ./ sr(obj), digits=2)
-    obj.markers[:, :length] = round.(obj.markers[:, :length] ./ sr(obj), digits=2)
+    obj.markers[:, :start] = round.(obj.markers[:, :start] ./ sr(obj), digits=3)
+    obj.markers[:, :length] = round.(obj.markers[:, :length] ./ sr(obj), digits=3)
 
     return nothing
 

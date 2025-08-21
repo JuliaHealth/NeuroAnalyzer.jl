@@ -20,10 +20,10 @@ function _get_t(from::Int64, to::Int64, fs::Int64)::Vector{Float64}
 end
 
 function _convert_t(t1::Float64, t2::Float64)::Tuple{Float64, String, Float64, String}
-    abs(t1) < 1.0 && (ts1 = string(floor(t1, digits=2) * 1000) * " ms")
-    abs(t1) >= 1.0 && (ts1 = string(floor(t1, digits=2)) * " s")
-    abs(t2) < 1.0 && (ts2 = string(ceil(t2, digits=2) * 1000) * " ms")
-    abs(t2) >= 1.0 && (ts2 = string(ceil(t2, digits=2)) * " s")
+    abs(t1) < 1.0 && (ts1 = string(floor(t1, digits=3) * 1000) * " ms")
+    abs(t1) >= 1.0 && (ts1 = string(floor(t1, digits=3)) * " s")
+    abs(t2) < 1.0 && (ts2 = string(ceil(t2, digits=3) * 1000) * " ms")
+    abs(t2) >= 1.0 && (ts2 = string(ceil(t2, digits=3)) * " s")
     return t1, ts1, t2, ts2
 end
 

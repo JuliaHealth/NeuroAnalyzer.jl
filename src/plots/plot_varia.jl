@@ -1305,7 +1305,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      palette=pal,
+                      seriescolor=pal,
                       xlims=_xlims(x),
                       ylims=_xlims(y),
                       xticks=_ticks(x),
@@ -1314,6 +1314,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                       titlefontsize=8,
                       xlabelfontsize=8,
                       ylabelfontsize=8,
+                      colorbar_titlefontsize=8,
                       xtickfontsize=8,
                       ytickfontsize=8;
                       kwargs=kwargs)
