@@ -41,7 +41,7 @@ function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
     else
         tc = linspace(t[1], t[end], length(round.(t[1]:((t[end] - t[1])/10):t[end], digits=3)))
     end
-    tc = round.(tc, digits=3)
+    tc = round.(tc, digits=2)
     return tc
 end
 
@@ -56,16 +56,16 @@ function _ticks(t::Tuple{Real, Real})::AbstractVector
         end
     else
         if length(collect(t[1]:t[2])) > (1 / (collect(t[1]:t[2])[2] - collect(t[1]:t[2])[1]))
-            return floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=3)
+            return floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
         else
-            return floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 20):ceil(t[end], digits=3)
+            return floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 20):ceil(t[end], digits=2)
         end
     end
 end
 
-_erpticks(t::Union{AbstractVector, AbstractRange})::AbstractVector = vcat(collect(range(floor(t[1], digits=3), 0, 3)), collect(range(0, ceil(t[end], digits=3), 9))[2:end])
+_erpticks(t::Union{AbstractVector, AbstractRange})::AbstractVector = vcat(collect(range(floor(t[1], digits=3), 0, 3)), collect(range(0, ceil(t[end], digits=2), 9))[2:end])
 
-_erpticks(t::Tuple{Real, Real})::AbstractVector = vcat(collect(range(floor(t[1], digits=3), 0, 3)), collect(range(0, ceil(t[2], digits=3), 9))[2:end])
+_erpticks(t::Tuple{Real, Real})::AbstractVector = vcat(collect(range(floor(t[1], digits=3), 0, 3)), collect(range(0, ceil(t[2], digits=2), 9))[2:end])
 
 function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String, t::String)::Tuple{String, String, String}
     yl == "default" && (yl = y)
