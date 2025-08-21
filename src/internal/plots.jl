@@ -1,4 +1,4 @@
-_xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} = floor(t[1], digits=3), ceil(t[end], digits=3)
+_xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} = floor(t[1], digits=2), ceil(t[end], digits=2)
 
 function _ylims(s::AbstractVector)::Tuple{Real, Real}
     if maximum(abs.(s)) > 100
@@ -39,7 +39,7 @@ function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
     if t[end] == round(Int64, t[end])
         tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:((t[end] - t[1])/10):t[end])))
     else
-        tc = linspace(t[1], t[end], length(round.(t[1]:((t[end] - t[1])/10):t[end], digits=3)))
+        tc = linspace(t[1], t[end], length(round.(t[1]:((t[end] - t[1])/10):t[end], digits=2)))
     end
     tc = round.(tc, digits=2)
     return tc
