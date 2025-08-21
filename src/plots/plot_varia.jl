@@ -15,6 +15,7 @@ export plot_ci
 export plot_heatmap
 export plot_imf
 export plot_hs
+export plot_fi
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -1490,7 +1491,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
 end
 
 """
-    plot_hs(sf, sp; <keyword arguments>)
+    plot_hs(sp, st; <keyword arguments>)
 
 Plot Hilbert spectrum.
 
@@ -1544,6 +1545,69 @@ function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
     # plot powers
     p = Plots.plot!(st,
                     sp,
+                    linewidth=1,
+                    label="",
+                    color=:black)
+
+    return p
+
+end
+
+"""
+    plot_fi(fi, st; <keyword arguments>)
+
+Plot instantaneous frequencies.
+
+# Arguments
+
+- `fi::Vector{Float64}`: instantaneous frequencies
+- `st::Vector{Float64}`: time
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    @assert length(fi) == length(st) "Length of powers vector must equal length of time points vector."
+
+    pal = mono ? :grays : :darktest
+
+    xl, yl, tt = _set_defaults(xlabel,
+                               ylabel,
+                               title,
+                               "Time [s]",
+                               "Frequency [Hz]",
+                               "")
+
+    # prepare plot
+    p = Plots.plot(xlabel=xl,
+                   ylabel=yl,
+                   legend=false,
+                   xlims=_xlims(st),
+                   xticks=_ticks(st),
+                   ytick_direction=:out,
+                   xtick_direction=:out,
+                   title=tt,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 800),
+                   margins=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6)
+
+    # plot powers
+    p = Plots.plot!(st,
+                    fi,
                     linewidth=1,
                     label="",
                     color=:black)
