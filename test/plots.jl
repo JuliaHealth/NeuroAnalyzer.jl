@@ -271,4 +271,10 @@ p = NeuroAnalyzer.plot_imf(imf, t=t)
 p = NeuroAnalyzer.plot_gridlocs()
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_hs()"
+hms, t = hmspectrum(e10, ch="Fp1")
+hms = vec(hms[:, :, 1])
+p = NeuroAnalyzer.plot_hs(hms, t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
