@@ -1024,4 +1024,14 @@ c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all", h=true)
 @test size(p) == (24, 2560, 10)
 @test size(ph) == (24, 2560, 10)
 
+@info "Test: zipratio()"
+e10_tmp = deepcopy(e10)
+z1 = zipratio(e10_tmp)
+e10_tmp.data = rand(size(e10.data, 1), size(e10.data, 2), size(e10.data, 3))
+z2 = zipratio(e10_tmp)
+e10_tmp.data = zeros(size(e10.data))
+z3 = zipratio(e10_tmp)
+@test z1 > z3
+@test z2 > z3
+
 true

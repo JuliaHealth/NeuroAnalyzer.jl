@@ -115,6 +115,10 @@ Calculate upper envelope using Hilbert transform.
 # Returns
 
 - `e::Vector{Float64}`: envelope
+
+# Notes
+
+Hilbert transform works best for narrowband signals (i.e., signals with all energy centered about a single frequency).
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
 
@@ -136,6 +140,10 @@ Calculate lower envelope using Hilbert transform.
 # Returns
 
 - `e::Vector{Float64}`: envelope
+
+# Notes
+
+Hilbert transform works best for narrowband signals (i.e., signals with all energy centered about a single frequency).
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
 

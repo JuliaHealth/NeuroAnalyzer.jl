@@ -494,6 +494,7 @@ include("analyze/transform.jl")
 include("analyze/vartest.jl")
 include("analyze/xcor.jl")
 include("analyze/xcov.jl")
+include("analyze/zip.jl")
 
 # plots
 include("plots/cairo.jl")
