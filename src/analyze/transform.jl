@@ -96,7 +96,7 @@ function htransform(s::AbstractVector; pad::Int64=0, db::Bool=false)::@NamedTupl
 
     # instantaneous power / energy
     p = abs2.(ht)
-    db && (p = pow2db.(ht))
+    db && (p = pow2db.(p))
 
     return (c=ht, a=a, p=p, ph=ph)
 
