@@ -32,7 +32,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector;
                    xticks=_ticks(t),
                    ytick_direction=:out,
                    xtick_direction=:out,
-                   ylims=_ylims(s),
+                   ylims=minimum(s) == 0 ? (0, _ylims(s)[2]) : _ylims(s),
                    title=title,
                    size=plot_size,
                    margins=20Plots.px,
