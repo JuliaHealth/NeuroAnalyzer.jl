@@ -187,7 +187,7 @@ function diss(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{S
     @assert datatype(obj1) in ["erp", "erf"] "diss() should be applied for ERP or ERF object only."
     @assert datatype(obj2) in ["erp", "erf"] "diss() should be applied for ERP or ERF object only."
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
-    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
+    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
     ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")

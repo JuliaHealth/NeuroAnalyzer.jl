@@ -403,12 +403,12 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::Union{String,Vector{String}}, type::Union{String,Vector{String}}, unit::Union{String,Vector{String}})::NeuroAnalyzer.NEURO
 
     if length(obj.data) > 0
-        @assert signal_len(obj) == size(data, 2) "Epoch length of the new data and the object data must be equal."
-        @assert nepochs(obj) == size(data, 3) "Number of epochs of the new data and the object data must be equal."
+        @assert signal_len(obj) == size(data, 2) "Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."
+        @assert nepochs(obj) == size(data, 3) "Number of epochs of the new data ($(size(data, 3))) and the object data ($(nepochs(obj))) must be equal."
     end
-    @assert length(label) == size(data, 1) "Number of labels and number of data channels must be equal."
-    @assert length(type) == size(data, 1) "Number of channel types and number of data channels must be equal."
-    @assert length(unit) == size(data, 1) "Number of channel units and number of data channels must be equal."
+    @assert length(label) == size(data, 1) "Number of labels ($(length(label))) and number of data channels ($(size(data, 1))) must be equal."
+    @assert length(type) == size(data, 1) "Number of channel types ($(length(type))) and number of data channels ($(size(data, 1))) must be equal."
+    @assert length(unit) == size(data, 1) "Number of channel units ($(length(unit))) and number of data channels ($(size(data, 1))) must be equal."
 
     for idx in eachindex(type)
         @assert type[idx] in channel_types "Unknown channel type $(type[idx])."
@@ -423,7 +423,7 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::U
         obj_new.header.recording[:channel_type] = [obj.header.recording[:channel_type]; string.(type)]
         obj_new.header.recording[:unit] = [obj.header.recording[:unit]; unit]
         obj_new.header.recording[:channel_order] = [obj_new.header.recording[:channel_order]; collect(maximum(obj_new.header.recording[:channel_order]):maximum(obj_new.header.recording[:channel_order]) + size(data, 1))]
-        obj_new.header.recording[:bad_channel] = m_pad0(obj_new.header.recording[:bad_channel], size(data))
+        obj_new.header.recording[:bad_channel] = m_pad0(obj_new.header.recording[:bad_channel], size(data)[1], size(data)[2])
     else
         obj_new.data = data
         obj_new.header.recording[:label] = label

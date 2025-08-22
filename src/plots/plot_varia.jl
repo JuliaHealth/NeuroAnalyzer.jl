@@ -665,17 +665,17 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        right_margin=50Plots.px,
                        bottom_margin=30Plots.px,
                        legend=false,
-                       xticks=false,
-                       yticks=false,
+                       # xticks=false,
+                       # yticks=false,
                        title=title,
                        color=:black,
                        palette=pal,
-                       linewidth=0.2,
+                       linewidth=2,
                        titlefontsize=8,
-                       xtickfontsize=4,
-                       ytickfontsize=4;
+                       xtickfontsize=5,
+                       ytickfontsize=5;
                        kwargs...)
-        for idx in 2:length(s)
+        for idx in eachindex(s)[(begin + 1):end]
             p = Plots.plot!([0, s[idx]], [0, 1],
                             projection=:polar,
                             color=:black)
@@ -688,17 +688,17 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        right_margin=50Plots.px,
                        bottom_margin=30Plots.px,
                        legend=false,
-                       xticks=false,
-                       yticks=false,
+                       # xticks=false,
+                       # yticks=false,
                        title=title,
                        color=:black,
                        palette=pal,
-                       linewidth=0.2,
+                       linewidth=2,
                        titlefontsize=8,
-                       xtickfontsize=4,
-                       ytickfontsize=4;
+                       xtickfontsize=5,
+                       ytickfontsize=5;
                        kwargs...)
-        for idx in 2:size(s, 1)
+        for idx in axes(s, 1)[(begin + 1):end]
             p = Plots.plot!([0, s[idx, 1]], [0, s[idx, 2]],
                             projection=:polar,
                             color=:black)

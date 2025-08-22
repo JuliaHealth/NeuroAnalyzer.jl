@@ -33,7 +33,7 @@ Calculate upper envelope.
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
-    @assert length(s) == length(x) "Length of s and length of x must be equal."
+    @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
 
     e = zeros(length(s))
 
@@ -75,7 +75,7 @@ Calculate lower envelope.
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
-    @assert length(s) == length(x) "Length of s and length of x must be equal."
+    @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
 
     e = zeros(length(s))
 

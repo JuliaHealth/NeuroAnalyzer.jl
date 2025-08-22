@@ -13,7 +13,6 @@ Plot PSD (power spectrum density).
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Vector{Float64}`: powers
-- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -26,7 +25,7 @@ Plot PSD (power spectrum density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -86,7 +85,6 @@ Plot multi-channel PSD (power spectrum density).
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -99,7 +97,7 @@ Plot multi-channel PSD (power spectrum density).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -142,7 +140,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
 
     # prepare plot
     plot_size = 100 + 40 * ch_n <= 800 ? (1200, 800) : (1200, 100 + 40 * ch_n)
-    p = Plots.plot(ylabel="",
+    p = Plots.plot(ylabel=ylabel,
                    xlabel=100 + 40 * ch_n < 800 ? xlabel : "",
                    legend=false,
                    xlims=frq_lim,
@@ -164,7 +162,8 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
-                   ytickfontsize=size(sp, 1) <= 64 ? 6 : 5)
+                   ytickfontsize=size(sp, 1) <= 64 ? 6 : 5;
+                   kwargs...)
 
     # plot zero line
     p = Plots.hline!(collect((ch_n - 1):-1:0),
