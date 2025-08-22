@@ -16,6 +16,7 @@ export plot_heatmap
 export plot_imf
 export plot_hs
 export plot_fi
+export plot_phase
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -43,9 +44,9 @@ Plot matrix.
 function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", xrot::Int64=0, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(m, 1) == size(m, 2) "Matrix must be square."
-    @assert length(xlabels) == length(ylabels) "Lengths of xlabels and ylabels must be equal."
-    @assert length(xlabels) == size(m, 1) "Length of xlabels and matrix size must be equal."
-    @assert length(ylabels) == size(m, 2) "Length of ylabels and matrix size must be equal."
+    @assert length(xlabels) == length(ylabels) "Lengths of xlabels ($(length(xlabels))) and ylabels ($(length(ylabels))) must be equal."
+    @assert length(xlabels) == size(m, 1) "Length of xlabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."
+    @assert length(ylabels) == size(m, 2) "Length of ylabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."
 
     n = size(m, 1)
     xmar = maximum(length.(xlabels)) * 2
@@ -149,8 +150,8 @@ Plot histogram.
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
 - `bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
 - `label::String=""`: channel label
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `draw_mean::Bool=true`
@@ -231,8 +232,8 @@ Bar plot.
 
 - `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -243,7 +244,7 @@ Bar plot.
 """
 function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert length(s) == length(xlabels) "s length ($(length(s))) and xlabels length ($(length(xlabels))) differ."
+    @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
@@ -287,8 +288,8 @@ Line plot.
 
 - `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -299,7 +300,7 @@ Line plot.
 """
 function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert length(s) == length(xlabels) "signal length ($(length(s))) must be equal to xlabels ($(length(xlabels)))."
+    @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :auto
@@ -341,8 +342,8 @@ Line plot.
 - `s::AbstractArray`
 - `rlabels::Vector{String}`: signal rows labels
 - `xlabels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -354,8 +355,8 @@ Line plot.
 function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _chk2d(s)
-    @assert size(s, 1) == length(rlabels) "Number of s columns ($(size(s, 1))) must be equal to rlabels length ($(length(rlabels)))."
-    @assert size(s, 2) == length(xlabels) "Number of s columns ($(size(s, 2))) must be equal to xlabels length ($(length(xlabels)))."
+    @assert size(s, 1) == length(rlabels) "Number of s columns ($(size(s, 1))) and length or rlabels ($(length(rlabels))) must be equal."
+    @assert size(s, 2) == length(xlabels) "Number of s columns ($(size(s, 2))) and length of xlabels ($(length(xlabels))) must be equal."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :auto
@@ -401,9 +402,9 @@ Box plot.
 # Arguments
 
 - `s::AbstractArray`
-- `glabels::Vector{String}`: group labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `glabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -415,7 +416,7 @@ Box plot.
 function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _chk2d(s)
-    @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."
+    @assert size(s, 1) == length(glabels) "Number of signal columns ($(size(s, 1))) and length of glabels ($(length(gxlabels))) must be equal."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :auto
@@ -454,9 +455,9 @@ Violin plot.
 # Arguments
 
 - `s::AbstractArray`
-- `glabels::Vector{String}`: group labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `glabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -468,7 +469,7 @@ Violin plot.
 function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _chk2d(s)
-    @assert size(s, 1) == length(glabels) "Number of s columns ($(size(s, 1))) must be equal to glabels length ($(length(glabels)))."
+    @assert size(s, 1) == length(glabels) "Number of s columns ($(size(s, 1))) and length of glabels ($(length(glabels))) must be equal."
 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :auto
@@ -507,9 +508,9 @@ Dots plot.
 # Arguments
 
 - `s::Vector{Vector{Float64}}`
-- `glabels::Vector{String}`: group labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `glabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -520,7 +521,7 @@ Dots plot.
 """
 function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert size(signal, 1) == length(glabels) "Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."
+    @assert size(signal, 1) == length(glabels) "Number of signal columns ($(size(signal, 1))) and length of glabels ($(length(xlabels))) must be equal."
 
     pal = mono ? :grays : :darktest
 
@@ -567,9 +568,9 @@ Plot paired data.
 # Arguments
 
 - `signal::Vector{Vector{Float64}}`
-- `glabels::Vector{String}`: group labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `glabels::Vector{String}`: group labels (X ticks)
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -580,7 +581,7 @@ Plot paired data.
 """
 function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert size(signal, 1) == length(glabels) "Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."
+    @assert size(signal, 1) == length(glabels) "Number of signal columns ($(size(signal, 1))) and length of glabels ($(length(xlabels))) must be equal."
     ll = Vector{Int64}()
     for idx in eachindex(glabels)
         push!(ll, length(signal[idx]))
@@ -728,7 +729,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `t::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`
 - `ylabel::String="default"`
@@ -746,8 +747,8 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 """
 function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(f[1], f[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert size(s, 1) == length(f) "f vector length does not match spectrogram."
-    @assert size(s, 2) == length(t) "t vector length does not match spectrogram."
+    @assert size(s, 1) == length(f) "Length of f ($(length(f))) and number of spectrogram rows ($(size(s, 1))) must be equal."
+    @assert size(s, 2) == length(t) "Length of t ($(length(t))) and number of spectrogram columns ($(size(s, 2))) must be equal."
     @assert ndims(s) == 3 "s must have 3 dimensions."
     @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
     @assert n > 0 "n must be ≥ 1."
@@ -932,7 +933,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
@@ -950,7 +951,7 @@ function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::S
 
     _in(frq_lim[1], (f[1], f[end]), "frq_lim")
     _in(frq_lim[2], (f[1], f[end]), "frq_lim")
-    @assert size(p, 1) == length(f) "f vector length does not match powers."
+    @assert size(p, 1) == length(f) "Length of f ($(length(f))) and number of powers rows ($(size(p, 1)))) must be equal."
     @assert ndims(p) == 2 "p must have 2 dimensions."
     @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
 
@@ -1225,8 +1226,8 @@ Dots plot.
 - `s_l::AbstractVector`: CI lower bound
 - `s_u::AbstractVector`: CI upper bound
 - `t::AbstractVector`: time points
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -1304,8 +1305,8 @@ Plot heatmap.
 - `m::AbstractMatrix`
 - `x::AbstractVector`
 - `y::AbstractVector`
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `xlabel::String=""`: X axis label
+- `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `cb::Bool=true`: draw color
@@ -1398,7 +1399,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
 
     @assert n > 0 "n must be ≥ 1."
     @assert n + 1 <= size(imf, 1) "n must be ≤ $(size(imf, 1) - 1)."
-    @assert size(imf, 2) == length(t) "Length of t must be $(size(imf, 2))."
+    @assert size(imf, 2) == length(t) "Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."
 
     pal = mono ? :grays : :darktest
 
@@ -1499,8 +1500,8 @@ Plot Hilbert spectrum.
 
 - `sp::Vector{Float64}`: Hilbert transform powers
 - `st::Vector{Float64}`: time
-- `xlabel::String="default"`: x-axis label, default is Time [s]
-- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `xlabel::String="default"`: X axis label, default is Time [s]
+- `ylabel::String="default"`: Y axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -1511,7 +1512,7 @@ Plot Hilbert spectrum.
 """
 function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert length(sp) == length(st) "Length of powers vector must equal length of time points vector."
+    @assert length(sp) == length(st) "Length of powers ($(length(sp))) and time points ($(length(st))) must be equal."
 
     pal = mono ? :grays : :darktest
 
@@ -1534,13 +1535,14 @@ function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=(1200, 500),
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
-                   ytickfontsize=6)
+                   ytickfontsize=6;
+                   kwargs...)
 
     # plot powers
     p = Plots.plot!(st,
@@ -1562,8 +1564,8 @@ Plot instantaneous frequencies.
 
 - `fi::Vector{Float64}`: instantaneous frequencies
 - `st::Vector{Float64}`: time
-- `xlabel::String="default"`: x-axis label, default is Time [s]
-- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `xlabel::String="default"`: X axis label, default is Time [s]
+- `ylabel::String="default"`: Y axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plot() function
@@ -1574,7 +1576,7 @@ Plot instantaneous frequencies.
 """
 function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert length(fi) == length(st) "Length of powers vector must equal length of time points vector."
+    @assert length(fi) == length(st) "Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal."
 
     pal = mono ? :grays : :darktest
 
@@ -1597,20 +1599,104 @@ function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=(1200, 500),
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
-                   ytickfontsize=6)
+                   ytickfontsize=6;
+                   kwargs...)
 
-    # plot powers
+    # plot frequencies
     p = Plots.plot!(st,
                     fi,
                     linewidth=1,
                     label="",
                     color=:black)
+
+    return p
+
+end
+
+"""
+    plot_phase(ph, sf; <keyword arguments>)
+
+Plot phases.
+
+# Arguments
+
+- `ph::Vector{Float64}`: phases
+- `sf::Vector{Float64}`: frequencies
+- `unit::Symbol=:rad`: phase unit (radians or degrees)
+- `type::Symbol=:line`: plot type (`:line`: line, `:stem`: stems)
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
+- `title::String="default"`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad, type::Symbol=:line, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    _check_var(unit, [:rad, :deg], "unit")
+    _check_var(type, [:line, :stem], "type")
+    @assert length(ph) == length(sf) "Length of phases ($(length(fi))) and frequencies ($(length(st))) must be equal."
+
+    pal = mono ? :grays : :darktest
+
+    xl, yl, tt = _set_defaults(xlabel,
+                               ylabel,
+                               title,
+                               "Frequency [Hz]",
+                               unit === :rad ? "Phase [rad]" : "Phase [°]",
+                               "")
+
+    # prepare plot
+    p = Plots.plot(xlabel=xl,
+                   ylabel=yl,
+                   legend=false,
+                   xlims=_xlims(sf),
+                   xticks=_ticks(sf),
+                   ytick_direction=:out,
+                   xtick_direction=:out,
+                   title=tt,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 500),
+                   margins=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+
+    # plot phases
+    if type === :line
+        p = Plots.plot!(sf,
+                        ph,
+                        linewidth=1,
+                        label="",
+                        color=:black)
+    else
+        p = Plots.plot!(sf,
+                        ph,
+                        seriestype=:stem,
+                        linewidth=1,
+                        label="",
+                        color=:black)
+        p = Plots.scatter!(sf,
+                           ph,
+                           linewidth=1,
+                           label="",
+                           mc=:black,
+                           ms=2.0)
+    end
 
     return p
 

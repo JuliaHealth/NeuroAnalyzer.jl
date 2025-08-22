@@ -277,4 +277,10 @@ hms = vec(hms[:, :, 1])
 p = NeuroAnalyzer.plot_hs(hms, t)
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_fi()"
+t = e10.epoch_time
+fi = frqinst(e10, ch="Fp1")
+p = NeuroAnalyzer.plot_fi(fi[1, :, 1], t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
