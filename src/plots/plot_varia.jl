@@ -1540,7 +1540,8 @@ function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
-                   ytickfontsize=6)
+                   ytickfontsize=6;
+                   kwargs...)
 
     # plot powers
     p = Plots.plot!(st,
@@ -1603,7 +1604,8 @@ function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                    xlabelfontsize=8,
                    ylabelfontsize=8,
                    xtickfontsize=6,
-                   ytickfontsize=6)
+                   ytickfontsize=6;
+                   kwargs...)
 
     # plot powers
     p = Plots.plot!(st,
