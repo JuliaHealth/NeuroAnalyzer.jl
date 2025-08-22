@@ -672,8 +672,8 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        palette=pal,
                        linewidth=2,
                        titlefontsize=8,
-                       xtickfontsize=5,
-                       ytickfontsize=5;
+                       xtickfontsize=6,
+                       ytickfontsize=6;
                        kwargs...)
         for idx in eachindex(s)[(begin + 1):end]
             p = Plots.plot!([0, s[idx]], [0, 1],
@@ -695,8 +695,8 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        palette=pal,
                        linewidth=2,
                        titlefontsize=8,
-                       xtickfontsize=5,
-                       ytickfontsize=5;
+                       xtickfontsize=6,
+                       ytickfontsize=6;
                        kwargs...)
         for idx in axes(s, 1)[(begin + 1):end]
             p = Plots.plot!([0, s[idx, 1]], [0, s[idx, 2]],
