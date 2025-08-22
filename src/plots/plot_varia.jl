@@ -1326,8 +1326,8 @@ Plot heatmap.
 """
 function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) differ."
-    @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) differ."
+    @assert size(m, 1) == length(y) "Number of m rows ($(size(m, 1))) and y length ($(length(y))) must be equal."
+    @assert size(m, 2) == length(x) "Number of m columns ($(size(m, 2))) and x length ($(length(x))) must be equal."
 
     pal = mono ? :grays : :bluesreds
 
