@@ -115,9 +115,9 @@ function freqs(t::Union{AbstractVector, AbstractRange}; nf::Bool=false)::Tuple{V
     # frequency array
     # hz = linspace(0, nf, floor(Int64, length(t) / 2))
     if nf
-        hz = fftshift(Vector(fftfreq(length(t), fs)))
+        hz = fftshift(round.(Vector(fftfreq(length(t), fs)), digits=3))
     else
-        hz = Vector(rfftfreq(length(t), fs))
+        hz = round.(Vector(rfftfreq(length(t), fs)), digits=3)
     end
 
     return hz, nqf

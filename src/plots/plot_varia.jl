@@ -644,13 +644,14 @@ Polar plot.
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
+- `ticks::Bool=false`: draw X and Y ticks
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
     ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
@@ -665,8 +666,8 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        right_margin=50Plots.px,
                        bottom_margin=30Plots.px,
                        legend=false,
-                       # xticks=false,
-                       # yticks=false,
+                       xticks=ticks,
+                       yticks=ticks,
                        title=title,
                        color=:black,
                        palette=pal,
@@ -688,8 +689,8 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        right_margin=50Plots.px,
                        bottom_margin=30Plots.px,
                        legend=false,
-                       # xticks=false,
-                       # yticks=false,
+                       xticks=ticks,
+                       yticks=ticks,
                        title=title,
                        color=:black,
                        palette=pal,
