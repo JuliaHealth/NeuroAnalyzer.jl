@@ -356,7 +356,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             _, sp, _, sf, st = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, db=false, w=w)
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf, st = NeuroAnalyzer.ghspectrogram(signal, fs=fs, db=false, gw=gw, w=w)
+            sp, _, sf, st = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=false, gw=gw, w=w)
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
             _log_off()
@@ -567,7 +567,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, db=db, gw=gw, w=w)
+            sp, _, sf = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=db, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
@@ -621,7 +621,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             sf = linspace(0, frq_lim[2], size(sp, 2))
             title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
-            sp, _, sf = NeuroAnalyzer.ghspectrogram(signal, fs=fs, db=db, gw=gw, w=w)
+            sp, _, sf = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=db, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
             title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt

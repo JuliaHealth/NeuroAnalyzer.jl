@@ -1219,7 +1219,7 @@ end
 """
     plot_ci(s, s_ci_l, s_ci_h; <keyword arguments>)
 
-Dots plot.
+Confidence interval plot.
 
 # Arguments
 
