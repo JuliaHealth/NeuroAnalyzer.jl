@@ -283,4 +283,17 @@ fi = frqinst(e10, ch="Fp1")
 p = NeuroAnalyzer.plot_fi(fi[1, :, 1], t)
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_phase()"
+s = e10.data[1, :, 1]
+X = ftransform(s)
+f, _ = freqs(s, sr(e10))
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:stem)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:stem)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:line)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
