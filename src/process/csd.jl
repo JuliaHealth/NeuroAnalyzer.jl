@@ -32,7 +32,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
 
     ch = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
     locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     ch_n = nrow(locs)
     ep_n = nepochs(obj)

@@ -365,6 +365,12 @@ e10_tmp = reference_plap(e10)
 e10_tmp = reference_plap(e10, weighted=true)
 @test size(e10_tmp) == size(e10)
 
+@info "Test: reference_slap()"
+e10_tmp = reference_slap(e10)
+@test size(e10_tmp) == size(e10)
+e10_tmp = reference_slap(e10, weighted=true)
+@test size(e10_tmp) == size(e10)
+
 @info "Test: csd()"
 g, h = gh(e10.locs)
 @test size(g) == (23, 23)

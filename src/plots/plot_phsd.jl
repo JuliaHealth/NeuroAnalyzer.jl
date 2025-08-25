@@ -536,7 +536,7 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
 
     chs = intersect(locs[!, :label], clabels[ch])
     locs = Base.filter(:label => in(chs), locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     pal = mono ? :grays : :darktest
 

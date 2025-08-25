@@ -1,3 +1,19 @@
+function _sph_distance_sph(r1::Real, theta1::Real, phi1::Real, r2::Real, theta2::Real, phi2::Real)
+    d = sqrt(r1^2 + r2^2 - (2 * r1 * r2) * (sind(theta1) * sind(theta2) * cosd(phi1 - phi2) + cosd(theta1) * cosd(theta2)))
+    return d
+end
+function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2::Real)
+    d = sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
+    return d
+end
+
+function _check_ch_locs(ch::Vector{Int64}, objl::Vector{String}, locsl::Vector{String})::Nothing
+    for idx in eachindex(ch)
+        @assert objl[idx] in locsl "Channel $(objl[idx]) does not have a location."
+    end
+    return nothing
+end
+
 _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{Int64, Vector{Int64}} = _find_bylabel(obj.locs, labels(obj)[ch])
 _loc_idx(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{Int64} = _find_bylabel(obj.locs, labels(obj)[get_channel(obj, ch=ch)])
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{String, Vector{String}} = obj.locs[_loc_idx(obj, ch), :label]
@@ -6,14 +22,14 @@ _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Ve
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::DataFrame
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     return locs
 end
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::DataFrame
     chs = intersect(obj.locs[!, :label], ch)
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     return locs
 end
 

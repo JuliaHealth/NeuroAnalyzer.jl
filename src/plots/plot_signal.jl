@@ -1022,6 +1022,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # check channels
+    @assert labels(obj1)[get_channel(obj1, ch=ch)] == labels(obj2)[get_channel(obj1, ch=ch)] "OBJ1 and OBJ2 channel labels must be the same."
     _ = get_channel(obj2, ch=ch)
     ch = get_channel(obj1, ch=ch)
     clabels = labels(obj1)

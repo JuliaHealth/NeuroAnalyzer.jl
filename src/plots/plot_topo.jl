@@ -376,7 +376,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     # get time vector
     if seg[2] <= epoch_len(obj)

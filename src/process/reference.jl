@@ -8,6 +8,8 @@ export reference_m
 export reference_m!
 export reference_plap
 export reference_plap!
+export reference_slap
+export reference_slap!
 export reference_custom
 export reference_custom!
 
@@ -131,7 +133,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
-        @assert length(ch) == nrow(locs) "Some channels do not have locations."
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
@@ -584,7 +586,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     s = @views obj.data[ch, :, :]
     ch_n = size(s, 1)
@@ -671,6 +673,130 @@ Nothing
 function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::Nothing
 
     obj_new = reference_plap(obj, nn=nn, weighted=weighted, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.locs = obj_new.locs
+
+    return nothing
+
+end
+
+
+"""
+    reference_slap(obj; <keyword arguments>)
+
+Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signal channels are processed.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `nn::Int64=4`: use `nn` adjacent electrodes
+- `weighted::Bool=false`: use mean of `nn` nearest channels if false; if true, mean of `nn` nearest channels is weighted by distance to the referenced channel
+- `med::Bool=false`: use median instead of mean
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function reference_slap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::NeuroAnalyzer.NEURO
+
+    _check_datatype(obj, "eeg")
+    _has_locs(obj)
+
+    # keep signal channels
+    ch = get_channel(obj, ch=get_channel(obj, type="eeg"))
+    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+
+    s = @views obj.data[ch, :, :]
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    @assert nn >= 1 "nn must be ≥ 1"
+    @assert nn < ch_n - 1 "nn must be < $(ch_n - 1)"
+
+    loc_x = locs[!, :loc_x]
+    loc_y = locs[!, :loc_y]
+    loc_z = locs[!, :loc_z]
+    
+    # distance matrix
+    d = zeros(ch_n, ch_n)
+    for idx1 in 1:ch_n
+        for idx2 in 1:ch_n
+            d[idx1, idx2] = _sph_distance_cart(loc_x[idx1], loc_y[idx1], loc_z[idx1], loc_x[idx2], loc_y[idx2], loc_z[idx2])
+        end
+    end
+    # set weights not to reference to itself
+    d[d .== 0] .= Inf
+
+    # nn nearest neighbors index matrix
+    nn_idx = zeros(Int64, ch_n, nn)
+    for idx1 in 1:ch_n
+        # nn_idx[idx1, :] = sortperm(d[idx1, :])[2:(nn + 1)] # 1st neighbor is the electrode itself
+        nn_idx[idx1, :] = sortperm(d[idx1, :])[1:nn]
+    end
+
+    s_ref = zeros(size(s))
+
+    @inbounds for ep_idx in 1:ep_n
+        Threads.@threads :greedy for ch_idx in 1:ch_n
+            ref_chs = @view s[nn_idx[ch_idx, :], :, ep_idx]
+            if !weighted
+                if !med
+                    ref_ch = vec(mean(ref_chs, dims=1))
+                else
+                    ref_ch = vec(median(ref_chs, dims=1))
+                end
+            else
+                w = zeros(nn)
+                for w_idx in 1:nn
+                    w[w_idx] = _sph_distance_cart(loc_x[ch_idx], loc_y[ch_idx], loc_z[ch_idx], loc_x[nn_idx[ch_idx, w_idx]], loc_y[nn_idx[ch_idx, w_idx]], loc_z[nn_idx[ch_idx, w_idx]])
+                end
+                w = 1 .- w
+                if !med
+                    ref_ch = vec(mean(w .* ref_chs, dims=1))
+                else
+                    ref_ch = vec(median(w .* ref_chs, dims=1))
+                end
+            end
+            s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
+        end
+    end
+
+    obj_new = deepcopy(obj)
+    obj_new.header.recording[:label][ch] .*= weighted ? "-wslap" : "-slap"
+    ch_locs = NeuroAnalyzer._find_bylabel(obj.locs, labels(obj)[ch])
+    obj_new.locs[ch_locs, :label] .*= weighted ? "-wslap" : "-slap"
+    obj_new.data[ch, :, :] = s_ref
+    obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
+    reset_components!(obj_new)
+    push!(obj_new.history, "reference_slap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
+
+    return obj_new
+
+end
+
+"""
+    reference_slap!(obj; <keyword arguments>)
+
+Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signal channels are processed.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `nn::Int64=4`: use `nn` adjacent electrodes
+- `weighted::Bool=false`: use distance weights; use mean of nearest channels if false
+- `med::Bool=false`: use median instead of mean
+
+# Returns
+
+Nothing
+"""
+function reference_slap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::Nothing
+
+    obj_new = reference_slap(obj, nn=nn, weighted=weighted, med=med)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
