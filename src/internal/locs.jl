@@ -1,5 +1,5 @@
 function _sph_distance_sph(r1::Real, theta1::Real, phi1::Real, r2::Real, theta2::Real, phi2::Real)
-    d = sqrt(r1^2 + r2^2 - (2 * r1 * r2) * (sind(theta1) * sind(theta2) * cosd(phi1 - phi2) + cosd(theta1) * cosd(theta2)))
+    d = sqrt(r1^2 + r2^2 - (2 * r1 * r2) * cosd(theta1 - theta2) + (2 * r1 * r2) * sind(theta1) * sind(theta2) * (cosd(phi1 - phi2 - 1)))
     return d
 end
 function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2::Real)
