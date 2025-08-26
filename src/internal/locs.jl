@@ -20,17 +20,15 @@ _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::Union{Strin
 _idx2lab(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Vector{String} = obj.locs[NeuroAnalyzer._loc_idx(obj, ch), :label]
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}})::DataFrame
-    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    chl = labels(obj)[ch]
+    chs = intersect(obj.locs[!, :label], chl)
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     return locs
 end
 
 function _ch_locs(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::DataFrame
-    chs = intersect(obj.locs[!, :label], ch)
-    locs = Base.filter(:label => in(chs), obj.locs)
-    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-    return locs
+    return _ch_locs(obj, get_channel(obj, ch=ch))
 end
 
 function _find_bylabel(locs::DataFrame, l::Union{String, Vector{String}, Vector{SubString{String}}})::Union{Int64, Vector{Int64}}
