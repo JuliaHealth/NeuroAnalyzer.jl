@@ -529,7 +529,6 @@ Plot topographical map PSDs.
 - `sp::Array{Float64, 3}`: powers
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -543,10 +542,9 @@ Plot topographical map PSDs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
@@ -969,6 +967,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         variant=:s;
                         kwargs...)
     elseif type === :topo
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])

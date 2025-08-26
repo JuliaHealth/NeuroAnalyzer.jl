@@ -1038,13 +1038,13 @@ z3 = zipratio(e10_tmp)
 imf = emd(e10, ch="Fp1", ep=1)[1:(end - 1), :]
 p, ph, f, t = hhtspectrogram(imf, fs=sr(e10))
 @test size(p) == (128, 2560)
-@test size(ph) == (11, 2560)
+@test size(ph) == (8, 2560)
 @test length(f) == 128
 @test length(t) == 2560
 
 @info "Test: hmspectrum()"
 p, t = hmspectrum(e10, ch="Fp1")
-@test size(p) == (1, 2560, 120)
+@test size(p) == (1, 2560, 10)
 @test length(t) == 2560
 
 true

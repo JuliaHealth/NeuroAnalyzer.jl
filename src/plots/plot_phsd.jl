@@ -536,7 +536,6 @@ function plot_phsd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
 
     chs = intersect(locs[!, :label], clabels[ch])
     locs = Base.filter(:label => in(chs), locs)
-    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     pal = mono ? :grays : :darktest
 
@@ -827,6 +826,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          variant=:s;
                          kwargs...)
     elseif type === :topo
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PHSD plots all channels must be of the same type."
