@@ -7,8 +7,8 @@ function _sph_distance_cart(x1::Real, y1::Real, z1::Real, x2::Real, y2::Real, z2
     return d
 end
 
-function _check_ch_locs(ch::Vector{Int64}, objl::Vector{String}, locsl::Vector{String})::Nothing
-    for idx in eachindex(ch)
+function _check_ch_locs(ch::Union{Int64, Vector{Int64}}, objl::Vector{String}, locsl::Vector{String})::Nothing
+    for idx in ch
         @assert objl[idx] in locsl "Channel $(objl[idx]) does not have a location."
     end
     return nothing
