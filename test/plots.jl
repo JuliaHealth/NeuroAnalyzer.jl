@@ -107,6 +107,8 @@ p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
+@test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
 @test p isa Plots.Plot{Plots.GRBackend}
 
