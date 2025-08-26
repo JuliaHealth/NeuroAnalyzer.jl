@@ -392,15 +392,18 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         # plot markers if available
         # TODO: draw markers length
         if markers && _has_markers(obj)
-            markerspos = obj.markers[!, :start] ./ sr(obj)
+            markers_pos = obj.markers[!, :start]
+            markers_id = obj.markers[!, :id]
             markers_desc = obj.markers[!, :value]
-            p = Plots.vline!(markerspos,
-                             linestyle=:dash,
-                             linewidth=0.5,
-                             linecolor=:black,
-                             label=false)
-            for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotations=(markerspos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+            for idx in eachindex(markers_pos)
+                if _in(markers_pos[idx], (st[1], st[end]))
+                    p = Plots.vline!([markers_pos[idx]],
+                                     linestyle=:dash,
+                                     linewidth=1,
+                                     linecolor=:black,
+                                     label=false)
+                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, 0.5, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                end
             end
         end
 
@@ -506,7 +509,7 @@ Plots spectrogram of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=10, wt::T=wavelet(Morlet(2π), β=32, Q=128), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=10, wt::T=wavelet(Morlet(2π), β=32, Q=128), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::Plots.Plot{Plots.GRBackend} where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert seg[1] != seg[2] "Signal is too short for analysis."
@@ -607,15 +610,18 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
         # plot markers if available
         # TODO: draw markers length
         if markers && _has_markers(obj)
-            markerspos = obj.markers[!, :start] ./ sr(obj)
+            markers_pos = obj.markers[!, :start]
+            markers_id = obj.markers[!, :id]
             markers_desc = obj.markers[!, :value]
-            p = Plots.vline!(markerspos,
-                             linestyle=:dash,
-                             linewidth=0.5,
-                             linecolor=:black,
-                             label=false)
-            for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotations=(markerspos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+            for idx in eachindex(markers_pos)
+                if _in(markers_pos[idx], (st[1], st[end]))
+                    p = Plots.vline!([markers_pos[idx]],
+                                     linestyle=:dash,
+                                     linewidth=1,
+                                     linecolor=:black,
+                                     label=false)
+                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, 0.5, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                end
             end
         end
 

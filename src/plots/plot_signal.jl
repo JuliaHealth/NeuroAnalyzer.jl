@@ -771,25 +771,28 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :value]
-        p = Plots.vline!(p,
-                         markers_pos,
-                         linestyle=:dash,
-                         linewidth=1,
-                         linecolor=:black,
-                         label=false)
-        for idx in eachindex(markers_desc)
-            p = Plots.plot!(p, annotations=(markers_pos[idx] + 0.1, -0.92, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+        for idx in eachindex(markers_pos)
+            if _in(markers_pos[idx], (t[1], t[end]))
+                p = Plots.vline!([markers_pos[idx]],
+                                 linestyle=:dash,
+                                 linewidth=1,
+                                 linecolor=:black,
+                                 label=false)
+                if length(ch) > 1
+                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, -0.90, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                else
+                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, _ylims(s[ch, :])[1] * 0.97, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                end
+            end
         end
     end
 
     # draw segment borders
-    p = Plots.vline!(p,
-                     [s_pos[1]],
+    p = Plots.vline!([s_pos[1]],
                      color=:black,
                      lw=1,
                      labels="")
-    p = Plots.vline!(p,
-                     [s_pos[2]],
+    p = Plots.vline!([s_pos[2]],
                      color=:black,
                      lw=1,
                      labels="")
