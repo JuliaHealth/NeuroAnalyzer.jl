@@ -185,11 +185,11 @@ function na_plugins_update(plugin::String="")::Nothing
     if plugin == ""
         for idx in eachindex(plugins)
             cd(plugins[idx])
-            @info "Updating: $(plugins[idx])"
+            _info("Updating: $(plugins[idx])")
             try
                 run(`$(git()) pull`)
             catch
-                @error "Cannot update $(plugins[idx])."
+                _error("Cannot update $(plugins[idx]).")
             end
             cd(plugins_path)
         end
@@ -199,7 +199,7 @@ function na_plugins_update(plugin::String="")::Nothing
         try
             run(`$(git()) pull`)
         catch
-            @error "Cannot update $plugin."
+            _error("Cannot update $plugin.")
         end
         cd(plugins_path)
     end

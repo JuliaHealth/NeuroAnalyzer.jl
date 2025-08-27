@@ -17,20 +17,11 @@ Perform convolution in the frequency domain.
 """
 function fconv(s::AbstractVector; kernel::AbstractVector, norm::Bool=true)::Vector{ComplexF64}
 
-    n_s = length(s)
-    n_kernel = length(kernel)
-    half_kernel = floor(Int64, n_kernel / 2)
-    s_fft = fft0(s, n_kernel - 1)
-    kernel_fft = fft0(kernel, n_s - 1)
+    s_fft = fft0(s, length(kernel) - 1)
+    kernel_fft = fft0(kernel, length(s) - 1)
     norm && (kernel_fft ./= cmax(kernel_fft))
     s_conv = ifft0(s_fft .* kernel_fft)
-
-    # remove in- and out- edges
-    if mod(n_kernel, 2) == 0
-        s_new = s_conv[half_kernel:(end - half_kernel)]
-    else
-        s_new = s_conv[half_kernel:(end - half_kernel - 1)]
-    end
+    s_new = _remove_kernel(s_conv, kernel)
 
     return s_new
 
@@ -94,6 +85,7 @@ function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
     ch = get_channel(obj, ch=ch)
     s_new = @views fconv(obj.data[ch, :, :], kernel=kernel, norm=norm)
+    _info("Group delay: $(_group_delay(kernel)) samples")
 
     return s_new
 

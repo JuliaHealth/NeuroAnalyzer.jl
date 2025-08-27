@@ -90,8 +90,8 @@ mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:c
 
 @info "Test: corm()"
 @test corm(v) ≈ ones(5, 5)
-@test size(corm(a1)) == (2, 2, 3, 2)
-@test size(corm(e10, ch="all")) == (24, 24, 2560, 10)
+@test size(corm(a1)) == (2, 2, 2)
+@test size(corm(e10, ch="all")) == (24, 24, 10)
 
 @info "Test: covm()"
 @test covm(v) == [ 2.5  5.0  7.5 10.0 12.5;
@@ -99,8 +99,8 @@ mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:c
                                  7.5 15.0 22.5 30.0 37.5;
                                 10.0 20.0 30.0 40.0 50.0;
                                 12.5 25.0 37.5 50.0 62.5]
-@test size(covm(a1)) == (2, 2, 3, 2)
-@test size(covm(e10, ch="all")) == (24, 24, 2560, 10)
+@test size(covm(a1)) == (2, 2, 2)
+@test size(covm(e10, ch="all")) == (24, 24, 10)
 
 @info "Test: cph()"
 ph, f = cph(rand(10), rand(10), fs=1)
@@ -722,43 +722,6 @@ sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
 @test t == (1, 30)
 @test f == (1, 11)
 
-@info "Test: spectrum()"
-c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(100))
-@test length(c) == 51
-@test length(sa) == 51
-@test length(sp) == 51
-@test length(sph) == 51
-c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(100))
-@test length(c) == 100
-@test length(sa) == 100
-@test length(sp) == 100
-@test length(sph) == 100
-c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10))
-@test size(c) == (10, 51, 10)
-@test size(sa) == (10, 51, 10)
-@test size(sp) == (10, 51, 10)
-@test size(sph) == (10, 51, 10)
-c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(10, 100, 10))
-@test size(c) == (10, 100, 10)
-@test size(sa) == (10, 100, 10)
-@test size(sp) == (10, 100, 10)
-@test size(sph) == (10, 100, 10)
-c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10), h=true)
-@test size(c) == (10, 100, 10)
-@test size(sa) == (10, 100, 10)
-@test size(sp) == (10, 100, 10)
-@test size(sph) == (10, 100, 10)
-c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, ch="all")
-@test size(c) == (24, 1281, 10)
-@test size(sa) == (24, 1281, 10)
-@test size(sp) == (24, 1281, 10)
-@test size(sph) == (24, 1281, 10)
-c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, ch="all", h=true)
-@test size(c) == (24, 2560, 10)
-@test size(sa) == (24, 2560, 10)
-@test size(sp) == (24, 2560, 10)
-@test size(sph) == (24, 2560, 10)
-
 @info "Test: stationarity()"
 s = NeuroAnalyzer.stationarity(e10, ch="all", method=:adf)
 @test size(s) == (24, 2, 10)
@@ -788,8 +751,8 @@ pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
 @test size(pxy) == (1, 2049, 1)
 @test length(f) == 2049
 pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
-@test size(pxy) == (1, 1290, 1)
-@test length(f) == 1290
+@test size(pxy) == (1, 1281, 1)
+@test length(f) == 1281
 
 @info "Test: tkeo()"
 @test tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
@@ -1013,5 +976,75 @@ gd, sc = diss(erp, erp, ch1="all", ch2="all")
 @info "Test: dirinrg()"
 @test dirinrg([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 212.5
 @test size(dirinrg(e10, ch="all")) == (24, 10)
+
+@info "Test: transform()"
+c, a, p, ph = NeuroAnalyzer.ftransform(rand(100))
+@test length(c) == 51
+@test length(a) == 51
+@test length(p) == 51
+@test length(ph) == 51
+c, a, p, ph = NeuroAnalyzer.ftransform(rand(100), nf=true)
+@test length(c) == 100
+@test length(a) == 100
+@test length(p) == 100
+@test length(ph) == 100
+c, a, p, ph = NeuroAnalyzer.htransform(rand(100))
+@test length(c) == 100
+@test length(a) == 100
+@test length(p) == 100
+@test length(ph) == 100
+c, a, p, ph = NeuroAnalyzer.transform(rand(10, 100, 10), h=false, nf=false)
+@test size(c) == (10, 51, 10)
+@test size(a) == (10, 51, 10)
+@test size(p) == (10, 51, 10)
+@test size(ph) == (10, 51, 10)
+c, a, p, ph = NeuroAnalyzer.transform(rand(10, 100, 10), h=false, nf=true)
+@test size(c) == (10, 100, 10)
+@test size(a) == (10, 100, 10)
+@test size(p) == (10, 100, 10)
+@test size(ph) == (10, 100, 10)
+c, a, p, ph = NeuroAnalyzer.transform(rand(10, 100, 10), h=true)
+@test size(c) == (10, 100, 10)
+@test size(a) == (10, 100, 10)
+@test size(p) == (10, 100, 10)
+@test size(ph) == (10, 100, 10)
+c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all")
+@test size(c) == (24, 1281, 10)
+@test size(a) == (24, 1281, 10)
+@test size(p) == (24, 1281, 10)
+@test size(ph) == (24, 1281, 10)
+c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all", nf=true)
+@test size(c) == (24, 2560, 10)
+@test size(a) == (24, 2560, 10)
+@test size(p) == (24, 2560, 10)
+@test size(ph) == (24, 2560, 10)
+c, a, p, ph = NeuroAnalyzer.transform(e10, ch="all", h=true)
+@test size(c) == (24, 2560, 10)
+@test size(a) == (24, 2560, 10)
+@test size(p) == (24, 2560, 10)
+@test size(ph) == (24, 2560, 10)
+
+@info "Test: zipratio()"
+e10_tmp = deepcopy(e10)
+z1 = zipratio(e10_tmp)
+e10_tmp.data = rand(size(e10.data, 1), size(e10.data, 2), size(e10.data, 3))
+z2 = zipratio(e10_tmp)
+e10_tmp.data = zeros(size(e10.data))
+z3 = zipratio(e10_tmp)
+@test z1 > z3
+@test z2 > z3
+
+@info "Test: hhtspectrogram()"
+imf = emd(e10, ch="Fp1", ep=1)[1:(end - 1), :]
+p, ph, f, t = hhtspectrogram(imf, fs=sr(e10))
+@test size(p) == (128, 2560)
+@test size(ph) == (8, 2560)
+@test length(f) == 128
+@test length(t) == 2560
+
+@info "Test: hmspectrum()"
+p, t = hmspectrum(e10, ch="Fp1")
+@test size(p) == (1, 2560, 10)
+@test length(t) == 2560
 
 true

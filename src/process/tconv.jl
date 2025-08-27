@@ -16,16 +16,11 @@ Performs convolution in the time domain.
 - `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
 function tconv(s::AbstractVector; kernel::AbstractVector)::Union{Vector{Float64}, Vector{ComplexF64}}
-    s_new = DSP.conv(s, kernel)
 
-    half_kernel = floor(Int, length(kernel) / 2)
+    s_conv = DSP.conv(s, kernel)
+    s_new = _remove_kernel(s_conv, kernel)
 
-    # remove in- and out- edges
-    if mod(length(kernel), 2) == 0
-        return s_new[half_kernel:(end - half_kernel)]
-    else
-        return s_new[half_kernel:(end - half_kernel - 1)]
-    end
+    return s_new
 
 end
 
@@ -87,16 +82,16 @@ function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
 
+    _info("Group delay: $(_group_delay(kernel)) samples")
+
     if eltype(kernel) == ComplexF64
         return tconv(obj.data[ch, :, :], kernel=kernel)
     else
         obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)
+        reset_components!(obj_new)
+        push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
+        return obj_new
     end
-
-    reset_components!(obj_new)
-    push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
-
-    return obj_new
 
 end
 

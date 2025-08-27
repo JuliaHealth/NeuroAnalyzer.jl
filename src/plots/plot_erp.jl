@@ -685,7 +685,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                    "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
-        @assert length(ch) == nrow(locs) "Some channels do not have locations."
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         peaks = false
         ndims(s) == 1 && (s = reshape(s, 1, length(s)))
         clabels = labels(obj)[ch]
@@ -789,8 +789,6 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             _info("Negative peak amplitude: $(round(erp_tmp[pp[1, 2]], digits=2)) $units")
         end
     end
-
-    Plots.plot(p)
 
     return p
 

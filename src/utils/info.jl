@@ -364,13 +364,13 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
     println("         Recording time: $(obj.header.recording[:recording_time])")
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
-    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
+    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=3))")
     println("     Number of channels: $(nchannels(obj))")
     if !(datatype(obj) in ["mep", "sensors", "eda"])
         println("              Epochs ID: $(obj.header.recording[:epoch_id])")
         println("       Number of epochs: $(nepochs(obj))")
         println(" Epoch length [samples]: $(epoch_len(obj))")
-        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=3))")
     end
     if datatype(obj) == "eeg"
         if obj.header.recording[:reference] == ""
@@ -482,13 +482,13 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
     println("         Recording time: $(obj.header.recording[:recording_time])")
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
-    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
+    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=3))")
     println("     Number of channels: $(nchannels(obj))")
     if !(datatype(obj) in ["mep", "sensors", "eda"])
         println("              Epochs ID: $(obj.header.recording[:epoch_id])")
         println("       Number of epochs: $(nepochs(obj))")
         println(" Epoch length [samples]: $(epoch_len(obj))")
-        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
+        println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=3))")
     end
     if datatype(obj) == "eeg"
         if obj.header.recording[:reference] == ""

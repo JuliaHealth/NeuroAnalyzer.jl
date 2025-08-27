@@ -12,7 +12,7 @@ module NeuroAnalyzer
 
 # set constants
 
-const VER = v"0.25.8"
+const VER = v"0.25.9-dev"
 const allow_wip = occursin("dev", string(VER))          # false for the stable branch, true for the devel branch
 const io = PipeBuffer()                                 # required for interactive preview
 const data_types = ["eeg",
@@ -81,11 +81,11 @@ using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
-using CubicSplines
 using CUDA
 using Dates
 using Deconvolution
 using DICOM
+using Dierckx
 using DSP
 using FFTW
 using FileIO
@@ -237,6 +237,7 @@ end
 include("internal/channels.jl")
 include("internal/check.jl")
 include("internal/components.jl")
+include("internal/convolution.jl")
 include("internal/create_header.jl")
 include("internal/draw_head.jl")
 include("internal/epochs.jl")
@@ -264,6 +265,7 @@ include("internal/statistics.jl")
 include("internal/tester.jl")
 include("internal/time.jl")
 include("internal/wl2ext.jl")
+include("internal/vec.jl")
 
 # utils
 include("utils/apply.jl")
@@ -368,8 +370,8 @@ include("process/dw_split.jl")
 include("process/edit_montage.jl")
 include("process/erp.jl")
 include("process/fconv.jl")
-include("process/filter_g.jl")
 include("process/filter.jl")
+include("process/filter_g.jl")
 include("process/filter_mavg.jl")
 include("process/filter_mmed.jl")
 include("process/filter_poly.jl")
@@ -434,8 +436,8 @@ include("stats/zscore.jl")
 # analyze
 include("analyze/acor.jl")
 include("analyze/acov.jl")
-include("analyze/ampdiff.jl")
 include("analyze/amp.jl")
+include("analyze/ampdiff.jl")
 include("analyze/axc2frq.jl")
 include("analyze/band_asymmetry.jl")
 include("analyze/band_mpower.jl")
@@ -447,20 +449,26 @@ include("analyze/cph.jl")
 include("analyze/cpsd.jl")
 include("analyze/dirinrg.jl")
 include("analyze/dissimilarity.jl")
+include("analyze/emd.jl")
 include("analyze/entropy.jl")
 include("analyze/envelopes.jl")
 include("analyze/erop.jl")
 include("analyze/eros.jl")
 include("analyze/erp_peaks.jl")
 include("analyze/frqinst.jl")
+include("analyze/ftt.jl")
 include("analyze/ged.jl")
+include("analyze/hfd.jl")
 include("analyze/hjorth.jl")
+include("analyze/hmspectrum.jl")
 include("analyze/hrv.jl")
 include("analyze/ispc.jl")
 include("analyze/itpc.jl")
 include("analyze/lat_idx.jl")
+include("analyze/mdiff.jl")
 include("analyze/mep_peaks.jl")
 include("analyze/mi.jl")
+include("analyze/msci95.jl")
 include("analyze/pacor.jl")
 include("analyze/peak.jl")
 include("analyze/phdiff.jl")
@@ -471,26 +479,23 @@ include("analyze/psd_rel.jl")
 include("analyze/psd_slope.jl")
 include("analyze/rms.jl")
 include("analyze/sef.jl")
-include("analyze/snr.jl")
-include("analyze/spectrogram.jl")
-include("analyze/spectrum.jl")
-include("analyze/stationarity.jl")
-include("analyze/symmetry.jl")
-include("analyze/tkeo.jl")
-include("analyze/tpt.jl")
-include("analyze/ftt.jl")
-include("analyze/total_power.jl")
-include("analyze/xcor.jl")
-include("analyze/xcov.jl")
-include("analyze/vartest.jl")
 include("analyze/segments.jl")
+include("analyze/snr.jl")
 include("analyze/specseg.jl")
+include("analyze/spectrogram.jl")
+include("analyze/stationarity.jl")
 include("analyze/stats.jl")
 include("analyze/std.jl")
-include("analyze/mdiff.jl")
-include("analyze/msci95.jl")
 include("analyze/sumsim.jl")
-include("analyze/hfd.jl")
+include("analyze/symmetry.jl")
+include("analyze/tkeo.jl")
+include("analyze/total_power.jl")
+include("analyze/tpt.jl")
+include("analyze/transform.jl")
+include("analyze/vartest.jl")
+include("analyze/xcor.jl")
+include("analyze/xcov.jl")
+include("analyze/zip.jl")
 
 # plots
 include("plots/cairo.jl")
@@ -500,6 +505,7 @@ include("plots/plot_connectivity_circle.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_eda.jl")
+include("plots/plot_efield.jl")
 include("plots/plot_erp.jl")
 include("plots/plot_filter_response.jl")
 include("plots/plot_locs.jl")
@@ -512,7 +518,6 @@ include("plots/plot_signal.jl")
 include("plots/plot_spectrogram.jl")
 include("plots/plot_topo.jl")
 include("plots/plot_varia.jl")
-include("plots/plot_efield.jl")
 
 # gui
 include("gui/iedit.jl")
@@ -522,8 +527,8 @@ include("gui/ipsd.jl")
 include("gui/iselect_seg.jl")
 include("gui/ispectrogram.jl")
 include("gui/itopo.jl")
-include("gui/iview_ica.jl")
 include("gui/iview.jl")
+include("gui/iview_ica.jl")
 
 # recorder
 include("recorder/edar.jl")
@@ -531,8 +536,8 @@ include("recorder/rt_plotter.jl")
 
 # tester
 include("tester/ftt.jl")
-include("tester/tpt.jl")
 include("tester/iavh.jl")
+include("tester/tpt.jl")
 
 # stim
 include("stim/ect.jl")

@@ -198,6 +198,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                            left_margin=head12 ? -20*Plots.px : -20*Plots.px,
                            titlefontsize=font_size,
                            colorbar=cb,
+                           colorbar_titlefontsize=font_size - 2,
                            colorbar_title=cb_label,
                            colorbar_ticks=false,
                            xlims=xl,
@@ -293,8 +294,6 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         end
     end
 
-    p = Plots.plot!(p)
-
     return p
 
 end
@@ -375,7 +374,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(ch) == nrow(locs) "Some channels do not have locations."
+    _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -406,9 +405,23 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=collect(1:nrow(locs)), locs=locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, threshold=threshold, threshold_type=threshold_type, kwargs=kwargs)
-
-    Plots.plot(p)
+    p = plot_topo(s,
+                  ch=collect(1:nrow(locs)),
+                  locs=locs,
+                  cb=cb,
+                  cb_label=cb_label,
+                  title=title,
+                  mono=mono,
+                  imethod=imethod,
+                  nmethod=nmethod,
+                  plot_contours=plot_contours,
+                  plot_electrodes=plot_electrodes,
+                  large=large,
+                  head=head,
+                  cart=cart,
+                  threshold=threshold,
+                  threshold_type=threshold_type,
+                  kwargs=kwargs)
 
     return p
 
@@ -556,9 +569,23 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=c_idx, locs=locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, threshold=threshold, threshold_type=threshold_type, kwargs=kwargs)
-
-    Plots.plot(p)
+    p = plot_topo(s,
+                  ch=c_idx,
+                  locs=locs,
+                  cb=cb,
+                  cb_label=cb_label,
+                  title=title,
+                  mono=mono,
+                  imethod=imethod,
+                  nmethod=nmethod,
+                  plot_contours=plot_contours,
+                  plot_electrodes=plot_electrodes,
+                  large=large,
+                  head=head,
+                  cart=cart,
+                  threshold=threshold,
+                  threshold_type=threshold_type,
+                  kwargs=kwargs)
 
     return p
 

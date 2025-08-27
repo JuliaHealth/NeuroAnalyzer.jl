@@ -1,5 +1,6 @@
 export plot_locs
 export plot_locs3d
+export plot_gridlocs
 
 """
     plot_locs(locs; <keyword arguments>)
@@ -438,10 +439,10 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
     if ch_labels
         for idx in eachindex(locs[!, :label])
             if idx in ch
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+                p = Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
 #=            if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+                p = Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
 =#
         end
@@ -449,7 +450,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
     if sch_labels
         for idx in eachindex(locs[!, :label])
             if idx in selected
-                Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
+                p = Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
     end
@@ -497,7 +498,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         end
     end
 
-    Plots.plot!(p)
+    Plots.plot(p)
 
     return p
 
@@ -624,8 +625,6 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
         end
     end
 
-    p = Plots.plot!(p)
-
     return p
 
 end
@@ -742,6 +741,72 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                       threshold=threshold,
                       threshold_type=threshold_type,
                       weights=weights)
+    end
+
+    return p
+
+end
+
+"""
+    plot_gridlocs()
+
+Plot a simplified plot of 10-20 EEG channels on a grid.
+
+# Arguments
+
+- `mono::Bool=false`: use color or gray palette
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_gridlocs(; mono::Bool=false)::Plots.Plot{Plots.GRBackend}
+
+    pal = mono ? :grays : :darktest
+
+    p = Plots.plot(grid=false,
+                   aspect_ratio=1,
+                   palette=pal,
+                   framestyle=:box,
+                   border=:none,
+                   size=(900, 900),
+                   margins=-50Plots.px,
+                   xlims=(-1.2, 1.2),
+                   ylims=(-1.2, 1.2),
+                   legend=false)
+
+    p = Plots.plot!([-1, 1], [-1, -1], lc=:black, lw=0.2)
+    p = Plots.plot!([-1, 1], [1, 1], lc=:black, lw=0.2)
+
+    p = Plots.plot!([-1, -1], [-1, 1], lc=:black, lw=0.2)
+    p = Plots.plot!([1, 1], [-1, 1], lc=:black, lw=0.2)
+
+    p = Plots.plot!([-1, -0.5], [0.5, 1], lc=:black, lw=0.5)
+    p = Plots.plot!([0.5, 1], [1, 0.5], lc=:black, lw=0.5)
+    p = Plots.plot!([-1, -0.5], [-0.5, -1], lc=:black, lw=0.5)
+    p = Plots.plot!([0.5, 1], [-1, -0.5], lc=:black, lw=0.5)
+
+    p = Plots.plot!([-0.5, 0.5], [-1, -1], lc=:black, lw=0.5)
+    p = Plots.plot!([-1, 1], [-0.5, -0.5], lc=:black, lw=0.5)
+    p = Plots.plot!([-1, 1], [0, 0], lc=:black, lw=0.5)
+    p = Plots.plot!([-1, 1], [0.5, 0.5], lc=:black, lw=0.5)
+    p = Plots.plot!([-0.5, 0.5], [1, 1], lc=:black, lw=0.5)
+
+    p = Plots.plot!([-1, -1], [-0.5, 0.5], lc=:black, lw=0.5)
+    p = Plots.plot!([-0.5, -0.5], [-1, 1], lc=:black, lw=0.5)
+    p = Plots.plot!([0, 0], [-1, 1], lc=:black, lw=0.5)
+    p = Plots.plot!([0.5, 0.5], [-1, 1], lc=:black, lw=0.5)
+    p = Plots.plot!([1, 1], [-0.5, 0.5], lc=:black, lw=0.5)
+
+    loc_x = [-0.5, 0, 0.5, -1, -0.5, 0, 0.5, 1, -1, -0.5, 0, 0.5, 1, -1, -0.5, 0, 0.5, 1, -0.5, 0, 0.5]
+    loc_y = [1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0, -0.5, -0.5, -0.5, -0.5, -0.5, -1, -1, -1]
+    loc_lab = ["Fp1", "Fpz", "Fp2", "F7", "F3", "Fz", "F4", "F8", "T3", "C3", "Cz", "C4", "T4", "T5", "P3", "Pz", "P4", "T6", "O1", "Oz", "O2"]
+    font_size = 6
+    label_offset_x = -0.05
+    label_offset_y = 0.02
+    for idx in eachindex(loc_x)
+        p = Plots.scatter!((loc_x[idx], loc_y[idx]), ms=3.0, mc=:black, mf=:black)
+        p = Plots.plot!(annotations=(loc_x[idx] + label_offset_x, loc_y[idx] + label_offset_y, Plots.text(loc_lab[idx], pointsize=font_size)))
     end
 
     return p

@@ -50,7 +50,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
             !isnothing(idx_tmp) && deleteat!(obj_new.header.recording[:magnetometers], idx_tmp)
         elseif obj_new.header.recording[:data_type] == "nirs"
             if !del_opt && idx in 1:length(obj_new.header.recording[:optode_labels])
-                @warn "NIRS signal channels must be deleted using delete_optode()."
+                _warn("NIRS signal channels must be deleted using delete_optode().")
                 return nothing
             end
             idx in 1:length(obj_new.header.recording[:wavelength_index]) && deleteat!(obj_new.header.recording[:wavelength_index], idx)

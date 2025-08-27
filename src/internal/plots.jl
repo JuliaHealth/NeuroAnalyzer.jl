@@ -33,7 +33,7 @@ function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
 #        if t[2] - t[1] == t[3] - t[2]
 #            tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:t[end])))
 #        else
-#            tc = collect(floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2))
+#            tc = collect(floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=3))
 #        end
 #    end
     if t[end] == round(Int64, t[end])

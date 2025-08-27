@@ -10,18 +10,18 @@ Convert time in seconds to sample number.
 
 # Arguments
 
-- `t::T`: time in s
+- `t::Real`: time in s
 - `fs::Int64`: sampling rate
 
 # Returns
 
 - `t2s::Int64`: sample number
 """
-function t2s(t::T, fs::Int64)::Int64 where {T<:Real}
+function t2s(t::Real, fs::Int64)::Int64
 
     @assert t >= 0 "t must be ≥ 0."
 
-    return t == 0 ? 1 : round(Int64, t * fs)
+    return t == 0 ? 1 : ceil(Int64, t * fs)
 
 end
 
@@ -32,18 +32,21 @@ Convert sample number to time in seconds.
 
 # Arguments
 
-- `t::Int64`: sample number
+- `s::Real`: sample number
 - `fs::Int64`: sampling rate
 
 # Returns
 
 - `s2t::Float64`: time in s
 """
-function s2t(s::Int64, fs::Int64)::Float64
+function s2t(s::Real, fs::Int64)::Float64
 
-    @assert s > 0 "s must be > 0."
+    if s == 0
+        _info("Sample number 0 replaced with 1")
+        s = 1
+    end
 
-    return s / fs
+    return round(s / fs - (1/fs), digits=3)
 
 end
 
@@ -55,15 +58,15 @@ Convert time in seconds to sample number.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `t::T`: time in seconds
+- `t::Real`: time in seconds
 
 # Returns
 
-- `t2s::Int64`: time in samples
+- `t2s::Int64`: sample number
 """
-function t2s(obj::NeuroAnalyzer.NEURO; t::T)::Int64 where {T<:Real}
+function t2s(obj::NeuroAnalyzer.NEURO; t::Real)::Int64
 
-    return floor(Int64, t * sr(obj)) + 1
+    return t2s(t, sr(obj))
 
 end
 
@@ -83,7 +86,7 @@ Convert time in samples to seconds.
 """
 function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)::Float64
 
-    return round(s / sr(obj), digits=2)
+    return s2t(s, sr(obj))
 
 end
 
@@ -104,8 +107,8 @@ Convert markers start and length from samples to seconds.
 function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
 
     m_new = deepcopy(m)
-    m_new[:, :start] = round.(m[:, :start] ./ fs, digits=2)
-    m_new[:, :length] = round.(m[:, :length] ./ fs, digits=2)
+    m_new[:, :start] = s2t.(m[:, :start], fs)
+    m_new[:, :length] = s2t.(m[:, :length], fs)
 
     return m_new
 
@@ -127,8 +130,8 @@ Nothing
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
 
-    m[:, :start] = round.(m[:, :start] ./ fs, digits=2)
-    m[:, :length] = round.(m[:, :length] ./ fs, digits=2)
+    m[:, :start] = s2t.(m[:, :start], fs)
+    m[:, :length] = s2t.(m[:, :length], fs)
 
     return nothing
 
@@ -149,9 +152,10 @@ Convert markers start and length from samples to seconds.
 """
 function markers_s2t(obj::NeuroAnalyzer.NEURO)::DataFrame
 
+    fs = sr(obj)
     m_new = deepcopy(obj.markers)
-    m_new[:, :start] = round.(m_new[:, :start] ./ sr(obj), digits=2)
-    m_new[:, :length] = round.(m_new[:, :length] ./ sr(obj), digits=2)
+    m_new[:, :start] = s2t.(m_new[:, :start], fs)
+    m_new[:, :length] = s2t.(m_new[:, :length], fs)
 
     return m_new
 
@@ -172,8 +176,9 @@ Nothing
 """
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
 
-    obj.markers[:, :start] = round.(obj.markers[:, :start] ./ sr(obj), digits=2)
-    obj.markers[:, :length] = round.(obj.markers[:, :length] ./ sr(obj), digits=2)
+    fs = sr(obj)
+    obj.markers[:, :start] = s2t.(obj.markers[:, :start], fs)
+    obj.markers[:, :length] = s2t.(obj.markers[:, :length], fs)
 
     return nothing
 

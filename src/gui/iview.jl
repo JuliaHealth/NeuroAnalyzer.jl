@@ -1257,6 +1257,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
     end
 
     p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], title="")
+
     win = GtkWindow("NeuroAnalyzer: iview()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
@@ -1284,7 +1285,6 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
     set_gtk_property!(bt_help, :tooltip_text, "Show help")
     bt_close = GtkButton("Close")
     set_gtk_property!(bt_close, :tooltip_text, "Close this window")
-
     if length(ch) > 20
         ch_slider = GtkScale(false, ch[ch_first]:(ch[end] - 19))
         set_gtk_property!(ch_slider, :draw_value, false)
@@ -2593,7 +2593,7 @@ function iview(file_name::String)::Nothing
 
     @assert isfile(file_name) "File $file_name cannot be opened."
     if splitext(file_name)[2] != ".png"
-        @error "Incorrect filename!"
+        _error("Incorrect filename!")
         return nothing
     end
 

@@ -107,6 +107,8 @@ p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
 @test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
+@test p isa Plots.Plot{Plots.GRBackend}
 p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
 @test p isa Plots.Plot{Plots.GRBackend}
 
@@ -259,6 +261,41 @@ p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
 l = get_channel(eeg, type="eeg")
 m = rand(-10:0.1:10, length(l), length(l))
 p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
+@test p isa Plots.Plot{Plots.GRBackend}
+
+@info "Test: plot_imf()"
+imf = rand(5, 100)
+t = collect(1:100)
+p = NeuroAnalyzer.plot_imf(imf, t=t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
+@info "Test: plot_gridlocs()"
+p = NeuroAnalyzer.plot_gridlocs()
+@test p isa Plots.Plot{Plots.GRBackend}
+
+@info "Test: plot_hs()"
+hms, t = hmspectrum(e10, ch="Fp1")
+hms = vec(hms[:, :, 1])
+p = NeuroAnalyzer.plot_hs(hms, t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
+@info "Test: plot_fi()"
+t = e10.epoch_time
+fi = frqinst(e10, ch="Fp1")
+p = NeuroAnalyzer.plot_fi(fi[1, :, 1], t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
+@info "Test: plot_phase()"
+s = e10.data[1, :, 1]
+X = ftransform(s)
+f, _ = freqs(s, sr(e10))
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:stem)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:stem)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:line)
+@test p isa Plots.Plot{Plots.GRBackend}
+p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 true

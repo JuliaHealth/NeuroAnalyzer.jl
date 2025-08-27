@@ -23,8 +23,8 @@ Calculate upper envelope.
 
 # Arguments
 
-- `s::AbstractVector`: signal
-- `x::AbstractVector`: x-axis points
+- `s::AbstractVector`
+- `x::AbstractVector`: x-axis points (e.g. time points)
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
 # Returns
@@ -33,14 +33,15 @@ Calculate upper envelope.
 """
 function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
-    e = similar(s)
+    @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
+
+    e = zeros(length(s))
 
     # find peaks
     p_idx = findpeaks(s, d=d)
 
-    if length(p_idx) == 0
-        _info("Envelope is not interpolated, all elements have the same value")
-        e = s
+    if length(p_idx) < 2
+        _info("Envelope cannot be not interpolated, less than 2 peaks detected")
     else
         # add first time-point
         p_idx[1] != 1 && pushfirst!(p_idx, 1)
@@ -48,25 +49,9 @@ function env_up(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
         # add last time-point
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
-        # interpolate peaks using cubic spline or loess
-        if length(p_idx) >= 5
-            model = CubicSpline(x[p_idx], s[p_idx])
-            try
-                e = model(x)
-            catch
-                @warn "CubicSpline error, using Loess."
-                model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-                e = Loess.predict(model, x)
-            end
-        else
-            _info("Less than 5 peaks detected, using Loess")
-            model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-            e = Loess.predict(model, x)
-        end
-
-        e[1] = e[2]
-
-        length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
+        # interpolate peaks using cubic spline
+        model = Spline1D(x[p_idx], s[p_idx], bc="extrapolate")
+        e = model(x)
     end
 
     return e
@@ -80,8 +65,8 @@ Calculate lower envelope.
 
 # Arguments
 
-- `s::AbstractVector`: signal
-- `x::AbstractVector`: x-axis points
+- `s::AbstractVector`
+- `x::AbstractVector`: x-axis points (e.g. time points)
 - `d::Int64=32`: distance between peeks in points, lower values get better envelope fit
 
 # Returns
@@ -90,17 +75,18 @@ Calculate lower envelope.
 """
 function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float64}
 
-    e = similar(s)
+    @assert length(s) == length(x) "Lengths of s ($(length(s))) and x ($(length(x))) must be equal."
+
+    e = zeros(length(s))
+
+    # flip the signal along the X axis
+    s_tmp = _flipx(s)
 
     # find peaks
-    p_idx = Int64[]
-    for idx in 1:d:(length(s) - d)
-        push!(p_idx, idx + vsearch(minimum(s[idx:(idx + (d - 1))]), s[idx:(idx + (d - 1))]) - 1)
-    end
+    p_idx = findpeaks(s_tmp, d=d)
 
-    if length(p_idx) == 0
-        _info("Envelope is not interpolated, all elements have the same value")
-        e = s
+    if length(p_idx) < 2
+        _info("Envelope cannot be not interpolated, less than 2 peaks detected")
     else
         # add first time-point
         p_idx[1] != 1 && pushfirst!(p_idx, 1)
@@ -108,25 +94,9 @@ function env_lo(s::AbstractVector, x::AbstractVector; d::Int64=32)::Vector{Float
         # add last time-point
         p_idx[end] != length(s) && push!(p_idx, length(s))
 
-        # interpolate peaks using cubic spline or loess
-        if length(p_idx) >= 5
-            model = CubicSpline(x[p_idx], s[p_idx])
-            try
-                e = model(x)
-            catch
-                @warn "CubicSpline error, using Loess."
-                model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-                e = Loess.predict(model, x)
-            end
-        else
-            _info("Less than 5 peaks detected, using Loess")
-            model = Loess.loess(x[p_idx], s[p_idx], span=0.5)
-            e = Loess.predict(model, x)
-        end
-
-        e[1] = e[2]
-
-        length(findall(isnan, e)) > 0 && _warn("Could not interpolate, envelope contains NaNs.")
+        # interpolate peaks using cubic spline
+        model = Spline1D(x[p_idx], s[p_idx], bc="extrapolate")
+        e = model(x)
     end
 
     return e
@@ -140,15 +110,19 @@ Calculate upper envelope using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 
 # Returns
 
 - `e::Vector{Float64}`: envelope
+
+# Notes
+
+Hilbert transform works best for narrowband signals (i.e., signals with all energy centered about a single frequency).
 """
 function henv_up(s::AbstractVector)::Vector{Float64}
 
-    _, e, _, _ = hspectrum(s)
+    _, e, _, _ = htransform(s)
 
     return e
 
@@ -161,15 +135,19 @@ Calculate lower envelope using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractVector`: signal
+- `s::AbstractVector`
 
 # Returns
 
 - `e::Vector{Float64}`: envelope
+
+# Notes
+
+Hilbert transform works best for narrowband signals (i.e., signals with all energy centered about a single frequency).
 """
 function henv_lo(s::AbstractVector)::Vector{Float64}
 
-    _, e, _, _ = hspectrum(-s)
+    _, e, _, _ = htransform(-s)
 
     return -e
 
@@ -644,7 +622,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     elseif method === :mw
     _, sp, _, _ = @views NeuroAnalyzer.mwspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
     elseif method === :gh
-        sp, _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
+        sp, _, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
         _log_off()
         sp, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs)
@@ -665,7 +643,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
             elseif method === :mw
                 _, sp, _, sf = @views NeuroAnalyzer.mwspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, db=db, ncyc=ncyc, w=w)
             elseif method === :gh
-                sp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
+                sp, _, sf = @views NeuroAnalyzer.ghtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
                 _log_off()
                 sp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs)
@@ -902,7 +880,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _warn("henv() uses Hilbert transform, the signal should be narrowband for best results.")
 
-    _, hamp, _, _ = @views hspectrum(obj.data[ch, :, :])
+    _, hamp, _, _ = @views htransform(obj.data[ch, :, :])
 
     ch_n = size(hamp, 1)
     ep_n = size(hamp, 3)

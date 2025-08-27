@@ -66,6 +66,36 @@ end
 """
     covm(s; <keyword arguments>)
 
+Calculate covariance matrix of channels × time points matrix.
+
+# Arguments
+
+- `s::AbstractMatrix`
+- `norm::Bool=false`: normalize covariance
+
+# Returns
+
+- `cm::Matrix{Float64}`: covariance matrix
+"""
+function covm(s::AbstractMatrix; norm::Bool=false)::Matrix{Float64}
+
+    # channels-vs-channels
+    if CUDA.functional() && use_cuda
+        cm = Matrix(cov(CuVector(s)'))
+    else
+        cm = cov(s')
+    end
+
+    # normalize
+    norm && (cm = m_norm(cm))
+
+    return cm
+
+end
+
+"""
+    covm(s; <keyword arguments>)
+
 Calculate covariance matrix.
 
 # Arguments
@@ -75,9 +105,9 @@ Calculate covariance matrix.
 
 # Returns
 
-- `cm::Array{Float64, 4}`: covariance matrix
+- `cm::Array{Float64, 3}`: covariance matrix
 """
-function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
+function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -85,14 +115,14 @@ function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
+    progress_bar && (progbar = Progress(ep_n, dt=1, barlen=20, color=:white))
 
-    cm = zeros(ch_n, ch_n, ep_len, ep_n)
+    cm = zeros(ch_n, ch_n, ep_n)
     @inbounds for ep_idx in 1:ep_n
         if use_cuda
             CUDA.synchronize()
             for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
+                @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm=norm)
 
                 # update progress bar
                 progress_bar && next!(progbar)
@@ -100,7 +130,7 @@ function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 4}
             CUDA.synchronize()
         else
             Threads.@threads :greedy for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, s_idx, ep_idx] = covm(s[:, s_idx, ep_idx], norm=norm)
+                @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm=norm)
 
                 # update progress bar
                 progress_bar && next!(progbar)
@@ -125,9 +155,9 @@ Calculate covariance matrix of `signal * signal'`.
 
 # Returns
 
-- `cm::Array{Float64, 4}`: covariance matrix for each epoch
+- `cm::Array{Float64, 3}`: covariance matrix for each epoch
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 4}
+function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
 

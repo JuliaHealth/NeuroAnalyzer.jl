@@ -12,17 +12,17 @@ Calculate phase spectral density.
 # Returns
 
 Named tuple containing:
-- `ph::Vector{Float64}`: phases
+- `ph::Vector{Float64}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractVector; fs::Int64)::@NamedTuple{ph::Vector{Float64}, f::Vector{Float64}}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    _, _, _, sph = spectrum(s)
+    _, _, _, ph = NeuroAnalyzer.ftransform(s)
     f, _ = freqs(s, fs)
 
-    return (ph=sph, f=f)
+    return (ph=ph, f=f)
 
 end
 
@@ -39,7 +39,7 @@ Calculate phase spectral density.
 # Returns
 
 Named tuple containing:
-- `ph::Matrix{Float64}`: phases
+- `ph::Matrix{Float64}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractMatrix; fs::Int64)::@NamedTuple{ph::Matrix{Float64}, f::Vector{Float64}}
@@ -69,7 +69,7 @@ Calculate phase spectral density.
 # Returns
 
 Named tuple containing:
-- `ph::Array{Float64, 3}`: phases
+- `ph::Array{Float64, 3}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}
@@ -105,7 +105,7 @@ Calculate phase spectral density.
 # Returns
 
 Named tuple containing:
-- `ph::Array{Float64, 3}`: phases
+- `ph::Array{Float64, 3}`: phases (in radians)
 - `f::Vector{Float64}`: frequencies
 """
 function phsd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::@NamedTuple{ph::Array{Float64, 3}, f::Vector{Float64}}

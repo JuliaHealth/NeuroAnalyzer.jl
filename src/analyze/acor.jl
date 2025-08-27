@@ -13,7 +13,7 @@ Calculate auto-correlation.
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = Σ(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`, `biased` value is ignored
+    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -26,33 +26,19 @@ function acor(s::AbstractVector; l::Int64=round(Int64, min(length(s) - 1, 10 * l
 
     ac = zeros(l + 1)
 
-    if demean
-        s_tmp = delmean(s)
-    else
-        s_tmp = s
-    end
-
     if method === :sum
-        for idx in 0:l
-            ac[idx + 1] = @views sum(s_tmp[1:(end - idx)] .* s_tmp[(1 + idx):end])
-            if biased
-                ac[idx + 1] /= length(s)
-            else
-                ac[idx + 1] /= (length(s) - idx)
-            end
-        end
+        ac = acov(s, l=l, demean=demean, biased=biased, method=:sum)[1, :, 1]
         # normalize by the variance of s
-        ac = round.(ac ./ var(s), digits=3)
+        ac = round.(ac ./ StatsBase.var(s), digits=3)
     elseif method === :cor
-        for idx in 0:l
-            ac[idx + 1] = @views cor(s_tmp[1:(end - idx)], s_tmp[(1 + idx):end])
-        end
+        ac = acov(s, l=l, demean=demean, biased=biased, method=:cov)[1, :, 1]
+        # normalize by the variance of s
+        ac = round.(ac ./ StatsBase.var(s), digits=3)
     elseif method === :stat
-        ac = autocor(s, 0:l, demean=demean)
+        ac = StatsBase.autocor(s, 0:l, demean=demean)
+        ac = round.(ac, digits=3)
+        ac = vcat(reverse(ac), ac[2:end])
     end
-
-    ac = round.(ac, digits=3)
-    ac = vcat(reverse(ac), ac[2:end])
 
     return reshape(ac, 1, :, 1)
 
@@ -71,7 +57,7 @@ Calculate auto-correlation.
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = Σ(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`, `biased` value is ignored
+    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -104,7 +90,7 @@ Calculate auto-correlation.
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = Σ(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`, `biased` value is ignored
+    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns
@@ -143,7 +129,7 @@ Calculate auto-correlation. For ERP return trial-averaged auto-correlation.
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
 - `method::Symbol=:sum`: method of calculating auto-correlation:
     - `:sum`: `acf = Σ(s[1:end - l] .* s[1+l:end]) ./ var(s)`
-    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`, `biased` value is ignored
+    - `:cor`: `acf = cor(s[1:end - l], s[1+l:end])`
     - `:stat`: use StatsBase `autocor()`, `biased` value is ignored
 
 # Returns

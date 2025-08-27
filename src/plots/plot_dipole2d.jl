@@ -78,19 +78,68 @@ function plot_dipole2d(d::NeuroAnalyzer.DIPOLE)::Plots.Plot{Plots.GRBackend}
     pxz = Plots.plot(head_front_texture, border=:none, framestyle=:none, aspect_ratio=1);
 
     # draw dipole
-    pxy = Plots.plot!(pxy, lt=:scatter, lxy, label="", c=:red, msc=:red, msa=0, ms=3)
-    pyz = Plots.plot!(pyz, lt=:scatter, lyz, label="", c=:red, msc=:red, msa=0, ms=3)
-    pxz = Plots.plot!(pxz, lt=:scatter, lxz, label="", c=:red, msc=:red, msa=0, ms=3)
+    pxy = Plots.plot!(pxy,
+                      lxy,
+                      lt=:scatter,
+                      label="",
+                      c=:red,
+                      msc=:red,
+                      msa=0,
+                      ms=3)
+    pyz = Plots.plot!(pyz,
+                      lyz,
+                      lt=:scatter,
+                      label="",
+                      c=:red,
+                      msc=:red,
+                      msa=0,
+                      ms=3)
+    pxz = Plots.plot!(pxz,
+                      lxz,
+                      lt=:scatter,
+                      label="",
+                      c=:red,
+                      msc=:red,
+                      msa=0,
+                      ms=3)
 
-    pxy = Plots.plot!(pxy, lw=3, [lxy[1], mxy[1]], [lxy[2], mxy[2]], label="", c=:red)
-    pyz = Plots.plot!(pyz, lw=3, [lyz[1], myz[1]], [lyz[2], myz[2]], label="", c=:red)
-    pxz = Plots.plot!(pxz, lw=3, [lxz[1], mxz[1]], [lxz[2], mxz[2]], label="", c=:red)
+    pxy = Plots.plot!(pxy,
+                      lw=3,
+                      [lxy[1],
+                      mxy[1]],
+                      [lxy[2],
+                      mxy[2]],
+                      label="",
+                      c=:red)
+    pyz = Plots.plot!(pyz,
+                      lw=3,
+                      [lyz[1],
+                      myz[1]],
+                      [lyz[2],
+                      myz[2]],
+                      label="",
+                      c=:red)
+    pxz = Plots.plot!(pxz,
+                      lw=3,
+                      [lxz[1],
+                      mxz[1]],
+                      [lxz[2],
+                      mxz[2]],
+                      label="",
+                      c=:red)
 
     # pxy = Plots.plot!(pxy, lw=4, [lxy[1], mx_xy], [lxy[2], my_xy], label="", c=:red)
     # pyz = Plots.plot!(pyz, lw=4, [lyz[1], my_yz], [lyz[2], mz_yz], label="", c=:red)
     # pxz = Plots.plot!(pxz, lw=4, [lxz[1], mx_xz], [lxz[2], mz_xz], label="", c=:red)
 
-    p = Plots.plot(pxy, pxz, pyz, layout=(1, 3), size=(600, 200), left_margin=-30Plots.px, top_margin=-20Plots.px, bottom_margin=-15Plots.px)
+    p = Plots.plot(pxy,
+                   pxz,
+                   pyz,
+                   layout=(1, 3),
+                   size=(600, 200),
+                   left_margin=-30Plots.px,
+                   top_margin=-20Plots.px,
+                   bottom_margin=-15Plots.px)
 
     return p
 

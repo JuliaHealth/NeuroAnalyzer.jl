@@ -32,7 +32,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector;
                    xticks=_ticks(t),
                    ytick_direction=:out,
                    xtick_direction=:out,
-                   ylims=_ylims(s),
+                   ylims=minimum(s) == 0 ? (0, _ylims(s)[2]) : _ylims(s),
                    title=title,
                    size=plot_size,
                    margins=20Plots.px,
@@ -771,30 +771,31 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :value]
-        p = Plots.vline!(p,
-                         markers_pos,
-                         linestyle=:dash,
-                         linewidth=1,
-                         linecolor=:black,
-                         label=false)
-        for idx in eachindex(markers_desc)
-            p = Plots.plot!(p, annotations=(markers_pos[idx] + 0.1, -0.92, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+        for idx in eachindex(markers_pos)
+            if _in(markers_pos[idx], (t[1], t[end]))
+                p = Plots.vline!([markers_pos[idx]],
+                                 linestyle=:dash,
+                                 linewidth=1,
+                                 linecolor=:black,
+                                 label=false)
+                if length(ch) > 1
+                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, -0.90, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                else
+                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, _ylims(s[ch, :])[1] * 0.97, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                end
+            end
         end
     end
 
     # draw segment borders
-    p = Plots.vline!(p,
-                     [s_pos[1]],
+    p = Plots.vline!([s_pos[1]],
                      color=:black,
                      lw=1,
                      labels="")
-    p = Plots.vline!(p,
-                     [s_pos[2]],
+    p = Plots.vline!([s_pos[2]],
                      color=:black,
                      lw=1,
                      labels="")
-
-    Plots.plot(p)
 
     return p
 
@@ -965,8 +966,6 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                          label="")
     end
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -1022,6 +1021,7 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
     end
 
     # check channels
+    @assert labels(obj1)[get_channel(obj1, ch=ch)] == labels(obj2)[get_channel(obj1, ch=ch)] "OBJ1 and OBJ2 channel labels must be the same."
     _ = get_channel(obj2, ch=ch)
     ch = get_channel(obj1, ch=ch)
     clabels = labels(obj1)
@@ -1087,8 +1087,6 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
                         scale=scale;
                         kwargs...)
     end
-
-    Plots.plot(p)
 
     return p
 

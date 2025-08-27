@@ -9,6 +9,7 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
+- `names::Bool=true`: export channel names
 - `header::Bool=false`: export header
 - `epoch_time::Bool=false`: export epoch time points
 - `components::Bool=false`: export components
@@ -21,7 +22,7 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 
 Nothing
 """
-function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=false, epoch_time::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, history::Bool=false, overwrite::Bool=false)::Nothing
+function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, names::Bool=true, header::Bool=false, epoch_time::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, history::Bool=false, overwrite::Bool=false)::Nothing
 
     @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
 
@@ -33,7 +34,11 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
     s = out[:, :, 1]'
     s = hcat(obj.time_pts, s)
     l = vcat("time", labels(obj))
-    CSV.write(file_name, DataFrame(s, l))
+    if names
+        CSV.write(file_name, DataFrame(s, l))
+    else
+        CSV.write(file_name, DataFrame(s, l), writeheader=false)
+    end
 
     # HEADER
     if header

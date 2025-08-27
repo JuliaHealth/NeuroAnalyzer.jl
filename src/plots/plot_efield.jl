@@ -55,8 +55,6 @@ function plot_efield2d(q::Vector{Int64}, qq::Vector{Vector{Float64}}, norm_e::Ma
                            markerstrokealpha=0)
     end
 
-    Plots.plot!(p)
-
     return p
 
 end

@@ -23,7 +23,18 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 """
 function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
+    @assert layout[1] * layout[2] >= length(p) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(p)))."
+
     pal = mono ? :grays : :darktest
+
+    s =(0, 0)
+    for idx in eachindex(p)
+        p[idx].attr[:size] > s && (s = p[idx].attr[:size])
+    end
+    for idx in eachindex(p)
+        p[idx].attr[:size] != s && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
+    end
+
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
             push!(p, plot_empty())
@@ -31,8 +42,16 @@ function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matr
     end
 
     pc = plot_empty()
-    pc = Plots.plot!(p..., layout=layout, palette=pal; kwargs...)
-    Plots.plot(pc)
+    layout[1] == layout[2] && (s = (s[1] * layout[1] * 0.75, s[2] * layout[2] * 0.75))
+    layout[1] > layout[2] && (s = (s[1] * layout[1] * 0.5, s[2] * layout[2] * 1.5))
+    layout[1] < layout[2] && (s = (s[1] * layout[1] * 1.25, s[2] * layout[2] * 0.5))
+    pc = Plots.plot!(p...,
+                     size=s,
+                     layout=layout,
+                     palette=pal,
+                     top_margin=25Plots.px,
+                     bottom_margin=75Plots.px;
+                     kwargs...)
 
     return pc
 
@@ -53,6 +72,7 @@ function plot_empty()::Plots.Plot{Plots.GRBackend}
                    framestyle=:none,
                    border=:none,
                    margins=0Plots.px)
+
     return p
 
 end

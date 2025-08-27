@@ -32,7 +32,7 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     if port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            @info "Serial port $port_name is not available, keyboard SPACEBAR key will be used"
+            _info("Serial port $port_name is not available, keyboard SPACEBAR key will be used")
             port_name = ""
         else
             _serial_close(sp)
@@ -475,12 +475,12 @@ function ftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int
         if rpi != false
             set_mode(rpi, gpio, PiGPIO.INPUT)
         else
-            @info "Could not detect pigpiod daemon, keyboard SPACEBAR key will be used"
+            _info("Could not detect pigpiod daemon, keyboard SPACEBAR key will be used")
         end
     elseif port_name != ""
         sp = _serial_open(port_name)
         if sp === nothing
-            @info "Serial port $port_name is not available, keyboard SPACEBAR key will be used"
+            _info("Serial port $port_name is not available, keyboard SPACEBAR key will be used")
             port_name = ""
         else
             _serial_close(sp)

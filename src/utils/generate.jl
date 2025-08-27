@@ -1,5 +1,6 @@
 export generate_window
 export generate_sine
+export generate_cosine
 export generate_csine
 export generate_sinc
 export generate_morlet
@@ -84,20 +85,20 @@ end
 """
     generate_sine(f, t, a, p)
 
-Generates sine wave.
+Generate sine wave.
 
 # Arguments
 
 - `f::Real`: frequency [Hz]
-- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `t::AbstractVector`: time vector
 - `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
-- `p::Real`: initial phase [degrees]
+- `p::Real`: phase shift [degrees]
 
 # Returns
 
 - s::Vector{Float64}`
 """
-function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)::Vector{Float64}
+function generate_sine(f::Real, t::AbstractVector, a::Real=1, p::Real=0)::Vector{Float64}
 
     s = @. a * sin(2 * pi * f * t + deg2rad(p))
 
@@ -106,21 +107,45 @@ function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real
 end
 
 """
-    generate_csine(f, t, a)
+    generate_cosine(f, t, a, p)
 
-Generates complex sine wave.
+Generate cosine wave.
 
 # Arguments
 
 - `f::Real`: frequency [Hz]
-- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `t::AbstractVector`: time vector
+- `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
+- `p::Real`: phase shift [degrees]
+
+# Returns
+
+- s::Vector{Float64}`
+"""
+function generate_cosine(f::Real, t::AbstractVector, a::Real=1, p::Real=0)::Vector{Float64}
+
+    s = @. a * cos(2 * pi * f * t + deg2rad(p))
+
+    return s
+
+end
+
+"""
+    generate_csine(f, t, a)
+
+Generate complex sine wave.
+
+# Arguments
+
+- `f::Real`: frequency [Hz]
+- `t::AbstractVector`: time vector
 - `a::Real`: amplitude, sine amplitude will be in `[-amp, +amp]`
 
 # Returns
 
 - cs::Vector{ComplexF64}`
 """
-function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)::Vector{ComplexF64}
+function generate_csine(f::Real, t::AbstractVector, a::Real=1)::Vector{ComplexF64}
 
     cs = @. a * exp(1im * 2 * pi * f * t)
 
@@ -135,7 +160,7 @@ Generate sinc function.
 
 # Arguments
 
-- `t::AbstractRange=-2:0.01:2`: time
+- `t::AbstractVector=-2:0.01:2`: time
 - `f::Real=1.0: frequency
 - `peak::Real=0`: sinc peak time
 - `norm::Bool=true`: generate normalized function
@@ -144,7 +169,7 @@ Generate sinc function.
 
 - `s::Vector{Float64}`
 """
-function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1.0, peak::Real=0, norm::Bool=true)::Vector{Float64}
+function generate_sinc(t::AbstractVector=-2:0.01:2; f::Real=1.0, peak::Real=0, norm::Bool=true)::Vector{Float64}
 
     s = norm ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(s)
@@ -313,11 +338,11 @@ end
 """
     generate_square(t, a, p, w, offset)
 
-Generates square wave.
+Generate square wave.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `t::AbstractVector`: time vector
 - `a::Real`: amplitude
 - `p::Real`: duty cycle
 - `w::Real`: width
@@ -327,7 +352,7 @@ Generates square wave.
 
 - `s::Vector{Float64}`
 """
-function generate_square(t::Union{AbstractVector, AbstractRange}, p::Real, a::Real=1, offset::Real=0, w::Real=1)::Vector{Float64}
+function generate_square(t::AbstractVector, p::Real, a::Real=1, offset::Real=0, w::Real=1)::Vector{Float64}
 
     s = @. offset + a * (mod(p + t, 2) > w)
     return s
@@ -337,18 +362,18 @@ end
 """
     generate_triangle(t, a)
 
-Generates triangle wave.
+Generate triangle wave.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `t::AbstractVector`: time vector
 - `a::Real`: amplitude
 
 # Returns
 
 - `s::Vector{Float64}`
 """
-function generate_triangle(t::Union{AbstractVector, AbstractRange}, a::Real=1)::Vector{Float64}
+function generate_triangle(t::AbstractVector, a::Real=1)::Vector{Float64}
 
     s = @. a * abs(mod(t, 2) - 1)
 

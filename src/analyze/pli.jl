@@ -27,8 +27,8 @@ function pli(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{pv::Float64, s
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
-    _, _, _, s1ph = hspectrum(s1)
-    _, _, _, s2ph = hspectrum(s2)
+    _, _, _, s1ph = htransform(s1)
+    _, _, _, s2ph = htransform(s2)
 
     sd = s2 - s1
     phd = s2ph - s1ph
@@ -66,11 +66,11 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{St
 
     ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
     ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
-    @assert length(ch1) == length(ch2) "ch1 and ch2 must have the same length."
+    @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
-    @assert length(ep1) == length(ep2) "ep1 and ep2 must have the same length."
+    @assert length(ep1) == length(ep2) "Lengths of ep1 ($(length(ep1)) and ep2 ($(length(ep2)) must be equal."
     @assert epoch_len(obj1) == epoch_len(obj2) "OBJ1 and OBJ2 must have the same epoch lengths."
 
     isa(ep1, Int64) && (ep1 = [ep1])

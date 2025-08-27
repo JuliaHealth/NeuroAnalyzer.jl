@@ -86,9 +86,9 @@ e10_tmp = denoise_wien(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: derivative()"
-@test derivative(v1) == [1, 1, 1, 1, 1]
-@test derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
-e10_tmp = derivative(e10, ch="all")
+@test NeuroAnalyzer.derivative(v1) == [1, 1, 1, 1, 1]
+@test NeuroAnalyzer.derivative(a1) == [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0]
+e10_tmp = NeuroAnalyzer.derivative(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: detrend()"
@@ -365,6 +365,12 @@ e10_tmp = reference_plap(e10)
 e10_tmp = reference_plap(e10, weighted=true)
 @test size(e10_tmp) == size(e10)
 
+@info "Test: reference_slap()"
+e10_tmp = reference_slap(e10)
+@test size(e10_tmp) == size(e10)
+e10_tmp = reference_slap(e10, weighted=true)
+@test size(e10_tmp) == size(e10)
+
 @info "Test: csd()"
 g, h = gh(e10.locs)
 @test size(g) == (23, 23)
@@ -492,5 +498,9 @@ e10_tmp = denoise_cwt(e10, ch="all", nf=50)
 @info "Test: remove_cwt())"
 e10_tmp = remove_cwt(e10, ch="Fp1", ep=1, tseg=(0.2, 0.4), fseg=(10, 12.5))
 @test size(e10_tmp) == size(e10)
+
+@info "Test: emd()"
+@test size(emd(e10.data[1, :, 1], e10.epoch_time, epsilon=0.3), 1) == 9
+@test size(emd(e10, ch="Fp1", ep=1, epsilon=0.3), 1) == 9
 
 true

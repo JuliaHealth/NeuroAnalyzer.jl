@@ -117,11 +117,20 @@ x[10] *= 1000
 f, nf = NeuroAnalyzer.freqs(0:1/10:10)
 @test length(f) == 51
 @test nf == 5
+f, nf = NeuroAnalyzer.freqs(0:1/10:10, nf=true)
+@test length(f) == 101
+@test nf == 5
 f, nf = NeuroAnalyzer.freqs(rand(100), 10)
 @test length(f) == 51
 @test nf == 5
+f, nf = NeuroAnalyzer.freqs(rand(100), 10, nf=true)
+@test length(f) == 100
+@test nf == 5
 f, nf = NeuroAnalyzer.freqs(e10)
 @test length(f) == 1281
+@test nf == 128
+f, nf = NeuroAnalyzer.freqs(e10, nf=true)
+@test length(f) == 2560
 @test nf == 128
 
 @info "Test: generate_window()"
@@ -144,6 +153,10 @@ s = generate_window(:exp, 100)
 
 @info "Test: generate_sine()"
 s = generate_sine(10, 1:100)
+@test length(s) == 100
+
+@info "Test: generate_cosine()"
+s = generate_cosine(10, 1:100)
 @test length(s) == 100
 
 @info "Test: generate_csine()"
@@ -272,11 +285,11 @@ delete_note!(e10)
 
 @info "Test: t2s()"
 @test t2s(1.0, 256) == 256
-@test t2s(e10, t=1.0) == 257
+@test t2s(e10, t=1.0) == 256
 
 @info "Test: s2t()"
-@test s2t(2560, 256) == 10.0
-@test s2t(e10, s=256) == 1.0
+@test s2t(2560, 256) == 9.996
+@test s2t(e10, s=256) == 0.996
 
 @info "Test: get_channel(wl)"
 @test length(get_channel(n, wl=760)) == 36
