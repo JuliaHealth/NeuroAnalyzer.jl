@@ -797,8 +797,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                      lw=1,
                      labels="")
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -968,8 +966,6 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                          label="")
     end
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -1091,8 +1087,6 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{In
                         scale=scale;
                         kwargs...)
     end
-
-    Plots.plot(p)
 
     return p
 

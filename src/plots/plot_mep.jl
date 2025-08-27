@@ -349,8 +349,6 @@ function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
                      linecolor=:black,
                      label=false)
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -550,8 +548,6 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             end
         end
     end
-
-    Plots.plot(p)
 
     return p
 

@@ -50,7 +50,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
         p = Plots.plot!(ear_r, fill=nothing, label="")
     end
 
-    p = Plots.plot!(p, head, fill=nothing, label="")
+    p = Plots.plot!(head, fill=nothing, label="")
 
     if head_labels
         p = Plots.plot!(annotations=(0, 1.05, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
@@ -64,7 +64,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
         x, y = Plots.unzip(pts)
         for idx in 1:0.001:1.7
             peripheral = Shape(x .* idx, y .* idx)
-            p = Plots.plot!(p, peripheral, label="", fill=nothing, lc=:white)
+            p = Plots.plot!(peripheral, label="", fill=nothing, lc=:white)
         end
         p = Plots.plot!(xlims=(-1.4, 1.4), ylims=(-1.4, 1.4); kwargs...)
     end

@@ -52,7 +52,6 @@ function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matr
                      top_margin=25Plots.px,
                      bottom_margin=75Plots.px;
                      kwargs...)
-    Plots.plot(pc)
 
     return pc
 
@@ -73,6 +72,7 @@ function plot_empty()::Plots.Plot{Plots.GRBackend}
                    framestyle=:none,
                    border=:none,
                    margins=0Plots.px)
+
     return p
 
 end

@@ -790,8 +790,6 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         end
     end
 
-    Plots.plot(p)
-
     return p
 
 end

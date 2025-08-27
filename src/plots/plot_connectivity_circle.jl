@@ -108,8 +108,6 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
         end
     end
 
-    Plots.plot(p)
-
     return p
 
 end

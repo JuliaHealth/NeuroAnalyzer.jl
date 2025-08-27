@@ -451,8 +451,6 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         p = plot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, threshold=threshold, threshold_type=threshold_type, kwargs=kwargs)
     end
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -672,8 +670,6 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         p = plot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, kwargs=kwargs)
     end
-
-    Plots.plot(p)
 
     return p
 

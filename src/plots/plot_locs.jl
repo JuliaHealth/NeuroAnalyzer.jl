@@ -498,7 +498,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         end
     end
 
-    Plots.plot!(p)
+    Plots.plot(p)
 
     return p
 
@@ -624,8 +624,6 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
                             Plots.text(fid_names[idx], font_size))
         end
     end
-
-    p = Plots.plot!(p)
 
     return p
 
@@ -810,8 +808,6 @@ function plot_gridlocs(; mono::Bool=false)::Plots.Plot{Plots.GRBackend}
         p = Plots.scatter!((loc_x[idx], loc_y[idx]), ms=3.0, mc=:black, mf=:black)
         p = Plots.plot!(annotations=(loc_x[idx] + label_offset_x, loc_y[idx] + label_offset_y, Plots.text(loc_lab[idx], pointsize=font_size)))
     end
-
-    p = Plots.plot(p)
 
     return p
 

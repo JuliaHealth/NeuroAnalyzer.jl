@@ -294,8 +294,6 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
         end
     end
 
-    p = Plots.plot!(p)
-
     return p
 
 end
@@ -407,9 +405,23 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=collect(1:nrow(locs)), locs=locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, threshold=threshold, threshold_type=threshold_type, kwargs=kwargs)
-
-    Plots.plot(p)
+    p = plot_topo(s,
+                  ch=collect(1:nrow(locs)),
+                  locs=locs,
+                  cb=cb,
+                  cb_label=cb_label,
+                  title=title,
+                  mono=mono,
+                  imethod=imethod,
+                  nmethod=nmethod,
+                  plot_contours=plot_contours,
+                  plot_electrodes=plot_electrodes,
+                  large=large,
+                  head=head,
+                  cart=cart,
+                  threshold=threshold,
+                  threshold_type=threshold_type,
+                  kwargs=kwargs)
 
     return p
 
@@ -557,9 +569,23 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(s, ch=c_idx, locs=locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, large=large, head=head, cart=cart, threshold=threshold, threshold_type=threshold_type, kwargs=kwargs)
-
-    Plots.plot(p)
+    p = plot_topo(s,
+                  ch=c_idx,
+                  locs=locs,
+                  cb=cb,
+                  cb_label=cb_label,
+                  title=title,
+                  mono=mono,
+                  imethod=imethod,
+                  nmethod=nmethod,
+                  plot_contours=plot_contours,
+                  plot_electrodes=plot_electrodes,
+                  large=large,
+                  head=head,
+                  cart=cart,
+                  threshold=threshold,
+                  threshold_type=threshold_type,
+                  kwargs=kwargs)
 
     return p
 

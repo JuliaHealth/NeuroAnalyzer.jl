@@ -849,8 +849,6 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                            kwargs...)
     end
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -1016,8 +1014,6 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                          variant=:s;
                          kwargs...)
     end
-
-    Plots.plot(p)
 
     return p
 

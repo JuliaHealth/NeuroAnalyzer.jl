@@ -375,6 +375,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
                         label=clabels[idx];
                         kwargs...)
     end
+
     return p
 
 end
@@ -992,8 +993,6 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                           kwargs...)
     end
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -1281,8 +1280,6 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg
                         variant=:s;
                         kwargs...)
     end
-
-    Plots.plot(p)
 
     return p
 

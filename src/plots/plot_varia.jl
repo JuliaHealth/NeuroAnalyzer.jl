@@ -712,8 +712,6 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                         color=:red)
     end
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -1290,8 +1288,6 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
                     c=:black,
                     lw=0.5)
 
-    Plots.plot(p)
-
     return p
 
 end
@@ -1372,8 +1368,6 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                         linewidth=2;
                         kwargs=kwargs)
     end
-
-    Plots.plot(p)
 
     return p
 
