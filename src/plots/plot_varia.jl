@@ -31,7 +31,7 @@ Plot matrix.
 - `xlabel::String=""`
 - `ylabel::String=""`
 - `title::String=""`
-- `cb::Bool=true`: draw color
+- `cb::Bool=true`: draw color bar
 - `cb_title::String=""`: color bar title
 - `xrot::Int64=0`: rotate xlabels by xrot degrees
 - `mono::Bool=false`: use color or gray palette
@@ -1306,7 +1306,7 @@ Plot heatmap.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `cb::Bool=true`: draw color
+- `cb::Bool=true`: draw color bar
 - `cb_title::String=""`: color bar title
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
