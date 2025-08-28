@@ -132,11 +132,8 @@ function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfac
         Cairo.show_text(cr, title);
     end
 
-    if file_name != ""
-        Cairo.write_to_png(c, file_name)
-    else
-        view && iview_plot(c)
-    end
+    file_name != "" && Cairo.write_to_png(c, file_name)
+    view && iview_plot(c)
 
     return c
 
