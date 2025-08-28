@@ -95,13 +95,6 @@ Add locations to a plot. Locations are placed in the top right corner. If `file_
 """
 function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
 
-    if file_name != ""
-        ext = lowercase(splitext(file_name)[2])
-        @assert ext == ".png" "Filename extension must be .png"
-
-        (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
-    end
-
     p1_size = p1.attr[:size]
     p2_size = p2.attr[:size]
     c = CairoRGBSurface(p1_size[1], p1_size[2])
@@ -117,6 +110,9 @@ function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRB
     Cairo.paint(cr)
 
     if file_name != ""
+        ext = lowercase(splitext(file_name)[2])
+        @assert ext == ".png" "Filename extension must be .png"
+        (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
         Cairo.write_to_png(c, file_name)
     else
         view && iview(c)
