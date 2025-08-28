@@ -94,7 +94,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     ch_labels = labels(obj_new)
     ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
 
-    if nrow(obj_new.locs) > 0
+    if DataFrame.nrow(obj_new.locs) > 0
         chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
         locs = Base.filter(:label => in(chs), obj_new.locs)
     else

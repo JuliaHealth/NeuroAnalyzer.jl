@@ -75,7 +75,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                             :length=>Float64.(duration),
                             :value=>strip.(string.(value)),
                             :channel=>zeros(Int64, length(id)))
-        _info("Imported: $(nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds")
+        _info("Imported: $(DataFrame.nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds")
 
         return markers
 

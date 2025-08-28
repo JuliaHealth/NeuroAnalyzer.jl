@@ -156,14 +156,14 @@ function import_nwb(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     occursin(".nwb", events_file) && (events_file = replace(events_file, ".nwb"=>".tsv"))
     if isfile(events_file)
         events = CSV.read(events_file, DataFrame)
-        _info("$(nrow(events)) markers found")
+        _info("$(DataFrame.nrow(events)) markers found")
         event_id = events[!, :trial_type]
         event_description = events[!, :value]
         event_start_sample = events[!, :sample] .+ 1
         event_start = zeros(length(event_start_sample))
         [event_start[idx] = time_pts[event_start_sample[idx]] for idx in eachindex(event_start_sample)]
         event_length = round.(events[!, :duration], digits=3)
-        event_channel = zeros(Int64, nrow(events))
+        event_channel = zeros(Int64, DataFrame.nrow(events))
         markers = DataFrame(:id=>event_id,
                             :start=>event_start,
                             :length=>event_length,

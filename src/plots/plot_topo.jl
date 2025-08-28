@@ -9,7 +9,7 @@ Plot topographical view.
 
 - `s::Vector{<:Real}`: values to plot (one value per channel)
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}}=1:nrow(locs)`: list of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}}=1:DataFrame.nrow(locs)`: list of channels, default is all channels
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
@@ -41,7 +41,7 @@ Plot topographical view.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrame.nrow(locs), cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, large::Bool=true, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -406,7 +406,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     cb_label == "default" && (cb_label = "[A.U.]")
 
     p = plot_topo(s,
-                  ch=collect(1:nrow(locs)),
+                  ch=collect(1:DataFrame.nrow(locs)),
                   locs=locs,
                   cb=cb,
                   cb_label=cb_label,
@@ -526,7 +526,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     @assert length(c_idx) >= 2 "plot_topo() requires ≥ 2 channels."
     chs = intersect(obj.locs[!, :label], labels(obj)[c_idx])
     locs = Base.filter(:label => in(chs), obj.locs)
-    @assert length(chs) == nrow(locs) "Some channels do not have locations."
+    @assert length(chs) == DataFrame.nrow(locs) "Some channels do not have locations."
 
     # get time vector
     if time_segment

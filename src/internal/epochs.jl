@@ -82,7 +82,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
     end
 
     # remove markers outside epoch limits
-    @inbounds for mrk_idx in nrow(markers):-1:1
+    @inbounds for mrk_idx in DataFrame.nrow(markers):-1:1
         within_epoch = false
         for ep_idx in 1:mrk_n
             _in(markers[mrk_idx, :start] * fs, (ep_start[ep_idx], ep_end[ep_idx])) && (within_epoch = true)
@@ -93,15 +93,15 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
     # keep only markers of the given type and shift their offsets
     mrk_tmp = markers[markers[!, :value] .== marker, :]
     mrk_tmp[1, :start] = offset / fs
-    if nrow(markers) > 1
-        @inbounds for idx in 2:nrow(mrk_tmp)
+    if DataFrame.nrow(markers) > 1
+        @inbounds for idx in 2:DataFrame.nrow(mrk_tmp)
             mrk_tmp[idx, :start] = mrk_tmp[(idx - 1), :start] + (ep_len / fs)
         end
     end
 
     # calculate marker offsets
     # @inbounds for ep_idx in 1:mrk_n
-    #     for mrk_idx in 1:nrow(markers)
+    #     for mrk_idx in 1:DataFrame.nrow(markers)
     #         if markers[mrk_idx, :start] in ep_start[ep_idx]:ep_end[ep_idx]
     #             markers[mrk_idx, :start] = (ep_idx - 1) * ep_len + markers[mrk_idx, :start] .- ep_start[ep_idx]
     #         end

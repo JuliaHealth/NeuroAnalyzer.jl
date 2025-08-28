@@ -118,7 +118,7 @@ function _locs_round!(obj::NeuroAnalyzer.NEURO)::Nothing
 end
 
 function _has_locs(obj::NeuroAnalyzer.NEURO)::Nothing
-    @assert nrow(obj.locs) > 0 "Electrode locations not available, use load_locs() or add_locs() first."
+    @assert DataFrame.nrow(obj.locs) > 0 "Electrode locations not available, use load_locs() or add_locs() first."
     return nothing
 end
 

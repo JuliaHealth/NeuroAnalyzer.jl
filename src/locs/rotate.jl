@@ -102,7 +102,7 @@ function locs_roty(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     locs_new = deepcopy(locs)
 
     if cart
-        for idx in 1:nrow(locs)
+        for idx in 1:DataFrame.nrow(locs)
             locs_new[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
             locs_new[idx, :loc_z] = -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
         end
@@ -111,7 +111,7 @@ function locs_roty(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     if spherical
         locs_tmp = deepcopy(locs)
         locs_sph2cart!(locs_tmp)
-        for idx in 1:nrow(locs)
+        for idx in 1:DataFrame.nrow(locs)
             locs_tmp[idx, :loc_x] = locs[idx, :loc_x] * cosd(a) + locs[idx, :loc_z] * sind(a)
             locs_tmp[idx, :loc_z] = -locs[idx, :loc_x] * sind(a) + locs[idx, :loc_z] * cosd(a)
         end
@@ -177,7 +177,7 @@ function locs_rotx(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     locs_new = deepcopy(locs)
 
     if cart
-        for idx in 1:nrow(locs)
+        for idx in 1:DataFrame.nrow(locs)
             locs_new[idx, :loc_y] = locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
             locs_new[idx, :loc_z] = locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
         end
@@ -186,7 +186,7 @@ function locs_rotx(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, 
     if spherical
         locs_tmp = deepcopy(locs)
         locs_sph2cart!(locs_tmp)
-        for idx in 1:nrow(locs)
+        for idx in 1:DataFrame.nrow(locs)
             locs_tmp[idx, :loc_y] = locs[idx, :loc_y] * cosd(a) - locs[idx, :loc_z] * sind(a)
             locs_tmp[idx, :loc_z] = locs[idx, :loc_y] * sind(a) + locs[idx, :loc_z] * cosd(a)
         end

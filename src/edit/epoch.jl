@@ -70,7 +70,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
         epochs = _make_epochs(obj.data, ep_n=ep_n, ep_len=ep_len)
 
         # delete markers outside epochs
-        for marker_idx in nrow(obj_new.markers):-1:1
+        for marker_idx in DataFrame.nrow(obj_new.markers):-1:1
             round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
         end
     end

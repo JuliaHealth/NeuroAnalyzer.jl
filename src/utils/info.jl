@@ -405,7 +405,7 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
         else
             println("                Markers: no")
         end
-        if nrow(obj.locs) > 0
+        if DataFrame.nrow(obj.locs) > 0
             println("      Channel locations: yes")
         else
             println("      Channel locations: no")
@@ -523,7 +523,7 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
         else
             println("                Markers: no")
         end
-        if nrow(obj.locs) > 0
+        if DataFrame.nrow(obj.locs) > 0
             println("      Channel locations: yes")
         else
             println("      Channel locations: no")

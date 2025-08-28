@@ -34,7 +34,7 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
             rpad("value", 24) *
             rpad("channel", 1))
 
-    for mrk_idx in 1:nrow(obj.markers)
+    for mrk_idx in 1:DataFrame.nrow(obj.markers)
         println(rpad(string(mrk_idx), 5) *
                 rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
                 rpad(string(round(obj.markers[mrk_idx, :start], digits=3)), 12) *
@@ -64,7 +64,7 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
     @assert _has_markers(obj) "OBJ has no markers."
 
     obj_new = deepcopy(obj)
-    nn = nrow(obj_new.markers)
+    nn = DataFrame.nrow(obj_new.markers)
     @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
     deleteat!(obj_new.markers, n)
     reset_components!(obj_new)

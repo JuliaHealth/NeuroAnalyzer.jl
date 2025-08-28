@@ -78,14 +78,14 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, names::Bool=tru
     end
 
     # MARKERS
-    if markers && nrow(obj.markers) > 0
+    if markers && DataFrame.nrow(obj.markers) > 0
         file_name = replace(file_name, ".csv" => "_markers.csv")
         @assert !(isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
         CSV.write(file_name, obj.markers)
     end
 
     # LOCS
-    if locs && nrow(obj.locs) > 0
+    if locs && DataFrame.nrow(obj.locs) > 0
         file_name = replace(file_name, ".csv" => "_locs.csv")
         @assert (isfile(file_name) && !overwrite) "File $file_name cannot be saved, to overwrite use overwrite=true."
         CSV.write(file_name, obj.locs)

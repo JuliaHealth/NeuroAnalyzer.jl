@@ -1,5 +1,5 @@
 function _delete_markers(markers::DataFrame, segment::Tuple{Real, Real}, fs::Int64)::DataFrame
-    for marker_idx in nrow(markers):-1:1
+    for marker_idx in DataFrame.nrow(markers):-1:1
         round(Int64, fs * markers[marker_idx, :start]) in segment[1]:segment[2] && deleteat!(markers, marker_idx)
     end
     return markers
@@ -7,7 +7,7 @@ end
 
 function _shift_markers(m::DataFrame, pos::Real, offset::Real, fs::Int64)::DataFrame
     markers = deepcopy(m)
-    for marker_idx in 1:nrow(markers)
+    for marker_idx in 1:DataFrame.nrow(markers)
         round(Int64, fs * markers[marker_idx, :start]) > pos && (markers[marker_idx, :start] -= (offset / fs))
     end
     return markers
@@ -30,7 +30,7 @@ function _has_markers(channel_types::Vector{String})::Tuple{Bool, Int64}
     return markers, markers_channel
 end
 
-_has_markers(obj::NeuroAnalyzer.NEURO)::Bool = nrow(obj.markers) > 0 ? true : false
+_has_markers(obj::NeuroAnalyzer.NEURO)::Bool = DataFrame.nrow(obj.markers) > 0 ? true : false
 
 function _a2df(annotations::Vector{String})::DataFrame
     # convert EDF/BDF annotations to markers DataFrame

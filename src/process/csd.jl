@@ -34,7 +34,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
-    ch_n = nrow(locs)
+    ch_n = DataFrame.nrow(locs)
     ep_n = nepochs(obj)
 
     G, H = gh(locs, m=m, n=n)
@@ -129,7 +129,7 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::@NamedTuple{G::Matrix{Floa
     @assert !(m < 2 || m > 10) "m must be in [2, 10]."
     @assert n >= 1 "n must be ≥ 1."
 
-    ch_n = nrow(locs)
+    ch_n = DataFrame.nrow(locs)
 
     G = zeros(ch_n, ch_n)
     H = zeros(ch_n, ch_n)

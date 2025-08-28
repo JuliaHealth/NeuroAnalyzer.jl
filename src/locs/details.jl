@@ -28,7 +28,7 @@ function locs_details(obj::NeuroAnalyzer.NEURO; ch::String, out::Bool=true)::@Na
 
     ch = intersect(obj.locs[!, :label], [ch])
     locs = Base.filter(:label => in(ch), obj.locs)
-    @assert nrow(locs) == 1 "Channel has no location details."
+    @assert DataFrame.nrow(locs) == 1 "Channel has no location details."
 
     l = obj.locs[1, :label]
     x = obj.locs[1, :loc_x]

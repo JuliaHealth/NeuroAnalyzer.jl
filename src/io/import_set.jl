@@ -169,11 +169,11 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                          :loc_radius_sph=>radius_sph,
                          :loc_theta_sph=>theta_sph,
                          :loc_phi_sph=>phi_sph)
-        for idx in nrow(locs):-1:1
+        for idx in DataFrame.nrow(locs):-1:1
             (chanlocs["X"][:][idx] isa Float64 && chanlocs["Y"][:][idx] isa Float64 && chanlocs["Z"][:][idx] isa Float64) || deleteat!(locs, idx)
         end
-        nrow(locs) > 0 && _info("Locs for $(nrow(locs)) channel$(_pl(nrow(locs))) found")
-        if nrow(locs) > 0
+        DataFrame.nrow(locs) > 0 && _info("Locs for $(DataFrame.nrow(locs)) channel$(_pl(DataFrame.nrow(locs))) found")
+        if DataFrame.nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
             locs_normalize!(locs)
         end
@@ -267,7 +267,7 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     components = Dict()
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
-    nrow(locs) == 0 && _initialize_locs!(obj)
+    DataFrame.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
 

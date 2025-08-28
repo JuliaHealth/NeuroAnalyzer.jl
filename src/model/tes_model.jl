@@ -35,9 +35,9 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
     cathode_ch = findfirst(isequal(cathode), labe)
 
     if !cart
-        loc_x = zeros(nrow(locs))
-        loc_y = zeros(nrow(locs))
-        for idx in 1:nrow(locs)
+        loc_x = zeros(DataFrame.nrow(locs))
+        loc_y = zeros(DataFrame.nrow(locs))
+        for idx in 1:DataFrame.nrow(locs)
             loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         end
     else
@@ -54,8 +54,8 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
 
     # 1st column: distance from anode
     # 2nd column: distance from cathode
-    r = zeros(nrow(locs), 2)
-    for idx in 1:nrow(locs)
+    r = zeros(DataFrame.nrow(locs), 2)
+    for idx in 1:DataFrame.nrow(locs)
         r[idx, 1] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), anode_pos)
         r[idx, 2] = euclidean((locs[!, :loc_x][idx], locs[!, :loc_y][idx]), cathode_pos)
     end
@@ -64,17 +64,17 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
     r[cathode_ch, :] = [1, 1]
     r .+= 1
 
-    E = zeros(nrow(locs))
-    for idx in 1:nrow(locs)
+    E = zeros(DataFrame.nrow(locs))
+    for idx in 1:DataFrame.nrow(locs)
         E[idx] = ((kₑ * anode_curr) / r[idx, 1]) + ((kₑ * cathode_curr) / r[idx, 2])
     end
     E[anode_ch] = anode_curr
     E[cathode_ch] = cathode_curr
 
-    obj_tmp = ecog = create(data_type="eeg")
-    obj_tmp.data = reshape(repeat(E, 1, 2), nrow(locs), 2, 1)
+    obj_tmp = create(data_type="eeg")
+    obj_tmp.data = reshape(repeat(E, 1, 2), DataFrame.nrow(locs), 2, 1)
     obj_tmp.header.recording[:label] = locs[!, :label]
-    obj_tmp.header.recording[:channel_type] = repeat(["EEG"], nrow(locs))
+    obj_tmp.header.recording[:channel_type] = repeat(["EEG"], DataFrame.nrow(locs))
     obj_tmp.locs = locs
     create_time!(obj_tmp, fs=1)
     obj_tmp.time_pts
@@ -83,6 +83,6 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
 
     return p
 
-    # Plots.plot(E, xticks=(1:nrow(locs), locs[!, :label]), xtickfontsize=3)
+    # Plots.plot(E, xticks=(1:DataFrame.nrow(locs), locs[!, :label]), xtickfontsize=3)
 
 end
