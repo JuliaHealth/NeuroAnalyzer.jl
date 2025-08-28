@@ -108,12 +108,6 @@ Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, 
 """
 function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}; x::Int64, y::Int64, title::String="", view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
 
-    if file_name != ""
-        ext = lowercase(splitext(file_name)[2])
-        @assert ext == ".png" "Filename extension must be .png"
-        isfile(file_name) && _warn("File $file_name will be overwritten.")
-    end
-
     c = CairoRGBSurface(c1.width, c1.height)
     cr = CairoContext(c)
     Cairo.set_source_surface(cr, c1, 0, 0)
@@ -132,7 +126,13 @@ function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfac
         Cairo.show_text(cr, title)
     end
 
-    file_name != "" && Cairo.write_to_png(c, file_name)
+    if file_name != ""
+        ext = lowercase(splitext(file_name)[2])
+        @assert ext == ".png" "Filename extension must be .png"
+        isfile(file_name) && _warn("File $file_name will be overwritten.")
+        Cairo.write_to_png(c, file_name)
+    end
+
     view && iview_plot(c)
 
     return c
