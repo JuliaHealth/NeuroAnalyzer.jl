@@ -673,12 +673,15 @@ Preview of channel locations.
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
 - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
+- `mesh_type::Symbol=:brain`: type of mesh to plot (`:brain` or `:head`)
+- `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
 
 # Returns
 
-- `Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
+- `Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure, Nothing}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, d::Int64=2, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, mesh_type::Union{Nothing, Symbol}=nothing, mesh_alpha::Float64=0.95)::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure, Nothing}
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, d::Int64=2, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, mesh_type::Union{Nothing, Symbol}=nothing, mesh_alpha::Float64=0.95, camera::Tuple{Real, Real}=(20, 45))::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure, Nothing}
 
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
     @assert (d == 2 || d == 3) "d must be 2 or 3."
@@ -757,7 +760,8 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                              mono=mono,
                              cart=cart,
                              mesh_type=mesh_type,
-                             mesh_alpha=mesh_alpha)
+                             mesh_alpha=mesh_alpha,
+                             camera=camera)
     end
 
     return p
@@ -907,18 +911,18 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
 
     f = Figure(size=(plot_size, plot_size))
 
-    ax = Axis3(f[1, 1],
-               xlabel="X",
-               ylabel="Y",
-               zlabel="Z",
-               limits=(x_lim, y_lim, z_lim),
-               title="",
-               aspect=(1, 1, 1),
-               xticks=[-1, 0, 1],
-               yticks=[-1, 0, 1],
-               zticks=[-1, 0, 1],
-               elevation=deg2rad(camera[1]),
-               azimuth=deg2rad(camera[2]))
+    Axis3(f[1, 1],
+          xlabel="X",
+          ylabel="Y",
+          zlabel="Z",
+          limits=(x_lim, y_lim, z_lim),
+          title="",
+          aspect=(1, 1, 1),
+          xticks=[-1, 0, 1],
+          yticks=[-1, 0, 1],
+          zticks=[-1, 0, 1],
+          elevation=deg2rad(camera[1]),
+          azimuth=deg2rad(camera[2]))
 
     GLMakie.scatter!(loc_x[ch],
                      loc_y[ch],
