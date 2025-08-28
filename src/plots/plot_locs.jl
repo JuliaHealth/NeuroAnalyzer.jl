@@ -1,6 +1,7 @@
 export plot_locs
 export plot_locs3d
 export plot_gridlocs
+export plot_locs3d_mesh
 
 """
     plot_locs(locs; <keyword arguments>)
@@ -610,8 +611,14 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
 
     if ch_labels
         for idx in eachindex(locs[!, :label])
-            idx in ch && Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
-            idx in selected && Plots.annotate!(loc_x[idx] * 1.1, loc_y[idx] * 1.1, loc_z[idx] * 1.1, Plots.text(locs[!, :label][idx], font_size))
+            idx in ch && Plots.annotate!(loc_x[idx] * 1.1,
+                                         loc_y[idx] * 1.1,
+                                         loc_z[idx] * 1.1,
+                                         Plots.text(locs[idx, :label], font_size))
+            idx in selected && Plots.annotate!(loc_x[idx] * 1.1,
+                                               loc_y[idx] * 1.1,
+                                               loc_z[idx] * 1.1,
+                                               Plots.text(locs[idx, :label], font_size))
         end
     end
 
@@ -810,5 +817,156 @@ function plot_gridlocs(; mono::Bool=false)::Plots.Plot{Plots.GRBackend}
     end
 
     return p
+
+end
+
+
+"""
+    plot_locs3d_mesh(locs; <keyword arguments>)
+
+3D preview of channel locations with brain or head mesh.
+
+# Arguments
+
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `ch::Union{Int64, Vector{Int64}}=1:nrow(locs)`: list of channels, default is all channels
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+- `ch_labels::Bool=true`: plot channel labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or gray palette
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
+- `mesh_type::Symbol=:brain`: type of mesh to plot (`:brain` or `:head`)
+- `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
+
+# Returns
+
+- `f::GLMakie.Figure`
+"""
+function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:brain, mesh_alpha::Float64=0.95)::GLMakie.Figure
+
+    _check_var(mesh_type, [:brain, :head], "mesh_type")
+    _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
+
+    if mesh_type === :brain
+        msh = FileIO.load(joinpath(res_path, "mesh/brain_hires.stl"))
+    else
+        msh = FileIO.load(joinpath(res_path, "mesh/head.stl"))
+        mesh_alpha = 1.0
+    end
+
+    # scale mesh to [-1.0, +1.0]
+    msh_m = zeros(length(msh.position), 3)
+    for idx in eachindex(msh.position)
+        msh_m[idx, :] = msh.position[idx]
+    end
+    msh.position ./= maximum(abs.(msh_m))
+    msh.position .*= mesh_type == :brain ? 0.95 : 1.8
+
+    pal = mono ? :grays : :darktest
+
+    if !cart
+        loc_x = zeros(nrow(locs))
+        loc_y = zeros(nrow(locs))
+        loc_z = zeros(nrow(locs))
+        for idx in 1:nrow(locs)
+            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
+        end
+    else
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
+        loc_z = locs[!, :loc_z]
+    end
+
+    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
+        x_lim = (-1.5, 1.5)
+        y_lim = (-1.5, 1.5)
+        z_lim = (-1.5, 1.5)
+        plot_size = 640
+    else
+        x_lim = (-2.0, 2.0)
+        y_lim = (-2.0, 2.0)
+        z_lim = (-2.0, 2.0)
+        plot_size = 850
+    end
+
+    plot_size = 850
+    marker_size = 10
+    font_size = 10
+
+    ch = setdiff(ch, selected)
+
+    f = Figure(size=(plot_size, plot_size))
+
+    ax = Axis3(f[1, 1],
+               xlabel="X",
+               ylabel="Y",
+               zlabel="Z",
+               limits=(x_lim, y_lim, z_lim),
+               title="",
+               aspect=(1, 1, 1),
+               xticks=[-1, 0, 1],
+               yticks=[-1, 0, 1],
+               zticks=[-1, 0, 1],
+               elevation=deg2rad(camera[1]),
+               azimuth=deg2rad(camera[2]))
+
+    GLMakie.scatter!(loc_x[ch],
+                     loc_y[ch],
+                     loc_z[ch],
+                     color=:gray,
+                     markersize=marker_size)
+
+    GLMakie.mesh!(msh,
+                  alpha=mesh_alpha,
+                  color=:gray)
+
+    if selected != 0
+        if mono
+            GLMakie.scatter!(loc_x[selected],
+                             loc_y[selected],
+                             loc_z[selected],
+                             color=:gray,
+                             markersize=marker_size)
+        else
+            GLMakie.scatter!(loc_x[selected],
+                             loc_y[selected],
+                             loc_z[selected],
+                             colormap=pal,
+                             color=selected,
+                             markersize=marker_size)
+        end
+    end
+
+    if ch_labels
+        GLMakie.text!(loc_x[ch] * 1.1,
+                      loc_y[ch] * 1.1,
+                      loc_z[ch] * 1.1,
+                      text=locs[ch, :label],
+                      fontsize=font_size,
+                      align=(:center, :center))
+        GLMakie.text!(loc_x[selected] * 1.1,
+                      loc_y[selected] * 1.1,
+                      loc_z[selected] * 1.1,
+                      text=locs[selected, :label],
+                      fontsize=font_size,
+                      align=(:center, :center))
+    end
+
+    if head_labels
+        fid_names = ["NAS", "IN", "LPA", "RPA"]
+        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+            GLMakie.text!(NeuroAnalyzer.fiducial_points[idx][1],
+                          NeuroAnalyzer.fiducial_points[idx][2],
+                          NeuroAnalyzer.fiducial_points[idx][3],
+                          text=fid_names[idx],
+                          fontsize=font_size,
+                          align=(:center, :center))
+        end
+    end
+
+    f
+
+    return f
 
 end
