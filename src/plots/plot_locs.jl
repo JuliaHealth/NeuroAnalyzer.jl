@@ -865,13 +865,14 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
         mesh_alpha = 1.0
     end
 
-    # scale mesh to [-1.0, +1.0]
-    msh_m = zeros(length(msh.position), 3)
-    for idx in eachindex(msh.position)
-        msh_m[idx, :] = msh.position[idx]
+    # scale mesh
+    if mesh_type === :brain
+        msh.position ./= _mesh_normalize_xyz(msh)
+        msh.position .*= 0.95
+    else
+        msh.position ./= _mesh_normalize_xy(msh)
+        msh.position .*= 1.1
     end
-    msh.position ./= maximum(abs.(msh_m))
-    msh.position .*= mesh_type == :brain ? 0.95 : 1.8
 
     pal = mono ? :grays : :darktest
 
