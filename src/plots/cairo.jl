@@ -129,7 +129,7 @@ function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfac
         y = y + c2.height + 12
         # - (extents[4] / 2 + extents[2])
         Cairo.move_to(cr, x, y)
-        Cairo.show_text(cr, title);
+        Cairo.show_text(cr, title)
     end
 
     file_name != "" && Cairo.write_to_png(c, file_name)
