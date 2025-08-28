@@ -2,6 +2,7 @@ using NeuroAnalyzer
 using Plots
 using Cairo
 using Test
+using GLMakie
 
 @info "Initializing"
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
@@ -297,5 +298,12 @@ p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:line)
 @test p isa Plots.Plot{Plots.GRBackend}
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
 @test p isa Plots.Plot{Plots.GRBackend}
+
+@info "Test: plot_locs3d_mesh()"
+ch = get_channel(e10, ch="eeg")
+p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:brain);
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:head);
+@test p isa GLMakie.Figure
 
 true

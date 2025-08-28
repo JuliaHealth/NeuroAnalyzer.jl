@@ -882,12 +882,10 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
         x_lim = (-1.5, 1.5)
         y_lim = (-1.5, 1.5)
         z_lim = (-1.5, 1.5)
-        plot_size = 640
     else
         x_lim = (-2.0, 2.0)
         y_lim = (-2.0, 2.0)
         z_lim = (-2.0, 2.0)
-        plot_size = 850
     end
 
     plot_size = 850
@@ -945,12 +943,14 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
                       text=locs[ch, :label],
                       fontsize=font_size,
                       align=(:center, :center))
-        GLMakie.text!(loc_x[selected] * 1.1,
-                      loc_y[selected] * 1.1,
-                      loc_z[selected] * 1.1,
-                      text=locs[selected, :label],
-                      fontsize=font_size,
-                      align=(:center, :center))
+        if selected != 0
+            GLMakie.text!(loc_x[selected] * 1.1,
+                          loc_y[selected] * 1.1,
+                          loc_z[selected] * 1.1,
+                          text=locs[selected, :label],
+                          fontsize=font_size,
+                          align=(:center, :center))
+        end
     end
 
     if head_labels
@@ -964,8 +964,6 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
                           align=(:center, :center))
         end
     end
-
-    f
 
     return f
 
