@@ -333,7 +333,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         elseif woverlap >= wlen
             warn_dialog("Window overlap must be < window length.")
             no_error = false
-        elseif DataFrame.nrow(obj.locs) == 0 && type === :topo
+        elseif DataFrames.nrow(obj.locs) == 0 && type === :topo
             warn_dialog("Electrode locations not available.")
             no_error = false
         elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo])
@@ -1004,7 +1004,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         elseif length(get_channel(obj, ch=ch)) < 2 && type === :s3d
             warn_dialog("For s3d plot, the signal must contain ≥ 2 channels.")
             no_error = false
-        elseif DataFrame.nrow(obj.locs) == 0 && type === :topo
+        elseif DataFrames.nrow(obj.locs) == 0 && type === :topo
             warn_dialog("Electrode locations not available.")
             no_error = false
         elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1 && (type in [:butterfly, :mean, :w3d, :s3d, :topo] || ch == "all")

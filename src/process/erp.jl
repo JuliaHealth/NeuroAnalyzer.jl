@@ -57,7 +57,7 @@ function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), 
     end
 
     # remove markers of deleted epochs
-    for marker_idx in DataFrame.nrow(obj_new.markers):-1:1
+    for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
         obj_new.markers[marker_idx, :start] > size(obj_new.data, 2) && deleteat!(obj_new.markers, marker_idx)
     end
     obj_new.markers[!, :start] .+= (obj_new.epoch_time[1] * sr(obj_new))

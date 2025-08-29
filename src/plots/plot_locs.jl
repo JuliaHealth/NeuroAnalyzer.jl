@@ -11,7 +11,7 @@ Preview channel locations.
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrame.nrow(locs)`: list of locations to plot, default is all locations
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
 - `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels should be highlighted
 - `ch_labels::Bool=true`: plot locations labels
 - `head::Bool=true`: draw head
@@ -40,7 +40,7 @@ Preview channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrame.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
     pal = mono ? :grays : :darktest
@@ -513,7 +513,7 @@ end
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}}=1:DataFrame.nrow(locs)`: list of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
 - `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -525,15 +525,15 @@ end
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrame.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Plots.Plot{Plots.GRBackend}
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
     if !cart
-        loc_x = zeros(DataFrame.nrow(locs))
-        loc_y = zeros(DataFrame.nrow(locs))
-        loc_z = zeros(DataFrame.nrow(locs))
-        for idx in 1:DataFrame.nrow(locs)
+        loc_x = zeros(DataFrames.nrow(locs))
+        loc_y = zeros(DataFrames.nrow(locs))
+        loc_z = zeros(DataFrames.nrow(locs))
+        for idx in 1:DataFrames.nrow(locs)
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
         end
     else
@@ -689,7 +689,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     ch = get_channel(obj, ch=ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
-    ch = collect(1:DataFrame.nrow(locs))
+    ch = collect(1:DataFrames.nrow(locs))
 
     if selected == ""
         selected = 0
@@ -842,7 +842,7 @@ end
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}}=1:DataFrame.nrow(locs)`: list of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
 - `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -856,7 +856,7 @@ end
 
 - `f::GLMakie.Figure`
 """
-function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrame.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:brain, mesh_alpha::Float64=0.95)::GLMakie.Figure
+function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:brain, mesh_alpha::Float64=0.95)::GLMakie.Figure
 
     _check_var(mesh_type, [:brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
@@ -880,10 +880,10 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
     pal = mono ? :grays : :darktest
 
     if !cart
-        loc_x = zeros(DataFrame.nrow(locs))
-        loc_y = zeros(DataFrame.nrow(locs))
-        loc_z = zeros(DataFrame.nrow(locs))
-        for idx in 1:DataFrame.nrow(locs)
+        loc_x = zeros(DataFrames.nrow(locs))
+        loc_y = zeros(DataFrames.nrow(locs))
+        loc_z = zeros(DataFrames.nrow(locs))
+        for idx in 1:DataFrames.nrow(locs)
             loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
         end
     else

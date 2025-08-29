@@ -235,12 +235,12 @@ function import_bv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEU
                             :length=>round.(m_len ./ sampling_rate),
                             :value=>m_desc,
                             :channel=>m_ch)
-        if markers[!, :id] == repeat([""], DataFrame.nrow(markers))
-            markers[!, :id] == repeat(["mrk"], DataFrame.nrow(markers))
+        if markers[!, :id] == repeat([""], DataFrames.nrow(markers))
+            markers[!, :id] == repeat(["mrk"], DataFrames.nrow(markers))
         end
     elseif isfile(replace(splitext(file_name)[1], "eeg"=>"events.tsv"))
         vmrk = CSV.read(replace(splitext(file_name)[1], "eeg"=>"events.tsv"), stringtype=String, DataFrame)
-        markers = DataFrame(:id=>repeat(["mrk"], DataFrame.nrow(vmrk)),
+        markers = DataFrame(:id=>repeat(["mrk"], DataFrames.nrow(vmrk)),
                             :start=>(vmrk[!, :sample] ./ sampling_rate),
                             :length=>round.(vmrk[!, :duration] ./ sampling_rate),
                             :value=>(vmrk[!, :trial_type] .* "_" .* string.(vmrk[!, :value])),
@@ -374,7 +374,7 @@ function import_bv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEU
     history = String[]
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
-    DataFrame.nrow(locs) == 0 && _initialize_locs!(obj)
+    DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
 

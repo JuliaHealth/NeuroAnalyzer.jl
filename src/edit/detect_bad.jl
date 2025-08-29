@@ -319,7 +319,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
         locs = _ch_locs(obj, ch_list)
         chs = intersect(ch_list, obj.locs[!, :label])
         locs = Base.filter(:label => in(chs), obj.locs)
-        @assert length(ch_list) == DataFrame.nrow(locs) "Some channels do not have locations."
+        @assert length(ch_list) == DataFrames.nrow(locs) "Some channels do not have locations."
         ch_n = length(ch)
         ep_n = nepochs(obj)
 

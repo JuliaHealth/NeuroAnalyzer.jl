@@ -179,7 +179,7 @@ function import_locs_locs(file_name::String)::DataFrame
     locs_swapxy!(locs, polar=true, cart=false, spherical=false)
     locs_flipx!(locs, polar=true, cart=false, spherical=false)
 
-    locs[!, :loc_phi_sph] = zeros(DataFrame.nrow(locs))
+    locs[!, :loc_phi_sph] = zeros(DataFrames.nrow(locs))
 
     locs_normalize!(locs)
     _locs_round!(locs)

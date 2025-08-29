@@ -981,7 +981,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         p = plot_psd_topo(locs,
                           sf,
                           sp,
-                          ch=collect(1:DataFrame.nrow(locs)),
+                          ch=collect(1:DataFrames.nrow(locs)),
                           clabels=obj.locs[!, :label],
                           xlabel=xlabel,
                           ylabel=ylabel,

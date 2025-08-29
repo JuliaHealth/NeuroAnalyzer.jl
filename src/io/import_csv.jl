@@ -32,13 +32,13 @@ function import_csv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         # time by channels
         time_pts = df[!, 1]
         data = Array(df[:, 2:end])'
-        ch_n = DataFrame.ncol(df) - 1
+        ch_n = DataFrames.ncol(df) - 1
         clabels_tmp = String.(names(df)[2:end])
     else
         # channels by time
         time_pts = parse.(Float64, names(df)[2:end])
         data = Array(df[!, 2:end])
-        ch_n = DataFrame.nrow(df)
+        ch_n = DataFrames.nrow(df)
         clabels_tmp = String.(df[:, 1])
     end
     data = Array(reshape(data, size(data, 1), size(data, 2), 1))

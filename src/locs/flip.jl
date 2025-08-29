@@ -116,7 +116,7 @@ function locs_flipx(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherica
     end
 
     if polar
-        for idx in 1:DataFrame.nrow(locs)
+        for idx in 1:DataFrames.nrow(locs)
             t = locs[idx, :loc_theta]
             q = _angle_quadrant(t)
             q == 1 && (t = 90 + (90 - t))

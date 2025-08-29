@@ -121,7 +121,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
             end
         end
         value = unique(markers[!, :value])
-        for idx1 in 1:DataFrame.nrow(markers), idx2 in eachindex(value)
+        for idx1 in 1:DataFrames.nrow(markers), idx2 in eachindex(value)
             markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
         end
     end
