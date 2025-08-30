@@ -1,7 +1,7 @@
 export filter_g
 
 """
-    filter_g(s, fs, pad, f, gw)
+    filter_g(s; <keyword arguments>)
 
 Filter using Gaussian in the frequency domain.
 
@@ -23,16 +23,15 @@ function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=
     @assert f >= 0 "f must be ≥ 0."
     @assert gw > 0 "gw must be > 0."
 
-    # create Gaussian in frequency domain
+    # create Gaussian in the frequency domain
     gf = linspace(0, fs, length(s))
     gs = (gw * (2 * pi - 1)) / (4 * pi)     # normalized width
     gf .-= f                                # shifted frequencies
-    g = @. exp((-gf^2 ) / 2 * gs^2)         # Gaussian
-    # g = @. exp(-0.5 * (gf / gs)^2)        # Gaussian
+    g = @. exp(-0.5 * (gf / gs)^2)          # Gaussian
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_new = 2 .* abs.(ifft0((fft0(s, pad) .* g ./ length(s)), pad) .* length(s))
+    s_new = abs.(ifft0((fft0(s, pad) .* g), pad))
 
     return s_new
 
