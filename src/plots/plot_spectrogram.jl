@@ -253,7 +253,7 @@ Plots spectrogram.
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
 - `method::Symbol=:stft`: method of calculating spectrogram:
-    - `:stft`: short-time Fourier transform
+    - `:stft`: short-time Fourier
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
@@ -350,16 +350,16 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
         if method === :stft
             sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=false, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Spectrogram (short-time Fourier transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
             sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=false, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Spectrogram (multi-tapered periodogram)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
             _, sp, _, sf, st = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, db=false, w=w)
-            title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
             sp, _, sf, st = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=false, gw=gw, w=w)
-            title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
             _log_off()
             sp, sf, st = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, norm=db)
@@ -370,7 +370,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         elseif method === :hht
             imf = emd(signal, t)
             sp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=false)
-            title == "default" && (title = "Spectrogram (Hilbert-Huang transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         end
 
         f1 = vsearch(frq_lim[1], sf)
@@ -414,16 +414,16 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         if method === :stft
             sp, sf = psd(signal, fs=fs, db=db, method=:stft, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Spectrogram (short-time Fourier transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
             sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Spectrogram (multi-tapered periodogram)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
             sp, sf = psd(signal, fs=fs, db=db, method=:mw, w=w, ncyc=ncyc)
-            title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
             sp, sf = psd(signal, fs=fs, db=db, method=:gh, w=w, gw=gw)
-            title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
             _log_off()
             sp, sf = psd(signal, fs=fs, db=db, method=:cwt, wt=wt)
@@ -440,7 +440,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                 imf = emd(signal[idx, :], t)
                 sp[idx, :], _, _, _ = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=db)
             end
-            title == "default" && (title = "Spectrogram (Hilbert-Huang transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         end
 
         f1 = vsearch(frq_lim[1], sf)
@@ -469,7 +469,7 @@ Plots spectrogram of embedded or external component.
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
 - `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
 - `method::Symbol=:stft`: method of calculating spectrogram:
-    - `:stft`: short-time Fourier transform
+    - `:stft`: short-time Fourier
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
@@ -571,22 +571,22 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             f2 = vsearch(frq_lim[2], sf)
             sf = sf[f1:f2]
             sp = sp[f1:f2, :]
-            title == "default" && (title = "Spectrogram (short-time Fourier transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (short-time Fourier)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
             sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             f1 = vsearch(frq_lim[1], sf)
             f2 = vsearch(frq_lim[2], sf)
             sf = sf[f1:f2]
             sp = sp[f1:f2, :]
-            title == "default" && (title = "Spectrogram (multi-tapered periodogram)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (multi-tapered)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
             _, sp, _, sf = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, db=db, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
-            title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Morlet wavelet)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
             sp, _, sf = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=db, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
-            title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
             _log_off()
             sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, norm=db)
@@ -598,7 +598,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
         elseif method === :hht
             imf = emd(signal, t)
             sp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=false)
-            title == "default" && (title = "Spectrogram (Hilbert-Huang transform)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep, time window: $t_s1:$t_s2]")
         end
 
         st .+= t[1]
@@ -632,22 +632,22 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             f2 = vsearch(frq_lim[2], sf)
             sf = sf[f1:f2]
             sp = sp[:, f1:f2]
-            title == "default" && (title = "Spectrogram (short-time Fourier transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (short-time Fourier)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mt
             sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             f1 = vsearch(frq_lim[1], sf)
             f2 = vsearch(frq_lim[2], sf)
             sf = sf[f1:f2]
             sp = sp[:, f1:f2]
-            title == "default" && (title = "Spectrogram (multi-tapered periodogram)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (multi-tapered)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :mw
             sp, sf = mwpsd(signal, fs=fs, ncyc=ncyc, db=db, w=w)
             sf = linspace(0, frq_lim[2], size(sp, 2))
-            title == "default" && (title = "Spectrogram (Morlet-wavelet transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Morlet wavelet)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :gh
             sp, _, sf = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=db, gw=gw, w=w)
             st = linspace(0, (length(signal) / fs), size(sp, 2))
-            title == "default" && (title = "Spectrogram (Gaussian and Hilbert transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         elseif method === :cwt
             _log_off()
             sp, sf = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt, norm=db)
@@ -665,7 +665,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
                 imf = emd(signal[idx, :], t)
                 sp[idx, :], _, _, _ = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=db)
             end
-            title == "default" && (title = "Spectrogram (Hilbert-Huang transform)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
 
         p = plot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, kwargs=kwargs)
