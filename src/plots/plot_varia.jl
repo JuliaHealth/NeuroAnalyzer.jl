@@ -645,47 +645,81 @@ Polar plot.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `ticks::Bool=false`: draw X and Y ticks
+- `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=false, ms::Symbol=:circle, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
     ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
+    _check_var(ms, [:circle, :xcross], "ms")
 
     pal = mono ? :grays : :darktest
 
     if ndims(s) == 1
-        p = Plots.plot([0, s[1]], [0, 1],
-                       size=(800, 800),
-                       projection=:polar,
-                       left_margin=50Plots.px,
-                       right_margin=50Plots.px,
-                       bottom_margin=30Plots.px,
-                       legend=false,
-                       xticks=ticks,
-                       yticks=ticks,
-                       title=title,
-                       color=:black,
-                       palette=pal,
-                       linewidth=2,
-                       titlefontsize=8,
-                       xtickfontsize=7,
-                       ytickfontsize=7;
-                       kwargs...)
-        for idx in eachindex(s)[(begin + 1):end]
-            p = Plots.plot!([0, s[idx]], [0, 1],
-                            projection=:polar,
-                            color=:black)
+        if eltype(s) <: Real
+            p = Plots.plot([0, s[1]], [0, 1],
+                           aspect_ratio=1,
+                           size=(800, 800),
+                           projection=:polar,
+                           left_margin=30Plots.px,
+                           right_margin=50Plots.px,
+                           bottom_margin=30Plots.px,
+                           legend=false,
+                           xticks=ticks,
+                           yticks=ticks,
+                           title=title,
+                           color=:black,
+                           palette=pal,
+                           linewidth=2,
+                           titlefontsize=8,
+                           xtickfontsize=7,
+                           ytickfontsize=7;
+                           kwargs...)
+            for idx in eachindex(s)[(begin + 1):end]
+                p = Plots.plot!([0, s[idx]], [0, 1],
+                                projection=:polar,
+                                color=:black)
+            end
+        elseif eltype(s) == Complex{Float64}
+            p = Plots.scatter([imag(s[1])], [real(s[1])],
+                              size=(800, 800),
+                              framestyle = :zerolines,
+                              projection=:polar,
+                              left_margin=30Plots.px,
+                              right_margin=50Plots.px,
+                              bottom_margin=30Plots.px,
+                              legend=false,
+                              xticks=ticks,
+                              yticks=ticks,
+                              title=title,
+                              palette=pal,
+                              markersize=5,
+                              markercolor= ms === :xcross ? :black : :white,
+                              markershape=ms,
+                              titlefontsize=8,
+                              xtickfontsize=7,
+                              ytickfontsize=7;
+                              kwargs...)
+            for idx in eachindex(s)[(begin + 1):end]
+                p = Plots.scatter!([imag(s[idx])], [real(s[idx])],
+                                   markershape=ms,
+                                   markersize=5,
+                                   markercolor= ms === :xcross ? :black : :white,
+                                   projection=:polar,
+                                   color=:black)
+            end
         end
     else
         p = Plots.plot([0, s[1, 1]], [0, s[1, 2]],
+                       aspect_ratio=1,
                        size=(800, 800),
                        projection=:polar,
-                       left_margin=50Plots.px,
+                       left_margin=30Plots.px,
                        right_margin=50Plots.px,
                        bottom_margin=30Plots.px,
                        legend=false,
