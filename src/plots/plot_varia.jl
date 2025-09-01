@@ -383,10 +383,10 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
                    ytickfontsize=8;
                    kwargs=kwargs)
     for idx in 2:size(s, 1)
-        p = Plots.plot!(s[idx, :],
-                        seriestype=:line,
-                        color=idx,
-                        label=rlabels[idx])
+        Plots.plot!(s[idx, :],
+                    seriestype=:line,
+                    color=idx,
+                    label=rlabels[idx])
     end
     Plots.plot(p)
 
@@ -545,11 +545,11 @@ function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xla
     for idx1 in eachindex(glabels)
         for idx2 in eachindex(signal[idx1])
             if !mono
-                p = Plots.scatter!((idx1, signal[idx1][idx2]),
-                                   color=idx1)
+                Plots.scatter!((idx1, signal[idx1][idx2]),
+                               color=idx1)
             else
-                p = Plots.scatter!((idx1, signal[idx1][idx2]),
-                                   color=:black)
+                Plots.scatter!((idx1, signal[idx1][idx2]),
+                               color=:black)
             end
         end
     end
@@ -612,17 +612,17 @@ function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, x
         for idx2 in eachindex(glabels)
             c_tmp[idx2] = signal[idx2][idx1]
         end
-        p = Plots.plot!(c_tmp,
-                        color=:black)
+        Plots.plot!(c_tmp,
+                    color=:black)
     end
     for idx1 in eachindex(glabels)
         for idx2 in eachindex(signal[idx1])
             if !mono
-                p = Plots.scatter!((idx1, signal[idx1][idx2]),
-                                   color=idx1)
+                Plots.scatter!((idx1, signal[idx1][idx2]),
+                               color=idx1)
             else
-                p = Plots.scatter!((idx1, signal[idx1][idx2]),
-                                   color=:black)
+                Plots.scatter!((idx1, signal[idx1][idx2]),
+                               color=:black)
             end
         end
     end
@@ -681,9 +681,9 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                            ytickfontsize=7;
                            kwargs...)
             for idx in eachindex(s)[(begin + 1):end]
-                p = Plots.plot!([0, s[idx]], [0, 1],
-                                projection=:polar,
-                                color=:black)
+                Plots.plot!([0, s[idx]], [0, 1],
+                            projection=:polar,
+                            color=:black)
             end
         elseif eltype(s) == Complex{Float64}
             p = Plots.scatter([imag(s[1])], [real(s[1])],
@@ -706,12 +706,12 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                               ytickfontsize=7;
                               kwargs...)
             for idx in eachindex(s)[(begin + 1):end]
-                p = Plots.scatter!([imag(s[idx])], [real(s[idx])],
-                                   markershape=ms,
-                                   markersize=5,
-                                   markercolor= ms === :xcross ? :black : :white,
-                                   projection=:polar,
-                                   color=:black)
+                Plots.scatter!([imag(s[idx])], [real(s[idx])],
+                               markershape=ms,
+                               markersize=5,
+                               markercolor= ms === :xcross ? :black : :white,
+                               projection=:polar,
+                               color=:black)
             end
         end
     else
@@ -734,16 +734,16 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
                        ytickfontsize=7;
                        kwargs...)
         for idx in axes(s, 1)[(begin + 1):end]
-            p = Plots.plot!([0, s[idx, 1]], [0, s[idx, 2]],
-                            projection=:polar,
-                            color=:black)
+            Plots.plot!([0, s[idx, 1]], [0, s[idx, 2]],
+                        projection=:polar,
+                        color=:black)
         end
     end
     if m != (0, 0)
-        p = Plots.plot!([0, m[1]], [0, m[2]],
-                        lw=2,
-                        projection=:polar,
-                        color=:red)
+        Plots.plot!([0, m[1]], [0, m[2]],
+                    lw=2,
+                    projection=:polar,
+                    color=:red)
     end
 
     return p
@@ -1299,28 +1299,28 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
                    ytickfontsize=6;
                    kwargs...)
     # plot upper bound
-    p = Plots.plot!(t,
-                    s_u,
-                    fillrange=s_l,
-                    fillalpha=0.35,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
+    Plots.plot!(t,
+                s_u,
+                fillrange=s_l,
+                fillalpha=0.35,
+                label=false,
+                t=:line,
+                c=:grey,
+                lw=0.5)
     # plot lower bound
-    p = Plots.plot!(t,
-                    s_l,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
+    Plots.plot!(t,
+                s_l,
+                label=false,
+                t=:line,
+                c=:grey,
+                lw=0.5)
     # plot signal
-    p = Plots.plot!(t,
-                    s,
-                    label=false,
-                    t=:line,
-                    c=:black,
-                    lw=0.5)
+    Plots.plot!(t,
+                s,
+                label=false,
+                t=:line,
+                c=:black,
+                lw=0.5)
 
     return p
 
@@ -1392,15 +1392,15 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
         _, bm = seg_extract(m, threshold=threshold, threshold_type=threshold_type)
         reg = ones(size(m)) .* minimum(m)
         reg[bm] .= maximum(m)
-        p = Plots.plot!(x,
-                        y,
-                        reg,
-                        seriestype=:contour,
-                        levels=1,
-                        linecolor=:black,
-                        colorbar_entry=false,
-                        linewidth=2;
-                        kwargs=kwargs)
+        Plots.plot!(x,
+                    y,
+                    reg,
+                    seriestype=:contour,
+                    levels=1,
+                    linecolor=:black,
+                    colorbar_entry=false,
+                    linewidth=2;
+                    kwargs=kwargs)
     end
 
     return p
@@ -1574,11 +1574,11 @@ function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                    kwargs...)
 
     # plot powers
-    p = Plots.plot!(st,
-                    sp,
-                    linewidth=1,
-                    label="",
-                    color=:black)
+    Plots.plot!(st,
+                sp,
+                linewidth=1,
+                label="",
+                color=:black)
 
     return p
 
@@ -1638,11 +1638,11 @@ function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                    kwargs...)
 
     # plot frequencies
-    p = Plots.plot!(st,
-                    fi,
-                    linewidth=1,
-                    label="",
-                    color=:black)
+    Plots.plot!(st,
+                fi,
+                linewidth=1,
+                label="",
+                color=:black)
 
     return p
 
@@ -1707,24 +1707,24 @@ function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad,
 
     # plot phases
     if type === :line
-        p = Plots.plot!(sf,
-                        ph,
-                        linewidth=1,
-                        label="",
-                        color=:black)
+        Plots.plot!(sf,
+                    ph,
+                    linewidth=1,
+                    label="",
+                    color=:black)
     else
-        p = Plots.plot!(sf,
-                        ph,
-                        seriestype=:stem,
-                        linewidth=1,
-                        label="",
-                        color=:black)
-        p = Plots.scatter!(sf,
-                           ph,
-                           linewidth=1,
-                           label="",
-                           mc=:black,
-                           ms=2.0)
+        Plots.plot!(sf,
+                    ph,
+                    seriestype=:stem,
+                    linewidth=1,
+                    label="",
+                    color=:black)
+        Plots.scatter!(sf,
+                       ph,
+                       linewidth=1,
+                       label="",
+                       mc=:black,
+                       ms=2.0)
     end
 
     return p
