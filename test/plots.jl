@@ -306,4 +306,8 @@ p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:brain);
 p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:head);
 @test p isa GLMakie.Figure
 
+@info "Test: plot_polezero()"
+p = NeuroAnalyzer.plot_polezero(rand(ComplexF64, 2), rand(ComplexF64, 2))
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
