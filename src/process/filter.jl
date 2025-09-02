@@ -50,13 +50,13 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     !(fprototype in [:iirnotch, :fir]) && @assert order > 1 "order must be > 1."
     !(fprototype in [:remez]) && @assert order > 1 "order must be > 3."
-    @assert order <= n "order must be ≤ signal length ($n)."
+    @assert order <= n "order($order) must be ≤ signal length ($n)."
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         order *= 2
     end
 
     if isa(w, AbstractVector)
-        @assert length(w) <= n "w must be ≤ signal length ($n)."
+        @assert length(w) <= n "Length of w ($(length(w))) must be ≤ signal length ($n)."
     elseif isa(w, Int64)
         @assert w <= n "w must be ≤ signal length ($n)."
     end
