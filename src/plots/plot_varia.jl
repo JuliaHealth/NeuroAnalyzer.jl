@@ -661,7 +661,6 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
 
     if ndims(s) == 1
         p = Plots.plot([0, s[1]], [0, 1],
-                       aspect_ratio=1,
                        size=(800, 800),
                        projection=:polar,
                        left_margin=30Plots.px,
@@ -685,7 +684,6 @@ function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real
         end
     else
         p = Plots.plot([0, s[1, 1]], [0, s[1, 2]],
-                       aspect_ratio=1,
                        size=(800, 800),
                        projection=:polar,
                        left_margin=30Plots.px,
