@@ -63,16 +63,16 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if ftype === :lp
-            @assert length(cutoff) == 1 "For :lp filter one frequency must be given."
+            @assert length(cutoff) == 1 "For :lp filter, cutoff must specify only one frequency."
             responsetype = Lowpass(cutoff)
         elseif ftype === :hp
-            @assert length(cutoff) == 1 "For :hp filter one frequency must be given."
+            @assert length(cutoff) == 1 "For :hp filter, cutoff must specify only one frequency."
             responsetype = Highpass(cutoff)
         elseif ftype === :bp
-            @assert length(cutoff) == 2 "For :bp filter two frequencies must be given."
+            @assert length(cutoff) == 2 "For :bp filter, cutoff must specify two frequencies."
             responsetype = Bandpass(cutoff[1], cutoff[2])
         elseif ftype === :bs
-            @assert length(cutoff) == 2 "For :bs filter two frequencies must be given."
+            @assert length(cutoff) == 2 "For :bs filter, cutoff must specify two frequencies."
             responsetype = Bandstop(cutoff[1], cutoff[2])
         end
     end
@@ -81,19 +81,20 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     if fprototype in [:fir, :firls, :remez]
         if fprototype === :fir
             w === nothing && (w = DSP.hamming(order))
+            @assert length(w) == order "Length of w ($length(w)) and order ($order) must be equal."
             prototype = FIRWindow(w)
 
             ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
             if ftype in [:lp, :hp]
                 ftype === :lp && _info("Creating LP filter:")
                 ftype === :hp && _info("Creating HP filter:")
-                _info(" Number of taps: $(length(w))")
+                _info(" Number of taps: $order")
             elseif ftype === :bp
                 _info("Creating BP filter:")
-                _info(" Number of taps: $(length(w))")
+                _info(" Number of taps: $order")
             elseif ftype === :bs
                 _info("Creating BS filter:")
-                _info(" Number of taps: $(length(w))")
+                _info(" Number of taps: $order")
             end
 
             flt = digitalfilter(responsetype, prototype, fs=fs)
@@ -114,10 +115,10 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                     w = ones(6)
                 end
             elseif ftype === :bs
-                f1_pass = cutoff[1] - bw
-                f1_stop = cutoff[1] + bw
-                f2_stop = cutoff[2] - bw
-                f2_pass = cutoff[2] + bw
+                f1_pass = cutoff[1] - (bw / 2)
+                f1_stop = cutoff[1] + (bw / 2)
+                f2_stop = cutoff[2] - (bw / 2)
+                f2_pass = cutoff[2] + (bw / 2)
                 flt_shape = [1, 1, 0, 0, 1, 1]
                 flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
                 if !isa(w, Nothing)
@@ -126,8 +127,8 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                     w = ones(6)
                 end
             elseif ftype === :lp
-                f_pass = cutoff[1] - bw
-                f_stop = cutoff[1] + bw
+                f_pass = cutoff[1] - (bw / 2)
+                f_stop = cutoff[1] + (bw / 2)
                 flt_shape = [1, 1, 0, 0]
                 flt_frq = [0, f_pass, f_stop, fs / 2]
                 if !isa(w, Nothing)
@@ -136,8 +137,8 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                     w = ones(4)
                 end
             elseif ftype === :hp
-                f_pass = cutoff[1] + bw
-                f_stop = cutoff[1] - bw
+                f_pass = cutoff[1] + (bw / 2)
+                f_stop = cutoff[1] - (bw / 2)
                 flt_shape = [0, 0, 1, 1]
                 flt_frq = [0, f_stop, f_pass, fs / 2]
                 if !isa(w, Nothing)
@@ -150,13 +151,13 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
             if ftype in [:lp, :hp]
                 ftype === :lp && _info("Creating LP filter:")
                 ftype === :hp && _info("Creating HP filter:")
-                _info(" Number of taps: $(order + 1)")
+                _info(" Number of taps: $order")
                 _info(" Transition band width: $bw Hz")
                 _info(" F_pass: $f_pass Hz")
                 _info(" F_stop: $f_stop Hz")
             elseif ftype === :bp
                 _info("Creating BP filter:")
-                _info(" Number of taps: $(order + 1)")
+                _info(" Number of taps: $order")
                 _info(" Transition band width: $bw Hz")
                 _info(" F1_stop: $f1_stop Hz")
                 _info(" F1_pass: $f1_pass Hz")
@@ -164,7 +165,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 _info(" F2_stop: $f2_stop Hz")
             elseif ftype === :bs
                 _info("Creating BS filter:")
-                _info(" Number of taps: $(order + 1)")
+                _info(" Number of taps: $order")
                 _info(" Transition band width: $bw Hz")
                 _info(" F1_pass: $f1_pass Hz")
                 _info(" F1_stop: $f1_stop Hz")
@@ -172,30 +173,30 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 _info(" F2_pass: $f2_pass Hz")
             end
 
-            flt = firls_design(order, flt_frq, flt_shape, w, true, fs=fs)
+            flt = firls_design((order - 1), flt_frq, flt_shape, w, true, fs=fs)
 
             return flt
 
         elseif fprototype === :remez
             if ftype === :bp
-                f1_stop = cutoff[1] - bw
-                f1_pass = cutoff[1] + bw
-                f2_pass = cutoff[2] - bw
-                f2_stop = cutoff[2] + bw
+                f1_stop = cutoff[1] - (bw / 2)
+                f1_pass = cutoff[1] + (bw / 2)
+                f2_pass = cutoff[2] - (bw / 2)
+                f2_stop = cutoff[2] + (bw / 2)
                 w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, fs / 2) => 0]
             elseif ftype === :bs
-                f1_pass = cutoff[1] - bw
-                f1_stop = cutoff[1] + bw
-                f2_stop = cutoff[2] - bw
-                f2_pass = cutoff[2] + bw
+                f1_pass = cutoff[1] - (bw / 2)
+                f1_stop = cutoff[1] + (bw / 2)
+                f2_stop = cutoff[2] - (bw / 2)
+                f2_pass = cutoff[2] + (bw / 2)
                 w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, fs / 2) => 1]
             elseif ftype === :lp
-                f_pass = cutoff[1] - bw
-                f_stop = cutoff[1] + bw
+                f_pass = cutoff[1] - (bw / 2)
+                f_stop = cutoff[1] + (bw / 2)
                 w = [(0, f_pass) => 1, (f_stop, fs / 2) => 0]
             elseif ftype === :hp
-                f_pass = cutoff[1] + bw
-                f_stop = cutoff[1] - bw
+                f_pass = cutoff[1] + (bw / 2)
+                f_stop = cutoff[1] - (bw / 2)
                 w = [(0, f_stop) => 0, (f_pass, fs / 2) => 1]
             end
 
@@ -245,9 +246,9 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
         if rs isa Nothing
             if fprototype === :elliptic
-                rp = 40
+                rs = 40
             else
-                rp = 20
+                rs = 20
             end
         end
 

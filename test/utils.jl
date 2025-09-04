@@ -390,6 +390,12 @@ x2, f2 = areduce(x, f)
 @test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]
 
 @info "Test: fir_order()"
-@test fir_order(0.1, 39) == 18
+@test fir_order(bw=0.2, a=50, fs=256) == 2909
+
+@info "Test: iir_order()"
+@test iir_order(fprototype=:butterworth, ftype=:lp, cutoff=12, bw=0.2, fs=256) == 152
+@test iir_order(fprototype=:butterworth, ftype=:hp, cutoff=12, bw=0.2, fs=256) == 152
+@test iir_order(fprototype=:butterworth, ftype=:bp, cutoff=(12, 15), bw=0.2, fs=256) == 22
+@test iir_order(fprototype=:butterworth, ftype=:bs, cutoff=(12, 15), bw=0.2, fs=256) == 22
 
 true
