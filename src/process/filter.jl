@@ -52,7 +52,8 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
         @assert cutoff >= 0 "cutoff must be ≥ 0 Hz."
         @assert cutoff <= fs / 2 "cutoff must be ≤ ($fs / 2) Hz."
     else
-        _in(cutoff, (0, fs / 2), "cutoff")
+        @assert cutoff[1] >= 0 "cutoff[1] must be ≥ 0 Hz."
+        @assert cutoff[2] <= fs / 2 "cutoff[2] must be ≤ ($fs / 2) Hz."
     end
 
     fprototype in [:firls, :remez, :iirnotch] && @assert !isa(bw, Nothing) "bw must be specified."
