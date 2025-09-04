@@ -8,6 +8,7 @@ export cums
 export f_nearest
 export ntapers
 export trtm
+export order_harris
 
 """
     linspace(start, stop, length)
@@ -267,5 +268,49 @@ function trtm(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int6
     end
 
     return s
+
+end
+
+"""
+    order_harris(obj, bw, a)
+
+Calculate order of FIR filter using harris' formula.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `bw::Real`: transition band width
+- `a::Real`: attenuation in dB
+
+# Returns
+
+- `n::Int64`
+"""
+function order_harris(obj::NeuroAnalyzer.NEURO, bw::Real, a::Real=50)::Int64
+    n = round(Int64, (a * sr(obj))/(22 * bw))
+
+    return n
+
+end
+
+"""
+    order_harris(bw, a, fs)
+
+Calculate order of FIR filter using harris' formula.
+
+# Arguments
+
+- `bw::Real`: transition band width
+- `a::Real`: attenuation in dB
+- `fs::Int64`: sampling rate
+
+# Returns
+
+- `n::Int64`
+"""
+function order_harris(bw::Real, a::Real=50, fs::Int64=1)::Int64
+    n = round(Int64, (a * fs)/(22 * bw))
+
+    return n
 
 end
