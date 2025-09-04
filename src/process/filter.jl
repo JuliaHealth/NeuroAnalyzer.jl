@@ -7,40 +7,41 @@ export filter!
 """
     filter_create(; <keyword arguments>)
 
-Create IIR or FIR filter.
+Create FIR or IIR filter.
 
 # Arguments
 
 - `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter
     - `:chebyshev2` IIR filter
     - `:elliptic` IIR filter
     - `:iirnotch`: second-order IIR notch filter
-    - `:fir`: FIR filter
-    - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
 - `n::Int64`: signal length in samples
 - `fs::Int64`: sampling rate
-- `order::Int64=4`: filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` (for these filters is multiplied by two since must be even), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
-- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
+- `order::Union{Nothing, Int64}=nothing`: filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` or number of taps for `:fir`, :firls` and `:remez` filters
+- `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Union{Nothing, Real}=nothing`: transition band width for `:iirnotch`, `:firls` and `:remez` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 
 # Returns
 
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 """
-function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=4, rp::Real=-1, rs::Real=-1, bw::Real=-1, w::Union{Nothing, AbstractVector, <:Real}=nothing)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, n::Int64, fs::Int64, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing)::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
-    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
+    _check_var(fprototype, [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch], "fprototype")
+
     if fprototype !== :iirnotch
         @assert ftype !== nothing "ftype must be specified."
         _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
@@ -48,267 +49,239 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    !(fprototype in [:iirnotch, :fir]) && @assert order > 1 "order must be > 1."
-    !(fprototype in [:remez]) && @assert order > 1 "order must be > 3."
-    @assert order <= n "order($order) must be ≤ signal length ($n)."
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        order *= 2
+    fprototype in [:firls, :remez, :iirnotch] && @assert !isa(bw, Nothing) "bw must be specified."
+
+    if !isa(bw, Nothing)
+        @assert bw > 0 "bw must be > 0."
+        @assert bw < cutoff[1] "bw must be < $(cutoff[1])."
+        length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
     end
 
-    if isa(w, AbstractVector)
-        @assert length(w) <= n "Length of w ($(length(w))) must be ≤ signal length ($n)."
-    elseif isa(w, Int64)
-        @assert w <= n "w must be ≤ signal length ($n)."
-    end
+    !isa(order, Nothing) && @assert order <= n "order must be ≤ signal length ($n)."
 
-    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez] && @assert cutoff != 0 "cutoff must be specified."
+    !isa(w, Nothing) && @assert length(w) <= n "Length of w ($(length(w))) must be ≤ signal length ($n)."
 
-    fprototype in [:iirnotch, :remez] && @assert bw != -1 "bw must be specified."
-
-    if fprototype === :iirnotch
-        if ftype !== nothing
-            _info("For :iirnotch filter ftype is ignored")
-            ftype = nothing
+    if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        if ftype === :lp
+            @assert length(cutoff) == 1 "For :lp filter one frequency must be given."
+            responsetype = Lowpass(cutoff)
+        elseif ftype === :hp
+            @assert length(cutoff) == 1 "For :hp filter one frequency must be given."
+            responsetype = Highpass(cutoff)
+        elseif ftype === :bp
+            @assert length(cutoff) == 2 "For :bp filter two frequencies must be given."
+            responsetype = Bandpass(cutoff[1], cutoff[2])
+        elseif ftype === :bs
+            @assert length(cutoff) == 2 "For :bs filter two frequencies must be given."
+            responsetype = Bandstop(cutoff[1], cutoff[2])
         end
-        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
     end
 
-    if fprototype === :remez
-        @assert bw <= cutoff[1] "For :remez filter bw must be ≤ $(cutoff[1])."
-        length(cutoff) == 2 && @assert bw <= cutoff[2] - cutoff[1] "For :remez filter bw must be ≤ $(cutoff[2] - cutoff[1])."
-    end
+    ## FIR filters
+    if fprototype in [:fir, :firls, :remez]
+        if fprototype === :fir
+            w === nothing && (w = DSP.hamming(order))
+            prototype = FIRWindow(w)
 
-    if fprototype === :fir
-        if w === nothing
-            if ftype === :bp
-                f1_stop = cutoff[1] - ((cutoff[2] - cutoff[1]) / fs) / 2
-                f1_pass = cutoff[1]
-                f2_stop = cutoff[2] + ((cutoff[2] - cutoff[1]) / fs) / 2
-                f2_pass = cutoff[2]
-                trans_bandwidth = (f2_stop - f1_stop) / fs
-                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))
-            elseif ftype === :bs
-                # TO DO: CHECK
-                f1_pass = cutoff[1]
-                f1_stop = cutoff[1] + ((cutoff[2] - cutoff[1]) / fs) / 2
-                f2_stop = cutoff[2] - ((cutoff[2] - cutoff[1]) / fs) / 2
-                f2_pass = cutoff[2]
-                trans_bandwidth = (f2_stop - f1_stop) / fs
-                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))
-            elseif ftype === :lp
-                f_pass = cutoff[1]
-                f_stop = cutoff[1] + minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
-                trans_bandwidth = (f_stop - f_pass) / fs
-                n_taps = ceil(Int64, ((order * 4) / (22 * trans_bandwidth)))
-            elseif ftype === :hp
-                f_pass = cutoff[1]
-                f_stop = cutoff[1] - minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
-                trans_bandwidth = (f_pass - f_stop) / fs
-                n_taps = ceil(Int64, ((order * 4) / (22 * trans_bandwidth)))
-            end
-
-            # next power of 2
-            n_taps = 2 ^ ceil(Int64, log2(n_taps))
-
-            # filter cannot be longer than signal
-            if n_taps > n
-                n_taps = n
-                _info("Reducing window length to $n_taps taps")
-            end
-
-            w = DSP.hamming(n_taps)
-
-            if ftype === :hp || ftype === :bp || ftype === :bs
-                mod(length(w), 2) == 0 && (w = vcat(w[1:((length(w) ÷ 2) - 1)], w[((length(w) ÷ 2) + 1):end]))
-            end
-
-            if ftype === :lp || ftype === :hp
+            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
+            if ftype in [:lp, :hp]
                 ftype === :lp && _info("Creating LP filter:")
                 ftype === :hp && _info("Creating HP filter:")
-                _info(" Using default window: hamming($n_taps)")
-                _info(" Attenuation: $(order * 4) dB")
-                _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info(" F_pass: $(round(f_pass, digits=4)) Hz")
-                _info(" F_stop: $(round(f_stop, digits=4)) Hz")
-                _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                _info(" Number of taps: $(length(w))")
             elseif ftype === :bp
                 _info("Creating BP filter:")
-                _info(" Using default window: hamming($n_taps)")
-                _info(" Attenuation: $(order * 4) dB")
-                _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info(" F1_stop: $(round(f1_stop, digits=4)) Hz")
-                _info(" F1_pass: $f1_pass Hz")
-                _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
-                _info(" F2_pass: $f2_pass Hz")
-                _info(" F2_stop: $(round(f2_stop, digits=4)) Hz")
-                _info(" Cutoff frequency: $(round((cutoff[2] + trans_bandwidth / 2), digits=4)) Hz")
+                _info(" Number of taps: $(length(w))")
             elseif ftype === :bs
                 _info("Creating BS filter:")
-                _info(" Using default window: hamming($n_taps)")
-                _info(" Attenuation: $(order * 4) dB")
-                _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info(" F1_pass: $f1_pass Hz")
-                _info(" F1_stop: $(round(f1_stop, digits=4)) Hz")
-                _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
-                _info(" F2_stop: $(round(f2_stop, digits=4)) Hz")
-                _info(" F2_pass: $f2_pass Hz")
-                _info(" Cutoff frequency: $(round((cutoff[2] + trans_bandwidth / 2), digits=4)) Hz")
+                _info(" Number of taps: $(length(w))")
             end
-        else
-            ftype in [:bp, :bs] && @assert isodd(length(w)) "For :bp and :bs filters window length must be odd."
+
+            flt = digitalfilter(responsetype, prototype, fs=fs)
+
+            return flt
+
+        elseif fprototype === :firls
+            if ftype === :bp
+                f1_stop = cutoff[1] - bw
+                f1_pass = cutoff[1] + bw
+                f2_pass = cutoff[2] - bw
+                f2_stop = cutoff[2] + bw
+                flt_shape = [0, 0, 1, 1, 0, 0]
+                flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
+                if !isa(w, Nothing)
+                    @assert length(w) == 6 "Length of w must be 6."
+                else
+                    w = ones(6)
+                end
+            elseif ftype === :bs
+                f1_pass = cutoff[1] - bw
+                f1_stop = cutoff[1] + bw
+                f2_stop = cutoff[2] - bw
+                f2_pass = cutoff[2] + bw
+                flt_shape = [1, 1, 0, 0, 1, 1]
+                flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
+                if !isa(w, Nothing)
+                    @assert length(w) == 6 "Length of w must be 6."
+                else
+                    w = ones(6)
+                end
+            elseif ftype === :lp
+                f_pass = cutoff[1] - bw
+                f_stop = cutoff[1] + bw
+                flt_shape = [1, 1, 0, 0]
+                flt_frq = [0, f_pass, f_stop, fs / 2]
+                if !isa(w, Nothing)
+                    @assert length(w) == 4 "Length of w must be 4."
+                else
+                    w = ones(4)
+                end
+            elseif ftype === :hp
+                f_pass = cutoff[1] + bw
+                f_stop = cutoff[1] - bw
+                flt_shape = [0, 0, 1, 1]
+                flt_frq = [0, f_stop, f_pass, fs / 2]
+                if !isa(w, Nothing)
+                    @assert length(w) == 4 "Length of w must be 4."
+                else
+                    w = ones(4)
+                end
+            end
+
+            if ftype in [:lp, :hp]
+                ftype === :lp && _info("Creating LP filter:")
+                ftype === :hp && _info("Creating HP filter:")
+                _info(" Number of taps: $(order + 1)")
+                _info(" Transition band width: $bw Hz")
+                _info(" F_pass: $f_pass Hz")
+                _info(" F_stop: $f_stop Hz")
+            elseif ftype === :bp
+                _info("Creating BP filter:")
+                _info(" Number of taps: $(order + 1)")
+                _info(" Transition band width: $bw Hz")
+                _info(" F1_stop: $f1_stop Hz")
+                _info(" F1_pass: $f1_pass Hz")
+                _info(" F2_pass: $f2_pass Hz")
+                _info(" F2_stop: $f2_stop Hz")
+            elseif ftype === :bs
+                _info("Creating BS filter:")
+                _info(" Number of taps: $(order + 1)")
+                _info(" Transition band width: $bw Hz")
+                _info(" F1_pass: $f1_pass Hz")
+                _info(" F1_stop: $f1_stop Hz")
+                _info(" F2_stop: $f2_stop Hz")
+                _info(" F2_pass: $f2_pass Hz")
+            end
+
+            flt = firls_design(order, flt_frq, flt_shape, w, true, fs=fs)
+
+            return flt
+
+        elseif fprototype === :remez
+            if ftype === :bp
+                f1_stop = cutoff[1] - bw
+                f1_pass = cutoff[1] + bw
+                f2_pass = cutoff[2] - bw
+                f2_stop = cutoff[2] + bw
+                w = [(0, f1_stop) => 0, (f1_pass, f2_pass) => 1, (f2_stop, fs / 2) => 0]
+            elseif ftype === :bs
+                f1_pass = cutoff[1] - bw
+                f1_stop = cutoff[1] + bw
+                f2_stop = cutoff[2] - bw
+                f2_pass = cutoff[2] + bw
+                w = [(0, f1_pass) => 1, (f1_stop, f2_stop) => 0, (f2_pass, fs / 2) => 1]
+            elseif ftype === :lp
+                f_pass = cutoff[1] - bw
+                f_stop = cutoff[1] + bw
+                w = [(0, f_pass) => 1, (f_stop, fs / 2) => 0]
+            elseif ftype === :hp
+                f_pass = cutoff[1] + bw
+                f_stop = cutoff[1] - bw
+                w = [(0, f_stop) => 0, (f_pass, fs / 2) => 1]
+            end
+
+            if ftype in [:lp, :hp]
+                ftype === :lp && _info("Creating LP filter:")
+                ftype === :hp && _info("Creating HP filter:")
+                _info(" Number of taps: $order")
+                _info(" Transition band width: $bw Hz")
+                _info(" F_pass: $f_pass Hz")
+                _info(" F_stop: $f_stop Hz")
+            elseif ftype === :bp
+                _info("Creating BP filter:")
+                _info(" Number of taps: $order")
+                _info(" Transition band width: $bw Hz")
+                _info(" F1_stop: $f1_stop Hz")
+                _info(" F1_pass: $f1_pass Hz")
+                _info(" F2_pass: $f2_pass Hz")
+                _info(" F2_stop: $f2_stop Hz")
+            elseif ftype === :bs
+                _info("Creating BS filter:")
+                _info(" Number of taps: $order")
+                _info(" Transition band width: $bw Hz")
+                _info(" F1_pass: $f1_pass Hz")
+                _info(" F1_stop: $f1_stop Hz")
+                _info(" F2_stop: $f2_stop Hz")
+                _info(" F2_pass: $f2_pass Hz")
+            end
+
+            flt = remez(order, w, Hz=fs)
+
+            return flt
+
         end
     end
 
-    if fprototype === :firls
-        flt_weights = w
-        if !isnothing(flt_weights)
-            @assert isa(flt_weights, AbstractVector) "For :firls, if weights are provided, they must be a vector."
-        end
-        trans_bandwidth = cutoff[1] * 0.1
-        if ftype === :bp
-            f1_stop = cutoff[1] - trans_bandwidth
-            f1_pass = cutoff[1]
-            f2_pass = cutoff[2]
-            f2_stop = cutoff[2] + trans_bandwidth
-            # order
-            n_taps = 8 * round(Int64, fs / f1_pass)
-            flt_shape = [0, 0, 1, 1, 0, 0]
-            flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
-            if isa(flt_weights, AbstractVector)
-                @assert length(flt_weights) == 6 "For :bp filter weights length must be 6."
+    ## IIR filters
+
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+
+        if rp isa Nothing
+            if fprototype === :elliptic
+                rp = 0.0025
             else
-                flt_weights = ones(6)
-            end
-        elseif ftype === :bs
-            f1_pass = cutoff[1] - trans_bandwidth
-            f1_stop = cutoff[1]
-            f2_stop = cutoff[2]
-            f2_pass = cutoff[2] + trans_bandwidth
-            # order
-            n_taps = 8 * round(Int64, fs / f1_pass)
-            flt_shape = [1, 1, 0, 0, 1, 1]
-            flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
-            if isa(flt_weights, AbstractVector)
-                @assert length(flt_weights) == 6 "For :bp filter weights length must be 6."
-            else
-                flt_weights = ones(6)
-            end
-        elseif ftype === :lp
-            f_pass = cutoff[1]
-            f_stop = cutoff[1] + trans_bandwidth
-            # order
-            n_taps = 8 * round(Int64, fs / f_pass)
-            flt_shape = [1, 1, 0, 0]
-            flt_frq = [0, f_pass, f_stop, fs / 2]
-            if isa(flt_weights, AbstractVector)
-                @assert length(flt_weights) == 4 "For :bp filter weights length must be 4."
-            else
-                flt_weights = ones(4)
-            end
-        elseif ftype === :hp
-            f_pass = cutoff[1]
-            f_stop = cutoff[1] - trans_bandwidth
-            # order
-            n_taps = 8 * round(Int64, fs / f_pass)
-            flt_shape = [0, 0, 1, 1]
-            flt_frq = [0, f_stop, f_pass, fs / 2]
-            if isa(flt_weights, AbstractVector)
-                @assert length(flt_weights) == 4 "For :bp filter weights length must be 4."
-            else
-                flt_weights = ones(4)
+                rp = 2
             end
         end
 
-        if ftype in [:lp, :hp]
-            ftype === :lp && _info("Creating LP filter:")
-            ftype === :hp && _info("Creating HP filter:")
-            _info(" Order: $(n_taps - 1)")
-            _info(" F_pass: $(round(f_pass, digits=4)) Hz")
-            _info(" F_stop: $(round(f_stop, digits=4)) Hz")
-            _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-        elseif ftype === :bp
-            _info("Creating BP filter:")
-            _info(" Order: $(n_taps - 1)")
-            _info(" F1_stop: $(round(f1_stop, digits=4)) Hz")
-            _info(" F1_pass: $f1_pass Hz")
-            _info(" F2_pass: $f2_pass Hz")
-            _info(" F2_stop: $(round(f2_stop, digits=4)) Hz")
-            _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-        elseif ftype === :bs
-            _info("Creating BS filter:")
-            _info(" Order: $(n_taps - 1)")
-            _info(" F1_pass: $f1_pass Hz")
-            _info(" F1_stop: $(round(f1_stop, digits=4)) Hz")
-            _info(" F2_stop: $(round(f2_stop, digits=4)) Hz")
-            _info(" F2_pass: $f2_pass Hz")
-            _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+        if rs isa Nothing
+            if fprototype === :elliptic
+                rp = 40
+            else
+                rp = 20
+            end
         end
 
-        flt = firls_design(n_taps, flt_frq, flt_shape, flt_weights, true, fs=fs)
+        if fprototype === :butterworth
+            prototype = Butterworth(order)
+        elseif fprototype === :chebyshev1
+            _in(rs, (0, fs / 2), "rs")
+            prototype = Chebyshev1(order, rs)
+        elseif fprototype === :chebyshev2
+            _in(rs, (0, fs / 2), "rs")
+            prototype = Chebyshev2(order, rp)
+        elseif fprototype === :elliptic
+            _in(rs, (0, fs / 2), "rs")
+            _in(rp, (0, fs / 2), "rs")
+            prototype = Elliptic(order, rp, rs)
+        end
+
+        flt = digitalfilter(responsetype, prototype, fs=fs)
 
         return flt
 
     end
 
-    if rp == -1
-        if fprototype === :elliptic
-            rp = 0.0025
-        else
-            rp = 2
-        end
-    end
-
-    if rs == -1
-        if fprototype === :elliptic
-            rp = 40
-        else
-            rp = 20
-        end
-    end
-
-    if ftype === :lp
-        @assert length(cutoff) == 1 "For :lp filter one frequency must be given."
-        responsetype = Lowpass(cutoff)
-    elseif ftype === :hp
-        @assert length(cutoff) == 1 "For :hp filter one frequency must be given."
-        responsetype = Highpass(cutoff)
-    elseif ftype === :bp
-        @assert length(cutoff) == 2 "For :bp filter two frequencies must be given."
-        responsetype = Bandpass(cutoff[1], cutoff[2])
-    elseif ftype === :bs
-        @assert length(cutoff) == 2 "For :bs filter two frequencies must be given."
-        responsetype = Bandstop(cutoff[1], cutoff[2])
-    end
-
-    if fprototype === :butterworth
-        prototype = Butterworth(order)
-    elseif fprototype === :chebyshev1
-        @assert !(rs < 0 || rs > fs / 2) "For :chebyshev1 filter rs must be in [0, ≤ $(fs / 2)]."
-        prototype = Chebyshev1(order, rs)
-    elseif fprototype === :chebyshev2
-        @assert !(rp < 0 || rp > fs / 2) "For :chebyshev2 filter rp must be in [0, ≤ $(fs / 2)]."
-        prototype = Chebyshev2(order, rp)
-    elseif fprototype === :elliptic
-        @assert !(rs < 0 || rs > fs / 2) "For :elliptic filter rs must be in [0, ≤ $(fs / 2)]."
-        @assert !(rp < 0 || rp > fs / 2) "For :elliptic filter rp must be in [0, ≤ $(fs / 2)]."
-        prototype = Elliptic(order, rp, rs)
-    elseif fprototype === :fir
-        prototype = FIRWindow(w)
-    end
-
     if fprototype === :iirnotch
-        flt = iirnotch(cutoff, bw, fs=fs)
-    elseif fprototype === :remez
-        ftype === :lp && (w = [(0, cutoff - bw) => 1, (cutoff + bw, fs / 2) => 0])
-        ftype === :hp && (w = [(0, cutoff - bw) => 0, (cutoff + bw, fs / 2) => 1])
-        ftype === :bp && (w = [(0, cutoff[1] - bw / 2) => 0, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 1, (cutoff[2] + bw / 2, fs / 2) => 0])
-        ftype === :bs && (w = [(0, cutoff[1] - bw / 2) => 1, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 0, (cutoff[2] + bw / 2, fs / 2) => 1])
-        flt = remez(order, w, Hz=fs)
-    else
-        flt = digitalfilter(responsetype, prototype, fs=fs)
-    end
+        if !isa(ftype, Nothing)
+            _info("For :iirnotch filter ftype is ignored")
+        end
+        @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
 
-    return flt
+        flt = iirnotch(cutoff[1], bw, fs=fs)
+
+        return flt
+
+    end
 
 end
 
@@ -449,16 +422,16 @@ Apply filtering.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez` filters
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Union{Nothing, Real}=nothing`: bandwidth for `:iirnotch` and `:remez` filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
-- `order::Int64=4`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
-- `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
+- `order::Union{Nothing, Int64}=nothing`: default is 4, filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` (for these filters is multiplied by two since must be even), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
 
 # Returns
@@ -467,7 +440,7 @@ Apply filtering.
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=4, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
 
@@ -480,6 +453,9 @@ function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Rege
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
+        if fprototype !== :firls
+            order === nothing && (order = 4)
+        end
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=fs, n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
         Plots.plot(p)
@@ -534,16 +510,16 @@ Apply filtering.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez` filters
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `rp::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Union{Nothing, Real}=nothing`: bandwidth for `:iirnotch` and `:remez` filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
-- `order::Int64=4`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
-- `w::Union{Nothing, AbstractVector, <:Real}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
+- `order::Union{Nothing, Int64}=nothing`: default is 4, filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` (for these filters is multiplied by two since must be even), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
 
 # Returns
@@ -552,10 +528,13 @@ Nothing
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=4, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector, <:Real}=nothing, preview::Bool=false)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
 
     if preview
-        _warn("When `preview=true`, signal is not being filtered.")
+        _info("Previewing filter response, signal will not be filtered")
+        if fprototype !== :firls
+            order === nothing && (order = 4)
+        end
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
         Plots.plot(p)

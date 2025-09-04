@@ -9,7 +9,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `s::AbstractVector`
-- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency f, k is `sqrt(0.196202 + f^2) / f`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -71,7 +71,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `s::AbstractArray`
-- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency f, k is `sqrt(0.196202 + f^2) / f`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -106,7 +106,7 @@ Filter using moving average filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -116,13 +116,13 @@ Filter using moving average filter (with threshold).
 
 # Source
 
-1. https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
+1. https://dsp.stackexchange.com/questions/9966/what-is-the-cutoff-frequency-of-a-moving-average-filter
 """
 function filter_mavg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     _info("Window length: $(2 * k + 1) samples")
-    _info("Approximate cut-off frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
+    _info("Approximate cutoff frequency: $(round(0.442947 / (sqrt((2 * k + 1)^2 - 1)), digits=2) * sr(obj)) Hz")
     _info("1st zero at: $(round(sr(obj) / k, digits=2)) Hz")
     _info("2nd zero at: $(round(2 * sr(obj) / k, digits=2)) Hz")
     _info("3rd zero at: $(round(3 * sr(obj) / k, digits=2)) Hz")
@@ -145,7 +145,7 @@ Filter using moving average filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `k::Int64=8`: window length is `2 × k + 1`; for cut-off frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency f, k is `sqrt(0.196202 + f^2) / f`
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`)
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
