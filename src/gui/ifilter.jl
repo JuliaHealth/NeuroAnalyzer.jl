@@ -19,15 +19,15 @@ The returned filter is based on sampling rate and epoch length of the OBJ used f
 """
 function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
-    fprototypes = [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez]
+    fprototypes = [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
     fprototype = fprototypes[1]
     ftypes = [:lp, :hp, :bs, :bp]
     ftype = ftypes[1]
-    cutoff = 1
+    cutoff = 10
     order = 8
     rp = 2
     rs = 20
-    bw = 2
+    bw = 1
     w = nothing
 
     n=epoch_len(obj)
