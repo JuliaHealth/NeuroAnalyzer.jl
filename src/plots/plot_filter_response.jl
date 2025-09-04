@@ -8,27 +8,28 @@ Plot filter response.
 # Arguments
 
 - `fs::Int64`: sampling rate
+- `n::Int64`: signal length in samples
 - `fprototype::Symbol`: filter prototype:
-    - `:butterworth`
-    - `:chebyshev1`
-    - `:chebyshev2`
-    - `:elliptic`
-    - `:fir`
-    - `:iirnotch`: second-order IIR notch filter
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
     - `:remez`: Remez FIR filter
-- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `n::Int64=2560`: signal length in samples
-- `fs::Int64`: sampling rate
-- `order::Int64=4`: filter order (6 dB/octave) for `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic` (for these filters is multiplied by two since must be even), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
-- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `w::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter (default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb) or weights for `:firls` filter
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `fs::Int64`: signal sampling rate
+- `order::Int64`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `mono::Bool=false`: use color or gray palette
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
 - `kwargs`: optional arguments for plot() function
@@ -37,16 +38,15 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
     flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, w=w)
 
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        order *= 2
-    end
+    xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
+    xt[end] = frq_lim[2]
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
         H, w = freqresp(flt)
@@ -54,23 +54,21 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
         H = 20 * log10.(abs.(H))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
-        x_max = w[end]
-        ftype === :hp && (x_max = cutoff * 10)
 
         if fprototype !== :iirnotch
             fname = titlecase(String(fprototype))
             title = "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\n\nFrequency response"
         else
             fname = "IIR notch"
-            title = "Filter: $(fname), cutoff: $(round.(cutoff, digits=1)) Hz, band width: $bw\n\nFrequency response"
+            title = "Filter: $(fname), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz\n\nFrequency response"
         end
 
         p1 = Plots.plot(w,
                         H,
                         title=title,
-                        # xlims=(0, x_max),
                         xlims=frq_lim,
                         ylims=(-100, 10),
+                        xticks=(xt, string.(xt)),
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
@@ -84,39 +82,37 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
-            p1 = Plots.plot!((0, cutoff),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:black)
+            Plots.plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:black)
         else
-            p1 = Plots.plot!((0, cutoff[1]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:red)
-            p1 = Plots.plot!((0, cutoff[2]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:green)
+            Plots.plot!((0, cutoff[1]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:red)
+            Plots.plot!((0, cutoff[2]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:green)
         end
 
         phi, w = phaseresp(flt)
         phi = rad2deg.(DSP.angle.(phi))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
-        x_max = w[end]
-        ftype === :hp && (x_max = cutoff * 10)
         p2 = Plots.plot(w,
                         phi,
                         title="Phase response",
-                        ylims=(-180, 180),
-                        # xlims=(0, x_max),
+                        ylims=(-190, 190),
                         xlims=frq_lim,
+                        xticks=(xt, string.(xt)),
                         ylabel="Phase\n[°]",
                         xlabel="Frequency [Hz]",
                         label="",
@@ -129,38 +125,36 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
-            p2 = Plots.plot!((0, cutoff),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:black)
+            Plots.plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:black)
         else
-            p2 = Plots.plot!((0, cutoff[1]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:red)
-            p2 = Plots.plot!((0, cutoff[2]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:green)
+            Plots.plot!((0, cutoff[1]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:red)
+            Plots.plot!((0, cutoff[2]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:green)
         end
 
         tau, w = grpdelay(flt)
         tau = abs.(tau)
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
-        x_max = w[end]
-        ftype === :hp && (x_max = cutoff * 10)
         p3 = Plots.plot(w,
                         tau,
                         title="Group delay",
-                        # xlims=(0, x_max),
                         xlims=frq_lim,
+                        xticks=(xt, string.(xt)),
                         ylabel="Group delay\n[samples]",
                         xlabel="Frequency [Hz]",
                         label="",
@@ -171,25 +165,25 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
-            p3 = Plots.plot!((0, cutoff),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:black)
+            Plots.plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:black)
         else
-            p3 = Plots.plot!((0, cutoff[1]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:red)
-            p3 = Plots.plot!((0, cutoff[2]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:green)
+            Plots.plot!((0, cutoff[1]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:red)
+            Plots.plot!((0, cutoff[2]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:green)
         end
 
         p = Plots.plot(p1, p2, p3, size=(1200, 800), margins=20Plots.px, layout=(3, 1), palette=pal; kwargs...)
@@ -200,21 +194,19 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
         H = 20 * log10.(abs.(H))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
-        x_max = w[end]
-        ftype === :hp && (x_max = cutoff * 10)
         if fprototype === :fir
-            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, taps: $(length(flt)), attenuation: $(order * 15) dB\nFrequency response"
+            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\nFrequency response"
         elseif fprototype === :firls
-            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $(length(flt))\nFrequency response"
+            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\nFrequency response"
         elseif fprototype === :remez
-            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, taps: $(length(flt))\nFrequency response"
+            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\nFrequency response"
         end
         p1 = Plots.plot(w,
                         H,
                         title=title,
-                        # xlims=(0, x_max),
                         xlims=frq_lim,
-                        ylims=(-100, 10),
+                        ylims=(-100, 20),
+                        xticks=(xt, string.(xt)),
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
@@ -227,39 +219,39 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
-            p1 = Plots.plot!((0, cutoff),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:black)
+            Plots.plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:black)
         else
-            p1 = Plots.plot!((0, cutoff[1]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:red)
-            p1 = Plots.plot!((0, cutoff[2]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:green)
+            Plots.plot!((0, cutoff[1]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:red)
+            Plots.plot!((0, cutoff[2]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:green)
         end
+
         w = range(0, stop=pi, length=1024)
         phi = _fir_response(flt, w)
-        phi = DSP.unwrap(-atan.(imag(phi), real(phi)))
+        phi = rad2deg.(-atan.(imag(phi), real(phi)))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
-        x_max = w[end]
-        ftype === :hp && (x_max = cutoff * 10)
         p2 = Plots.plot(w,
                         phi,
                         title="Phase response",
-                        # xlims=(0, x_max),
+                        ylims=(-190, 190),
                         xlims=frq_lim,
-                        ylabel="Phase\n[rad]",
+                        xticks=(xt, string.(xt)),
+                        ylabel="Phase\n[°]",
                         xlabel="Frequency [Hz]",
                         label="",
                         titlefontsize=8,
@@ -269,28 +261,65 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
                         ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
-            p2 = Plots.plot!((0, cutoff),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:black)
+            Plots.plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:black)
         else
-            p2 = Plots.plot!((0, cutoff[1]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:red)
-            p2 = Plots.plot!((0, cutoff[2]),
-                             seriestype=:vline,
-                             linestyle=:dash,
-                             label="",
-                             lw=0.5,
-                             lc=:green)
+            Plots.plot!((0, cutoff[1]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:red)
+            Plots.plot!((0, cutoff[2]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:green)
         end
 
-        p = Plots.plot(p1, p2, size=(1200, 800), margins=20*Plots.px, layout=(2, 1), palette=pal; kwargs...)
+        tau = derivative(phi)
+        p3 = Plots.plot(w,
+                        tau,
+                        title="Group delay",
+                        xlims=frq_lim,
+                        xticks=(xt, string.(xt)),
+                        ylabel="Group delay\n[samples]",
+                        xlabel="Frequency [Hz]",
+                        label="",
+                        titlefontsize=8,
+                        xlabelfontsize=6,
+                        ylabelfontsize=6,
+                        xtickfontsize=6,
+                        ytickfontsize=6;
+                        palette=pal)
+        if length(cutoff) == 1
+            Plots.plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:black)
+        else
+            Plots.plot!((0, cutoff[1]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:red)
+            Plots.plot!((0, cutoff[2]),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="",
+                        lw=0.5,
+                        lc=:green)
+        end
+
+        p = Plots.plot(p1, p2, p3, size=(1200, 800), margins=20Plots.px, layout=(3, 1), palette=pal; kwargs...)
     end
 
     return p
