@@ -389,7 +389,7 @@ x2, f2 = areduce(x, f)
 @info "Test: tal2mni()"
 @test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]
 
-@info "Test: order_harris()"
-@test order_harris(0.1, 39) == 18
+@info "Test: fir_order()"
+@test fir_order(0.1, 39) == 18
 
 true
