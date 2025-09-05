@@ -303,9 +303,9 @@ Apply IIR or FIR filter.
 
 - `s::AbstractVector`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-- `dir:Symbol=:twopass`: filter direction:
+- `dir:Symbol=:twopass`: filtering direction:
     - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
-    - `:onepass`: single pass, use for for causal filter
+    - `:onepass`: single pass
     - `:reverse`: one pass, reverse direction
 
 # Returns
@@ -332,9 +332,9 @@ Apply IIR or FIR filter.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-- `dir:Symbol=:twopass`: filter direction:
-    - `:twopass`
-    - `:onepass`
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
     - `:reverse`: one pass, reverse direction
 
 # Returns
@@ -382,9 +382,9 @@ Apply IIR or FIR filter.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-- `dir:Symbol=:twopass`: filter direction:
-    - `:twopass`
-    - `:onepass`
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
     - `:reverse`: one pass, reverse direction
 
 # Returns
@@ -440,9 +440,9 @@ Apply filtering.
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
-- `dir:Symbol=:twopass`: filter direction:
-    - `:twopass`
-    - `:onepass`
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
     - `:reverse`: one pass, reverse direction
 
 # Returns
@@ -499,9 +499,9 @@ Apply filtering.
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
-- `dir:Symbol=:twopass`: filter direction:
-    - `:twopass`
-    - `:onepass`
+- `dir:Symbol=:twopass`: filtering direction:
+    - `:twopass`: two passes, the resulting signal has zero phase distortion, the effective filter order is doubled
+    - `:onepass`: single pass
     - `:reverse`: one pass, reverse direction
 
 # Returns

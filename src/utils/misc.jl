@@ -275,7 +275,7 @@ end
 """
     fir_order(; <keyword arguments>)
 
-Calculate order of FIR filter using harris' formula.
+Calculate order of FIR filter using Harris formula.
 
 # Arguments
 
@@ -287,7 +287,7 @@ Calculate order of FIR filter using harris' formula.
 
 - `n::Int64`
 """
-function fir_order(; bw::Real, a::Real=50, fs::Int64=1)::Int64
+function fir_order(; bw::Real, a::Real=60, fs::Int64=1)::Int64
 
     n = round(Int64, (a * fs)/(22 * bw))
 
@@ -298,7 +298,7 @@ end
 """
     fir_order(obj; <keyword arguments>)
 
-Calculate order of FIR filter using harris' formula.
+Calculate order of FIR filter using Harris formula.
 
 # Arguments
 
@@ -310,7 +310,7 @@ Calculate order of FIR filter using harris' formula.
 
 - `n::Int64`
 """
-function fir_order(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real=50)::Int64
+function fir_order(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real=60)::Int64
 
     n = fir_order(bw=bw, a=a, fs=sr(obj))
 
