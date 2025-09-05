@@ -56,7 +56,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
 
     bt_close = GtkButton("Close")
-    set_gtk_property!(bt_close, :tooltip_text, "Close this window")
+    set_gtk_property!(bt_close, :tooltip_text, "Close this window and return the filter")
 
     cb_mono = GtkCheckButton()
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
@@ -80,25 +80,25 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     set_gtk_property!(entry_cutoff1, :tooltip_text, "Filter cutoff in Hz (lower)")
 
     entry_cutoff2 = GtkSpinButton(0.2, fs / 2, 0.1)
-    set_gtk_property!(entry_cutoff2, :value, cutoff)
+    set_gtk_property!(entry_cutoff2, :value, cutoff + 0.1)
     set_gtk_property!(entry_cutoff2, :sensitive, false)
     set_gtk_property!(entry_cutoff2, :tooltip_text, "Filter cutoff in Hz (upper)")
 
-    entry_order = GtkSpinButton(1, 256, 1)
+    entry_order = GtkSpinButton(1, 10_000, 1)
     set_gtk_property!(entry_order, :value, order)
-    set_gtk_property!(entry_order, :tooltip_text, "Filter order (6 dB/octave) for IIR filters\nNumber of taps for REMEZ filter\nAttenuation (× 4 dB) for FIR filter")
+    set_gtk_property!(entry_order, :tooltip_text, "Filter order (number of taps)")
 
     entry_rp = GtkSpinButton(0.0025, 256.0, 0.0025)
     set_gtk_property!(entry_rp, :value, rp)
-    set_gtk_property!(entry_rp, :tooltip_text, "Ripple amplitude in dB in the pass band; default: 0.0025 dB for ELLIPTIC, 2 dB for others")
+    set_gtk_property!(entry_rp, :tooltip_text, "Maximum ripple amplitude in dB; default: 0.0025 dB for ELLIPTIC, 2 dB for others")
 
     entry_rs = GtkSpinButton(0.0025, 256.0, 0.0025)
     set_gtk_property!(entry_rs, :value, rs)
-    set_gtk_property!(entry_rs, :tooltip_text, "Ripple amplitude in dB in the stop band; default: 40 dB for ELLIPTIC, 20 dB for others")
+    set_gtk_property!(entry_rs, :tooltip_text, "Minimum ripple attenuation in dB; default: 40 dB for ELLIPTIC, 20 dB for others")
 
-    entry_bw = GtkSpinButton(1.0, 256.0, 1.0)
+    entry_bw = GtkSpinButton(0.1, cutoff, 0.1)
     set_gtk_property!(entry_bw, :value, bw)
-    set_gtk_property!(entry_bw, :tooltip_text, "Bandwidth for IIRNOTCH and REMEZ filters")
+    set_gtk_property!(entry_bw, :tooltip_text, "Transition band width in Hz")
 
     lab_fprototype = GtkLabel("Filter prototype:")
     set_gtk_property!(lab_fprototype, :halign, 2)
@@ -160,6 +160,8 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         fprototype = fprototypes[get_gtk_property(combo_fprototype, :active, Int64) + 1]
         ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
         fprototype === :iirnotch && (ftype = :bs)
+        fprototype = fprototypes[get_gtk_property(combo_fprototype, :active, Int64) + 1]
+        ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
         if ftype === :bp || ftype === :bs
             if fprototype !== :iirnotch
                 cutoff = (cutoff1, cutoff2)
@@ -169,33 +171,32 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         else
             cutoff = cutoff1
         end
-        p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
+        if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0
+            _warn("order must be odd. Filter was not generated.")
+        else
+            p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
+        end
     end
 
     signal_connect(combo_fprototype, "changed") do widget
         fprototype = fprototypes[get_gtk_property(combo_fprototype, :active, Int64) + 1]
-        if fprototype === :remez
-            if get_gtk_property(entry_bw, :value, Float64) > get_gtk_property(entry_cutoff1, :value, Float64)
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_bw, :value, get_gtk_property(entry_cutoff1, :value, Float64))
-                end
-            end
-        end
-        if fprototype in [:iirnotch, :fir]
+        ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
+        if fprototype === :iirnotch
             Gtk.@sigatom begin
-                GAccessor.range(entry_order, 1, 256)
+                set_gtk_property!(entry_cutoff2, :sensitive, false)
+                set_gtk_property!(combo_ftype, :sensitive, false)
             end
-        elseif fprototype === :remez
+        elseif fprototype !== :iirnotch
             Gtk.@sigatom begin
-                GAccessor.range(entry_order, 4, 256)
+                set_gtk_property!(combo_ftype, :sensitive, true)
             end
-        else
+        elseif ftype === :bp || ftype === :bs
             Gtk.@sigatom begin
-                GAccessor.range(entry_order, 2, 256)
+                set_gtk_property!(entry_cutoff2, :sensitive, false)
             end
         end
         draw(can)
@@ -221,6 +222,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
 
     signal_connect(entry_cutoff1, "changed") do widget
         Gtk.@sigatom begin
+            GAccessor.range(entry_bw, 0.1, get_gtk_property(entry_cutoff1, :value, Float64) - 0.1)
             GAccessor.range(entry_cutoff2, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1), fs / 2)
             set_gtk_property!(entry_cutoff2, :value, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1))
         end
@@ -256,6 +258,8 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         return nothing
     end
 
+    help = "Keyboard shortcuts:\n\nCtrl + r\t\t\tRefresh\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+
     signal_connect(win, "key-press-event") do widget, event
         k = event.keyval
         s = event.state
@@ -263,6 +267,10 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
             if k == 0x00000071 # q
                 Gtk.destroy(win)
                 return nothing
+            elseif k == 0x00000072 # r
+                draw(can)
+            elseif k == 0x00000068 # h
+                info_dialog(help)
             end
         end
     end
@@ -274,6 +282,11 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     @async Gtk.gtk_main()
     wait(cnd)
 
-    return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
+    if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0
+        _warn("order must be odd. Filter was not generated.")
+        return nothing
+    else
+        return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
+    end
 
 end
