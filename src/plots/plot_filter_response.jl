@@ -103,16 +103,15 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
         end
 
         phi, w = phaseresp(flt)
-        # phi = rad2deg.(DSP.angle.(phi))
+        phi = rad2deg.(phi)
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         p2 = Plots.plot(w,
                         phi,
                         title="Phase response",
-                        ylims=(-190, 190),
                         xlims=frq_lim,
                         xticks=(xt, string.(xt)),
-                        ylabel="Phase\n[°]",
+                        ylabel="Phase\n[deg]",
                         xlabel="Frequency [Hz]",
                         label="",
                         bottom_margin=10Plots.px,
@@ -145,10 +144,7 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
                         lc=:green)
         end
 
-        tau, w = grpdelay(flt)
-        tau = abs.(tau)
-        # convert rad/sample to Hz
-        w = w .* fs / 2 / pi
+        tau = -derivative(phi)
         p3 = Plots.plot(w,
                         tau,
                         title="Group delay",
@@ -190,7 +186,7 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
         w = range(0, stop=pi, length=1024)
         H = _fir_response(flt, w)
         # convert to dB
-        H = 20 * log10.(abs.(H))
+        H = amp2db.(abs.(H))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         if fprototype === :fir
@@ -242,16 +238,14 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
         w = range(0, stop=pi, length=1024)
         phi = _fir_response(flt, w)
         phi = rad2deg.(-atan.(imag(phi), real(phi)))
-        # phi = rad2deg.(DSP.unwrap(-atan.(imag(phi), real(phi))))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         p2 = Plots.plot(w,
                         phi,
                         title="Phase response",
-                        #ylims=(-190, 190),
                         xlims=frq_lim,
                         xticks=(xt, string.(xt)),
-                        ylabel="Phase\n[°]",
+                        ylabel="Phase\n[deg]",
                         xlabel="Frequency [Hz]",
                         label="",
                         titlefontsize=8,
@@ -327,7 +321,7 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
 end
 
 """
-    plot_filter_response(<keyword arguments>)
+    plot_filter_response(obj, <keyword arguments>)
 
 Plot filter response.
 
