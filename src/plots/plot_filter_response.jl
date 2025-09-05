@@ -67,7 +67,7 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
                         H,
                         title=title,
                         xlims=frq_lim,
-                        ylims=(-100, 10),
+                        ylims=(-100, 20),
                         xticks=(xt, string.(xt)),
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
@@ -103,7 +103,7 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
         end
 
         phi, w = phaseresp(flt)
-        phi = rad2deg.(DSP.angle.(phi))
+        # phi = rad2deg.(DSP.angle.(phi))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         p2 = Plots.plot(w,
@@ -242,12 +242,13 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
         w = range(0, stop=pi, length=1024)
         phi = _fir_response(flt, w)
         phi = rad2deg.(-atan.(imag(phi), real(phi)))
+        # phi = rad2deg.(DSP.unwrap(-atan.(imag(phi), real(phi))))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         p2 = Plots.plot(w,
                         phi,
                         title="Phase response",
-                        ylims=(-190, 190),
+                        #ylims=(-190, 190),
                         xlims=frq_lim,
                         xticks=(xt, string.(xt)),
                         ylabel="Phase\n[°]",
@@ -281,7 +282,7 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
                         lc=:green)
         end
 
-        tau = derivative(phi)
+        tau = -derivative(phi)
         p3 = Plots.plot(w,
                         tau,
                         title="Group delay",
