@@ -56,7 +56,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
                    ylabelfontsize=8,
                    xtickfontsize=8,
                    ytickfontsize=8;
-                   kwargs=kwargs)
+                   kwargs...)
 
     # draw connections
     m_norm = NeuroAnalyzer.normalize_minmax(m)

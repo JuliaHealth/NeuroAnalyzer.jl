@@ -272,7 +272,7 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
                    ylabelfontsize=8,
                    xtickfontsize=8,
                    ytickfontsize=8;
-                   kwargs=kwargs)
+                   kwargs...)
 
     Plots.plot(p)
 
@@ -325,7 +325,7 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
                    ylabelfontsize=8,
                    xtickfontsize=8,
                    ytickfontsize=8;
-                   kwargs=kwargs)
+                   kwargs...)
 
     Plots.plot(p)
 
@@ -382,7 +382,7 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
                    ylabelfontsize=8,
                    xtickfontsize=8,
                    ytickfontsize=8;
-                   kwargs=kwargs)
+                   kwargs...)
     for idx in 2:size(s, 1)
         Plots.plot!(s[idx, :],
                     seriestype=:line,
@@ -441,7 +441,7 @@ function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", 
                    ylabelfontsize=8,
                    xtickfontsize=8,
                    ytickfontsize=8;
-                   kwargs=kwargs)
+                   kwargs...)
     Plots.plot(p)
 
     return p
@@ -494,7 +494,7 @@ function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="
                    ylabelfontsize=8,
                    xtickfontsize=8,
                    ytickfontsize=8;
-                   kwargs=kwargs)
+                   kwargs...)
     Plots.plot(p)
 
     return p
@@ -1353,7 +1353,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                       colorbar_titlefontsize=8,
                       xtickfontsize=8,
                       ytickfontsize=8;
-                      kwargs=kwargs)
+                      kwargs...)
 
     if !isnothing(threshold)
         _, bm = seg_extract(m, threshold=threshold, threshold_type=threshold_type)
@@ -1367,7 +1367,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                     linecolor=:black,
                     colorbar_entry=false,
                     linewidth=2;
-                    kwargs=kwargs)
+                    kwargs...)
     end
 
     return p

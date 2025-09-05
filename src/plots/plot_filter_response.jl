@@ -31,7 +31,7 @@ Plot filter response.
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `mono::Bool=false`: use color or gray palette
-- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -72,7 +72,6 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
-                        top_margin=10Plots.px,
                         bottom_margin=10Plots.px,
                         left_margin=40Plots.px,
                         titlefontsize=8,
@@ -195,11 +194,11 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         if fprototype === :fir
-            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\nFrequency response"
+            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\n\nFrequency response"
         elseif fprototype === :firls
-            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\nFrequency response"
+            title = "Filter: FIR (LS), type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\n\nFrequency response"
         elseif fprototype === :remez
-            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\nFrequency response"
+            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\n\nFrequency response"
         end
         p1 = Plots.plot(w,
                         H,
@@ -321,6 +320,52 @@ function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::
 
         p = Plots.plot(p1, p2, p3, size=(1200, 800), margins=20Plots.px, layout=(3, 1), palette=pal; kwargs...)
     end
+
+    return p
+
+end
+
+"""
+    plot_filter_response(<keyword arguments>)
+
+Plot filter response.
+
+# Arguments
+
+- `fs::Int64`: sampling rate
+- `n::Int64`: signal length in samples
+- `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
+    - `:butterworth`: IIR filter
+    - `:chebyshev1` IIR filter
+    - `:chebyshev2` IIR filter
+    - `:elliptic` IIR filter
+    - `:iirnotch`: second-order IIR notch filter
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
+- `fs::Int64`: signal sampling rate
+- `order::Int64`: filter order
+- `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
+- `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
+- `mono::Bool=false`: use color or gray palette
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_filter_response(obj::NeuroAnalyzer.NEURO; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono, frq_lim=frq_lim, kwargs=kwargs)
 
     return p
 

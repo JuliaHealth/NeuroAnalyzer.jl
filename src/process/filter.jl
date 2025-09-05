@@ -47,7 +47,11 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
         _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     end
 
+    fprototype in [:firls, :remez, :iirnotch] && @assert !isa(bw, Nothing) "bw must be specified."
     @assert fs >= 1 "fs must be ≥ 1."
+
+    !isa(w, Nothing) && @assert length(w) > 0 "Length of w must be ≥ 1."
+
     if length(cutoff) == 1
         @assert cutoff >= 0 "cutoff must be ≥ 0 Hz."
         @assert cutoff <= fs / 2 "cutoff must be ≤ ($fs / 2) Hz."
@@ -56,17 +60,14 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
         @assert cutoff[2] <= fs / 2 "cutoff[2] must be ≤ ($fs / 2) Hz."
     end
 
-    fprototype in [:firls, :remez, :iirnotch] && @assert !isa(bw, Nothing) "bw must be specified."
-
     if !isa(bw, Nothing)
         @assert bw > 0 "bw must be > 0."
         @assert bw < cutoff[1] "bw must be < $(cutoff[1])."
+        @assert bw < fs - cutoff[1] "bw must be < $(fs - cutoff[1])."
         length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
     end
 
-    !isa(order, Nothing) && @assert order <= n "order must be ≤ signal length ($n)."
-
-    !isa(w, Nothing) && @assert length(w) <= n "Length of w ($(length(w))) must be ≤ signal length ($n)."
+    # !isa(order, Nothing) && @assert order <= n "order must be ≤ signal length ($n)."
 
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if ftype === :lp
@@ -87,11 +88,11 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     ## FIR filters
     if fprototype in [:fir, :firls, :remez]
         if fprototype === :fir
+            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
             w === nothing && (w = DSP.hamming(order))
             @assert length(w) == order "Length of w ($length(w)) and order ($order) must be equal."
             prototype = FIRWindow(w)
 
-            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
             if ftype in [:lp, :hp]
                 ftype === :lp && _info("Creating LP filter:")
                 ftype === :hp && _info("Creating HP filter:")
@@ -331,7 +332,7 @@ Apply IIR or FIR filter.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+- `dir:Symbol=:twopass`: filter direction:
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
@@ -346,10 +347,10 @@ function filter_apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     ch = get_channel(obj, ch=ch)
     ep_n = nepochs(obj)
-    fs = sr(obj)
 
     ep_n > 1 && _warn("filter() should be applied to a continuous signal.")
     _info("Signal should be tapered prior to filtering to reduce edge artifacts")
+    dir === :twopass && _info("Filter is applied twice, the effective filter order is doubled")
 
     obj_new = deepcopy(obj)
 
@@ -365,7 +366,7 @@ function filter_apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     end
 
     reset_components!(obj_new)
-    push!(obj_new.history, "filter(OBJ, ch=$ch, dir=$dir)")
+    push!(obj_new.history, "filter_apply(OBJ, ch=$ch, dir=$dir)")
 
     return obj_new
 
@@ -381,7 +382,7 @@ Apply IIR or FIR filter.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
-- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+- `dir:Symbol=:twopass`: filter direction:
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
@@ -417,14 +418,14 @@ Apply filtering.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
 - `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter
     - `:chebyshev2` IIR filter
     - `:elliptic` IIR filter
     - `:iirnotch`: second-order IIR notch filter
-    - `:fir`: FIR filter
-    - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -439,6 +440,10 @@ Apply filtering.
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
+- `dir:Symbol=:twopass`: filter direction:
+    - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
 
 # Returns
 
@@ -446,46 +451,17 @@ Apply filtering.
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, dir::Symbol=:twopass, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
-
-    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez], "fprototype")
-
-    fs = sr(obj)
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        p = plot_filter_response(fs=fs, n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
-        Plots.plot(p)
+        p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
         return p
     end
 
-    ch = get_channel(obj, ch=ch)
-    ep_n = nepochs(obj)
-
-    ep_n > 1 && _warn("filter() should be applied to a continuous signal.")
-    _info("Signal should be tapered prior to filtering to reduce edge artifacts")
-
-    obj_new = deepcopy(obj)
-
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :firls, :iirnotch, :remez]
-        ftype in [:bs, :bp] && @assert length(cutoff) == 2 "For :bp and :bs filters cutoff must contain two frequencies."
-        flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=fs, order=order, rp=rp, rs=rs, bw=bw, w=w)
-    end
-
-    # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
-
-    @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in eachindex(ch)
-            obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
-    end
-
-    reset_components!(obj_new)
-    push!(obj_new.history, "filter(OBJ, ch=$ch, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, w=$w)")
+    flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=sr(obj), order=order, rp=rp, rs=rs, bw=bw, w=w)
+    obj_new = filter_apply(obj, ch=ch, flt=flt, dir=dir)
 
     return obj_new
 
@@ -501,14 +477,14 @@ Apply filtering.
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
 - `fprototype::Symbol`: filter prototype:
+    - `:fir`: FIR filter
+    - `:firls`: weighted least-squares FIR filter
+    - `:remez`: Remez FIR filter
     - `:butterworth`: IIR filter
     - `:chebyshev1` IIR filter
     - `:chebyshev2` IIR filter
     - `:elliptic` IIR filter
     - `:iirnotch`: second-order IIR notch filter
-    - `:fir`: FIR filter
-    - `:firls`: weighted least-squares FIR filter
-    - `:remez`: Remez FIR filter
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -523,6 +499,10 @@ Apply filtering.
 - `bw::Union{Nothing, Real}=nothing`: transition band width in Hz for `:firls`, `:remez` and `:iirnotch` filters
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `preview::Bool=false`: plot filter response
+- `dir:Symbol=:twopass`: filter direction:
+    - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
 
 # Returns
 
@@ -530,17 +510,14 @@ Nothing
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, dir::Symbol=:twopass, t::Real=0, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
         fprototype === :iirnotch && (ftype = :bs)
-        p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
-        Plots.plot(p)
+        p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
         return p
     end
-
-    dir === :twopass && _info("Filter is applied twice, the effective filter order is doubled")
 
     obj_new = NeuroAnalyzer.filter(obj,
                                    ch=ch,

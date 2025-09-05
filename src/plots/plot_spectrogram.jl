@@ -103,7 +103,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
                         linecolor=:black,
                         colorbar_entry=false,
                         linewidth=2;
-                        kwargs=kwargs)
+                        kwargs...)
     end
 
     return p
@@ -233,7 +233,7 @@ function plot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Fl
                         linecolor=:black,
                         colorbar_entry=false,
                         linewidth=2;
-                        kwargs=kwargs)
+                        kwargs...)
     end
 
     return p

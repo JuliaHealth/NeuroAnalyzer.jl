@@ -272,7 +272,7 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                         linecolor=:black,
                         colorbar_entry=false,
                         linewidth=2;
-                        kwargs=kwargs)
+                        kwargs...)
     end
 
     # draw head
