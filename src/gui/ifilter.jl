@@ -30,10 +30,9 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     bw = 1
     w = nothing
 
-    n=epoch_len(obj)
     fs = sr(obj)
 
-    p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
+    p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
 
     win = GtkWindow("NeuroAnalyzer: ifilter()", 1300, 800)
     set_gtk_property!(win, :border_width, 5)
@@ -174,7 +173,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0
             _warn("order must be odd. Filter was not generated.")
         else
-            p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
+            p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
             show(io, MIME("image/png"), p)
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
@@ -187,16 +186,35 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
         if fprototype === :iirnotch
             Gtk.@sigatom begin
-                set_gtk_property!(entry_cutoff2, :sensitive, false)
                 set_gtk_property!(combo_ftype, :sensitive, false)
+                set_gtk_property!(entry_order, :sensitive, false)
+                set_gtk_property!(entry_cutoff2, :sensitive, false)
             end
         elseif fprototype !== :iirnotch
             Gtk.@sigatom begin
                 set_gtk_property!(combo_ftype, :sensitive, true)
+                set_gtk_property!(entry_order, :sensitive, true)
+                if ftype === :bp || ftype === :bs
+                    set_gtk_property!(entry_cutoff2, :sensitive, true)
+                end
             end
-        elseif ftype === :bp || ftype === :bs
+        elseif fprototype === :fir
             Gtk.@sigatom begin
-                set_gtk_property!(entry_cutoff2, :sensitive, false)
+                set_gtk_property!(entry_bw, :sensitive, false)
+            end
+        elseif fprototype !== :fir
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_bw, :sensitive, false)
+            end
+        elseif fprototype in [:fir, :firls, :remez, :iirnotch]
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_rp, :sensitive, false)
+                set_gtk_property!(entry_rs, :sensitive, false)
+            end
+        elseif fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+            Gtk.@sigatom begin
+                set_gtk_property!(entry_rp, :sensitive, true)
+                set_gtk_property!(entry_rs, :sensitive, true)
             end
         end
         draw(can)
@@ -204,7 +222,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
 
     signal_connect(combo_ftype, "changed") do widget
         ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
-        if ftype === :bp || ftype === :bs
+        if ftype in [:bp, :bs]
             Gtk.@sigatom begin
                 set_gtk_property!(entry_cutoff2, :sensitive, true)
             end
@@ -286,7 +304,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         _warn("order must be odd. Filter was not generated.")
         return nothing
     else
-        return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
+        return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
     end
 
 end

@@ -25,7 +25,7 @@ function filter_mmed(s::AbstractVector; k::Int64=8, t::Real=0, ww::AbstractVecto
     # check weighting window
     @assert length(ww) == (2 * k + 1) "ww length must be 2 × k + 1 ($(2 * k + 1))."
 
-    s_filtered = deepcopy(s)
+    s_filtered = zeros(length(s))
 
     @inbounds for idx in 1:k
         s_tmp = s[1:idx]

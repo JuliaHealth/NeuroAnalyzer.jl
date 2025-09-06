@@ -9,7 +9,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `s::AbstractVector`
-- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -23,7 +23,7 @@ function filter_mavg(s::AbstractVector; k::Int64=8, t::Real=0, ww::AbstractVecto
     _in(k, (1, length(s)), "k")
 
     # check weighting window
-    @assert length(ww) == (2 * k + 1) "ww length must be `2 × k + 1` ($(2 * k + 1))."
+    @assert length(ww) == (2 * k + 1) "ww length must be 2 × k + 1 ($(2 * k + 1))."
 
     s_filtered = zeros(length(s))
 
@@ -71,7 +71,7 @@ Filter using moving average filter (with threshold).
 # Arguments
 
 - `s::AbstractArray`
-- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`); only samples below/above the threshold are being filtered
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 
@@ -145,7 +145,7 @@ Filter using moving average filter (with threshold).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency f, k is `sqrt(0.196202 + f^2) / f`
+- `k::Int64=8`: window length is `2 × k + 1`; for cutoff frequency F, k is `sqrt(0.196202 + F^2) / F`, where F is a normalized frequency (`F = f/fs`)
 - `t::Real=0`: threshold (`t = mean(s) - t * std(s):mean(s) + t * std(s)`)
 - `ww::Union{Nothing, AbstractVector}=nothing`: weighting window
 

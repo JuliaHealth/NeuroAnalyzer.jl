@@ -7,8 +7,8 @@ using ContinuousWavelets
 eeg = import_edf(joinpath(testfiles_path, "eeg-test-edf.edf"))
 e10 = epoch(eeg, ep_len=10)
 keep_epoch!(e10, ep=1:10)
-NeuroAnalyzer.filter!(e10, ch="all", fprototype=:fir, ftype=:lp, cutoff=40, order=8)
-NeuroAnalyzer.filter!(e10, ch="all", fprototype=:fir, ftype=:hp, cutoff=1, order=8)
+NeuroAnalyzer.filter!(e10, ch="all", fprototype=:fir, ftype=:lp, cutoff=40, order=91)
+NeuroAnalyzer.filter!(e10, ch="all", fprototype=:fir, ftype=:hp, cutoff=1, order=91)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
 v2 = [6, 5, 4, 3, 2]
@@ -399,8 +399,8 @@ iv, ia = ispc(e10, ch="all")
 @test size(iv) == (24, 24, 10)
 @test size(ia) == (24, 24, 10)
 iv, ia, sd, pd, s1p, s2p = ispc(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test iv ≈ [0.17788686412100269;;]
-@test ia ≈ [-2.6185880107001522;;]
+@test iv ≈ [0.992049536181781;;]
+@test ia ≈ [-0.00013424580155569295;;]
 @test size(sd) == (1, 2560, 1)
 @test size(pd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -413,10 +413,10 @@ iv, izv, ia, ip = itpc(ones(1, 10, 10), t=1)
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 iv, izv, ia, ip = itpc(e10, ch="Fp1", t=256)
-@test iv ≈ [0.3985502708093351]
-@test izv ≈ [1.5884231836219433]
-@test ia ≈ [2.6367250215324236]
-@test ip[1] ≈ 1.692178021812872
+@test iv ≈ [0.9998240652404411]
+@test izv ≈ [9.996481614339217]
+@test ia ≈ [-0.002502999604530084]
+@test ip[1] ≈ 0.03175562541176744
 
 @info "Test: itpc_spec()"
 iv, izv, f = itpc_spec(e10, ch="Fp1", frq_lim=(0, 4), frq_n=5)
@@ -525,7 +525,7 @@ pv, phd, s1ph, s2ph = pli(v1, v2)
 pv = pli(e10, ch="all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = pli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.17421875;;]
+@test pv == [0.265625;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -676,7 +676,7 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10, ch="all")
 @info "Test: rms()"
 @test NeuroAnalyzer.rms(v1) == 3.3166247903554
 @test NeuroAnalyzer.rms(a1) == [1.0 1.0; 1.0 1.0]
-@test NeuroAnalyzer.rms(e10, ch="Fp1") == [26.3583818053152 27.47847315721561 7.624655429448963 26.861953531022724 10.10298341567004 24.51072968378096 19.790744974837178 35.32409783853301 11.67271804180004 30.763635959367605]
+@test NeuroAnalyzer.rms(e10, ch="Fp1") ≈ [363.8114536270564 349.8499943131803 336.5232468207543 329.74272589619585 317.29058937434684 311.968752257765 285.77992099365093 267.594955731802 259.6385867764089 243.78896217942722]
 
 @info "Test: rmse()"
 @test NeuroAnalyzer.rmse(v1, v2) == 3.0
@@ -897,7 +897,7 @@ ph, f = phsd(e10, ch="all")
 
 @info "Test: symmetry()"
 @test symmetry(v) == 5
-@test symmetry(e10, ch="Fp1") == [1.02052091554854 0.96771714066103 1.0285261489698891 1.0285261489698891 1.0189274447949528 0.9291635267520724 0.96771714066103 1.0578778135048232 1.0611916264090178 0.9662058371735791]
+@test symmetry(e10, ch="Fp1") == [852.3333333333334 1279.0 852.3333333333334 852.3333333333334 1279.0 852.3333333333334 639.0 852.3333333333334 1279.0 1279.0]
 
 @info "Test: lat_idx()"
 @test lat_idx(e10) isa Float64
@@ -967,7 +967,7 @@ gd, sc = diss(erp, erp, ch1="all", ch2="all")
 @info "Test: sumsim()"
 @test sumsim(v1, v2, theta=1) == 0.0012208548944264495
 @test sumsim(a1, a2, theta=1) == [0.17692120631776423 0.17692120631776423; 0.17692120631776423 0.17692120631776423]
-@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.7303479422560654;;]
+@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.3321122822366191;;]
 
 @info "Test: hfd()"
 @test hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 0.8604486476012065
