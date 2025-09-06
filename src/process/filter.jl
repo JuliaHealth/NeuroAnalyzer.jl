@@ -41,6 +41,22 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     _check_var(fprototype, [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch], "fprototype")
 
+    if fprototype === :fir
+        @assert !(order isa Nothing && w isa Nothing) "Either order or w must be specified."
+        if !(w isa Nothing)
+            @assert length(w) > 0 "Length of w must be ≥ 1."
+            if order isa Nothing
+                order = length(w)
+                ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "Length of w must be odd."
+            end
+        end
+        if !(order isa Nothing)
+            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
+            w isa Nothing && (w = DSP.hamming(order))
+        end
+        @assert length(w) == order "Length of w ($(length(w))) and order ($order) must be equal."
+    end
+
     if fprototype !== :iirnotch
         @assert order !== nothing "order must be specified."
         @assert ftype !== nothing "ftype must be specified."
@@ -49,8 +65,6 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     fprototype in [:firls, :remez, :iirnotch] && @assert !isa(bw, Nothing) "bw must be specified."
     @assert fs >= 1 "fs must be ≥ 1."
-
-    !isa(w, Nothing) && @assert length(w) > 0 "Length of w must be ≥ 1."
 
     if length(cutoff) == 1
         @assert cutoff >= 0 "cutoff must be ≥ 0 Hz."
@@ -88,9 +102,6 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     ## FIR filters
     if fprototype in [:fir, :firls, :remez]
         if fprototype === :fir
-            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
-            w === nothing && (w = DSP.hamming(order))
-            @assert length(w) == order "Length of w ($length(w)) and order ($order) must be equal."
             prototype = FIRWindow(w)
 
             if ftype in [:lp, :hp]
