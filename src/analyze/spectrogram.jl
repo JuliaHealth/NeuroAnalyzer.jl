@@ -316,8 +316,8 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
         a = amp(s)[1]
         p = normalize_n(p, a)
     end
- 
-   f = cwtfrq(s, fs=fs, wt=wt)
+
+    f = cwtfrq(s, fs=fs, wt=wt)
 
     # reverse order
     f_idx = sortperm(f)

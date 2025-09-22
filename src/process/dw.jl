@@ -11,8 +11,8 @@ Perform discrete wavelet transformation (DWT).
 - `s::AbstractVector`
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
-    - `:sdwt`: Stationary Wavelet Transforms
-    - `:acdwt`: Autocorrelation Wavelet Transforms
+    - `:sdwt`: stationary discrete wavelet transform
+    - `:acdwt`: discrete autocorrelation wavelet transform
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
 
 # Returns
@@ -55,8 +55,8 @@ Perform discrete wavelet transformation (DWT).
 - `s::AbstractArray`
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
-    - `:sdwt`: Stationary Wavelet Transforms
-    - `:acdwt`: Autocorrelation Wavelet Transforms
+    - `:sdwt`: stationary discrete wavelet transform
+    - `:acdwt`: discrete autocorrelation wavelet transform
 - `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
 
 # Returns
@@ -98,8 +98,8 @@ Perform discrete wavelet transformation (DWT).
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
-    - `:sdwt`: Stationary Wavelet Transforms
-    - `:acdwt`: Autocorrelation Wavelet Transforms
+    - `:sdwt`: stationary discrete wavelet transform
+    - `:acdwt`: discrete autocorrelation wavelet transform
 - `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
 
 # Returns
@@ -125,8 +125,8 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 - `dwt_coefs::AbstractArray`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
-    - `:sdwt`: Stationary Wavelet Transforms
-    - `:acdwt`: Autocorrelation Wavelet Transforms
+    - `:sdwt`: stationary discrete wavelet transform
+    - `:acdwt`: discrete autocorrelation wavelet transform
 
 # Returns
 

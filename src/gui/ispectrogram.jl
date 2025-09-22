@@ -89,7 +89,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
 
     cb_db = GtkCheckButton()
-    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB")
+    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB; for CWT normalize scaleogram magnitude to the signal amplitude")
     set_gtk_property!(cb_db, :active, true)
 
     cb_hw = GtkCheckButton()
