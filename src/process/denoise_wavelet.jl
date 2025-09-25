@@ -185,16 +185,21 @@ function denoise_dwd(s::AbstractVector; wt::T1=wavelet(WT.haar), l::Int64=0, dnt
     _check_var(smooth, [:regular, :undersmooth], "smooth")
 
     @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
-
     if l == 0
         l = maxtransformlevels(s)
         _info("Calculating DWD using maximum level: $l")
     end
 
-    s_new = Wavelets.denoise(s, :sig, wt,
-                             L=l,
-                             dnt=dnt,
-                             smooth=smooth)
+    if isdyadic(length(s))
+        s_new = Wavelets.denoise(s, :sig, wt,
+                                 L=l,
+                                 dnt=dnt,
+                                 smooth=smooth)
+    else
+        s_new = Wavelets.denoise(s, wt,
+                                 L=l,
+                                 dnt=dnt)
+    end
 
     return s_new
 
@@ -220,6 +225,7 @@ Perform denoising using discrete wavelet decomposition (DWD).
 function denoise_dwd(s::AbstractArray; wt::T1=wavelet(WT.haar), l::Int64=0, dnt::T2=RelErrorShrink(SoftTH()), smooth::Symbol=:regular)::Array{Float64, 3} where {T1 <: DiscreteWavelet, T2 <: DNFT}
 
     _chk3d(s)
+
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
