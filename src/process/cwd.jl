@@ -117,3 +117,4 @@ function cwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
     return ct
 
 end
+

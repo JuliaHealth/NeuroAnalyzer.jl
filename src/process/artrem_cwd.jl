@@ -116,3 +116,4 @@ function artrem_cwd!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wave
     return nothing
 
 end
+
