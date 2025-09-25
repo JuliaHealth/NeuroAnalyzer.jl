@@ -73,10 +73,10 @@ s2, f = denoise_fft(s)
 e10_tmp = denoise_fft(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
-@info "Test: denoise_dwt())"
-s = denoise_dwt(rand(100), wt=wavelet(WT.haar))
+@info "Test: denoise_dwd())"
+s = denoise_dwd(rand(100), wt=wavelet(WT.haar))
 @test length(s) == 100
-e10_tmp = denoise_dwt(e10, ch="all", wt=wavelet(WT.haar))
+e10_tmp = denoise_dwd(e10, ch="all", wt=wavelet(WT.haar))
 @test size(e10_tmp) == size(e10)
 
 @info "Test: denoise_wien()"
@@ -108,18 +108,18 @@ e10_tmp = detrend(e10, ch="all", type=:loess)
 NeuroAnalyzer._log_off()
 s = rand(100)
 dt = dwd(s, type=:sdwt)
-@test size(dt) == (3, 100)
+@test size(dt) == (7, 100)
 dt = dwd(s, type=:acdwt)
-@test size(dt) == (3, 100)
+@test size(dt) == (7, 100)
 NeuroAnalyzer._log_on()
 dt = dwd(e10, ch="all", type=:sdwt)
-@test size(dt) == (24, 10, 2560, 10)
+@test size(dt) == (24, 1023, 2560, 10)
 dt = dwd(e10, ch="all", type=:acdwt)
-@test size(dt) == (24, 10, 2560, 10)
+@test size(dt) == (24, 1023, 2560, 10)
 
 @info "Test: idwd()"
 NeuroAnalyzer._log_off()
-dt = dwd(s)
+dt = dwd(s, type=:sdwt)
 s_new = idwd(dt, type=:sdwt)
 @test length(s_new) == 100
 s_new = idwd(dt, type=:acdwt)
@@ -485,10 +485,10 @@ e10_erp = average_epochs(e10)
 e = sort_epochs(e10_erp, s=collect((nepochs(e10_erp)-1):-1:1))
 @test size(e.data) == (19, 2560, 11)
 
-@info "Test: denoise_cwt())"
-s = denoise_cwt(rand(100), fs=10, nf=2)
+@info "Test: denoise_cwd())"
+s = denoise_cwd(rand(100), fs=10, nf=2)
 @test length(s) == 100
-e10_tmp = denoise_cwt(e10, ch="all", nf=50)
+e10_tmp = denoise_cwd(e10, ch="all", nf=50)
 @test size(e10_tmp) == size(e10)
 
 @info "Test: artrem_cwd())"

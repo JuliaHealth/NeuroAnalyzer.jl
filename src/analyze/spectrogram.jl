@@ -114,7 +114,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
         p_tmp, _, f, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[1, :, 1], fs=fs, db=db, gw=gw, w=w)
     elseif method === :cwt
         _log_off()
-        p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt, norm=db)
+        p_tmp, f, _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], fs=fs, wt=wt)
         _log_on()
     elseif method === :hht
         imf = emd(obj.data[1, :, 1], obj.epoch_time)[1:(end - 1), :]
@@ -139,7 +139,7 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
                 p[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, gw=gw, w=w)
             elseif method === :cwt
                 _log_off()
-                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt, norm=db)
+                p[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, wt=wt)
                 _log_on()
             elseif method === :hht
                 imf = emd(obj.data[ch[ch_idx], :, ep_idx], obj.epoch_time)[1:(end - 1), :]

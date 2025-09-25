@@ -486,8 +486,8 @@ s, f, t = eros(e10, ch="Fp1", method=:gh)
 @test length(f) == 129
 @test length(t) == 2560
 s, f, t = eros(e10, ch="Fp1", method=:cwt)
-@test size(s) == (131, 2560, 1)
-@test length(f) == 131
+@test size(s) == (30, 2560, 1)
+@test length(f) == 30
 @test length(t) == 2560
 
 @info "Test: phdiff()"

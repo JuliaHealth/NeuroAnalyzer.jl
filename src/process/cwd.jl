@@ -24,43 +24,6 @@ function cwd(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2))::Matrix{Float6
 end
 
 """
-    icwd(ct; <keyword arguments>)
-
-Perform inverse continuous wavelet transformation (iCWT).
-
-# Arguments
-
-- `ct::AbstractArray`: CWT coefficients (by rows)
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `type::Symbol=:pd`: inverse style type:
-    - `:pd`: PenroseDelta
-    - `:nd`: NaiveDelta
-    - `:df`: DualFrames
-
-# Returns
-
-- `s::AbstractArray`: reconstructed signal
-"""
-function icwd(ct::AbstractArray; wt::T=wavelet(Morlet(2π), β=2), type::Symbol=:pd)::AbstractArray where {T<:CWT}
-
-    _check_var(type, [:nd, :pd, :df], "type")
-
-    # reconstruct array of CWT coefficients as returned by ContinuousWavelets.jl functions
-    ct = Matrix(ct')
-
-    if type === :pd
-        s = ContinuousWavelets.icwt(ct, wt, PenroseDelta())
-    elseif type === :nd
-        s = ContinuousWavelets.icwt(ct, wt, NaiveDelta())
-    elseif type === :df
-        s = ContinuousWavelets.icwt(ct, wt, DualFrames())
-    end
-
-    return s
-
-end
-
-"""
     cwd(s; <keyword arguments>)
 
 Perform continuous wavelet decomposition (CWD).
@@ -118,3 +81,39 @@ function cwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
 
 end
 
+"""
+    icwd(ct; <keyword arguments>)
+
+Perform inverse continuous wavelet transformation (iCWT).
+
+# Arguments
+
+- `ct::Matrix{Float64}`: CWT coefficients (by rows)
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `type::Symbol=:pd`: inverse style type:
+    - `:pd`: PenroseDelta
+    - `:nd`: NaiveDelta
+    - `:df`: DualFrames
+
+# Returns
+
+- `s::Vector{Float64}`: reconstructed signal
+"""
+function icwd(ct::Matrix{Float64}; wt::T=wavelet(Morlet(2π), β=2), type::Symbol=:pd)::Vector{Float64} where {T<:CWT}
+
+    _check_var(type, [:nd, :pd, :df], "type")
+
+    # reconstruct array of CWT coefficients
+    ct = Matrix(ct')
+
+    if type === :pd
+        s = ContinuousWavelets.icwt(ct, wt, PenroseDelta())
+    elseif type === :nd
+        s = ContinuousWavelets.icwt(ct, wt, NaiveDelta())
+    elseif type === :df
+        s = real.(ContinuousWavelets.icwt(ct, wt, DualFrames()))
+    end
+
+    return vec(s)
+
+end

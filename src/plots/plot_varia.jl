@@ -18,7 +18,7 @@ export plot_hs
 export plot_fi
 export plot_phase
 export plot_polezero
-export plot_dwd
+export plot_dwc
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -1763,7 +1763,7 @@ end
 
 
 """
-    plot_dwd(dc; <keyword arguments>)
+    plot_dwc(dc; <keyword arguments>)
 
 Plot discrete wavelet decomposition coefficients.
 
@@ -1779,7 +1779,7 @@ Plot discrete wavelet decomposition coefficients.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_dwd(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVector, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVector, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert n > 1 "n must be > 1."
     @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."

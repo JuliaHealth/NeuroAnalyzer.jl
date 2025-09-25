@@ -27,7 +27,7 @@ function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0
 
     if l == 0
         l = maxtransformlevels(s)
-        _info("Calculating DWT using maximum level: $l")
+        _info("Calculating DWD using maximum level: $l")
     end
 
     if type === :sdwt
@@ -64,7 +64,7 @@ function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)
 
     if l == 0
         l = maxtransformlevels(s[1, :, 1])
-        _info("Calculating DWT using maximum level: $l")
+        _info("Calculating DWD using maximum level: $l")
     end
 
     ch_n, ep_len, ep_n = size(s)
@@ -138,7 +138,7 @@ function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Unio
     if length(c) > 1
         c = sort(c)
         for idx in c
-            @assert idx <= size(dc, 1) "Value of c ($idx) must be within the number of dc rows ($(size(dc, 1)))."
+            @assert idx <= size(dc, 1) "Value of c ($idx) must be ≤ the number of dc rows ($(size(dc, 1)))."
         end
     end
 

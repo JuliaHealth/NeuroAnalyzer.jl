@@ -50,7 +50,7 @@ function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = denoise_wien(obj_new.data[ch, :, :])
+    obj_new.data[ch, :, :] = @views denoise_wien(obj_new.data[ch, :, :])
     reset_components!(obj_new)
     push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
 

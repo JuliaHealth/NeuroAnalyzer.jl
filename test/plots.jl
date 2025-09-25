@@ -308,4 +308,10 @@ p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:head);
 p = NeuroAnalyzer.plot_polezero(rand(ComplexF64, 2), rand(ComplexF64, 2))
 @test p isa Plots.Plot{Plots.GRBackend}
 
+@info "Test: plot_dwc()"
+dc = rand(5, 100)
+t = collect(1:100)
+p = NeuroAnalyzer.plot_dwc(dc, t=t)
+@test p isa Plots.Plot{Plots.GRBackend}
+
 true
