@@ -185,10 +185,7 @@ function denoise_dwd(s::AbstractVector; wt::T1=wavelet(WT.haar), l::Int64=0, dnt
     _check_var(smooth, [:regular, :undersmooth], "smooth")
 
     @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
-    if l == 0
-        l = maxtransformlevels(s)
-        _info("Calculating DWD using maximum level: $l")
-    end
+    l == 0 && (l = maxtransformlevels(s))
 
     if isdyadic(length(s))
         s_new = Wavelets.denoise(s, :sig, wt,
@@ -260,6 +257,11 @@ Perform denoising using discrete wavelet decomposition (DWD).
 - `obj_new::NeuroAnalyzer.NEURO`
 """
 function denoise_dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T1=wavelet(WT.haar), l::Int64=0, dnt::T2=RelErrorShrink(SoftTH()), smooth::Symbol=:regular)::NeuroAnalyzer.NEURO where {T1 <: DiscreteWavelet, T2 <: DNFT}
+
+    if l == 0
+        l = maxtransformlevels(obj.data[1, :, 1])
+        _info("Calculating DWD using maximum level: $l")
+    end
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)

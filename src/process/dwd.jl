@@ -13,22 +13,17 @@ Perform discrete wavelet decomposition (DWD).
 - `type::Symbol`: decomposition type:
     - `:sdwt`: stationary discrete wavelet transform
     - `:acdwt`: discrete autocorrelation wavelet transform
-- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+- `l::Int64=maxtransformlevels(s)`: number of levels, default maximum number of levels available or total transformation
 
 # Returns
 
 - `dc::Matrix{Float64}`: DWT coefficients (by rows)
 """
-function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)::Matrix{Float64} where {T <: DiscreteWavelet}
+function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s))::Matrix{Float64} where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
 
     @assert l <= maxtransformlevels(s) "l must be ≤ $(maxtransformlevels(s))."
-
-    if l == 0
-        l = maxtransformlevels(s)
-        _info("Calculating DWD using maximum level: $l")
-    end
 
     if type === :sdwt
         dc = swpd(s, wt, l)
@@ -52,20 +47,15 @@ Perform discrete wavelet transformation (DWT).
 - `type::Symbol`: transformation type:
     - `:sdwt`: stationary discrete wavelet transform
     - `:acdwt`: discrete autocorrelation wavelet transform
-- `l::Int64=0`: number of levels, default is the maximum number of levels available or total transformation
+- `l::Int64=maxtransformlevels(s[1, :, 1])`: number of levels, default is the maximum number of levels available or total transformation
 
 # Returns
 
 - `dc::Array{Float64, 4}`: DWT coefficients
 """
-function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
+function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s[1, :, 1]))::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     _chk3d(s)
-
-    if l == 0
-        l = maxtransformlevels(s[1, :, 1])
-        _info("Calculating DWD using maximum level: $l")
-    end
 
     ch_n, ep_len, ep_n = size(s)
 
@@ -105,6 +95,11 @@ Perform discrete wavelet transformation (DWT).
 """
 function dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
 
+    if l == 0
+        l = maxtransformlevels(obj.data[1, :, 1])
+        _info("Calculating DWD using maximum level: $l")
+    end
+
     ch = get_channel(obj, ch=ch)
     dc = @views dwd(obj.data[ch, :, :], wt=wt, type=type, l=l)
 
@@ -123,23 +118,22 @@ Perform inverse discrete wavelet transformation (iDWT).
 - `type::Symbol`: transformation type:
     - `:sdwt`: stationary discrete wavelet transform
     - `:acdwt`: discrete autocorrelation wavelet transform
-- `c::Union{Int64, Vector{Int64}, AbstractRange}=0`: which coefficients are used for reconstruction (default is all)
+- `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: which coefficients are used for reconstruction (default is all)
 
 # Returns
 
 - `s::AbstractArray`: reconstructed signal
 """
-function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Union{Int64, Vector{Int64}, AbstractRange}=0)::AbstractArray where {T <: DiscreteWavelet}
+function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1))::AbstractArray where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
-    @assert length(c) <= size(dc, 2) "c must be ≤ number of coefficients $(size(dwt_c, 2))."
-    c == 0 && (c = axes(dc, 1))
     
     if length(c) > 1
-        c = sort(c)
         for idx in c
-            @assert idx <= size(dc, 1) "Value of c ($idx) must be ≤ the number of dc rows ($(size(dc, 1)))."
+            _in(idx, (1, size(dc, 1)))
         end
+    else
+        _in(c, (1, size(dc, 1)), "c")
     end
 
     if type === :sdwt

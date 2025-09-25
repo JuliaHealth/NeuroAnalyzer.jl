@@ -73,7 +73,7 @@ s2, f = denoise_fft(s)
 e10_tmp = denoise_fft(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
-@info "Test: denoise_dwd())"
+@info "Test: denoise_dwd()"
 s = denoise_dwd(rand(100), wt=wavelet(WT.haar))
 @test length(s) == 100
 e10_tmp = denoise_dwd(e10, ch="all", wt=wavelet(WT.haar))
@@ -118,6 +118,7 @@ dt = dwd(e10, ch="all", type=:acdwt)
 @test size(dt) == (24, 1023, 2560, 10)
 
 @info "Test: idwd()"
+s = rand(100)
 NeuroAnalyzer._log_off()
 dt = dwd(s, type=:sdwt)
 s_new = idwd(dt, type=:sdwt)
