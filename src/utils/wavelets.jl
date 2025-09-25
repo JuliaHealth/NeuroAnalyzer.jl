@@ -9,13 +9,13 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `f::Vector{Float64}`: frequencies
 """
-function cwtfrq(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function cwtfrq(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
@@ -35,19 +35,17 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `f::Vector{Float64}`: frequencies
 """
-function cwtfrq(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128)) where {T <: CWT}
+function cwtfrq(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=2)) where {T <: CWT}
 
     _chk3d(s)
-    @assert fs >= 1 "fs must be ≥ 1."
 
-    f = round.(ContinuousWavelets.getMeanFreq(size(s, 2), wt, fs), digits=2)
-    f[1] = 0
+    f = cwtfrq(s[1, :], fs=fs, wt=wt)
 
     return f
 
@@ -61,7 +59,7 @@ Return mean frequencies of a collection of analytic or real wavelets for a given
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 

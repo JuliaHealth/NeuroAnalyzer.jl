@@ -167,3 +167,5 @@ function _veqlen(s1::AbstractVector, s2::AbstractVector)::Tuple{AbstractVector, 
         return s1, s2
     end
 end
+
+_fmem()::Float64 = return Sys.free_memory() / 2^20

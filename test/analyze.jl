@@ -49,7 +49,6 @@ ad = ampdiff(e10, ch="all")
 @test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:mt)) == (1, 10)
 @test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:mw)) == (1, 10)
 @test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:gh)) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:cwt)) == (1, 10)
 
 @info "Test: band_mpower()"
 mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20))
@@ -78,11 +77,6 @@ mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:m
 @test size(maxbp) == (1, 10)
 @test size(maxba) == (1, 10)
 mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:gh)
-@test size(mbp) == (1, 10)
-@test size(maxf) == (1, 10)
-@test size(maxbp) == (1, 10)
-@test size(maxba) == (1, 10)
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:cwt)
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
@@ -186,9 +180,6 @@ e, t = senv(e10, ch="Fp1", method=:mw)
 e, t = senv(e10, ch="Fp1", method=:gh)
 @test size(e) == (1, 2560, 10)
 @test length(t) == 2560
-e, t = senv(e10, ch="Fp1", method=:cwt)
-@test size(e) == (1, 2560, 10)
-@test length(t) == 2560
 em, eu, el, t = senv_mean(e10, ch="all", dims=1)
 @test size(em) == (289, 10)
 @test size(eu) == (289, 10)
@@ -239,9 +230,6 @@ e, t = penv(e10, ch="Fp1", method=:mw)
 e, t = penv(e10, ch="Fp1", method=:gh)
 @test size(e) == (1, 129, 10)
 @test length(t) == 129
-e, t = penv(e10, ch="Fp1", method=:cwt)
-@test size(e) == (1, 131, 10)
-@test length(t) == 131
 em, eu, el, t = penv_mean(e10, ch="all", dims=1)
 @test size(em) == (129, 10)
 @test size(eu) == (129, 10)
@@ -368,9 +356,6 @@ p, f = erop(e10, ch="Fp1", method=:mw)
 p, f = erop(e10, ch="Fp1", method=:gh)
 @test size(p) == (129, 1)
 @test length(f) == 129
-p, f = erop(e10, ch="Fp1", method=:cwt)
-@test size(p) == (131, 1)
-@test length(f) == 131
 
 @info "Test: acor()"
 @test acor(v) == [-0.32 -0.32 -0.08 0.32 0.8 0.32 -0.08 -0.32 -0.32;;;]
@@ -564,9 +549,6 @@ p, f = NeuroAnalyzer.psd(e10, ch="Fp1", method=:mw)
 p, f = NeuroAnalyzer.psd(e10, ch="Fp1", method=:gh)
 @test size(p) == (1, 129, 10)
 @test round.(f, digits=3) == 0.0:1.0:128.0
-p, f = NeuroAnalyzer.psd(e10, ch="Fp1", method=:cwt)
-@test size(p) == (1, 131, 10)
-@test length(f) == 131
 
 @info "Test: env_cor()"
 e1, t = tenv(e10, ch="all")
@@ -614,10 +596,6 @@ p, f = psd_rel(e10, ch="Fp1", method=:gh, frq_lim=(0, 1))
 @test size(p) == (1, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = psd_rel(e10, ch="Fp1", method=:cwt, frq_lim=(0, 1))
-@test size(p) == (1, 131, 10)
-@test f[1] == 0.0
-@test f[end] == 86.63
 
 @info "Test: psd_slope()"
 lf, ls, pf = psd_slope(rand(100), fs=10, wlen=10, woverlap=0)
@@ -656,11 +634,6 @@ lf, ls, pf = psd_slope(e10, ch="Fp1", method=:gh)
 @test size(ls) == (1, 10)
 @test pf[1] == 0.0
 @test pf[end] == 128.0
-lf, ls, pf = psd_slope(e10, ch="Fp1", method=:cwt)
-@test size(lf) == (1, 131, 10)
-@test size(ls) == (1, 10)
-@test pf[1] == 0.0
-@test pf[end] == 86.63
 
 @info "Test: amp()"
 p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10, ch="all")
@@ -779,8 +752,6 @@ tp = total_power(e10, ch="Fp1", method=:mw)
 @test size(tp) == (1, 10)
 tp = total_power(e10, ch="Fp1", method=:gh)
 @test size(tp) == (1, 10)
-tp = total_power(e10, ch="Fp1", method=:cwt)
-@test size(tp) == (1, 10)
 
 @info "Test: pacor()"
 pac, l = pacor(e10, ch="all", l=2)
@@ -893,7 +864,6 @@ ph, f = phsd(e10, ch="all")
 @test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:stft) == (ba = 0.0, ba_norm = 0.0)
 @test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:mw) == (ba = 0.0, ba_norm = 0.0)
 @test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:gh) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:cwt) == (ba = 0.0, ba_norm = 0.0)
 
 @info "Test: symmetry()"
 @test symmetry(v) == 5

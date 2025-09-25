@@ -45,23 +45,23 @@ e10_tmp = ch_zero(e10)
 @test e10_tmp.data[1, 1, 1] == 0
 @test e10_tmp.data[1, end, 1] == 0
 
-@info "Test: cw_trans()"
+@info "Test: cwd()"
 s = rand(100)
 NeuroAnalyzer._log_off()
-ct = cw_trans(s, wt=wavelet(Morlet(π), β=32, Q=128))
+ct = cwd(s, wt=wavelet(Morlet(π), β=32, Q=128))
 NeuroAnalyzer._log_on()
 @test size(ct) == (130, 100)
-ct = cw_trans(e10, ch="Fp1", wt=wavelet(Morlet(π), β=32, Q=128));
+ct = cwd(e10, ch="Fp1", wt=wavelet(Morlet(π), β=32, Q=128));
 @test size(ct) == (1, 131, 2560, 10)
 
-@info "Test: icw_trans()"
+@info "Test: icwd()"
 NeuroAnalyzer._log_off()
-ct = cw_trans(s, wt=wavelet(Morlet(π), β=32, Q=128))
-s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:nd)
+ct = cwd(s, wt=wavelet(Morlet(π), β=32, Q=128))
+s_new = icwd(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:nd)
 @test length(s_new) == 100
-s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:pd)
+s_new = icwd(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:pd)
 @test length(s_new) == 100
-s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:df)
+s_new = icwd(ct, wt=wavelet(Morlet(π), β=32, Q=128), type=:df)
 @test length(s_new) == 100
 NeuroAnalyzer._log_on()
 
@@ -104,31 +104,27 @@ e10_tmp = detrend(e10, ch="all", type=:poly)
 e10_tmp = detrend(e10, ch="all", type=:loess)
 @test size(e10_tmp) == size(e10)
 
-@info "Test: dw_trans()"
+@info "Test: dwd()"
 NeuroAnalyzer._log_off()
 s = rand(100)
-dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
+dt = dwd(s, type=:sdwt)
 @test size(dt) == (3, 100)
-dt = dw_trans(s, wt=wavelet(WT.haar), type=:acdwt)
+dt = dwd(s, type=:acdwt)
 @test size(dt) == (3, 100)
 NeuroAnalyzer._log_on()
-dt = dw_trans(e10, ch="all", wt=wavelet(WT.haar), type=:sdwt)
+dt = dwd(e10, ch="all", type=:sdwt)
 @test size(dt) == (24, 10, 2560, 10)
-dt = dw_trans(e10, ch="all", wt=wavelet(WT.haar), type=:acdwt)
+dt = dwd(e10, ch="all", type=:acdwt)
 @test size(dt) == (24, 10, 2560, 10)
 
-@info "Test: idw_trans()"
+@info "Test: idwd()"
 NeuroAnalyzer._log_off()
-dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
-s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:sdwt)
+dt = dwd(s)
+s_new = idwd(dt, type=:sdwt)
 @test length(s_new) == 100
-s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
+s_new = idwd(dt, type=:acdwt)
 @test length(s_new) == 100
 NeuroAnalyzer._log_on()
-
-@info "Test: dw_split()"
-s = dw_split(e10, ch="Fp1", wt=wavelet(WT.haar), type=:sdwt)
-@test size(s) == (10, 2560, 10)
 
 @info "Test: average_epochs()"
 e_erp = average_epochs(e10)
@@ -495,8 +491,8 @@ s = denoise_cwt(rand(100), fs=10, nf=2)
 e10_tmp = denoise_cwt(e10, ch="all", nf=50)
 @test size(e10_tmp) == size(e10)
 
-@info "Test: remove_cwt())"
-e10_tmp = remove_cwt(e10, ch="Fp1", ep=1, tseg=(0.2, 0.4), fseg=(10, 12.5))
+@info "Test: artrem_cwd())"
+e10_tmp = artrem_cwd(e10, ch="Fp1", ep=1, tseg=(0.2, 0.4), fseg=(10, 12.5))
 @test size(e10_tmp) == size(e10)
 
 @info "Test: emd()"

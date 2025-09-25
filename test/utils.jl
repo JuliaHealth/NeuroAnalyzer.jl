@@ -204,7 +204,7 @@ s = generate_morlet_fwhm(100, 10)
 
 @info "Test: cwtfrq()"
 s = rand(100)
-@test length(cwtfrq(s, fs=10)) == 130
+@test length(cwtfrq(s, fs=10)) == 12
 @test length(cwtfrq(e10)) == 19
 
 @info "Test: history()"

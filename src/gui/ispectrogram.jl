@@ -89,7 +89,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
 
     cb_db = GtkCheckButton()
-    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB; for CWT normalize scaleogram magnitude to the signal amplitude")
+    set_gtk_property!(cb_db, :tooltip_text, "Normalize powers to dB")
     set_gtk_property!(cb_db, :active, true)
 
     cb_hw = GtkCheckButton()
@@ -113,7 +113,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
 
     entry_wt = GtkEntry()
-    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=32, Q=128")
+    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=2")
     set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     entry_nt = GtkSpinButton(1, 128, 1)
@@ -698,7 +698,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     set_gtk_property!(combo_method, :tooltip_text, "Spectrogram method")
 
     entry_wt = GtkEntry()
-    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=32, Q=128")
+    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=2")
     set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     entry_nt = GtkSpinButton(1, 128, 1)

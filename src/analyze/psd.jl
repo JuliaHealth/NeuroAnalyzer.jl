@@ -1,7 +1,6 @@
 export psd
 export mwpsd
 export ghpsd
-export cwtpsd
 
 """
     psd(s; <keyword arguments>)
@@ -11,7 +10,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
 # Arguments
 - `s::Vector{Float64}`
 - `fs::Int64`: sampling rate
-- `db::Bool=false`: normalize do dB; for CWT power spectrum: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
+- `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -19,14 +18,12 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-    - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -34,9 +31,9 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
-    _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh, :cwt], "method")
+    _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
     @assert nt >= 1 "nt must be ≥ 1."
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
@@ -77,8 +74,6 @@ function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch
         p, f = mwpsd(s, db=db, fs=fs, ncyc=ncyc, w=w)
     elseif method === :gh
         p, f = ghpsd(s, fs=fs, db=db, gw=gw, w=w)
-    elseif method === :cwt
-        p, f = cwtpsd(s, fs=fs, norm=db, wt=wt)
     end
 
     # replace powers at extreme frequencies
@@ -106,13 +101,11 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-    - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -120,15 +113,15 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
-    _, f = psd(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    _, f = psd(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
     p = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
-        p[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     end
 
     return (p=p, f=f)
@@ -151,14 +144,12 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-    - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -166,19 +157,19 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
+function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    _, f = psd(s[1, :, 1], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    _, f = psd(s[1, :, 1], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
     p = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            p[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+            p[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
         end
     end
 
@@ -203,14 +194,12 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-    - `:cwt`: continuous wavelet transformation
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 - `gw::Real=5`: Gaussian width in Hz
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -218,11 +207,11 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}} where {T <: CWT}
+function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _log_off()
-    p, f = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+    p, f = psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     _log_on()
 
     return (p=p, f=f)
@@ -329,43 +318,6 @@ function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=
     p = vec(mean(p, dims=2))
 
     db && (p = pow2db.(p))
-
-    return (p=p, f=f)
-
-end
-
-"""
-    cwtpsd(s; <keyword arguments>)
-
-Calculate power spectrum using continuous wavelet transformation (CWT).
-
-# Arguments
-
-- `s::AbstractVector`
-- `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `norm::Bool=true`: normalize scaleogram to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
-
-# Returns
-
-Named tuple containing:
-- `p::Vector{Float64}`: powers
-- `f::Vector{Float64}`: frequencies
-"""
-function cwtpsd(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}} where {T <: CWT}
-
-    @assert fs >= 1 "fs must be ≥ 1."
-
-    p = abs.(ContinuousWavelets.cwt(s, wt)')
-    p = vec(mean(p, dims=2))
-
-    # scale
-    if norm
-        a = amp(s)[1]
-        p = normalize_n(p, a)
-    end
-
-    f = cwtfrq(s, fs=fs, wt=wt)
 
     return (p=p, f=f)
 

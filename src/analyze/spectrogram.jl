@@ -80,11 +80,11 @@ Calculate spectrogram. Default method is short time Fourier transform.
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
     - `:hht`: Hilbert-Huang transform
-- `db::Bool=true`: normalize powers to dB; for CWT scaleogram: normalize to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
+- `db::Bool=true`: normalize powers to dB
 - `nt::Int64=7`: number of Slepian tapers
 - `gw::Real=10`: Gaussian width in Hz
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
@@ -92,11 +92,11 @@ Calculate spectrogram. Default method is short time Fourier transform.
 # Returns
 
 Named tuple containing:
-- `p::Array{Float64, 4}`: powers
+- `p::Array{Float64, 4}`: powers (magnitudes for `:cwt`)
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time points
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=10, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=32, Q=128), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, method::Symbol=:stft, db::Bool=true, nt::Int64=7, gw::Real=10, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Array{Float64, 4}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
@@ -293,45 +293,32 @@ Calculate scaleogram using continuous wavelet transformation (CWT).
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `norm::Bool=true`: normalize scaleogram to the signal scale so the amplitudes of wavelet coefficients agree with the amplitudes of oscillatory components in a signal
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 Named tuple containing:
-- `p::Matrix{Float64}`: powers
+- `m::Matrix{Float64}`: magnitude
 - `f::Vector{Float64}`: frequencies
 - `t::Vector{Float64}`: time
 """
-function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=32, Q=128), norm::Bool=true)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π), β=2))::@NamedTuple{m::Matrix{Float64}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    # w = w ? hanning(length(s)) : ones(length(s))
-
-    p = abs.(ContinuousWavelets.cwt(s, wt)')
-
-    # scale
-    if norm
-        a = amp(s)[1]
-        p = normalize_n(p, a)
-    end
-
+    m = abs.(ContinuousWavelets.cwt(s, wt)')
+    # m = amp2db.(m)
     f = cwtfrq(s, fs=fs, wt=wt)
 
     # reverse order
     f_idx = sortperm(f)
     f = f[f_idx]
-    p = p[f_idx, :]
-
-    # p[p .== -Inf] .= minimum(p[p .!== -Inf])
-    # p[p .== +Inf] .= maximum(p[p .!== +Inf])
-    # db && (p = pow2db.(p))
+    m = m[f_idx, :]
 
     t = 0:1/fs:(length(s) / fs)
-    t = linspace(t[1], t[end - 1], size(p, 2))
+    t = linspace(t[1], t[end - 1], size(m, 2))
 
-    return (p=p, f=f, t=t)
+    return (m=m, f=f, t=t)
 
 end
 

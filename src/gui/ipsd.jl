@@ -102,7 +102,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     set_gtk_property!(cb_hw, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian-Hilbert transform", "CWT"]
+    psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian-Hilbert transform"]
     for idx in psd_methods
         push!(combo_method, idx)
     end
@@ -129,10 +129,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     end
     set_gtk_property!(combo_ref, :active, 0)
     set_gtk_property!(combo_ref, :tooltip_text, "Powers referenced to")
-
-    entry_wt = GtkEntry()
-    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=32, Q=128")
-    set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     cb_frq = GtkCheckButton()
     set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
@@ -203,8 +199,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     set_gtk_property!(lab_frq, :halign, 2)
     lab_hw = GtkLabel("Hanning:")
     set_gtk_property!(lab_hw, :halign, 2)
-    lab_wt = GtkLabel("Continuous wavelet:")
-    set_gtk_property!(lab_wt, :halign, 2)
     lab_gw = GtkLabel("Gaussian width:")
     set_gtk_property!(lab_gw, :halign, 2)
 
@@ -226,11 +220,10 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     g_opts[1, 12] = lab_wlen
     g_opts[1, 13] = lab_woverlap
     g_opts[1, 14] = lab_gw
-    g_opts[1, 15] = lab_wt
-    g_opts[1, 16] = lab_frq
-    g_opts[1, 17] = lab_norm
-    g_opts[1, 18] = lab_mono
-    g_opts[1, 19] = lab_hw
+    g_opts[1, 15] = lab_frq
+    g_opts[1, 16] = lab_norm
+    g_opts[1, 17] = lab_mono
+    g_opts[1, 18] = lab_hw
     g_opts[2, 1] = combo_ch
     g_opts[2, 2] = combo_type
     g_opts[2, 3] = combo_method
@@ -245,12 +238,11 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     g_opts[2, 12] = entry_wlen
     g_opts[2, 13] = entry_woverlap
     g_opts[2, 14] = entry_gw
-    g_opts[2, 15] = entry_wt
-    g_opts[2, 16] = cb_frq
-    g_opts[2, 17] = cb_db
-    g_opts[2, 18] = cb_mono
-    g_opts[2, 19] = cb_hw
-    g_opts[1:2, 20] = bt_refresh
+    g_opts[2, 15] = cb_frq
+    g_opts[2, 16] = cb_db
+    g_opts[2, 17] = cb_mono
+    g_opts[2, 18] = cb_hw
+    g_opts[1:2, 19] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -285,7 +277,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         method == "3" && (method = :mt)
         method == "4" && (method = :mw)
         method == "5" && (method = :gh)
-        method == "6" && (method = :cwt)
         type = get_gtk_property(combo_type, :active, String)
         type == "0" && (type = :normal)
         type == "1" && (type = :butterfly)
@@ -310,11 +301,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         ref == "13" && (ref = :gamma_lower)
         ref == "14" && (ref = :gamma_higher)
         frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
-        wt = nothing
-        try
-            wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
-        catch
-        end
         gw = get_gtk_property(entry_gw, :value, Int64)
         frq1 = get_gtk_property(entry_frq1, :value, Float64)
         frq2 = get_gtk_property(entry_frq2, :value, Float64)
@@ -363,7 +349,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                                        wlen=wlen,
                                        woverlap=woverlap,
                                        w=hw,
-                                       wt=wt,
                                        gw=gw)
             img = read_from_png(io)
             set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))
@@ -767,7 +752,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     set_gtk_property!(cb_db, :active, true)
 
     combo_method = GtkComboBoxText()
-    psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian-Hilbert transform", "CWT"]
+    psd_methods = ["Welch's periodogram", "fast Fourier transform", "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian-Hilbert transform"]
     for idx in psd_methods
         push!(combo_method, idx)
     end
@@ -789,10 +774,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     end
     set_gtk_property!(combo_ref, :active, 0)
     set_gtk_property!(combo_ref, :tooltip_text, "Powers referenced to")
-
-    entry_wt = GtkEntry()
-    set_gtk_property!(entry_wt, :text, "Morlet(2π), β=32, Q=128")
-    set_gtk_property!(entry_wt, :tooltip_text, "Continuous wavelet formula")
 
     cb_frq = GtkCheckButton()
     set_gtk_property!(cb_frq, :tooltip_text, "Linear or logarithmic frequencies")
@@ -863,8 +844,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     set_gtk_property!(lab_frq, :halign, 2)
     lab_hw = GtkLabel("Hanning:")
     set_gtk_property!(lab_hw, :halign, 2)
-    lab_wt = GtkLabel("Continuous wavelet:")
-    set_gtk_property!(lab_wt, :halign, 2)
     lab_gw = GtkLabel("Gaussian width:")
     set_gtk_property!(lab_gw, :halign, 2)
 
@@ -886,11 +865,10 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     g_opts[1, 12] = lab_wlen
     g_opts[1, 13] = lab_woverlap
     g_opts[1, 14] = lab_gw
-    g_opts[1, 15] = lab_wt
-    g_opts[1, 16] = lab_frq
-    g_opts[1, 17] = lab_norm
-    g_opts[1, 18] = lab_mono
-    g_opts[1, 19] = lab_hw
+    g_opts[1, 15] = lab_frq
+    g_opts[1, 16] = lab_norm
+    g_opts[1, 17] = lab_mono
+    g_opts[1, 18] = lab_hw
     g_opts[2, 1] = combo_ch
     g_opts[2, 2] = combo_type
     g_opts[2, 3] = combo_method
@@ -905,12 +883,11 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     g_opts[2, 12] = entry_wlen
     g_opts[2, 13] = entry_woverlap
     g_opts[2, 14] = entry_gw
-    g_opts[2, 15] = entry_wt
-    g_opts[2, 16] = cb_frq
-    g_opts[2, 17] = cb_db
-    g_opts[2, 18] = cb_mono
-    g_opts[2, 19] = cb_hw
-    g_opts[1:2, 20] = bt_refresh
+    g_opts[2, 15] = cb_frq
+    g_opts[2, 16] = cb_db
+    g_opts[2, 17] = cb_mono
+    g_opts[2, 18] = cb_hw
+    g_opts[1:2, 19] = bt_refresh
     vbox = GtkBox(:v)
     push!(vbox, g_opts)
 
@@ -944,7 +921,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         method == "3" && (method = :mt)
         method == "4" && (method = :mw)
         method == "5" && (method = :gh)
-        method == "6" && (method = :cwt)
         type = get_gtk_property(combo_type, :active, String)
         type == "0" && (type = :normal)
         type == "1" && (type = :butterfly)
@@ -969,11 +945,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         ref == "13" && (ref = :gamma_lower)
         ref == "14" && (ref = :gamma_higher)
         frq = get_gtk_property(cb_frq, :active, Bool) ? :lin : :log
-        wt = nothing
-        try
-            wt = eval(Meta.parse("wavelet(" * get_gtk_property(entry_wt, :text, String) * ")"))
-        catch
-        end
         gw = get_gtk_property(entry_gw, :value, Int64)
         frq1 = get_gtk_property(entry_frq1, :value, Float64)
         frq2 = get_gtk_property(entry_frq2, :value, Float64)
@@ -1032,7 +1003,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                                        wlen=wlen,
                                        woverlap=woverlap,
                                        w=hw,
-                                       wt=wt,
                                        gw=gw)
             img = read_from_png(io)
             set_gtk_property!(can, :width_request, Int32(p.attr[:size][1]))

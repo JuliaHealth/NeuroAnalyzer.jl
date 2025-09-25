@@ -1,21 +1,21 @@
-export cw_trans
-export icw_trans
+export cwd
+export icwd
 
 """
-    cw_trans(s; <keyword arguments>)
+    cwd(s; <keyword arguments>)
 
-Perform continuous wavelet transformation (CWT).
+Perform continuous wavelet decomposition (CWD).
 
 # Arguments
 
 - `s::AbstractVector`
-- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `ct::Matrix{Float64}`: CWT coefficients (by rows)
 """
-function cw_trans(s::AbstractVector; wt::T)::Matrix{Float64} where {T<:CWT}
+function cwd(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2))::Matrix{Float64} where {T<:CWT}
 
     ct = Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
@@ -24,14 +24,14 @@ function cw_trans(s::AbstractVector; wt::T)::Matrix{Float64} where {T<:CWT}
 end
 
 """
-    icw_trans(ct; <keyword arguments>)
+    icwd(ct; <keyword arguments>)
 
 Perform inverse continuous wavelet transformation (iCWT).
 
 # Arguments
 
 - `ct::AbstractArray`: CWT coefficients (by rows)
-- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `type::Symbol=:pd`: inverse style type:
     - `:pd`: PenroseDelta
     - `:nd`: NaiveDelta
@@ -41,7 +41,7 @@ Perform inverse continuous wavelet transformation (iCWT).
 
 - `s::AbstractArray`: reconstructed signal
 """
-function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::AbstractArray where {T<:CWT}
+function icwd(ct::AbstractArray; wt::T=wavelet(Morlet(2π), β=2), type::Symbol=:pd)::AbstractArray where {T<:CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 
@@ -61,20 +61,20 @@ function icw_trans(ct::AbstractArray; wt::T, type::Symbol=:pd)::AbstractArray wh
 end
 
 """
-    cw_trans(s; <keyword arguments>)
+    cwd(s; <keyword arguments>)
 
-Perform continuous wavelet transformation (CWT).
+Perform continuous wavelet decomposition (CWD).
 
 # Arguments
 
 - `s::AbstractArray`
-- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cw_trans(s::AbstractArray; wt::T)::Array{Float64, 4} where {T<:CWT}
+function cwd(s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2))::Array{Float64, 4} where {T<:CWT}
 
     _chk3d(s)
     ch_n, ep_len, ep_n = size(s)
@@ -85,7 +85,7 @@ function cw_trans(s::AbstractArray; wt::T)::Array{Float64, 4} where {T<:CWT}
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads :greedy for ch_idx in 1:ch_n
-            ct[ch_idx, :, :, ep_idx] = @views cw_trans(s[ch_idx, :, ep_idx], wt=wt)
+            ct[ch_idx, :, :, ep_idx] = @views cwd(s[ch_idx, :, ep_idx], wt=wt)
         end
     end
     _log_on()
@@ -95,24 +95,24 @@ function cw_trans(s::AbstractArray; wt::T)::Array{Float64, 4} where {T<:CWT}
 end
 
 """
-    cw_trans(obj; <keyword arguments>)
+    cwd(obj; <keyword arguments>)
 
-Perform continuous wavelet transformation (CWT).
+Perform continuous wavelet decomposition (CWD).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T)::Array{Float64, 4} where {T<:CWT}
+function cwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(Morlet(2π), β=2))::Array{Float64, 4} where {T<:CWT}
 
     ch = get_channel(obj, ch=ch)
-    ct = @views cw_trans(obj.data[ch, :, :], wt=wt)
+    ct = @views cwd(obj.data[ch, :, :], wt=wt)
 
     return ct
 

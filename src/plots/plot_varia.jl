@@ -18,6 +18,7 @@ export plot_hs
 export plot_fi
 export plot_phase
 export plot_polezero
+export plot_dwd
 
 """
     plot_matrix(m; <keyword arguments>)
@@ -1755,6 +1756,96 @@ function plot_polezero(pol::Vector{Complex{Float64}}, zer::Vector{Complex{Float6
                 ls=:dot,
                 lw=0.5,
                 lc=:black)
+
+    return p
+
+end
+
+
+"""
+    plot_dwd(dc; <keyword arguments>)
+
+Plot discrete wavelet decomposition coefficients.
+
+# Arguments
+
+- `dc::Matrix{Float64}`: coefficients
+- `n::Int64=size(dc, 1) - 1`: number of coefficients to plot
+- `t::AbstractVector`: time points
+- `mono::Bool=false`: use color or gray palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_dwd(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVector, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+
+    @assert n > 1 "n must be > 1."
+    @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."
+    @assert size(dc, 2) == length(t) "Length of t $(size(dc, 2)) and number of dc columns ($(size(m, 2))) must be equal."
+
+    pal = mono ? :grays : :darktest
+
+    ylim = (floor(minimum(dc), digits=0), ceil(maximum(dc), digits=0))
+    ylim = _tuple_max(ylim)
+    yticks = [ylim[1], 0, ylim[2]]
+
+    # prepare plots
+    p_dc = Vector{Plots.Plot{Plots.GRBackend}}()
+    for idx in 2:(n + 1)
+        p = Plots.plot(t,
+                       dc[idx, :],
+                       xlabel="time [s]",
+                       ylabel="",
+                       xlims=_xlims(t),
+                       xticks=_ticks(t),
+                       ylims=ylim,
+                       yticks=yticks,
+                       ytick_direction=:out,
+                       xtick_direction=:out,
+                       title="DC #$(idx - 1)",
+                       palette=pal,
+                       size=(500, 250),
+                       margins=10Plots.px,
+                       label=false,
+                       line_width=0.5,
+                       titlefontsize=6,
+                       xlabelfontsize=6,
+                       ylabelfontsize=6,
+                       xtickfontsize=4,
+                       ytickfontsize=4;
+                       kwargs...)
+        push!(p_dc, p)
+    end
+
+    p = Plots.plot(t,
+                   dc[1, :],
+                   xlabel="time [s]",
+                   ylabel="",
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   ytick_direction=:out,
+                   xtick_direction=:out,
+                   title="Original signal",
+                   palette=pal,
+                   size=(500, 250),
+                   margins=10Plots.px,
+                   label=false,
+                   line_width=0.5,
+                   titlefontsize=6,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
+                   xtickfontsize=4,
+                   ytickfontsize=4;
+                   kwargs...)
+    push!(p_dc, p)
+
+    mod(n + 2, 2) != 0 && push!(p_dc, plot_empty())
+
+    p = plot_compose(p_dc, layout=(ceil(Int64, (n + 2) / 2), 2))
 
     return p
 

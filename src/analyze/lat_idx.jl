@@ -16,20 +16,18 @@ Calculate lateralization index (log(A / B), where A is average power at given fr
     - `:stft`: short time Fourier transform
     - `:mw`: Morlet wavelet convolution
     - `:gh`: Gaussian and Hilbert transform
-    - `:cwt`: continuous wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 - `gw::Real=5`: Gaussian width in Hz
-- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=32, Q=128)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `lidx::Float64`: lateralization index
 """
-function lat_idx(obj::NeuroAnalyzer.NEURO; frq::Union{Real, Tuple{<:Real, <:Real}}=10, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, wt::T=wavelet(Morlet(2π), β=32, Q=128))::Float64 where {T <: CWT}
+function lat_idx(obj::NeuroAnalyzer.NEURO; frq::Union{Real, Tuple{<:Real, <:Real}}=10, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::Float64
 
     _check_datatype(obj, ["meg", "eeg", "erp", "erf"])
 
@@ -43,16 +41,16 @@ function lat_idx(obj::NeuroAnalyzer.NEURO; frq::Union{Real, Tuple{<:Real, <:Real
 
     # left PSDs
     if datatype(obj) in ["erp", "erf"]
-        p_left, f = psd(obj.data[ch_l, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p_left, f = psd(obj.data[ch_l, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     else
-        p_left, f = psd(obj.data[ch_l, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p_left, f = psd(obj.data[ch_l, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     end
 
     # right PSDs
     if datatype(obj) in ["erp", "erf"]
-        p_right, _ = psd(obj.data[ch_r, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p_right, _ = psd(obj.data[ch_r, :, 1], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     else
-        p_right, _ = psd(obj.data[ch_r, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw, wt=wt)
+        p_right, _ = psd(obj.data[ch_r, :, :], fs=sr(obj), db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     end
 
     _log_on()
