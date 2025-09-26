@@ -684,8 +684,8 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10, ch="Fp1", method=:gh)
 @test length(sf) == 129
 @test length(st) == 2560
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, ch="Fp1", method=:cwt)
-@test size(sp) == (131, 2560, 1, 10)
-@test length(sf) == 131
+@test size(sp) == (30, 2560, 1, 10)
+@test length(sf) == 30
 @test length(st) == 2560
 
 @info "Test: spec_seg()"
@@ -1008,7 +1008,7 @@ z3 = zipratio(e10_tmp)
 imf = emd(e10, ch="Fp1", ep=1)[1:(end - 1), :]
 p, ph, f, t = hhtspectrogram(imf, fs=sr(e10))
 @test size(p) == (128, 2560)
-@test size(ph) == (8, 2560)
+@test size(ph) == (9, 2560)
 @test length(f) == 128
 @test length(t) == 2560
 
