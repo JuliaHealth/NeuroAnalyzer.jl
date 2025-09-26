@@ -138,7 +138,6 @@ function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Unio
     end
 
     if type === :sdwt
-        @assert isdyadic(size(dc, 2)) "For iSDWT the number of samples ($(size(dc, 2))) must be a power of 2."
         s = @views isdwt(dc[c, :]', wt)
     elseif type === :acdwt
         s = @views iacdwt(dc[c, :]', wt)
