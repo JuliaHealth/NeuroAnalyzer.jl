@@ -133,7 +133,7 @@ function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Unio
             _in(idx, (1, size(dc, 1)))
         end
     else
-        _in(c, (1, size(dc, 1)), "c")
+        _in(c[1], (1, size(dc, 1)), "c")
     end
 
     if type === :sdwt
