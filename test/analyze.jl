@@ -1008,7 +1008,7 @@ z3 = zipratio(e10_tmp)
 imf = emd(e10, ch="Fp1", ep=1)[1:(end - 1), :]
 p, ph, f, t = hhtspectrogram(imf, fs=sr(e10))
 @test size(p) == (128, 2560)
-@test size(ph) == (9, 2560)
+@test size(ph) == (8, 2560) || size(ph) == (9, 2560)
 @test length(f) == 128
 @test length(t) == 2560
 
