@@ -17,7 +17,7 @@ Perform discrete wavelet decomposition (DWD).
 
 # Returns
 
-- `dc::Matrix{Float64}`: DWT coefficients (by rows)
+- `dc::Matrix{Float64}`: DWD coefficients (by rows)
 """
 function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s))::Matrix{Float64} where {T <: DiscreteWavelet}
 
@@ -51,7 +51,7 @@ Perform discrete wavelet transformation (DWT).
 
 # Returns
 
-- `dc::Array{Float64, 4}`: DWT coefficients
+- `dc::Array{Float64, 4}`: DWD coefficients
 """
 function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s[1, :, 1]))::Array{Float64, 4} where {T <: DiscreteWavelet}
 
@@ -91,7 +91,7 @@ Perform discrete wavelet transformation (DWT).
 
 # Returns
 
-- `dc::Array{Float64, 4}`: DWT coefficients
+- `dc::Array{Float64, 4}`: DWD coefficients
 """
 function dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
 
@@ -108,15 +108,15 @@ function dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
 end
 
 """
-    idwd(dwt_c; <keyword arguments>)
+    idwd(dc; <keyword arguments>)
 
 Perform inverse discrete wavelet transformation (iDWT).
 # Arguments
 
-- `dc::Matrix{Float64}`: DWT coefficients (by rows)
+- `dc::Matrix{Float64}`: DWD coefficients (by rows)
 - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
 - `type::Symbol`: transformation type:
-    - `:sdwt`: stationary discrete wavelet transform
+    - `:sdwt`: average-based stationary discrete wavelet transform
     - `:acdwt`: discrete autocorrelation wavelet transform
 - `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: which coefficients are used for reconstruction (default is all)
 
@@ -127,8 +127,9 @@ Perform inverse discrete wavelet transformation (iDWT).
 function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1))::AbstractArray where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
-    
+
     if length(c) > 1
+        c = sort(c)
         for idx in c
             _in(idx, (1, size(dc, 1)))
         end
@@ -137,9 +138,10 @@ function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Unio
     end
 
     if type === :sdwt
-        s = isdwt(dc[c, :]', wt)
+        @assert isdyadic(size(dc, 2)) "For iSDWT the number of samples ($(size(dc, 2))) must be a power of 2."
+        s = @views isdwt(dc[c, :]', wt)
     elseif type === :acdwt
-        s = iacdwt(dc[c, :]', wt)
+        s = @views iacdwt(dc[c, :]', wt)
     end
 
     return s

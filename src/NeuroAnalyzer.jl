@@ -187,12 +187,13 @@ na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, excl
 
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
-_info("    Preferences:")
+_info("Preferences:")
 _info("       Use CUDA: $use_cuda")
 _info("   Progress bar: $progress_bar")
 _info("        Verbose: $verbose")
 _info("   Exclude bads: $exclude_bads")
 _info("         Colors: $colors")
+_info("System info:")
 _info("    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB")
 
 # set package options

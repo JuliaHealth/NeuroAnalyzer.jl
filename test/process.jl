@@ -112,19 +112,21 @@ dt = dwd(s, type=:sdwt)
 dt = dwd(s, type=:acdwt)
 @test size(dt) == (7, 100)
 NeuroAnalyzer._log_on()
-dt = dwd(e10, ch="all", type=:sdwt)
-@test size(dt) == (24, 1023, 2560, 10)
-dt = dwd(e10, ch="all", type=:acdwt)
-@test size(dt) == (24, 1023, 2560, 10)
+dt = dwd(e10, ch="all", type=:sdwt, l=2)
+@test size(dt) == (24, 7, 2560, 10)
+dt = dwd(e10, ch="all", type=:acdwt, l=2)
+@test size(dt) == (24, 7, 2560, 10)
 
 @info "Test: idwd()"
-s = rand(100)
 NeuroAnalyzer._log_off()
-dt = dwd(s, type=:sdwt)
+s = rand(256)
+dt = dwd(s, type=:sdwt, l=2)
 s_new = idwd(dt, type=:sdwt)
-@test length(s_new) == 100
+@test length(s_new) == 256
+s = rand(256)
+dt = dwd(s, type=:acdwt, l=2)
 s_new = idwd(dt, type=:acdwt)
-@test length(s_new) == 100
+@test length(s_new) == 256
 NeuroAnalyzer._log_on()
 
 @info "Test: average_epochs()"
