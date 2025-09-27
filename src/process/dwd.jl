@@ -111,6 +111,7 @@ end
     idwd(dc; <keyword arguments>)
 
 Perform inverse discrete wavelet transformation (iDWT).
+
 # Arguments
 
 - `dc::Matrix{Float64}`: DWD coefficients (by rows)
@@ -118,7 +119,7 @@ Perform inverse discrete wavelet transformation (iDWT).
 - `type::Symbol`: transformation type:
     - `:sdwt`: average-based stationary discrete wavelet transform
     - `:acdwt`: discrete autocorrelation wavelet transform
-- `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: which coefficients are used for reconstruction (default is all)
+- `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: which coefficients are used for reconstruction, default is all coefficients
 
 # Returns
 
