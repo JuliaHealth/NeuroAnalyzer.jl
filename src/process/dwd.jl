@@ -38,7 +38,7 @@ end
 """
     dwd(s; <keyword arguments>)
 
-Perform discrete wavelet transformation (DWT).
+Perform discrete wavelet decomposition (DWD).
 
 # Arguments
 
@@ -77,7 +77,7 @@ end
 """
     dwd(obj; <keyword arguments>)
 
-Perform discrete wavelet transformation (DWT).
+Perform discrete wavelet decomposition (DWD).
 
 # Arguments
 
@@ -110,7 +110,7 @@ end
 """
     idwd(dc; <keyword arguments>)
 
-Perform inverse discrete wavelet transformation (iDWT).
+Perform inverse discrete wavelet decomposition (iDWD).
 
 # Arguments
 
