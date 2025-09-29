@@ -75,6 +75,7 @@ function na_info()::Nothing
             "GLMakie",
             "GR",
             "Gtk",
+            "Hurst",
             "HypothesisTests",
             "Images",
             "ImageBinarization",

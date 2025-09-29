@@ -2,6 +2,26 @@ export snr
 export snr2
 
 """
+    snr(s1, s2)
+
+Calculate SNR between two signals
+
+# Arguments
+
+- `s1::AbstractVector`
+- `s2::AbstractVector`
+
+# Returns
+
+- `snr::Float64`: SNR
+"""
+function snr(s1::AbstractVector, s2::AbstractVector)::Float64
+
+    return -20 * log10(norm(abs.(s2 - s1)) / norm(s2))
+
+end
+
+"""
     snr(s)
 
 Calculate mean-based SNR.

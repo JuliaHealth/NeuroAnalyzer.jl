@@ -98,6 +98,7 @@ using Git
 using GLMakie
 using GR
 using Gtk
+using Hurst
 using Images
 using ImageBinarization
 using ImageFiltering
@@ -460,6 +461,7 @@ include("analyze/erp_peaks.jl")
 include("analyze/frqinst.jl")
 include("analyze/ftt.jl")
 include("analyze/ged.jl")
+include("analyze/ghexp.jl")
 include("analyze/hfd.jl")
 include("analyze/hjorth.jl")
 include("analyze/hmspectrum.jl")

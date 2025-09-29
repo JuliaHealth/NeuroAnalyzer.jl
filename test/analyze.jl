@@ -657,6 +657,7 @@ p, r, p2p, semi_p2p, msa, rmsa, nrg, rmsq = NeuroAnalyzer.amp(e10, ch="all")
 @test length(NeuroAnalyzer.rmse(e10, e10, ch1="Fp1", ch2="Fp2")) == 10
 
 @info "Test: snr()"
+@test NeuroAnalyzer.snr(v1, v2) == 3.0102999566398116
 @test NeuroAnalyzer.snr(v1) == 1.8973665961010275
 @test NeuroAnalyzer.snr2(v1) == 1.2060453783110545
 sn, f = NeuroAnalyzer.snr(e10, ch="all", type=:rms)
@@ -1016,5 +1017,11 @@ p, ph, f, t = hhtspectrogram(imf, fs=sr(e10))
 p, t = hmspectrum(e10, ch="Fp1")
 @test size(p) == (1, 2560, 10)
 @test length(t) == 2560
+
+@info "Test: ghexp()"
+g = ghexp(e10, ch="Fp1", tau_range=1:10)
+@test size(g) == (1, 1, 2, 10)
+g = ghexp(e10, ch="Fp1", tau_range=1:10, q_range=0.1:0.1:1.0)
+@test size(g) == (1, 10, 2, 10)
 
 true
