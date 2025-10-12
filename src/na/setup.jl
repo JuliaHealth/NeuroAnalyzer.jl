@@ -29,19 +29,19 @@ function na_info()::Nothing
     println("    Resources path: $res_path")
     println(" Show progress bar: $progress_bar")
     println("           Use GPU: $use_gpu")
-    if use_gpu
-        if na_gpu === :cuda
+    if NeuroAnalyzer.use_gpu
+        if NeuroAnalyzer.na_gpu === :cuda
 #            println("          CUDA GPU: $(CUDA.runtime_version())")
             println("              CUDA: $(CUDA.runtime_version())")
-        elseif na_gpu === :amdgpu
+        elseif NeuroAnalyzer.na_gpu === :amdgpu
             println("           AMD GPU: $(AMDGPU.HIP.name(AMDGPU.device()))")
             println("        AMDGPU HIP: $(string(AMDGPU.HIP.runtime_version()))")
             println("     AMDGPU rocFFT: $(string(AMDGPU.rocFFT.version()))")
         end
     end
-    println("           Verbose: $verbose")
-    println("      Exclude bads: $exclude_bads")
-    println("            Colors: $colors")
+    println("           Verbose: $(NeuroAnalyzer.verbose)")
+    println("      Exclude bads: $(NeuroAnalyzer.exclude_bads)")
+    println("            Colors: $(NeuroAnalyzer.colors)")
     println("           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
     println()
     Threads.nthreads() < length(Sys.cpu_info()) || println("For best performance, environment variable `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))")
@@ -146,8 +146,17 @@ Nothing
 """
 function na_set_use_gpu(value::Bool)::Nothing
 
+    NeuroAnalyzer.use_gpu = value
+    if NeuroAnalyzer.use_gpu
+        if CUDA.functional()
+            NeuroAnalyzer.na_gpu = :cuda
+        elseif AMDGPU.functional()
+            NeuroAnalyzer.na_gpu = :amdgpu
+        end
+    else
+        NeuroAnalyzer.na_gpu = ""
+    end
     @set_preferences!("use_gpu" => value)
-    _info("New option value set, restart your Julia session for this change to take effect")
 
     return nothing
 
@@ -168,8 +177,8 @@ Nothing
 """
 function na_set_progress_bar(value::Bool)::Nothing
 
+    NeuroAnalyzer.progress_bar = value
     @set_preferences!("progress_bar" => value)
-    _info("New option value set, restart your Julia session for this change to take effect")
 
     return nothing
 
@@ -190,8 +199,8 @@ Nothing
 """
 function na_set_verbose(value::Bool)::Nothing
 
+    NeuroAnalyzer.verbose = value
     @set_preferences!("verbose" => value)
-    _info("New option value set, restart your Julia session for this change to take effect")
 
     return nothing
 
@@ -212,8 +221,8 @@ Nothing
 """
 function na_set_colors(value::Bool)::Nothing
 
+    NeuroAnalyzer.colors = value
     @set_preferences!("colors" => value)
-    _info("New option value set, restart your Julia session for this change to take effect")
 
     return nothing
 
@@ -284,8 +293,8 @@ Nothing
 """
 function na_set_exclude_bads(value::Bool)::Nothing
 
+    NeuroAnalyzer.exclude_bads = value
     @set_preferences!("exclude_bads" => value)
-    _info("New option value set, restart your Julia session for this change to take effect")
 
     return nothing
 

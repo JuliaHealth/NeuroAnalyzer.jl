@@ -31,7 +31,8 @@ function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_new = abs.(ifft0((fft0(s, pad) .* g), pad))
+    s_tmp = fft0(s, pad) .* g
+    s_new = abs.(ifft0(s_tmp, pad))
 
     return s_new
 

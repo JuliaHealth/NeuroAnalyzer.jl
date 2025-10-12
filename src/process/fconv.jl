@@ -55,7 +55,7 @@ function fconv(s::AbstractArray; kernel::AbstractVector, norm::Bool=true)::Array
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm)
-            @show AMDGPU.free()
+
             # update progress bar
             progress_bar && next!(progbar)
         end
