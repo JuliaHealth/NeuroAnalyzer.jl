@@ -20,6 +20,7 @@ Named tuple containing:
 """
 function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)::@NamedTuple{s::Vector{Float64}, f_idx::BitVector}
 
+    # pad == 0 ? s_fft = fft(s) : fft(pad0(s, pad))
     s_fft = fft0(s, pad)
     s_pow = @. (abs(s_fft * conj(s_fft))) / length(s)
 
@@ -57,7 +58,7 @@ function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)::Array{Float64, 
     s_new = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad=pad, t=t)
         end
     end

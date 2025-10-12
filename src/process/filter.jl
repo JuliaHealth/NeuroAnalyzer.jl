@@ -369,7 +369,7 @@ function filter_apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in eachindex(ch)
+        Threads.@threads for ch_idx in eachindex(ch)
             obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
             # update progress bar
             progress_bar && next!(progbar)

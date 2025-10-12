@@ -61,7 +61,7 @@ function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)::Array{Float64
     s_new = zeros(ch_n, length(s_new), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views NeuroAnalyzer.resample(s[ch_idx, :, ep_idx], old_sr=old_sr, new_sr=new_sr)
         end
     end

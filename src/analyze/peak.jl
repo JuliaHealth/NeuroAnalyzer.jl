@@ -166,7 +166,7 @@ function peak_frq(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, metho
     pf = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             pf[ch_idx, ep_idx] = @views peak_frq(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end
@@ -208,7 +208,7 @@ function peak_amp(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, metho
     pa = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             pa[ch_idx, ep_idx] = @views peak_amp(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end
@@ -250,7 +250,7 @@ function peak_pow(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, metho
     pp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             pp[ch_idx, ep_idx] = @views peak_pow(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
         end
     end

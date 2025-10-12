@@ -180,7 +180,7 @@ function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     t_env = zeros(ch_n, epoch_len(obj), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             t_env[ch_idx, :, ep_idx] = @views env_up(obj.data[ch[ch_idx], :, ep_idx], s_t, d=d)
         end
     end
@@ -386,7 +386,7 @@ function penv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     pw, pf = psd(obj.data[1, :, 1], fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
     p_env = zeros(ch_n, length(pw), ep_n)
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             pw, _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=true, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
             p_env[ch_idx, :, ep_idx] = env_up(pw, pf, d=d)
         end
@@ -634,7 +634,7 @@ function senv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     s_env = zeros(ch_n, length(st), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if method === :stft
                 sp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
@@ -889,7 +889,7 @@ function henv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     s_t = obj.epoch_time
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             s = @view hamp[ch_idx, :, ep_idx]
             h_env[ch_idx, :, ep_idx] = env_up(s, s_t, d=d)
         end

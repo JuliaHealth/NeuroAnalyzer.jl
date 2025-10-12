@@ -20,7 +20,7 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     f = lowercase(f)
     clabels = lowercase.(labels(obj))
     vc = zeros(1, epoch_len(obj), ep_n)
-    Threads.@threads :greedy for ep_idx in 1:ep_n
+    Threads.@threads for ep_idx in 1:ep_n
         f_tmp = f
         @inbounds for ch_idx in eachindex(clabels)
             occursin(clabels[ch_idx], f) && (f_tmp = replace(f_tmp, clabels[ch_idx] => "$(obj.data[ch_idx, :, ep_idx])"))

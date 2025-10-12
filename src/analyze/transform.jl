@@ -142,7 +142,7 @@ function ftransform(s::AbstractArray; pad::Int64=0, db::Bool=false, nf::Bool=fal
     end
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.ftransform(s[ch_idx, :, ep_idx], pad=pad, db=db, nf=nf)
         end
     end
@@ -183,7 +183,7 @@ function htransform(s::AbstractArray; pad::Int64=0, db::Bool=false)::@NamedTuple
     ph = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             c[ch_idx, :, ep_idx], a[ch_idx, :, ep_idx], p[ch_idx, :, ep_idx], ph[ch_idx, :, ep_idx] = @views NeuroAnalyzer.htransform(s[ch_idx, :, ep_idx], pad=pad, db=db)
         end
     end
@@ -304,7 +304,7 @@ function hanalytic(s::AbstractArray; pad::Int64=0)::Array{ComplexF64, 3}
     ha = zeros(ComplexF64, ch_n, ep_len, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             ha = @views NeuroAnalyzer.hanalytic(s[ch_idx, :, ep_idx], pad=pad)
         end
     end

@@ -47,7 +47,7 @@ function cwd(s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2))::Array{Float64,
     ct = zeros(ch_n, l, ep_len, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             ct[ch_idx, :, :, ep_idx] = @views cwd(s[ch_idx, :, ep_idx], wt=wt)
         end
     end

@@ -45,7 +45,7 @@ function gfp(s::AbstractMatrix)::Vector{Float64}
 
     ch_n = size(s, 1)
     g = zeros(size(s, 2))
-    Threads.@threads :greedy for tp_idx in axes(s, 2)
+    Threads.@threads for tp_idx in axes(s, 2)
         g[tp_idx] = @views sum(s[:, tp_idx] .^2) / ch_n
     end
 
@@ -70,7 +70,7 @@ function gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 
     g = gfp(s)
     gn = similar(s)
-    Threads.@threads :greedy for tp_idx in axes(s, 2)
+    Threads.@threads for tp_idx in axes(s, 2)
         @views gn[:, tp_idx] = s[:, tp_idx] ./ g[tp_idx]
     end
 
@@ -154,7 +154,7 @@ function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Fl
 
     gd = zeros(size(s1, 2))
     sc = zeros(size(s1, 2))
-    Threads.@threads :greedy for tp_idx in axes(s1, 2)
+    Threads.@threads for tp_idx in axes(s1, 2)
         gd[tp_idx] = sqrt(sum((gfp_norm1[:, tp_idx] .- gfp_norm2[:, tp_idx]).^2) / n_ch)
         sc[tp_idx] = 0.5 * (2 - gd[tp_idx]^2)
     end

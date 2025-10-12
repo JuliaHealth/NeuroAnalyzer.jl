@@ -116,7 +116,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         s = zeros(ch_n, window, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :greedy for ch_idx in 1:ch_n
+            Threads.@threads for ch_idx in 1:ch_n
                 s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
         end
@@ -128,7 +128,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         s = zeros(ch_n, window, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :greedy for ch_idx in 1:ch_n
+            Threads.@threads for ch_idx in 1:ch_n
                 s[ch_idx, :, ep_idx] = @views stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window=window)
             end
         end
@@ -140,7 +140,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         s = zeros(ch_n, epoch_len(obj) - 1, ep_n)
 
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :greedy for ch_idx in 1:ch_n
+            Threads.@threads for ch_idx in 1:ch_n
                 s[ch_idx, :, ep_idx] = @views stationarity_hilbert(obj.data[ch[ch_idx], :, ep_idx])
             end
         end
@@ -160,7 +160,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         # create covariance matrices per each window
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :greedy for window_idx = 1:window_n
+            Threads.@threads for window_idx = 1:window_n
                 cov_mat[:, :, window_idx, ep_idx] = @views covm(obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx])
             end
         end
@@ -168,7 +168,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         # calculate Euclidean distance between adjacent matrices
         @inbounds for ep_idx in 1:ep_n
             w_idx = 1
-            Threads.@threads :greedy for window_idx = 2:window:window_n
+            Threads.@threads for window_idx = 2:window:window_n
                 s[w_idx, ep_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, ep_idx], cov_mat[:, :, window_idx, ep_idx])
                 w_idx += 1
             end
@@ -186,7 +186,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads :greedy for ch_idx = 1:ch_n
+            Threads.@threads for ch_idx = 1:ch_n
                 adf = @views HypothesisTests.ADFTest(obj.data[ch_idx, :, ep_idx], :none, 1)
                 a = adf.stat
                 p = pvalue(adf)

@@ -43,7 +43,7 @@ function hfd(s::AbstractArray)::Matrix{Float64}
     hd = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             hd[ch_idx, ep_idx] = @views hfd(s[ch_idx, :, ep_idx])
         end
     end

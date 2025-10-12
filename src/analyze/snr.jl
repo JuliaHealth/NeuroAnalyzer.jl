@@ -100,14 +100,14 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::@NamedTup
 
     # create spectrum for each channel
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             _, amp[ch_idx, :, ep_idx], _, _ = @views NeuroAnalyzer.ftransform(s[ch_idx, :, ep_idx])
         end
     end
 
     # calculate SNR for each channel spectrum
     @inbounds for f_idx in eachindex(f)
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             if type === :mean
                 sn[ch_idx, f_idx] = @views snr(amp[ch_idx, f_idx, :])
             else

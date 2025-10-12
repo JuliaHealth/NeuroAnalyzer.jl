@@ -67,7 +67,7 @@ function hjorth(s::AbstractArray)::@NamedTuple{h_act::Matrix{Float64}, h_mob::Ma
     h_comp = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             h_act[ch_idx, ep_idx], h_mob[ch_idx, ep_idx], h_comp[ch_idx, ep_idx] = @views hjorth(s[ch_idx, :, ep_idx])
         end
     end

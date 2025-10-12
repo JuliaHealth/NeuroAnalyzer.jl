@@ -43,7 +43,7 @@ function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbo
     ss = [s1; s2]
     st = zeros(size(s1, 1) * n)
 
-    Threads.@threads :greedy for idx1 in 1:(size(s1, 1) * n)
+    Threads.@threads for idx1 in 1:(size(s1, 1) * n)
         s_tmp1 = zeros(size(s1, 1), size(s1, 2))
         sample_idx = rand(axes(ss, 1), size(ss, 1))
         @inbounds for idx2 in axes(s1, 1)

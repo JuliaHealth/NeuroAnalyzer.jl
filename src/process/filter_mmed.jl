@@ -88,7 +88,7 @@ function filter_mmed(s::AbstractArray; k::Int64=8, t::Real=0, ww::AbstractVector
     s_filtered = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             s_filtered[ch_idx, :, ep_idx] = @views filter_mmed(s[ch_idx, :, ep_idx], k=k, t=t, ww=ww)
         end
     end

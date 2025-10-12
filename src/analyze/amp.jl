@@ -73,7 +73,7 @@ function amp(s::AbstractArray)::@NamedTuple{p::Matrix{Float64}, r::Matrix{Float6
     rmsq = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             p[ch_idx, ep_idx], r[ch_idx, ep_idx], p2p[ch_idx, ep_idx], semi_p2p[ch_idx, ep_idx], msa[ch_idx, ep_idx], rmsa[ch_idx, ep_idx], nrg[ch_idx, ep_idx], rmsq[ch_idx, ep_idx] = @views amp(s[ch_idx, :, ep_idx])
         end
     end

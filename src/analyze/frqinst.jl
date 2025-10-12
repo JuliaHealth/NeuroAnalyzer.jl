@@ -44,7 +44,7 @@ function frqinst(s::AbstractArray)::Array{Float64, 3}
 
     f = similar(s)
     @inbounds for ep_idx in axes(s, 3)
-        Threads.@threads :greedy for ch_idx in axes(s, 1)
+        Threads.@threads for ch_idx in axes(s, 1)
             f[ch_idx, :, ep_idx] = @views frqinst(s[ch_idx, :, ep_idx])
         end
     end

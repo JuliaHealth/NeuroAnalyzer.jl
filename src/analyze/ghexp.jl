@@ -57,7 +57,7 @@ function ghexp(s::AbstractArray; tau_range::UnitRange{Int64}, q_range::Union{Not
     end
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             ghe[ch_idx, :, :, ep_idx] = ghexp(s[ch_idx, :, ep_idx], tau_range=tau_range, q_range=q_range)
         end
     end

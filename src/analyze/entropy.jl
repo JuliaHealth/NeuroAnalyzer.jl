@@ -77,7 +77,7 @@ function entropy(s::AbstractArray)::@NamedTuple{ent::Matrix{Float64}, shent::Mat
     nsent = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             ent[ch_idx, ep_idx], shent[ch_idx, ep_idx], leent[ch_idx, ep_idx], sent[ch_idx, ep_idx], nsent[ch_idx, ep_idx] = @views entropy(s[ch_idx, :, ep_idx])
         end
     end
@@ -162,7 +162,7 @@ function negentropy(s::AbstractArray)::Matrix{Float64}
     progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             ne[ch_idx, ep_idx] = @views negentropy(s[ch_idx, :, ep_idx])
 
         # update progress bar

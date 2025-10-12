@@ -46,7 +46,7 @@ function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
     s_new = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views taper(s[ch_idx, :, ep_idx], t=t)
         end
     end

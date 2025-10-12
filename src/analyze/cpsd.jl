@@ -117,7 +117,7 @@ function cpsd(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs::Int6
     pxy = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             pxy[ch_idx, :, ep_idx], _ = @views cpsd(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w, db=db)
         end
     end

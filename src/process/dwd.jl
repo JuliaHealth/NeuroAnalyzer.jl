@@ -64,7 +64,7 @@ function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=ma
 
     _log_off()
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             dc[ch_idx, :, :, ep_idx] = @views dwd(s[ch_idx, :, ep_idx], wt=wt, type=type, l=l)
         end
     end

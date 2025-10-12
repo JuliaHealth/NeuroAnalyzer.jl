@@ -168,7 +168,7 @@ function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch,
     p = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             p[ch_idx, :, ep_idx], _ = psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
         end
     end

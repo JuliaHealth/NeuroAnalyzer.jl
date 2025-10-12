@@ -35,7 +35,7 @@ function _copy_lt2ut(m::AbstractArray)::AbstractArray
     if ndims(m) == 2
         return m + m' - diagm(diag(m))
     else
-        Threads.@threads :greedy for ep_idx in axes(m, 3)
+        Threads.@threads for ep_idx in axes(m, 3)
             @inbounds m[:, :, ep_idx] = m[:, :, ep_idx] + m[:, :, ep_idx]' - diagm(diag(m[:, :, ep_idx]))
         end
         return m

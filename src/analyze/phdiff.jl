@@ -73,7 +73,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}}=_c(size(s, 1))
     end
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             if avg === :phase
                 ref_channels = setdiff(ch, ch_idx)
                 ph_ref = zeros(length(ref_channels), ep_len)

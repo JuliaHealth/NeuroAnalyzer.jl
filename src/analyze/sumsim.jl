@@ -59,7 +59,7 @@ function sumsim(s1::AbstractArray, s2::AbstractArray; theta::Real)::Matrix{Float
     ss = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        Threads.@threads :greedy for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             ss[ch_idx, ep_idx] = @views sumsim(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], theta=theta)
         end
     end
