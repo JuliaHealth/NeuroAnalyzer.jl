@@ -69,12 +69,13 @@ end
 
 # initialize preferences
 
-use_cuda = nothing
+use_gpu = nothing
 progress_bar = nothing
 verbose = nothing
 
 # load dependencies
 
+using AMDGPU
 using Artifacts
 using Cairo
 using ColorSchemes
@@ -177,19 +178,33 @@ include("na/plugins.jl")
 
 # load preferences
 
-global use_cuda = @load_preference("use_cuda", false)
+global use_gpu = @load_preference("use_gpu", false)
 global progress_bar = @load_preference("progress_bar", true)
 global verbose = @load_preference("verbose", true)
 global exclude_bads = @load_preference("exclude_bads", false)
 global colors = @load_preference("colors", true)
-na_set_prefs(use_cuda=use_cuda, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
+global na_gpu = ""
+na_set_prefs(use_gpu=use_gpu, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
 
 # be verbose
 
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
 _info("Preferences:")
-_info("       Use CUDA: $use_cuda")
+if use_gpu
+    if CUDA.functional()
+        na_gpu = :cuda
+    elseif AMDGPU.functional()
+        na_gpu = :amdgpu
+    else
+        use_gpu = false
+    end
+end
+if use_gpu == false
+    _info("        Use GPU: $use_gpu")
+else
+    _info("        Use GPU: $use_gpu ($(uppercase(string(na_gpu))))")
+end
 _info("   Progress bar: $progress_bar")
 _info("        Verbose: $verbose")
 _info("   Exclude bads: $exclude_bads")

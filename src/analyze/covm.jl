@@ -17,8 +17,10 @@ Calculate covariance matrix of `s * s'`.
 function covm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
-    if CUDA.functional() && use_cuda
+    if na_gpu === :cuda
         cm = Matrix(cov(CuVector(s) * CuVector(s)'))
+    elseif na_gpu === :amdgpu
+        cm = cov(Matrix(ROCVector(s) * ROCVector(s)'))
     else
         cm = cov(s * s')
     end
@@ -50,8 +52,10 @@ function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # channels-vs-channels
-    if CUDA.functional() && use_cuda
+    if na_gpu === :cuda
         cm = Matrix(cov(CuVector(s1) * CuVector(s2)'))
+    elseif na_gpu === :amdgpu
+        cm = cov(Matrix(ROCVector(s1) * ROCVector(s2)'))
     else
         cm = cov(s1 * s2')
     end
@@ -80,11 +84,7 @@ Calculate covariance matrix of channels × time points matrix.
 function covm(s::AbstractMatrix; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
-    if CUDA.functional() && use_cuda
-        cm = Matrix(cov(CuVector(s)'))
-    else
-        cm = cov(s')
-    end
+    cm = cov(s')
 
     # normalize
     norm && (cm = m_norm(cm))
@@ -111,31 +111,12 @@ function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
-    ep_len = size(s, 2)
     ep_n = size(s, 3)
 
-    # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n, dt=1, barlen=20, color=:white))
-
     cm = zeros(ch_n, ch_n, ep_n)
+
     @inbounds for ep_idx in 1:ep_n
-        if use_cuda
-            CUDA.synchronize()
-            for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm=norm)
-
-                # update progress bar
-                progress_bar && next!(progbar)
-            end
-            CUDA.synchronize()
-        else
-            Threads.@threads :greedy for s_idx in 1:ep_len
-                @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm=norm)
-
-                # update progress bar
-                progress_bar && next!(progbar)
-            end
-        end
+        @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm=norm)
     end
 
     return cm

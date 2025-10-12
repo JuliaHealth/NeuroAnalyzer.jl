@@ -17,8 +17,10 @@ Calculate correlation matrix of `s * s'`.
 function corm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
-    if CUDA.functional() && use_cuda
-        cm = Matrix(cor(CuVector(s) * CuVector(s)'))
+    if na_gpu === :cuda
+        cm = cor(Matrix(CuVector(s) * CuVector(s)'))
+    elseif na_gpu === :amdgpu
+        cm = cor(Matrix(ROCVector(s) * ROCVector(s)'))
     else
         cm = cor(s * s')
     end
@@ -50,8 +52,10 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # channels-vs-channels
-    if CUDA.functional() && use_cuda
+    if na_gpu === :cuda
         cm = Matrix(cor(CuVector(s1) * CuVector(s2)'))
+    elseif na_gpu === :amdgpu
+        cm = cor(Matrix(ROCVector(s1) * ROCVector(s2)'))
     else
         cm = cor(s1 * s2')
     end
@@ -81,11 +85,7 @@ Calculate corelation matrix of channels × time points matrix.
 function corm(s::AbstractMatrix; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
-    if CUDA.functional() && use_cuda
-        cm = Matrix(cov(CuVector(s)'))
-    else
-        cm = cor(s')
-    end
+    cm = Statistics.cor(s')
 
     # normalize
     norm && (cm = m_norm(cm))
@@ -112,28 +112,12 @@ function corm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
-    ep_len = size(s, 2)
     ep_n = size(s, 3)
-
-    # initialize progress bar
-    progress_bar && (progbar = Progress(ep_len * ep_n, dt=1, barlen=20, color=:white))
 
     cm = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        if use_cuda
-            CUDA.synchronize()
-            @views @inbounds cm[:, :, ep_idx] = corm(s[:, :, ep_idx], norm=norm)
-
-            # update progress bar
-            progress_bar && next!(progbar)
-            CUDA.synchronize()
-        else
-            @views @inbounds cm[:, :, ep_idx] = corm(s[:, :, ep_idx], norm=norm)
-
-            # update progress bar
-            progress_bar && next!(progbar)
-        end
+        @views @inbounds cm[:, :, ep_idx] = corm(s[:, :, ep_idx], norm=norm)
     end
 
     return cm
