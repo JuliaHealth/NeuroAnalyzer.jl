@@ -44,9 +44,9 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
     if method === :mt
         # multitaper
         w = w ? hanning(length(s1)) : nothing
-        s = hcat(s1, s2)'
+        s = hcat(s1 .* w, s2 .* w)'
         n_samples = length(s1)
-        c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=w, nw=((nt + 1) ÷ 2), ntapers=nt)
+        c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), nw=((nt + 1) ÷ 2), ntapers=nt)
         f = DSP.freq(c)
         coh = DSP.coherence(c)
         f1_idx = vsearch(frq_lim[1], f)
@@ -56,15 +56,9 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
         mscoh = coh.^2
         return (coh=coh, mscoh=mscoh, f=f)
     elseif method in [:fft, :stft]
-        _, s1s1, f = cpsd(s1, s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method)
-        _, s1s2, f = cpsd(s1, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method)
-        _, s2s2, f = cpsd(s2, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method)
-        f1_idx = vsearch(frq_lim[1], f)
-        f2_idx = vsearch(frq_lim[2], f)
-        f = f[f1_idx:f2_idx]
-        s1s1 = @views s1s1[f1_idx:f2_idx]
-        s2s2 = @views s2s2[f1_idx:f2_idx]
-        s1s2 = @views s1s2[f1_idx:f2_idx]
+        s1s1, f = cpsd(s1, s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method, frq_lim=frq_lim)
+        s1s2, f = cpsd(s1, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method, frq_lim=frq_lim)
+        s2s2, f = cpsd(s2, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method, frq_lim=frq_lim)
         coh = @. abs(s1s2) / sqrt(s1s1 * s2s2)
         imcoh = @. imag(s1s2) / sqrt(s1s1 * s2s2)
         mscoh = @. (abs(s1s2))^2 / (s1s1 * s2s2)
@@ -109,7 +103,7 @@ function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs:
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 
-    _, _, f = coherence(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    _, _, f = coherence(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap)
     if frq_lim !== nothing
         _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
@@ -122,7 +116,7 @@ function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs:
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            coh[ch_idx, :, ep_idx], mscoh[ch_idx, :, ep_idx], _ = @views coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            coh[ch_idx, :, ep_idx], mscoh[ch_idx, :, ep_idx], _ = @views NeuroAnalyzer.coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
 
@@ -174,7 +168,7 @@ function coherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Un
     isa(ep1, Int64) && (ep1 = [ep1])
     isa(ep2, Int64) && (ep2 = [ep2])
 
-    coh, mscoh, f = @views coherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    coh, mscoh, f = @views NeuroAnalyzer.coherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], method=method, fs=sr(obj1), frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     return (coh=coh, mscoh=mscoh, f=f)
 
