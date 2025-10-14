@@ -12,6 +12,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
+    - `:stft`: short time Fourier transformation
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -24,12 +25,13 @@ Calculate coherence and MSC (magnitude-squared coherence).
 
 Named tuple containing:
 - `coh::Vector{Float64}`: coherence
+- `imcoh::Vector{Float64}`: imaginary component of coherence
 - `mscoh::Vector{Float64}`: magnitude-squared coherence
 - `f::Vector{Float64}`: frequencies
 """
 function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), demean::Bool=false, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{coh::Vector{Float64}, mscoh::Vector{Float64}, f::Vector{Float64}}
 
-    _check_var(method, [:mt, :fft], "method")
+    _check_var(method, [:mt, :fft, :stft], "method")
     s1, s2 = _veqlen(s1, s2)
     @assert nt >= 1 "nt must be ≥ 1."
     @assert fs >= 1 "fs must be ≥ 1."
@@ -44,7 +46,7 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
         w = w ? hanning(length(s1)) : nothing
         s = hcat(s1, s2)'
         n_samples = length(s1)
-        c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=nothing, nw=((nt + 1) ÷ 2), ntapers=nt)
+        c = mt_coherence(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), window=w, nw=((nt + 1) ÷ 2), ntapers=nt)
         f = DSP.freq(c)
         coh = DSP.coherence(c)
         f1_idx = vsearch(frq_lim[1], f)
@@ -52,11 +54,11 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
         f = f[f1_idx:f2_idx]
         coh = @views coh[1, 2, f1_idx:f2_idx]
         mscoh = coh.^2
-    elseif method === :fft
-        # fft
-        s1s1, f = cpsd(s1, s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean)
-        s1s2, f = cpsd(s1, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean)
-        s2s2, f = cpsd(s2, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean)
+        return (coh=coh, mscoh=mscoh, f=f)
+    elseif method in [:fft, :stft]
+        _, s1s1, f = cpsd(s1, s1, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method)
+        _, s1s2, f = cpsd(s1, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method)
+        _, s2s2, f = cpsd(s2, s2, fs=fs, wlen=wlen, woverlap=woverlap, w=w, demean=demean, method=method)
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)
         f = f[f1_idx:f2_idx]
@@ -64,10 +66,10 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
         s2s2 = @views s2s2[f1_idx:f2_idx]
         s1s2 = @views s1s2[f1_idx:f2_idx]
         coh = @. abs(s1s2) / sqrt(s1s1 * s2s2)
+        imcoh = @. imag(s1s2) / sqrt(s1s1 * s2s2)
         mscoh = @. (abs(s1s2))^2 / (s1s1 * s2s2)
+        return (coh=coh, imcoh=imcoh, mscoh=mscoh, f=f)
     end
-
-    return (coh=coh, mscoh=mscoh, f=f)
 
 end
 
@@ -83,6 +85,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
+    - `:stft`: short time Fourier transformation
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed
@@ -142,6 +145,7 @@ Calculate coherence and MSC (magnitude-squared coherence).
 - `method::Symbol=:mt`: method used to calculate CPSD:
     - `:mt`: multi-tapered cross-power spectra
     - `:fft`: fast Fourier transformation
+    - `:stft`: short time Fourier transformation
 - `fs::Int64`: sampling rate
 - `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: frequency bounds
 - `demean::Bool=false`: if true, the channel-wise mean will be subtracted from the input signals before the cross spectral powers are computed

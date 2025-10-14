@@ -158,5 +158,11 @@ t, et = NeuroAnalyzer._get_t(e10)
 @test NeuroAnalyzer._bin(0.9, (1.0, 2)) == false
 @test NeuroAnalyzer._zeros([1.0, 2.0, -1.0, 0.0, -1.0, 2.0, 0.0, 1.0, -1.0]) == 7
 @test NeuroAnalyzer._flipx([1.0, 2.0, -1.0, 0.0, -1.0, 2.0, 0.0, 1.0, -1.0]) == [-0.3333333333333334, -1.3333333333333335, 1.6666666666666665, 0.6666666666666666, 1.6666666666666665, -1.3333333333333335, 0.6666666666666666, -0.3333333333333334, 1.6666666666666665]
+@test length(NeuroAnalyzer._split(1:55, wlen=32, woverlap=8)) == 4
+@test length(NeuroAnalyzer._fsplit(1:55, wlen=32, woverlap=8)) == 3
+@test NeuroAnalyzer._chunks(55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48; 25 55]
+@test NeuroAnalyzer._chunks(1:55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48; 25 55]
+@test NeuroAnalyzer._fchunks(55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48]
+@test NeuroAnalyzer._fchunks(1:55, wlen=32, woverlap=8) == [1 32; 9 40; 17 48]
 
 true

@@ -159,6 +159,40 @@ function freqs(s::AbstractVector, fs::Int64; nf::Bool=false)::Tuple{Vector{Float
 end
 
 """
+    freqs(n, fs; nf)
+
+Return vector of frequencies and Nyquist frequency for signal.
+
+# Arguments
+
+- `n::Int64`: number of samples
+- `fs::Int64`
+- `nf::Bool=false`: if true, return negative and positive frequencies, otherwise return positive frequencies only
+
+# Returns
+
+- `hz::Vector{Float64`: signal vector
+- `nqf::Float64`
+"""
+function freqs(n::Int64, fs::Int64; nf::Bool=false)::Tuple{Vector{Float64}, Float64}
+
+    @assert fs >= 1 "fs must be ≥ 1."
+
+    # Nyquist frequency
+    nqf = fs / 2
+    # frequency array
+    # hz = linspace(0, nf, floor(Int64, length(s) / 2) + 1)
+    if nf
+        hz = fftshift(round.(Vector(fftfreq(n, fs)), digits=3))
+    else
+        hz = round.(Vector(rfftfreq(n, fs)), digits=3)
+    end
+
+    return hz, nqf
+
+end
+
+"""
     freqs(obj; nf)
 
 Return vector of frequencies and Nyquist frequency.

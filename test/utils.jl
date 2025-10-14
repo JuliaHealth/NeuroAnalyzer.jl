@@ -126,6 +126,12 @@ f, nf = NeuroAnalyzer.freqs(rand(100), 10)
 f, nf = NeuroAnalyzer.freqs(rand(100), 10, nf=true)
 @test length(f) == 100
 @test nf == 5
+f, nf = NeuroAnalyzer.freqs(100, 10)
+@test length(f) == 51
+@test nf == 5
+f, nf = NeuroAnalyzer.freqs(100, 10, nf=true)
+@test length(f) == 100
+@test nf == 5
 f, nf = NeuroAnalyzer.freqs(e10)
 @test length(f) == 1281
 @test nf == 128

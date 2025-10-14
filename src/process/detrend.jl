@@ -16,9 +16,9 @@ Perform piecewise detrending.
     - `:constant`: `offset` is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
-- `offset::Real=0`: constant for :constant detrending
+- `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
-- `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 - `s_new::Vector{Float64}`
@@ -90,7 +90,7 @@ Perform piecewise detrending.
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
-- `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
@@ -131,7 +131,7 @@ Perform piecewise detrending.
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
 - `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
-- `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
@@ -166,9 +166,9 @@ Perform piecewise detrending.
     - `:constant`: `offset` is subtracted from `s`
     - `:ls`: the result of a linear least-squares fit to `s` is subtracted from `s`
     - `:linear`: linear trend (1st order polynomial) is subtracted from `s`
-- `offset::Real=0`: constant for :constant detrending
+- `offset::Real=0`: constant for `:constant` detrending
 - `order::Int64=1`: polynomial fitting order
-- `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
+- `f::Float64=1.0`: smoothing factor for `:loess` detrending
 
 # Returns
 
