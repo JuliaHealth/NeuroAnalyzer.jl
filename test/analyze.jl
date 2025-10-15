@@ -302,22 +302,36 @@ p = erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "Test: coherence()"
-c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:mt)
+c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:mt)
 @test length(c) == 65
+@test length(imc) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:fft)
+c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:fft)
 @test length(c) == 65
+@test length(imc) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
+c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:stft)
+@test length(c) == 9
+@test length(imc) == 9
+@test length(msc) == 9
+@test length(f) == 9
+c, imc, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
+@test size(c) == (1, 2049, 1)
 @test size(c) == (1, 2049, 1)
 @test size(msc) == (1, 2049, 1)
 @test length(f) == 2049
-c, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
+c, imc, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
 @test size(c) == (1, 2049, 1)
+@test size(imc) == (1, 2049, 1)
 @test size(msc) == (1, 2049, 1)
 @test length(f) == 2049
+c, imc, msc, f = NeuroAnalyzer.coherence(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:stft)
+@test size(c) == (1, 257, 1)
+@test size(imc) == (1, 257, 1)
+@test size(msc) == (1, 257, 1)
+@test length(f) == 257
 
 @info "Test: frqinst()"
 f = NeuroAnalyzer.frqinst(rand(100))
@@ -725,11 +739,11 @@ pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:mt)
 @test size(pxy) == (1, 2049, 1)
 @test length(f) == 2049
 pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:fft)
-@test size(pxy) == (1, 1281, 1)
-@test length(f) == 1281
+@test size(pxy) == (1, 2049, 1)
+@test length(f) == 2049
 pxy, f = cpsd(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, method=:stft)
-@test size(pxy) == (1, 129, 1)
-@test length(f) == 129
+@test size(pxy) == (1, 257, 1)
+@test length(f) == 257
 
 @info "Test: tkeo()"
 @test tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]

@@ -44,7 +44,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
     if method === :mt
         w = w ? DSP.hanning(n_samples) : ones(n_samples)
         s = hcat(s1 .* w, s2 .* w)'
-        pxy = DSP.mt_cross_power_spectra(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples), nw=((nt + 1) ÷ 2), ntapers=nt)
+        pxy = DSP.mt_cross_power_spectra(s, fs=fs, demean=demean, nfft=nextpow(2, n_samples + 1), nw=((nt + 1) ÷ 2), ntapers=nt)
         f = DSP.freq(pxy)
         pxy = DSP.power(pxy)
         f1_idx = vsearch(frq_lim[1], f)
@@ -53,7 +53,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         pxy = pxy[1, 2, f1_idx:f2_idx]
     elseif method === :stft
         chunks_idx = NeuroAnalyzer._fchunks(length(s1), wlen=wlen, woverlap=woverlap)
-        pxy = zeros(ComplexF64, length(chunks_idx[1, 1]:chunks_idx[1, 2]))
+        pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
         w = w ? hanning(wlen) : ones(wlen)
         for idx in axes(chunks_idx, 1)
             if demean
@@ -63,13 +63,13 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
                 s1_tmp = @views s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]] .* w
                 s2_tmp = @views s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]] .* w
             end
-            ss1 = fft(s1_tmp) / length(s1_tmp)
-            ss2 = fft(s2_tmp) / length(s2_tmp)
+            ss1 = fft0(s1_tmp, nextpow(2, wlen + 1) - wlen) / length(s1_tmp)
+            ss2 = fft0(s2_tmp, nextpow(2, wlen + 1) - wlen) / length(s2_tmp)
             pxy .+= (conj.(ss1) .* ss2)
         end
         # get mean over segments
         pxy /= size(chunks_idx, 1)
-        f, _ = freqs(wlen, fs)
+        f, _ = freqs(nextpow(2, wlen + 1), fs)
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)
         f = f[f1_idx:f2_idx]
@@ -84,9 +84,9 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
             s2_tmp = s2 .* w
         end
         # fft
-        ss1 = fft(s1_tmp) / n_samples
-        ss2 = fft(s2_tmp) / n_samples
-        f, _ = freqs(s1, fs)
+        ss1 = fft0(s1_tmp, nextpow(2, n_samples + 1) - n_samples) / n_samples
+        ss2 = fft0(s2_tmp, nextpow(2, n_samples + 1) - n_samples) / n_samples
+        f, _ = freqs(nextpow(2, n_samples + 1), fs)
         pxy = conj.(ss1) .* ss2
         f1_idx = vsearch(frq_lim[1], f)
         f2_idx = vsearch(frq_lim[2], f)
