@@ -35,7 +35,7 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
     @assert wlen >= 1 "wlen must be ≥ 1."
-    @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
+    @assert woverlap < wlen "woverlap must be < $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
 
     if method === :stft

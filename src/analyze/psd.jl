@@ -38,7 +38,7 @@ function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s) "wlen must be ≤ $(length(s))."
     @assert wlen >= 2 "wlen must be ≥ 2."
-    @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
+    @assert woverlap < wlen "woverlap must be < $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
 
     if method === :mt

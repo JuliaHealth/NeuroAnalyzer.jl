@@ -35,7 +35,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s1) "wlen must be ≤ $(length(s1))."
     @assert wlen >= 2 "wlen must be ≥ 2."
-    @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
+    @assert woverlap < wlen "woverlap must be < $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
@@ -53,7 +53,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         pxy = pxy[1, 2, f1_idx:f2_idx]
     elseif method === :stft
         chunks_idx = NeuroAnalyzer._fchunks(length(s1), wlen=wlen, woverlap=woverlap)
-        pxy = zeros(ComplexF64, length(chunks_idx[1, 1]:chunks_idx[1, 2]))
+        pxy = zeros(ComplexF64, wlen)
         w = w ? hanning(wlen) : ones(wlen)
         for idx in axes(chunks_idx, 1)
             if demean

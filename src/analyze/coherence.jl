@@ -37,7 +37,7 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
     @assert fs >= 1 "fs must be ≥ 1."
     @assert wlen <= length(s1) "wlen must be ≤ $(length(s1))."
     @assert wlen >= 2 "wlen must be ≥ 2."
-    @assert woverlap <= wlen "woverlap must be ≤ $(wlen)."
+    @assert woverlap < wlen "woverlap must be < $(wlen)."
     @assert woverlap >= 0 "woverlap must be ≥ 0."
     _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
 
@@ -47,7 +47,7 @@ function coherence(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, f
 
     coh = @. s1s2 / sqrt(s1s1 * s2s2)
     imcoh = @. imag(coh)
-    msc = @. abs(coh)^2
+    msc = @. (abs(coh))^2
 
     return (coh=coh, imcoh=imcoh, msc=msc, f=f)
 
@@ -123,7 +123,7 @@ function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs:
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            coh[ch_idx, :, ep_idx], imcoh[ch_idx, :, ep_idx], imcoh[ch_idx, :, ep_idx], _ = @views NeuroAnalyzer.coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+            coh[ch_idx, :, ep_idx], imcoh[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], _ = @views NeuroAnalyzer.coherence(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
         end
     end
 
