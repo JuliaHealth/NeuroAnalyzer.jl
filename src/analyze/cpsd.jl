@@ -57,14 +57,14 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         w = w ? hanning(wlen) : ones(wlen)
         for idx in axes(chunks_idx, 1)
             if demean
-                s1_tmp = @views detrend(s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]], type=:mean) .* w
-                s2_tmp = @views detrend(s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]], type=:mean) .* w
+                s1_tmp = @views detrend(s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]], type=:mean)
+                s2_tmp = @views detrend(s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]], type=:mean)
             else
-                s1_tmp = @views s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]] .* w
-                s2_tmp = @views s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]] .* w
+                s1_tmp = @views s1[chunks_idx[idx, 1]:chunks_idx[idx, 2]]
+                s2_tmp = @views s2[chunks_idx[idx, 1]:chunks_idx[idx, 2]]
             end
-            ss1 = fft0(s1_tmp, nextpow(2, wlen + 1) - wlen) / length(s1_tmp)
-            ss2 = fft0(s2_tmp, nextpow(2, wlen + 1) - wlen) / length(s2_tmp)
+            ss1 = fft0(s1_tmp .* w, nextpow(2, wlen + 1) - wlen) / length(s1_tmp)
+            ss2 = fft0(s2_tmp .* w, nextpow(2, wlen + 1) - wlen) / length(s2_tmp)
             pxy .+= (conj.(ss1) .* ss2)
         end
         # get mean over segments
@@ -83,7 +83,6 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
             s1_tmp = s1 .* w
             s2_tmp = s2 .* w
         end
-        # fft
         ss1 = fft0(s1_tmp, nextpow(2, n_samples + 1) - n_samples) / n_samples
         ss2 = fft0(s2_tmp, nextpow(2, n_samples + 1) - n_samples) / n_samples
         f, _ = freqs(nextpow(2, n_samples + 1), fs)
