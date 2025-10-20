@@ -32,10 +32,10 @@ function plv(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{pv::Float64, s
     _, _, _, s2ph = htransform(s2)
 
     # signal difference
-    sd = s2 - s1
+    sd = s1 - s2
 
     # phase differences
-    phd = s2ph - s1ph
+    phd = s1ph - s2ph
 
     # complex phase differences
     cphd = exp.(1im .* phd)
@@ -115,7 +115,7 @@ Calculate PLV (Phase Lag Index).
 
 # Returns
 
-- `pv::Array{Float64, 3}`: PLV value matrices over epochs
+- `pv::Array{Float64, 3}`: PLV value
 """
 function plv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 

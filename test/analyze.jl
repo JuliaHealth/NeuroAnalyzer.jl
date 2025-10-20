@@ -533,7 +533,7 @@ pv, sd, phd, s1p, s2p = pli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 @info "Test: plv()"
 pv, phd, s1ph, s2ph = plv(v1, v2)
 @test pv == 0.6125992852305387
-@test phd == [5, 3, 1, -1, -3]
+@test phd == [-5.0, -3.0, -1.0, 1.0, 3.0]
 @test length(s1ph) == 5
 @test length(s2ph) == 5
 pv = plv(e10, ch="all");
@@ -1065,6 +1065,14 @@ pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 @test size(s2p) == (1, 2560, 1)
 pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, debiased=true)
 @test pv == [-0.23701568410384583;;]
+@test size(sd) == (1, 2560, 1)
+@test size(phd) == (1, 2560, 1)
+@test size(s1p) == (1, 2560, 1)
+@test size(s2p) == (1, 2560, 1)
+
+@info "Test: dpli()"
+pv, sd, phd, s1p, s2p = dpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test pv == [1.0;;],
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
