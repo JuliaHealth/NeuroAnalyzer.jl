@@ -395,10 +395,19 @@ x2, f2 = areduce(x, f)
 @info "Test: tal2mni()"
 @test tal2mni([9.9, 12.2692, 12.2821]) == [10.0, 11.999613921643125, 13.999435493742183]
 
-@info "Test: fir_order()"
-@test fir_order(bw=0.2, a=50, fs=256) == 2909
+@info "Test: fir_order_bw()"
+@test fir_order_bw(eeg, bw=0.2, a=50) == 2909
+@test fir_order_bw(bw=0.2, a=50, fs=256) == 2909
+
+@info "Test: fir_order_f()"
+@test fir_order_f(eeg; f=35) == (32, 40)
+@test fir_order_f(f=35, fs=256) == (32, 40)
 
 @info "Test: iir_order()"
+@test iir_order(eeg, fprototype=:butterworth, ftype=:lp, cutoff=12, bw=0.2) == 152
+@test iir_order(eeg, fprototype=:butterworth, ftype=:hp, cutoff=12, bw=0.2) == 152
+@test iir_order(eeg, fprototype=:butterworth, ftype=:bp, cutoff=(12, 15), bw=0.2) == 22
+@test iir_order(eeg, fprototype=:butterworth, ftype=:bs, cutoff=(12, 15), bw=0.2) == 22
 @test iir_order(fprototype=:butterworth, ftype=:lp, cutoff=12, bw=0.2, fs=256) == 152
 @test iir_order(fprototype=:butterworth, ftype=:hp, cutoff=12, bw=0.2, fs=256) == 152
 @test iir_order(fprototype=:butterworth, ftype=:bp, cutoff=(12, 15), bw=0.2, fs=256) == 22

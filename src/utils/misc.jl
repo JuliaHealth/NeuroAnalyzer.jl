@@ -8,7 +8,8 @@ export cums
 export f_nearest
 export ntapers
 export trtm
-export fir_order
+export fir_order_bw
+export fir_order_f
 export iir_order
 
 """
@@ -273,7 +274,7 @@ function trtm(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int6
 end
 
 """
-    fir_order(; <keyword arguments>)
+    fir_order_bw(; <keyword arguments>)
 
 Calculate order of FIR filter using Harris formula.
 
@@ -287,7 +288,7 @@ Calculate order of FIR filter using Harris formula.
 
 - `n::Int64`
 """
-function fir_order(; bw::Real, a::Real=60, fs::Int64=1)::Int64
+function fir_order_bw(; bw::Real, a::Real=60, fs::Int64)::Int64
 
     n = round(Int64, (a * fs)/(22 * bw))
 
@@ -296,7 +297,7 @@ function fir_order(; bw::Real, a::Real=60, fs::Int64=1)::Int64
 end
 
 """
-    fir_order(obj; <keyword arguments>)
+    fir_order_bw(obj; <keyword arguments>)
 
 Calculate order of FIR filter using Harris formula.
 
@@ -310,9 +311,57 @@ Calculate order of FIR filter using Harris formula.
 
 - `n::Int64`
 """
-function fir_order(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real=60)::Int64
+function fir_order_bw(obj::NeuroAnalyzer.NEURO; bw::Real, a::Real=60)::Int64
 
-    n = fir_order(bw=bw, a=a, fs=sr(obj))
+    n = fir_order_bw(bw=bw, a=a, fs=sr(obj))
+
+    return n
+
+end
+
+"""
+    fir_order_f(obj; <keyword arguments>)
+
+Calculate order of FIR filter using lower frequency bound.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `f::Real`: lower frequency bound for analyzed range
+
+# Returns
+
+- `n::Tuple{Int64, Int64}`: recommended order range
+"""
+function fir_order_f(obj::NeuroAnalyzer.NEURO; f::Real)::Tuple{Int64, Int64}
+
+    n = fir_order_f(f=f, fs=sr(obj))
+
+    return n
+
+end
+
+"""
+    fir_order_f(; <keyword arguments>)
+
+Calculate order of FIR filter using lower frequency bound.
+
+# Arguments
+
+- `f::Real`: lower frequency bound for analyzed range
+- `fs::Int64`: sampling rate
+
+# Returns
+
+- `n::Tuple{Int64, Int64}`: recommended order range
+"""
+function fir_order_f(; fs::Int64, f::Real)::Tuple{Int64, Int64}
+
+    # single cycle length in s
+    sc = (1 / f)
+    
+    # convert to samples
+    n = (4 * t2s(sc, fs), 5 * t2s(sc, fs))
 
     return n
 

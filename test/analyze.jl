@@ -524,7 +524,22 @@ pv, phd, s1ph, s2ph = pli(v1, v2)
 pv = pli(e10, ch="all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = pli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.265625;;]
+@test pv == [0.45234375;;]
+@test size(sd) == (1, 2560, 1)
+@test size(phd) == (1, 2560, 1)
+@test size(s1p) == (1, 2560, 1)
+@test size(s2p) == (1, 2560, 1)
+
+@info "Test: plv()"
+pv, phd, s1ph, s2ph = plv(v1, v2)
+@test pv == 0.6125992852305387
+@test phd == [5, 3, 1, -1, -3]
+@test length(s1ph) == 5
+@test length(s2ph) == 5
+pv = plv(e10, ch="all");
+@test size(pv) == (24, 24, 10)
+pv, sd, phd, s1p, s2p = plv(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test pv == [0.4645911766833192;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -1040,5 +1055,19 @@ g = ghexp(e10, ch="Fp1", tau_range=1:10)
 @test size(g) == (1, 1, 2, 10)
 g = ghexp(e10, ch="Fp1", tau_range=1:10, q_range=0.1:0.1:1.0)
 @test size(g) == (1, 10, 2, 10)
+
+@info "Test: wpli()"
+pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test pv == [2.2404471627825757e-17;;]
+@test size(sd) == (1, 2560, 1)
+@test size(phd) == (1, 2560, 1)
+@test size(s1p) == (1, 2560, 1)
+@test size(s2p) == (1, 2560, 1)
+pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, debiased=true)
+@test pv == [-0.23701568410384583;;]
+@test size(sd) == (1, 2560, 1)
+@test size(phd) == (1, 2560, 1)
+@test size(s1p) == (1, 2560, 1)
+@test size(s2p) == (1, 2560, 1)
 
 true
