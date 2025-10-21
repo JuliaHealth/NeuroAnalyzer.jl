@@ -3,7 +3,7 @@ export dpli
 """
     dpli(s1, s2)
 
-Calculate dPLI (Directed Phase Lag Index).
+Calculate Directed Phase Lag Index (dPLI).
 
 # Arguments
 
@@ -52,7 +52,7 @@ end
 """
     dpli(obj1, obj2; <keyword arguments>)
 
-Calculate dPLI (Directed Phase Lag Index).
+Calculate Directed Phase Lag Index (dPLI).
 
 # Arguments
 
@@ -108,7 +108,7 @@ end
 """
     dpli(obj; <keyword arguments>)
 
-Calculate dPLI (Directed Phase Lag Index).
+Calculate Directed Phase Lag Index (dPLI).
 
 # Arguments
 

@@ -3,7 +3,7 @@ export plv
 """
     plv(s1, s2)
 
-Calculate PLV (Phase Locking Value).
+Calculate Phase Locking Value (PLV).
 
 # Arguments
 
@@ -50,7 +50,7 @@ end
 """
     plv(obj1, obj2; <keyword arguments>)
 
-Calculate PLV (Phase Lag Index).
+Calculate Phase Locking Value (PLV).
 
 # Arguments
 
@@ -106,7 +106,7 @@ end
 """
     plv(obj; <keyword arguments>)
 
-Calculate PLV (Phase Lag Index).
+Calculate Phase Locking Value (PLV).
 
 # Arguments
 

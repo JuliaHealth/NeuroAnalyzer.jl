@@ -3,7 +3,7 @@ export pli
 """
     pli(s1, s2)
 
-Calculate PLI (Phase Locking Index).
+Calculate Phase Locking Index (PLI).
 
 # Arguments
 
@@ -48,7 +48,7 @@ end
 """
     pli(obj1, obj2; <keyword arguments>)
 
-Calculate PLI (Phase Locking Index).
+Calculate Phase Locking Index (PLI).
 
 # Arguments
 
@@ -104,7 +104,7 @@ end
 """
     pli(obj; <keyword arguments>)
 
-Calculate PLI (Phase Locking Index).
+Calculate Phase Locking Index (PLI).
 
 # Arguments
 

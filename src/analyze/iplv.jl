@@ -3,7 +3,7 @@ export iplv
 """
     iplv(s1, s2)
 
-Calculate IPLV (Imaginary Phase Locking Value).
+Calculate Imaginary Phase Locking Value (IPLV).
 
 # Arguments
 
@@ -50,7 +50,7 @@ end
 """
     iplv(obj1, obj2; <keyword arguments>)
 
-Calculate IPLV (Imaginary Phase Locking Value).
+Calculate Imaginary Phase Locking Value (IPLV).
 
 # Arguments
 
@@ -106,7 +106,7 @@ end
 """
     iplv(obj; <keyword arguments>)
 
-Calculate IPLV (Imaginary Phase Locking Value).
+Calculate Imaginary Phase Locking Value (IPLV).
 
 # Arguments
 
