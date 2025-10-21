@@ -39,7 +39,7 @@ function dpli(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{pv::Float64, 
 
     rel_phase = mod.(phd, 2.0 * pi)
 
-    r1 = union(findall(x -> x .>= 0, rel_phase), findall(x -> x .< pi, rel_phase))
+    r1 = intersect(findall(x -> 0 .<= x, rel_phase), findall(x -> x .< pi, rel_phase))
     r2 = intersect(findall(x -> x .>= -pi, rel_phase), findall(x -> x .< 0, rel_phase))
     r3 = findall(x -> x .== 0, rel_phase)
 
