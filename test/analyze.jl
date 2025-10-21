@@ -1078,4 +1078,12 @@ pv, sd, phd, s1p, s2p = dpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 
+@info "Test: iplv()"
+pv, sd, phd, s1p, s2p = iplv(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test pv == [0.4542354515591727;;]
+@test size(sd) == (1, 2560, 1)
+@test size(phd) == (1, 2560, 1)
+@test size(s1p) == (1, 2560, 1)
+@test size(s2p) == (1, 2560, 1)
+
 true
