@@ -13,7 +13,7 @@ Calculate entropy.
 # Returns
 
 Named tuple containing:
-- `ent::Float64`
+- `ent::Float64`: entropy in bits
 - `shent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
 - `sent::Float64`: sample entropy
@@ -58,7 +58,7 @@ Calculate entropy.
 # Returns
 
 Named tuple containing:
-- `ent::Matrix{Float64}`
+- `ent::Matrix{Float64}`: entropy in bits
 - `shent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
 - `sent::Matrix{Float64}`: sample entropy
@@ -99,7 +99,7 @@ Calculate entropy.
 # Returns
 
 Named tuple containing:
-- `ent::Matrix{Float64}`
+- `ent::Matrix{Float64}`: entropy in bits
 - `shent::Matrix{Float64}`: Shanon entropy
 - `leent::Matrix{Float64}`: log energy entropy
 - `sent::Matrix{Float64}`: sample entropy
