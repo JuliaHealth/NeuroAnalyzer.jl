@@ -1,7 +1,7 @@
 export corr
 
 """
-    cor(obj1, obj2; <keyword arguments>)
+    corr(obj1, obj2; <keyword arguments>)
 
 Calculate correlation.
 

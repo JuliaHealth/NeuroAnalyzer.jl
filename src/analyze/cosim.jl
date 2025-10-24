@@ -12,7 +12,6 @@ Calculate Cosine Similarity.
 
 # Returns
 
-Named tuple containing:
 - `cs::Float64`: CS value
 """
 function cosim(s1::AbstractVector, s2::AbstractVector)::Float64
@@ -41,7 +40,6 @@ Calculate Cosine Similarity.
 
 # Returns
 
-Named tuple containing:
 - `cs::Matrix{Float64}`: CS value
 """
 function cosim(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}

@@ -14,7 +14,7 @@ Calculate Phase Slope Index (PSI).
 
 # Returns
 
-- `pv::Tuple{Float64, Float64}`: PSI value (signal1 - signal2, signal2- signal1)
+- `pv::Tuple{Float64, Float64}`: PSI value (signal1 -> signal2, signal2 -> signal1)
 
 # Source
 
