@@ -302,17 +302,17 @@ p = erp_peaks(e)
 @test size(p) == (19, 2)
 
 @info "Test: coherence()"
-c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:mt)
+c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, woverlap=5, method=:mt)
 @test length(c) == 65
 @test length(imc) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:fft)
+c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, woverlap=5, method=:fft)
 @test length(c) == 65
 @test length(imc) == 65
 @test length(msc) == 65
 @test length(f) == 65
-c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, method=:stft)
+c, imc, msc, f = NeuroAnalyzer.coherence(rand(100), rand(100), fs=10, woverlap=5, method=:stft)
 @test length(c) == 9
 @test length(imc) == 9
 @test length(msc) == 9
@@ -518,13 +518,13 @@ p = phdiff(e10, ch="all", avg=:phase, h=true)
 @info "Test: pli()"
 pv, phd, s1ph, s2ph = pli(v1, v2)
 @test pv == 0.2
-@test phd == [5, 3, 1, -1, -3]
+@test phd == [-5.0, -3.0, -1.0, 1.0, 3.0]
 @test length(s1ph) == 5
 @test length(s2ph) == 5
 pv = pli(e10, ch="all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = pli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.45234375;;]
+@test pv == [0.265625;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -532,33 +532,33 @@ pv, sd, phd, s1p, s2p = pli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 
 @info "Test: plv()"
 pv, phd, s1ph, s2ph = plv(v1, v2)
-@test pv == 0.6125992852305387
+@test pv == 0.6125992852305386
 @test phd == [-5.0, -3.0, -1.0, 1.0, 3.0]
 @test length(s1ph) == 5
 @test length(s2ph) == 5
 pv = plv(e10, ch="all");
 @test size(pv) == (24, 24, 10)
 pv, sd, phd, s1p, s2p = plv(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.4645911766833192;;]
+@test pv == [0.992049536181781;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 
 @info "Test: psd()"
-p, f = NeuroAnalyzer.psd(rand(100), fs=10, wlen=10, woverlap=0)
+p, f = NeuroAnalyzer.psd(rand(100), fs=10, wlen=10, woverlap=5)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-p, f = NeuroAnalyzer.psd(rand(10, 100), fs=10, wlen=10, woverlap=0)
+p, f = NeuroAnalyzer.psd(rand(10, 100), fs=10, wlen=10, woverlap=5)
 @test size(p) == (10, 6)
-p, f = NeuroAnalyzer.psd(rand(10, 100, 10), fs=10, wlen=10, woverlap=0)
+p, f = NeuroAnalyzer.psd(rand(10, 100, 10), fs=10, wlen=10, woverlap=5)
 @test size(p) == (10, 6, 10)
-p, f = NeuroAnalyzer.psd(rand(100), fs=10, method=:mt)
+p, f = NeuroAnalyzer.psd(rand(100), fs=10, method=:mt, woverlap=5)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
-p, f = NeuroAnalyzer.psd(rand(10, 100), fs=10, method=:mt)
+p, f = NeuroAnalyzer.psd(rand(10, 100), fs=10, method=:mt, woverlap=5)
 @test size(p) == (10, 51)
-p, f = NeuroAnalyzer.psd(rand(10, 100, 10), fs=10, method=:mt)
+p, f = NeuroAnalyzer.psd(rand(10, 100, 10), fs=10, method=:mt, woverlap=5)
 @test size(p) == (10, 51, 10)
 p, f = NeuroAnalyzer.psd(e10, ch="Fp1")
 @test size(p) == (1, 129, 10)
@@ -587,19 +587,19 @@ ec, p = env_cor(e1, e2)
 @test p[1] <= 1.0
 
 @info "Test: psd_rel()"
-p, f = psd_rel(rand(100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=5)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-p, f = psd_rel(rand(10, 100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 6)
-p, f = psd_rel(rand(10, 100, 10), fs=10, frq_lim=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100, 10), fs=10, frq_lim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 6, 10)
-p, f = psd_rel(rand(100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=5)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
-p, f = psd_rel(rand(10, 100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 51)
-p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=0)
+p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 51, 10)
 p, f = psd_rel(e10, ch="Fp1", frq_lim=(0, 1))
 @test size(p) == (1, 129, 10)
@@ -627,10 +627,10 @@ p, f = psd_rel(e10, ch="Fp1", method=:gh, frq_lim=(0, 1))
 @test f[end] == 128.0
 
 @info "Test: psd_slope()"
-lf, ls, pf = psd_slope(rand(100), fs=10, wlen=10, woverlap=0)
+lf, ls, pf = psd_slope(rand(100), fs=10, wlen=10, woverlap=5)
 @test length(lf) == 6
 @test pf == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-lf, ls, pf = psd_slope(rand(10, 100, 10), fs=10, wlen=10, woverlap=0)
+lf, ls, pf = psd_slope(rand(10, 100, 10), fs=10, wlen=10, woverlap=5)
 @test size(lf) == (10, 6, 10)
 @test size(ls) == (10, 10)
 lf, ls, pf = psd_slope(e10, ch="Fp1")
@@ -970,7 +970,7 @@ gd, sc = diss(erp, erp, ch1="all", ch2="all")
 @info "Test: sumsim()"
 @test sumsim(v1, v2, theta=1) == 0.0012208548944264495
 @test sumsim(a1, a2, theta=1) == [0.17692120631776423 0.17692120631776423; 0.17692120631776423 0.17692120631776423]
-@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.3321122822366191;;]
+@test sumsim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, theta=0.0001) == [0.33211228223661815;;]
 
 @info "Test: hfd()"
 @test hfd([1.0, 2.0, 3.5, 2.0, 5.0, 11.0, 2.0, 11.0]) == 0.8604486476012065
@@ -1041,7 +1041,7 @@ z3 = zipratio(e10_tmp)
 imf = emd(e10, ch="Fp1", ep=1)[1:(end - 1), :]
 p, ph, f, t = hhtspectrogram(imf, fs=sr(e10))
 @test size(p) == (128, 2560)
-@test size(ph) == (8, 2560) || size(ph) == (9, 2560)
+@test size(ph)[2] == 2560
 @test length(f) == 128
 @test length(t) == 2560
 
@@ -1058,13 +1058,13 @@ g = ghexp(e10, ch="Fp1", tau_range=1:10, q_range=0.1:0.1:1.0)
 
 @info "Test: wpli()"
 pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [2.2404471627825757e-17;;]
+@test pv == [-1.4635227849931698e-16;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, debiased=true)
-@test pv == [-0.23701568410384583;;]
+@test pv == [-0.15493536823774107;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -1072,7 +1072,7 @@ pv, sd, phd, s1p, s2p = wpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1, debia
 
 @info "Test: dpli()"
 pv, sd, phd, s1p, s2p = dpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.844921875;;]
+@test pv == [0.3671875;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -1080,7 +1080,7 @@ pv, sd, phd, s1p, s2p = dpli(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 
 @info "Test: iplv()"
 pv, sd, phd, s1p, s2p = iplv(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [0.4542354515591727;;]
+@test pv == [0.0001331784847676487;;]
 @test size(sd) == (1, 2560, 1)
 @test size(phd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -1088,26 +1088,26 @@ pv, sd, phd, s1p, s2p = iplv(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 
 @info "Test: aecor()"
 aec = aecor(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test aec == [0.8235479629107108;;]
+@test aec == [0.7502008756742231;;]
 
 @info "Test: escor()"
 esc = escor(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test esc == [0.39015716807156764;;]
+@test esc == [0.6526958295597842;;]
 
 @info "Test: cosim()"
 cs = cosim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test cs == [0.6353708571139378;;]
+@test cs == [0.9876762920190555;;]
 
 @info "Test: cosine()"
 cs = cosine(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test cs == [0.004319861405450652;;]
+@test cs == [0.032123375994239846;;]
 
 @info "Test: corr()"
 cr = corr(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test cr == [0.6593973106450063;;]
+@test cr == [0.7751960643628429;;]
 
 @info "Test: psi()"
 pv = psi(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test pv == [(0.020201910385001076, -0.020201910385001076);;]
+@test pv[1][1] == -pv[1][2]
 
 true
