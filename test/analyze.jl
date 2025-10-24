@@ -1086,4 +1086,28 @@ pv, sd, phd, s1p, s2p = iplv(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 @test size(s1p) == (1, 2560, 1)
 @test size(s2p) == (1, 2560, 1)
 
+@info "Test: aecor()"
+aec = aecor(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test aec == [0.8235479629107108;;]
+
+@info "Test: escor()"
+esc = escor(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test esc == [0.39015716807156764;;]
+
+@info "Test: cosim()"
+cs = cosim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test cs == [0.6353708571139378;;]
+
+@info "Test: cosine()"
+cs = cosine(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test cs == [0.004319861405450652;;]
+
+@info "Test: corr()"
+cr = corr(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test cr == [0.6593973106450063;;]
+
+@info "Test: psi()"
+pv = psi(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test pv == [(0.020201910385001076, -0.020201910385001076);;]
+
 true

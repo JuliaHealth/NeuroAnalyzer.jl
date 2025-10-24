@@ -18,7 +18,7 @@ Load Elekta-Neuromag 306 FIFF (Functional Image File Format) file (MEG, EEG) and
 
 # Source
 
-Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. March 2011
+1. Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. March 2011
 """
 function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vector{Any}, Matrix{Int64}}
 

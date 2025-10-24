@@ -120,6 +120,7 @@ using PiGPIO
 using Pkg
 using Plots
 using Plots.PlotMeasures
+using PhaseSlopeIndex
 using Polynomials
 using Preferences
 using PrettyTables
@@ -217,20 +218,10 @@ _info("    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB")
 GR.setarrowsize(0.4)
 Plots.gr_cbar_width[] = 0.01
 Plots.gr_set_arrowstyle
-if Sys.islinux() && Sys.ARCH === :x86_64
-    FFTW.set_provider!("mkl")
-    _info("  FFTW provider: MKL")
-else
-    FFTW.set_provider!("fftw")
-    _info("  FFTW provider: FFTW")
-end
+FFTW.set_provider!("fftw")
+_info("  FFTW provider: FFTW")
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
-# do not use Wayland under Linux
-if Sys.islinux() && Sys.ARCH === :x86_64
-    ENV["QT_QPA_PLATFORM"]="xcb"
-    _info("QT_QPA_PLATFORM: xcb")
-end
 
 # setup resources
 
@@ -454,6 +445,7 @@ include("stats/zscore.jl")
 # analyze
 include("analyze/acor.jl")
 include("analyze/acov.jl")
+include("analyze/aecor.jl")
 include("analyze/amp.jl")
 include("analyze/ampdiff.jl")
 include("analyze/axc2frq.jl")
@@ -463,7 +455,10 @@ include("analyze/band_power.jl")
 include("analyze/coherence.jl")
 include("analyze/corm.jl")
 include("analyze/covm.jl")
+include("analyze/cosim.jl")
+include("analyze/cosine.jl")
 include("analyze/cph.jl")
+include("analyze/corr.jl")
 include("analyze/cpsd.jl")
 include("analyze/dirinrg.jl")
 include("analyze/dissimilarity.jl")
@@ -497,6 +492,7 @@ include("analyze/dpli.jl")
 include("analyze/wpli.jl")
 include("analyze/plv.jl")
 include("analyze/iplv.jl")
+include("analyze/psi.jl")
 include("analyze/psd.jl")
 include("analyze/psd_rel.jl")
 include("analyze/psd_slope.jl")

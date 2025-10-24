@@ -24,6 +24,7 @@ Install FIRLSFilterDesign.jl from https://codeberg.org/AdamWysokinski/FIRLSFilte
 ```julia
 using Pkg
 Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
+Pkg.add(url="https://github.com/ssnio/PhaseSlopeIndex.jl")
 ```
 
 Start NeuroAnalyzer:

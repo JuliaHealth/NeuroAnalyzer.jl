@@ -15,7 +15,7 @@ Load NIRX file and return `NeuroAnalyzer.NEURO` object.
 
 # Source
 
-https://nirx.net/file-formats
+1. https://nirx.net/file-formats
 """
 function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 

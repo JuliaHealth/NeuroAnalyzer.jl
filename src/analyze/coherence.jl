@@ -3,7 +3,7 @@ export coherence
 """
     coherence(s1, s2; <keyword arguments>)
 
-Calculate coherence and MSC (magnitude-squared coherence).
+Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC).
 
 # Arguments
 
@@ -75,7 +75,7 @@ end
 """
     coherence(s1, s2; <keyword arguments>)
 
-Calculate coherence and MSC (magnitude-squared coherence).
+Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC).
 
 # Arguments
 
@@ -109,7 +109,7 @@ function coherence(s1::AbstractArray, s2::AbstractArray; method::Symbol=:mt, fs:
     ch_n = size(s1, 1)
     ep_n = size(s1, 3)
 
-    _, _, _, f = NeuroAnalyzer.coherence(s1[1, :, 1], s2[1, :, 1]; method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    _, _, _, f = NeuroAnalyzer.coherence(s1[1, :, 1], s2[1, :, 1], method=method, fs=fs, frq_lim=frq_lim, demean=demean, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     if frq_lim !== nothing
         _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
         idx1 = vsearch(frq_lim[1], f)
@@ -133,7 +133,7 @@ end
 """
     coherence(obj1, obj2; <keyword arguments>)
 
-Calculate coherence and MSC (magnitude-squared coherence).
+Calculate coherence, imaginary part of coherence and magnitude-squared coherence (MSC).
 
 # Arguments
 

@@ -224,11 +224,6 @@ s = bootstrap_stat(x, f="abs(maximum(obj))")
 @info "Test: mscr()"
 @test mscr(tp=90, tn=90, fp=10, fn=10) == (mr = 0.1, acc = 0.9)
 
-@info "Test: cosim()"
-x = 1:4
-y = 101:104
-@test cosim(x, y) == 0.9172693928327048
-
 @info "Test: cip()"
 @test cip(0.5, 10) == (0.19010248384771866, 0.8098975161522813)
 

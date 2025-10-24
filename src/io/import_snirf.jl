@@ -16,7 +16,7 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 # Source
 
-https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
+1. https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """
 function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
 

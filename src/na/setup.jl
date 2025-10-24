@@ -100,6 +100,7 @@ function na_info()::Nothing
             "NPZ",
             "PiGPIO",
             "Plots",
+            "PhaseSlopeIndex",
             "Polynomials",
             "Preferences",
             "PrettyTables",

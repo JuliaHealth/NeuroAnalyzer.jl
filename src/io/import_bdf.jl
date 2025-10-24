@@ -22,7 +22,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Source
 
-https://www.biosemi.com/faq/file_format.htm
+1. https://www.biosemi.com/faq/file_format.htm
 """
 function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
 

@@ -60,12 +60,15 @@ function detrend(s::AbstractVector; type::Symbol=:linear, offset::Real=0, order:
         factor = Rinv * transpose(A)
         s_new = s .- A * (factor * s)
     elseif type === :linear
-        t = collect(1:1:length(s))
-        p = Polynomials.fit(t, s, 1)
-        trend = zeros(length(s))
-        for idx in eachindex(s)
-            trend[idx] = p(t[idx])
-        end
+        t = collect(1:length(s))
+        trend = ones(length(s))
+        trend = trend * (trend \ s)
+        # or
+        # p = Polynomials.fit(t, s, 1)
+        # trend = zeros(length(s))
+        # for idx in eachindex(s)
+        #     trend[idx] = p(t[idx])
+        # end
         s_new = s .- trend
     end
 

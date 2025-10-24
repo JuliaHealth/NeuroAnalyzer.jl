@@ -15,7 +15,7 @@ Load NIRS file and return `NeuroAnalyzer.NEURO` object.
 
 # Source
 
-https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
+1. https://github.com/BUNPC/Homer3/wiki/HOMER3-file-formats
 """
 function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
 
