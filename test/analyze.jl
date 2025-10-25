@@ -1098,9 +1098,9 @@ esc = escor(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 cs = cosim(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
 @test cs == [0.9876762920190555;;]
 
-@info "Test: cosine()"
-cs = cosine(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
-@test cs == [0.032123375994239846;;]
+@info "Test: psa()"
+ps = psa(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)
+@test ps == [0.9920495272424554;;]
 
 @info "Test: corr()"
 cr = corr(e10, e10, ch1="Fp1", ch2="Fp2", ep1=1, ep2=1)

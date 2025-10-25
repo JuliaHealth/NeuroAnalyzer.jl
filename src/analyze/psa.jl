@@ -1,9 +1,9 @@
-export cosine
+export psa
 
 """
-    cosine(s1, s2)
+    psa(s1, s2)
 
-Calculate Cosine Correlation.
+Calculate Phase Synchronization Analysis.
 
 # Arguments
 
@@ -12,23 +12,26 @@ Calculate Cosine Correlation.
 
 # Returns
 
-- `cc::Float64`: CC value
+- `ps::Float64`: PSA value
 """
-function cosine(s1::AbstractVector, s2::AbstractVector)::Float64
+function psa(s1::AbstractVector, s2::AbstractVector)::Float64
 
     @assert length(s1) == length(s2) "Both signals must have the same length."
 
-    cc = sum(cos.(s1 .- s2)) / length(s1)
-    cc = abs(cc)
+    # get instatenous phases
+    _, _, _, s1ph = htransform(s1)
+    _, _, _, s2ph = htransform(s2)
 
-    return cc
+    ps = mean(cos.(s1ph .- s2ph))
+
+    return ps
 
 end
 
 """
-    cosine(obj1, obj2; <keyword arguments>)
+    psa(obj1, obj2; <keyword arguments>)
 
-Calculate Cosine Correlation.
+Calculate Phase Synchronization Analysis.
 
 # Arguments
 
@@ -41,9 +44,9 @@ Calculate Cosine Correlation.
 
 # Returns
 
-- `cc::Matrix{Float64}`: CC value
+- `ps::Matrix{Float64}`: PSA value
 """
-function cosine(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
+function psa(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::Matrix{Float64}
 
     ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
     ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
@@ -60,22 +63,22 @@ function cosine(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union
     ep_n = length(ep1)
     ch_n = length(ch1)
 
-    cc = zeros(ch_n, ep_n)
+    ps = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            cc[ch_idx, ep_idx] = @views cosine(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
+            ps[ch_idx, ep_idx] = @views psa(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]])
         end
     end
 
-    return cc
+    return ps
 
 end
 
 """
-    cosine(obj; <keyword arguments>)
+    psa(obj; <keyword arguments>)
 
-Calculate Cosine Correlation.
+Calculate Phase Synchronization Analysis.
 
 # Arguments
 
@@ -84,27 +87,27 @@ Calculate Cosine Correlation.
 
 # Returns
 
-- `cc::Array{Float64, 3}`: CC value
+- `ps::Array{Float64, 3}`: PSA value
 """
-function cosine(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
+function psa(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     ch_n = length(ch)
     ep_n = nepochs(obj)
     isa(ch, Int64) && (ch = [ch])
 
-    cc = zeros(ch_n, ch_n, ep_n)
+    ps = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                cc[ch_idx1, ch_idx2, ep_idx] = @views cosine(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
+                ps[ch_idx1, ch_idx2, ep_idx] = @views psa(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
             end
         end
     end
 
-    cc = _copy_lt2ut(cc)
+    ps = _copy_lt2ut(ps)
 
-    return cc
+    return ps
 
 end
