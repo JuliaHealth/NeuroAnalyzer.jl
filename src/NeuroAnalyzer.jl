@@ -72,6 +72,8 @@ end
 use_gpu = nothing
 progress_bar = nothing
 verbose = nothing
+exclude_bads = nothing
+colors = nothing
 
 # load dependencies
 
@@ -187,7 +189,7 @@ global colors = @load_preference("colors", true)
 global na_gpu = ""
 na_set_prefs(use_gpu=use_gpu, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
 
-# be verbose
+# show major parameters
 
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
