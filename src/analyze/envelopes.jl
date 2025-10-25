@@ -1066,7 +1066,7 @@ Calculate envelope correlation.
 # Returns
 
 Named tuple containing:
-- `ec::Vector{Float64}`: power correlation value
+- `ec::Vector{Float64}`: envelope correlation coefficient
 - `p::Vector{Float64}`: p-value
 """
 function env_cor(env1::Array{Float64, 3}, env2::Array{Float64, 3})::@NamedTuple{ec::Vector{Float64}, p::Vector{Float64}}
