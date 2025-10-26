@@ -241,14 +241,14 @@ p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_coherence()"
-coh, mscoh, f = coherence(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=1, ep2=1, frq_lim=(45, 55))
-p = NeuroAnalyzer.plot_coherence(coh[1, :, 1], f)
+coh, imcoh, mscoh, f = coherence(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=1, ep2=1, frq_lim=(45, 55))
+p = NeuroAnalyzer.plot_coherence(abs.(coh[1, :, 1]), f)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_coherence(coh[:, :, 1], f)
+p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_coherence_avg(coh[:, :, 1], f)
+p = NeuroAnalyzer.plot_coherence_avg(abs.(coh[:, :, 1]), f)
 @test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_coherence_butterfly(coh[:, :, 1], f)
+p = NeuroAnalyzer.plot_coherence_butterfly(abs.(coh[:, :, 1]), f)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_heatmap()"

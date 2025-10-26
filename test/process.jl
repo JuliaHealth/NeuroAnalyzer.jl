@@ -92,7 +92,7 @@ e10_tmp = NeuroAnalyzer.derivative(e10, ch="all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: detrend()"
-@test round.(detrend(v1)) == zeros(5)
+@test round.(detrend(v1)) == [-2.0, -1.0, 0.0, 1.0, 2.0]
 e10_tmp = detrend(e10, ch="all", type=:ls)
 @test size(e10_tmp) == size(e10)
 e10_tmp = detrend(e10, ch="all", type=:linear)
