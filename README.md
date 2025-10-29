@@ -20,14 +20,8 @@ Note: this toolbox is under active development and is subject to change without 
 
 ## Quickstart
 
-Install FIRLSFilterDesign.jl from https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl:
-```julia
-using Pkg
-Pkg.add(url="https://codeberg.org/AdamWysokinski/FIRLSFilterDesign.jl")
-Pkg.add(url="https://github.com/ssnio/PhaseSlopeIndex.jl")
-```
-
 Start NeuroAnalyzer:
+
 ```julia
 using NeuroAnalyzer
 ```
