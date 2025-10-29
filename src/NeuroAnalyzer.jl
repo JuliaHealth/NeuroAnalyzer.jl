@@ -90,10 +90,10 @@ using Deconvolution
 using DICOM
 using Dierckx
 using DSP
+using Einsum
 using FFTW
 using FileIO
 using FindPeaks1D
-using FIRLSFilterDesign
 using FourierTools
 using FractalDimensions
 using GeometryBasics
@@ -122,7 +122,6 @@ using PiGPIO
 using Pkg
 using Plots
 using Plots.PlotMeasures
-using PhaseSlopeIndex
 using Polynomials
 using Preferences
 using PrettyTables
@@ -243,6 +242,10 @@ else
 end
 
 # load sub-modules
+
+# dependencies
+include("deps/PhaseSlopeIndex.jl/PhaseSlopeIndex.jl")
+include("deps/FIRLSFilterDesign.jl/FIRLSFilterDesign.jl")
 
 # internal
 include("internal/channels.jl")
