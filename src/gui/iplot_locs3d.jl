@@ -23,15 +23,11 @@ Nothing
 function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
 
     p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
-    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]), false)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
-    set_gtk_property!(win, :border_width, 0)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     push!(win, can)
-    showall(win)
+    Gtk4.show(win)
 
     camera_pos = camera
     x_pos_last = 0
@@ -70,7 +66,7 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:DataFra
 
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             end
         end
 
@@ -125,15 +121,11 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     end
 
     p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
-    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]), false)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
-    set_gtk_property!(win, :border_width, 0)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     push!(win, can)
-    showall(win)
+    Gtk4.show(win)
 
     camera_pos = camera
     x_pos_last = 0
@@ -172,7 +164,7 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             end
         end
 
@@ -192,7 +184,7 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing

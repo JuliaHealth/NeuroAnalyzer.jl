@@ -25,11 +25,7 @@ function itpt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, port_nam
     img1 = read_from_png(joinpath(res_path, "finger_nopinch.png"))
     img2 = read_from_png(joinpath(res_path, "finger_pinch.png"))
 
-    win = GtkWindow("NeuroRecorder: itpt()", img1.width, img1.height + 100)
-    set_gtk_property!(win, :border_width, 20)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
+    win = GtkWindow("NeuroRecorder: itpt()", img1.width, img1.height + 100, false)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     can = GtkCanvas(img1.width, img1.height)
@@ -72,7 +68,7 @@ function itpt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, port_nam
     push!(vbox1, g1)
 
     push!(win, vbox1)
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ctx = getgc(can)
@@ -157,8 +153,8 @@ function itpt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, port_nam
             _serial_close(sp)
             # Interacting with GTK from a thread other than the main thread is
             # generally not allowed, so we register an idle callback instead.
-            Gtk.GLib.g_idle_add(nothing) do user_data
-                Gtk.destroy(win)
+            Gtk4.GLib.g_idle_add(nothing) do user_data
+                Gtk4.destroy(win)
             end
         end
     end
@@ -167,7 +163,7 @@ function itpt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, port_nam
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     # tpt_ch_x = tpt_ch_x[1:(end - 1)]

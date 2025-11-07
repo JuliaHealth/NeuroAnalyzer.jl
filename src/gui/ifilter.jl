@@ -34,11 +34,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
 
     p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
 
-    win = GtkWindow("NeuroAnalyzer: ifilter()", 1300, 800)
-    set_gtk_property!(win, :border_width, 5)
-    set_gtk_property!(win, :resizable, true)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
+    win = GtkWindow("NeuroAnalyzer: ifilter()", p.attr[:size][1] + 2, p.attr[:size][2] + 2, false)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
 
@@ -145,7 +141,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     g[2, 1] = can
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ctx = getgc(can)
@@ -185,37 +181,25 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         fprototype = fprototypes[get_gtk_property(combo_fprototype, :active, Int64) + 1]
         ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
         if fprototype === :iirnotch
-            Gtk.@sigatom begin
-                set_gtk_property!(combo_ftype, :sensitive, false)
-                set_gtk_property!(entry_order, :sensitive, false)
-                set_gtk_property!(entry_cutoff2, :sensitive, false)
-            end
+            set_gtk_property!(combo_ftype, :sensitive, false)
+            set_gtk_property!(entry_order, :sensitive, false)
+            set_gtk_property!(entry_cutoff2, :sensitive, false)
         elseif fprototype !== :iirnotch
-            Gtk.@sigatom begin
-                set_gtk_property!(combo_ftype, :sensitive, true)
-                set_gtk_property!(entry_order, :sensitive, true)
-                if ftype === :bp || ftype === :bs
-                    set_gtk_property!(entry_cutoff2, :sensitive, true)
-                end
+            set_gtk_property!(combo_ftype, :sensitive, true)
+            set_gtk_property!(entry_order, :sensitive, true)
+            if ftype === :bp || ftype === :bs
+                set_gtk_property!(entry_cutoff2, :sensitive, true)
             end
         elseif fprototype === :fir
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_bw, :sensitive, false)
-            end
+            set_gtk_property!(entry_bw, :sensitive, false)
         elseif fprototype !== :fir
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_bw, :sensitive, false)
-            end
+            set_gtk_property!(entry_bw, :sensitive, false)
         elseif fprototype in [:fir, :firls, :remez, :iirnotch]
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_rp, :sensitive, false)
-                set_gtk_property!(entry_rs, :sensitive, false)
-            end
+            set_gtk_property!(entry_rp, :sensitive, false)
+            set_gtk_property!(entry_rs, :sensitive, false)
         elseif fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_rp, :sensitive, true)
-                set_gtk_property!(entry_rs, :sensitive, true)
-            end
+            set_gtk_property!(entry_rp, :sensitive, true)
+            set_gtk_property!(entry_rs, :sensitive, true)
         end
         draw(can)
     end
@@ -223,13 +207,9 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     signal_connect(combo_ftype, "changed") do widget
         ftype = ftypes[get_gtk_property(combo_ftype, :active, Int64) + 1]
         if ftype in [:bp, :bs]
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_cutoff2, :sensitive, true)
-            end
+            set_gtk_property!(entry_cutoff2, :sensitive, true)
         else
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_cutoff2, :sensitive, false)
-            end
+            set_gtk_property!(entry_cutoff2, :sensitive, false)
         end
         draw(can)
     end
@@ -239,11 +219,9 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     end
 
     signal_connect(entry_cutoff1, "changed") do widget
-        Gtk.@sigatom begin
-            GAccessor.range(entry_bw, 0.1, get_gtk_property(entry_cutoff1, :value, Float64) - 0.1)
-            GAccessor.range(entry_cutoff2, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1), fs / 2)
-            set_gtk_property!(entry_cutoff2, :value, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1))
-        end
+        Gtk4.range(entry_bw, 0.1, get_gtk_property(entry_cutoff1, :value, Float64) - 0.1)
+        Gtk4.range(entry_cutoff2, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1), fs / 2)
+        set_gtk_property!(entry_cutoff2, :value, round(get_gtk_property(entry_cutoff1, :value, Float64) + 0.1, digits=1))
         draw(can)
     end
 
@@ -272,7 +250,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     end
 
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
         return nothing
     end
 
@@ -283,7 +261,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
                 return nothing
             elseif k == 0x00000072 # r
                 draw(can)
@@ -297,7 +275,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0

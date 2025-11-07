@@ -43,14 +43,10 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
     size_y = p.attr[:size][2] ÷ dim_y
 
     win = GtkWindow("NeuroAnalyzer: iselect_seg()", p.attr[:size][1] + 2, p.attr[:size][2] + 2)
-    set_gtk_property!(win, :border_width, 0)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
     push!(win, can)
-    showall(win)
+    Gtk4.show(win)
 
     x = Int64[]
     y = Int64[]
@@ -75,21 +71,21 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
             push!(y, y_pos)
         end
         if length(x) == 1
-            Gtk.arc(ctx, x[1], y[1], 2, 0, 2*pi)
-            Gtk.set_source_rgb(ctx, 0, 0, 0)
-            Gtk.fill(ctx)
-            Gtk.stroke(ctx)
-            Gtk.reveal(widget)
+            Gtk4.arc(ctx, x[1], y[1], 2, 0, 2*pi)
+            Gtk4.set_source_rgb(ctx, 0, 0, 0)
+            Gtk4.fill(ctx)
+            Gtk4.stroke(ctx)
+            Gtk4.reveal(widget)
         else length(x) == 2
             if shape === :c
-                Gtk.arc(ctx, x[1], y[1], distance((x[1], y[1]), (x[2], y[2])), 0, 2*pi)
+                Gtk4.arc(ctx, x[1], y[1], distance((x[1], y[1]), (x[2], y[2])), 0, 2*pi)
             elseif shape === :r
-                Gtk.rectangle(ctx, x[1], y[1], x[2] - x[1], y[2] - y[1])
+                Gtk4.rectangle(ctx, x[1], y[1], x[2] - x[1], y[2] - y[1])
             end
-            Gtk.set_source_rgb(ctx, 0, 0, 0)
-            Gtk.set_line_width(ctx, 4.0);
-            Gtk.stroke(ctx)
-            Gtk.reveal(widget)
+            Gtk4.set_source_rgb(ctx, 0, 0, 0)
+            Gtk4.set_line_width(ctx, 4.0);
+            Gtk4.stroke(ctx)
+            Gtk4.reveal(widget)
         end
     end
 
@@ -104,12 +100,12 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
             pop!(y)
         end
         if length(x) == 1
-            Gtk.arc(ctx, x[1], y[1], 2, 0, 2*pi)
-            Gtk.set_source_rgb(ctx, 0, 0, 0)
-            Gtk.fill(ctx)
-            Gtk.stroke(ctx)
+            Gtk4.arc(ctx, x[1], y[1], 2, 0, 2*pi)
+            Gtk4.set_source_rgb(ctx, 0, 0, 0)
+            Gtk4.fill(ctx)
+            Gtk4.stroke(ctx)
         end
-        Gtk.reveal(widget)
+        Gtk4.reveal(widget)
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -120,14 +116,14 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
                 file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
                     if file_name != ""
                         if splitext(file_name)[2] in [".png"]
-                            surface_buf = Gtk.cairo_surface(can)
+                            surface_buf = Gtk4.cairo_surface(can)
                             Cairo.write_to_png(surface_buf, file_name)
                         else
                             warn_dialog("Incorrect filename!")
                         end
                     end
             elseif k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
                 x = nothing
                 y = nothing
             end
@@ -138,7 +134,7 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     if x === nothing && y === nothing

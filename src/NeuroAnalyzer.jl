@@ -100,7 +100,7 @@ using GeometryBasics
 using Git
 using GLMakie
 using GR
-using Gtk
+using Gtk4
 using Hurst
 using Images
 using ImageBinarization
@@ -141,6 +141,11 @@ using WAV
 using Wavelets
 using WaveletsExt
 using XDF
+
+# Gtk4 modifiers
+const mask_shift = Gtk4.ModifierType_SHIFT_MASK
+const mask_ctrl = Gtk4.ModifierType_CONTROL_MASK
+const mask_alt = Gtk4.ModifierType_ALT_MASK
 
 # define structures
 

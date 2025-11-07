@@ -17,55 +17,51 @@ Nothing
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 
     function _refresh_locs()::Nothing
-        Gtk.@sigatom begin
-            if current_channel in ch_signal
-                set_gtk_property!(entry_loc_theta, :sensitive, true)
-                set_gtk_property!(entry_loc_radius, :sensitive, true)
-                set_gtk_property!(entry_loc_x, :sensitive, true)
-                set_gtk_property!(entry_loc_y, :sensitive, true)
-                set_gtk_property!(entry_loc_z, :sensitive, true)
-                set_gtk_property!(entry_loc_theta_sph, :sensitive, true)
-                set_gtk_property!(entry_loc_radius_sph, :sensitive, true)
-                set_gtk_property!(entry_loc_phi_sph, :sensitive, true)
-                if isa(NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel]), Int64)
-                    set_gtk_property!(entry_loc_theta, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta])
-                    set_gtk_property!(entry_loc_radius, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius])
-                    set_gtk_property!(entry_loc_x, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x])
-                    set_gtk_property!(entry_loc_y, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y])
-                    set_gtk_property!(entry_loc_z, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z])
-                    set_gtk_property!(entry_loc_theta_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph])
-                    set_gtk_property!(entry_loc_radius_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph])
-                    set_gtk_property!(entry_loc_phi_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph])
-                end
-            else
-                set_gtk_property!(entry_loc_theta, :sensitive, false)
-                set_gtk_property!(entry_loc_radius, :sensitive, false)
-                set_gtk_property!(entry_loc_x, :sensitive, false)
-                set_gtk_property!(entry_loc_y, :sensitive, false)
-                set_gtk_property!(entry_loc_z, :sensitive, false)
-                set_gtk_property!(entry_loc_theta_sph, :sensitive, false)
-                set_gtk_property!(entry_loc_radius_sph, :sensitive, false)
-                set_gtk_property!(entry_loc_phi_sph, :sensitive, false)
-                set_gtk_property!(entry_loc_theta, :value, 0)
-                set_gtk_property!(entry_loc_radius, :value, 0)
-                set_gtk_property!(entry_loc_x, :value, 0)
-                set_gtk_property!(entry_loc_y, :value, 0)
-                set_gtk_property!(entry_loc_z, :value, 0)
-                set_gtk_property!(entry_loc_theta_sph, :value, 0)
-                set_gtk_property!(entry_loc_radius_sph, :value, 0)
-                set_gtk_property!(entry_loc_phi_sph, :value, 0)
+        if current_channel in ch_signal
+            set_gtk_property!(entry_loc_theta, :sensitive, true)
+            set_gtk_property!(entry_loc_radius, :sensitive, true)
+            set_gtk_property!(entry_loc_x, :sensitive, true)
+            set_gtk_property!(entry_loc_y, :sensitive, true)
+            set_gtk_property!(entry_loc_z, :sensitive, true)
+            set_gtk_property!(entry_loc_theta_sph, :sensitive, true)
+            set_gtk_property!(entry_loc_radius_sph, :sensitive, true)
+            set_gtk_property!(entry_loc_phi_sph, :sensitive, true)
+            if isa(NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel]), Int64)
+                set_gtk_property!(entry_loc_theta, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta])
+                set_gtk_property!(entry_loc_radius, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius])
+                set_gtk_property!(entry_loc_x, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x])
+                set_gtk_property!(entry_loc_y, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_y])
+                set_gtk_property!(entry_loc_z, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_z])
+                set_gtk_property!(entry_loc_theta_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta_sph])
+                set_gtk_property!(entry_loc_radius_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius_sph])
+                set_gtk_property!(entry_loc_phi_sph, :value, locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_phi_sph])
             end
+        else
+            set_gtk_property!(entry_loc_theta, :sensitive, false)
+            set_gtk_property!(entry_loc_radius, :sensitive, false)
+            set_gtk_property!(entry_loc_x, :sensitive, false)
+            set_gtk_property!(entry_loc_y, :sensitive, false)
+            set_gtk_property!(entry_loc_z, :sensitive, false)
+            set_gtk_property!(entry_loc_theta_sph, :sensitive, false)
+            set_gtk_property!(entry_loc_radius_sph, :sensitive, false)
+            set_gtk_property!(entry_loc_phi_sph, :sensitive, false)
+            set_gtk_property!(entry_loc_theta, :value, 0)
+            set_gtk_property!(entry_loc_radius, :value, 0)
+            set_gtk_property!(entry_loc_x, :value, 0)
+            set_gtk_property!(entry_loc_y, :value, 0)
+            set_gtk_property!(entry_loc_z, :value, 0)
+            set_gtk_property!(entry_loc_theta_sph, :value, 0)
+            set_gtk_property!(entry_loc_radius_sph, :value, 0)
+            set_gtk_property!(entry_loc_phi_sph, :value, 0)
         end
         return nothing
     end
 
     function _refresh_plots()::Nothing
-        Gtk.@sigatom begin
-            draw(can1)
-            draw(can2)
-            draw(can3)
-            draw(can4)
-        end
+        draw(can1)
+        draw(can2)
+        draw(can3)
+        draw(can4)
         return nothing
     end
 
@@ -85,7 +81,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     if nchannels(obj) < 1
         _warn("OBJ must contain ≥ 1 channel.")
         warn_dialog("OBJ must contain ≥ 1 channel.")
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
         return nothing
     end
 
@@ -109,11 +105,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     already_scaled4 = false
     refresh = true
 
-    win = GtkWindow("NeuroAnalyzer: iedit()", 1000, 900)
-    set_gtk_property!(win, :border_width, 5)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
+    win = GtkWindow("NeuroAnalyzer: iedit()", 1000, 900, false)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     g = GtkGrid()
@@ -339,7 +331,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     _refresh_locs()
 
@@ -438,25 +430,19 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 
     signal_connect(bt_start, "clicked") do widget
         current_channel = 1
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ch, :value, current_channel)
-        end
+        set_gtk_property!(entry_ch, :value, current_channel)
     end
 
     signal_connect(bt_end, "clicked") do widget
         current_channel = nchannels(obj_new)
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_ch, :value, current_channel)
-        end
+        set_gtk_property!(entry_ch, :value, current_channel)
     end
 
     signal_connect(entry_ch, "value-changed") do widget
         current_channel = get_gtk_property(entry_ch, :value, Int64)
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_label, :text, ch_labels[current_channel])
-            set_gtk_property!(combo_chtype, :active, findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2)
-            set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
-        end
+        set_gtk_property!(entry_label, :text, ch_labels[current_channel])
+        set_gtk_property!(combo_chtype, :active, findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2)
+        set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         refresh = false
         _refresh_locs()
         refresh = true
@@ -474,12 +460,10 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
             chs = intersect(labels(obj_new)[ch_signal], obj_new.locs[!, :label])
             locs = Base.filter(:label => in(chs), obj_new.locs)
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_ch, :value, current_channel)
-                set_gtk_property!(entry_label, :text, ch_labels[current_channel])
-                set_gtk_property!(combo_chtype, :active, findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2)
-                set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
-            end
+            set_gtk_property!(entry_ch, :value, current_channel)
+            set_gtk_property!(entry_label, :text, ch_labels[current_channel])
+            set_gtk_property!(combo_chtype, :active, findfirst(isequal(ch_types[current_channel]), NeuroAnalyzer.channel_types) - 2)
+            set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
             refresh = false
             _refresh_locs()
             refresh = true
@@ -496,9 +480,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     signal_connect(combo_chtype, "changed") do widget
         ch_types[current_channel] = string(NeuroAnalyzer.channel_types[get_gtk_property(combo_chtype, :active, Int64) + 2])
         ch_signal = get_channel(obj_new, ch = get_channel(obj_new, type=["mag", "grad", "eeg", "eog", "ref"]))
-        Gtk.@sigatom begin
-            set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
-        end
+        set_gtk_property!(combo_chunits, :active, findfirst(isequal(ch_units[current_channel]), NeuroAnalyzer.channel_units) - 1)
         refresh = false
         _refresh_locs()
         refresh = true
@@ -706,13 +688,13 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
             obj.components = obj_new.components
             obj.history = obj_new.history
             obj.markers = obj_new.markers
-            Gtk.destroy(win)
+            Gtk4.destroy(win)
             return nothing
         end
     end
 
     signal_connect(bt_cancel, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
         return nothing
     end
 
@@ -721,7 +703,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             end
         end
     end
@@ -730,7 +712,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing

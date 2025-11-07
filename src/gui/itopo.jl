@@ -24,16 +24,12 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
     size = p.attr[:size]
     if size[1] > 900
-        win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, 1000)
+        win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, 1000, false)
         can = GtkCanvas(1000, 1000)
     else
-        win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, 800)
+        win = GtkWindow("NeuroAnalyzer: itopo()", p.attr[:size][1] + 100, 800, false)
         can = GtkCanvas(800, 800)
     end
-    set_gtk_property!(win, :border_width, 5)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     g_opts = GtkGrid()
@@ -169,7 +165,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     g[2:11, 1] = can
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         if redraw
@@ -219,16 +215,16 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                                         cart=cart)
             ctx = getgc(can)
             if size[1] > 900
-                Gtk.rectangle(ctx, 0, 0, 999, 999)
+                Gtk4.rectangle(ctx, 0, 0, 999, 999)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
-                Gtk.fill(ctx)
+                Gtk4.fill(ctx)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 500 - (p.attr[:size][1] ÷ 2) - 1, 500 - (p.attr[:size][1] ÷ 2) - 1)
             else
-                Gtk.rectangle(ctx, 0, 0, 799, 799)
+                Gtk4.rectangle(ctx, 0, 0, 799, 799)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
-                Gtk.fill(ctx)
+                Gtk4.fill(ctx)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 400 - (p.attr[:size][1] ÷ 2) - 1, 400 - (p.attr[:size][1] ÷ 2) - 1)
@@ -244,10 +240,8 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         else
             draw(can)
         end
-        Gtk.@sigatom begin
-            seg[1] == seg[2] && set_gtk_property!(combo_amethod, :sensitive, false)
-            seg[1] != seg[2] && set_gtk_property!(combo_amethod, :sensitive, true)
-        end
+        seg[1] == seg[2] && set_gtk_property!(combo_amethod, :sensitive, false)
+        seg[1] != seg[2] && set_gtk_property!(combo_amethod, :sensitive, true)
     end
     signal_connect(entry_ts2, "value-changed") do widget
         seg = round.((get_gtk_property(entry_ts1, :value, Float64), get_gtk_property(entry_ts2, :value, Float64)), digits=3)
@@ -256,10 +250,8 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         else
             draw(can)
         end
-        Gtk.@sigatom begin
-            seg[1] == seg[2] && set_gtk_property!(combo_amethod, :sensitive, false)
-            seg[1] != seg[2] && set_gtk_property!(combo_amethod, :sensitive, true)
-        end
+        seg[1] == seg[2] && set_gtk_property!(combo_amethod, :sensitive, false)
+        seg[1] != seg[2] && set_gtk_property!(combo_amethod, :sensitive, true)
     end
 
     signal_connect(bt_refresh, "clicked") do widget
@@ -290,7 +282,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         draw(can)
     end
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
     end
 
     help = "Keyboard shortcuts:\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
@@ -304,7 +296,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             elseif k == 0x00000068 # h
                 info_dialog(help)
             elseif k == 0x00000073 # s
@@ -329,7 +321,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing
@@ -359,16 +351,12 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
     size = p.attr[:size]
     if size[1] > 900
-        win = GtkWindow("NeuroAnalyzer: itopo_ep()", p.attr[:size][1] + 100, 1000)
+        win = GtkWindow("NeuroAnalyzer: itopo_ep()", p.attr[:size][1] + 100, 1000, false)
         can = GtkCanvas(1000, 1000)
     else
-        win = GtkWindow("NeuroAnalyzer: itopo_ep()", p.attr[:size][1] + 100, 800)
+        win = GtkWindow("NeuroAnalyzer: itopo_ep()", p.attr[:size][1] + 100, 800, false)
         can = GtkCanvas(800, 800)
     end
-    set_gtk_property!(win, :border_width, 5)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     g_opts = GtkGrid()
@@ -511,7 +499,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     g[2:11, 1] = can
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ep = get_gtk_property(entry_epoch, :value, Int64)
@@ -564,16 +552,16 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                     cart=cart)
         ctx = getgc(can)
         if size[1] > 900
-            Gtk.rectangle(ctx, 0, 0, 999, 999)
+            Gtk4.rectangle(ctx, 0, 0, 999, 999)
             Cairo.set_source_rgb(ctx, 255, 255, 255)
-            Gtk.fill(ctx)
+            Gtk4.fill(ctx)
             show(io, MIME("image/png"), p)
             img = read_from_png(io)
             set_source_surface(ctx, img, 500 - (p.attr[:size][1] ÷ 2) - 1, 500 - (p.attr[:size][1] ÷ 2) - 1)
         else
-            Gtk.rectangle(ctx, 0, 0, 799, 799)
+            Gtk4.rectangle(ctx, 0, 0, 799, 799)
             Cairo.set_source_rgb(ctx, 255, 255, 255)
-            Gtk.fill(ctx)
+            Gtk4.fill(ctx)
             show(io, MIME("image/png"), p)
             img = read_from_png(io)
             set_source_surface(ctx, img, 400 - (p.attr[:size][1] ÷ 2) - 1, 400 - (p.attr[:size][1] ÷ 2) - 1)
@@ -618,7 +606,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         draw(can)
     end
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
     end
 
     help = "Keyboard shortcuts:\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
@@ -632,7 +620,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             elseif k == 0x00000068 # h
                 info_dialog(help)
             elseif k == 0x00000073 # s
@@ -657,7 +645,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing

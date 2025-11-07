@@ -35,8 +35,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     set_gtk_property!(win_view, :min_content_height, 600)
     set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     push!(win_view, can)
@@ -202,7 +200,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     lab_gw = GtkLabel("Gaussian width:")
     set_gtk_property!(lab_gw, :halign, 2)
 
-    signal_slider = GtkScale(false, obj.time_pts[1]:obj.time_pts[end] - zoom)
+    signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
     set_gtk_property!(signal_slider, :draw_value, false)
     set_gtk_property!(signal_slider, :tooltip_text, "Time position")
 
@@ -259,7 +257,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     g[9, 3] = bt_close
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ch = ch_types[get_gtk_property(combo_ch, :active, Int64) + 1]
@@ -371,9 +369,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 else
                     time_current = obj.time_pts[end] - zoom
                 end
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
+                set_gtk_property!(entry_time, :value, time_current)
             elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
@@ -381,26 +377,20 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 else
                     time_current = obj.time_pts[end] - zoom
                 end
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
+                set_gtk_property!(entry_time, :value, time_current)
             end
         elseif event.direction == 0 # up
             if s == 0x00000001
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
             elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
             end
         end
@@ -408,35 +398,29 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
     signal_connect(combo_ch, "changed") do widget
         ch = get_gtk_property(combo_ch, :active, Int64) + 1
-        Gtk.@sigatom begin
-            if ch in 1:length(ctypes)
-                ch = lowercase(ctypes[ch])
-                if length(get_channel(obj, type=ch)) > 1
-                    set_gtk_property!(combo_type, :sensitive, true)
-                else
-                    set_gtk_property!(combo_type, :active, 0)
-                    set_gtk_property!(combo_type, :sensitive, false)
-                end
+        if ch in 1:length(ctypes)
+            ch = lowercase(ctypes[ch])
+            if length(get_channel(obj, type=ch)) > 1
+                set_gtk_property!(combo_type, :sensitive, true)
             else
                 set_gtk_property!(combo_type, :active, 0)
                 set_gtk_property!(combo_type, :sensitive, false)
             end
+        else
+            set_gtk_property!(combo_type, :active, 0)
+            set_gtk_property!(combo_type, :sensitive, false)
         end
         draw(can)
     end
     signal_connect(signal_slider, "value-changed") do widget, others...
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_time, :value, round(GAccessor.value(signal_slider)))
-        end
+        set_gtk_property!(entry_time, :value, round(Gtk4.value(signal_slider)))
         draw(can)
     end
     signal_connect(bt_refresh, "clicked") do widget
         draw(can)
     end
     signal_connect(entry_time, "value-changed") do widget
-        Gtk.@sigatom begin
-            GAccessor.value(signal_slider, get_gtk_property(entry_time, :value, Float64))
-        end
+        Gtk4.value(signal_slider, get_gtk_property(entry_time, :value, Float64))
         draw(can)
     end
     signal_connect(combo_type, "changed") do widget
@@ -486,9 +470,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj.time_pts[1] + zoom
             time_current = time_current - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
+            set_gtk_property!(entry_time, :value, time_current)
         end
     end
 
@@ -496,32 +478,24 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current < obj.time_pts[end] - zoom
             time_current += zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
+            set_gtk_property!(entry_time, :value, time_current)
         else
             time_current = obj.time_pts[end] - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
-        end
-    end
-
-    signal_connect(bt_start, "clicked") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_time, :value, obj.time_pts[1])
-        end
-    end
-
-    signal_connect(bt_end, "clicked") do widget
-        time_current = obj.time_pts[end] - zoom
-        Gtk.@sigatom begin
             set_gtk_property!(entry_time, :value, time_current)
         end
     end
 
+    signal_connect(bt_start, "clicked") do widget
+        set_gtk_property!(entry_time, :value, obj.time_pts[1])
+    end
+
+    signal_connect(bt_end, "clicked") do widget
+        time_current = obj.time_pts[end] - zoom
+        set_gtk_property!(entry_time, :value, time_current)
+    end
+
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
     end
 
     help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
@@ -536,46 +510,36 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         if k == 0x0000005b # [
             if zoom > 1
                 zoom -= 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
-                    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
-                    GAccessor.range(signal_slider, obj.time_pts[1], obj.time_pts[end] - zoom)
-                    GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                end
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                Gtk4.range(signal_slider, obj.time_pts[1], obj.time_pts[end] - zoom)
+                Gtk4.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
             help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
         elseif k == 0x0000005d # ]
             if zoom < 30 && zoom < obj.time_pts[end] - 1
                 zoom += 1
-                Gtk.@sigatom begin
-                    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
-                    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
-                    GAccessor.range(signal_slider, obj.time_pts[1], obj.time_pts[end] - zoom)
-                    GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                end
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                Gtk4.range(signal_slider, obj.time_pts[1], obj.time_pts[end] - zoom)
+                Gtk4.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             else
                 zoom = obj.time_pts[end]
-                Gtk.@sigatom begin
-                    set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
-                    set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
-                    GAccessor.range(signal_slider, obj.time_pts[1], obj.time_pts[end] - zoom)
-                    GAccessor.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
-                end
+                set_gtk_property!(bt_next, :tooltip_text, "Go forward by $(round(zoom)) seconds")
+                set_gtk_property!(bt_prev, :tooltip_text, "Go back by $(round(zoom)) seconds")
+                Gtk4.range(signal_slider, obj.time_pts[1], obj.time_pts[end] - zoom)
+                Gtk4.range(entry_time, obj.time_pts[1], obj.time_pts[end] - zoom)
                 draw(can)
             end
             help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
         elseif k == 0x0000ff50 # home
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, obj.time_pts[1])
-            end
+            set_gtk_property!(entry_time, :value, obj.time_pts[1])
             draw(can)
         elseif k == 0x0000ff57 # end
             time_current = obj.time_pts[end] - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
+            set_gtk_property!(entry_time, :value, time_current)
             draw(can)
         end
 
@@ -584,30 +548,24 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
                 draw(can)
             elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 else
                     time_current = obj.time_pts[end] - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
             end
         end
 
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             elseif k == 0x00000068 # h
                 info_dialog(help)
             elseif k == 0x00000073 # s
@@ -628,23 +586,17 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
                 draw(can)
             elseif k == 0x0000002e # .
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
                     time_current += 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 else
                     time_current = obj.time_pts[end] - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
             end
         end
@@ -654,7 +606,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing
@@ -691,8 +643,6 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     set_gtk_property!(win_view, :min_content_height, 600)
     set_gtk_property!(win, :border_width, 5)
     set_gtk_property!(win, :resizable, true)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     push!(win_view, can)
@@ -847,7 +797,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     lab_gw = GtkLabel("Gaussian width:")
     set_gtk_property!(lab_gw, :halign, 2)
 
-    signal_slider = GtkScale(false, 1:nepochs(obj))
+    signal_slider = GtkScale(:h, 1:nepochs(obj))
     set_gtk_property!(signal_slider, :draw_value, false)
     set_gtk_property!(signal_slider, :tooltip_text, "Current epoch")
 
@@ -902,7 +852,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     g[7, 3] = bt_close
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ch = ch_types[get_gtk_property(combo_ch, :active, Int64) + 1]
@@ -1017,19 +967,17 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
     signal_connect(combo_ch, "changed") do widget
         ch = get_gtk_property(combo_ch, :active, Int64) + 1
-        Gtk.@sigatom begin
-            if ch in 1:length(ctypes)
-                ch = lowercase(ctypes[ch])
-                if length(get_channel(obj, type=ch)) > 1
-                    set_gtk_property!(combo_type, :sensitive, true)
-                else
-                    set_gtk_property!(combo_type, :active, 0)
-                    set_gtk_property!(combo_type, :sensitive, false)
-                end
+        if ch in 1:length(ctypes)
+            ch = lowercase(ctypes[ch])
+            if length(get_channel(obj, type=ch)) > 1
+                set_gtk_property!(combo_type, :sensitive, true)
             else
                 set_gtk_property!(combo_type, :active, 0)
                 set_gtk_property!(combo_type, :sensitive, false)
             end
+        else
+            set_gtk_property!(combo_type, :active, 0)
+            set_gtk_property!(combo_type, :sensitive, false)
         end
         draw(can)
     end
@@ -1081,33 +1029,25 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     end
 
     signal_connect(entry_epoch, "value-changed") do widget
-         Gtk.@sigatom begin
-            GAccessor.value(signal_slider, get_gtk_property(entry_epoch, :value, Int64))
-        end
+        Gtk4.value(signal_slider, get_gtk_property(entry_epoch, :value, Int64))
         draw(can)
     end
 
     signal_connect(signal_slider, "value-changed") do widget, others...
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, round(Int64, GAccessor.value(signal_slider)))
-        end
+        set_gtk_property!(entry_epoch, :value, round(Int64, Gtk4.value(signal_slider)))
         draw(can)
     end
 
     signal_connect(bt_start, "clicked") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, 1)
-        end
+        set_gtk_property!(entry_epoch, :value, 1)
     end
 
     signal_connect(bt_end, "clicked") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_epoch, :value, nepochs(obj))
-        end
+        set_gtk_property!(entry_epoch, :value, nepochs(obj))
     end
 
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
     end
 
     help = "Keyboard shortcuts:\n\nHome\t\t\tGo to the first epoch\nEnd\t\t\tGo to last epoch\nCtrl + ,\t\t\tPrevious epoch\nCtrl + .\t\t\tNext epoch\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
@@ -1121,20 +1061,16 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         s = event.state
 
         if k == 0x0000ff50 # home
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, 1)
-            end
+            set_gtk_property!(entry_epoch, :value, 1)
             draw(can)
         elseif k == 0x0000ff57 # end
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_epoch, :value, nepochs(obj))
-            end
+            set_gtk_property!(entry_epoch, :value, nepochs(obj))
             draw(can)
         end
 
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             elseif k == 0x00000068 # h
                 info_dialog(help)
             elseif k == 0x00000073 # s
@@ -1155,17 +1091,13 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep >= 2
                     ep -= 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_epoch, :value, ep)
-                    end
+                    set_gtk_property!(entry_epoch, :value, ep)
                 end
             elseif k == 0x0000002e # .
                 ep = get_gtk_property(entry_epoch, :value, Int64)
                 if ep < nepochs(obj)
                     ep += 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_epoch, :value, ep)
-                    end
+                    set_gtk_property!(entry_epoch, :value, ep)
                 end
             end
         end
@@ -1175,7 +1107,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing

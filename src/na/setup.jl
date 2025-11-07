@@ -80,7 +80,7 @@ function na_info()::Nothing
             "GLM",
             "GLMakie",
             "GR",
-            "Gtk",
+            "Gtk4",
             "Hurst",
             "HypothesisTests",
             "Images",

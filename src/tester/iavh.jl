@@ -65,11 +65,7 @@ function iavh()::Nothing
 
     img = read_from_png(joinpath(res_path, "avh/head.png"))
 
-    win = GtkWindow("NeuroTester: iavh", 1100, 820)
-    set_gtk_property!(win, :border_width, 10)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
+    win = GtkWindow("NeuroTester: iavh", 1100, 820, false)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     can = GtkCanvas(800, 800)
@@ -167,7 +163,7 @@ function iavh()::Nothing
     g[2, 1] = can
     push!(win, g)
 
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ctx = getgc(widget)
@@ -793,10 +789,10 @@ function iavh()::Nothing
                 Cairo.set_source_surface(ctx, img, 1, 1)
                 Cairo.paint(ctx)
 
-                Gtk.arc(ctx, x_pos, y_pos, 10, 0, 2*pi)
-                Gtk.set_source_rgb(ctx, 1, 0, 0)
-                Gtk.stroke(ctx)
-                Gtk.reveal(widget)
+                Gtk4.arc(ctx, x_pos, y_pos, 10, 0, 2*pi)
+                Gtk4.set_source_rgb(ctx, 1, 0, 0)
+                Gtk4.stroke(ctx)
+                Gtk4.reveal(widget)
             end
 
             x_pos = round((x_pos / 800) - 0.5, digits=2)
@@ -942,7 +938,7 @@ function iavh()::Nothing
     end
 
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
         return nothing
     end
 
@@ -950,7 +946,7 @@ function iavh()::Nothing
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing

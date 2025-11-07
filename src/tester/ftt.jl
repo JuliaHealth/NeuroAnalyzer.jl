@@ -42,11 +42,8 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     img1 = read_from_png(joinpath(res_path, "finger_noclick.png"))
     img2 = read_from_png(joinpath(res_path, "finger_click.png"))
 
-    win = GtkWindow("NeuroTester: iftt()", img1.width, img1.height + 100)
+    win = GtkWindow("NeuroTester: iftt()", img1.width, img1.height + 100, false)
     set_gtk_property!(win, :border_width, 20)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
 
     can = GtkCanvas(img1.width, img1.height)
@@ -89,7 +86,7 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     push!(vbox1, g1)
 
     push!(win, vbox1)
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(can) do widget
         ctx = getgc(can)
@@ -199,8 +196,8 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
 
                 # Interacting with GTK from a thread other than the main thread is
                 # generally not allowed, so we register an idle callback instead.
-                Gtk.GLib.g_idle_add(nothing) do user_data
-                    Gtk.destroy(win)
+                Gtk4.GLib.g_idle_add(nothing) do user_data
+                    Gtk4.destroy(win)
                 end
             end
         elseif !isnothing(sp)
@@ -292,8 +289,8 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
                 end
                 # Interacting with GTK from a thread other than the main thread is
                 # generally not allowed, so we register an idle callback instead.
-                Gtk.GLib.g_idle_add(nothing) do user_data
-                    Gtk.destroy(win)
+                Gtk4.GLib.g_idle_add(nothing) do user_data
+                    Gtk4.destroy(win)
                 end
             end
         end
@@ -303,7 +300,7 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     if port_name == ""

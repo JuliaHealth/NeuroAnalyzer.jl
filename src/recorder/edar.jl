@@ -36,11 +36,7 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
                    xtickfontsize=8,
                    ytickfontsize=8)
 
-    win = GtkWindow("NeuroRecorder: iedar()", p.attr[:size][1], p.attr[:size][2] + 40)
-    set_gtk_property!(win, :border_width, 20)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
+    win = GtkWindow("NeuroRecorder: iedar()", p.attr[:size][1], p.attr[:size][2] + 40, false)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
     g = GtkGrid()
@@ -126,8 +122,8 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
 
             # Interacting with GTK from a thread other than the main thread is
             # generally not allowed, so we register an idle callback instead.
-            Gtk.GLib.g_idle_add(nothing) do user_data
-                Gtk.destroy(win)
+            Gtk4.GLib.g_idle_add(nothing) do user_data
+                Gtk4.destroy(win)
             end
         end
     end
@@ -136,7 +132,7 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     eda_signal = eda_signal[1:(end - 1)]

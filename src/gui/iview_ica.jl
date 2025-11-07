@@ -80,7 +80,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         cx_tmp = plot2canvas(p_tmp)
         push!(ica_set, cx_tmp)
     end
-    ica_can_set = Vector{Gtk.GtkCanvas}()
+    ica_can_set = Vector{Gtk4.GtkCanvas}()
     for idx in 1:length(ic_idx)
         push!(ica_can_set, GtkCanvas(ica_set[1].width, ica_set[1].height))
     end
@@ -107,11 +107,8 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
 
     p_sig = NeuroAnalyzer.plot(obj, ch=cl[chn[ch_idx]], title="Channel: $(cl[chn[ch_idx]]) (original)")
     p_psd = NeuroAnalyzer.plot_psd(obj, ch=cl[chn[ch_idx]], title="Channel: $(cl[chn[ch_idx]]) (original)")
-    win = GtkWindow("NeuroAnalyzer: iview_ica()", ica_set[1].width + Int32(p_sig.attr[:size][1]) + 20, Int32(p_sig.attr[:size][2]) + Int32(p_psd.attr[:size][2]) + 20)
+    win = GtkWindow("NeuroAnalyzer: iview_ica()", ica_set[1].width + Int32(p_sig.attr[:size][1]) + 20, Int32(p_sig.attr[:size][2]) + Int32(p_psd.attr[:size][2]) + 20, false)
     set_gtk_property!(win, :border_width, 5)
-    set_gtk_property!(win, :resizable, false)
-    set_gtk_property!(win, :has_resize_grip, false)
-    set_gtk_property!(win, :window_position, 3)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     signal_view = GtkCanvas(Int32(p_sig.attr[:size][1]), Int32(p_sig.attr[:size][2]))
     psd_view = GtkCanvas(Int32(p_psd.attr[:size][1]), Int32(p_psd.attr[:size][2]))
@@ -156,14 +153,14 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     bt_end = GtkButton("⇥")
     set_gtk_property!(bt_end, :tooltip_text, "Go to the signal end")
 
-    ch_slider = GtkScale(false, 1:length(chn))
+    ch_slider = GtkScale(:h, 1:length(chn))
     set_gtk_property!(ch_slider, :draw_value, false)
     set_gtk_property!(ch_slider, :tooltip_text, "Scroll channels")
     set_gtk_property!(ch_slider, :vexpand, true)
     oc = GtkOrientable(ch_slider)
     set_gtk_property!(oc, :orientation, 1)
 
-    signal_slider = GtkScale(false, obj.time_pts[1]:obj.time_pts[end] - zoom)
+    signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
     set_gtk_property!(signal_slider, :draw_value, false)
     set_gtk_property!(signal_slider, :tooltip_text, "Time position")
 
@@ -213,7 +210,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     g[8, 5] = bt_close
 
     push!(win, g)
-    showall(win)
+    Gtk4.show(win)
 
     @guarded draw(signal_view) do widget
         plot_sig_type = get_gtk_property(combo_sig, :active, Int64)
@@ -294,9 +291,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     end
 
     signal_connect(signal_slider, "value-changed") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_time, :value, round(GAccessor.value(signal_slider)))
-        end
+        set_gtk_property!(entry_time, :value, round(Gtk4.value(signal_slider)))
         draw(signal_view)
         draw(psd_view)
         time1 = get_gtk_property(entry_time, :value, Float64)
@@ -306,7 +301,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     end
 
     signal_connect(ch_slider, "value-changed") do widget, others...
-        ch_idx = round(Int64, GAccessor.value(ch_slider))
+        ch_idx = round(Int64, Gtk4.value(ch_slider))
         draw(signal_view)
         draw(psd_view)
     end
@@ -322,9 +317,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 else
                     time_current = obj.time_pts[end] - zoom
                 end
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
+                set_gtk_property!(entry_time, :value, time_current)
             elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current < obj.time_pts[end] - zoom
@@ -332,16 +325,12 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 else
                     time_current = obj.time_pts[end] - zoom
                 end
-                Gtk.@sigatom begin
-                    set_gtk_property!(entry_time, :value, time_current)
-                end
+                set_gtk_property!(entry_time, :value, time_current)
             else
                 if plot_sig_type != 3
                     if ch_idx < length(chn)
                         ch_idx += 1
-                        Gtk.@sigatom begin
-                            GAccessor.value(ch_slider, chn[ch_idx])
-                        end
+                        Gtk4.value(ch_slider, chn[ch_idx])
                         draw(signal_view)
                         draw(psd_view)
                     end
@@ -352,25 +341,19 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + 1
                     time_current -= 1
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
             elseif s == 0x00000004
                 time_current = get_gtk_property(entry_time, :value, Float64)
                 if time_current >= obj.time_pts[1] + zoom
                     time_current = time_current - zoom
-                    Gtk.@sigatom begin
-                        set_gtk_property!(entry_time, :value, time_current)
-                    end
+                    set_gtk_property!(entry_time, :value, time_current)
                 end
             else
                 if plot_sig_type != 3
                     if ch_idx > 1
                         ch_idx -= 1
-                        Gtk.@sigatom begin
-                            GAccessor.value(ch_slider, chn[ch_idx])
-                        end
+                        Gtk4.value(ch_slider, chn[ch_idx])
                         draw(signal_view)
                         draw(psd_view)
                     end
@@ -380,9 +363,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     end
 
     signal_connect(entry_time, "value-changed") do widget
-        Gtk.@sigatom begin
-            GAccessor.value(signal_slider, get_gtk_property(entry_time, :value, Float64))
-        end
+        Gtk4.value(signal_slider, get_gtk_property(entry_time, :value, Float64))
         draw(signal_view)
         draw(psd_view)
     end
@@ -402,14 +383,12 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
 
     signal_connect(entry_ic, "value-changed") do widget
         current_ic = get_gtk_property(entry_ic, :value, Int64)
-        Gtk.@sigatom begin
-            set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
-            set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
-            if !ic_available_for_removal_idx[current_ic]
-                set_gtk_property!(cb_mark, :opacity, 0.2)
-            else
-                set_gtk_property!(cb_mark, :opacity, 1)
-            end
+        set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
+        set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
+        if !ic_available_for_removal_idx[current_ic]
+            set_gtk_property!(cb_mark, :opacity, 0.2)
+        else
+            set_gtk_property!(cb_mark, :opacity, 1)
         end
         draw(signal_view)
         draw(psd_view)
@@ -423,18 +402,16 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 ica_reconstruct!(obj_new, ic, ic_mw, ch=ch, ic_idx=ic_idx[ic_remove_idx], keep=true)
                 ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
-                Gtk.@sigatom begin
-                    set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
-                    if !ic_available_for_removal_idx[current_ic]
-                        set_gtk_property!(cb_mark, :opacity, 0.2)
-                    else
-                        set_gtk_property!(cb_mark, :opacity, 1)
-                    end
-                    set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
-                    draw(signal_view)
-                    draw(psd_view)
-                    obj_edited = true
+                set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
+                if !ic_available_for_removal_idx[current_ic]
+                    set_gtk_property!(cb_mark, :opacity, 0.2)
+                else
+                    set_gtk_property!(cb_mark, :opacity, 1)
                 end
+                set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
+                draw(signal_view)
+                draw(psd_view)
+                obj_edited = true
             end
         else
             warn_dialog("No ICA components marked for reconstruction!")
@@ -449,15 +426,13 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 ica_reconstruct!(obj_new, ic, ic_mw, ch=ch, ic_idx=ic_idx[ic_remove_idx])
                 ic_available_for_removal_idx[ic_idx[ic_remove_idx]] .= false
                 ic_remove_idx[ic_idx[ic_remove_idx]] .= false
-                Gtk.@sigatom begin
-                    set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
-                    if !ic_available_for_removal_idx[current_ic]
-                        set_gtk_property!(cb_mark, :opacity, 0.2)
-                    else
-                        set_gtk_property!(cb_mark, :opacity, 1)
-                    end
-                    set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
+                set_gtk_property!(cb_mark, :sensitive, ic_available_for_removal_idx[current_ic])
+                if !ic_available_for_removal_idx[current_ic]
+                    set_gtk_property!(cb_mark, :opacity, 0.2)
+                else
+                    set_gtk_property!(cb_mark, :opacity, 1)
                 end
+                set_gtk_property!(cb_mark, :active, ic_remove_idx[current_ic])
                 draw(signal_view)
                 draw(psd_view)
                 obj_edited = true
@@ -476,7 +451,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 obj.components = obj_new.components
                 obj.history = obj_new.history
                 obj.markers = obj_new.markers
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
                 return nothing
             end
         else
@@ -488,9 +463,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         time_current = get_gtk_property(entry_time, :value, Float64)
         if time_current >= obj.time_pts[1] + zoom
             time_current = time_current - zoom
-            Gtk.@sigatom begin
-                set_gtk_property!(entry_time, :value, time_current)
-            end
+            set_gtk_property!(entry_time, :value, time_current)
         end
     end
 
@@ -501,26 +474,20 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         else
             time_current = obj.time_pts[end] - zoom
         end
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_time, :value, time_current)
-        end
+        set_gtk_property!(entry_time, :value, time_current)
     end
 
     signal_connect(bt_start, "clicked") do widget
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_time, :value, obj.time_pts[1])
-        end
+        set_gtk_property!(entry_time, :value, obj.time_pts[1])
     end
 
     signal_connect(bt_end, "clicked") do widget
         time_current = obj.time_pts[end] - zoom
-        Gtk.@sigatom begin
-            set_gtk_property!(entry_time, :value, time_current)
-        end
+        set_gtk_property!(entry_time, :value, time_current)
     end
 
     signal_connect(bt_close, "clicked") do widget
-        Gtk.destroy(win)
+        Gtk4.destroy(win)
     end
 
     signal_connect(win, "key-press-event") do widget, event
@@ -528,7 +495,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         s = event.state
         if s == 0x00000004 || s == 0x00000014 # ctrl
             if k == 0x00000071 # q
-                Gtk.destroy(win)
+                Gtk4.destroy(win)
             end
         end
 
@@ -538,7 +505,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     signal_connect(win, :destroy) do widget
         notify(cnd)
     end
-    @async Gtk.gtk_main()
+    @async Gtk4.gtk_main()
     wait(cnd)
 
     return nothing
