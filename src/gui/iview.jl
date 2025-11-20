@@ -30,17 +30,13 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     ch = 1:nchannels(obj)
 
     mono = false
-    quit = false
+    quit = true
     scale = true
     ts1 = 0
     ts2 = 0
     k = nothing
     k = nothing
     kc = nothing
-
-    function _close_win(a, par)::Nothing
-        close(win)
-    end
 
     plot_type = 0
 
@@ -63,611 +59,270 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], title="Channel: $(cl[ch_first])")
     end
 
-    Gtk4.GLib.start_main_loop()
+    function activate(app)
 
-    win = GtkWindow("NeuroAnalyzer: iview()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
-    g = GtkGrid()
-    g.column_homogeneous = false
-    g.column_spacing = 5
-    g.row_spacing = 5
-    entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
-    entry_time.digits = 2
-    entry_time.value = obj.time_pts[1]
-    entry_time.tooltip_text = "Time position [s]"
-    bt_start = GtkButton("⇤")
-    bt_start.tooltip_text = "Go to the signal start"
-    bt_prev = GtkButton("←")
-    bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
-    bt_next = GtkButton("→")
-    bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
-    bt_end = GtkButton("⇥")
-    bt_end.tooltip_text = "Go to the signal end"
-    entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
-    bt_help = GtkButton("Help")
-    bt_help.tooltip_text = "Show help"
-    bt_close = GtkButton("Close")
-    bt_close.tooltip_text = "Close this window"
-    bt_close.action_name = "win.close"
-    entry_ts1.tooltip_text = "Segment start [s]"
-    entry_ts1.digits = 3
-    entry_ts2 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
-    entry_ts2.digits = 3
-    entry_ts2.tooltip_text = "Segment end [s]"
-    bt_ts = GtkButton("Return TS")
-    bt_ts.tooltip_text = "Return selected time segment"
-    bt_ts.action_name = "win.close"
-    bt_delete = GtkButton("Delete TS")
-    bt_delete.tooltip_text = "Delete selected time segment"
-
-    action_group = Gtk4.GLib.GSimpleActionGroup()
-    Gtk4.add_action(Gtk4.GLib.GActionMap(action_group), "close", _close_win)
-    push!(win, Gtk4.GLib.GActionGroup(action_group), "win")
-
-    combo_ch = GtkComboBoxText()
-    ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
-    for idx in ch_types
-        length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
-    end
-    combo_ch.active = 0
-    combo_ch.sensitive = false
-    combo_ch.tooltip_text = "Channels"
-
-    if !mch
-        ch_slider = GtkScale(:h, 1:nchannels(obj))
-        ch_slider.draw_value =  false
-    else
-        if length(ch) > 20
-            ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
-            ch_slider.draw_value =  false
-        else
-            ch_slider = GtkScale(:h, ch[1]:ch[end])
-            ch_slider.draw_value =  false
-            ch_slider.sensitive =  false
-        end
-    end
-    ch_slider.tooltip_text = "Scroll channels"
-    ch_slider.vexpand = true
-    oc = GtkOrientable(ch_slider)
-    oc.orientation = 1
-
-    signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
-    signal_slider.draw_value = false
-    signal_slider.tooltip_text = "Time position"
-
-    g[1:9, 1] = can
-    g[10, 1] = ch_slider
-    g[1:9, 2] = signal_slider
-    g[1, 3] = bt_start
-    g[2, 3] = bt_prev
-    g[3, 3] = entry_time
-    g[4, 3] = bt_next
-    g[5, 3] = bt_end
-    g[6, 3] = combo_ch
-    g[7, 3] = entry_ts1
-    g[8, 3] = bt_ts
-    g[9, 3] = bt_help
-    g[7, 4] = entry_ts2
-    g[8, 4] = bt_delete
-    g[9, 4] = bt_close
-    push!(win, g)
-
-    @guarded draw(can) do widget
-        time1 = entry_time.value
-        time2 = time1 + zoom
-        time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-        ts1 = entry_ts1.value
-        ts2 = entry_ts2.value
-        ctx = getgc(can)
-        channel_type = lowercase.(ch_types)[combo_ch.active + 1]
-        if mch
-            if plot_type == 0
-                p = NeuroAnalyzer.plot(obj,
-                                       ch=cl[ch_first:ch_last],
-                                       seg=(time1, time2),
-                                       s_pos=(ts1, ts2),
-                                       mono=mono,
-                                       title="",
-                                       scale=scale)
-            elseif plot_type == 1
-                p =  NeuroAnalyzer.plot(obj,
-                                        ch=get_channel(obj, type=channel_type),
-                                        seg=(time1, time2),
-                                        s_pos=(ts1, ts2),
-                                        mono=mono,
-                                        type=:butterfly,
-                                        avg=false)
-            elseif plot_type == 2
-                p = NeuroAnalyzer.plot(obj,
-                                       ch=get_channel(obj, type=channel_type),
-                                       seg=(time1, time2),
-                                       s_pos=(ts1, ts2),
-                                       mono=mono,
-                                       type=:mean)
-            end
-        else
-            p = NeuroAnalyzer.plot(obj,
-                                   ch=cl[ch_first],
-                                   seg=(time1, time2),
-                                   s_pos=(ts1, ts2),
-                                   mono=mono,
-                                   title="Channel: $(cl[ch_first])",
-                                   scale=scale,
-                                   bad=bad)
-        end
-        show(io, MIME("image/png"), p)
-        win.width_request = p.attr[:size][2] + 4
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
+        win.width_request = p.attr[:size][1] + 40
         win.height_request = p.attr[:size][2] + 40
-        can.width_request = Int32(p.attr[:size][1])
-        can.height_request = Int32(p.attr[:size][2])
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        paint(ctx)
-    end
 
-    function lmb_click(_, _, x, y)
-        if x < 82
-            if mch
-                ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-                ch_idx = nothing
-                for idx in eachindex(ch_y)
-                    if y > ch_y[idx] && y < ch_y[idx] + 15 && x > 0 && x < 82
-                        ch_idx = idx + ch_first - 1
-                    end
-                end
-                !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
-            end
+        # win = GtkWindow("NeuroAnalyzer: iview()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
+        can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+        g = GtkGrid()
+        g.column_homogeneous = false
+        g.column_spacing = 5
+        g.row_spacing = 5
+        entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
+        entry_time.digits = 2
+        entry_time.value = obj.time_pts[1]
+        entry_time.tooltip_text = "Time position [s]"
+        bt_start = GtkButton("⇤")
+        bt_start.tooltip_text = "Go to the signal start"
+        bt_prev = GtkButton("←")
+        bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
+        bt_next = GtkButton("→")
+        bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
+        bt_end = GtkButton("⇥")
+        bt_end.tooltip_text = "Go to the signal end"
+        entry_ts1 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
+        bt_help = GtkButton("Help")
+        bt_help.tooltip_text = "Show help"
+        bt_close = GtkButton("Close")
+        bt_close.tooltip_text = "Close this window"
+        entry_ts1.tooltip_text = "Segment start [s]"
+        entry_ts1.digits = 3
+        entry_ts2 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
+        entry_ts2.digits = 3
+        entry_ts2.tooltip_text = "Segment end [s]"
+        bt_ts = GtkButton("Return TS")
+        bt_ts.tooltip_text = "Return selected time segment"
+        bt_delete = GtkButton("Delete TS")
+        bt_delete.tooltip_text = "Delete selected time segment"
+
+        combo_ch = GtkComboBoxText()
+        ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
+        for idx in ch_types
+            length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+        end
+        combo_ch.active = 0
+        combo_ch.sensitive = false
+        combo_ch.tooltip_text = "Channels"
+
+        if !mch
+            ch_slider = GtkScale(:h, 1:nchannels(obj))
+            ch_slider.draw_value =  false
         else
-            time_current = entry_time.value
-            x > 1172 && (x = 1172)
-            if time_current + zoom < obj.time_pts[end]
-                ts1 = time_current + round((x - 82) / (1090 / zoom), digits=3)
+            if length(ch) > 20
+                ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+                ch_slider.draw_value =  false
             else
-                ts1 = time_current + round((x - 82) / (1090 / (obj.time_pts[end] - time_current)), digits=3)
+                ch_slider = GtkScale(:h, ch[1]:ch[end])
+                ch_slider.draw_value =  false
+                ch_slider.sensitive =  false
             end
-            snap && (ts1 = round(ts1 * 4) / 4)
-            @idle_add entry_ts1.value = round(ts1, digits=3)
         end
-    end
-    ggc_l = GtkGestureClick()
-    ggc_l.button = 1
-    push!(can, ggc_l)
-    signal_connect(lmb_click, ggc_l, "pressed")
+        ch_slider.tooltip_text = "Scroll channels"
+        ch_slider.vexpand = true
+        oc = GtkOrientable(ch_slider)
+        oc.orientation = 1
 
-    function rmb_click(_, _, x, y)
-        if x < 82
+        signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
+        signal_slider.draw_value = false
+        signal_slider.tooltip_text = "Time position"
+
+        g[1:9, 1] = can
+        g[10, 1] = ch_slider
+        g[1:9, 2] = signal_slider
+        g[1, 3] = bt_start
+        g[2, 3] = bt_prev
+        g[3, 3] = entry_time
+        g[4, 3] = bt_next
+        g[5, 3] = bt_end
+        g[6, 3] = combo_ch
+        g[7, 3] = entry_ts1
+        g[8, 3] = bt_ts
+        g[9, 3] = bt_help
+        g[7, 4] = entry_ts2
+        g[8, 4] = bt_delete
+        g[9, 4] = bt_close
+        push!(win, g)
+
+        show(win)
+
+        @guarded draw(can) do widget
+            time1 = entry_time.value
+            time2 = time1 + zoom
+            time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
+            ts1 = entry_ts1.value
+            ts2 = entry_ts2.value
+            ctx = getgc(can)
+            channel_type = lowercase.(ch_types)[combo_ch.active + 1]
             if mch
-                ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
-                ch_idx = nothing
-                for idx in eachindex(ch_y)
-                    if y > ch_y[idx] && y < ch_y[idx] + 15 && x > 0 && x < 82
-                        ch_idx = idx + ch_first - 1
-                    end
+                if plot_type == 0
+                    p = NeuroAnalyzer.plot(obj,
+                                           ch=cl[ch_first:ch_last],
+                                           seg=(time1, time2),
+                                           s_pos=(ts1, ts2),
+                                           mono=mono,
+                                           title="",
+                                           scale=scale)
+                elseif plot_type == 1
+                    p =  NeuroAnalyzer.plot(obj,
+                                            ch=get_channel(obj, type=channel_type),
+                                            seg=(time1, time2),
+                                            s_pos=(ts1, ts2),
+                                            mono=mono,
+                                            type=:butterfly,
+                                            avg=false)
+                elseif plot_type == 2
+                    p = NeuroAnalyzer.plot(obj,
+                                           ch=get_channel(obj, type=channel_type),
+                                           seg=(time1, time2),
+                                           s_pos=(ts1, ts2),
+                                           mono=mono,
+                                           type=:mean)
                 end
-                !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
-                draw(can)
-            end
-        else
-            time_current = entry_time.value
-            x > 1172 && (x = 1172)
-            if time_current + zoom < obj.time_pts[end]
-                ts2 = time_current + ((x - 82) / (1090 / zoom))
             else
-                ts2 = time_current + ((x - 82) / (1090 / (obj.time_pts[end] - time_current)))
+                p = NeuroAnalyzer.plot(obj,
+                                       ch=cl[ch_first],
+                                       seg=(time1, time2),
+                                       s_pos=(ts1, ts2),
+                                       mono=mono,
+                                       title="Channel: $(cl[ch_first])",
+                                       scale=scale,
+                                       bad=bad)
             end
-            snap && (ts2 = round(ts2 * 4) / 4)
-            @idle_add entry_ts2.value = round(ts2, digits=3)
+            show(io, MIME("image/png"), p)
+            win.width_request = p.attr[:size][1] + 40
+            win.height_request = p.attr[:size][2] + 40
+            can.width_request = Int32(p.attr[:size][1])
+            can.height_request = Int32(p.attr[:size][2])
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            paint(ctx)
         end
-    end
-    ggc_r = GtkGestureClick()
-    ggc_r.button = 3
-    push!(can, ggc_r)
-    signal_connect(rmb_click, ggc_r, "pressed")
 
-    signal_connect(signal_slider, "value-changed") do widget
-        @idle_add entry_time.value = round(Gtk4.value(signal_slider))
-        draw(can)
-    end
-
-    signal_connect(entry_time, "value-changed") do widget
-        @idle_add Gtk4.value(signal_slider, entry_time.value)
-        draw(can)
-    end
-
-    signal_connect(entry_ts1, "value-changed") do widget
-        entry_ts1.value = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
-        ts1 = entry_ts1.value
-        draw(can)
-    end
-
-    signal_connect(entry_ts2, "value-changed") do widget
-        entry_ts2.value = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
-        ts2 = entry_ts2.value
-        draw(can)
-    end
-
-    signal_connect(bt_prev, "clicked") do widget
-        time_current = entry_time.value
-        if time_current >= obj.time_pts[1] + zoom
-            time_current = time_current - zoom
-            @idle_add Gtk4.value(entry_time, time_current)
-        end
-    end
-
-    signal_connect(bt_next, "clicked") do widget
-        time_current = entry_time.value
-        if time_current < obj.time_pts[end] - zoom
-            time_current += zoom
-        else
-            time_current = obj.time_pts[end] - zoom
-        end
-        @idle_add Gtk4.value(entry_time, time_current)
-    end
-
-    signal_connect(bt_start, "clicked") do widget
-        @idle_add Gtk4.value(entry_time, obj.time_pts[1])
-    end
-
-    signal_connect(bt_end, "clicked") do widget
-        time_current = obj.time_pts[end] - zoom
-        @idle_add Gtk4.value(entry_time, time_current)
-    end
-
-    signal_connect(bt_delete, "clicked") do widget
-        time_current = entry_time.value
-        time1 = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
-        time2 = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
-        if time1 > time2
-            warn_dialog(_nill, "Cannot delete!\nSegment start is larger than segment end.", win)
-        elseif time1 == time2
-            warn_dialog(_nill, "Cannot delete!\nSegment start must be different from segment end.", win)
-        elseif time1 < time2
-            ask_dialog("Delete segment $time1:$time2 ?", win) do ans
-                if ans
-                    trim!(obj, seg=(time1, time2), remove_epochs=false)
-                    _info("Deleted segment: $time1:$time2")
-
-                    if time1 == time_current && time2 > obj.time_pts[end]
-                        time_current = obj.time_pts[end] - zoom
-                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                    else
-                        if obj.time_pts[end] % zoom == 0
-                            time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
-                        else
-                            time_current >= (obj.time_pts[end] - (obj.time_pts[end] % zoom)) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
-                        end
-                        time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
-                    end
-
-                    @idle_add entry_time.value = time_current
-                    @idle_add entry_ts1.value = time_current
-                    @idle_add entry_ts2.value = time_current
-
-                    signal_adj = GtkAdjustment(signal_slider)
-                    signal_adj.lower = obj.time_pts[1]
-                    signal_adj.upper = obj.time_pts[end] - zoom
-                    @idle_add Gtk4.adjustment(signal_slider, signal_adj)
-
-                    time_adj = GtkAdjustment(entry_time)
-                    time_adj.lower = obj.time_pts[1]
-                    time_adj.upper = obj.time_pts[end] - zoom
-                    @idle_add Gtk4.adjustment(entry_time, time_adj)
-
-                    ts1_adj = GtkAdjustment(entry_ts1)
-                    ts1_adj.lower = obj.time_pts[1]
-                    ts1_adj.upper = obj.time_pts[end]
-                    @idle_add Gtk4.adjustment(entry_ts1, ts1_adj)
-
-                    ts2_adj = GtkAdjustment(entry_ts2)
-                    ts2_adj.lower = obj.time_pts[1]
-                    ts2_adj.upper = obj.time_pts[end]
-                    @idle_add Gtk4.adjustment(entry_ts2, ts2_adj)
-                end
-            end
-        end
-    end
-
-    signal_connect(ch_slider, "value-changed") do widget
-        ch_first = round(Int64, Gtk4.value(ch_slider))
-        length(ch) > 20 && (ch_last = ch_first + 19)
-        draw(can)
-    end
-
-#    signal_connect(bt_close, "clicked") do widget
-#        quit = true
-#        # Gtk4.destroy(win)
-#    end
-
-#    signal_connect(bt_ts, "clicked") do widget
-#        Gtk4.destroy(win)
-#    end
-
-    if mch
-        help = "Keyboard shortcuts:\n\nCtrl + b\t\t\tToggle butterfly plot\nCtrl + m\t\t\tToggle mean plot\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-    else
-        help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + p\t\t\tPlay current segment as audio\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-    end
-
-    signal_connect(combo_ch, "changed") do widget
-        draw(can)
-    end
-
-    signal_connect(bt_help, "clicked") do widget
-        info_dialog(help, win) do
-            nothing
-        end
-    end
-
-    function mwheel_scroll(_, dx, dy)
-        if dy == 1.0
-            if k == 0x0000ffe1 # shift
-                time_current = entry_time.value
-                if time_current < obj.time_pts[end] - zoom
-                    time_current += 1
-                else
-                    time_current = obj.time_pts[end] - zoom
-                end
-                @idle_add entry_time.value = time_current
-            elseif k == 0x0000ffe9 # alt
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                if time_current < obj.time_pts[end] - zoom
-                    time_current += zoom
-                else
-                    time_current = obj.time_pts[end] - zoom
-                end
-                @idle_add entry_time.value = time_current
-            elseif k == 0x0000ffe3 ## ctrl
+        function lmb_click(_, _, x, y)
+            if x < 82
                 if mch
-                    if ch_last < length(ch)
-                        ch_first += 1
-                        ch_last += 1
-                        @idle_add Gtk4.value(ch_slider, ch_first)
-                        draw(can)
+                    ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
+                    ch_idx = nothing
+                    for idx in eachindex(ch_y)
+                        if y > ch_y[idx] && y < ch_y[idx] + 15 && x > 0 && x < 82
+                            ch_idx = idx + ch_first - 1
+                        end
                     end
-                else
-                    if ch_first < length(ch)
-                        ch_first += 1
-                        @idle_add Gtk4.value(ch_slider, ch_first)
-                        draw(can)
-                    end
+                    !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
                 end
-            end
-        elseif dy == -1.0
-            if k == 0x0000ffe1 # shift
+            else
                 time_current = entry_time.value
-                if time_current >= obj.time_pts[1] + 1
-                    time_current -= 1
-                    @idle_add entry_time.value = time_current
+                x > 1172 && (x = 1172)
+                if time_current + zoom < obj.time_pts[end]
+                    ts1 = time_current + round((x - 82) / (1090 / zoom), digits=3)
+                else
+                    ts1 = time_current + round((x - 82) / (1090 / (obj.time_pts[end] - time_current)), digits=3)
                 end
-            elseif k == 0x0000ffe9 # alt
-                time_current = get_gtk_property(entry_time, :value, Float64)
-                if time_current >= obj.time_pts[1] + zoom
-                    time_current = time_current - zoom
-                    @idle_add entry_time.value = time_current
-                end
-            elseif k == 0x0000ffe3 ## ctrl
-                if ch_first > 1
-                    ch_first -= 1
-                    ch_last -= 1
-                    @idle_add Gtk4.value(ch_slider, ch_first)
-                    draw(can)
-                end
+                snap && (ts1 = round(ts1 * 4) / 4)
+                @idle_add entry_ts1.value = round(ts1, digits=3)
             end
         end
-    end
-    ecsf = Gtk4.GtkEventControllerScroll(Gtk4.EventControllerScrollFlags_VERTICAL)
-    push!(can, ecsf)
-    signal_connect(mwheel_scroll, ecsf, "scroll")
+        ggc_l = GtkGestureClick()
+        ggc_l.button = 1
+        push!(can, ggc_l)
+        signal_connect(lmb_click, ggc_l, "pressed")
 
-    win_key = Gtk4.GtkEventControllerKey(win)
-
-    signal_connect(win_key, "key-released") do widget, keyval, keycode, state
-        k = nothing
-    end
-
-    signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
-        k = keyval
-        # @show k
-        # @show s
-        # @show Char(k)
-        # @show (ModifierType(s & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt)
-        # keyval == UInt(',')
-        if keyval == 0x0000ff55 # Page Up
-            if ch_first > 1
-                ch_first -= 1
-                ch_last -= 1
-                @idle_add Gtk4.value(ch_slider, ch_first)
-                draw(can)
-            end
-        elseif keyval == 0x0000ff56 # Page Down
-            if mch
-                if ch_last < length(ch)
-                    ch_first += 1
-                    ch_last += 1
-                    @idle_add Gtk4.value(ch_slider, ch_first)
+        function rmb_click(_, _, x, y)
+            if x < 82
+                if mch
+                    ch_y = collect(50:39:793)[1:length(ch_first:ch_last)]
+                    ch_idx = nothing
+                    for idx in eachindex(ch_y)
+                        if y > ch_y[idx] && y < ch_y[idx] + 15 && x > 0 && x < 82
+                            ch_idx = idx + ch_first - 1
+                        end
+                    end
+                    !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
                     draw(can)
                 end
             else
-                if ch_first < length(ch)
-                    ch_first += 1
-                    @idle_add Gtk4.value(ch_slider, ch_first)
-                    draw(can)
+                time_current = entry_time.value
+                x > 1172 && (x = 1172)
+                if time_current + zoom < obj.time_pts[end]
+                    ts2 = time_current + ((x - 82) / (1090 / zoom))
+                else
+                    ts2 = time_current + ((x - 82) / (1090 / (obj.time_pts[end] - time_current)))
                 end
+                snap && (ts2 = round(ts2 * 4) / 4)
+                @idle_add entry_ts2.value = round(ts2, digits=3)
             end
-        elseif keyval == UInt('[')
-            if zoom > 1
-                zoom -= 1
-                bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
-                bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
+        end
+        ggc_r = GtkGestureClick()
+        ggc_r.button = 3
+        push!(can, ggc_r)
+        signal_connect(rmb_click, ggc_r, "pressed")
 
-                signal_adj = GtkAdjustment(signal_slider)
-                signal_adj.lower = obj.time_pts[1]
-                signal_adj.upper = obj.time_pts[end] - zoom
-                @idle_add Gtk4.adjustment(signal_slider, signal_adj)
-
-                time_adj = GtkAdjustment(entry_time)
-                time_adj.lower = obj.time_pts[1]
-                time_adj.upper = obj.time_pts[end] - zoom
-                @idle_add Gtk4.adjustment(entry_time, time_adj)
-
-                draw(can)
-            end
-            if mch
-                help = "Keyboard shortcuts:\n\nCtrl + b\t\t\tToggle butterfly plot\nCtrl + m\t\t\tToggle mean plot\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-            else
-                help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + p\t\t\tPlay current segment as audio\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-            end
-        elseif keyval == UInt(']')
-            if zoom < 30 && zoom < obj.time_pts[end] - 1
-                zoom += 1
-                bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
-                bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
-
-                signal_adj = GtkAdjustment(signal_slider)
-                signal_adj.lower = obj.time_pts[1]
-                signal_adj.upper = obj.time_pts[end] - zoom
-                @idle_add Gtk4.adjustment(signal_slider, signal_adj)
-
-                time_adj = GtkAdjustment(entry_time)
-                time_adj.lower = obj.time_pts[1]
-                time_adj.upper = obj.time_pts[end] - zoom
-                @idle_add Gtk4.adjustment(entry_time, time_adj)
-
-                draw(can)
-            else
-                zoom = obj.time_pts[end]
-                bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
-                bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
-
-                signal_adj = GtkAdjustment(signal_slider)
-                signal_adj.lower = obj.time_pts[1]
-                signal_adj.upper = obj.time_pts[end] - zoom
-                @idle_add Gtk4.adjustment(signal_slider, signal_adj)
-
-                time_adj = GtkAdjustment(entry_time)
-                time_adj.lower = obj.time_pts[1]
-                time_adj.upper = obj.time_pts[end] - zoom
-                @idle_add Gtk4.adjustment(entry_time, time_adj)
-
-                draw(can)
-            end
-            if mch
-                help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-            else
-                help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + p\t\t\tPlay current segment as audio\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-
-            end
-        elseif keyval == 0x0000ff50 # Home
-            @idle_add entry_time.value = obj.time_pts[1]
-            draw(can)
-        elseif keyval == 0x0000ff57 # End
-            time_current = obj.time_pts[end] - zoom
-            @idle_add entry_time.value = time_current
+        signal_connect(signal_slider, "value-changed") do widget
+            @idle_add entry_time.value = round(Gtk4.value(signal_slider))
             draw(can)
         end
 
-        # ALT
-        if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt(','))
+        signal_connect(entry_time, "value-changed") do widget
+            @idle_add Gtk4.value(signal_slider, entry_time.value)
+            draw(can)
+        end
+
+        signal_connect(entry_ts1, "value-changed") do widget
+            entry_ts1.value = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
+            ts1 = entry_ts1.value
+            draw(can)
+        end
+
+        signal_connect(entry_ts2, "value-changed") do widget
+            entry_ts2.value = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
+            ts2 = entry_ts2.value
+            draw(can)
+        end
+
+        signal_connect(bt_prev, "clicked") do widget
             time_current = entry_time.value
             if time_current >= obj.time_pts[1] + zoom
                 time_current = time_current - zoom
-                @idle_add entry_time.value = time_current
+                @idle_add Gtk4.value(entry_time, time_current)
             end
-            draw(can)
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('.'))
+        end
+
+        signal_connect(bt_next, "clicked") do widget
             time_current = entry_time.value
             if time_current < obj.time_pts[end] - zoom
                 time_current += zoom
-                @idle_add entry_time.value = time_current
             else
                 time_current = obj.time_pts[end] - zoom
-                @idle_add entry_time.value = time_current
             end
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
-            mono = !mono
-            draw(can)
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('s'))
-            scale = !scale
-            draw(can)
+            @idle_add Gtk4.value(entry_time, time_current)
         end
 
-        # CONTROL
-        if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
-            quit = true
-            Gtk4.destroy(win)
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-            info_dialog(help, win) do
-                nothing
-            end
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('b'))
-            if mch
-                if plot_type != 1
-                    ch_slider.sensitive = false
-                    combo_ch.sensitive = true
-                    plot_type = 1
-                else
-                    ch_slider.sensitive = true
-                    combo_ch.sensitive = false
-                    plot_type = 0
-                end
-                draw(can)
-            end
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('m'))
-            if mch
-                if plot_type != 2
-                    ch_slider.sensitive = false
-                    combo_ch.sensitive = true
-                    plot_type = 2
-                else
-                    ch_slider.sensitive = true
-                    combo_ch.sensitive = false
-                    plot_type = 0
-                end
-                draw(can)
-            end
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('p'))
-            if !mch
-                _info("Playing current segment as audio")
-                time_current = entry_time.value
-                play(obj, ch=cl[ch_first], seg=(time_current, time_current+zoom), ep=1)
-            end
-        elseif keyval == 0x0000ff0d # Enter
-            close(widget(win_key))
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-            info_dialog(help, win) do
-                nothing
-            end
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
-            snap = !snap
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+        signal_connect(bt_start, "clicked") do widget
+            @idle_add Gtk4.value(entry_time, obj.time_pts[1])
+        end
+
+        signal_connect(bt_end, "clicked") do widget
+            time_current = obj.time_pts[end] - zoom
+            @idle_add Gtk4.value(entry_time, time_current)
+        end
+
+        signal_connect(bt_delete, "clicked") do widget
             time_current = entry_time.value
-            if time_current >= obj.time_pts[1] + 1
-                time_current -= 1
-                @idle_add entry_time.value = time_current
-            end
-            draw(can)
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
-            time_current = entry_time.value
-            if time_current < obj.time_pts[end] - zoom
-                time_current += 1
-                @idle_add entry_time.value = time_current
-            else
-                time_current = obj.time_pts[end] - zoom
-                @idle_add entry_time.value = time_current
-            end
-        elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('d'))
-            time_current = entry_time.value
-            time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
-            time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
+            time1 = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
+            time2 = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
             if time1 > time2
-                warn_dialog(nill, "Cannot delete!\nSegment start is larger than segment end.", win)
+                warn_dialog(_nill, "Cannot delete!\nSegment start is larger than segment end.", win)
             elseif time1 == time2
-                warn_dialog(nill, "Cannot delete!\nSegment start must be different from segment end.", win)
+                warn_dialog(_nill, "Cannot delete!\nSegment start must be different from segment end.", win)
             elseif time1 < time2
                 ask_dialog("Delete segment $time1:$time2 ?", win) do ans
                     if ans
                         trim!(obj, seg=(time1, time2), remove_epochs=false)
                         _info("Deleted segment: $time1:$time2")
+
                         if time1 == time_current && time2 > obj.time_pts[end]
                             time_current = obj.time_pts[end] - zoom
                             time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
@@ -675,7 +330,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                             if obj.time_pts[end] % zoom == 0
                                 time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
                             else
-                                time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                                time_current >= (obj.time_pts[end] - (obj.time_pts[end] % zoom)) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
                             end
                             time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                         end
@@ -707,21 +362,357 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                 end
             end
         end
+
+        signal_connect(ch_slider, "value-changed") do widget
+            ch_first = round(Int64, Gtk4.value(ch_slider))
+            length(ch) > 20 && (ch_last = ch_first + 19)
+            draw(can)
+        end
+
+        signal_connect(bt_close, "clicked") do widget
+            close(win)
+        end
+
+        signal_connect(bt_ts, "clicked") do widget
+            quit = false
+            close(win)
+        end
+
+        if mch
+            help = "Keyboard shortcuts:\n\nCtrl + b\t\t\tToggle butterfly plot\nCtrl + m\t\t\tToggle mean plot\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+        else
+            help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + p\t\t\tPlay current segment as audio\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+        end
+
+        signal_connect(combo_ch, "changed") do widget
+            draw(can)
+        end
+
+        signal_connect(bt_help, "clicked") do widget
+            info_dialog(help, win) do
+                nothing
+            end
+        end
+
+        function mwheel_scroll(_, dx, dy)
+            if dy == 1.0
+                if k == 0x0000ffe1 # shift
+                    time_current = entry_time.value
+                    if time_current < obj.time_pts[end] - zoom
+                        time_current += 1
+                    else
+                        time_current = obj.time_pts[end] - zoom
+                    end
+                    @idle_add entry_time.value = time_current
+                elseif k == 0x0000ffe9 # alt
+                    time_current = get_gtk_property(entry_time, :value, Float64)
+                    if time_current < obj.time_pts[end] - zoom
+                        time_current += zoom
+                    else
+                        time_current = obj.time_pts[end] - zoom
+                    end
+                    @idle_add entry_time.value = time_current
+                elseif k == 0x0000ffe3 ## ctrl
+                    if mch
+                        if ch_last < length(ch)
+                            ch_first += 1
+                            ch_last += 1
+                            @idle_add Gtk4.value(ch_slider, ch_first)
+                            draw(can)
+                        end
+                    else
+                        if ch_first < length(ch)
+                            ch_first += 1
+                            @idle_add Gtk4.value(ch_slider, ch_first)
+                            draw(can)
+                        end
+                    end
+                end
+            elseif dy == -1.0
+                if k == 0x0000ffe1 # shift
+                    time_current = entry_time.value
+                    if time_current >= obj.time_pts[1] + 1
+                        time_current -= 1
+                        @idle_add entry_time.value = time_current
+                    end
+                elseif k == 0x0000ffe9 # alt
+                    time_current = get_gtk_property(entry_time, :value, Float64)
+                    if time_current >= obj.time_pts[1] + zoom
+                        time_current = time_current - zoom
+                        @idle_add entry_time.value = time_current
+                    end
+                elseif k == 0x0000ffe3 ## ctrl
+                    if ch_first > 1
+                        ch_first -= 1
+                        ch_last -= 1
+                        @idle_add Gtk4.value(ch_slider, ch_first)
+                        draw(can)
+                    end
+                end
+            end
+        end
+        ecsf = Gtk4.GtkEventControllerScroll(Gtk4.EventControllerScrollFlags_VERTICAL)
+        push!(can, ecsf)
+        signal_connect(mwheel_scroll, ecsf, "scroll")
+
+        win_key = Gtk4.GtkEventControllerKey(win)
+
+        signal_connect(win_key, "key-released") do widget, keyval, keycode, state
+            k = nothing
+        end
+
+        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            k = keyval
+            # @show k
+            # @show s
+            # @show Char(k)
+            # @show (ModifierType(s & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt)
+            # keyval == UInt(',')
+            if keyval == 0x0000ff55 # Page Up
+                if ch_first > 1
+                    ch_first -= 1
+                    ch_last -= 1
+                    @idle_add Gtk4.value(ch_slider, ch_first)
+                    draw(can)
+                end
+            elseif keyval == 0x0000ff56 # Page Down
+                if mch
+                    if ch_last < length(ch)
+                        ch_first += 1
+                        ch_last += 1
+                        @idle_add Gtk4.value(ch_slider, ch_first)
+                        draw(can)
+                    end
+                else
+                    if ch_first < length(ch)
+                        ch_first += 1
+                        @idle_add Gtk4.value(ch_slider, ch_first)
+                        draw(can)
+                    end
+                end
+            elseif keyval == UInt('[')
+                if zoom > 1
+                    zoom -= 1
+                    bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
+                    bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
+
+                    signal_adj = GtkAdjustment(signal_slider)
+                    signal_adj.lower = obj.time_pts[1]
+                    signal_adj.upper = obj.time_pts[end] - zoom
+                    @idle_add Gtk4.adjustment(signal_slider, signal_adj)
+
+                    time_adj = GtkAdjustment(entry_time)
+                    time_adj.lower = obj.time_pts[1]
+                    time_adj.upper = obj.time_pts[end] - zoom
+                    @idle_add Gtk4.adjustment(entry_time, time_adj)
+
+                    draw(can)
+                end
+                if mch
+                    help = "Keyboard shortcuts:\n\nCtrl + b\t\t\tToggle butterfly plot\nCtrl + m\t\t\tToggle mean plot\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+                else
+                    help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + p\t\t\tPlay current segment as audio\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+                end
+            elseif keyval == UInt(']')
+                if zoom < 30 && zoom < obj.time_pts[end] - 1
+                    zoom += 1
+                    bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
+                    bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
+
+                    signal_adj = GtkAdjustment(signal_slider)
+                    signal_adj.lower = obj.time_pts[1]
+                    signal_adj.upper = obj.time_pts[end] - zoom
+                    @idle_add Gtk4.adjustment(signal_slider, signal_adj)
+
+                    time_adj = GtkAdjustment(entry_time)
+                    time_adj.lower = obj.time_pts[1]
+                    time_adj.upper = obj.time_pts[end] - zoom
+                    @idle_add Gtk4.adjustment(entry_time, time_adj)
+
+                    draw(can)
+                else
+                    zoom = obj.time_pts[end]
+                    bt_next.tooltip_text = "Go forward by $(round(zoom)) seconds"
+                    bt_prev.tooltip_text = "Go back by $(round(zoom)) seconds"
+
+                    signal_adj = GtkAdjustment(signal_slider)
+                    signal_adj.lower = obj.time_pts[1]
+                    signal_adj.upper = obj.time_pts[end] - zoom
+                    @idle_add Gtk4.adjustment(signal_slider, signal_adj)
+
+                    time_adj = GtkAdjustment(entry_time)
+                    time_adj.lower = obj.time_pts[1]
+                    time_adj.upper = obj.time_pts[end] - zoom
+                    @idle_add Gtk4.adjustment(entry_time, time_adj)
+
+                    draw(can)
+                end
+                if mch
+                    help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+                else
+                    help = "Keyboard shortcuts:\n\nPage Up\t\tScroll channels up\nPage Down\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + p\t\t\tPlay current segment as audio\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+
+                end
+            elseif keyval == 0x0000ff50 # Home
+                @idle_add entry_time.value = obj.time_pts[1]
+                draw(can)
+            elseif keyval == 0x0000ff57 # End
+                time_current = obj.time_pts[end] - zoom
+                @idle_add entry_time.value = time_current
+                draw(can)
+            end
+
+            # ALT
+            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt(','))
+                time_current = entry_time.value
+                if time_current >= obj.time_pts[1] + zoom
+                    time_current = time_current - zoom
+                    @idle_add entry_time.value = time_current
+                end
+                draw(can)
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('.'))
+                time_current = entry_time.value
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += zoom
+                    @idle_add entry_time.value = time_current
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    @idle_add entry_time.value = time_current
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
+                mono = !mono
+                draw(can)
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('s'))
+                scale = !scale
+                draw(can)
+            end
+
+            # CONTROL
+            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+                quit = true
+                Gtk4.destroy(win)
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+                info_dialog(help, win) do
+                    nothing
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('b'))
+                if mch
+                    if plot_type != 1
+                        ch_slider.sensitive = false
+                        combo_ch.sensitive = true
+                        plot_type = 1
+                    else
+                        ch_slider.sensitive = true
+                        combo_ch.sensitive = false
+                        plot_type = 0
+                    end
+                    draw(can)
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('m'))
+                if mch
+                    if plot_type != 2
+                        ch_slider.sensitive = false
+                        combo_ch.sensitive = true
+                        plot_type = 2
+                    else
+                        ch_slider.sensitive = true
+                        combo_ch.sensitive = false
+                        plot_type = 0
+                    end
+                    draw(can)
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('p'))
+                if !mch
+                    _info("Playing current segment as audio")
+                    time_current = entry_time.value
+                    play(obj, ch=cl[ch_first], seg=(time_current, time_current+zoom), ep=1)
+                end
+            elseif keyval == 0x0000ff0d # Enter
+                close(widget(win_key))
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+                info_dialog(help, win) do
+                    nothing
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+                snap = !snap
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
+                time_current = entry_time.value
+                if time_current >= obj.time_pts[1] + 1
+                    time_current -= 1
+                    @idle_add entry_time.value = time_current
+                end
+                draw(can)
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('.'))
+                time_current = entry_time.value
+                if time_current < obj.time_pts[end] - zoom
+                    time_current += 1
+                    @idle_add entry_time.value = time_current
+                else
+                    time_current = obj.time_pts[end] - zoom
+                    @idle_add entry_time.value = time_current
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('d'))
+                time_current = entry_time.value
+                time1 = obj.time_pts[vsearch(get_gtk_property(entry_ts1, :value, Float64), obj.time_pts)]
+                time2 = obj.time_pts[vsearch(get_gtk_property(entry_ts2, :value, Float64), obj.time_pts)]
+                if time1 > time2
+                    warn_dialog(nill, "Cannot delete!\nSegment start is larger than segment end.", win)
+                elseif time1 == time2
+                    warn_dialog(nill, "Cannot delete!\nSegment start must be different from segment end.", win)
+                elseif time1 < time2
+                    ask_dialog("Delete segment $time1:$time2 ?", win) do ans
+                        if ans
+                            trim!(obj, seg=(time1, time2), remove_epochs=false)
+                            _info("Deleted segment: $time1:$time2")
+                            if time1 == time_current && time2 > obj.time_pts[end]
+                                time_current = obj.time_pts[end] - zoom
+                                time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                            else
+                                if obj.time_pts[end] % zoom == 0
+                                    time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
+                                else
+                                    time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                                end
+                                time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
+                            end
+
+                            @idle_add entry_time.value = time_current
+                            @idle_add entry_ts1.value = time_current
+                            @idle_add entry_ts2.value = time_current
+
+                            signal_adj = GtkAdjustment(signal_slider)
+                            signal_adj.lower = obj.time_pts[1]
+                            signal_adj.upper = obj.time_pts[end] - zoom
+                            @idle_add Gtk4.adjustment(signal_slider, signal_adj)
+
+                            time_adj = GtkAdjustment(entry_time)
+                            time_adj.lower = obj.time_pts[1]
+                            time_adj.upper = obj.time_pts[end] - zoom
+                            @idle_add Gtk4.adjustment(entry_time, time_adj)
+
+                            ts1_adj = GtkAdjustment(entry_ts1)
+                            ts1_adj.lower = obj.time_pts[1]
+                            ts1_adj.upper = obj.time_pts[end]
+                            @idle_add Gtk4.adjustment(entry_ts1, ts1_adj)
+
+                            ts2_adj = GtkAdjustment(entry_ts2)
+                            ts2_adj.lower = obj.time_pts[1]
+                            ts2_adj.upper = obj.time_pts[end]
+                            @idle_add Gtk4.adjustment(entry_ts2, ts2_adj)
+                        end
+                    end
+                end
+            end
+        end
     end
 
-#    c = Condition()
-#    signal_connect(win, :destroy) do widget
-#        notify(c)
-#    end
-#    @async Gtk4.GLib.glib_main()
-#    wait(c)
+    app = GtkApplication()
 
-    c = Condition()
-    signal_connect(win, :close_request) do widget
-        notify(c)
-    end
-    @async Gtk4.GLib.glib_main()
-    wait(c)
+    Gtk4.signal_connect(activate, app, :activate)
+
+    Gtk4.GLib.stop_main_loop()
+
+    run(app)
 
     if !quit
         time1 = obj.time_pts[vsearch(ts1, obj.epoch_time)]
