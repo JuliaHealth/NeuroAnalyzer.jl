@@ -38,7 +38,7 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
 
     win = GtkWindow("NeuroRecorder: iedar()", p.attr[:size][1], p.attr[:size][2] + 40, false)
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
     g = GtkGrid()
     set_gtk_property!(g, :column_homogeneous, false)
     set_gtk_property!(g, :column_spacing, 5)

@@ -23,8 +23,8 @@ Nothing
 function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
 
     p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
-    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]), false)
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", p.attr[:size][1], p.attr[:size][2], false)
+    can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     push!(win, can)
     Gtk4.show(win)
@@ -121,8 +121,8 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     end
 
     p = NeuroAnalyzer.plot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
-    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", Int32(p.attr[:size][1]), Int32(p.attr[:size][2]), false)
-    can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+    win = GtkWindow("NeuroAnalyzer: iplot_locs3d()", p.attr[:size][1], p.attr[:size][2], false)
+    can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
     set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
     push!(win, can)
     Gtk4.show(win)

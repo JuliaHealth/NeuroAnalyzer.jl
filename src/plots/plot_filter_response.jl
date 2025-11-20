@@ -23,7 +23,6 @@ Plot filter response.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `fs::Int64`: signal sampling rate
 - `order::Int64`: filter order
 - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
@@ -326,7 +325,7 @@ Plot filter response.
 
 # Arguments
 
-- `fs::Int64`: sampling rate
+- `obj::NeuroAnalyzer.NEURO`
 - `n::Int64`: signal length in samples
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter
@@ -343,7 +342,6 @@ Plot filter response.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (must be a pair of frequencies for `:bp` and `:bs`)
-- `fs::Int64`: signal sampling rate
 - `order::Int64`: filter order
 - `rp::Union{Nothing, Real}=nothing`: maximum ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Union{Nothing, Real}=nothing`: minimum ripple attenuation in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
@@ -357,7 +355,7 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(obj::NeuroAnalyzer.NEURO; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_filter_response(obj::NeuroAnalyzer.NEURO; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
 
     p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono, frq_lim=frq_lim, kwargs=kwargs)
 

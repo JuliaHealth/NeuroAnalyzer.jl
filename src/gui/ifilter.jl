@@ -32,16 +32,13 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
 
     fs = sr(obj)
 
-    p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w)
-
-    function activate(app)
+    function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ifilter()")
-        set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-        win.width_request = p.attr[:size][1] + 2
-        win.height_request = p.attr[:size][2] + 2
+        win.width_request = 1200 + 2
+        win.height_request = 800 + 2
 
-        can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
+        can = GtkCanvas(1200, 800)
 
         g = GtkGrid()
         g.column_homogeneous = false
@@ -153,7 +150,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
             mono = cb_mono.active
             cutoff1 = entry_cutoff1.value
             cutoff2 = entry_cutoff2.value
-            order = round(Int64, entry_order.value)
+            order = Int64(entry_order.value)
             rp = entry_rp.value
             rs = entry_rs.value
             bw = entry_bw.value
@@ -285,13 +282,10 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         end
     end
 
-    app = GtkApplication()
-
-    Gtk4.signal_connect(activate, app, :activate)
-
+    app = GtkApplication("org.neuroanalyzer.ifilter")
+    Gtk4.signal_connect(_activate, app, :activate)
     Gtk4.GLib.stop_main_loop()
-
-    run(app)
+    Gtk4.run(app)
 
     if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0
         _warn("order must be odd. Filter was not generated.")
