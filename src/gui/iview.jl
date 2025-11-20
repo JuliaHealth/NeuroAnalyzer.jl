@@ -2335,13 +2335,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         end
     end
 
-#    cnd = Condition()
-#    signal_connect(win, :destroy) do widget
-#        notify(cnd)
-#    end
-#    @async Gtk4.gtk_main()
-#    wait(cnd)
-
     return nothing
 
 end
@@ -2362,52 +2355,51 @@ Nothing
 """
 function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
 
-    win = GtkWindow("NeuroAnalyzer: iview()", p.attr[:size][1] + 2, p.attr[:size][2] + 2, false)
-    win.startup_id = "org.neuroanalyzer"
-    can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
-    push!(win, can)
-        @guarded draw(can) do widget
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        w = img.width
-        h = img.height
-        ctx = getgc(can)
-        # Cairo.scale(ctx, 0.75, 0.75)
-        Cairo.set_source_surface(ctx, img, 1, 2)
-        Cairo.paint(ctx)
-    end
+    function _activate(app)
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
+        win.width_request = p.attr[:size][1] + 2
+        win.height_request = p.attr[:size][2] + 2
 
-    signal_connect(win, "key-press-event") do widget, event
-        k = event.keyval
-        s = event.state
-        if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 115 # s
-                file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
+        can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
+        push!(win, can)
+
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            w = img.width
+            h = img.height
+            ctx = getgc(can)
+            Cairo.set_source_surface(ctx, img, 1, 2)
+            Cairo.paint(ctx)
+        end
+
+        win_key = Gtk4.GtkEventControllerKey(win)
+
+        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            # CONTROL
+            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+                save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
-                        if splitext(file_name)[2] in [".png"]
-                            try
-                                surface_buf = Gtk4.cairo_surface(can)
-                                Cairo.write_to_png(surface_buf, file_name)
-                                _info("Plot saved as: $file_name")
-                            catch
-                                warn_dialog("File $file_name cannot be written!")
-                            end
+                        surface_buf = Gtk4.cairo_surface(can)
+                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                            _info("Plot saved as: $file_name")
                         else
-                            warn_dialog("Incorrect filename!")
+                            warn_dialog(_nill, "File $file_name cannot be written!", win)
                         end
                     end
-            elseif k == 0x00000071 # q
-                Gtk4.destroy(win)
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+                close(win)
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iview")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     return nothing
 
@@ -2436,36 +2428,40 @@ function iview(file_name::String)::Nothing
 
     img = read_from_png(file_name)
 
-    win = GtkWindow("NeuroAnalyzer: iview()", img.width, img.height, false)
-    win.startup_id = "org.neuroanalyzer"
-    can = GtkCanvas(img.width, img.height)
-    push!(win, can)
-        @guarded draw(can) do widget
-        ctx = getgc(can)
-        Cairo.set_source_surface(ctx, img, 0, 0)
-        Cairo.paint(ctx)
-    end
+    function _activate(app)
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
+        win.width_request = Int64(img.width)
+        win.height_request = Int64(img.height)
 
-    signal_connect(win, "key-press-event") do widget, event
-        k = event.keyval
-        s = event.state
-        if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 0x00000071 # q
-                Gtk4.destroy(win)
+        can = GtkCanvas(Int64(img.width), Int64(img.height))
+        push!(win, can)
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            ctx = getgc(can)
+            Cairo.set_source_surface(ctx, img, 0, 0)
+            Cairo.paint(ctx)
+        end
+
+        win_key = Gtk4.GtkEventControllerKey(win)
+
+        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            # CONTROL
+            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+                close(win)
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iview")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     return nothing
 
 end
+
 
 """
     iview(c)
@@ -2482,48 +2478,47 @@ Nothing
 """
 function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
 
-    win = GtkWindow("NeuroAnalyzer: iview()", c.width, c.height, false)
-    win.startup_id = "org.neuroanalyzer"
-    can = GtkCanvas(c.width, c.height)
-    push!(win, can)
-        @guarded draw(can) do widget
-        ctx = getgc(can)
-        Cairo.set_source_rgb(ctx, 255, 255, 255)
-        Cairo.set_source_surface(ctx, c, 1, 1)
-        Cairo.paint(ctx)
-    end
+    function _activate(app)
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
+        win.width_request = Int64(c.width)
+        win.height_request = Int64(c.height)
 
-    signal_connect(win, "key-press-event") do widget, event
-        k = event.keyval
-        s = event.state
-        if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 115 # s
-                file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
+        can = GtkCanvas(Int64(c.width), Int64(c.height))
+        push!(win, can)
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            ctx = getgc(can)
+            Cairo.set_source_rgb(ctx, 255, 255, 255)
+            Cairo.set_source_surface(ctx, c, 1, 1)
+            Cairo.paint(ctx)
+        end
+
+        win_key = Gtk4.GtkEventControllerKey(win)
+
+        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            # CONTROL
+            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+                save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
-                        if splitext(file_name)[2] in [".png"]
-                            try
-                                surface_buf = Gtk4.cairo_surface(can)
-                                Cairo.write_to_png(surface_buf, file_name)
-                                _info("Plot saved as: $file_name")
-                            catch
-                                warn_dialog("File $file_name cannot be written!")
-                            end
+                        surface_buf = Gtk4.cairo_surface(can)
+                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                            _info("Plot saved as: $file_name")
                         else
-                            warn_dialog("Incorrect filename!")
+                            warn_dialog(_nill, "File $file_name cannot be written!", win)
                         end
                     end
-            elseif k == 0x00000071 # q
-                Gtk4.destroy(win)
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+                close(win)
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iview")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     return nothing
 
