@@ -62,15 +62,16 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     function activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
+        set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
         win.width_request = p.attr[:size][1] + 40
         win.height_request = p.attr[:size][2] + 40
 
-        # win = GtkWindow("NeuroAnalyzer: iview()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
         can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+
         entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
         entry_time.digits = 2
         entry_time.value = obj.time_pts[1]
@@ -146,7 +147,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         g[9, 4] = bt_close
         push!(win, g)
 
-        show(win)
+        Gtk4.show(win)
 
         @guarded draw(can) do widget
             time1 = entry_time.value
@@ -589,8 +590,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
 
             # CONTROL
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
-                quit = true
-                Gtk4.destroy(win)
+                close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
                 info_dialog(help, win) do
                     nothing

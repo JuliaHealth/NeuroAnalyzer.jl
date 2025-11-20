@@ -192,7 +192,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 _info(" F2_pass: $f2_pass Hz")
             end
 
-            flt = firls_design((order - 1), flt_frq, flt_shape, w, true, fs=fs)
+            flt = FIRLSFilterDesign.firls_design((order - 1), flt_frq, flt_shape, w, true, fs=fs)
 
             return flt
 
