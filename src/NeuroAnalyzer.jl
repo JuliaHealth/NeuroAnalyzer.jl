@@ -225,7 +225,6 @@ GR.setarrowsize(0.4)
 Plots.gr_cbar_width[] = 0.01
 Plots.gr_set_arrowstyle
 FFTW.set_provider!("fftw")
-_info("  FFTW provider: FFTW")
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 

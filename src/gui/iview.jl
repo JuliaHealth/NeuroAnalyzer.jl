@@ -37,7 +37,10 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     k = nothing
     k = nothing
     kc = nothing
-    nill() = nothing
+
+    function _close_win(a, par)::Nothing
+        close(win)
+    end
 
     plot_type = 0
 
@@ -60,7 +63,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], title="Channel: $(cl[ch_first])")
     end
 
-#    Gtk4.GLib.start_main_loop()
+    Gtk4.GLib.start_main_loop()
 
     win = GtkWindow("NeuroAnalyzer: iview()", Int32(p.attr[:size][1]) + 40, Int32(p.attr[:size][2]) + 40)
     can = GtkCanvas(Int32(p.attr[:size][1]), Int32(p.attr[:size][2]))
@@ -85,6 +88,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     bt_help.tooltip_text = "Show help"
     bt_close = GtkButton("Close")
     bt_close.tooltip_text = "Close this window"
+    bt_close.action_name = "win.close"
     entry_ts1.tooltip_text = "Segment start [s]"
     entry_ts1.digits = 3
     entry_ts2 = GtkSpinButton(obj.time_pts[1], obj.time_pts[end], 0.5)
@@ -92,8 +96,13 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     entry_ts2.tooltip_text = "Segment end [s]"
     bt_ts = GtkButton("Return TS")
     bt_ts.tooltip_text = "Return selected time segment"
+    bt_ts.action_name = "win.close"
     bt_delete = GtkButton("Delete TS")
     bt_delete.tooltip_text = "Delete selected time segment"
+
+    action_group = Gtk4.GLib.GSimpleActionGroup()
+    Gtk4.add_action(Gtk4.GLib.GActionMap(action_group), "close", _close_win)
+    push!(win, Gtk4.GLib.GActionGroup(action_group), "win")
 
     combo_ch = GtkComboBoxText()
     ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
@@ -309,9 +318,9 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         time1 = obj.time_pts[vsearch(entry_ts1.value, obj.time_pts)]
         time2 = obj.time_pts[vsearch(entry_ts2.value, obj.time_pts)]
         if time1 > time2
-            warn_dialog(nill, "Cannot delete!\nSegment start is larger than segment end.", win)
+            warn_dialog(_nill, "Cannot delete!\nSegment start is larger than segment end.", win)
         elseif time1 == time2
-            warn_dialog(nill, "Cannot delete!\nSegment start must be different from segment end.", win)
+            warn_dialog(_nill, "Cannot delete!\nSegment start must be different from segment end.", win)
         elseif time1 < time2
             ask_dialog("Delete segment $time1:$time2 ?", win) do ans
                 if ans
@@ -364,14 +373,14 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         draw(can)
     end
 
-    signal_connect(bt_close, "clicked") do widget
-        quit = true
-        Gtk4.destroy(win)
-    end
+#    signal_connect(bt_close, "clicked") do widget
+#        quit = true
+#        # Gtk4.destroy(win)
+#    end
 
-    signal_connect(bt_ts, "clicked") do widget
-        Gtk4.destroy(win)
-    end
+#    signal_connect(bt_ts, "clicked") do widget
+#        Gtk4.destroy(win)
+#    end
 
     if mch
         help = "Keyboard shortcuts:\n\nCtrl + b\t\t\tToggle butterfly plot\nCtrl + m\t\t\tToggle mean plot\n\nPage Up\t\tScroll channels up\nPage Down\t\tScroll channels down\n\nHome\t\t\tGo to the signal start\nEnd\t\t\t\tGo to the signal end\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + Enter\t\tReturn selected time segment\nCtrl + d\t\t\tDelete selected time segment\n\nCtrl + s\t\t\tToggle snapping\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
@@ -707,8 +716,12 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
 #    @async Gtk4.GLib.glib_main()
 #    wait(c)
 
-#    @async Gtk4.GLib.glib_main()
-#    Gtk4.GLib.waitforsignal(win, :destroy)
+    c = Condition()
+    signal_connect(win, :close_request) do widget
+        notify(c)
+    end
+    @async Gtk4.GLib.glib_main()
+    wait(c)
 
     if !quit
         time1 = obj.time_pts[vsearch(ts1, obj.epoch_time)]
