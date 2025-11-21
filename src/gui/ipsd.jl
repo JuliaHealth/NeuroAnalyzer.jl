@@ -789,11 +789,11 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         entry_frq2.value = sr(obj) / 2
         entry_frq2.tooltip_text = "End frequency"
 
-        entry_wlen = GtkSpinButton(2, zoom * sr(obj) + 1, 1)
+        entry_wlen = GtkSpinButton(2, epoch_len(obj) * sr(obj) + 1, 1)
         entry_wlen.value = sr(obj)
         entry_wlen.tooltip_text = "Window length (samples)"
 
-        entry_woverlap = GtkSpinButton(0, zoom * sr(obj), 1)
+        entry_woverlap = GtkSpinButton(0, epoch_len(obj) * sr(obj), 1)
         entry_woverlap.value = round(Int64, sr(obj) * 0.97)
         entry_woverlap.tooltip_text = "Window overlap (samples)"
 

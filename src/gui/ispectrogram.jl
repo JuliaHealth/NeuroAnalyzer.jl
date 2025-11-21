@@ -745,11 +745,11 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         entry_frq2.value = sr(obj) / 2
         entry_frq2.tooltip_text = "End frequency"
 
-        entry_wlen = GtkSpinButton(2, ep_len(obj) * sr(obj) + 1, 1)
+        entry_wlen = GtkSpinButton(2, epoch_len(obj) * sr(obj) + 1, 1)
         entry_wlen.value = sr(obj)
         entry_wlen.tooltip_text = "Window length (samples)"
 
-        entry_woverlap = GtkSpinButton(0, ep_len(obj) * sr(obj), 1)
+        entry_woverlap = GtkSpinButton(0, epoch_len(obj) * sr(obj), 1)
         entry_woverlap.value = round(Int64, sr(obj) * 0.97)
         entry_woverlap.tooltip_text = "Window overlap (samples)"
 
@@ -973,7 +973,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             draw(can)
         end
         signal_connect(signal_slider, "value-changed") do widget
-            @idle_add entry_time.value = round(Gtk4.value(signal_slider))
+            @idle_add entry_epoch.value = round(Gtk4.value(signal_slider))
         end
         signal_connect(entry_epoch, "value-changed") do widget
             Gtk4.value(signal_slider, get_gtk_property(entry_epoch, :value, Int64))
