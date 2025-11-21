@@ -50,71 +50,71 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         g_opts.row_spacing = 5
 
         bt_refresh = GtkButton("Refresh")
-        set_gtk_property!(bt_refresh, :tooltip_text, "Refresh the plot")
+        bt_refresh.tooltip_text = "Refresh the plot"
 
         bt_close = GtkButton("Close")
-        set_gtk_property!(bt_close, :tooltip_text, "Close this window and return the filter")
+        bt_close.tooltip_text = "Close this window and return the filter"
 
         cb_mono = GtkCheckButton()
-        set_gtk_property!(cb_mono, :tooltip_text, "Use color or gray palette")
+        cb_mono.tooltip_text = "Use color or gray palette"
 
         combo_fprototype = GtkComboBoxText()
         for idx in uppercase.(String.(fprototypes))
             push!(combo_fprototype, idx)
         end
-        set_gtk_property!(combo_fprototype, :active, 0)
-        set_gtk_property!(combo_fprototype, :tooltip_text, "Filter prototype")
+        combo_fprototype.active = 0
+        combo_fprototype.tooltip_text = "Filter prototype"
 
         combo_ftype = GtkComboBoxText()
         for idx in uppercase.(String.(ftypes))
             push!(combo_ftype, idx)
         end
-        set_gtk_property!(combo_ftype, :active, 0)
-        set_gtk_property!(combo_ftype, :tooltip_text, "Filter type")
+        combo_ftype.active = 0
+        combo_ftype.tooltip_text = "Filter type"
 
         entry_cutoff1 = GtkSpinButton(0.1, fs / 2 - 0.1, 0.1)
-        set_gtk_property!(entry_cutoff1, :value, cutoff)
-        set_gtk_property!(entry_cutoff1, :tooltip_text, "Filter cutoff in Hz (lower)")
+        entry_cutoff1.value = cutoff
+        entry_cutoff1.tooltip_text = "Filter cutoff in Hz (lower)"
 
         entry_cutoff2 = GtkSpinButton(0.2, fs / 2, 0.1)
-        set_gtk_property!(entry_cutoff2, :value, cutoff + 0.1)
-        set_gtk_property!(entry_cutoff2, :sensitive, false)
-        set_gtk_property!(entry_cutoff2, :tooltip_text, "Filter cutoff in Hz (upper)")
+        entry_cutoff2.value = cutoff + 0.1
+        entry_cutoff2.sensitive = false
+        entry_cutoff2.tooltip_text = "Filter cutoff in Hz (upper)"
 
         entry_order = GtkSpinButton(1, 10_000, 1)
-        set_gtk_property!(entry_order, :value, order)
-        set_gtk_property!(entry_order, :tooltip_text, "Filter order (number of taps)")
+        entry_order.value = order
+        entry_order.tooltip_text = "Filter order (number of taps)"
 
         entry_rp = GtkSpinButton(0.0025, 256.0, 0.0025)
-        set_gtk_property!(entry_rp, :value, rp)
-        set_gtk_property!(entry_rp, :tooltip_text, "Maximum ripple amplitude in dB; default: 0.0025 dB for ELLIPTIC, 2 dB for others")
+        entry_rp.value = rp
+        entry_rp.tooltip_text = "Maximum ripple amplitude in dB; default: 0.0025 dB for ELLIPTIC, 2 dB for others"
 
         entry_rs = GtkSpinButton(0.0025, 256.0, 0.0025)
-        set_gtk_property!(entry_rs, :value, rs)
-        set_gtk_property!(entry_rs, :tooltip_text, "Minimum ripple attenuation in dB; default: 40 dB for ELLIPTIC, 20 dB for others")
+        entry_rs.value = rs
+        entry_rs.tooltip_text = "Minimum ripple attenuation in dB; default: 40 dB for ELLIPTIC, 20 dB for others"
 
         entry_bw = GtkSpinButton(0.1, cutoff, 0.1)
-        set_gtk_property!(entry_bw, :value, bw)
-        set_gtk_property!(entry_bw, :tooltip_text, "Transition band width in Hz")
+        entry_bw.value = bw
+        entry_bw.tooltip_text = "Transition band width in Hz"
 
         lab_fprototype = GtkLabel("Filter prototype:")
-        set_gtk_property!(lab_fprototype, :halign, 2)
+        lab_fprototype.halign = 2
         lab_ftype = GtkLabel("Filter type:")
-        set_gtk_property!(lab_ftype, :halign, 2)
+        lab_ftype.halign = 2
         lab_mono = GtkLabel("Grayscale:")
-        set_gtk_property!(lab_mono, :halign, 2)
+        lab_mono.halign = 2
         lab_cutoff1 = GtkLabel("Cutoff (L):")
-        set_gtk_property!(lab_cutoff1, :halign, 2)
+        lab_cutoff1.halign = 2
         lab_cutoff2 = GtkLabel("Cutoff (U):")
-        set_gtk_property!(lab_cutoff2, :halign, 2)
+        lab_cutoff2.halign = 2
         lab_order = GtkLabel("Order:")
-        set_gtk_property!(lab_order, :halign, 2)
+        lab_order.halign = 2
         lab_rp = GtkLabel("R_pass:")
-        set_gtk_property!(lab_rp, :halign, 2)
+        lab_rp.halign = 2
         lab_rs = GtkLabel("R_stop:")
-        set_gtk_property!(lab_rs, :halign, 2)
+        lab_rs.halign = 2
         lab_bw = GtkLabel("Bandwidth:")
-        set_gtk_property!(lab_bw, :halign, 2)
+        lab_bw.halign = 2
 
         g_opts[1, 1] = lab_fprototype
         g_opts[1, 2] = lab_ftype

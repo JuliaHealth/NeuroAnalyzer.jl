@@ -24,133 +24,155 @@ Interactive selection of matrix area.
 
 or
 
-- `seg::Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}`: extracted segment
+- `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
-function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)::Union{Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}
+function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}
 
     _check_var(shape, [:r, :c, :p], "shape")
 
-    p = heatmap(m,
-                framestyle=:none,
-                cb=false;
-                fill=:darktest,
-                margins=-100Plots.px,
-                legend=false)
+    size_x = size(m, 2)
+    size_y = size(m, 1)
 
-    dim_x = size(m, 2)
-    dim_y = size(m, 1)
-    size_x = p.attr[:size][1] ÷ dim_x
-    size_y = p.attr[:size][2] ÷ dim_y
+    p = Plots.heatmap(m,
+                      framestyle=:none,
+                      cb=false;
+                      fill=:darktest,
+                      margins=-100Plots.px,
+                      legend=false,
+                      size=(size_x, size_y))
 
-    win = GtkWindow("NeuroAnalyzer: iselect_seg()", p.attr[:size][1] + 2, p.attr[:size][2] + 2)
-    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-    can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
-    push!(win, can)
-    Gtk4.show(win)
+    x_pos = Int64[]
+    y_pos = Int64[]
 
-    x = Int64[]
-    y = Int64[]
+    function _activate(app)
 
-    @guarded draw(can) do widget
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        ctx = getgc(can)
-        Cairo.set_source_surface(ctx, img, 1, 1)
-        Cairo.paint(ctx)
-    end
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
+        win.width_request = p.attr[:size][1] + 2
+        win.height_request = p.attr[:size][2] + 2
 
-    can.mouse.button1press = @guarded (widget, event) -> begin
-        x_pos = round(event.x)
-        y_pos = round(event.y)
-        ctx = getgc(widget)
-        if length(x) >= 0 && length(x) < 2 && shape in [:r, :c]
-            push!(x, x_pos)
-            push!(y, y_pos)
-        elseif shape === :p && length(x) == 0
-            push!(x, x_pos)
-            push!(y, y_pos)
+        can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
+        push!(win, can)
+
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            ctx = getgc(can)
+            Cairo.set_source_surface(ctx, img, 1, 1)
+            Cairo.paint(ctx)
         end
-        if length(x) == 1
-            Gtk4.arc(ctx, x[1], y[1], 2, 0, 2*pi)
-            Gtk4.set_source_rgb(ctx, 0, 0, 0)
-            Gtk4.fill(ctx)
-            Gtk4.stroke(ctx)
-            Gtk4.reveal(widget)
-        else length(x) == 2
-            if shape === :c
-                Gtk4.arc(ctx, x[1], y[1], distance((x[1], y[1]), (x[2], y[2])), 0, 2*pi)
-            elseif shape === :r
-                Gtk4.rectangle(ctx, x[1], y[1], x[2] - x[1], y[2] - y[1])
+
+        function _lmb_click(_, _, x, y)
+            x = round(x)
+            y = round(y)
+            ctx = getgc(can)
+            if length(x) >= 0 && length(x_pos) < 2 && shape in [:r, :c]
+                push!(x_pos, x)
+                push!(y_pos, y)
+            elseif shape === :p && length(x_pos) == 0
+                push!(x_pos, x)
+                push!(y_pos, y)
             end
-            Gtk4.set_source_rgb(ctx, 0, 0, 0)
-            Gtk4.set_line_width(ctx, 4.0);
-            Gtk4.stroke(ctx)
-            Gtk4.reveal(widget)
+            if length(x_pos) == 1
+                Gtk4.arc(ctx, x_pos[1], y_pos[1], 2, 0, 2*pi)
+                Gtk4.set_source_rgb(ctx, 0, 0, 0)
+                Gtk4.fill(ctx)
+                Gtk4.stroke(ctx)
+                Gtk4.reveal(can)
+            else length(x) == 2
+                if shape === :c
+                    Gtk4.arc(ctx, x_pos[1], y_pos[1], distance((x_pos[1], y_pos[1]), (x_pos[2], y_pos[2])), 0, 2*pi)
+                elseif shape === :r
+                    Gtk4.rectangle(ctx, x_pos[1], y_pos[1], x_pos[2] - x_pos[1], y_pos[2] - y_pos[1])
+                end
+                Gtk4.set_source_rgb(ctx, 0, 0, 0)
+                Gtk4.set_line_width(ctx, 4.0);
+                Gtk4.stroke(ctx)
+                Gtk4.reveal(can)
+            end
         end
-    end
+        ggc_l = GtkGestureClick()
+        ggc_l.button = 1
+        push!(can, ggc_l)
+        signal_connect(_lmb_click, ggc_l, "pressed")
 
-    can.mouse.button2press = @guarded (widget, event) -> begin
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        ctx = getgc(can)
-        Cairo.set_source_surface(ctx, img, 1, 1)
-        Cairo.paint(ctx)
-        if length(x) > 0
-            pop!(x)
-            pop!(y)
+        function _rmb_click(_, _, x, y)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            ctx = getgc(can)
+            Cairo.set_source_surface(ctx, img, 1, 1)
+            Cairo.paint(ctx)
+            if length(x_pos) > 0
+                pop!(x_pos)
+                pop!(y_pos)
+            end
+            if length(x_pos) == 1
+                Gtk4.arc(ctx, x_pos[1], y_pos[1], 2, 0, 2*pi)
+                Gtk4.set_source_rgb(ctx, 0, 0, 0)
+                Gtk4.fill(ctx)
+                Gtk4.stroke(ctx)
+            end
+            Gtk4.reveal(can)
         end
-        if length(x) == 1
-            Gtk4.arc(ctx, x[1], y[1], 2, 0, 2*pi)
-            Gtk4.set_source_rgb(ctx, 0, 0, 0)
-            Gtk4.fill(ctx)
-            Gtk4.stroke(ctx)
-        end
-        Gtk4.reveal(widget)
-    end
+        ggc_r = GtkGestureClick()
+        ggc_r.button = 3
+        push!(can, ggc_r)
+        signal_connect(_rmb_click, ggc_r, "pressed")
 
-    signal_connect(win, "key-press-event") do widget, event
-        k = event.keyval
-        s = event.state
-        if s == 0x00000004 || s == 0x00000014 # ctrl
-            if k == 0x00000073 # s
-                file_name = save_dialog("Pick image file", GtkNullContainer(), (GtkFileFilter("*.png", name="All supported formats"), "*.png"))
+        win_key = Gtk4.GtkEventControllerKey(win)
+
+        help = "Keyboard shortcuts:\n\nCtrl + Enter\t\tReturn selected segment\nCtrl + s\t\t\tSave selected segment as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+
+        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
+                save_dialog("Pick an image file", win, ["*.png"]) do file_name
                     if file_name != ""
-                        if splitext(file_name)[2] in [".png"]
-                            surface_buf = Gtk4.cairo_surface(can)
-                            Cairo.write_to_png(surface_buf, file_name)
+                        surface_buf = Gtk4.cairo_surface(can)
+                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
+                            _info("Plot saved as: $file_name")
                         else
-                            warn_dialog("Incorrect filename!")
+                            warn_dialog(_nill, "File $file_name cannot be written!", win)
                         end
                     end
-            elseif k == 0x00000071 # q
-                Gtk4.destroy(win)
-                x = nothing
-                y = nothing
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
+                info_dialog(help, win) do
+                    nothing
+                end
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == 0x0000ff0d) # Enter
+                close(win)
+            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
+                x_pos = nothing
+                y_pos = nothing
+                close(win)
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iselect_seg")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
-    if x === nothing && y === nothing
+    if x_pos === nothing && y_pos === nothing
         return nothing
     end
 
     if shape in [:r, :c]
-        if x !== nothing && y !== nothing && length(x) > 0 && length(y) > 0
-            if length(x) > 1 && length(y) > 1 && x[end] == x[1] && y[end] == y[1]
-                pop!(x)
-                pop!(y)
+        if x_pos !== nothing && y_pos !== nothing && length(x_pos) > 0 && length(y_pos) > 0
+            if length(x_pos) > 1 && length(y_pos) > 1 && x_pos[end] == x_pos[1] && y_pos[end] == y_pos[1]
+                pop!(x_pos)
+                pop!(y_pos)
             end
-            c1 = div(x[1], size_x) .+ 1
-            c2 = div(x[2], size_x) .+ 1
-            r1 = div(y[1], size_y) .+ 1
-            r2 = div(y[2], size_y) .+ 1
+            x_pos[1] > size_x && (x_pos[1] = size_x)
+            x_pos[2] > size_x && (x_pos[2] = size_x)
+            y_pos[1] > size_y && (y_pos[1] = size_y)
+            y_pos[2] > size_y && (y_pos[2] = size_y)
+            c1 = x_pos[1]
+            c2 = x_pos[2]
+            r1 = y_pos[1]
+            r2 = y_pos[2]
             if shape === :r
                 r1 > r2 && ((r1, r2) = _swap(r1, r2))
                 c1 > c2 && ((c1, c2) = _swap(c1, c2))
@@ -159,9 +181,11 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
             return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
         end
     else
-        c = div(x[1], size_x) .+ 1
-        r = div(y[1], size_y) .+ 1
-        return (m[r, :], m[:, c])
+        x_pos[1] > size_x && (x_pos[1] = size_x)
+        y_pos[1] > size_y && (y_pos[1] = size_y)
+        c = x_pos[1]
+        r = y_pos[1]
+        return !extract ? (r, c) : m[r, c]
     end
 
 end
