@@ -802,7 +802,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         oc = GtkOrientable(ch_slider)
         oc.orientation = 1
 
-        signal_slider = GtkScale(:h, 1:1:nepochs(obj))
+        signal_slider = GtkScale(:h, 1:nepochs(obj))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Current epoch"
 
