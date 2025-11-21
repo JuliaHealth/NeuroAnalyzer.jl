@@ -517,7 +517,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
             close(win)
         end
 
-        help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+        help = "Keyboard shortcuts:\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
 
         signal_connect(bt_help, "clicked") do widget
             info_dialog(_nill, help, win)
@@ -548,7 +548,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                     @idle_add Gtk4.adjustment(entry_time, time_adj)
                     draw(can)
                 end
-                help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+                help = "Keyboard shortcuts:\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
             elseif keyval == UInt(']')
                 if zoom < 30 && zoom < obj.time_pts[end] - 1
                     zoom += 1
@@ -581,7 +581,7 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                     @idle_add Gtk4.adjustment(entry_time, time_adj)
                     draw(can)
                 end
-                help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+                help = "Keyboard shortcuts:\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nCtrl + s\t\t\tSave as PNG\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
             end
 
             # ALT
@@ -635,25 +635,6 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 else
                     time_current = obj.time_pts[end] - 1
                     @idle_add entry_time.value = time_current
-                end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('z'))
-                if ch_first > 1
-                    ch_first -= 1
-                    ch_last -= 1
-                    @idle_add Gtk4.value(ch_slider, ch_first)
-                end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('x'))
-                if mch
-                    if ch_last < length(ch)
-                        ch_first += 1
-                        ch_last += 1
-                        @idle_add Gtk4.value(ch_slider, ch_first)
-                    end
-                else
-                    if ch_first < length(ch)
-                        ch_first += 1
-                        @idle_add Gtk4.value(ch_slider, ch_first)
-                    end
                 end
             end
         end
@@ -716,9 +697,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
         entry_epoch.tooltip_text = "Epoch"
         bt_start = GtkButton("⇤")
-        bt_start.tooltip_text = "Go to the signal start"
+        bt_start.tooltip_text = "Go to the first epoch"
         bt_end = GtkButton("⇥")
-        bt_end.tooltip_text = "Go to the signal end"
+        bt_end.tooltip_text = "Go to the last epoch"
         bt_help = GtkButton("Help")
         bt_help.tooltip_text = "Show help"
         bt_close = GtkButton("Close")
@@ -1027,6 +1008,29 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             end
         end
 
+        function _mwheel_scroll(_, dx, dy)
+            if dy > 0.5
+                if k == 0x0000ffe1 # shift
+                    ep = Int64(entry_epoch.value)
+                    if ep < nepochs(obj1)
+                        ep += 1
+                        @idle_add entry_epoch.value = ep
+                    end
+                end
+            elseif dy < 0.5
+                if k == 0x0000ffe1 # shift
+                    ep = Int64(entry_epoch.value)
+                    if ep > 1
+                        ep -= 1
+                        @idle_add entry_epoch.value = ep
+                    end
+                end
+            end
+        end
+        ecsf = Gtk4.GtkEventControllerScroll(Gtk4.EventControllerScrollFlags_VERTICAL)
+        push!(can, ecsf)
+        signal_connect(_mwheel_scroll, ecsf, "scroll")
+
         signal_connect(combo_ch, "changed") do widget
             ch = Int64(combo_ch.active) + 1
             if ch in 1:length(ctypes)
@@ -1110,13 +1114,17 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             close(win)
         end
 
-        help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tPrevious epoch\nCtrl + .\t\t\tNext epoch\n\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
+        help = "Keyboard shortcuts:\n\nCtrl + ,\t\t\tPrevious epoch\nCtrl + .\t\t\tNext epoch\n\nCtrl + s\t\t\tSave as PNG\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
 
         signal_connect(bt_help, "clicked") do widget
             info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
+
+        signal_connect(win_key, "key-released") do widget, keyval, keycode, state
+            k = nothing
+        end
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
             # ALT

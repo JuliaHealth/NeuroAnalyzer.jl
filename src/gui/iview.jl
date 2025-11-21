@@ -757,9 +757,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         entry_epoch.value = ep
         entry_epoch.tooltip_text = "Epoch"
         bt_start = GtkButton("⇤")
-        bt_start.tooltip_text = "Go to the signal start"
+        bt_start.tooltip_text = "Go to the first epoch"
         bt_end = GtkButton("⇥")
-        bt_end.tooltip_text = "Go to the signal end"
+        bt_end.tooltip_text = "Go to the last epoch"
         bt_help = GtkButton("Help")
         bt_help.tooltip_text = "Show help"
         bt_close = GtkButton("Close")
@@ -1591,9 +1591,9 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         entry_epoch.value = ep
         entry_epoch.tooltip_text = "Epoch"
         bt_start = GtkButton("⇤")
-        bt_start.tooltip_text = "Go to the signal start"
+        bt_start.tooltip_text = "Go to the first epoch"
         bt_end = GtkButton("⇥")
-        bt_end.tooltip_text = "Go to the signal end"
+        bt_end.tooltip_text = "Go to the last epoch"
         bt_help = GtkButton("Help")
         bt_help.tooltip_text = "Show help"
         bt_close = GtkButton("Close")
@@ -2210,9 +2210,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         entry_epoch.value = ep
         entry_epoch.tooltip_text = "Epoch"
         bt_start = GtkButton("⇤")
-        bt_start.tooltip_text = "Go to the signal start"
+        bt_start.tooltip_text = "Go to the first epoch"
         bt_end = GtkButton("⇥")
-        bt_end.tooltip_text = "Go to the signal end"
+        bt_end.tooltip_text = "Go to the last epoch"
         bt_help = GtkButton("Help")
         bt_help.tooltip_text = "Show help"
         bt_close = GtkButton("Close")
