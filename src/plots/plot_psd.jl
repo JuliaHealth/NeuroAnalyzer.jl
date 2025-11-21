@@ -851,7 +851,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
             p = plot_psd(sf,
                          sp,
                          xlabel=xlabel,
-                         ylabel=ylabel,
+                         ylabel="",
                          clabels=clabels[ch],
                          title=title,
                          db=db,

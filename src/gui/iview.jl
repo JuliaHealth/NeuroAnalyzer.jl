@@ -35,8 +35,6 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     ts1 = 0
     ts2 = 0
     k = nothing
-    k = nothing
-    kc = nothing
 
     plot_type = 0
 
@@ -446,9 +444,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         end
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -548,9 +544,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('b'))
                 if mch
                     if plot_type != 1
@@ -723,8 +717,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     quit = true
     scale = true
     k = nothing
-    k = nothing
-    kc = nothing
 
     plot_type = 0
     zoom = epoch_len(obj)
@@ -1059,9 +1051,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         end
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -1086,9 +1076,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('b'))
                 if mch
                     if plot_type != 1
@@ -1230,6 +1218,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
     ch = 1:nchannels(obj1)
 
     scale = true
+    k = nothing
 
     if length(ch) > 20
         ch_first = 1
@@ -1412,9 +1401,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nAlt + s\t\t\tToggle scales\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         signal_connect(bt_close, "clicked") do widget
@@ -1507,9 +1494,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
                 time_current = entry_time.value
                 if time_current >= obj1.time_pts[1] + 1
@@ -1578,6 +1563,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
     _check_epochs(obj1, ep)
 
     scale = true
+    k = nothing
 
     if length(ch) > 20
         ch_first = 1
@@ -1729,9 +1715,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tPrevious epoch\nCtrl + .\t\t\tNext epoch\n\nAlt + s\t\t\tToggle scales\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -1756,9 +1740,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
                 ep = Int64(entry_epoch.value)
                 if ep > 1
@@ -1830,6 +1812,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
     mono = false
     quit = false
     scale = true
+    k = nothing
 
     if length(ch) > 20
         ch_first = 1
@@ -2027,9 +2010,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
         help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tGo back by 1 second\nCtrl + .\t\t\tGo forward by 1 second\nAlt + ,\t\t\tGo back by $(round(zoom)) seconds\nAlt + .\t\t\tGo forward by $(round(zoom)) seconds\n\n[\t\t\t\tZoom in\n]\t\t\t\tZoom out\n\nToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -2129,9 +2110,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
                 time_current = entry_time.value
                 if time_current >= obj.time_pts[1] + 1
@@ -2205,6 +2184,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
 
     mono = false
     scale = true
+    k = nothing
 
     if length(ch) > 20
         ch_first = 1
@@ -2356,9 +2336,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         help = "Keyboard shortcuts:\n\nCtrl + z\t\t\tScroll channels up\nCtrl + x\t\t\tScroll channels down\n\nCtrl + ,\t\t\tPrevious epoch\nCtrl + .\t\t\tNext epoch\n\nAlt + s\t\t\tToggle scales\nAlt + m\t\t\tToggle monochromatic mode\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -2383,9 +2361,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt(','))
                 ep = Int64(entry_epoch.value)
                 if ep > 1

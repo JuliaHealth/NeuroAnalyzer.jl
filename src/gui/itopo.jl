@@ -291,9 +291,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         help = "Keyboard shortcuts:\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -311,9 +309,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                     end
                 end
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             end
@@ -636,9 +632,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         help = "Keyboard shortcuts:\n\nCtrl + s\t\t\tSave as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tExit\n"
 
         signal_connect(bt_help, "clicked") do widget
-            info_dialog(help, win) do
-                nothing
-            end
+            info_dialog(_nill, help, win)
         end
 
         win_key = Gtk4.GtkEventControllerKey(win)
@@ -656,9 +650,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                     end
                 end
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(help, win) do
-                    nothing
-                end
+                info_dialog(_nill, help, win)
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
                 close(win)
             end
