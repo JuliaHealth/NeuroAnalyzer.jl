@@ -1097,7 +1097,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         signal_connect(signal_slider, "value-changed") do widget
             @idle_add entry_epoch.value = round(Int64, Gtk4.value(signal_slider))
         end
-        signal_connect(entry_time, "value-changed") do widget
+        signal_connect(entry_epoch, "value-changed") do widget
             @idle_add Gtk4.value(signal_slider, entry_epoch.value)
             draw(can)
         end
