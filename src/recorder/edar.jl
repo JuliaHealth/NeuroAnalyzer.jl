@@ -36,104 +36,108 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
                    xtickfontsize=8,
                    ytickfontsize=8)
 
-    win = GtkWindow("NeuroRecorder: iedar()", p.attr[:size][1], p.attr[:size][2] + 40, false)
-    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-    can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
-    g = GtkGrid()
-    set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 5)
-    set_gtk_property!(g, :row_spacing, 5)
+    function _activate(app)
 
-    bt_record = GtkButton("RECORD")
-    set_gtk_property!(bt_record, :tooltip_text, "Start recording")
+        win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
+        win.width_request = p.attr[:size][1]
+        win.height_request = p.attr[:size][2] + 40
 
-    lb_status1 = GtkLabel("Status:")
-    lb_status2 = GtkLabel("READY TO START")
-    set_gtk_property!(lb_status1, :halign, 2)
-    set_gtk_property!(lb_status2, :halign, 1)
+        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        g = GtkGrid()
+        g.column_homogeneous = false
+        g.column_spacing = 5
+        g.row_spacing = 5
 
-    g[1:2, 1] = can
-    g[1:2, 2] = bt_record
-    g[1, 3] = lb_status1
-    g[2, 3] = lb_status2
-    vbox = GtkBox(:v)
-    push!(vbox, g)
+        bt_record = GtkButton("RECORD")
+        bt_record.tooltip_text = "Start recording"
 
-    push!(win, vbox)
-    showall(win)
+        lb_status1 = GtkLabel("Status:")
+        lb_status2 = GtkLabel("READY TO START")
+        lb_status1.halign = 2
+        lb_status2.halign = 1
 
-    @guarded draw(can) do widget
-        p = Plots.plot(t,
-                       eda_signal,
-                       mc=:black,
-                       ms=0.5,
-                       lw=0.5,
-                       lc=:black,
-                       ylims=(0, 10),
-                       xlims=(t[1], t[end]),
-                       legend=false,
-                       palette=:darktest,
-                       size=(800, 400),
-                       margins=20Plots.px,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8)
-        ctx = getgc(can)
-        show(io, MIME("image/png"), p)
-        img = read_from_png(io)
-        set_source_surface(ctx, img, 0, 0)
-        Cairo.paint(ctx)
-    end
+        g[1:2, 1] = can
+        g[1:2, 2] = bt_record
+        g[1, 3] = lb_status1
+        g[2, 3] = lb_status2
+        vbox = GtkBox(:v)
+        push!(vbox, g)
 
-    @guarded signal_connect(bt_record, "clicked") do widget
-        set_gtk_property!(bt_record, :sensitive, false)
-        Threads.@spawn begin
-            set_gtk_property!(lb_status2, :label, "PREPARING")
-            ts = time()
-            while time() - ts <= 2
-                _serial_listener(sp)
-            end
-            _beep()
-            set_gtk_property!(lb_status2, :label, "RECORDING")
-            t_refresh = time()
-            idx = 1
-            while idx <= length(eda_signal)
-                if time() - t_refresh >= 0.1
-                    draw(can)
-                    t_refresh = time()
+        push!(win, vbox)
+
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            p = Plots.plot(t,
+                           eda_signal,
+                           mc=:black,
+                           ms=0.5,
+                           lw=0.5,
+                           lc=:black,
+                           ylims=(0, 10),
+                           xlims=(t[1], t[end]),
+                           legend=false,
+                           palette=:darktest,
+                           size=(800, 400),
+                           margins=20Plots.px,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=8,
+                           ytickfontsize=8)
+            ctx = getgc(can)
+            show(io, MIME("image/png"), p)
+            img = read_from_png(io)
+            set_source_surface(ctx, img, 0, 0)
+            Cairo.paint(ctx)
+        end
+
+        @guarded signal_connect(bt_record, "clicked") do widget
+            bt_record.sensitive = false
+            Threads.@spawn begin
+                lb_status2.label = "PREPARING"
+                ts = time()
+                while time() - ts <= 2
+                    _serial_listener(sp)
                 end
-                sp_signal = _serial_listener(sp)
-                if !isnothing(sp_signal)
-                    m = match(r"(gsr\:)([0-9]+\.[0-9]+)", sp_signal)
-                    if !isnothing(m)
-                        if length(m.captures) == 2
-                            eda_signal[idx] = parse(Float64, m.captures[2])
-                            idx += 1
+                _beep()
+                lb_status2.label = "RECORDING"
+                t_refresh = time()
+                idx = 1
+                while idx <= length(eda_signal)
+                    if time() - t_refresh >= 0.1
+                        draw(can)
+                        t_refresh = time()
+                    end
+                    sp_signal = _serial_listener(sp)
+                    if !isnothing(sp_signal)
+                        m = match(r"(gsr\:)([0-9]+\.[0-9]+)", sp_signal)
+                        if !isnothing(m)
+                            if length(m.captures) == 2
+                                eda_signal[idx] = parse(Float64, m.captures[2])
+                                idx += 1
+                            end
                         end
                     end
                 end
-            end
-            draw(can)
-            _serial_close(sp)
-            set_gtk_property!(lb_status2, :label, "FINISHED")
-            _beep()
-            sleep(2)
+                draw(can)
+                _serial_close(sp)
+                lb_status2.label = "FINISHED"
+                _beep()
+                sleep(2)
 
-            # Interacting with GTK from a thread other than the main thread is
-            # generally not allowed, so we register an idle callback instead.
-            Gtk4.GLib.g_idle_add(nothing) do user_data
-                Gtk4.destroy(win)
+                # Interacting with GTK from a thread other than the main thread is
+                # generally not allowed, so we register an idle callback instead.
+                Gtk4.GLib.g_idle_add(nothing) do user_data
+                    close(win)
+                end
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iedar")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     eda_signal = eda_signal[1:(end - 1)]
     t = round.(t[1:(end - 1)], digits=3)

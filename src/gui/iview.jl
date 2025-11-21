@@ -2477,7 +2477,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
                         if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
-                            warn_dialog(_nill, "File $file_name cannot be written!", win)
+                            warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end
@@ -2596,7 +2596,7 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
                         if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
                             _info("Plot saved as: $file_name")
                         else
-                            warn_dialog(_nill, "File $file_name cannot be written!", win)
+                            warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     end
                 end

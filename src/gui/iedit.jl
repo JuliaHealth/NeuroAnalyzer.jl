@@ -679,13 +679,13 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         end
 
         signal_connect(bt_save, "clicked") do widget
-            file_name = save_dialog("Pick a locations file", win, ["*.ced", "*.elc", "*.locs", "*.tsv", "*.sfp", "*.csd", "*.geo", "*.mat"]) do file_name
+            file_name = save_dialog("Pick a locations file", win, [".ced", ".locs", ".tsv"]) do file_name
                 if file_name != ""
                     if splitext(file_name)[2] in [".ced", ".locs", ".tsv"]
                         try
                             export_locs(obj_new, file_name=file_name, overwrite=true)
                         catch
-                            warn_dialog(_nill, "File could not be saved!", win)
+                            warn_dialog(_nill, "File cannot be saved!", win)
                         end
                     else
                         warn_dialog(_nill, "Incorrect filename!", win)

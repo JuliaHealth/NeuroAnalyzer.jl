@@ -19,8 +19,6 @@ Nothing
 """
 function iavh()::Nothing
 
-    info_dialog("Please use headphones for the best results.")
-
     d_l = 1
     d_r = 1
     vol = 1.0
@@ -65,123 +63,236 @@ function iavh()::Nothing
 
     img = read_from_png(joinpath(res_path, "avh/head.png"))
 
-    win = GtkWindow("NeuroTester: iavh", 1100, 820, false)
-    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
+    function _activate(app)
 
-    can = GtkCanvas(800, 800)
+        win = GtkApplicationWindow(app, "NeuroTester: iavh()")
+        win.width_request = 1100
+        win.height_request = 820
 
-    g = GtkGrid()
-    set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 10)
-    set_gtk_property!(g, :row_spacing, 10)
-    g_opts = GtkGrid()
-    set_gtk_property!(g_opts, :column_homogeneous, false)
-    set_gtk_property!(g_opts, :column_spacing, 10)
-    set_gtk_property!(g_opts, :row_spacing, 10)
+        can = GtkCanvas(800, 800)
+        g = GtkGrid()
+        g.column_homogeneous = false
+        g.column_spacing = 10
+        g.row_spacing = 10
+        g_opts = GtkGrid()
+        g_opts.column_homogeneous = false
+        g_opts.column_spacing = 10
+        g_opts.row_spacing = 10
 
-    lab_lang = GtkLabel("Language")
-    set_gtk_property!(lab_lang, :halign, 2)
-    langs = ["EN", "DE", "SP", "PL"]
-    combo_lang = GtkComboBoxText()
-    for idx in langs
-        push!(combo_lang, idx)
-    end
-    set_gtk_property!(combo_lang, :active, 0)
-    set_gtk_property!(combo_lang, :tooltip_text, "AVH language")
+        lab_lang = GtkLabel("Language")
+        lab_lang.halign = 2
+        langs = ["EN", "DE", "SP", "PL"]
+        combo_lang = GtkComboBoxText()
+        for idx in langs
+            push!(combo_lang, idx)
+        end
+        combo_lang.active = 0
+        combo_lang.tooltip_text = "AVH language"
 
-    lab_character = GtkLabel("Emotional aspect")
-    set_gtk_property!(lab_character, :halign, 2)
-    characters = ["negative", "neutral", "positive"]
-    combo_character = GtkComboBoxText()
-    for idx in uppercase.(String.(characters))
-        push!(combo_character, idx)
-    end
-    set_gtk_property!(combo_character, :active, 0)
-    set_gtk_property!(combo_character, :tooltip_text, "AVH content emotional aspect")
+        lab_character = GtkLabel("Emotional aspect")
+        lab_character.halign = 2
+        characters = ["negative", "neutral", "positive"]
+        combo_character = GtkComboBoxText()
+        for idx in uppercase.(String.(characters))
+            push!(combo_character, idx)
+        end
+        combo_character.active = 0
+        combo_character.tooltip_text = "AVH content emotional aspect"
 
-    lab_type = GtkLabel("Type")
-    set_gtk_property!(lab_type, :halign, 2)
-    types = ["voice", "whisper", "noise", "ringing"]
-    combo_type = GtkComboBoxText()
-    for idx in uppercase.(String.(types))
-        push!(combo_type, idx)
-    end
-    set_gtk_property!(combo_type, :active, 0)
-    set_gtk_property!(combo_type, :tooltip_text, "VH sounds type")
+        lab_type = GtkLabel("Type")
+        lab_type.halign = 2
+        types = ["voice", "whisper", "noise", "ringing"]
+        combo_type = GtkComboBoxText()
+        for idx in uppercase.(String.(types))
+            push!(combo_type, idx)
+        end
+        combo_type.active = 0
+        combo_type.tooltip_text = "VH sounds type"
 
-    lab_gender = GtkLabel("Gender")
-    set_gtk_property!(lab_gender, :halign, 2)
-    genders = ["male", "female"]
-    combo_gender = GtkComboBoxText()
-    for idx in uppercase.(String.(genders))
-        push!(combo_gender, idx)
-    end
-    set_gtk_property!(combo_gender, :active, 0)
-    set_gtk_property!(combo_gender, :tooltip_text, "AVH voice gender characteristic")
+        lab_gender = GtkLabel("Gender")
+        lab_gender.halign = 2
+        genders = ["male", "female"]
+        combo_gender = GtkComboBoxText()
+        for idx in uppercase.(String.(genders))
+            push!(combo_gender, idx)
+        end
+        combo_gender.active = 0
+        combo_gender.tooltip_text = "AVH voice gender characteristic"
 
-    lab_vol_up = GtkLabel("Volume")
-    set_gtk_property!(lab_vol_up, :halign, 2)
-    lab_vol_down = GtkLabel("Volume")
-    set_gtk_property!(lab_vol_down, :halign, 2)
-    bt_vol_up = GtkButton("+")
-    vol == 1 && set_gtk_property!(bt_vol_up, :sensitive, 0)
-    set_gtk_property!(bt_vol_up, :tooltip_text, "Increase volume")
-    bt_vol_down = GtkButton("-")
-    set_gtk_property!(bt_vol_down, :tooltip_text, "Decrease volume")
+        lab_vol_up = GtkLabel("Volume")
+        lab_vol_up.halign = 2
+        lab_vol_down = GtkLabel("Volume")
+        lab_vol_down.halign = 2
+        bt_vol_up = GtkButton("+")
+        vol == 1 && (bt_vol_up.sensitive = 0)
+        bt_vol_up.tooltip_text = "Increase volume"
+        bt_vol_down = GtkButton("-")
+        bt_vol_down.tooltip_text = "Decrease volume"
 
-    bt_play = GtkButton("Play")
-    set_gtk_property!(bt_play, :tooltip_text, "Play the sound with current settings")
+        bt_play = GtkButton("Play")
+        bt_play.tooltip_text = "Play the sound with current settings"
 
-    bt_save = GtkButton("Save")
-    set_gtk_property!(bt_save, :tooltip_text, "Save results")
+        bt_save = GtkButton("Save")
+        bt_save.tooltip_text = "Save results"
 
-    bt_close = GtkButton("Close")
-    set_gtk_property!(bt_close, :tooltip_text, "Close this window")
+        bt_close = GtkButton("Close")
+        bt_close.tooltip_text = "Close this window"
 
-    g_opts[1, 1] = lab_lang
-    g_opts[2, 1] = combo_lang
-    g_opts[1, 2] = lab_type
-    g_opts[2, 2] = combo_type
-    g_opts[1, 3] = lab_gender
-    g_opts[2, 3] = combo_gender
-    g_opts[1, 4] = lab_character
-    g_opts[2, 4] = combo_character
-    g_opts[1, 5] = lab_vol_up
-    g_opts[2, 5] = bt_vol_up
-    g_opts[1, 6] = lab_vol_down
-    g_opts[2, 6] = bt_vol_down
-    g_opts[1:2, 7] = ""
-    g_opts[1:2, 8] = bt_play
-    g_opts[1:2, 9] = ""
-    g_opts[1:2, 10] = bt_save
-    g_opts[1:2, 11] = ""
-    g_opts[1:2, 12] = bt_close
-    vbox = GtkBox(:v)
-    push!(vbox, g_opts)
+        g_opts[1, 1] = lab_lang
+        g_opts[2, 1] = combo_lang
+        g_opts[1, 2] = lab_type
+        g_opts[2, 2] = combo_type
+        g_opts[1, 3] = lab_gender
+        g_opts[2, 3] = combo_gender
+        g_opts[1, 4] = lab_character
+        g_opts[2, 4] = combo_character
+        g_opts[1, 5] = lab_vol_up
+        g_opts[2, 5] = bt_vol_up
+        g_opts[1, 6] = lab_vol_down
+        g_opts[2, 6] = bt_vol_down
+        g_opts[1:2, 7] = GtkLabel("")
+        g_opts[1:2, 8] = bt_play
+        g_opts[1:2, 9] = GtkLabel("")
+        g_opts[1:2, 10] = bt_save
+        g_opts[1:2, 11] = GtkLabel("")
+        g_opts[1:2, 12] = bt_close
+        vbox = GtkBox(:v)
+        push!(vbox, g_opts)
 
-    g[1, 1] = vbox
-    g[2, 1] = can
-    push!(win, g)
+        g[1, 1] = vbox
+        g[2, 1] = can
+        push!(win, g)
 
-    Gtk4.show(win)
+        Gtk4.show(win)
 
-    @guarded draw(can) do widget
-        ctx = getgc(widget)
-        h = Cairo.height(can)
-        w = Cairo.width(can)
-        Cairo.rectangle(ctx, 0, 0, w, h)
-        Cairo.set_source_rgb(ctx, 1, 1, 1)
-        Cairo.fill(ctx)
-        Cairo.set_source_surface(ctx, img, 1, 1)
-        Cairo.paint(ctx)
-    end
+        info_dialog("Please use headphones for the best results.", win) do
+            nothing
+        end
 
-    signal_connect(combo_type, "changed") do widget
-        type = types[get_gtk_property(combo_type, :active, Int64) + 1]
-        lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-        character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-        gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
-        if type == "voice"
+        @guarded draw(can) do widget
+            ctx = getgc(widget)
+            h = Cairo.height(can)
+            w = Cairo.width(can)
+            Cairo.rectangle(ctx, 0, 0, w, h)
+            Cairo.set_source_rgb(ctx, 1, 1, 1)
+            Cairo.fill(ctx)
+            Cairo.set_source_surface(ctx, img, 1, 1)
+            Cairo.paint(ctx)
+        end
+
+        signal_connect(combo_type, "changed") do widget
+            type = types[Int64(combo_type.active) + 1]
+            lang = langs[Int64(combo_lang.active) + 1]
+            character = characters[Int64(combo_character.active) + 1]
+            gender = genders[Int64(combo_gender.active) + 1]
+            if type == "voice"
+                if lang == "EN"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_en_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_en_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_en_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_en_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_en_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_en_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "DE"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_de_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_de_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_de_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_de_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_de_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_de_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "SP"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_sp_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_sp_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_sp_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "PL"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_pl_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_pl_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_pl_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(11:15, 1)[]]
+                        end
+                    end
+                end
+                combo_lang.sensitive = 1
+                combo_character.sensitive = 1
+                combo_gender.sensitive = 1
+            elseif type == "whisper"
+                snd = snd_whisper
+                combo_lang.sensitive = 0
+                combo_character.sensitive = 0
+                combo_gender.sensitive = 0
+            elseif type == "noise"
+                snd = snd_noise
+                combo_lang.sensitive = 0
+                combo_character.sensitive = 0
+                combo_gender.sensitive = 0
+            elseif type == "ringing"
+                snd = snd_sine
+                combo_lang.sensitive = 0
+                combo_character.sensitive = 0
+                combo_gender.sensitive = 0
+            end
+            snd_tmp = deepcopy(snd)
+        end
+
+        signal_connect(combo_gender, "changed") do widget
+            lang = langs[Int64(combo_lang.active) + 1]
+            character = characters[Int64(combo_character.active) + 1]
+            gender = genders[Int64(combo_gender.active) + 1]
             if lang == "EN"
                 if character == "negative"
                     if gender == "male"
@@ -263,215 +374,13 @@ function iavh()::Nothing
                     end
                 end
             end
-            set_gtk_property!(combo_lang, :sensitive, 1)
-            set_gtk_property!(combo_character, :sensitive, 1)
-            set_gtk_property!(combo_gender, :sensitive, 1)
-        elseif type == "whisper"
-            snd = snd_whisper
-            set_gtk_property!(combo_lang, :sensitive, 0)
-            set_gtk_property!(combo_character, :sensitive, 0)
-            set_gtk_property!(combo_gender, :sensitive, 0)
-        elseif type == "noise"
-            snd = snd_noise
-            set_gtk_property!(combo_lang, :sensitive, 0)
-            set_gtk_property!(combo_character, :sensitive, 0)
-            set_gtk_property!(combo_gender, :sensitive, 0)
-        elseif type == "ringing"
-            snd = snd_sine
-            set_gtk_property!(combo_lang, :sensitive, 0)
-            set_gtk_property!(combo_character, :sensitive, 0)
-            set_gtk_property!(combo_gender, :sensitive, 0)
+            snd_tmp = deepcopy(snd)
         end
-        snd_tmp = deepcopy(snd)
-    end
 
-    signal_connect(combo_gender, "changed") do widget
-        lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-        character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-        gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
-        if lang == "EN"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_en_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_en_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_en_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_en_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_en_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_en_w[rand(11:15, 1)[]]
-                end
-            end
-        elseif lang == "DE"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_de_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_de_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_de_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_de_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_de_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_de_w[rand(11:15, 1)[]]
-                end
-            end
-        elseif lang == "SP"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_sp_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_sp_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_sp_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_sp_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_sp_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_sp_w[rand(11:15, 1)[]]
-                end
-            end
-        elseif lang == "PL"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_pl_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_pl_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_pl_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_pl_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_pl_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_pl_w[rand(11:15, 1)[]]
-                end
-            end
-        end
-        snd_tmp = deepcopy(snd)
-    end
-
-    signal_connect(combo_character, "changed") do widget
-        lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-        character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-        gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
-        if lang == "EN"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_en_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_en_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_en_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_en_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_en_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_en_w[rand(11:15, 1)[]]
-                end
-            end
-        elseif lang == "DE"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_de_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_de_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_de_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_de_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_de_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_de_w[rand(11:15, 1)[]]
-                end
-            end
-        elseif lang == "SP"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_sp_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_sp_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_sp_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_sp_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_sp_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_sp_w[rand(11:15, 1)[]]
-                end
-            end
-        elseif lang == "PL"
-            if character == "negative"
-                if gender == "male"
-                    snd = voices_pl_m[rand(1:5, 1)[]]
-                else
-                    snd = voices_pl_w[rand(1:5, 1)[]]
-                end
-            elseif character == "positive"
-                if gender == "male"
-                    snd = voices_pl_m[rand(6:10, 1)[]]
-                else
-                    snd = voices_pl_w[rand(6:10, 1)[]]
-                end
-            else
-                if gender == "male"
-                    snd = voices_pl_m[rand(11:15, 1)[]]
-                else
-                    snd = voices_pl_w[rand(11:15, 1)[]]
-                end
-            end
-        end
-        snd_tmp = deepcopy(snd)
-    end
-
-    signal_connect(bt_vol_up, "clicked") do widget
-        vol < 1.0 && (vol += 0.1)
-        vol > 0.1 && set_gtk_property!(bt_vol_down, :sensitive, 1)
-        vol == 1.0 && set_gtk_property!(bt_vol_up, :sensitive, 0)
-        vol = round(vol, digits=1)
-
-        type = types[get_gtk_property(combo_type, :active, Int64) + 1]
-        lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-        character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-        gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
-        if type == "voice"
+        signal_connect(combo_character, "changed") do widget
+            lang = langs[Int64(combo_lang.active) + 1]
+            character = characters[Int64(combo_character.active) + 1]
+            gender = genders[Int64(combo_gender.active) + 1]
             if lang == "EN"
                 if character == "negative"
                     if gender == "male"
@@ -553,272 +462,19 @@ function iavh()::Nothing
                     end
                 end
             end
-        elseif type == "whisper"
-            snd = snd_whisper
-        elseif type == "noise"
-            snd = snd_noise
-        elseif type == "ringing"
-            snd = snd_sine
+            snd_tmp = deepcopy(snd)
         end
-        snd_tmp = deepcopy(snd)
 
-        snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
-        snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
-        wavplay(snd_tmp[1], snd_tmp[2])
-    end
+        signal_connect(bt_vol_up, "clicked") do widget
+            vol < 1.0 && (vol += 0.1)
+            vol > 0.1 && (bt_vol_down.sensitive = 1)
+            vol == 1.0 && (bt_vol_up.sensitive = 0)
+            vol = round(vol, digits=1)
 
-    signal_connect(bt_vol_down, "clicked") do widget
-        vol > 0.1 && (vol -= 0.1)
-        vol == 0.1 && set_gtk_property!(bt_vol_down, :sensitive, 0)
-        vol < 1.0 && set_gtk_property!(bt_vol_up, :sensitive, 1)
-        vol = round(vol, digits=1)
-
-        type = types[get_gtk_property(combo_type, :active, Int64) + 1]
-        lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-        character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-        gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
-        if type == "voice"
-            if lang == "EN"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_en_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_en_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_en_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_en_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_en_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_en_w[rand(11:15, 1)[]]
-                    end
-                end
-            elseif lang == "DE"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_de_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_de_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_de_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_de_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_de_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_de_w[rand(11:15, 1)[]]
-                    end
-                end
-            elseif lang == "SP"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_sp_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_sp_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_sp_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_sp_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_sp_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_sp_w[rand(11:15, 1)[]]
-                    end
-                end
-            elseif lang == "PL"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_pl_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_pl_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_pl_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_pl_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_pl_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_pl_w[rand(11:15, 1)[]]
-                    end
-                end
-            end
-        elseif type == "whisper"
-            snd = snd_whisper
-        elseif type == "noise"
-            snd = snd_noise
-        elseif type == "ringing"
-            snd = snd_sine
-        end
-        snd_tmp = deepcopy(snd)
-
-        snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
-        snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
-        wavplay(snd_tmp[1], snd_tmp[2])
-    end
-
-    signal_connect(bt_play, "clicked") do widget
-        type = types[get_gtk_property(combo_type, :active, Int64) + 1]
-        lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-        character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-        gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
-        if type == "voice"
-            if lang == "EN"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_en_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_en_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_en_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_en_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_en_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_en_w[rand(11:15, 1)[]]
-                    end
-                end
-            elseif lang == "DE"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_de_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_de_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_de_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_de_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_de_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_de_w[rand(11:15, 1)[]]
-                    end
-                end
-            elseif lang == "SP"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_sp_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_sp_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_sp_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_sp_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_sp_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_sp_w[rand(11:15, 1)[]]
-                    end
-                end
-            elseif lang == "PL"
-                if character == "negative"
-                    if gender == "male"
-                        snd = voices_pl_m[rand(1:5, 1)[]]
-                    else
-                        snd = voices_pl_w[rand(1:5, 1)[]]
-                    end
-                elseif character == "positive"
-                    if gender == "male"
-                        snd = voices_pl_m[rand(6:10, 1)[]]
-                    else
-                        snd = voices_pl_w[rand(6:10, 1)[]]
-                    end
-                else
-                    if gender == "male"
-                        snd = voices_pl_m[rand(11:15, 1)[]]
-                    else
-                        snd = voices_pl_w[rand(11:15, 1)[]]
-                    end
-                end
-            end
-        elseif type == "whisper"
-            snd = snd_whisper
-        elseif type == "noise"
-            snd = snd_noise
-        elseif type == "ringing"
-            snd = snd_sine
-        end
-        snd_tmp = deepcopy(snd)
-
-        snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
-        snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
-        wavplay(snd_tmp[1], snd_tmp[2])
-    end
-
-    can.mouse.button1press = @guarded (widget, event) -> begin
-        x_pos = event.x
-        y_pos = event.y
-        Threads.@spawn begin
-            @guarded draw(can) do widget
-                ctx = getgc(widget)
-                h = Cairo.height(can)
-                w = Cairo.width(can)
-                Cairo.rectangle(ctx, 0, 0, w, h)
-                Cairo.set_source_rgb(ctx, 1, 1, 1)
-                Cairo.fill(ctx)
-
-                Cairo.set_source_surface(ctx, img, 1, 1)
-                Cairo.paint(ctx)
-
-                Gtk4.arc(ctx, x_pos, y_pos, 10, 0, 2*pi)
-                Gtk4.set_source_rgb(ctx, 1, 0, 0)
-                Gtk4.stroke(ctx)
-                Gtk4.reveal(widget)
-            end
-
-            x_pos = round((x_pos / 800) - 0.5, digits=2)
-            y_pos = round((y_pos / 800) - 0.5, digits=2)
-
-            y_pos = -y_pos
-            y_pos == -0.0 && (y_pos = 0)
-            d_l = sqrt((x_pos - -0.05)^2 + (y_pos^2))
-            d_r = sqrt((x_pos - 0.05)^2 + (y_pos^2))
-            if d_l < 0.10 || d_r < 0.10
-                d_l = 0
-                d_r = 0
-            end
-            d_l = (1 - d_l)^4
-            d_r = (1 - d_r)^4
-
-            d_l > d_r && (d_r *= 0.75)
-            d_r > d_l && (d_l *= 0.75)
-
-            d_l = round(d_l, digits=2)
-            d_r = round(d_r, digits=2)
-
-            type = types[get_gtk_property(combo_type, :active, Int64) + 1]
-            lang = langs[get_gtk_property(combo_lang, :active, Int64) + 1]
-            character = characters[get_gtk_property(combo_character, :active, Int64) + 1]
-            gender = genders[get_gtk_property(combo_gender, :active, Int64) + 1]
+            type = types[Int64(combo_type.active) + 1]
+            lang = langs[Int64(combo_lang.active) + 1]
+            character = characters[Int64(combo_character.active) + 1]
+            gender = genders[Int64(combo_gender.active) + 1]
             if type == "voice"
                 if lang == "EN"
                     if character == "negative"
@@ -914,40 +570,395 @@ function iavh()::Nothing
             snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
             wavplay(snd_tmp[1], snd_tmp[2])
         end
-    end
 
-    signal_connect(bt_save, "clicked") do widget
-        fname = save_dialog("Save as...", GtkNullContainer(), (GtkFileFilter("*.csv", name="All supported formats"), "*.txt"))
-        if fname != ""
-            f = open(fname, "w")
-            println(f, "\"AH type\",$(types[get_gtk_property(combo_type, :active, Int64) + 1])")
-            if get_gtk_property(combo_type, :active, Int64) == 0
-                println(f, "\"AVH language\",$(langs[get_gtk_property(combo_lang, :active, Int64) + 1])")
-                println(f, "\"AVH gender\",$(genders[get_gtk_property(combo_character, :active, Int64) + 1])")
-                println(f, "\"AVH emotional aspect\",$(characters[get_gtk_property(combo_gender, :active, Int64) + 1])")
-            else
-                println(f, "\"AVH language\",NA")
-                println(f, "\"AVH gender\",NA")
-                println(f, "\"AVH emotional aspect\",NA")
+        signal_connect(bt_vol_down, "clicked") do widget
+            vol > 0.1 && (vol -= 0.1)
+            vol == 0.1 && (bt_vol_down.sensitive = 0)
+            vol < 1.0 && (bt_vol_up.sensitive = 1)
+            vol = round(vol, digits=1)
+
+            type = types[Int64(combo_type.active) + 1]
+            lang = langs[Int64(combo_lang.active) + 1]
+            character = characters[Int64(combo_character.active) + 1]
+            gender = genders[Int64(combo_gender.active) + 1]
+            if type == "voice"
+                if lang == "EN"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_en_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_en_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_en_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_en_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_en_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_en_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "DE"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_de_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_de_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_de_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_de_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_de_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_de_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "SP"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_sp_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_sp_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_sp_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "PL"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_pl_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_pl_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_pl_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(11:15, 1)[]]
+                        end
+                    end
+                end
+            elseif type == "whisper"
+                snd = snd_whisper
+            elseif type == "noise"
+                snd = snd_noise
+            elseif type == "ringing"
+                snd = snd_sine
             end
-            println(f, "\"distance L\",$d_l")
-            println(f, "\"distance R\",$d_r")
-            print(f, "\"volume\",$vol")
-            close(f)
+            snd_tmp = deepcopy(snd)
+
+            snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
+            snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
+            wavplay(snd_tmp[1], snd_tmp[2])
+        end
+
+        signal_connect(bt_play, "clicked") do widget
+            type = types[Int64(combo_type.active) + 1]
+            lang = langs[Int64(combo_lang.active) + 1]
+            character = characters[Int64(combo_character.active) + 1]
+            gender = genders[Int64(combo_gender.active) + 1]
+            if type == "voice"
+                if lang == "EN"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_en_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_en_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_en_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_en_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_en_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_en_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "DE"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_de_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_de_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_de_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_de_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_de_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_de_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "SP"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_sp_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_sp_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_sp_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_sp_w[rand(11:15, 1)[]]
+                        end
+                    end
+                elseif lang == "PL"
+                    if character == "negative"
+                        if gender == "male"
+                            snd = voices_pl_m[rand(1:5, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(1:5, 1)[]]
+                        end
+                    elseif character == "positive"
+                        if gender == "male"
+                            snd = voices_pl_m[rand(6:10, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(6:10, 1)[]]
+                        end
+                    else
+                        if gender == "male"
+                            snd = voices_pl_m[rand(11:15, 1)[]]
+                        else
+                            snd = voices_pl_w[rand(11:15, 1)[]]
+                        end
+                    end
+                end
+            elseif type == "whisper"
+                snd = snd_whisper
+            elseif type == "noise"
+                snd = snd_noise
+            elseif type == "ringing"
+                snd = snd_sine
+            end
+            snd_tmp = deepcopy(snd)
+
+            snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
+            snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
+            wavplay(snd_tmp[1], snd_tmp[2])
+        end
+
+        function _lmb_click(_, _, x, y)
+            x_pos = x
+            y_pos = y
+            Threads.@spawn begin
+                @guarded draw(can) do widget
+                    ctx = getgc(widget)
+                    h = Cairo.height(can)
+                    w = Cairo.width(can)
+                    Cairo.rectangle(ctx, 0, 0, w, h)
+                    Cairo.set_source_rgb(ctx, 1, 1, 1)
+                    Cairo.fill(ctx)
+
+                    Cairo.set_source_surface(ctx, img, 1, 1)
+                    Cairo.paint(ctx)
+
+                    Gtk4.arc(ctx, x_pos, y_pos, 10, 0, 2*pi)
+                    Gtk4.set_source_rgb(ctx, 1, 0, 0)
+                    Gtk4.stroke(ctx)
+                    Gtk4.reveal(widget)
+                end
+
+                x_pos = round((x_pos / 800) - 0.5, digits=2)
+                y_pos = round((y_pos / 800) - 0.5, digits=2)
+
+                y_pos = -y_pos
+                y_pos == -0.0 && (y_pos = 0)
+                d_l = sqrt((x_pos - -0.05)^2 + (y_pos^2))
+                d_r = sqrt((x_pos - 0.05)^2 + (y_pos^2))
+                if d_l < 0.10 || d_r < 0.10
+                    d_l = 0
+                    d_r = 0
+                end
+                d_l = (1 - d_l)^4
+                d_r = (1 - d_r)^4
+
+                d_l > d_r && (d_r *= 0.75)
+                d_r > d_l && (d_l *= 0.75)
+
+                d_l = round(d_l, digits=2)
+                d_r = round(d_r, digits=2)
+
+                type = types[Int64(combo_type.active) + 1]
+                lang = langs[Int64(combo_lang.active) + 1]
+                character = characters[Int64(combo_character.active) + 1]
+                gender = genders[Int64(combo_gender.active) + 1]
+                if type == "voice"
+                    if lang == "EN"
+                        if character == "negative"
+                            if gender == "male"
+                                snd = voices_en_m[rand(1:5, 1)[]]
+                            else
+                                snd = voices_en_w[rand(1:5, 1)[]]
+                            end
+                        elseif character == "positive"
+                            if gender == "male"
+                                snd = voices_en_m[rand(6:10, 1)[]]
+                            else
+                                snd = voices_en_w[rand(6:10, 1)[]]
+                            end
+                        else
+                            if gender == "male"
+                                snd = voices_en_m[rand(11:15, 1)[]]
+                            else
+                                snd = voices_en_w[rand(11:15, 1)[]]
+                            end
+                        end
+                    elseif lang == "DE"
+                        if character == "negative"
+                            if gender == "male"
+                                snd = voices_de_m[rand(1:5, 1)[]]
+                            else
+                                snd = voices_de_w[rand(1:5, 1)[]]
+                            end
+                        elseif character == "positive"
+                            if gender == "male"
+                                snd = voices_de_m[rand(6:10, 1)[]]
+                            else
+                                snd = voices_de_w[rand(6:10, 1)[]]
+                            end
+                        else
+                            if gender == "male"
+                                snd = voices_de_m[rand(11:15, 1)[]]
+                            else
+                                snd = voices_de_w[rand(11:15, 1)[]]
+                            end
+                        end
+                    elseif lang == "SP"
+                        if character == "negative"
+                            if gender == "male"
+                                snd = voices_sp_m[rand(1:5, 1)[]]
+                            else
+                                snd = voices_sp_w[rand(1:5, 1)[]]
+                            end
+                        elseif character == "positive"
+                            if gender == "male"
+                                snd = voices_sp_m[rand(6:10, 1)[]]
+                            else
+                                snd = voices_sp_w[rand(6:10, 1)[]]
+                            end
+                        else
+                            if gender == "male"
+                                snd = voices_sp_m[rand(11:15, 1)[]]
+                            else
+                                snd = voices_sp_w[rand(11:15, 1)[]]
+                            end
+                        end
+                    elseif lang == "PL"
+                        if character == "negative"
+                            if gender == "male"
+                                snd = voices_pl_m[rand(1:5, 1)[]]
+                            else
+                                snd = voices_pl_w[rand(1:5, 1)[]]
+                            end
+                        elseif character == "positive"
+                            if gender == "male"
+                                snd = voices_pl_m[rand(6:10, 1)[]]
+                            else
+                                snd = voices_pl_w[rand(6:10, 1)[]]
+                            end
+                        else
+                            if gender == "male"
+                                snd = voices_pl_m[rand(11:15, 1)[]]
+                            else
+                                snd = voices_pl_w[rand(11:15, 1)[]]
+                            end
+                        end
+                    end
+                elseif type == "whisper"
+                    snd = snd_whisper
+                elseif type == "noise"
+                    snd = snd_noise
+                elseif type == "ringing"
+                    snd = snd_sine
+                end
+                snd_tmp = deepcopy(snd)
+
+                snd_tmp[1][:, 1] = snd[1][:, 1] .* (vol * (d_l * 0.25))
+                snd_tmp[1][:, 2] = snd[1][:, 2] .* (vol * (d_r * 0.25))
+                wavplay(snd_tmp[1], snd_tmp[2])
+            end
+        end
+        ggc_l = GtkGestureClick()
+        ggc_l.button = 1
+        push!(can, ggc_l)
+        signal_connect(_lmb_click, ggc_l, "pressed")
+
+        signal_connect(bt_save, "clicked") do widget
+            save_dialog("Save as...", win, ["*.csv", ".txt"]) do file_name
+                if file_name != ""
+                    try
+                        f = open(file_name, "w")
+                        println(f, "\"AH type\",$(types[get_gtk_property(combo_type, :active, Int64) + 1])")
+                        if combo_type.active == 0
+                            println(f, "\"AVH language\",$(langs[Int64(combo_lang.active) + 1])")
+                            println(f, "\"AVH gender\",$(genders[Int64(combo_character.active) + 1])")
+                            println(f, "\"AVH emotional aspect\",$(characters[Int64(combo_gender.active) + 1])")
+                        else
+                            println(f, "\"AVH language\",NA")
+                            println(f, "\"AVH gender\",NA")
+                            println(f, "\"AVH emotional aspect\",NA")
+                        end
+                        println(f, "\"distance L\",$d_l")
+                        println(f, "\"distance R\",$d_r")
+                        print(f, "\"volume\",$vol")
+                        close(f)
+                    catch
+                        warn_dialog(_nill, "File cannot be saved!", win)
+                    end
+                end
+            end
+        end
+
+        signal_connect(bt_close, "clicked") do widget
+            close(win)
         end
     end
 
-    signal_connect(bt_close, "clicked") do widget
-        Gtk4.destroy(win)
-        return nothing
-    end
-
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iavh")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     return nothing
 
