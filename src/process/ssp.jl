@@ -43,7 +43,7 @@ function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Ve
     # reorthogonalize the vectors
     U, S, _ = svd(ssp_projectors)
 
-    # remove linearly dependent vectors -- this code comes from proj.py of the mne-python project 
+    # remove linearly dependent vectors - this code comes from proj.py of the mne-python project 
     nproj = sum(S ./ S[1] .> 0.01)
     U = U[:, 1:nproj]
 

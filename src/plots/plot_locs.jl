@@ -519,7 +519,7 @@ end
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
 
 # Returns
 
@@ -673,8 +673,8 @@ Preview of channel locations.
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
 - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
-- `mesh_type::Symbol=:brain`: type of mesh to plot (`:brain` or `:head`)
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
+- `mesh_type::Union{Nothing, Symbol}=nothing`: type of mesh to plot (`:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
 
 # Returns
@@ -848,7 +848,7 @@ end
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position -- (XY plane angle, XZ plane angle)
+- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
 - `mesh_type::Symbol=:brain`: type of mesh to plot (`:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
 

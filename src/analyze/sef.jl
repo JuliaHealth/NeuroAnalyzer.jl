@@ -3,7 +3,7 @@ export sef
 """
     sef(s; <keyword arguments>)
 
-Calculate spectral edge frequency (SEF) -- the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
+Calculate spectral edge frequency (SEF) - the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
 # Arguments
 
@@ -61,7 +61,7 @@ end
 """
     sef(s; <keyword arguments>)
 
-Calculate spectral edge frequency (SEF) -- the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
+Calculate spectral edge frequency (SEF) - the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
 # Arguments
 
@@ -105,7 +105,7 @@ end
 """
     sef(obj; <keyword arguments>)
 
-Calculate spectral edge frequency (SEF) -- the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
+Calculate spectral edge frequency (SEF) - the frequency below which x percent of the total power of a given signal are located; typically, x is in the range 75 to 95.
 
 # Arguments
 

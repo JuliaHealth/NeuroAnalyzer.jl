@@ -18,11 +18,11 @@ Create model of TES stimulation.
 
 # Notes
 
-This is a very initial version, simplified model -- just superficial spread of the electric field
+This is a very initial version, simplified model - just superficial spread of the electric field
 
 # To do
 
-Model spread of electric field at the cortical surface -- reduce charge for skull resistance
+Model spread of electric field at the cortical surface - reduce charge for skull resistance
 """
 function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, cathode_curr::Real=-2.0)::Plots.Plot{Plots.GRBackend}
 
