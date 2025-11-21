@@ -56,10 +56,10 @@ const channel_units = ["μV",
                        "μS",
                        "rad/s",
                        ""]
-const fiducial_points = (nasion = (0.0, 0.95, -0.2),
-                         inion  = (0.0, -0.96, -0.2),
-                         lpa    = (-0.98, 0.0, -0.2),
-                         rpa    = (0.98, 0.0, -0.2))
+const fiducial_points = (nasion = (0.0, 1.0, -0.2),
+                         inion  = (0.0, -1.0, -0.2),
+                         lpa    = (-1.04, 0.0, -0.2),
+                         rpa    = (1.04, 0.0, -0.2))
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
