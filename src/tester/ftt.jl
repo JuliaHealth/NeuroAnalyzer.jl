@@ -24,7 +24,7 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
+function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
