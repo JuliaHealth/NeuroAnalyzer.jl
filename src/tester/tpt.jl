@@ -33,94 +33,95 @@ function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     tpt_ch_accy = zeros(length(t))
     tpt_ch_accz = zeros(length(t))
 
-    win = GtkWindow("NeuroTester: itpt()", img1.width, img1.height + 100, false)
-    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-    can = GtkCanvas(img1.width, img1.height)
-    g = GtkGrid()
-    set_gtk_property!(g, :column_homogeneous, false)
-    set_gtk_property!(g, :column_spacing, 5)
-    set_gtk_property!(g, :row_spacing, 5)
+    function _activate(app)
 
-    bt_record = GtkButton("RECORD")
-    set_gtk_property!(bt_record, :tooltip_text, "Start recording")
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: itpt()")
+        win.width_request = Int64(img1.width)
+        win.height_request = Int64(img1.height) + 100
 
-    lb_status1 = GtkLabel("Status:")
-    lb_status2 = GtkLabel("READY TO START")
-    set_gtk_property!(lb_status1, :halign, 2)
-    set_gtk_property!(lb_status2, :halign, 1)
+        can = GtkCanvas(Int64(img1.width), Int64(img1.height))
 
-    g[1:2, 1] = can
-    g[1:2, 2] = bt_record
-    g[1, 3] = lb_status1
-    g[2, 3] = lb_status2
-    vbox = GtkBox(:v)
-    push!(vbox, g)
+        g = GtkGrid()
+        g.column_homogeneous = false
+        g.column_spacing = 5
+        g.row_spacing = 5
 
-    push!(win, vbox)
-    Gtk4.show(win)
+        bt_record = GtkButton("RECORD")
+        bt_record.tooltip_text = "Start recording"
 
-    @guarded draw(can) do widget
-        ctx = getgc(can)
-        Cairo.set_source_surface(ctx, img1, 0, 0)
-        Cairo.paint(ctx)
-    end
+        lb_status1 = GtkLabel("Status:")
+        lb_status2 = GtkLabel("READY TO START")
+        lb_status1.halign = 2
+        lb_status2.halign = 1
 
-    @guarded signal_connect(bt_record, "clicked") do widget
-        set_gtk_property!(bt_record, :sensitive, false)
-        Threads.@spawn begin
-            set_gtk_property!(lb_status2, :label, "PREPARING")
-            ts = time()
-            while time() - ts <= 2
-                _serial_listener(sp)
-            end
-            _beep()
-            @guarded draw(can) do widget
-                ctx = getgc(can)
-                Cairo.set_source_surface(ctx, img2, 0, 0)
-                Cairo.paint(ctx)
-            end
-            set_gtk_property!(lb_status2, :label, "RECORDING")
-            idx = 1
-            while idx <= length(tpt_ch_x)
-                sp_signal = _serial_listener(sp)
-                if !isnothing(sp_signal)
-                    m = match(r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)", sp_signal)
-                    if !isnothing(m)
-                        if length(m.captures) == 7
-                            tpt_ch_x[idx] = parse(Float64, m.captures[2])
-                            tpt_ch_y[idx] = parse(Float64, m.captures[3])
-                            tpt_ch_z[idx] = parse(Float64, m.captures[4])
-                            tpt_ch_accx[idx] = parse(Float64, m.captures[5])
-                            tpt_ch_accy[idx] = parse(Float64, m.captures[6])
-                            tpt_ch_accz[idx] = parse(Float64, m.captures[7])
-                            idx += 1
+        g[1:2, 1] = can
+        g[1:2, 2] = bt_record
+        g[1, 3] = lb_status1
+        g[2, 3] = lb_status2
+        vbox = GtkBox(:v)
+        push!(vbox, g)
+
+        push!(win, vbox)
+
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            ctx = getgc(can)
+            Cairo.set_source_surface(ctx, img1, 0, 0)
+            Cairo.paint(ctx)
+        end
+
+        @guarded signal_connect(bt_record, "clicked") do widget
+            bt_record.sensitive = false
+            Threads.@spawn begin
+                @idle_add lb_status2.label = "PREPARING"
+                ts = time()
+                while time() - ts <= 2
+                    _serial_listener(sp)
+                end
+                _beep()
+                @idle_add @guarded draw(can) do widget
+                    ctx = getgc(can)
+                    Cairo.set_source_surface(ctx, img2, 0, 0)
+                    Cairo.paint(ctx)
+                end
+                @idle_add lb_status2.label = "RECORDING"
+                idx = 1
+                while idx <= length(tpt_ch_x)
+                    sp_signal = _serial_listener(sp)
+                    if !isnothing(sp_signal)
+                        m = match(r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)", sp_signal)
+                        if !isnothing(m)
+                            if length(m.captures) == 7
+                                tpt_ch_x[idx] = parse(Float64, m.captures[2])
+                                tpt_ch_y[idx] = parse(Float64, m.captures[3])
+                                tpt_ch_z[idx] = parse(Float64, m.captures[4])
+                                tpt_ch_accx[idx] = parse(Float64, m.captures[5])
+                                tpt_ch_accy[idx] = parse(Float64, m.captures[6])
+                                tpt_ch_accz[idx] = parse(Float64, m.captures[7])
+                                idx += 1
+                            end
                         end
                     end
                 end
-            end
-            _serial_close(sp)
-            _beep()
-            set_gtk_property!(lb_status2, :label, "FINISHED")
-            @guarded draw(can) do widget
-                ctx = getgc(can)
-                Cairo.set_source_surface(ctx, img1, 0, 0)
-                Cairo.paint(ctx)
-            end
-            sleep(2)
-            # Interacting with GTK from a thread other than the main thread is
-            # generally not allowed, so we register an idle callback instead.
-            Gtk4.GLib.g_idle_add(nothing) do user_data
-                Gtk4.destroy(win)
+                _serial_close(sp)
+                _beep()
+                @idle_add lb_status2.label = "FINISHED"
+                @idle_add @guarded draw(can) do widget
+                    ctx = getgc(can)
+                    Cairo.set_source_surface(ctx, img1, 0, 0)
+                    Cairo.paint(ctx)
+                end
+                sleep(2)
+                @idle_add close(win)
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.itpt")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)
