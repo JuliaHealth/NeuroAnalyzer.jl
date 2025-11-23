@@ -42,7 +42,7 @@ function psi(s1::AbstractVector, s2::AbstractVector; fs::Int64, frq_lim::Tuple{R
     method = "boostrap"     # standard deviation estimation method
     detrend = true          # performs a 0th-order detrend across raw segments
 
-    pv, _ = data2psi([s1 s2], seglen; nboot=nboot, method=method, detrend=detrend, freqlist=Int64(frq_lim[1]):1:Int64(frq_lim[end]))
+    pv, _ = PhaseSlopeIndex.data2psi([s1 s2], seglen; nboot=nboot, method=method, detrend=detrend, freqlist=Int64(frq_lim[1]):1:Int64(frq_lim[end]))
     pv = (pv[1, 2], pv[2, 1])
 
     return pv

@@ -1,6 +1,8 @@
 module PhaseSlopeIndex
 
 using Einsum
+using StatsKit
+using FFTW
 
 # Exports
 #---
