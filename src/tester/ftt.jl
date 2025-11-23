@@ -123,7 +123,7 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
                     push!(t_kp_tmp, time())
                     key_pressed = true
                 end
-            elseif keyval == 0x00000020 && lb_status2.label == "INTERVAL"
+            elseif keyval == 32 && lb_status2.label == "INTERVAL"
                 #t = parse(Int64, split(lb_interval2.label, ' ')[1])
                 if !key_pressed
                     push!(int_t_kp_tmp, time())
