@@ -94,18 +94,18 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
         @guarded signal_connect(bt_record, "clicked") do widget
             bt_record.sensitive = false
             Threads.@spawn begin
-                lb_status2.label = "PREPARING"
+                @idle_add lb_status2.label = "PREPARING"
                 ts = time()
                 while time() - ts <= 2
                     _serial_listener(sp)
                 end
                 _beep()
-                lb_status2.label = "RECORDING"
+                @idle_add lb_status2.label = "RECORDING"
                 t_refresh = time()
                 idx = 1
                 while idx <= length(eda_signal)
                     if time() - t_refresh >= 0.1
-                        draw(can)
+                        @idle_add draw(can)
                         t_refresh = time()
                     end
                     sp_signal = _serial_listener(sp)
@@ -119,17 +119,12 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
                         end
                     end
                 end
-                draw(can)
+                @idle_add draw(can)
                 _serial_close(sp)
-                lb_status2.label = "FINISHED"
+                @idle_add lb_status2.label = "FINISHED"
                 _beep()
                 sleep(2)
-
-                # Interacting with GTK from a thread other than the main thread is
-                # generally not allowed, so we register an idle callback instead.
-                Gtk4.GLib.g_idle_add(nothing) do user_data
-                    close(win)
-                end
+                @idle_add close(win)
             end
         end
     end

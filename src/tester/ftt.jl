@@ -24,7 +24,7 @@ Named tuple containing:
 - `tap_t_int::Vector{Vector{Float64}}`: taps time point [ms] during intervals
 - `tap_d_int::Vector{Vector{Float64}}`: taps duration [ms] during intervals
 """
-function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
+function iftt(; duration::Int64=5, trials::Int64=2, interval::Int64=2, gpio::Int64=-1, port_name::String="")::@NamedTuple{taps::Vector{Int64}, tap_t::Vector{Vector{Float64}}, tap_d::Vector{Vector{Float64}}, taps_int::Vector{Int64}, tap_t_int::Vector{Vector{Float64}}, tap_d_int::Vector{Vector{Float64}}}
 
     @assert !(port_name != "" && gpio == -1) "If serial port is used, GPIO must be specified."
 
@@ -41,58 +41,6 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
 
     img1 = read_from_png(joinpath(res_path, "finger_noclick.png"))
     img2 = read_from_png(joinpath(res_path, "finger_click.png"))
-
-    win = GtkWindow("NeuroTester: iftt()", img1.width, img1.height + 100, false)
-    set_gtk_property!(win, :border_width, 20)
-    set_gtk_property!(win, :startup_id, "org.neuroanalyzer")
-
-    can = GtkCanvas(img1.width, img1.height)
-
-    g1 = GtkGrid()
-    set_gtk_property!(g1, :column_homogeneous, true)
-    set_gtk_property!(g1, :column_spacing, 20)
-    set_gtk_property!(g1, :row_spacing, 20)
-    g2 = GtkGrid()
-    set_gtk_property!(g2, :column_homogeneous, true)
-    set_gtk_property!(g2, :column_spacing, 20)
-    set_gtk_property!(g2, :row_spacing, 20)
-
-    bt_start = GtkButton("START")
-    set_gtk_property!(bt_start, :tooltip_text, "Start the test")
-
-    lb_status1 = GtkLabel("Status:")
-    lb_status2 = GtkLabel("READY TO START")
-    set_gtk_property!(lb_status1, :halign, 2)
-    set_gtk_property!(lb_status2, :halign, 1)
-    lb_trial1 = GtkLabel("Trial #:")
-    lb_trial2 = GtkLabel("-")
-    set_gtk_property!(lb_trial1, :halign, 2)
-    set_gtk_property!(lb_trial2, :halign, 1)
-    lb_interval1 = GtkLabel("Interval #:")
-    lb_interval2 = GtkLabel("-")
-    set_gtk_property!(lb_interval1, :halign, 2)
-    set_gtk_property!(lb_interval2, :halign, 1)
-
-    g1[1:3, 1] = can
-    g1[1, 2] = lb_status1
-    g1[3, 2] = lb_status2
-    g1[1, 3] = lb_trial1
-    g1[3, 3] = lb_trial2
-    g1[1, 4] = lb_interval1
-    g1[3, 4] = lb_interval2
-    g1[1:3, 5] = GtkLabel("")
-    g1[1:3, 6] = bt_start
-    vbox1 = GtkBox(:v)
-    push!(vbox1, g1)
-
-    push!(win, vbox1)
-    Gtk4.show(win)
-
-    @guarded draw(can) do widget
-        ctx = getgc(can)
-        Cairo.set_source_surface(ctx, img1, 0, 0)
-        Cairo.paint(ctx)
-    end
 
     result = zeros(Int64, trials)
     int_result = zeros(Int64, trials)
@@ -111,197 +59,238 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     t_idx = Vector{Float64}()
     int_idx = Vector{Float64}()
 
-    signal_connect(win, "key-press-event") do widget, event
-        k = event.keyval
-        if k == 32 && get_gtk_property(lb_status2, :label, String) == "TEST"
-            #t = parse(Int64, split(get_gtk_property(lb_trial2, :label, String), ' ')[1])
-            if !key_pressed
-                push!(t_kp_tmp, time())
-                key_pressed = true
-            end
-        elseif k == 32 && get_gtk_property(lb_status2, :label, String) == "INTERVAL"
-            #t = parse(Int64, split(get_gtk_property(lb_interval2, :label, String), ' ')[1])
-            if !key_pressed
-                push!(int_t_kp_tmp, time())
-                key_pressed = true
-            end
-        end
-        sleep(0.1)
-    end
+    function _activate(app)
 
-    signal_connect(win, "key-release-event") do widget, event
-        k = event.keyval
-        if k == 32 && get_gtk_property(lb_status2, :label, String) == "TEST"
-            #t = parse(Int64, split(get_gtk_property(lb_trial2, :label, String), ' ')[1])
-            if key_pressed
-                push!(d_kp_tmp, time())
-                key_pressed = false
-            end
-        elseif k == 32 && get_gtk_property(lb_status2, :label, String) == "INTERVAL"
-            #t = parse(Int64, split(get_gtk_property(lb_interval2, :label, String), ' ')[1])
-            if key_pressed
-                push!(int_d_kp_tmp, time())
-                key_pressed = false
-            end
-        end
-        sleep(0.1)
-    end
+        win = GtkApplicationWindow(app, "NeuroAnalyzer: iftt()")
+        win.width_request = Int64(img1.width)
+        win.height_request = Int64(img1.height) + 100
 
-    signal_connect(bt_start, "clicked") do widget
-        if port_name == ""
-            set_gtk_property!(bt_start, :sensitive, false)
-            Threads.@spawn begin
-                for idx in 1:trials
-                    t_kp_tmp = Vector{Float64}()
-                    d_kp_tmp = Vector{Float64}()
-                    int_t_kp_tmp = Vector{Float64}()
-                    int_d_kp_tmp = Vector{Float64}()
-                    _beep()
-                    @guarded draw(can) do widget
-                        ctx = getgc(can)
-                        Cairo.set_source_surface(ctx, img2, 0, 0)
-                        Cairo.paint(ctx)
-                    end
-                    set_gtk_property!(lb_status2, :label, "TEST")
-                    l = strip(string(idx) * " of " * string(trials))
-                    set_gtk_property!(lb_trial2, :label, l)
-                    set_gtk_property!(lb_interval2, :label, "-")
-                    t1 = time()
-                    push!(t_idx, t1)
-                    while time() <= t1 + duration
-                    end
-                    _beep()
-                    push!(t_kp, t_kp_tmp)
-                    push!(d_kp, d_kp_tmp)
-                    result[idx] = length(t_kp_tmp)
-                    if interval > 0
-                        @guarded draw(can) do widget
-                            ctx = getgc(can)
-                            Cairo.set_source_surface(ctx, img1, 0, 0)
-                            Cairo.paint(ctx)
-                        end
-                        set_gtk_property!(lb_status2, :label, "INTERVAL")
-                        set_gtk_property!(lb_trial2, :label, "-")
-                        l = strip(string(idx) * " of " * string(trials))
-                        set_gtk_property!(lb_interval2, :label, l)
-                        t1 = time()
-                        push!(int_idx, t1)
-                        while time() <= t1 + interval
-                        end
-                        push!(int_t_kp, int_t_kp_tmp)
-                        push!(int_d_kp, int_d_kp_tmp)
-                        int_result[idx] = length(int_t_kp_tmp)
-                    end
+        can = GtkCanvas(Int64(img1.width), Int64(img1.height))
+
+        g1 = GtkGrid()
+        g1.column_homogeneous = true
+        g1.column_spacing = 20
+        g1.row_spacing = 20
+        g2 = GtkGrid()
+        g2.column_homogeneous = true
+        g2.column_spacing = 20
+        g2.row_spacing = 20
+
+        bt_start = GtkButton("START")
+        bt_start.tooltip_text = "Start the test"
+
+        lb_status1 = GtkLabel("Status:")
+        lb_status2 = GtkLabel("READY TO START")
+        lb_status1.halign = 2
+        lb_status2.halign = 1
+        lb_trial1 = GtkLabel("Trial #:")
+        lb_trial2 = GtkLabel("-")
+        lb_trial1.halign = 2
+        lb_trial2.halign = 1
+        lb_interval1 = GtkLabel("Interval #:")
+        lb_interval2 = GtkLabel("-")
+        lb_interval1.halign = 2
+        lb_interval2.halign = 1
+
+        g1[1:3, 1] = can
+        g1[1, 2] = lb_status1
+        g1[3, 2] = lb_status2
+        g1[1, 3] = lb_trial1
+        g1[3, 3] = lb_trial2
+        g1[1, 4] = lb_interval1
+        g1[3, 4] = lb_interval2
+        g1[1:3, 5] = GtkLabel("")
+        g1[1:3, 6] = bt_start
+        vbox1 = GtkBox(:v)
+        push!(vbox1, g1)
+
+        push!(win, vbox1)
+
+        Gtk4.show(win)
+
+        @guarded draw(can) do widget
+            ctx = getgc(can)
+            Cairo.set_source_surface(ctx, img1, 0, 0)
+            Cairo.paint(ctx)
+        end
+
+        win_key = Gtk4.GtkEventControllerKey(win)
+
+        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            if keyval == 32 && lb_status2.label == "TEST"
+                #t = parse(Int64, split(lb_trial2.label, ' ')[1])
+                if !key_pressed
+                    push!(t_kp_tmp, time())
+                    key_pressed = true
                 end
-
-                # Interacting with GTK from a thread other than the main thread is
-                # generally not allowed, so we register an idle callback instead.
-                Gtk4.GLib.g_idle_add(nothing) do user_data
-                    Gtk4.destroy(win)
+            elseif keyval == 0x00000020 && lb_status2.label == "INTERVAL"
+                #t = parse(Int64, split(lb_interval2.label, ' ')[1])
+                if !key_pressed
+                    push!(int_t_kp_tmp, time())
+                    key_pressed = true
                 end
             end
-        elseif !isnothing(sp)
-            # use serial port
-            set_gtk_property!(bt_start, :sensitive, false)
-            t_s = nothing
-            t_kp = Vector{Float64}()
-            d_kp = Vector{Float64}()
-            int_t_kp = Vector{Float64}()
-            int_d_kp = Vector{Float64}()
-            Threads.@spawn begin
-                for idx in 1:trials
-                    _beep()
-                    @guarded draw(can) do widget
-                        ctx = getgc(can)
-                        Cairo.set_source_surface(ctx, img2, 0, 0)
-                        Cairo.paint(ctx)
-                    end
-                    set_gtk_property!(lb_status2, :label, "TEST")
-                    l = strip(string(idx) * " of " * string(trials))
-                    set_gtk_property!(lb_trial2, :label, l)
-                    set_gtk_property!(lb_interval2, :label, "-")
+            sleep(0.1)
+        end
+
+        signal_connect(win_key, "key-released") do widget, keyval, keycode, state
+            if keyval == 32 && lb_status2.label == "TEST"
+                #t = parse(Int64, split(lb_trial2.label, ' ')[1])
+                if key_pressed
+                    push!(d_kp_tmp, time())
                     key_pressed = false
-                    sp = _serial_open(port_name)
-                    t_1 = time()
-                    while time() - t_1 <= duration
-                        t = time() - t_1
-                        serial_key = _serial_listener(sp)
-                        if serial_key == "$gpio:1"
-                            if !key_pressed
-                                # key is pressed
-                                push!(t_kp, t)
-                                result[idx] += 1
-                                key_pressed = true
-                            end
-                        elseif serial_key == "$gpio:0"
-                            if key_pressed
-                                # key is released
-                                push!(d_kp, t)
-                                key_pressed = false
-                            end
-                        end
-                        sleep(0.1)
-                    end
-                    _serial_close(sp)
-                    _beep()
-                    if length(d_kp) < sum(result)
-                        pop!(t_kp)
-                        result[idx] -= 1
-                    end
-                    if interval > 0
-                        @guarded draw(can) do widget
+                end
+            elseif keyval == 32 && lb_status2.label == "INTERVAL"
+                #t = parse(Int64, split(lb_interval2.label, ' ')[1])
+                if key_pressed
+                    push!(int_d_kp_tmp, time())
+                    key_pressed = false
+                end
+            end
+            sleep(0.1)
+        end
+
+        signal_connect(bt_start, "clicked") do widget
+            if port_name == ""
+                bt_start.sensitive = false
+                Threads.@spawn begin
+                    for idx in 1:trials
+                        t_kp_tmp = Vector{Float64}()
+                        d_kp_tmp = Vector{Float64}()
+                        int_t_kp_tmp = Vector{Float64}()
+                        int_d_kp_tmp = Vector{Float64}()
+                        _beep()
+                        @idle_add @guarded draw(can) do widget
                             ctx = getgc(can)
-                            Cairo.set_source_surface(ctx, img1, 0, 0)
+                            Cairo.set_source_surface(ctx, img2, 0, 0)
                             Cairo.paint(ctx)
                         end
-                        set_gtk_property!(lb_status2, :label, "INTERVAL")
+                        @idle_add lb_status2.label = "TEST"
                         l = strip(string(idx) * " of " * string(trials))
-                        set_gtk_property!(lb_interval2, :label, l)
-                        set_gtk_property!(lb_trial2, :label, "-")
+                        @idle_add lb_trial2.label = l
+                        @idle_add lb_interval2.label = "-"
+                        push!(t_idx, time())
+                        sleep(duration)
+                        _beep()
+                        push!(t_kp, t_kp_tmp)
+                        push!(d_kp, d_kp_tmp)
+                        result[idx] = length(t_kp_tmp)
+                        if interval > 0
+                            @idle_add @guarded draw(can) do widget
+                                ctx = getgc(can)
+                                Cairo.set_source_surface(ctx, img1, 0, 0)
+                                Cairo.paint(ctx)
+                            end
+                            @idle_add lb_status2.label = "INTERVAL"
+                            @idle_add lb_trial2.label = "-"
+                            l = strip(string(idx) * " of " * string(trials))
+                            @idle_add lb_interval2.label = l
+                            push!(int_idx, time())
+                            sleep(interval)
+                            push!(int_t_kp, int_t_kp_tmp)
+                            push!(int_d_kp, int_d_kp_tmp)
+                            int_result[idx] = length(int_t_kp_tmp)
+                        end
+                    end
+                    @idle_add close(win)
+                end
+            elseif !isnothing(sp)
+                # use serial port
+                bt_start.sensitive = false
+                t_s = nothing
+                t_kp = Vector{Float64}()
+                d_kp = Vector{Float64}()
+                int_t_kp = Vector{Float64}()
+                int_d_kp = Vector{Float64}()
+                Threads.@spawn begin
+                    for idx in 1:trials
+                        _beep()
+                        @idle_add @guarded draw(can) do widget
+                            ctx = getgc(can)
+                            Cairo.set_source_surface(ctx, img2, 0, 0)
+                            Cairo.paint(ctx)
+                        end
+                        @idle_add lb_status2.label = "TEST"
+                        l = strip(string(idx) * " of " * string(trials))
+                        @idle_add lb_trial2.label = l
+                        @idle_add lb_interval2.label = "-"
                         key_pressed = false
                         sp = _serial_open(port_name)
-                        t_2 = time()
-                        while time() - t_2 <= interval
-                            t = time() - t_2
+                        t_1 = time()
+                        while time() - t_1 <= duration
+                            t = time() - t_1
                             serial_key = _serial_listener(sp)
                             if serial_key == "$gpio:1"
                                 if !key_pressed
                                     # key is pressed
-                                    push!(int_t_kp, t)
-                                    int_result[idx] += 1
+                                    push!(t_kp, t)
+                                    result[idx] += 1
                                     key_pressed = true
                                 end
                             elseif serial_key == "$gpio:0"
                                 if key_pressed
                                     # key is released
-                                    push!(int_d_kp, t)
+                                    push!(d_kp, t)
                                     key_pressed = false
                                 end
                             end
                             sleep(0.1)
                         end
                         _serial_close(sp)
-                        if length(int_d_kp) < sum(int_result)
-                            pop!(int_t_kp)
-                            int_result[idx] -= 1
+                        _beep()
+                        if length(d_kp) < sum(result)
+                            pop!(t_kp)
+                            result[idx] -= 1
+                        end
+                        if interval > 0
+                            @idle_add @guarded draw(can) do widget
+                                ctx = getgc(can)
+                                Cairo.set_source_surface(ctx, img1, 0, 0)
+                                Cairo.paint(ctx)
+                            end
+                            @idle_add lb_status2.label = "INTERVAL"
+                            l = strip(string(idx) * " of " * string(trials))
+                            @idle_add lb_interval2.label = l
+                            @idle_add lb_trial2.label = "-"
+                            key_pressed = false
+                            sp = _serial_open(port_name)
+                            t_2 = time()
+                            while time() - t_2 <= interval
+                                t = time() - t_2
+                                serial_key = _serial_listener(sp)
+                                if serial_key == "$gpio:1"
+                                    if !key_pressed
+                                        # key is pressed
+                                        push!(int_t_kp, t)
+                                        int_result[idx] += 1
+                                        key_pressed = true
+                                    end
+                                elseif serial_key == "$gpio:0"
+                                    if key_pressed
+                                        # key is released
+                                        push!(int_d_kp, t)
+                                        key_pressed = false
+                                    end
+                                end
+                                sleep(0.1)
+                            end
+                            _serial_close(sp)
+                            if length(int_d_kp) < sum(int_result)
+                                pop!(int_t_kp)
+                                int_result[idx] -= 1
+                            end
                         end
                     end
-                end
-                # Interacting with GTK from a thread other than the main thread is
-                # generally not allowed, so we register an idle callback instead.
-                Gtk4.GLib.g_idle_add(nothing) do user_data
-                    Gtk4.destroy(win)
+                    @idle_add close(win)
                 end
             end
         end
     end
 
-    cnd = Condition()
-    signal_connect(win, :destroy) do widget
-        notify(cnd)
-    end
-    @async Gtk4.gtk_main()
-    wait(cnd)
+    app = GtkApplication("org.neuroanalyzer.iftt")
+    Gtk4.signal_connect(_activate, app, :activate)
+    Gtk4.GLib.stop_main_loop()
+    Gtk4.run(app)
 
     if port_name == ""
         for idx in 1:trials
