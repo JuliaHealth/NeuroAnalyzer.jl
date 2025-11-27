@@ -20,6 +20,8 @@ Interactive view of continuous signal.
 """
 function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
 
+    @assert nepochs(obj) == 1 "For epoched object iview_ep() must be used."
+
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
 
     @assert zoom > 0 "zoom must be > 0."
@@ -1205,6 +1207,8 @@ Nothing
 """
 function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
 
+    @assert nepochs(obj) == 1 "For epoched object iview_ep() must be used."
+
     obj1.time_pts[end] < zoom && (zoom = round(obj1.time_pts[end]) / 2)
 
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
@@ -1552,9 +1556,11 @@ Nothing
 """
 function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)::Nothing
 
+
     @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
     @assert size(obj1) == size(obj2) "Both signals must have the same size."
     @assert sr(obj1) == sr(obj2) "Both signals must have the same sampling rate."
+    @assert nepochs(obj1) == nepochs(obj2) "Both signals must have the same number of epochs."
     @assert nepochs(obj1) > 1 "For continuous object iview() must be used."
 
     ch_order = obj1.header.recording[:channel_order]
@@ -1802,6 +1808,8 @@ Interactive view of embedded or external component of continuous signal.
 Nothing
 """
 function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::Real=10)::Nothing
+
+    @assert nepochs(obj) == 1 "For epoched object iview_ep() must be used."
 
     @assert zoom > 0 "zoom must be > 0."
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
@@ -2175,7 +2183,7 @@ Nothing
 """
 function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Int64=1)::Nothing
 
-    @assert nepochs(obj) > 1 "iview() must be used for continuous object."
+    @assert nepochs(obj) > 1 "For continuous object iview() must be used."
 
     c isa Symbol && (c = _get_component(obj, c))
     ch = axes(c, 1)

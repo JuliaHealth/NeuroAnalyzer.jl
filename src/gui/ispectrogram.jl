@@ -18,6 +18,8 @@ Nothing
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
+    @assert nepochs(obj) == 1 "For epoched object ispectrogram_ep() must be used."
+
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
 
     @assert zoom > 0 "zoom must be > 0."
@@ -635,7 +637,7 @@ Nothing
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
-    @assert nepochs(obj) > 1 "ispectrogram() must be used for continuous object."
+    @assert nepochs(obj) > 1 "For continuous object ispectrogram() must be used."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)

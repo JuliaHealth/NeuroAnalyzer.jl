@@ -18,6 +18,8 @@ Nothing
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
+    @assert nepochs(obj) == 1 "For epoched object ipsd_ep() must be used."
+
     obj.time_pts[end] < zoom && (zoom = round(obj.time_pts[end]) / 2)
 
     @assert zoom > 0 "zoom must be > 0."
@@ -665,7 +667,7 @@ Nothing
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
-    @assert nepochs(obj) > 1 "ipsd() must be used for continuous object."
+    @assert nepochs(obj) > 1 "For continuous object ipsd() must be used."
 
     ch_init = ch
     ch = get_channel(obj, ch=ch)

@@ -17,6 +17,8 @@ Nothing
 """
 function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
+    @assert nepochs(obj) == 1 "For epoched object itopo_ep() must be used."
+
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
     p = NeuroAnalyzer.plot_topo(obj, ch=ch)
