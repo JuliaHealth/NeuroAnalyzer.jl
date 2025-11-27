@@ -1210,7 +1210,7 @@ Nothing
 """
 function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
 
-    @assert nepochs(obj) == 1 "For epoched object iview_ep() must be used."
+    @assert nepochs(obj1) == 1 "For epoched object iview_ep() must be used."
 
     obj1.time_pts[end] < zoom && (zoom = round(obj1.time_pts[end]) / 2)
 
