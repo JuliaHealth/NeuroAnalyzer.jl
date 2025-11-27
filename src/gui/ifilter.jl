@@ -35,10 +35,12 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ifilter()")
-        win.width_request = 1200 + 2
-        win.height_request = 800 + 2
+        Gtk4.default_size(win, 1202, 802)
 
-        can = GtkCanvas(1200, 800)
+
+        can = GtkCanvas()
+        can.content_width = 1200
+        can.content_height = 800
 
         g = GtkGrid()
         g.column_homogeneous = false

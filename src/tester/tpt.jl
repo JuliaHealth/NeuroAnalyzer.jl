@@ -36,10 +36,11 @@ function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: itpt()")
-        win.width_request = Int64(img1.width)
-        win.height_request = Int64(img1.height) + 100
+        Gtk4.default_size(win, Int64(img1.width), Int64(img1.height) + 100)
 
-        can = GtkCanvas(Int64(img1.width), Int64(img1.height))
+        can = GtkCanvas()
+        can.content_width = Int64(img1.width)
+        can.content_height = Int64(img1.height)
 
         g = GtkGrid()
         g.column_homogeneous = false

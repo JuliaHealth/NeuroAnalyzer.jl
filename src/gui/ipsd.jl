@@ -37,10 +37,11 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ipsd()")
-        win.width_request = 1200
-        win.height_request = 850
+        Gtk4.default_size(win, 1200, 850)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         win_view = GtkScrolledWindow()
         win_view.min_content_width = 1200
         win_view.min_content_height = 800
@@ -378,8 +379,9 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                                            w=hw,
                                            gw=gw)
                 img = read_from_png(io)
-                can.width_request = p.attr[:size][1]
-                can.height_request = p.attr[:size][2]
+                can.content_width = p.attr[:size][1]
+                can.content_height = p.attr[:size][2]
+                Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
                 ctx = getgc(can)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)
@@ -687,10 +689,11 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ipsd_ep()")
-        win.width_request = 1200
-        win.height_request = 850
+        Gtk4.default_size(win, 1200, 850)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         win_view = GtkScrolledWindow()
         win_view.min_content_width = 1200
         win_view.min_content_height = 800
@@ -1018,8 +1021,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                                            w=hw,
                                            gw=gw)
                 img = read_from_png(io)
-                set_gtk_property!(can, :width_request, p.attr[:size][1])
-                set_gtk_property!(can, :height_request, p.attr[:size][2])
+                can.content_width = p.attr[:size][1]
+                can.content_height = p.attr[:size][2]
+                Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
                 ctx = getgc(can)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)

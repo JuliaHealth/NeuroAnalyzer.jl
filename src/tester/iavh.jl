@@ -66,18 +66,29 @@ function iavh()::Nothing
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroTester: iavh()")
-        win.width_request = 1100
-        win.height_request = 820
+        Gtk4.default_size(win, 1100, 820)
 
-        can = GtkCanvas(800, 800)
+        can = GtkCanvas()
+        can.content_width = 800
+        can.content_height = 800
+
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 10
         g.row_spacing = 10
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
         g_opts.column_spacing = 10
         g_opts.row_spacing = 10
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         lab_lang = GtkLabel("Language")
         lab_lang.halign = 2

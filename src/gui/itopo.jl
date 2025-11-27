@@ -27,13 +27,13 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
         if p.attr[:size][1] > 900
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo()")
-            win.width_request = p.attr[:size][1] + 100
-            win.height_request = 1000
+            win.content_width = p.attr[:size][1] + 100
+            win.content_height = 1000
             can = GtkCanvas(1000, 1000)
         else
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo()")
-            win.width_request = p.attr[:size][1] + 100
-            win.height_request = 800
+            win.content_width = p.attr[:size][1] + 100
+            win.content_height = 800
             can = GtkCanvas(800, 800)
         end
 
@@ -358,14 +358,16 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
         if p.attr[:size][1] > 900
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo_ep()")
-            win.width_request = p.attr[:size][1] + 100
-            win.height_request = 1000
-            can = GtkCanvas(1000, 1000)
+            Gtk4.default_size(win, p.attr[:size][1] + 100, 1000)
+            can = GtkCanvas()
+            can.content_width = 1000
+            can.content_height = 1000
         else
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo_ep()")
-            win.width_request = p.attr[:size][1] + 100
-            win.height_request = 800
-            can = GtkCanvas(800, 800)
+        Gtk4.default_size(win, p.attr[:size][1] + 100, 800)
+            can = GtkCanvas()
+            can.content_width = 800
+            can.content_height = 800
         end
 
         g_opts = GtkGrid()

@@ -62,10 +62,11 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = p.attr[:size][1] + 40
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
@@ -112,22 +113,19 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         combo_ch.tooltip_text = "Channels"
 
         if !mch
-            ch_slider = GtkScale(:h, 1:nchannels(obj))
+            ch_slider = GtkScale(:v, 1:nchannels(obj))
             ch_slider.draw_value =  false
         else
             if length(ch) > 20
-                ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+                ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
                 ch_slider.draw_value =  false
             else
-                ch_slider = GtkScale(:h, ch[1]:ch[end])
+                ch_slider = GtkScale(:v, ch[1]:ch[end])
                 ch_slider.draw_value =  false
                 ch_slider.sensitive =  false
             end
         end
         ch_slider.tooltip_text = "Scroll channels"
-        ch_slider.vexpand = true
-        oc = GtkOrientable(ch_slider)
-        oc.orientation = 1
 
         signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
         signal_slider.draw_value = false
@@ -196,10 +194,9 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                                        bad=bad)
             end
             show(io, MIME("image/png"), p)
-            can.width_request = p.attr[:size][1]
-            can.height_request = p.attr[:size][2]
-            win.width_request = p.attr[:size][1] + 40
-            win.height_request = p.attr[:size][2] + 40
+            can.content_width = p.attr[:size][1]
+            can.content_height = p.attr[:size][2]
+            Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
@@ -749,10 +746,11 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ep()")
-        win.width_request = p.attr[:size][1] + 40
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_height = p.attr[:size][1]
+        can.content_width = p.attr[:size][2]
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
@@ -785,14 +783,14 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         bt_delete = GtkButton("Delete epoch")
         bt_delete.tooltip_text = "Delete current epoch"
         if !mch
-            ch_slider = GtkScale(:h, 1:nchannels(obj))
+            ch_slider = GtkScale(:v, 1:nchannels(obj))
             ch_slider.draw_value = false
         else
             if length(ch) > 20
-                ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+                ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
                 ch_slider.draw_value = false
             else
-                ch_slider = GtkScale(:h, ch[1]:ch[end])
+                ch_slider = GtkScale(:v, ch[1]:ch[end])
                 ch_slider.draw_value = false
                 ch_slider.sensitive = false
             end
@@ -809,8 +807,6 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
 
         ch_slider.tooltip_text = "Scroll channels"
         ch_slider.vexpand = true
-        oc = GtkOrientable(ch_slider)
-        oc.orientation = 1
 
         signal_slider = GtkScale(:h, 1:nepochs(obj))
         signal_slider.draw_value = false
@@ -875,10 +871,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                                        bad=bad)
             end
             show(io, MIME("image/png"), p)
-            can.width_request = p.attr[:size][1]
-            can.height_request = p.attr[:size][2]
-            win.width_request = p.attr[:size][1] + 40
-            win.height_request = p.attr[:size][2] + 40
+            can.content_width = p.attr[:size][1]
+            can.content_height = p.attr[:size][2]
+            Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
@@ -1245,10 +1240,11 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = p.attr[:size][1] + 40
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
@@ -1275,17 +1271,14 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         bt_close = GtkButton("Close")
         bt_close.tooltip_text = "Close this window"
         if length(ch) > 20
-            ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
             ch_slider.draw_value = false
         else
-            ch_slider = GtkScale(:h, ch[ch_first]:ch[end])
+            ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
             ch_slider.draw_value = false
             ch_slider.sensitive = false
         end
         ch_slider.tooltip_text = "Scroll channels"
-        ch_slider.vexpand = true
-        oc = GtkOrientable(ch_slider)
-        oc.orientation = 1
 
         signal_slider = GtkScale(:h, 1:obj1.time_pts[end] - zoom)
         signal_slider.draw_value = false
@@ -1596,10 +1589,11 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ep()")
-        win.width_request = p.attr[:size][1] + 40
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
@@ -1622,17 +1616,14 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         bt_close.tooltip_text = "Close this window"
 
         if length(ch) > 20
-            ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
             ch_slider.draw_value = false
         else
-            ch_slider = GtkScale(:h, ch[ch_first]:ch[end])
+            ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
             ch_slider.draw_value = false
             ch_slider.sensitive = false
         end
         ch_slider.tooltip_text = "Scroll channels"
-        ch_slider.vexpand = true
-        oc = GtkOrientable(ch_slider)
-        oc.orientation = 1
 
         signal_slider = GtkScale(:h, 1:nepochs(obj1))
         signal_slider.draw_value = false
@@ -1853,10 +1844,11 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = p.attr[:size][1] + 40
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
@@ -1879,17 +1871,14 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
         bt_close = GtkButton("Close")
         bt_close.tooltip_text = "Close this window"
         if length(ch) > 20
-            ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
             ch_slider.draw_value = false
         else
-            ch_slider = GtkScale(:h, ch[ch_first]:ch[end])
+            ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
             ch_slider.draw_value = false
             ch_slider.sensitive = false
         end
         ch_slider.tooltip_text = "Scroll components"
-        ch_slider.vexpand = true
-        oc = GtkOrientable(ch_slider)
-        oc.orientation = 1
 
         signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
         signal_slider.draw_value = false
@@ -2221,10 +2210,11 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ep()")
-        win.width_request = p.attr[:size][1] + 40
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
@@ -2243,17 +2233,14 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         bt_close.tooltip_text = "Close this window"
 
         if length(ch) > 20
-            ch_slider = GtkScale(:h, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
             ch_slider.draw_value = false
         else
-            ch_slider = GtkScale(:h, ch[ch_first]:ch[end])
+            ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
             ch_slider.draw_value = false
             ch_slider.sensitive = false
         end
         ch_slider.tooltip_text = "Scroll components"
-        ch_slider.vexpand = true
-        oc = GtkOrientable(ch_slider)
-        oc.orientation = 1
 
         signal_slider = GtkScale(:h, 1:nepochs(obj))
         signal_slider.draw_value = false
@@ -2448,10 +2435,11 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
 
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = p.attr[:size][1] + 2
-        win.height_request = p.attr[:size][2] + 2
+        Gtk4.default_size(win, p.attr[:size][1] + 2, p.attr[:size][2] + 2)
 
-        can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1] + 2
+        can.content_height = p.attr[:size][2] + 2
         push!(win, can)
 
         Gtk4.show(win)
@@ -2521,10 +2509,11 @@ function iview(file_name::String)::Nothing
 
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = Int64(img.width)
-        win.height_request = Int64(img.height)
+        Gtk4.default_size(win, Int64(img.width), Int64(img.height))
 
-        can = GtkCanvas(Int64(img.width), Int64(img.height))
+        can = GtkCanvas()
+        can.content_width = Int64(img.width)
+        can.content_height = Int64(img.height)
         push!(win, can)
         Gtk4.show(win)
 
@@ -2571,10 +2560,11 @@ function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
 
     function _activate(app)
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = Int64(c.width)
-        win.height_request = Int64(c.height)
+        Gtk4.default_size(win, Int64(c.width), Int64(c.height))
 
-        can = GtkCanvas(Int64(c.width), Int64(c.height))
+        can = GtkCanvas()
+        can.content_width = Int64(c.width)
+        can.content_height = Int64(c.height)
         push!(win, can)
         Gtk4.show(win)
 

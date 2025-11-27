@@ -39,14 +39,20 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroRecorder: iedar()")
-        win.width_request = p.attr[:size][1]
-        win.height_request = p.attr[:size][2] + 40
+        Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 40)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
+
         g = GtkGrid()
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         bt_record = GtkButton("RECORD")
         bt_record.tooltip_text = "Start recording"

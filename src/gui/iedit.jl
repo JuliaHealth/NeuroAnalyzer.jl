@@ -108,8 +108,8 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         end
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iedit()")
-        win.width_request = 1000
-        win.height_request = 900
+        win.content_width = 1000
+        win.content_height = 900
 
         g = GtkGrid()
         g.column_homogeneous = false

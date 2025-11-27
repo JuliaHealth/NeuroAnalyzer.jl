@@ -47,10 +47,15 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        win.width_request = p.attr[:size][1] + 2
-        win.height_request = p.attr[:size][2] + 2
+        Gtk4.default_size(win, p.attr[:size][1] + 4, p.attr[:size][2] + 4)
 
-        can = GtkCanvas(p.attr[:size][1] + 2, p.attr[:size][2] + 2)
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
+        can.margin_start = 2
+        can.margin_end = 2
+        can.margin_top = 2
+        can.margin_bottom = 2
         push!(win, can)
 
         Gtk4.show(win)

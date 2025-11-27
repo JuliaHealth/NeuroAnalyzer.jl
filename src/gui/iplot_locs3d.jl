@@ -31,10 +31,11 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iplot_locs3d()")
-        win.width_request = p.attr[:size][1]
-        win.height_request = p.attr[:size][2]
+        Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2])
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
         push!(win, can)
 
         Gtk4.show(win)

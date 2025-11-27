@@ -62,19 +62,29 @@ function iftt(; duration::Int64=20, trials::Int64=2, interval::Int64=2, gpio::In
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iftt()")
-        win.width_request = Int64(img1.width)
-        win.height_request = Int64(img1.height) + 100
+        Gtk4.default_size(win, Int64(img1.width), Int64(img1.height) + 100)
 
-        can = GtkCanvas(Int64(img1.width), Int64(img1.height))
+        can = GtkCanvas()
+        can.content_width = Int64(img1.width)
+        can.content_height = Int64(img1.height)
 
         g1 = GtkGrid()
         g1.column_homogeneous = true
         g1.column_spacing = 20
         g1.row_spacing = 20
+        g1.margin_start = 5
+        g1.margin_end = 5
+        g1.margin_top = 5
+        g1.margin_bottom = 5
+
         g2 = GtkGrid()
         g2.column_homogeneous = true
         g2.column_spacing = 20
         g2.row_spacing = 20
+        g2.margin_start = 5
+        g2.margin_end = 5
+        g2.margin_top = 5
+        g2.margin_bottom = 5
 
         bt_start = GtkButton("START")
         bt_start.tooltip_text = "Start the test"

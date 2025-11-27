@@ -37,10 +37,11 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ispectrogram()")
-        win.width_request = 1200
-        win.height_request = 850
+        Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
 
         g = GtkGrid()
         g.column_homogeneous = false
@@ -343,8 +344,9 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
                                                    smooth=smooth,
                                                    n=n)
                 img = read_from_png(io)
-                can.width_request = p.attr[:size][1]
-                can.height_request = p.attr[:size][2]
+                can.content_width = p.attr[:size][1]
+                can.content_height = p.attr[:size][2]
+                Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
                 ctx = getgc(can)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)
@@ -660,10 +662,11 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: ispectrogram_ep()")
-        win.width_request = 1200
-        win.height_request = 850
+        Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
 
-        can = GtkCanvas(p.attr[:size][1], p.attr[:size][2])
+        can = GtkCanvas()
+        can.content_width = p.attr[:size][1]
+        can.content_height = p.attr[:size][2]
 
         g = GtkGrid()
         g.column_homogeneous = false
@@ -956,8 +959,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                                                    smooth=smooth,
                                                    n=n)
                 img = read_from_png(io)
-                set_gtk_property!(can, :width_request, p.attr[:size][1])
-                set_gtk_property!(can, :height_request, p.attr[:size][2])
+                can.content_width = p.attr[:size][1]
+                can.content_height = p.attr[:size][2]
+                Gtk4.default_size(win, p.attr[:size][1] + 4, p.attr[:size][2] + 4)
                 ctx = getgc(can)
                 show(io, MIME("image/png"), p)
                 img = read_from_png(io)

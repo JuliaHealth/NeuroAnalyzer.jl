@@ -106,8 +106,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     function _activate(app)
 
         win = GtkApplicationWindow(app, "NeuroAnalyzer: iview_ica()")
-        win.width_request = Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20
-        win.height_request = round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20
+        Gtk4.default_size(win, Int64(ica_set[1].width) + round(Int64, p_sig.attr[:size][1] * 0.75) + 20, round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20)
 
         ica_view = GtkScrolledWindow()
         g_cans = GtkGrid()
@@ -124,8 +123,12 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         end
         ica_view.child = g_cans
 
-        signal_view = GtkCanvas(round(Int64, p_sig.attr[:size][1] * 0.75), round(Int64, p_sig.attr[:size][2] * 0.75))
-        psd_view = GtkCanvas(round(Int64, p_psd.attr[:size][1] * 0.75), round(Int64, p_psd.attr[:size][2] * 0.75))
+        signal_view = GtkCanvas()
+        signal_view.content_width = round(Int64, p_sig.attr[:size][1] * 0.75)
+        signal_view.content_hegiht = round(Int64, p_sig.attr[:size][2] * 0.75)
+        psd_view = GtkCanvas()
+        psd_view.content_width = round(Int64, p_psd.attr[:size][1] * 0.75)
+        psd_view.content_height = round(Int64, p_psd.attr[:size][2] * 0.75)
         ica_view.min_content_width = Int64(ica_set[1].width) + 10
         ica_view.max_content_height = round(Int64, p_sig.attr[:size][2] * 0.75) + round(Int64, p_psd.attr[:size][2] * 0.75) + 20
 
