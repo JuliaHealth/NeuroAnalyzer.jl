@@ -398,10 +398,10 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
             draw(can)
         end
         signal_connect(signal_slider, "value-changed") do widget
-            @idle_add entry_epoch.value = round(Int64, Gtk4.value(signal_slider))
+            @idle_add entry_time.value = round(Int64, Gtk4.value(signal_slider))
         end
         signal_connect(entry_time, "value-changed") do widget
-            @idle_add Gtk4.value(signal_slider, entry_epoch.value)
+            @idle_add Gtk4.value(signal_slider, entry_time.value)
             draw(can)
         end
         signal_connect(combo_ch, "changed") do widget
@@ -974,7 +974,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     ep = Int64(entry_epoch.value)
-                    if ep < nepochs(obj1)
+                    if ep < nepochs(obj)
                         ep += 1
                         @idle_add entry_epoch.value = ep
                     end
@@ -1077,6 +1077,7 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         end
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            k = keyval
             # ALT
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
                 mono = !mono

@@ -684,6 +684,8 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
     ch = get_channel(obj, ch=ch)
     clabels = labels(obj)
 
+    k = nothing
+
     p = NeuroAnalyzer.plot_psd(obj, ch=clabels[ch], ep=1)
 
     function _activate(app)
@@ -1036,7 +1038,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             if dy > 0.5
                 if k == 0x0000ffe1 # shift
                     ep = Int64(entry_epoch.value)
-                    if ep < nepochs(obj1)
+                    if ep < nepochs(obj)
                         ep += 1
                         @idle_add entry_epoch.value = ep
                     end
@@ -1151,6 +1153,7 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         end
 
         signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
+            k = keyval
             # ALT
             if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_alt == mask_alt) && keyval == UInt('m'))
                 mono = !mono
