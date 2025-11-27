@@ -44,10 +44,19 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
         g_opts.column_spacing = 5
         g_opts.row_spacing = 5
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         bt_refresh = GtkButton("Refresh")
         bt_refresh.tooltip_text = "Refresh the plot"

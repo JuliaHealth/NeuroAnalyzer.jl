@@ -70,6 +70,10 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
         entry_time.digits = 2
@@ -753,6 +757,10 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
         entry_epoch.digits = 0
@@ -1245,6 +1253,10 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         entry_time = GtkSpinButton(obj1.time_pts[1], obj1.time_pts[end] - zoom, 1)
         entry_time.digits = 2
@@ -1592,6 +1604,10 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         entry_epoch = GtkSpinButton(1, nepochs(obj1), 1)
         entry_epoch.value = ep

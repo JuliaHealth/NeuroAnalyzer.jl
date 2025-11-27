@@ -50,10 +50,19 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
         g_opts.column_spacing = 5
         g_opts.row_spacing = 5
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         entry_time = GtkSpinButton(obj.time_pts[1], obj.time_pts[end] - zoom, 1)
         entry_time.digits = 2
@@ -691,10 +700,19 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         g_opts = GtkGrid()
         g_opts.column_homogeneous = false
         g_opts.column_spacing = 5
         g_opts.row_spacing = 5
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         entry_epoch = GtkSpinButton(1, nepochs(obj), 1)
         entry_epoch.tooltip_text = "Epoch"

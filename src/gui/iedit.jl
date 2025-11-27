@@ -115,11 +115,19 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
         g.column_homogeneous = false
         g.column_spacing = 5
         g.row_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
 
         g_opts = GtkGrid()
         g_opts.column_homogeneous = true
         g_opts.column_spacing = 5
         g_opts.row_spacing = 5
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         can1 = GtkCanvas(458, 458)
         can2 = GtkCanvas(458, 458)

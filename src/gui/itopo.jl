@@ -165,6 +165,11 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         g.column_homogeneous = false
         g.row_spacing = 5
         g.column_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         vbox = GtkBox(:v)
         push!(vbox, g_opts)
         g[1, 1] = vbox
@@ -498,6 +503,11 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         g.column_homogeneous = false
         g.row_spacing = 5
         g.column_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         vbox = GtkBox(:v)
         push!(vbox, g_opts)
         g[1, 1] = vbox

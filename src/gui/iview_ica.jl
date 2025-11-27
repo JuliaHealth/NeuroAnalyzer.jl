@@ -114,6 +114,11 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         g_cans.column_homogeneous = false
         g_cans.row_spacing = 5
         g_cans.column_spacing = 5
+        g_cans.margin_start = 5
+        g_cans.margin_end = 5
+        g_cans.margin_top = 5
+        g_cans.margin_bottom = 5
+
         for idx in eachindex(ica_can_set)
             g_cans[1, idx] = ica_can_set[idx]
         end
@@ -128,6 +133,10 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         g_opts.column_homogeneous = false
         g_opts.row_spacing = 5
         g_opts.column_spacing = 5
+        g_opts.margin_start = 5
+        g_opts.margin_end = 5
+        g_opts.margin_top = 5
+        g_opts.margin_bottom = 5
 
         entry_ic = GtkSpinButton(1, length(ic_idx), 1)
         entry_ic.tooltip_text = "ICA component"
@@ -196,6 +205,11 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
         g.column_homogeneous = false
         g.row_spacing = 5
         g.column_spacing = 5
+        g.margin_start = 5
+        g.margin_end = 5
+        g.margin_top = 5
+        g.margin_bottom = 5
+
         g[1, 1:2] = ica_view
         g[2:8, 1] = psd_view
         g[2:8, 2] = signal_view
