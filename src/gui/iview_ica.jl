@@ -125,7 +125,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
 
         signal_view = GtkCanvas()
         signal_view.content_width = round(Int64, p_sig.attr[:size][1] * 0.75)
-        signal_view.content_hegiht = round(Int64, p_sig.attr[:size][2] * 0.75)
+        signal_view.content_height = round(Int64, p_sig.attr[:size][2] * 0.75)
         psd_view = GtkCanvas()
         psd_view.content_width = round(Int64, p_psd.attr[:size][1] * 0.75)
         psd_view.content_height = round(Int64, p_psd.attr[:size][2] * 0.75)
