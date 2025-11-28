@@ -396,7 +396,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
             _refresh_ica_can_set(obj_reconstructed, ica_can_set, ic_idx, time1, time2)
         end
 
-        signal_connect(ch_slider, "value-changed") do widget, others...
+        signal_connect(ch_slider, "value-changed") do widget
             ch_idx = round(Int64, Gtk4.value(ch_slider))
             draw(signal_view)
             draw(psd_view)
