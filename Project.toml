@@ -1,6 +1,6 @@
 name = "NeuroAnalyzer"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
-version = "0.25.12"
+version = "0.26.01-dev"
 authors = ["Adam Wysokiński <adam.wysokinski@neuroanalyzer.org>"]
 
 [deps]
