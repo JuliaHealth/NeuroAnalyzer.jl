@@ -91,7 +91,8 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
 
             # prominence of 2 dB, distance of 5 Hz
             if length(pks_frq) == 0
-                peaks, _ = findpeaks1d(p_tmp, prominence=pr, distance=vsearch(d, f))
+                peaks, _ = findpeaks1d(p_tmp, prominence=pr / 2, distance=vsearch(d, f))
+                # peaks, _ = findpeaks1d(p_tmp, distance=vsearch(d, f))
                 if length(peaks) > 0
                     for idx in eachindex(peaks)
                         push!(pks_frq, f_tmp[peaks[idx]])

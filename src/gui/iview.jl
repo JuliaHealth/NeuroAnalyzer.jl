@@ -117,7 +117,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             ch_slider.draw_value =  false
         else
             if length(ch) > 15
-                ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
+                ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
                 ch_slider.draw_value =  false
             else
                 ch_slider = GtkScale(:v, ch[1]:ch[end])
@@ -789,7 +789,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             ch_slider.draw_value = false
         else
             if length(ch) > 15
-                ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
+                ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
                 ch_slider.draw_value = false
             else
                 ch_slider = GtkScale(:v, ch[1]:ch[end])
@@ -1275,7 +1275,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         bt_close = GtkButton("Close")
         bt_close.tooltip_text = "Close this window"
         if length(ch) > 15
-            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
             ch_slider.draw_value = false
         else
             ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
@@ -1622,7 +1622,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         bt_close.tooltip_text = "Close this window"
 
         if length(ch) > 15
-            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
             ch_slider.draw_value = false
         else
             ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
@@ -1879,7 +1879,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
         bt_close = GtkButton("Close")
         bt_close.tooltip_text = "Close this window"
         if length(ch) > 15
-            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
             ch_slider.draw_value = false
         else
             ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
@@ -2243,7 +2243,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
         bt_close.tooltip_text = "Close this window"
 
         if length(ch) > 15
-            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 19))
+            ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
             ch_slider.draw_value = false
         else
             ch_slider = GtkScale(:v, ch[ch_first]:ch[end])
