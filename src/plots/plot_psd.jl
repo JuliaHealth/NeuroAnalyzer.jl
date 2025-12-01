@@ -635,7 +635,9 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                        xtickfontsize=6,
                        ytickfontsize=6;
                        kwargs...)
-        show(io, MIME("image/png"), p)
+        withenv("GKSwstype" => "100") do
+            png(p, io)
+        end
         img = read_from_png(io)
         Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
         Cairo.paint(cr)

@@ -193,7 +193,9 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                                        scale=scale,
                                        bad=bad)
             end
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             can.content_width = p.attr[:size][1]
             can.content_height = p.attr[:size][2]
             Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
@@ -870,7 +872,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                                        scale=scale,
                                        bad=bad)
             end
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             can.content_width = p.attr[:size][1]
             can.content_height = p.attr[:size][2]
             Gtk4.default_size(win, p.attr[:size][1] + 40, p.attr[:size][2] + 40)
@@ -1308,7 +1312,9 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
                                    seg=(time1, time2),
                                    title="",
                                    scale=scale)
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
@@ -1649,7 +1655,9 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
                                    ep=ep,
                                    title="",
                                    scale=scale)
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
@@ -1910,7 +1918,9 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
                                    mono=mono,
                                    scale=scale,
                                    title="")
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
@@ -2268,7 +2278,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
                                    mono=mono,
                                    scale=scale,
                                    title="")
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)
@@ -2445,7 +2457,9 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
         Gtk4.show(win)
 
         @guarded draw(can) do widget
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             w = img.width
             h = img.height

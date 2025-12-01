@@ -361,7 +361,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 rectangle(ctx, 0, 0, 800, 800)
                 set_source_rgb(ctx, 1, 1, 1)
                 fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -385,7 +387,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 rectangle(ctx, 0, 0, 800, 800)
                 set_source_rgb(ctx, 1, 1, 1)
                 fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -408,7 +412,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 rectangle(ctx, 0, 0, 800, 800)
                 set_source_rgb(ctx, 1, 1, 1)
                 fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -431,7 +437,9 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 rectangle(ctx, 0, 0, 800, 800)
                 set_source_rgb(ctx, 1, 1, 1)
                 fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)

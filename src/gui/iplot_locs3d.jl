@@ -44,7 +44,9 @@ function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
             p = NeuroAnalyzer.plot_locs3d(locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, mono=mono)
             img = read_from_png(io)
             ctx = getgc(can)
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             paint(ctx)

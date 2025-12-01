@@ -91,7 +91,9 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
                            xtickfontsize=8,
                            ytickfontsize=8)
             ctx = getgc(can)
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             set_source_surface(ctx, img, 0, 0)
             Cairo.paint(ctx)

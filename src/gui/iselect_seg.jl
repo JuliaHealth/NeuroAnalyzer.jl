@@ -61,7 +61,9 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
         Gtk4.show(win)
 
         @guarded draw(can) do widget
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, img, 1, 1)
@@ -103,7 +105,9 @@ function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v
         signal_connect(_lmb_click, ggc_l, "pressed")
 
         function _rmb_click(_, _, x, y)
-            show(io, MIME("image/png"), p)
+            withenv("GKSwstype" => "100") do
+                png(p, io)
+            end
             img = read_from_png(io)
             ctx = getgc(can)
             Cairo.set_source_surface(ctx, img, 1, 1)

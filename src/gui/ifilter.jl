@@ -104,7 +104,7 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         entry_rs.value = rs
         entry_rs.tooltip_text = "Minimum ripple attenuation in dB; default: 40 dB for ELLIPTIC, 20 dB for others"
 
-        entry_bw = GtkSpinButton(0.1, cutoff, 0.1)
+        entry_bw = GtkSpinButton(0.1, entry_cutoff1.value - 0.1, 0.1)
         entry_bw.value = bw
         entry_bw.tooltip_text = "Transition band width in Hz"
 
@@ -183,7 +183,9 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
                 _warn("order must be odd. Filter was not generated.")
             else
                 p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)

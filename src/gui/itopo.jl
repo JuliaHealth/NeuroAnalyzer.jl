@@ -228,14 +228,18 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
                 Gtk4.rectangle(ctx, 0, 0, 999, 999)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
                 Gtk4.fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 500 - (p.attr[:size][1] ÷ 2) - 1, 500 - (p.attr[:size][1] ÷ 2) - 1)
             else
                 Gtk4.rectangle(ctx, 0, 0, 799, 799)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
                 Gtk4.fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 400 - (p.attr[:size][1] ÷ 2) - 1, 400 - (p.attr[:size][1] ÷ 2) - 1)
             end
@@ -573,14 +577,18 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                 Gtk4.rectangle(ctx, 0, 0, 999, 999)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
                 Gtk4.fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 500 - (p.attr[:size][1] ÷ 2) - 1, 500 - (p.attr[:size][1] ÷ 2) - 1)
             else
                 Gtk4.rectangle(ctx, 0, 0, 799, 799)
                 Cairo.set_source_rgb(ctx, 255, 255, 255)
                 Gtk4.fill(ctx)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 400 - (p.attr[:size][1] ÷ 2) - 1, 400 - (p.attr[:size][1] ÷ 2) - 1)
             end

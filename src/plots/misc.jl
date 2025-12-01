@@ -99,12 +99,16 @@ function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRB
     p2_size = p2.attr[:size]
     c = CairoRGBSurface(p1_size[1], p1_size[2])
     cr = CairoContext(c)
-    show(io, MIME("image/png"), p1)
+    withenv("GKSwstype" => "100") do
+        png(p1, io)
+    end
     img = read_from_png(io)
     Cairo.set_source_surface(cr, img, 0, 0)
     Cairo.paint(cr)
     Cairo.scale(cr, 0.5, 0.5)
-    show(io, MIME("image/png"), p2)
+    withenv("GKSwstype" => "100") do
+        png(p2, io)
+    end
     img = read_from_png(io)
     Cairo.set_source_surface(cr, img, (2 * p1_size[1]) - p2_size[1], 0)
     Cairo.paint(cr)

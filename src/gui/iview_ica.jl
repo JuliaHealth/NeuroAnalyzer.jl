@@ -271,7 +271,9 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                                            mono=true,
                                            title="IC: $(current_ic)")
             end
-            show(io, MIME("image/png"), p_sig)
+            withenv("GKSwstype" => "100") do
+                png(p_sig, io)
+            end
             ctx_sig = getgc(signal_view)
             if !scaled_sig
                 Cairo.scale(ctx_sig, 0.75, 0.75)
@@ -313,7 +315,9 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                                                mono=true,
                                                title="IC: $(current_ic)")
             end
-            show(io, MIME("image/png"), p_psd)
+            withenv("GKSwstype" => "100") do
+                png(p_psd, io)
+            end
             ctx_psd = getgc(psd_view)
             if !scaled_psd
                 Cairo.scale(ctx_psd, 0.75, 0.75)

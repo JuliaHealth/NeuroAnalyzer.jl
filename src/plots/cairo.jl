@@ -21,7 +21,9 @@ function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UIn
     p_size = p.attr[:size]
     c = CairoRGBSurface(p_size[1], p_size[2])
     cr = CairoContext(c)
-    show(io, MIME("image/png"), p)
+    withenv("GKSwstype" => "100") do
+        png(p, io)
+    end
     img = read_from_png(io)
     Cairo.set_source_surface(cr, img, 0, 0)
     Cairo.paint(cr)

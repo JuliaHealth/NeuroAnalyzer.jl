@@ -439,7 +439,9 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
                          linecolor=:black,
                          label=false)
 
-        show(io, MIME("image/png"), p)
+        withenv("GKSwstype" => "100") do
+            png(p, io)
+        end
         img = read_from_png(io)
         Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
         Cairo.paint(cr)

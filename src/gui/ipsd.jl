@@ -383,7 +383,9 @@ function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
                 can.content_height = p.attr[:size][2]
                 # Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
                 ctx = getgc(can)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
@@ -1027,7 +1029,9 @@ function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
                 can.content_height = p.attr[:size][2]
                 Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2] + 50)
                 ctx = getgc(can)
-                show(io, MIME("image/png"), p)
+                withenv("GKSwstype" => "100") do
+                    png(p, io)
+                end
                 img = read_from_png(io)
                 set_source_surface(ctx, img, 0, 0)
                 paint(ctx)
