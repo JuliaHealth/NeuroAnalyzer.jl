@@ -427,7 +427,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter
     - `:firls`: weighted least-squares FIR filter
@@ -461,7 +461,7 @@ Apply filtering.
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
@@ -485,7 +485,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `fprototype::Symbol`: filter prototype:
     - `:fir`: FIR filter
     - `:firls`: weighted least-squares FIR filter
@@ -519,7 +519,7 @@ Nothing
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
