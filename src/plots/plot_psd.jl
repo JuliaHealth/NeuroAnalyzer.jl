@@ -56,7 +56,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real,
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=(1200, 600),
                    margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
@@ -139,7 +139,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     end
 
     # prepare plot
-    plot_size = 100 + 40 * ch_n <= 800 ? (1200, 800) : (1200, 100 + 40 * ch_n)
+    plot_size = 100 + 40 * ch_n <= 800 ? (1200, 600) : (1200, 100 + 40 * ch_n)
     p = Plots.plot(ylabel=ylabel,
                    xlabel=100 + 40 * ch_n < 800 ? xlabel : "",
                    legend=false,
@@ -261,7 +261,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=(1200, 600),
                    margins=20Plots.px,
                    titlefontsize=10,
                    xlabelfontsize=8,
@@ -357,7 +357,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
+                   size=(1200, 600),
                    margins=20Plots.px,
                    titlefontsize=10,
                    xlabelfontsize=8,
@@ -445,7 +445,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                          palette=pal,
                          st=:line,
                          lc=:black,
-                         size=(1200, 800),
+                         size=(1200, 600),
                          margins=-10Plots.px,
                          titlefontsize=10,
                          xlabelfontsize=8,
@@ -493,7 +493,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                        palette=pal,
                        st=:surface,
                        lc=:black,
-                       size=(1200, 800),
+                       size=(1200, 600),
                        margins=-10Plots.px,
                        titlefontsize=10,
                        xlabelfontsize=8,
