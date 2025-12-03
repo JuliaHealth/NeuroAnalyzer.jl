@@ -32,25 +32,31 @@ function ftransform(s::AbstractVector; pad::Int64=0, db::Bool=false, nf::Bool=fa
     if nf
         # this will return positive and negative frequencies
         ft = fft0(s, pad)
-
-        # normalize
-        ft ./= length(s)
     else
         # this will only return positive frequencies
         ft = rfft0(s, pad)
-
-        # normalize
-        ft ./= length(s)
-
-        # multiple by 2 to compensate removed negative frequencies
-        ft[2:end] .*= 2
     end
 
     # amplitudes per frequencies
     a = abs.(ft)
+    # normalize
+    a ./= length(s)
+    # for two-sided amplitude
+    # nf && (a = a[1:div(length(s), 2) + 1])
+    # multiple by 2 to compensate removed negative frequencies, except 0 Hz and Nyquist
+    !nf && (a[2:end - 1] .*= 2)
 
-    # powers
-    p = abs2.(ft)               # p = a .^ 2 = abs.(ft .* conj(ft))
+    # powers per frequencies
+    if nf
+        p = abs2.(ft)               # p = a .^ 2 = abs.(ft .* conj(ft))
+        p ./= length(s)^2
+    else
+        p = a.^2
+    end
+    # for two-sided power
+    # nf && (p = p[1:div(length(s), 2) + 1])
+
+    # convert do dB
     db && (p = pow2db.(p))
 
     # remove very small values of |ft|, since they will affect calculations
