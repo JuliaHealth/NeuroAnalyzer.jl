@@ -300,11 +300,13 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                 p_psd = NeuroAnalyzer.plot_psd(obj_reconstructed[current_ic],
                                                ch=cl[chn[ch_idx]],
                                                seg=(time1, time2),
+                                               mono=true,
                                                title="Channel: $(cl[chn[ch_idx]]) (reconstructed from IC: $current_ic)")
             elseif plot_psd_type == 2
                 p_psd = NeuroAnalyzer.plot_psd(obj_removed[current_ic],
                                                ch=cl[chn[ch_idx]],
                                                seg=(time1, time2),
+                                               mono=true,
                                                title="Channel: $(cl[chn[ch_idx]]) (removed IC: $current_ic)")
             elseif plot_psd_type == 3
                 p_psd = NeuroAnalyzer.plot_psd(obj_new,

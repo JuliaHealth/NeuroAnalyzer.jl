@@ -44,7 +44,13 @@ function ftransform(s::AbstractVector; pad::Int64=0, db::Bool=false, nf::Bool=fa
     # for two-sided amplitude
     # nf && (a = a[1:div(length(s), 2) + 1])
     # multiple by 2 to compensate removed negative frequencies, except 0 Hz and Nyquist
-    !nf && (a[2:end - 1] .*= 2)
+    if !nf
+        if mod(length(s), 2) == 0
+            (a[2:end - 1] .*= 2)
+        else
+            (a[2:end] .*= 2)
+        end
+    end
 
     # powers per frequencies
     if nf
