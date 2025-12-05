@@ -77,11 +77,11 @@ colors = nothing
 
 # load dependencies
 
-using Suppressor
-@suppress begin
-    using AMDGPU
-    using CUDA
-end
+using Logging
+Logging.configure(level=ERROR)
+using AMDGPU
+using CUDA
+Logging.configure(level=INFO)
 using Artifacts
 using Cairo
 using ColorSchemes
@@ -117,7 +117,6 @@ using JSON
 using LibSerialPort
 using LinearAlgebra
 using LinRegOutliers
-using Logging
 using MAT
 using MLJ
 using NPZ
