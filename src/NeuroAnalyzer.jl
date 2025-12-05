@@ -77,17 +77,14 @@ colors = nothing
 
 # load dependencies
 
-using Logging
-Logging.configure(level=ERROR)
 using AMDGPU
-using CUDA
-Logging.configure(level=INFO)
 using Artifacts
 using Cairo
 using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
+using CUDA
 using Dates
 using Deconvolution
 using DICOM
@@ -117,6 +114,7 @@ using JSON
 using LibSerialPort
 using LinearAlgebra
 using LinRegOutliers
+using Logging
 using MAT
 using MLJ
 using NPZ
