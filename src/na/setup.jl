@@ -111,6 +111,7 @@ function na_info()::Nothing
             "StatsKit",
             "StatsModels",
             "StatsPlots",
+            "Suppressor",
             "TimeZones",
             "TOML",
             "WAV",

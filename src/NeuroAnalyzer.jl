@@ -4,7 +4,7 @@ Julia toolbox for analyzing neurophysiological data.
 https://neuroanalyzer.org
 """
 
-__precompile__(true)
+__precompile__(false)
 
 module NeuroAnalyzer
 
@@ -77,14 +77,17 @@ colors = nothing
 
 # load dependencies
 
-using AMDGPU
+using Suppressor
+@suppress begin
+    using AMDGPU
+    using CUDA
+end
 using Artifacts
 using Cairo
 using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
-using CUDA
 using Dates
 using Deconvolution
 using DICOM
