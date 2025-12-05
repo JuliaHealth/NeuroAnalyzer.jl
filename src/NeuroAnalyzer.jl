@@ -4,7 +4,7 @@ Julia toolbox for analyzing neurophysiological data.
 https://neuroanalyzer.org
 """
 
-__precompile__(false)
+__precompile__(true)
 
 module NeuroAnalyzer
 
