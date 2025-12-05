@@ -4,7 +4,7 @@ Julia toolbox for analyzing neurophysiological data.
 https://neuroanalyzer.org
 """
 
-# __precompile__(true)
+__precompile__(true)
 
 module NeuroAnalyzer
 
@@ -198,54 +198,56 @@ na_set_prefs(use_gpu=use_gpu, progress_bar=progress_bar, verbose=verbose, exclud
 
 # show major parameters
 
-_info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
-_info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
-_info("Preferences:")
-if use_gpu
-    if CUDA.functional()
-        na_gpu = :cuda
-    elseif AMDGPU.functional()
-        na_gpu = :amdgpu
+function __init__()
+    _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
+    _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
+    _info("Preferences:")
+    if use_gpu
+        if CUDA.functional()
+            na_gpu = :cuda
+        elseif AMDGPU.functional()
+            na_gpu = :amdgpu
+        else
+            use_gpu = false
+        end
+    end
+    if use_gpu == false
+        _info("        Use GPU: $use_gpu")
     else
-        use_gpu = false
+        _info("        Use GPU: $use_gpu ($(uppercase(string(na_gpu))))")
     end
-end
-if use_gpu == false
-    _info("        Use GPU: $use_gpu")
-else
-    _info("        Use GPU: $use_gpu ($(uppercase(string(na_gpu))))")
-end
-_info("   Progress bar: $progress_bar")
-_info("        Verbose: $verbose")
-_info("   Exclude bads: $exclude_bads")
-_info("         Colors: $colors")
-_info("System info:")
-_info("    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB")
+    _info("   Progress bar: $progress_bar")
+    _info("        Verbose: $verbose")
+    _info("   Exclude bads: $exclude_bads")
+    _info("         Colors: $colors")
+    _info("System info:")
+    _info("    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB")
 
-# set package options
+    # set package options
 
-GR.setarrowsize(0.4)
-Plots.gr_cbar_width[] = 0.01
-Plots.gr_set_arrowstyle
-FFTW.set_provider!("fftw")
-FFTW.set_num_threads(Sys.CPU_THREADS)
-BLAS.set_num_threads(Sys.CPU_THREADS)
+    GR.setarrowsize(0.4)
+    Plots.gr_cbar_width[] = 0.01
+    Plots.gr_set_arrowstyle
+    FFTW.set_provider!("fftw")
+    FFTW.set_num_threads(Sys.CPU_THREADS)
+    BLAS.set_num_threads(Sys.CPU_THREADS)
 
-# setup resources
+    # setup resources
 
-_info("Preparing resources")
-global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
+    _info("Preparing resources")
+    global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
 
-# load plugins
+    # load plugins
 
-global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
-if isdir(plugins_path)
-    if length(readdir(plugins_path)) > 0
-        _info("Loading plugins:")
-        na_plugins_reload()
+    global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
+    if isdir(plugins_path)
+        if length(readdir(plugins_path)) > 0
+            _info("Loading plugins:")
+            na_plugins_reload()
+        end
+    else
+        mkpath(plugins_path)
     end
-else
-    mkpath(plugins_path)
 end
 
 # load sub-modules
