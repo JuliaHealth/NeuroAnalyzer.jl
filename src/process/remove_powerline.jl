@@ -24,7 +24,7 @@ Remove power line noise and its peaks above power line frequency.
 - `obj_new::NeuroAnalyzer.NEURO`
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
+function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Real=5.0, q::Real=0.1)::Tuple{NeuroAnalyzer.NEURO, DataFrame}
 
     @assert nepochs(obj) == 1 "remove_powerline() must be applied to a continuous signal."
     @assert pl_frq >= 0 "pl_freq must be ≥ 0."
@@ -93,6 +93,8 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
             if length(pks_frq) == 0
                 pr_tmp = pr
                 d_tmp = d
+                peaks, _ = findpeaks1d(p_tmp, prominence=pr, distance=vsearch(d, f))
+                # if no peaks detected, try changing prominence and distance values
                 while length(peaks) == 0
                     peaks, _ = findpeaks1d(p_tmp, prominence=pr_tmp, distance=vsearch(d_tmp, f))
                     pr_tmp -= 0.1
@@ -102,7 +104,6 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
                     push!(pks_frq, f_tmp[peaks[idx]])
                 end
             end
-
             n = length(pks_frq)
             bw_values = collect(0:q:5.0)[2:end]
             if n > 0
@@ -180,7 +181,7 @@ Remove power line noise and harmonics.
 
 - `df::DataFrame`: list of peaks detected
 """
-function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Float64=5.0, q::Real=0.1)::DataFrame
+function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pl_frq::Real=obj.header.recording[:line_frequency], method::Symbol=:iir, pr::Real=2.0, d::Real=5.0, q::Real=0.1)::DataFrame
 
     obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data
