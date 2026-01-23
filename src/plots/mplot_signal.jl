@@ -31,6 +31,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
+                      xticks=NeuroAnalyzer._ticks(t),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -153,15 +154,34 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     ax.yticklabelsize = 12
 
     # plot channels
+    if length(ctypes_uni) > 1
+        cmap = GLMakie.resample_cmap(pal, length(ctypes_uni))
+    end
     for idx in 1:ch_n
         if !bad[idx]
-            Makie.lines!(ax,
-                         t,
-                         s[idx, :],
-                         linewidth=0.75,
-                         color=palette(pal)[channel_color[idx]],
-                         colormap=pal,
-                         colorrange=1:length(ctypes_uni))
+            if mono
+                Makie.lines!(ax,
+                             t,
+                             s[idx, :],
+                             linewidth=0.75,
+                             color=:black)
+            else
+                if length(ctypes_uni) > 1
+                    Makie.lines!(ax,
+                                 t,
+                                 s[idx, :],
+                                 linewidth=0.75,
+                                 color=cmap[channel_color[idx]],
+                                 colormap=pal,
+                                 colorrange=1:length(ctypes_uni))
+                else
+                    Makie.lines!(ax,
+                                 t,
+                                 s[idx, :],
+                                 linewidth=0.75,
+                                 colormap=pal)
+                end
+            end
         else
             Makie.lines!(ax,
                          t,
@@ -216,46 +236,65 @@ Plot amplitude of single-channel signal.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `f::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)::Plots.Plot{Plots.GRBackend}
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)::GLMakie.Figure
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # prepare plot
     plot_size = (1200, 400)
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ytick_direction=:out,
-                   xtick_direction=:out,
-                   ylims=_ylims(s1)[1] < _ylims(s2)[1] ? _ylims(s1) : _ylims(s2),
-                   title=title,
-                   size=plot_size,
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
+    f = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(f[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    if minimum(s1) == 0 || minimum(s2) == 0
+        if maximum(s1) > maximum(s2)
+            GLMakie.ylims!(ax, 0, NeuroAnalyzer._ylims(s1)[2])
+        else
+            GLMakie.ylims!(ax, 0, NeuroAnalyzer._ylims(s2)[2])
+        end
+    else
+        if maximum(s1) < maximum(s2)
+            if minimum(s1) < minimum(s2)
+                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s1)[1], NeuroAnalyzer._ylims(s2)[2])
+            else
+                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s2)[1], NeuroAnalyzer._ylims(s2)[2])
+            end
+        else
+            if minimum(s1) < minimum(s2)
+                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s1)[1], NeuroAnalyzer._ylims(s1)[2])
+            else
+                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s2)[1], NeuroAnalyzer._ylims(s1)[2])
+            end
+        end
+    end
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
     # plot signals
-    p = Plots.plot!(t,
-                    s1,
-                    linewidth=1,
-                    label="",
-                    alpha=0.5,
-                    color=:black)
-    p = Plots.plot!(t,
-                    s2,
-                    linewidth=1,
-                    label="",
-                    alpha=0.5,
-                    color=:blue)
+    Makie.lines!(t,
+                 s1,
+                 linewidth=1,
+                 label="",
+                 alpha=0.5,
+                 color=:black)
+    Makie.lines!(t,
+                 s2,
+                 linewidth=1,
+                 label="",
+                 alpha=0.5,
+                 color=:blue)
 
-    return p
+    return f
 
 end
 
@@ -276,9 +315,9 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `f::GLMakie.Figure`
 """
-function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -290,46 +329,37 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
     ylim = _tuple_max(ylim)
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ylims=ylim,
-                   title=title,
-                   palette=pal,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
-    # plot upper 95% CI
-    p = Plots.plot!(t,
-                    s_u,
-                    fillrange=s_l,
-                    fillalpha=0.35,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    linewidth=0.5)
-    # plot lower 95% CI
-    p = Plots.plot!(t,
-                    s_l,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    linewidth=0.5)
-    # plot mean
-    p = Plots.plot!(t,
-                    s_m,
-                    label=false,
-                    t=:line,
-                    c=:black,
-                    linewidth=0.5)
+    plot_size = (1200, 500)
+    f = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(f[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=NeuroAnalyzer._ticks(t),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
-    return p
+    # plot upper 95% CI
+    Makie.band!(t,
+                s_u,
+                s_l,
+                alpha=0.25,
+                color=:grey,
+                strokewidth=0.5)
+    # plot mean
+    Makie.lines!(t,
+                 s_m,
+                 color=:black,
+                 linewidth=1)
+
+    return f
 
 end
 
@@ -352,9 +382,9 @@ Butterfly plot of `s` channels.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `f::GLMakie.Figure`
 """
-function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false, kwargs...)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -369,42 +399,38 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
 
     # plot channels
     plot_size = (1200, 500)
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ylims=ylim,
-                   title=title,
-                   palette=pal,
-                   size=plot_size,
-                   legend=false,
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
+    f = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(f[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=NeuroAnalyzer._ticks(t),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    cmap = GLMakie.resample_cmap(pal, ch_n)
     for idx in 1:ch_n
-        p = Plots.plot!(t,
-                        s[idx, :],
-                        t=:line,
-                        color=idx,
-                        linewidth=0.5,
-                        label=clabels[idx])
+        Makie.lines!(t,
+                     s[idx, :],
+                     color=cmap[idx],
+                     colormap=pal,
+                     colorrange=1:ch_n,
+                     linewidth=0.5,
+                     label=clabels[idx])
     end
+    ch_n < 40 && axislegend(position = :rb)
 
     # plot averaged channels
     if avg
         s = mean(s, dims=1)[:]
-        p = Plots.plot!(t,
-                        s,
-                        linewidth=2,
-                        color=:black,
-                        label=false)
+        Makie.lines!(t,
+                     s,
+                     linewidth=2,
+                     color=:black)
     end
 
-    return p
+    return f
 
 end
 
