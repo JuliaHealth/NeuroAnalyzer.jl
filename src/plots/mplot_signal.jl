@@ -159,15 +159,16 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                          t,
                          s[idx, :],
                          linewidth=0.75,
-                         color=channel_color[idx])
+                         color=palette(pal)[channel_color[idx]],
+                         colormap=pal,
+                         colorrange=1:length(ctypes_uni))
         else
             Makie.lines!(ax,
                          t,
                          s[idx, :],
                          linewidth=0.75,
                          alpha=0.2,
-                         colormap=pal,
-                         color=channel_color[idx])
+                         color=:black)
         end
     end
 
