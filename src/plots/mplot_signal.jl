@@ -31,9 +31,6 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xpanlock=true,
-                      ypanlock=true,
-                      yzoomlock=true,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -141,9 +138,6 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xpanlock=true,
-                      ypanlock=true,
-                      yzoomlock=true,
                       yticksvisible=false,
                       xticks=NeuroAnalyzer._ticks(t),
                       yticks=((ch_n - 1):-1:0, clabels),
@@ -161,13 +155,14 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     # plot channels
     for idx in 1:ch_n
         if !bad[idx]
-            Makie.lines!(t,
+            Makie.lines!(ax,
+                         t,
                          s[idx, :],
                          linewidth=0.75,
-                         colormap=pal,
                          color=channel_color[idx])
         else
-            Makie.lines!(t,
+            Makie.lines!(ax,
+                         t,
                          s[idx, :],
                          linewidth=0.75,
                          alpha=0.2,
@@ -176,20 +171,28 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
         end
     end
 
-#=
     # draw scales
     if scale
         idx2 = 1
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
-                Makie.lines!([_xlims(t)[1], _xlims(t)[1]], [(s_pos - 1.5), (s_pos - 0.5)], color=:red, linewidth=5, label="")
-                Makie.lines!(annotations=(_xlims(t)[1], (s_pos - 0.5), Plots.text("$(r[idx2]) $(cunits[idx1])  ", pointsize=5, halign=:right, valign=:bottom, rotation=90)), label=false)
+                Makie.lines!(ax,
+                             [_xlims(t)[1], _xlims(t)[1]],
+                             [(s_pos - 1.5), (s_pos - 0.5)],
+                             color=:red,
+                             linewidth=5)
+                Makie.text!(ax,
+                            (_xlims(t)[1], s_pos - 1),
+                            text="$(r[idx2]) $(cunits[idx1])  ",
+                            fontsize=8,
+                            align=(:center, :top),
+                            rotation=pi/2,
+                            offset=(5, 0))
                 idx2 += 1
             end
         end
     end
-=#
 
     return f
 
