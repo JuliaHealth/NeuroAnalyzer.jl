@@ -20,14 +20,14 @@ Plot amplitude of single-channel signal.
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, kwargs...)::GLMakie.Figure
 
     # prepare plot
     plot_size = (1200, 400)
-    f = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(f[1, 1],
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
@@ -63,7 +63,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                      color=:black)
     end
 
-    return f
+    return p
 
 end
 
@@ -89,7 +89,7 @@ Plot amplitude of multi-channel signal.
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), kwargs...)::GLMakie.Figure
 
@@ -134,8 +134,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
 
     # prepare plot
     plot_size = (1200, 100 + 40 * ch_n)
-    f = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(f[1, 1],
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
@@ -215,7 +215,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
         end
     end
 
-    return f
+    return p
 
 end
 
@@ -236,7 +236,7 @@ Plot amplitude of single-channel signal.
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)::GLMakie.Figure
 
@@ -244,8 +244,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
 
     # prepare plot
     plot_size = (1200, 400)
-    f = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(f[1, 1],
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
@@ -294,7 +294,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
                  alpha=0.5,
                  color=:blue)
 
-    return f
+    return p
 
 end
 
@@ -315,7 +315,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::GLMakie.Figure
 
@@ -330,8 +330,8 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
 
     # prepare plot
     plot_size = (1200, 500)
-    f = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(f[1, 1],
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
@@ -359,7 +359,7 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
                  color=:black,
                  linewidth=1)
 
-    return f
+    return p
 
 end
 
@@ -382,7 +382,7 @@ Butterfly plot of `s` channels.
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `p::GLMakie.Figure`
 """
 function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false, kwargs...)::GLMakie.Figure
 
@@ -399,8 +399,8 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
 
     # plot channels
     plot_size = (1200, 500)
-    f = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(f[1, 1],
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
@@ -456,9 +456,9 @@ Plot amplitude of multi-channel signals.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, kwargs...)::GLMakie.Figure
 
     ch_n = size(s1, 1)
 
@@ -490,65 +490,57 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
 
     # prepare plot
     plot_size = (1200, 100 + 40 * ch_n)
-    p = Plots.plot(ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=(_ticks(t), []),
-                   ylims=(-1, ch_n),
-                   yticks=((ch_n - 1):-1:0, []),
-                   ytick_direction=:none,
-                   xtick_direction=:out,
-                   title=title,
-                   palette=:darktest,
-                   size=plot_size,
-                   top_margin=10Plots.px,
-                   bottom_margin=40Plots.px,
-                   right_margin=20Plots.px,
-                   left_margin=60Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      yticksvisible=false,
+                      xticks=NeuroAnalyzer._ticks(t),
+                      yticks=((ch_n - 1):-1:0, clabels),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.ylims!(ax, -1, ch_n)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
     # plot channels
     for idx in 1:ch_n
-        p = @views Plots.plot!(t,
-                               s1[idx, :],
-                               linewidth=1,
-                               label="",
-                               color=:black,
-                               alpha=0.5)
-        p = @views Plots.plot!(t,
-                               s2[idx, :],
-                               linewidth=1,
-                               label="",
-                               color=:blue,
-                               alpha=0.5)
+        Makie.lines!(t,
+                     s1[idx, :],
+                     linewidth=1,
+                     color=:black,
+                     alpha=0.5)
+        Makie.lines!(t,
+                     s2[idx, :],
+                     linewidth=1,
+                     color=:blue,
+                     alpha=0.5)
     end
 
-    # draw labels
-    for idx in 1:ch_n
-        s_pos = ch_n - idx
-        p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos), Plots.text("$(clabels[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
-    end
-
-    # draw ticks
-    xt = collect(_ticks(t))
-    xt_s = string.(xt)
-    for idx in eachindex(xt)
-        p = Plots.plot!(annotations=(xt[idx], (-1.5), Plots.text("$(xt_s[idx])", pointsize=6, halign=:center, valign=:center)), label=false)
-    end
-    p = Plots.plot!(annotations=(mean(xt), (-2), Plots.text("$xlabel", pointsize=8, halign=:center, valign=:center)), label=false)
-
-    # draw scales
+    # draw scale
     if scale
         idx2 = 1
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
-                p = Plots.plot!([_xlims(t)[1], _xlims(t)[1]], [(s_pos - 1.5), (s_pos - 0.5)], color=:red, linewidth=5, label="")
-                p = Plots.plot!(annotations=(_xlims(t)[1], (s_pos - 1.5), Plots.text("$(r[idx2]) $(cunits[idx1])  ", pointsize=5, halign=:right, valign=:bottom)), label=false)
+                Makie.lines!(ax,
+                             [_xlims(t)[1], _xlims(t)[1]],
+                             [(s_pos - 1.5), (s_pos - 0.5)],
+                             color=:red,
+                             linewidth=5)
+                Makie.text!(ax,
+                            (_xlims(t)[1], s_pos - 1),
+                            text="$(r[idx2]) $(cunits[idx1])  ",
+                            fontsize=8,
+                            align=(:center, :top),
+                            rotation=pi/2,
+                            offset=(5, 0))
                 idx2 += 1
             end
         end
@@ -1025,9 +1017,9 @@ Plot signal.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)::GLMakie.Figure
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
