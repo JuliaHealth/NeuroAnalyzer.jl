@@ -437,7 +437,7 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
                      color=:black)
     end
 
-    return f
+    return p
 
 end
 

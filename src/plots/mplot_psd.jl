@@ -189,7 +189,6 @@ Plot PSD mean and ±95% CI of averaged channels.
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
-- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -202,7 +201,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::GLMakie.Figure
+function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -214,61 +213,52 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, 
     s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp)
 
     if frq === :lin
-        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
-        xsc = :identity
-    elseif frq === :log
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
+        else
+            xt = frq_lim[1]:5:frq_lim[2]
+        end
+    else
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
         end
         xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
-        xsc = :log10
     end
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   legend=false,
-                   xlims=frq_lim,
-                   xticks=(xt, string.(xt)),
-                   xscale=xsc,
-                   title=title,
-                   palette=pal,
-                   t=:line,
-                   c=:black,
-                   size=(1200, 600),
-                   margins=20Plots.px,
-                   titlefontsize=10,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
+    plot_size = (1200, 500)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=xt,
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xscale=frq===:lin ? identity : log10,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, frq_lim)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
     # plot upper 95% CI
-    p = Plots.plot!(sf,
-                    s_u,
-                    fillrange=s_l,
-                    fillalpha=0.35,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
-    # plot lower 95% CI
-    p = Plots.plot!(sf,
-                    s_l,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
+    Makie.band!(sf,
+                s_u,
+                s_l,
+                alpha=0.25,
+                color=:grey,
+                strokewidth=0.5)
     # plot mean
-    p = Plots.plot!(sf,
-                    s_m,
-                    label=false,
-                    t=:line,
-                    c=:black,
-                    lw=0.5)
+    Makie.lines!(sf,
+                 s_m,
+                 color=:black,
+                 linewidth=1)
 
     return p
 
@@ -284,20 +274,20 @@ Butterfly PSD plot.
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
 - `clabels::Vector{String}=[""]`: signal channel labels vector
-- `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `avg::Bool=false`: plot average channels
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::GLMakie.Figure
+function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, kwargs...)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -310,17 +300,63 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
     if frq === :lin
-        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
-        xsc = :identity
-    elseif frq === :log
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
+        else
+            xt = frq_lim[1]:5:frq_lim[2]
+        end
+    else
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
         end
         xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
-        xsc = :log10
     end
+
+    # prepare plot
+    plot_size = (1200, 600)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=xt,
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xscale=frq===:lin ? identity : log10,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, frq_lim)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
+
+    cmap = GLMakie.resample_cmap(pal, ch_n)
+    for idx in 1:ch_n
+        Makie.lines!(sf,
+                     sp[idx, :],
+                     color=cmap[idx],
+                     colormap=pal,
+                     colorrange=1:ch_n,
+                     linewidth=0.5,
+                     label=clabels[idx])
+    end
+    ch_n < 40 && axislegend(position = :rb)
+
+    # plot averaged channels
+    if avg
+        s = mean(sp, dims=1)[:]
+        Makie.lines!(sf,
+                     s,
+                     linewidth=2,
+                     color=:black)
+    end
+
+    return p
+
 
     # prepare plot
     p = Plots.plot(xlabel=xlabel,
@@ -396,59 +432,64 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
     clabels == [""] && (clabels = repeat([""], ch_n))
 
     if frq === :lin
-        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
-        xsc = :identity
-    elseif frq === :log
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
+        else
+            xt = frq_lim[1]:5:frq_lim[2]
+        end
+    else
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
+        end
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
+        else
+            xt = frq_lim[1]:5:frq_lim[2]
         end
         xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
-        xsc = :log10
     end
 
     # prepare plot
     if variant === :w
-        p = Plots.plot3d(xlabel=xlabel,
-                         ylabel="",
-                         zlabel=zlabel,
-                         legend=false,
-                         xlims=frq_lim,
-                         xrotation=-15,
-                         yrotation=-10,
-                         title=title,
-                         palette=pal,
-                         st=:line,
-                         lc=:black,
-                         size=(1200, 600),
-                         margins=-10Plots.px,
-                         titlefontsize=10,
-                         xlabelfontsize=8,
-                         ylabelfontsize=8,
-                         zlabelfontsize=8,
-                         xtickfontsize=6,
-                         ytickfontsize=5,
-                         ztickfontsize=6,
-                         xscale=xsc,
-                         linewidth=0.5;
-                         kwargs...)
+        plot_size = (1200, 600)
+        p = GLMakie.Figure(size=plot_size)
+        ax = GLMakie.Axis3(p[1, 1],
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           zlabel=zlabel,
+                           title=title,
+                           yticks=(1:1:ch_n, clabels),
+                           zoommode=:disable,
+                           xtranslationlock=true,
+                           ytranslationlock=true,
+                           ztranslationlock=true,
+                           aspect=(1, 1, 0.5),
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0),
+                           zautolimitmargin=(0, 0);
+                           kwargs...)
+        GLMakie.xlims!(ax, frq_lim)
+        ax.titlesize = 20
+        ax.xlabelsize = 18
+        ax.ylabelsize = 18
+        ax.xticklabelsize = 12
+        ax.yticklabelsize = 12
+        ax.xticks = xt
 
         # plot powers
+        cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
-            if frq === :lin
-                p = Plots.plot!(sf,
-                                ones(length(sf)) .* idx,
-                                sp[idx, :],
-                                linecolor=idx,
-                                xticks=(xt, string.(xt)))
-            else
-                p = Plots.plot!(sf,
-                                ones(length(sf)) .* idx,
-                                sp[idx, :],
-                                xticks=((frq_lim[1], frq_lim[2]), (string(frq_lim[1]), string(frq_lim[2]))),
-                                linecolor=idx)
-            end
+            Makie.lines!(sf,
+                         ones(length(sf)) .* idx,
+                         sp[idx, :],
+                         #xminorticksvisible=true,
+                         #xminorticks=IntervalsBetween(10),
+                         #xscale=frq===:lin ? identity : log10,
+                         linewidth=1,
+                         color=mono ? :black : cmap[idx],
+                         colormap=pal,
+                         colorrange=1:ch_n)
         end
     else
         f1 = vsearch(frq_lim[1], sf)
@@ -488,7 +529,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
     else
         yt = (1:ch_n, clabels)
     end
-    p = Plots.plot!(yticks=yt)
+#    p = Plots.plot!(yticks=yt)
 
     return p
 
@@ -848,7 +889,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                                xlabel=xlabel,
                                ylabel=ylabel,
                                title=title,
-                               db=db,
                                frq_lim=frq_lim,
                                frq=frq,
                                mono=mono;
@@ -865,7 +905,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         db=db,
                          frq_lim=frq_lim,
                          frq=frq,
                          mono=mono;
@@ -886,7 +925,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        db=db,
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
@@ -908,7 +946,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        db=db,
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
@@ -933,7 +970,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,
-                          db=db,
                           frq_lim=frq_lim,
                           frq=frq,
                           mono=mono;
