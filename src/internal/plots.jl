@@ -29,6 +29,13 @@ function _ylims(s::AbstractVector)::Tuple{Real, Real}
 end
 
 function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
+    tc = collect(t[1]:10:t[end])
+    if t[end] - t[1] < 10
+        tc = collect(t[1]:5:t[end])
+    elseif t[end] - t[1] < 5
+        tc = collect(t[1]:1:t[end])
+    end
+    return tc
 #    if length(t) >= 3
 #        if t[2] - t[1] == t[3] - t[2]
 #            tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:t[end])))
@@ -36,13 +43,13 @@ function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
 #            tc = collect(floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=3))
 #        end
 #    end
-    if t[end] == round(Int64, t[end])
-        tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:((t[end] - t[1])/10):t[end])))
-    else
-        tc = linspace(t[1], t[end], length(round.(t[1]:((t[end] - t[1])/10):t[end], digits=2)))
-    end
-    tc = round.(tc, digits=2)
-    return tc
+#    if t[end] == round(Int64, t[end])
+#        tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:((t[end] - t[1])/10):t[end])))
+#    else
+#        tc = linspace(t[1], t[end], length(round.(t[1]:((t[end] - t[1])/10):t[end], digits=2)))
+#    end
+#    tc = round.(tc, digits=2)
+#    return tc
 end
 
 function _ticks(t::Tuple{Real, Real})::AbstractVector

@@ -31,7 +31,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=NeuroAnalyzer._ticks(t),
+                      xticks=_ticks(t),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -52,14 +54,12 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
         Makie.lines!(t,
                      s,
                      linewidth=1,
-                     label="",
                      alpha=0.2,
                      color=:black)
     else
         Makie.lines!(t,
                      s,
                      linewidth=1,
-                     label="",
                      color=:black)
     end
 
@@ -139,9 +139,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      yticksvisible=false,
-                      xticks=NeuroAnalyzer._ticks(t),
+                      xticks=_ticks(t),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       yticks=((ch_n - 1):-1:0, clabels),
+                      yticksvisible=false,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -151,7 +153,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    ax.yticklabelsize = ch_n <= 64 ? 12 : 10;
 
     # plot channels
     if length(ctypes_uni) > 1
@@ -249,6 +251,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
+                      xticks=_ticks(t),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -284,13 +289,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
     Makie.lines!(t,
                  s1,
                  linewidth=1,
-                 label="",
                  alpha=0.5,
                  color=:black)
     Makie.lines!(t,
                  s2,
                  linewidth=1,
-                 label="",
                  alpha=0.5,
                  color=:blue)
 
@@ -335,7 +338,9 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=NeuroAnalyzer._ticks(t),
+                      xticks=_ticks(t),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -404,7 +409,9 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=NeuroAnalyzer._ticks(t),
+                      xticks=_ticks(t),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -495,9 +502,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      yticksvisible=false,
-                      xticks=NeuroAnalyzer._ticks(t),
+                      xticks=_ticks(t),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       yticks=((ch_n - 1):-1:0, clabels),
+                      yticksvisible=false,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
