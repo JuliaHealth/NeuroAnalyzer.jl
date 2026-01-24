@@ -35,7 +35,7 @@ Plot topographical view.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -337,7 +337,7 @@ Topographical plot.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -467,7 +467,7 @@ Topographical plot of embedded or external component.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

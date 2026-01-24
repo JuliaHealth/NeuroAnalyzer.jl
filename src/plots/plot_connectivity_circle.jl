@@ -18,7 +18,7 @@ Plot connectivity circle.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

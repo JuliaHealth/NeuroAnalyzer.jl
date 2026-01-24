@@ -19,7 +19,7 @@ Plot PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -93,7 +93,7 @@ Plot multi-channel PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -195,7 +195,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -281,7 +281,7 @@ Butterfly PSD plot.
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `avg::Bool=false`: plot average channels
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -411,7 +411,7 @@ Plot 3-d waterfall PSD plot.
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -544,7 +544,7 @@ end
 """
     mplot_psd_topo(locs, sf, sp; <keyword arguments>)
 
-Plot topographical map PSDs.
+Plot topographical map of PSDs.
 
 # Arguments
 
@@ -557,8 +557,8 @@ Plot topographical map PSDs.
 - `title::String=""`: plot title
 - `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `kwargs`: optional arguments for plot() function
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -590,7 +590,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
         marker_size = (120, 80)
         xl = 1.1
         yl = 1.1
-    elseif size(sp, 1) <= 100
+    elseif _in(size(sp, 1), (64, 100))
         mplot_size = 1200
         marker_size = (120, 80)
         xl = 1.5
@@ -710,13 +710,14 @@ Plot power spectrum density.
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical
-- `kwargs`: optional arguments for plot() function
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, kwargs...)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -966,7 +967,8 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           ylabel=ylabel,
                           title=title,
                           frq_lim=frq_lim,
-                          frq=frq;
+                          frq=frq,
+                          cart=cart;
                           kwargs...)
     end
 
@@ -1015,13 +1017,14 @@ Plot power spectrum density of embedded or external component.
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical
-- `kwargs`: optional arguments for plot() function
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, kwargs...)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -1222,6 +1225,27 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                         mono=mono,
                         variant=:s;
                         kwargs...)
+    elseif type === :topo
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
+        _has_locs(obj)
+        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+        locs = Base.filter(:label => in(chs), obj.locs)
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+        ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
+        xlabel == "default" && (xlabel = "")
+        ylabel == "default" && (ylabel = "")
+        title = replace(title, "channel" => "channels")
+        p = mplot_psd_topo(locs,
+                          sf,
+                          sp,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          frq_lim=frq_lim,
+                          frq=frq,
+                          cart=cart;
+                          kwargs...)
     end
 
     return p

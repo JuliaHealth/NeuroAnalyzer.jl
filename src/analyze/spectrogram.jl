@@ -63,6 +63,45 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
 
 end
 
+
+"""
+    spectrogram(s; <keyword arguments>)
+
+Calculate spectrogram. Default method is short time Fourier transform.
+
+# Arguments
+
+- `s::AbstractMatrix`
+- `fs::Int64`: sampling frequency
+- `db::Bool=true`: normalize powers to dB
+- `method::Symbol=:stft`: method used to calculate PSD:
+    - `:stft`: short time Fourier transform
+    - `:mt`: multi-tapered periodogram
+- `nt::Int64=7`: number of Slepian tapers
+- `wlen::Int64=fs`: window length, default is 1 second
+- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `w::Bool=true`: if true, apply Hanning window
+
+# Returns
+
+Named tuple containing:
+- `p::Array{Float64, 3}`: powers
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
+"""
+function spectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
+
+    p_tmp, f_tmp, t_tmp = spectrogram(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+
+    p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    Threads.@threads for ch_idx in axes(s, 1)
+        p[:, :, ch_idx], _, _ = @views spectrogram(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    end
+
+    return (p=p, f=f_tmp, t=t_tmp)
+
+end
+
 """
     spectrogram(obj; <keyword arguments>)
 

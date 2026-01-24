@@ -15,7 +15,7 @@ Plot EDA.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -71,7 +71,7 @@ Plot EDA.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -150,7 +150,7 @@ Butterfly plot of EDA.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average EDA
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -253,7 +253,7 @@ Plot EDA amplitude mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

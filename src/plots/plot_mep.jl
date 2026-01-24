@@ -17,7 +17,7 @@ Plot MEP.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -92,7 +92,7 @@ Butterfly plot of MEP.
 - `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average MEP
 - `yrev::Bool=false`: reverse Y axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -206,7 +206,7 @@ Plot MEP amplitude mean and ±95% CI.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -302,7 +302,7 @@ Plot EPRs stacked by channels or by epochs.
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -375,7 +375,7 @@ Plot MEP.
 - `type::Symbol=:normal`: plot type: `:normal`, butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
 - `yrev::Bool=false`: reverse Y axis
 - `avg::Bool=false`: plot average MEP for `:butterfly` plot
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

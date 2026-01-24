@@ -37,7 +37,7 @@ Plot matrix.
 - `cb_title::String=""`: color bar title
 - `xrot::Int64=0`: rotate xlabels by xrot degrees
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -96,7 +96,7 @@ Plot cross/auto-covariance/correlation.
 - `title::String=""`
 - `cb_title::String=""`: color bar title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -158,7 +158,7 @@ Plot histogram.
 - `mono::Bool=false`: use color or gray palette
 - `draw_mean::Bool=true`
 - `draw_median::Bool=true`
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -238,7 +238,7 @@ Bar plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -294,7 +294,7 @@ Line plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -348,7 +348,7 @@ Line plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -409,7 +409,7 @@ Box plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -462,7 +462,7 @@ Violin plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -515,7 +515,7 @@ Dots plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -575,7 +575,7 @@ Plot paired data.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -647,7 +647,7 @@ Polar plot.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `ticks::Bool=false`: draw X and Y ticks
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -740,7 +740,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `units::String="μV"`
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -942,7 +942,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
     - `:loglog`: log10-log10
 - `units::String="μV"`
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1110,7 +1110,7 @@ Topographical plot of embedded ICA components.
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `plot_contours::Bools=true`: plot contours over topo plot
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1179,7 +1179,7 @@ Topographical plot of external ICA components.
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `plot_contours::Bools=true`: plot contours over topo plot
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1231,7 +1231,7 @@ Confidence interval plot.
 - `ylabel::String=""`: Y axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1318,7 +1318,7 @@ Plot heatmap.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1386,7 +1386,7 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 - `n::Int64=size(imf, 1) - 1`: number of IMFs to plot
 - `t::AbstractVector`: time points
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1501,7 +1501,7 @@ Plot Hilbert spectrum.
 - `ylabel::String="default"`: Y axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1565,7 +1565,7 @@ Plot instantaneous frequencies.
 - `ylabel::String="default"`: Y axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1631,7 +1631,7 @@ Plot phases.
 - `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1713,7 +1713,7 @@ Polar pole-zero map.
 - `mono::Bool=false`: use color or gray palette
 - `ticks::Bool=false`: draw X and Y ticks
 - `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1773,7 +1773,7 @@ Plot discrete wavelet decomposition coefficients.
 - `n::Int64=size(dc, 1) - 1`: number of coefficients to plot
 - `t::AbstractVector`: time points
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

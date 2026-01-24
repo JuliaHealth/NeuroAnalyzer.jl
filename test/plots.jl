@@ -56,60 +56,62 @@ p = NeuroAnalyzer.plot_locs(e10, ch="eeg", d=3, interactive=false)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_psd()"
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1")
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:mean)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1")
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:mean)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_save()"
-p = NeuroAnalyzer.plot(e10, ch="Fp1")
+p = NeuroAnalyzer.mplot(e10, ch="Fp1")
 NeuroAnalyzer.plot_save(p, file_name="test.png")
 @test isfile("test.png")
 isfile("test.png") && rm("test.png")
 
 @info "Test: plot()"
-p = NeuroAnalyzer.plot(e10, ch="Fp1")
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:mean)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot(e10, ch="Fp1")
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot(e10, ch=["Fp1", "Fp2"], type=:mean)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_spectrogram()"
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1")
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1")
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="eeg", topo=true)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_topo()"
 p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1))

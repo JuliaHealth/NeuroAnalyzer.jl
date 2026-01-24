@@ -19,7 +19,7 @@ Plot coherence.
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -106,7 +106,7 @@ Plot multi-channel coherence.
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -253,7 +253,7 @@ Plot coherence mean and ±95% CI of averaged channels.
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -371,7 +371,7 @@ Butterfly PSD plot.
 - `ax::Symbol=:linlin`: type of axes scaling:
     - `:linlin`: linear-linear
     - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

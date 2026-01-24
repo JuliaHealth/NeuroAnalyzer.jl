@@ -19,7 +19,7 @@ Plot PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -91,7 +91,7 @@ Plot multi-channel PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -220,7 +220,7 @@ Plot PSD mean and ±95% CI of averaged channels.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -315,7 +315,7 @@ Butterfly PSD plot.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -399,7 +399,7 @@ Plot 3-d waterfall PSD plot.
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -537,7 +537,7 @@ Plot topographical map PSDs.
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -696,7 +696,7 @@ Plot power spectrum density.
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -1011,7 +1011,7 @@ Plot power spectrum density of embedded or external component.
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

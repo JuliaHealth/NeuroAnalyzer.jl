@@ -19,7 +19,7 @@ Plot PHSD (phase spectral density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -95,7 +95,7 @@ Plot multi-channel PHSD (phase spectral density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -204,7 +204,7 @@ Plot PHSD mean and ±95% CI of averaged channels.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -303,7 +303,7 @@ Butterfly PHSD plot.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -390,7 +390,7 @@ Plot 3-d waterfall PHSD plot.
 - `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -522,7 +522,7 @@ Plot topographical map PHSDs.
 - `mono::Bool=false`: use color or gray palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`)
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -654,7 +654,7 @@ Plot phase spectral density.
 - `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -876,7 +876,7 @@ Plot phase spectral density of embedded or external component.
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
 - `units::String=""`
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

@@ -19,7 +19,7 @@ Plot ERP/ERF.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -103,7 +103,7 @@ Butterfly plot of ERP.
 - `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average ERP
 - `yrev::Bool=false`: reverse Y axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -225,7 +225,7 @@ Plot ERP/ERF amplitude mean and ±95% CI.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse Y axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -331,7 +331,7 @@ Plot topographical map ERPs.
 - `yrev::Bool=false`: reverse Y axis
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -481,7 +481,7 @@ Plot EPRs stacked by channels or by epochs.
 - `mono::Bool=false`: use color or gray palette
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -580,7 +580,7 @@ Plot ERP/ERF.
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
 - `sort_epochs::Bool=false`:: sort epochs by rt vector
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

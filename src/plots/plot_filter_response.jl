@@ -30,7 +30,7 @@ Plot filter response.
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `mono::Bool=false`: use color or gray palette
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -349,7 +349,7 @@ Plot filter response.
 - `w::Union{Nothing, AbstractVector}=nothing`: window for `:fir` filter (default is Hamming window) or weights for `:firls` filter
 - `mono::Bool=false`: use color or gray palette
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the X-axis
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 

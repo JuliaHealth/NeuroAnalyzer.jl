@@ -30,7 +30,7 @@ Plot single-channel spectrogram.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -146,7 +146,7 @@ Plot multiple-channel spectrogram.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -285,19 +285,23 @@ Plots spectrogram.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `topo::Bool=false`: plot topographical map of spectrograms
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure where {T <: CWT}
+function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, kwargs...)::GLMakie.Figure where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert seg[1] != seg[2] "Signal is too short for analysis."
     @assert n > 0 "n must be ≥ 1."
 
     ch = get_channel(obj, ch=ch)
+
+    @assert topo == true && length(ch) > 1 "For topographical plot, the number of channels must be >1."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -382,9 +386,24 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
         st .+= t[1]
 
         if method === :cwt
-            _log_off()
-            p = mplot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, cb_title="Magnitude", threshold=threshold, threshold_type=threshold_type; kwargs...)
-            _log_on()
+            p = mplot_spectrogram(st,
+                                  sf,
+                                  sp,
+                                  db=db,
+                                  frq=frq,
+                                  frq_lim=frq_lim,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  mono=mono,
+                                  units=units,
+                                  smooth=smooth,
+                                  n=n,
+                                  cb=cb,
+                                  cb_title="Magnitude",
+                                  threshold=threshold,
+                                  threshold_type=threshold_type;
+                                  kwargs...)
         else
             db && (sp = pow2db.(sp))
             p = mplot_spectrogram(st,
@@ -427,61 +446,128 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
     else
         ch_t = unique(obj.header.recording[:channel_type][ch])
         @assert length(ch_t) == 1 "For multi-channel spectrogram plot, all channels must be of the same type."
-        ylabel == "default" && (ylabel = "")
-        xlabel == "default" && (xlabel = "Frequency [Hz]")
-        if method === :stft
-            sp, sf = psd(signal, fs=fs, db=db, method=:stft, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mt
-            sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mw
-            sp, sf = psd(signal, fs=fs, db=db, method=:mw, w=w, ncyc=ncyc)
-            title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :gh
-            sp, sf = psd(signal, fs=fs, db=db, method=:gh, w=w, gw=gw)
-            title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :cwt
-            _log_off()
-            sp, sf = psd(signal, fs=fs, method=:cwt, wt=wt)
-            _log_on()
-            sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
-            sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
-            title == "default" && (title = "CWT Scaleogram\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :hht
-            imf = emd(signal[1, :], t)
-            sp_tmp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=db)
-            sp = zeros(size(signal, 1), length(sp_tmp))
-            sp[1, :] = sp_tmp
-            for idx in axes(signal, 1)[(begin + 1):end]
-                imf = emd(signal[idx, :], t)
-                sp[idx, :], _, _, _ = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=db)
+        if !topo
+            ylabel == "default" && (ylabel = "")
+            xlabel == "default" && (xlabel = "Frequency [Hz]")
+            if method === :stft
+                sp, sf = psd(signal, fs=fs, db=db, method=:stft, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :mt
+                sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :mw
+                sp, sf = psd(signal, fs=fs, db=db, method=:mw, w=w, ncyc=ncyc)
+                title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :gh
+                sp, sf = psd(signal, fs=fs, db=db, method=:gh, w=w, gw=gw)
+                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :cwt
+                _log_off()
+                sp, sf = psd(signal, fs=fs, method=:cwt, wt=wt)
+                _log_on()
+                sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
+                sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
+                title == "default" && (title = "CWT Scaleogram\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :hht
+                imf = emd(signal[1, :], t)
+                sp_tmp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=db)
+                sp = zeros(size(signal, 1), length(sp_tmp))
+                sp[1, :] = sp_tmp
+                for idx in axes(signal, 1)[(begin + 1):end]
+                    imf = emd(signal[idx, :], t)
+                    sp[idx, :], _, _, _ = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=db)
+                end
+                title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep, time window: $t_s1:$t_s2]")
             end
-            title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+
+            f1 = vsearch(frq_lim[1], sf)
+            f2 = vsearch(frq_lim[2], sf)
+            sf = sf[f1:f2]
+            sp = sp[:, f1:f2]
+
+            p = mplot_spectrogram(sf,
+                                  sp,
+                                  clabels=clabels,
+                                  db=db,
+                                  frq=frq,
+                                  frq_lim=frq_lim,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  mono=mono,
+                                  units=units,
+                                  smooth=smooth,
+                                  n=n,
+                                  cb=cb,
+                                  threshold=threshold,
+                                  threshold_type=threshold_type;
+                                  kwargs...)
+        else
+            _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+            _has_locs(obj)
+            chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+            locs = Base.filter(:label => in(chs), obj.locs)
+            _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+            if method === :stft
+                sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=false, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
+                title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :mt
+                sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=false, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+                title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :mw
+                _, sp, _, sf, st = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, db=false, w=w)
+                title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :gh
+                sp, _, sf, st = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=false, gw=gw, w=w)
+                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :cwt
+                _log_off()
+                sp, sf, st = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt)
+                _log_on()
+                sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
+                sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
+                title == "default" && (title = "CWT Scaleogram\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            elseif method === :hht
+                imf = emd(signal, t)
+                sp, _, sf, st = NeuroAnalyzer.hhtspectrogram(imf[1:(end - 1), :], fs=fs, db=false)
+                title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep, time window: $t_s1:$t_s2]")
+            end
+
+            f1 = vsearch(frq_lim[1], sf)
+            f2 = vsearch(frq_lim[2], sf)
+            sf = sf[f1:f2]
+            sp = sp[f1:f2, :, :]
+
+            st .+= t[1]
+            if method === :cwt
+                p = mplot_spectrogram_topo(locs,
+                                           st,
+                                           sf,
+                                           sp,
+                                           frq=frq,
+                                           frq_lim=frq_lim,
+                                           title=title,
+                                           mono=mono,
+                                           cart=cart,
+                                           smooth=smooth,
+                                           n=n,
+                                           kwargs...)
+            else
+                db && (sp = pow2db.(sp))
+                p = mplot_spectrogram_topo(locs,
+                                           st,
+                                           sf,
+                                           sp,
+                                           frq=frq,
+                                           frq_lim=frq_lim,
+                                           title=title,
+                                           mono=mono,
+                                           cart=cart,
+                                           smooth=smooth,
+                                           n=n,
+                                           kwargs...)
+            end
         end
-
-        f1 = vsearch(frq_lim[1], sf)
-        f2 = vsearch(frq_lim[2], sf)
-        sf = sf[f1:f2]
-        sp = sp[:, f1:f2]
-
-        p = mplot_spectrogram(sf,
-                              sp,
-                              clabels=clabels,
-                              db=db,
-                              frq=frq,
-                              frq_lim=frq_lim,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              mono=mono,
-                              units=units,
-                              smooth=smooth,
-                              n=n,
-                              cb=cb,
-                              threshold=threshold,
-                              threshold_type=threshold_type;
-                              kwargs...)
     end
 
     return p
@@ -489,7 +575,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
 end
 
 """
-    plot_spectrogram(obj, c; <keyword arguments>)
+    mplot_spectrogram(obj, c; <keyword arguments>)
 
 Plots spectrogram of embedded or external component.
 
@@ -534,13 +620,13 @@ Plots spectrogram of embedded or external component.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure where {T <: CWT}
+function mplot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert seg[1] != seg[2] "Signal is too short for analysis."
@@ -730,8 +816,149 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
                              units=units,
                              smooth=smooth,
                              n=n,
-                             cb=cb;
+                             cb=cb,
+                             threshold=threshold,
+                             threshold_type=threshold_type;
                              kwargs...)
+    end
+
+    return p
+
+end
+
+"""
+    mplot_spectrogram_topo(locs, st, sf, sp; <keyword arguments>)
+
+Plot topographical map of spectrograms.
+
+# Arguments
+
+- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `st::Vector{Float64}`: time
+- `sf::Vector{Float64}`: frequencies
+- `sp::Array{Float64, 3}`: powers
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `smooth::Bool=false`: smooth the image using Gaussian blur
+- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `mono::Bool=false`: unused, for compatibility only
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `kwargs`: optional arguments for plotting
+
+# Returns
+
+- `p::GLMakie.Figure`
+"""
+function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, kwargs...)::GLMakie.Figure
+
+    @assert size(sp, 3) == nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(nrow(locs))) do not match."
+    @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
+    @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
+    @assert n > 0 "n must be ≥ 1."
+
+    _check_var(frq, [:lin, :log], "frq")
+    _check_tuple(frq_lim, "frq_lim")
+
+    pal = mono ? :grays : :darktest
+
+    if frq === :lin
+        if frq_lim[2] > 100
+            yt = frq_lim[1]:10:frq_lim[2]
+        else
+            yt = frq_lim[1]:5:frq_lim[2]
+        end
+    else
+        if frq_lim[1] == 0
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
+        end
+        yt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    end
+
+    # plot parameters
+    if size(sp, 3) <= 64
+        mplot_size = 1000
+        marker_size = (120, 100)
+        xl = 1.1
+        yl = 1.1
+    elseif _in(size(sp, 3), (64, 100))
+        mplot_size = 1200
+        marker_size = (120, 100)
+        xl = 1.5
+        yl = 1.5
+    else
+        mplot_size = 1500
+        marker_size = (100, 80)
+        xl = 1.5
+        yl = 1.5
+    end
+
+    # get locations
+    if !cart
+        loc_x = zeros(size(locs, 1))
+        loc_y = zeros(size(locs, 1))
+        for idx in axes(locs, 1)
+            loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        end
+    else
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
+    end
+
+    if smooth
+        sp = imfilter(sp, Kernel.gaussian(n))
+    end
+
+    # prepare PSD plots
+    pp_vec = GLMakie.Figure[]
+    for idx in axes(sp, 3)
+        pp = GLMakie.Figure(size=marker_size)
+        ax = GLMakie.Axis(pp[1, 1],
+                          xlabel="",
+                          ylabel="",
+                          title=locs[idx, :label],
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0);
+                          kwargs...)
+        hidespines!(ax)
+        hidedecorations!(ax)
+        GLMakie.xlims!(ax, frq_lim)
+        ax.titlesize = 8
+        # plot powers
+        GLMakie.heatmap!(sp[:, :, idx]',
+                         colormap=pal)
+        push!(pp_vec, pp)
+    end
+
+    # prepare plot
+    plot_size = (mplot_size, mplot_size)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel="",
+                      ylabel="",
+                      title=title,
+                      aspect = AxisAspect(1),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, (-xl, xl))
+    GLMakie.ylims!(ax, (-yl, yl))
+    hidespines!(ax)
+    hidedecorations!(ax)
+    ax.titlesize = 20
+    for idx in axes(sp, 3)
+        fname = tempname()*".png"
+        GLMakie.save(fname, pp_vec[idx])
+        pp = FileIO.load(fname)
+        rm(fname)
+        GLMakie.scatter!(loc_x[idx],
+                         loc_y[idx],
+                         marker=pp,
+                         markersize=marker_size,
+                         markerspace=:pixel)
     end
 
     return p

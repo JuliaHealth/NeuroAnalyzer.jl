@@ -16,7 +16,7 @@ Plot amplitude of single-channel signal.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `bad::Bool=false`: is this a bad channel
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -81,7 +81,7 @@ Plot amplitude of multi-channel signal.
 - `mono::Bool=false`: use color or gray palette
 - `scale::Bool=true`: draw scale
 - `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -213,7 +213,7 @@ Plot amplitude of single-channel signal.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -273,7 +273,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -349,7 +349,7 @@ Butterfly plot of `s` channels.
 - `title::String=""`: plot title
 - `avg::Bool=false`: plot average channels
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -427,7 +427,7 @@ Plot amplitude of multi-channel signals.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `scale::Bool=true`: draw scale
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -558,7 +558,7 @@ Plot signal.
 - `avg::Bool=false`: plot average EDA
 - `bad::Bool=false`: plot bad channels
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -824,7 +824,7 @@ Plot embedded or external component.
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
 - `avg::Bool=false`: plot average EDA
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
@@ -986,7 +986,7 @@ Plot signal.
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
 - `scale::Bool=true`: draw scale
-- `kwargs`: optional arguments for plot() function
+- `kwargs`: optional arguments for plotting
 
 # Returns
 
