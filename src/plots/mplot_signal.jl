@@ -51,16 +51,16 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
 
     # plot signal
     if bad
-        Makie.lines!(t,
-                     s,
-                     linewidth=1,
-                     alpha=0.2,
-                     color=:black)
+        GLMakie.lines!(t,
+                       s,
+                       linewidth=1,
+                       alpha=0.2,
+                       color=:black)
     else
-        Makie.lines!(t,
-                     s,
-                     linewidth=1,
-                     color=:black)
+        GLMakie.lines!(t,
+                      s,
+                      linewidth=1,
+                      color=:black)
     end
 
     return p
@@ -162,35 +162,35 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     for idx in 1:ch_n
         if !bad[idx]
             if mono
-                Makie.lines!(ax,
-                             t,
-                             s[idx, :],
-                             linewidth=0.75,
-                             color=:black)
+                GLMakie.lines!(ax,
+                               t,
+                               s[idx, :],
+                               linewidth=0.75,
+                               color=:black)
             else
                 if length(ctypes_uni) > 1
-                    Makie.lines!(ax,
-                                 t,
-                                 s[idx, :],
-                                 linewidth=0.75,
-                                 color=cmap[channel_color[idx]],
-                                 colormap=pal,
-                                 colorrange=1:length(ctypes_uni))
+                    GLMakie.lines!(ax,
+                                   t,
+                                   s[idx, :],
+                                   linewidth=0.75,
+                                   color=cmap[channel_color[idx]],
+                                   colormap=pal,
+                                   colorrange=1:length(ctypes_uni))
                 else
-                    Makie.lines!(ax,
-                                 t,
-                                 s[idx, :],
-                                 linewidth=0.75,
-                                 colormap=pal)
+                    GLMakie.lines!(ax,
+                                   t,
+                                   s[idx, :],
+                                   linewidth=0.75,
+                                   colormap=pal)
                 end
             end
         else
-            Makie.lines!(ax,
-                         t,
-                         s[idx, :],
-                         linewidth=0.75,
-                         alpha=0.2,
-                         color=:black)
+            GLMakie.lines!(ax,
+                           t,
+                           s[idx, :],
+                           linewidth=0.75,
+                           alpha=0.2,
+                           color=:black)
         end
     end
 
@@ -200,18 +200,18 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
-                Makie.lines!(ax,
-                             [_xlims(t)[1], _xlims(t)[1]],
-                             [(s_pos - 1.5), (s_pos - 0.5)],
-                             color=:red,
-                             linewidth=5)
-                Makie.text!(ax,
-                            (_xlims(t)[1], s_pos - 1),
-                            text="$(r[idx2]) $(cunits[idx1])  ",
-                            fontsize=8,
-                            align=(:center, :top),
-                            rotation=pi/2,
-                            offset=(5, 0))
+                GLMakie.lines!(ax,
+                               [_xlims(t)[1], _xlims(t)[1]],
+                               [(s_pos - 1.5), (s_pos - 0.5)],
+                               color=:red,
+                               linewidth=5)
+                GLMakie.text!(ax,
+                              (_xlims(t)[1], s_pos - 1),
+                              text="$(r[idx2]) $(cunits[idx1])  ",
+                              fontsize=8,
+                              align=(:center, :top),
+                              rotation=pi/2,
+                              offset=(5, 0))
                 idx2 += 1
             end
         end
@@ -286,16 +286,16 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
     ax.yticklabelsize = 12
 
     # plot signals
-    Makie.lines!(t,
-                 s1,
-                 linewidth=1,
-                 alpha=0.5,
-                 color=:black)
-    Makie.lines!(t,
-                 s2,
-                 linewidth=1,
-                 alpha=0.5,
-                 color=:blue)
+    GLMakie.lines!(t,
+                   s1,
+                   linewidth=1,
+                   alpha=0.5,
+                   color=:black)
+    GLMakie.lines!(t,
+                   s2,
+                   linewidth=1,
+                   alpha=0.5,
+                   color=:blue)
 
     return p
 
@@ -352,17 +352,17 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
     ax.yticklabelsize = 12
 
     # plot upper 95% CI
-    Makie.band!(t,
-                s_u,
-                s_l,
-                alpha=0.25,
-                color=:grey,
-                strokewidth=0.5)
+    GLMakie.band!(t,
+                  s_u,
+                  s_l,
+                  alpha=0.25,
+                  color=:grey,
+                  strokewidth=0.5)
     # plot mean
-    Makie.lines!(t,
-                 s_m,
-                 color=:black,
-                 linewidth=1)
+    GLMakie.lines!(t,
+                   s_m,
+                   color=:black,
+                   linewidth=1)
 
     return p
 
@@ -418,23 +418,23 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
     GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
     cmap = GLMakie.resample_cmap(pal, ch_n)
     for idx in 1:ch_n
-        Makie.lines!(t,
-                     s[idx, :],
-                     color=cmap[idx],
-                     colormap=pal,
-                     colorrange=1:ch_n,
-                     linewidth=0.5,
-                     label=clabels[idx])
+        GLMakie.lines!(t,
+                       s[idx, :],
+                       color=cmap[idx],
+                       colormap=pal,
+                       colorrange=1:ch_n,
+                       linewidth=0.5,
+                       label=clabels[idx])
     end
     ch_n < 40 && axislegend(position = :rb)
 
     # plot averaged channels
     if avg
         s = mean(s, dims=1)[:]
-        Makie.lines!(t,
-                     s,
-                     linewidth=2,
-                     color=:black)
+        GLMakie.lines!(t,
+                       s,
+                       linewidth=2,
+                       color=:black)
     end
 
     return p
@@ -520,16 +520,16 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
 
     # plot channels
     for idx in 1:ch_n
-        Makie.lines!(t,
-                     s1[idx, :],
-                     linewidth=1,
-                     color=:black,
-                     alpha=0.5)
-        Makie.lines!(t,
-                     s2[idx, :],
-                     linewidth=1,
-                     color=:blue,
-                     alpha=0.5)
+        GLMakie.lines!(t,
+                       s1[idx, :],
+                       linewidth=1,
+                       color=:black,
+                       alpha=0.5)
+        GLMakie.lines!(t,
+                       s2[idx, :],
+                       linewidth=1,
+                       color=:blue,
+                       alpha=0.5)
     end
 
     # draw scale
@@ -538,18 +538,18 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
-                Makie.lines!(ax,
-                             [_xlims(t)[1], _xlims(t)[1]],
-                             [(s_pos - 1.5), (s_pos - 0.5)],
-                             color=:red,
-                             linewidth=5)
-                Makie.text!(ax,
-                            (_xlims(t)[1], s_pos - 1),
-                            text="$(r[idx2]) $(cunits[idx1])  ",
-                            fontsize=8,
-                            align=(:center, :top),
-                            rotation=pi/2,
-                            offset=(5, 0))
+                GLMakie.lines!(ax,
+                               [_xlims(t)[1], _xlims(t)[1]],
+                               [(s_pos - 1.5), (s_pos - 0.5)],
+                               color=:red,
+                               linewidth=5)
+                GLMakie.text!(ax,
+                              (_xlims(t)[1], s_pos - 1),
+                              text="$(r[idx2]) $(cunits[idx1])  ",
+                              fontsize=8,
+                              align=(:center, :top),
+                              rotation=pi/2,
+                              offset=(5, 0))
                 idx2 += 1
             end
         end

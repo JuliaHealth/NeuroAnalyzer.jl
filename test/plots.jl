@@ -126,36 +126,52 @@ p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1), amethod=:median, imethod=
 channels = get_channel(e10, ch=get_channel(e10, type=datatype(e10)))
 c = corm(e10, ch="eeg")
 p = NeuroAnalyzer.plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_xac()"
 ac, lags = acov(e10, ch="eeg")
 p = NeuroAnalyzer.plot_xac(ac[1, :, 1], lags)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 xc, lags = xcov(e10, e10, ch1="Fp1", ch2="Fp2")
 p = NeuroAnalyzer.plot_xac(xc[1, :, 1], lags)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_histogram()"
-stats = rand(2, 10)
-p = NeuroAnalyzer.plot_histogram(stats[1, :])
-@test p isa Plots.Plot{Plots.GRBackend}
+stats = rand(2, 100)
+p = NeuroAnalyzer.plot_histogram(stats[1, :], 0.8)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_bar()"
-p = NeuroAnalyzer.plot_bar(stats[:, 1], xlabels=["1", "2"])
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_bar([1, 2, 3, 4, 5], xlabels=["G1", "G2", "G3", "G4", "G5"])
+@test p isa GLMakie.Figure
 
 @info "Test: plot_line()"
-p = NeuroAnalyzer.plot_line(stats[:, 1], xlabels=["1", "2"])
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_line([1, 2, 1, 4.1, 1.5], xlabels=["G1", "G2", "G3", "G4", "G5"])
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_line(rand(2, 5), rlabels=["pre", "post"], xlabels=["G1", "G2", "G3", "G4", "G5"])
+@test p isa GLMakie.Figure
+
+@info "Test: plot_box()"
+s = rand(3, 10)
+s[1, :] .*= 2
+p = NeuroAnalyzer.plot_box(s, xlabels=["G1", "G2", "G3"])
+@test p isa GLMakie.Figure
+
+@info "Test: plot_violin()"
+s = rand(3, 10)
+s[1, :] .*= 2
+p = NeuroAnalyzer.plot_violin(s, xlabels=["G1", "G2", "G3"])
+@test p isa GLMakie.Figure
 
 @info "Test: plot_dots()"
-p = NeuroAnalyzer.plot_dots([stats[1, :], stats[2, :]], glabels=["1", "2"])
-@test p isa Plots.Plot{Plots.GRBackend}
+s = rand(2, 10)
+p = NeuroAnalyzer.plot_dots(s, xlabels=["G1", "G2"])
+@test p isa GLMakie.Figure
 
 @info "Test: plot_paired()"
-p = NeuroAnalyzer.plot_paired([stats[1, :], stats[2, :]], glabels=["1", "2"])
-@test p isa Plots.Plot{Plots.GRBackend}
+s = rand(3, 10)
+p = NeuroAnalyzer.plot_paired(s, xlabels=["V1", "V2", "V3"])
+@test p isa GLMakie.Figure
 
 @info "Test: plot_polar()"
 p = NeuroAnalyzer.plot_polar(stats')
@@ -172,7 +188,7 @@ p = NeuroAnalyzer.plot_dipole2d(d)
 
 @info "Test: plot_dipole3d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 1), (1, 1, 1))
-p = NeuroAnalyzer.plot_dipole3d(d)
+p = NeuroAnalyzer.mplot_dipole3d(d)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_eros()"
