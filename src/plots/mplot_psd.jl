@@ -450,6 +450,14 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
         xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
 
+    if ch_n > 64
+        yts = 5
+    elseif ch_n > 32
+        yts = 2
+    else
+        yts = 1
+    end
+
     # prepare plot
     if variant === :w
         plot_size = (1200, 600)
@@ -459,7 +467,11 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            ylabel=ylabel,
                            zlabel=zlabel,
                            title=title,
-                           yticks=(1:1:ch_n, clabels),
+                           xticks=xt,
+                           # xminorticksvisible=true,
+                           # xminorticks=IntervalsBetween(10),
+                           # xscale=frq===:lin ? identity : log10,
+                           yticks=(1:yts:ch_n, clabels[1:yts:end]),
                            zoommode=:disable,
                            xtranslationlock=true,
                            ytranslationlock=true,
@@ -475,7 +487,6 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
         ax.yticklabelsize = 12
-        ax.xticks = xt
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, ch_n)
@@ -483,9 +494,6 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
             Makie.lines!(sf,
                          ones(length(sf)) .* idx,
                          sp[idx, :],
-                         #xminorticksvisible=true,
-                         #xminorticks=IntervalsBetween(10),
-                         #xscale=frq===:lin ? identity : log10,
                          linewidth=1,
                          color=mono ? :black : cmap[idx],
                          colormap=pal,
@@ -494,42 +502,40 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
     else
         f1 = vsearch(frq_lim[1], sf)
         f2 = vsearch(frq_lim[2], sf)
-        p = Plots.plot(sf[f1:f2],
-                       eachindex(clabels),
-                       sp[:, f1:f2],
-                       xlabel=xlabel,
-                       ylabel="",
-                       zlabel=zlabel,
-                       legend=false,
-                       xlims=frq_lim,
-                       xrotation=-15,
-                       yrotation=-10,
-                       #xticks=frq === :lin ? (xt, string.(xt)) : ((frq_lim[1], frq_lim[2]), (string(frq_lim[1]), string(frq_lim[2]))),
-                       xscale=xsc,
-                       title=title,
-                       palette=pal,
-                       st=:surface,
-                       lc=:black,
-                       size=(1200, 600),
-                       margins=-10Plots.px,
-                       titlefontsize=10,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       zlabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=5,
-                       ztickfontsize=6;
-                       kwargs...)
-    end
+        plot_size = (1200, 600)
+        p = GLMakie.Figure(size=plot_size)
+        ax = GLMakie.Axis3(p[1, 1],
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           zlabel=zlabel,
+                           title=title,
+                           xticks=xt,
+                           # xminorticksvisible=true,
+                           # xminorticks=IntervalsBetween(10),
+                           # xscale=frq===:lin ? identity : log10,
+                           yticks=(1:yts:ch_n, clabels[1:yts:end]),
+                           zoommode=:disable,
+                           xtranslationlock=true,
+                           ytranslationlock=true,
+                           ztranslationlock=true,
+                           aspect=(1, 1, 0.5),
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0),
+                           zautolimitmargin=(0, 0);
+                           kwargs...)
+        ax.titlesize = 20
+        ax.xlabelsize = 18
+        ax.ylabelsize = 18
+        ax.xticklabelsize = 12
+        ax.yticklabelsize = 12
 
-    if ch_n > 64
-        yt = (1:5:ch_n, clabels[1:5:length(clabels)])
-    elseif ch_n > 32
-        yt = (1:2:ch_n, clabels[1:2:length(clabels)])
-    else
-        yt = (1:ch_n, clabels)
+        # plot powers
+        cmap = GLMakie.resample_cmap(pal, ch_n)
+        Makie.surface!(sf[f1:f2],
+                       eachindex(clabels),
+                       sp[:, f1:f2]',
+                       colormap=pal)
     end
-#    p = Plots.plot!(yticks=yt)
 
     return p
 
@@ -545,13 +551,11 @@ Plot topographical map PSDs.
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
-- `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
-- `clabels::Vector{String}=[""]`: signal channel labels vector
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `kwargs`: optional arguments for plot() function
@@ -560,49 +564,42 @@ Plot topographical map PSDs.
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, kwargs...)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
-    pal = mono ? :grays : :darktest
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(sp, 1)))
-
     if frq === :lin
-        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
-        xsc = :identity
-    elseif frq === :log
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
+        else
+            xt = frq_lim[1]:5:frq_lim[2]
+        end
+    else
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
         end
         xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
-        xsc = :log10
     end
 
     # plot parameters
     if size(sp, 1) <= 64
         mplot_size = 800
         marker_size = (120, 80)
-        rx = 1
-        ry = 1
-        offset = 0
+        xl = 1.2
+        yl = 1.2
     elseif size(sp, 1) <= 100
         mplot_size = 1200
         marker_size = (120, 80)
-        rx = 0.9
-        ry = 0.7
-        offset = 150
+        xl = 1.5
+        yl = 1.5
     else
         mplot_size = 2500
         marker_size = (85, 50)
-        rx = 0.6
-        ry = 0.4
-        offset = 250
+        xl = 1.5
+        yl = 1.5
     end
 
     # get locations
@@ -616,58 +613,58 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
     end
-    loc_x = _s2v(loc_x)
-    loc_y = _s2v(loc_y)
-    # get marker centers
-    loc_x .*= ((mplot_size / 2) - marker_size[1] / 2) .* rx
-    loc_y .*= ((mplot_size / 2) - marker_size[2] / 2) .* ry
-    # origin is in the left top corner, convert positions
-    loc_x = round.(Int64, loc_x .+ (mplot_size / 2) .- marker_size[1] / 2)
-    loc_y = (mplot_size - marker_size[2]) .- round.(Int64, loc_y .+ (mplot_size / 2) .- marker_size[2] / 2)
 
-    c = CairoRGBSurface(mplot_size, mplot_size - 3 * offset)
-    cr = CairoContext(c)
-    Cairo.set_source_rgb(cr, 256, 256, 256)
-    Cairo.rectangle(cr, 0.0, 0.0, mplot_size, mplot_size - 3 * offset)
-    Cairo.fill(cr)
+    # prepare PSD plots
+    pp_vec = GLMakie.Figure[]
     for idx in axes(sp, 1)
-        p = Plots.plot(sf,
-                       sp[idx, :],
-                       t=:line,
-                       c=:black,
-                       linewidth=0.5,
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       legend=false,
-                       xlims=frq_lim,
-                       xticks=false,
-                       yticks=false,
-                       xscale=xsc,
-                       title=clabels[idx],
-                       palette=pal,
-                       size=marker_size,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6;
-                       kwargs...)
-        withenv("GKSwstype" => "100") do
-            png(p, io)
-        end
-        img = read_from_png(io)
-        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
-        Cairo.paint(cr)
+        pp = GLMakie.Figure(size=marker_size)
+        ax = GLMakie.Axis(pp[1, 1],
+                          xlabel="",
+                          ylabel="",
+                          title=locs[idx, :label],
+                          xscale=frq===:lin ? identity : log10,
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0);
+                          kwargs...)
+        hidespines!(ax)
+        hidedecorations!(ax)
+        GLMakie.xlims!(ax, frq_lim)
+        ax.titlesize = 8
+        # plot powers
+        Makie.lines!(sf,
+                     sp[idx, :],
+                     linewidth=0.5,
+                     color=:black)
+        push!(pp_vec, pp)
     end
-    img_png = tempname() * ".png"
-    Cairo.write_to_png(c, img_png)
-    img = FileIO.load(img_png)
-    p = Plots.plot(img,
-                   size=(mplot_size, mplot_size - 3 * offset),
-                   title=title,
-                   titlefontsize=12,
-                   border=:none)
-    rm(img_png)
+
+    # prepare plot
+    plot_size = (mplot_size, mplot_size)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel="",
+                      ylabel="",
+                      title=title,
+                      aspect = AxisAspect(1),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
+                      kwargs...)
+    GLMakie.xlims!(ax, (-xl, xl))
+    GLMakie.ylims!(ax, (-yl, yl))
+    hidespines!(ax)
+    hidedecorations!(ax)
+    ax.titlesize = 20
+    for idx in axes(sp, 1)
+        fname = tempname()*".png"
+        GLMakie.save(fname, pp_vec[idx])
+        pp = FileIO.load(fname)
+        rm(fname)
+        scatter!(loc_x[idx],
+                 loc_y[idx],
+                 marker=pp,
+                 markersize = marker_size,
+                 markerspace = :pixel)
+    end
 
     return p
 
