@@ -76,6 +76,8 @@ p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterf
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
 @test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:s3d)
+@test p isa GLMakie.Figure
 p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa GLMakie.Figure
 
@@ -184,8 +186,8 @@ p = NeuroAnalyzer.plot_erop(p, f)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot(obj1, obj2)"
-p = NeuroAnalyzer.plot(e10, e10, ch="all")
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot(e10, e10, ch="all")
+@test p isa GLMakie.Figure
 
 @info "Test: plot_icatopo()"
 eeg_new = keep_epoch(e10, ep=1)

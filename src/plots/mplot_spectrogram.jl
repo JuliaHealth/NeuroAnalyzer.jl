@@ -22,6 +22,7 @@ Plot single-channel spectrogram.
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar label
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
@@ -36,7 +37,7 @@ Plot single-channel spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
 
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
@@ -46,7 +47,9 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
+    if cb_title == ""
+        cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
+    end
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
@@ -138,6 +141,7 @@ Plot multiple-channel spectrogram.
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar label
 - `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
@@ -152,7 +156,7 @@ Plot multiple-channel spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
 
     @assert size(sp, 1) == length(clabels) "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
@@ -162,7 +166,9 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
+    if cb_title == ""
+        cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
+    end
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
@@ -300,8 +306,6 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
     @assert n > 0 "n must be ≥ 1."
 
     ch = get_channel(obj, ch=ch)
-
-    @assert topo == true && length(ch) > 1 "For topographical plot, the number of channels must be >1."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -503,6 +507,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
                                   threshold_type=threshold_type;
                                   kwargs...)
         else
+            @assert length(ch) > 1 "For topographical plot, the number of channels must be >1."
             _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
             _has_locs(obj)
             chs = intersect(obj.locs[!, :label], labels(obj)[ch])
