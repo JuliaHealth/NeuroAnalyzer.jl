@@ -546,6 +546,7 @@ include("plots/plot_save.jl")
 include("plots/plot_signal.jl")
 include("plots/mplot_signal.jl")
 include("plots/plot_spectrogram.jl")
+include("plots/mplot_spectrogram.jl")
 include("plots/plot_topo.jl")
 include("plots/plot_varia.jl")
 

@@ -586,17 +586,17 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
 
     # plot parameters
     if size(sp, 1) <= 64
-        mplot_size = 800
+        mplot_size = 1000
         marker_size = (120, 80)
-        xl = 1.2
-        yl = 1.2
+        xl = 1.1
+        yl = 1.1
     elseif size(sp, 1) <= 100
         mplot_size = 1200
         marker_size = (120, 80)
         xl = 1.5
         yl = 1.5
     else
-        mplot_size = 2500
+        mplot_size = 1500
         marker_size = (85, 50)
         xl = 1.5
         yl = 1.5
@@ -631,10 +631,10 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
         GLMakie.xlims!(ax, frq_lim)
         ax.titlesize = 8
         # plot powers
-        Makie.lines!(sf,
-                     sp[idx, :],
-                     linewidth=0.5,
-                     color=:black)
+        GLMakie.lines!(sf,
+                       sp[idx, :],
+                       linewidth=1,
+                       color=:black)
         push!(pp_vec, pp)
     end
 
@@ -659,11 +659,11 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
         GLMakie.save(fname, pp_vec[idx])
         pp = FileIO.load(fname)
         rm(fname)
-        scatter!(loc_x[idx],
-                 loc_y[idx],
-                 marker=pp,
-                 markersize = marker_size,
-                 markerspace = :pixel)
+        GLMakie.scatter!(loc_x[idx],
+                         loc_y[idx],
+                         marker=pp,
+                         markersize = marker_size,
+                         markerspace = :pixel)
     end
 
     return p
@@ -962,14 +962,11 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         p = mplot_psd_topo(locs,
                           sf,
                           sp,
-                          ch=collect(1:DataFrames.nrow(locs)),
-                          clabels=obj.locs[!, :label],
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,
                           frq_lim=frq_lim,
-                          frq=frq,
-                          mono=mono;
+                          frq=frq;
                           kwargs...)
     end
 
@@ -1159,7 +1156,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     db=db,
                      frq_lim=frq_lim,
                      frq=frq,
                      mono=mono;
@@ -1173,7 +1169,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                                xlabel=xlabel,
                                ylabel=ylabel,
                                title=title,
-                               db=db,
                                frq_lim=frq_lim,
                                frq=frq,
                                mono=mono;
@@ -1187,7 +1182,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         db=db,
                          frq_lim=frq_lim,
                          frq=frq,
                          mono=mono;
@@ -1205,7 +1199,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        db=db,
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
@@ -1224,7 +1217,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                         ylabel=ylabel,
                         zlabel=zlabel,
                         title=title,
-                        db=db,
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
