@@ -106,26 +106,27 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                          linewidth=2)
     end
 
-    cbar = Colorbar(p[1, 2],
-                    hm,
-                    label=cb_title,
-                    labelsize=18)
-
+    if cb
+        Colorbar(p[1, 2],
+                 hm,
+                 label=cb_title,
+                 labelsize=18)
+    end
 
     return p
 
 end
 
 """
-    mplot_spectrogram(sch, sf, sp; <keyword arguments>)
+    mplot_spectrogram(sf, sp; <keyword arguments>)
 
 Plot multiple-channel spectrogram.
 
 # Arguments
 
-- `sch::Vector{String}`: channel labels
 - `sf::Vector{<:Real}`: frequencies
 - `sp::Matrix{Float64}`: powers
+- `clabels::Vector{String}`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
@@ -151,9 +152,9 @@ Plot multiple-channel spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
 
-    @assert size(sp, 1) == length(sch) "Size of powers ($(size(sp, 1))) and channels vector ($(length(sch))) do not match."
+    @assert size(sp, 1) == length(clabels) "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
     @assert n > 0 "n must be ≥ 1."
 
@@ -167,79 +168,73 @@ function mplot_spectrogram(sch::Vector{String}, sf::Vector{<:Real}, sp::Matrix{F
         sp = imfilter(sp, Kernel.gaussian(n))
     end
 
+    # channel labels
+    clabels == [""] && (clabels = repeat([""], size(sp, 1)))
+
     if frq === :lin
-        xsc = :identity
-        xt = round.(linspace(frq_lim[1], frq_lim[2], 10), digits=1)
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
+        else
+            xt = frq_lim[1]:5:frq_lim[2]
+        end
     else
-        xsc = :log10
         if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.1 Hz")
-            sf[1] == 0 && (sf[1] = 0.1)
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
         end
         xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
-    ch = collect(eachindex(sch)) .- 0.5
+
+    ch = collect(eachindex(clabels)) .- 0.5
     ch_n = length(ch)
+    reverse!(sp, dims=1)
+
+    # prepare plot
     plot_size = (1200, 800)
-    p = Plots.heatmap(sf,
-                      ch,
-                      sp,
-                      xticks=(xt, string.(xt)),
-                      xlims=frq_lim,
-                      xscale=xsc,
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
-                      ylabel="",
-                      yticks=false,
-                      xtick_direction=:out,
+                      ylabel=ylabel,
                       title=title,
-                      size=plot_size,
-                      top_margin=20Plots.px,
-                      bottom_margin=30Plots.px,
-                      right_margin=20Plots.px,
-                      left_margin=100Plots.px,
-                      titlefontsize=8,
-                      xlabelfontsize=8,
-                      ylabelfontsize=8,
-                      xtickfontsize=6,
-                      ytickfontsize=6,
-                      seriescolor=pal,
-                      cb=cb,
-                      colorbar_titlefontsize=8,
-                      colorbar_title=cb_title;
+                      xticks=xt,
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      yticks=(0.5:1:ch_n, reverse(clabels)),
+                      yticksvisible=false,
+                      xscale=frq===:lin ? identity : log10,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0);
                       kwargs...)
+    GLMakie.xlims!(ax, frq_lim)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
-    # draw labels
-    if ch_n > 64
-        for idx in 1:5:ch_n
-            s_pos = ch_n - idx
-            p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos + 0.5), Plots.text("$(sch[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
-        end
-    elseif ch_n > 32
-        for idx in 1:2:ch_n
-            s_pos = ch_n - idx
-            p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos + 0.5), Plots.text("$(sch[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
-        end
-    else
-        for idx in 1:ch_n
-            s_pos = ch_n - idx
-            p = Plots.plot!(annotations=(_xlims(sf)[1], (s_pos + 0.5), Plots.text("$(sch[idx])  ", pointsize=8, halign=:right, valign=:center)), label=false)
-        end
-    end
-
+    hm = GLMakie.heatmap!(ax,
+                          sf,
+                          ch,
+                          sp',
+                          colormap=pal)
     if !isnothing(threshold)
         _, bm = seg_extract(sp, threshold=threshold, threshold_type=threshold_type)
         reg = ones(size(sp)) .* minimum(sp)
         reg[bm] .= maximum(sp)
-        p = Plots.plot!(sf,
-                        ch,
-                        reg,
-                        seriestype=:contour,
-                        levels=1,
-                        linecolor=:black,
-                        colorbar_entry=false,
-                        linewidth=2;
-                        kwargs...)
+        GLMakie.contour!(ax,
+                         sf,
+                         ch,
+                         reg',
+                         levels=1,
+                         color=:black,
+                         linewidth=2)
+    end
+
+    if cb
+        Colorbar(p[1, 2],
+                 hm,
+                 label=cb_title,
+                 labelsize=18)
     end
 
     return p
@@ -392,7 +387,23 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
             _log_on()
         else
             db && (sp = pow2db.(sp))
-            p = mplot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, threshold=threshold, threshold_type=threshold_type; kwargs...)
+            p = mplot_spectrogram(st,
+                                  sf,
+                                  sp,
+                                  db=db,
+                                  frq=frq,
+                                  frq_lim=frq_lim,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  mono=mono,
+                                  units=units,
+                                  smooth=smooth,
+                                  n=n,
+                                  cb=cb,
+                                  threshold=threshold,
+                                  threshold_type=threshold_type;
+                                  kwargs...)
         end
 
         # plot markers if available
@@ -454,7 +465,23 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
         sf = sf[f1:f2]
         sp = sp[:, f1:f2]
 
-        p = mplot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, threshold=threshold, threshold_type=threshold_type; kwargs...)
+        p = mplot_spectrogram(sf,
+                              sp,
+                              clabels=clabels,
+                              db=db,
+                              frq=frq,
+                              frq_lim=frq_lim,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              mono=mono,
+                              units=units,
+                              smooth=smooth,
+                              n=n,
+                              cb=cb,
+                              threshold=threshold,
+                              threshold_type=threshold_type;
+                              kwargs...)
     end
 
     return p
@@ -609,7 +636,23 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         st .+= t[1]
 
-        p = plot_spectrogram(st, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb, threshold=threshold, threshold_type=threshold_type; kwargs...)
+        p = mplot_spectrogram(st,
+                              sf,
+                              sp,
+                              db=db,
+                              frq=frq,
+                              frq_lim=frq_lim,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              mono=mono,
+                              units=units,
+                              smooth=smooth,
+                              n=n,
+                              cb=cb,
+                              threshold=threshold,
+                              threshold_type=threshold_type;
+                              kwargs...)
 
         # plot markers if available
         # TODO: draw markers length
@@ -674,7 +717,21 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
             title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[components: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
         end
 
-        p = plot_spectrogram(clabels, sf, sp, db=db, frq=frq, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, smooth=smooth, n=n, cb=cb; kwargs...)
+        p = mplot_spectrogram(sf,
+                             sp,
+                             clabels=clabels,
+                             db=db,
+                             frq=frq,
+                             frq_lim=frq_lim,
+                             xlabel=xlabel,
+                             ylabel=ylabel,
+                             title=title,
+                             mono=mono,
+                             units=units,
+                             smooth=smooth,
+                             n=n,
+                             cb=cb;
+                             kwargs...)
     end
 
     return p
