@@ -22,8 +22,10 @@ p = NeuroAnalyzer.plot_compose(pp, layout=l)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_connections()"
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", connections=rand(-10:1:10, 19, 19), threshold=12, threshold_type=:g)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_erp()"
 e10_erp = average_epochs(e10)
@@ -49,11 +51,11 @@ p = NeuroAnalyzer.mplot_filter_response(fs=sr(eeg), fprototype=:butterworth, fty
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs()"
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg")
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", d=3, interactive=false)
+p = NeuroAnalyzer.mplot_locs(e10, ch="eeg")
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", d=3, interactive=false)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_psd()"
@@ -307,8 +309,8 @@ p = NeuroAnalyzer.plot_imf(imf, t=t)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_gridlocs()"
-p = NeuroAnalyzer.plot_gridlocs()
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_gridlocs()
+@test p isa GLMakie.Figure
 
 @info "Test: plot_hs()"
 hms, t = hmspectrum(e10, ch="Fp1")
