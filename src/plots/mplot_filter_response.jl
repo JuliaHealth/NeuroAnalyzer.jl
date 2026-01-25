@@ -51,12 +51,6 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                         bw=bw,
                         w=w)
 
-    if frq_lim[2] > 100
-        xt = frq_lim[1]:10:frq_lim[2]
-    else
-        xt = frq_lim[1]:5:frq_lim[2]
-    end
-
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
         H, w = freqresp(flt)
         # convert to dB
@@ -79,7 +73,7 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                           xlabel="Frequency [Hz]",
                           ylabel="Magnitude\n[dB]",
                           title=title,
-                          xticks=xt,
+                          xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
@@ -128,7 +122,7 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                           xlabel="Frequency [Hz]",
                           ylabel="Phase\n[deg]",
                           title="Phase response",
-                          xticks=xt,
+                          xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
@@ -173,7 +167,7 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                           xlabel="Frequency [Hz]",
                           ylabel="Group delay\n[samples]",
                           title="Group delay",
-                          xticks=xt,
+                          xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
@@ -233,7 +227,7 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                           xlabel="Frequency [Hz]",
                           ylabel="Magnitude\n[dB]",
                           title=title,
-                          xticks=xt,
+                          xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
@@ -283,7 +277,7 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                           xlabel="Frequency [Hz]",
                           ylabel="Phase\n[deg]",
                           title="Phase response",
-                          xticks=xt,
+                          xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
@@ -328,7 +322,7 @@ function mplot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Not
                           xlabel="Frequency [Hz]",
                           ylabel="Group delay\n[samples]",
                           title="Group delay",
-                          xticks=xt,
+                          xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),

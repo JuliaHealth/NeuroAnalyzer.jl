@@ -29,11 +29,17 @@ function _ylims(s::AbstractVector)::Tuple{Real, Real}
 end
 
 function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
-    tc = collect(t[1]:1:t[end])
-    if t[end] - t[1] > 20
+    return WilkinsonTicks(10)
+    if t[end] - t[1] < 2
+        tc = collect(t[1]:1:t[end])
+    elseif t[end] - t[1] < 5
         tc = collect(t[1]:2:t[end])
-    elseif t[end] - t[1] > 50
+    elseif t[end] - t[1] < 10
         tc = collect(t[1]:5:t[end])
+    elseif t[end] - t[1] < 20
+        tc = collect(t[1]:10:t[end])
+    else
+        tc = collect(t[1]:20:t[end])
     end
     return tc
 #    if length(t) >= 3

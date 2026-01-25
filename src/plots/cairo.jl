@@ -33,6 +33,35 @@ function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UIn
 end
 
 """
+    plot2canvas(p)
+
+Convert Plots.Plot to CairoSurfaceBase.
+
+# Arguments
+
+- `p::GLMakie.Figure`
+
+# Returns
+
+- `c::Cairo.CairoSurfaceBase{UInt32}`
+"""
+function plot2canvas(p::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
+
+    p_size = size(p.scene)
+    c = CairoRGBSurface(p_size[1], p_size[2])
+    cr = CairoContext(c)
+    fname = tempname()*".png"
+    GLMakie.save(fname, p)
+    img = read_from_png(fname)
+    rm(fname)
+    Cairo.set_source_surface(cr, img, 0, 0)
+    Cairo.paint(cr)
+
+    return c
+
+end
+
+"""
     resize_canvas(c; <keyword arguments>)
 
 Resize CairoSurfaceBase by a factor.

@@ -55,18 +55,9 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
         sp = imfilter(sp, Kernel.gaussian(n))
     end
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            yt = frq_lim[1]:10:frq_lim[2]
-        else
-            yt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        yt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # prepare plot
@@ -76,14 +67,17 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=_ticks(st),
-                      yticks=yt,
+                      xticks=LinearTicks(10),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
+                      yticks=LinearTicks(15),
+                      yminorticksvisible=true,
+                      yminorticks=IntervalsBetween(10),
                       yscale=frq===:lin ? identity : log10,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
+    GLMakie.xlims!(ax, (st[1], st[end]))
     GLMakie.ylims!(ax, frq_lim)
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -96,6 +90,7 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                           sf,
                           sp',
                           colormap=pal)
+
     if !isnothing(threshold)
         _, bm = seg_extract(sp, threshold=threshold, threshold_type=threshold_type)
         reg = ones(size(sp)) .* minimum(sp)
@@ -177,18 +172,9 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     ch = collect(eachindex(clabels)) .- 0.5
@@ -202,7 +188,7 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=xt,
+                      xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
                       yticks=(0.5:1:ch_n, reverse(clabels)),
@@ -437,12 +423,16 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
             markers_desc = obj.markers[!, :value]
             for idx in eachindex(markers_pos)
                 if _in(markers_pos[idx], (st[1], st[end]))
-                    p = Plots.vline!([markers_pos[idx]],
-                                     linestyle=:dash,
-                                     linewidth=1,
-                                     linecolor=:black,
-                                     label=false)
-                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, 0.5, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                    GLMakie.vlines!(markers_pos[idx],
+                                    linestyle=:dash,
+                                    linewidth=1,
+                                    color=:black)
+                    GLMakie.text!(markers_pos[idx] + 0.1,
+                                  0.5,
+                                  text="$(markers_id[idx]) / $(markers_desc[idx])",
+                                  fontsize=5,
+                                  align=(:left, :top),
+                                  rotation=pi/2)
                 end
             end
         end
@@ -753,12 +743,16 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractAr
             markers_desc = obj.markers[!, :value]
             for idx in eachindex(markers_pos)
                 if _in(markers_pos[idx], (st[1], st[end]))
-                    p = Plots.vline!([markers_pos[idx]],
-                                     linestyle=:dash,
-                                     linewidth=1,
-                                     linecolor=:black,
-                                     label=false)
-                    p = Plots.plot!(annotations=(markers_pos[idx] + 0.1, 0.5, Plots.text("$(markers_id[idx]) / $(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
+                    GLMakie.vlines!(markers_pos[idx],
+                                    linestyle=:dash,
+                                    linewidth=1,
+                                    label=false)
+                    GLMakie.text!(markers_pos[idx] + 0.1,
+                                  0.5,
+                                  text="$(markers_id[idx]) / $(markers_desc[idx])",
+                                  fontsize=5,
+                                  align=(:left, :top),
+                                  rotation=pi/2)
                 end
             end
         end
@@ -869,18 +863,9 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
 
     pal = mono ? :grays : :darktest
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            yt = frq_lim[1]:10:frq_lim[2]
-        else
-            yt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        yt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # plot parameters

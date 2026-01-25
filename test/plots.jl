@@ -292,7 +292,7 @@ p = NeuroAnalyzer.plot_coherence_butterfly(abs.(coh[:, :, 1]), f)
 @info "Test: plot_heatmap()"
 m = rand(nchannels(e10), epoch_len(e10))
 p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_connectivity_circle()"
 l = get_channel(eeg, type="eeg")
@@ -314,26 +314,26 @@ p = NeuroAnalyzer.mplot_gridlocs()
 hms, t = hmspectrum(e10, ch="Fp1")
 hms = vec(hms[:, :, 1])
 p = NeuroAnalyzer.plot_hs(hms, t)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_fi()"
 t = e10.epoch_time
 fi = frqinst(e10, ch="Fp1")
 p = NeuroAnalyzer.plot_fi(fi[1, :, 1], t)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_phase()"
 s = e10.data[1, :, 1]
 X = ftransform(s)
 f, _ = freqs(s, sr(e10))
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:stem)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:stem)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:line)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_locs3d()"
 p = NeuroAnalyzer.mplot_locs3d(e10, ch="eeg", mesh_type=:disabled);
@@ -345,12 +345,12 @@ p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", mesh_type=:head);
 
 @info "Test: plot_polezero()"
 p = NeuroAnalyzer.plot_polezero(rand(ComplexF64, 2), rand(ComplexF64, 2))
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_dwc()"
-dc = rand(5, 100)
+dc = rand(16, 100)
 t = collect(1:100)
 p = NeuroAnalyzer.plot_dwc(dc, t=t)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 true

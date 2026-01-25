@@ -33,18 +33,9 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
 
     pal = mono ? :grays : :darktest
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # prepare plot
@@ -54,10 +45,10 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=xt,
+                      xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
-                      xscale=frq===:lin ? identity : log10,
+                      xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -127,18 +118,9 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
         sp[idx, :] = @views normalize_minmax(sp[idx, :]) .* 0.5 .+ (idx - 1)
     end
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # prepare plot
@@ -148,17 +130,17 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                       xlabel=100 + 40 * ch_n < 800 ? xlabel : "",
                       ylabel=ylabel,
                       title=title,
-                      xticks=xt,
-                      yticks=((ch_n - 1):-1:0, clabels),
-                      yticksvisible=false,
+                      xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
-                      xscale=frq===:lin ? identity : log10,
+                      yticks=((ch_n - 1):-1:0, clabels),
+                      yticksvisible=false,
+                      xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
     GLMakie.xlims!(ax, frq_lim)
-    GLMakie.ylims!(ax, -1, ch_n)
+    GLMakie.ylims!(ax, -0.5, ch_n)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -212,18 +194,9 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
     # get mean and 95%CI
     s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp)
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # prepare plot
@@ -233,10 +206,10 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=xt,
+                      xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
-                      xscale=frq===:lin ? identity : log10,
+                      xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -299,18 +272,9 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # prepare plot
@@ -320,10 +284,10 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=xt,
+                      xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
-                      xscale=frq===:lin ? identity : log10,
+                      xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -353,39 +317,6 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                      s,
                      linewidth=2,
                      color=:black)
-    end
-
-    return p
-
-
-    # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   legend=false,
-                   xlims=frq_lim,
-                   xticks=(xt, string.(xt)),
-                   xscale=xsc,
-                   title=title,
-                   palette=pal,
-                   t=:line,
-                   c=:black,
-                   size=(1200, 600),
-                   margins=20Plots.px,
-                   titlefontsize=10,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6)
-
-    # plot powers
-    for idx in axes(sp, 1)
-        p = Plots.plot!(sf,
-                        sp[idx, :],
-                        t=:line,
-                        linecolor=idx,
-                        linewidth=0.5,
-                        label=clabels[idx];
-                        kwargs...)
     end
 
     return p
@@ -431,23 +362,10 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
     # channel labels
     clabels == [""] && (clabels = repeat([""], ch_n))
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Currently log10 scale is not supported by Makie.")
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     if ch_n > 64
@@ -467,10 +385,10 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            ylabel=ylabel,
                            zlabel=zlabel,
                            title=title,
-                           xticks=xt,
+                           xticks=LinearTicks(15),
                            # xminorticksvisible=true,
                            # xminorticks=IntervalsBetween(10),
-                           # xscale=frq===:lin ? identity : log10,
+                           # xscale=frq === :lin ? identity : log10,
                            yticks=(1:yts:ch_n, clabels[1:yts:end]),
                            zoommode=:disable,
                            xtranslationlock=true,
@@ -509,10 +427,10 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            ylabel=ylabel,
                            zlabel=zlabel,
                            title=title,
-                           xticks=xt,
+                           xticks=LinearTicks(15),
                            # xminorticksvisible=true,
                            # xminorticks=IntervalsBetween(10),
-                           # xscale=frq===:lin ? identity : log10,
+                           # xscale=frq === :lin ? identity : log10,
                            yticks=(1:yts:ch_n, clabels[1:yts:end]),
                            zoommode=:disable,
                            xtranslationlock=true,
@@ -570,18 +488,9 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
-    if frq === :lin
-        if frq_lim[2] > 100
-            xt = frq_lim[1]:10:frq_lim[2]
-        else
-            xt = frq_lim[1]:5:frq_lim[2]
-        end
-    else
-        if frq_lim[1] == 0
-            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
-        end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # plot parameters
@@ -622,11 +531,11 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                           xlabel="",
                           ylabel="",
                           title=locs[idx, :label],
-                          xscale=frq===:lin ? identity : log10,
+                          xscale=frq === :lin ? identity : log10,
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0);
                           kwargs...)
-        hidespines!(ax)
+        #hidespines!(ax)
         hidedecorations!(ax)
         GLMakie.xlims!(ax, frq_lim)
         ax.titlesize = 8
@@ -645,7 +554,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                       xlabel="",
                       ylabel="",
                       title=title,
-                      aspect = AxisAspect(1),
+                      aspect=1,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
