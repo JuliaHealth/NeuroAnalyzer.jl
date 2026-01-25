@@ -28,52 +28,16 @@ function _ylims(s::AbstractVector)::Tuple{Real, Real}
     end
 end
 
-function _ticks(t::Union{AbstractVector, AbstractRange})::AbstractVector
-    return WilkinsonTicks(10)
-    if t[end] - t[1] < 2
-        tc = collect(t[1]:1:t[end])
-    elseif t[end] - t[1] < 5
+function _ticks(t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}})::AbstractVector
+    tc = collect(t[1]:1:t[end])
+    if t[end] - t[1] > 10
         tc = collect(t[1]:2:t[end])
-    elseif t[end] - t[1] < 10
+    elseif t[end] - t[1] > 20
+        tc = collect(t[1]:2:t[end])
+    elseif t[end] - t[1] > 50
         tc = collect(t[1]:5:t[end])
-    elseif t[end] - t[1] < 20
-        tc = collect(t[1]:10:t[end])
-    else
-        tc = collect(t[1]:20:t[end])
     end
     return tc
-#    if length(t) >= 3
-#        if t[2] - t[1] == t[3] - t[2]
-#            tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:t[end])))
-#        else
-#            tc = collect(floor(t[1], digits=3):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=3))
-#        end
-#    end
-#    if t[end] == round(Int64, t[end])
-#        tc = linspace(round(t[1]), round(t[end]), length(round.(Int64, t[1]:((t[end] - t[1])/10):t[end])))
-#    else
-#        tc = linspace(t[1], t[end], length(round.(t[1]:((t[end] - t[1])/10):t[end], digits=2)))
-#    end
-#    tc = round.(tc, digits=2)
-#    return tc
-end
-
-function _ticks(t::Tuple{Real, Real})::AbstractVector
-    if typeof(t[1]) <: Int && typeof(t[2]) <: Int
-        if length(t[1]:t[2]) <= 30
-            return collect(t[1]:t[2])
-        elseif length(t[1]:t[2]) <= 100
-            return collect(t[1]:5:t[2])
-        elseif length(t[1]:t[2]) <= 1000
-            return collect(t[1]:10:t[2])
-        end
-    else
-        if length(collect(t[1]:t[2])) > (1 / (collect(t[1]:t[2])[2] - collect(t[1]:t[2])[1]))
-            return floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
-        else
-            return floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 20):ceil(t[end], digits=2)
-        end
-    end
 end
 
 _erpticks(t::Union{AbstractVector, AbstractRange})::AbstractVector = vcat(collect(range(floor(t[1], digits=2), 0, 3)), collect(range(0, ceil(t[end], digits=2), 9))[2:end])
