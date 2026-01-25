@@ -198,7 +198,7 @@ p = NeuroAnalyzer.plot_dipole2d(d)
 
 @info "Test: plot_dipole3d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 1), (1, 1, 1))
-p = NeuroAnalyzer.mplot_dipole3d(d)
+p = NeuroAnalyzer.plot_dipole3d(d)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_eros()"
