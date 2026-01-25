@@ -55,8 +55,6 @@ p = NeuroAnalyzer.mplot_locs(e10, ch="eeg")
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", d=3, interactive=false)
-@test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_psd()"
 p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1")
@@ -190,8 +188,8 @@ p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_weights()"
-p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg")
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_locs(e10, weights=rand(19), ch="eeg")
+@test p isa GLMakie.Figure
 
 @info "Test: plot_dipole2d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 0), (1, 1, 1))
@@ -337,11 +335,12 @@ p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:rad, type=:line)
 p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
 @test p isa Plots.Plot{Plots.GRBackend}
 
-@info "Test: plot_locs3d_mesh()"
-ch = get_channel(e10, ch="eeg")
-p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:brain);
+@info "Test: plot_locs3d()"
+p = NeuroAnalyzer.mplot_locs3d(e10, ch="eeg", mesh_type=:disabled);
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs3d_mesh(e10.locs[ch, :], mesh_type=:head);
+p = NeuroAnalyzer.mplot_locs3d(e10, ch="eeg", mesh_type=:brain);
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", mesh_type=:head);
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polezero()"

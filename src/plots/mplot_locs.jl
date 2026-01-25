@@ -623,21 +623,29 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                 fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
             end
             if large
-                fid_loc_x = @. origin[1] + (fid_loc_x * 250)
-                fid_loc_y = @. origin[2] - (fid_loc_y * 250)
+                fid_loc_x = @. origin[1] + (fid_loc_x * 260)
+                fid_loc_y = @. origin[2] + (fid_loc_y * 260)
             else
-                fid_loc_x = @. origin[1] - (fid_loc_x * 100)
-                fid_loc_y = @. origin[2] - (fid_loc_y * 100)
+                fid_loc_x = @. origin[1] + (fid_loc_x * 100)
+                fid_loc_y = @. origin[2] + (fid_loc_y * 100)
             end
             GLMakie.text!(fid_loc_x,
                           fid_loc_y,
                           text=fid_names[idx],
-                          fontsize=font_size + 2)
+                          fontsize=font_size + 2,
+                          align = (:center, :center))
         end
     end
 
     # draw weights
     if typeof(weights) <: Vector
+        if ch_labels
+            label_offset_x = -10
+            label_offset_y = 10
+        else
+            label_offset_x = 10
+            label_offset_y = -10
+        end
         @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
         @assert length(weights) >= 1 "weights must contain at least one value."
         for idx in eachindex(locs[ch, :label])
@@ -671,140 +679,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 end
 
 """
-    mplot_locs3d(locs; <keyword arguments>)
-
-3D preview of channel locations.
-
-# Arguments
-
-- `locs::DataFrame`: columns: `channel`, `labels`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`
-- `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
-- `ch_labels::Bool=true`: plot channel labels
-- `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
-
-# Returns
-
-- `p::GLMakie.Figure`
-"""
-function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::GLMakie.Figure
-
-    pal = mono ? :grays : :darktest
-
-    if !cart
-        loc_x = zeros(DataFrames.nrow(locs))
-        loc_y = zeros(DataFrames.nrow(locs))
-        loc_z = zeros(DataFrames.nrow(locs))
-        for idx in 1:DataFrames.nrow(locs)
-            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
-        end
-    else
-        loc_x = locs[!, :loc_x]
-        loc_y = locs[!, :loc_y]
-        loc_z = locs[!, :loc_z]
-    end
-
-    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
-        x_lim = (-1.5, 1.5)
-        y_lim = (-1.5, 1.5)
-        z_lim = (-1.5, 1.5)
-        plot_size = 640
-    else
-        x_lim = (-2.0, 2.0)
-        y_lim = (-2.0, 2.0)
-        z_lim = (-2.0, 2.0)
-        plot_size = 850
-    end
-
-    marker_size = 6
-    font_size = 6
-
-    ch = setdiff(ch, selected)
-
-    p = Plots.scatter3d(grid=true,
-                        palette=pal,
-                        size=(plot_size, plot_size),
-                        aspect_ratios=:equal,
-                        right_margin=-20*Plots.px,
-                        bottom_margin=-20*Plots.px,
-                        top_margin=-20*Plots.px,
-                        left_margin=-20*Plots.px,
-                        legend=false,
-                        camera=camera,
-                        xticks=([-1, 0, 1]),
-                        yticks=([-1, 0, 1]),
-                        zticks=([-1, 0, 1]),
-                        xlabel="X",
-                        ylabel="Y",
-                        zlabel="Z",
-                        xlim=x_lim,
-                        ylim=y_lim,
-                        zlim=z_lim)
-
-    Plots.scatter3d!((loc_x, loc_y, loc_z),
-                     markercolor=:gray,
-                     markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                     markershape=:circle,
-                     markersize=marker_size,
-                     markerstrokewidth=0,
-                     markerstrokealpha=0)
-
-    if selected != 0
-        if mono
-            Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]),
-                             markercolor=:gray,
-                             markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                             markershape=:circle,
-                             markersize=marker_size,
-                             markerstrokewidth=0,
-                             markerstrokealpha=0)
-        else
-            for idx in selected
-                Plots.scatter3d!((loc_x[idx], loc_y[idx], loc_z[idx]),
-                                 markercolor=idx,
-                                 markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
-                                 markershape=:circle,
-                                 markersize=marker_size,
-                                 markerstrokewidth=0,
-                                 markerstrokealpha=0)
-            end
-        end
-    end
-
-    if ch_labels
-        for idx in eachindex(locs[!, :label])
-            idx in ch && GLMakie.text!(loc_x[idx] * 1.1,
-                                       loc_y[idx] * 1.1,
-                                       loc_z[idx] * 1.1,
-                                       text=locs[idx, :label],
-                                       fontsize=font_size)
-            idx in selected && GLMakie.text!(loc_x[idx] * 1.1,
-                                             loc_y[idx] * 1.1,
-                                             loc_z[idx] * 1.1,
-                                             text=locs[idx, :label],
-                                             fontsize=font_size)
-        end
-    end
-
-    if head_labels
-        fid_names = ["NAS", "IN", "LPA", "RPA"]
-        for idx in 1:length(NeuroAnalyzer.fiducial_points)
-            GLMakie.text!(NeuroAnalyzer.fiducial_points[idx][1],
-                          NeuroAnalyzer.fiducial_points[idx][2],
-                          NeuroAnalyzer.fiducial_points[idx][3],
-                          text=fid_names[idx],
-                          fontsize=font_size)
-        end
-    end
-
-    return p
-
-end
-
-"""
     mplot_locs(obj; <keyword arguments>)
 
 Preview of channel locations.
@@ -820,7 +694,6 @@ Preview of channel locations.
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
-- `d::Int64=2`: 2- or 3-dimensional plot
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
@@ -829,7 +702,6 @@ Preview of channel locations.
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
-- `interactive::Bool=true`: if true, use interactive 3-dimensional plot
 - `transparent::Bool=false`: if true, do not paint the background
 - `connections::Matrix{<:Real}=[0 0; 0 0]`: matrix of connections weights (channels by channels)
 - `threshold::Real=0`: threshold for plotting, see below
@@ -841,18 +713,14 @@ Preview of channel locations.
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
 - `weights::Union{Bool, Vector{<:Real}}=true`: weight line widths and alpha based on connection value, if false connections values will be drawn or vector of weights
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
-- `mesh_type::Union{Nothing, Symbol}=nothing`: type of mesh to plot (`:brain` or `:head`)
-- `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
 
 # Returns
 
 - `Union{GLMakie.Figure, Nothing}`
 """
-function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, d::Int64=2, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, mesh_type::Union{Nothing, Symbol}=nothing, mesh_alpha::Float64=0.95, camera::Tuple{Real, Real}=(20, 45))::Union{GLMakie.Figure, Nothing}
+function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Union{GLMakie.Figure, Nothing}
 
     @assert datatype(obj) != "ecog" "Use mplot_locs_ecog() for ECoG data."
-    @assert (d == 2 || d == 3) "d must be 2 or 3."
 
     ch = get_channel(obj, ch=ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
@@ -883,26 +751,7 @@ function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                            grid=grid,
                            mono=mono)
         return p
-    end
-
-    if d == 3
-        if interactive
-            implot_locs3d(locs,
-                         ch=ch,
-                         selected=selected,
-                         ch_labels=ch_labels,
-                         head_labels=head_labels,
-                         mono=mono)
-            return nothing
-        else
-            p = mplot_locs3d(locs,
-                            ch=ch,
-                            selected=selected,
-                            ch_labels=ch_labels,
-                            head_labels=head_labels,
-                            mono=mono)
-        end
-    elseif isnothing(mesh_type)
+    else
         p = mplot_locs(locs,
                       ch=ch,
                       selected=selected,
@@ -919,17 +768,6 @@ function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                       threshold=threshold,
                       threshold_type=threshold_type,
                       weights=weights)
-    elseif mesh_type === :head || mesh_type === :brain
-        p = mplot_locs3d_mesh(locs,
-                             ch=ch,
-                             selected=selected,
-                             ch_labels=ch_labels,
-                             head_labels=head_labels,
-                             mono=mono,
-                             cart=cart,
-                             mesh_type=mesh_type,
-                             mesh_alpha=mesh_alpha,
-                             camera=camera)
     end
 
     return p
@@ -1025,33 +863,36 @@ end
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
-- `mesh_type::Symbol=:brain`: type of mesh to plot (`:brain` or `:head`)
+- `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
+- `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
 
 # Returns
 
 - `f::GLMakie.Figure`
 """
-function mplot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:brain, mesh_alpha::Float64=0.95)::GLMakie.Figure
+function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95)::GLMakie.Figure
 
-    _check_var(mesh_type, [:brain, :head], "mesh_type")
+    _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
 
-    if mesh_type === :brain
-        msh = FileIO.load(joinpath(res_path, "mesh/brain_hires.stl"))
-    else
-        msh = FileIO.load(joinpath(res_path, "mesh/head.stl"))
-        mesh_alpha = 1.0
-    end
+    msh = nothing
 
-    # scale mesh
-    if mesh_type === :brain
-        msh.position ./= _mesh_normalize_xyz(msh)
-        msh.position .*= 0.95
-    else
-        msh.position ./= _mesh_normalize_xy(msh)
-        msh.position .*= 1.1
+    if mesh_type !== :disabled
+        if mesh_type === :brain
+            msh = FileIO.load(joinpath(res_path, "mesh/brain_hires.stl"))
+        else
+            msh = FileIO.load(joinpath(res_path, "mesh/head.stl"))
+            mesh_alpha = 1.0
+        end
+        # scale mesh
+        if mesh_type === :brain
+            msh.position ./= _mesh_normalize_xyz(msh)
+            msh.position .*= 0.95
+        else
+            msh.position ./= _mesh_normalize_xy(msh)
+            msh.position .*= 1.1
+        end
     end
 
     pal = mono ? :grays : :darktest
@@ -1085,9 +926,9 @@ function mplot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abst
 
     ch = setdiff(ch, selected)
 
-    f = Figure(size=(plot_size, plot_size))
+    p = Figure(size=(plot_size, plot_size))
 
-    Axis3(f[1, 1],
+    Axis3(p[1, 1],
           xlabel="X",
           ylabel="Y",
           zlabel="Z",
@@ -1097,8 +938,8 @@ function mplot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abst
           xticks=[-1, 0, 1],
           yticks=[-1, 0, 1],
           zticks=[-1, 0, 1],
-          elevation=deg2rad(camera[1]),
-          azimuth=deg2rad(camera[2]))
+          elevation=deg2rad(cam[1]),
+          azimuth=deg2rad(cam[2]))
 
     GLMakie.scatter!(loc_x[ch],
                      loc_y[ch],
@@ -1106,9 +947,11 @@ function mplot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abst
                      color=:gray,
                      markersize=marker_size)
 
-    GLMakie.mesh!(msh,
-                  alpha=mesh_alpha,
-                  color=:gray)
+    if mesh_type !== :disabled
+        GLMakie.mesh!(msh,
+                      alpha=mesh_alpha,
+                      color=:gray)
+    end
 
     if selected != 0
         if mono
@@ -1156,6 +999,59 @@ function mplot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abst
         end
     end
 
-    return f
+    return p
+
+end
+
+"""
+    mplot_locs(obj; <keyword arguments>)
+
+Preview of channel locations.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `selected::Union{String, Vector{String}, Regex}`: which channels should be highlighted
+- `ch_labels::Bool=true`: plot channel labels
+- `head_labels::Bool=false`: plot head labels
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
+- `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
+- `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
+
+# Returns
+
+- `Union{GLMakie.Figure, Nothing}`
+"""
+function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, cam::Tuple{Real, Real}=(20, 45))::Union{GLMakie.Figure, Nothing}
+
+    @assert datatype(obj) in ["eeg"] "Currently mplot_locs3d() works for EEG objects only."
+
+    ch = get_channel(obj, ch=ch)
+    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    ch = collect(1:DataFrames.nrow(locs))
+
+    if selected == ""
+        selected = 0
+    else
+        selected = get_channel(obj, ch=selected)
+        selected = intersect(locs[!, :label], labels(obj)[selected])
+        selected = _find_bylabel(locs, selected)
+    end
+
+    p = mplot_locs3d(locs,
+                     ch=ch,
+                     selected=selected,
+                     ch_labels=ch_labels,
+                     head_labels=head_labels,
+                     mono=mono,
+                     cart=cart,
+                     mesh_type=mesh_type,
+                     mesh_alpha=mesh_alpha,
+                     cam=cam)
+
+    return p
 
 end
