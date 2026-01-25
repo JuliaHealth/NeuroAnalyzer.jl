@@ -33,6 +33,10 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Union{Tuple{Int64, Int6
         size(p[idx].scene) != s && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
     end
 
+    layout[1] == layout[2] && (s = (s[1] * layout[1] * 0.75, s[2] * layout[2] * 0.75))
+    layout[1] > layout[2] && (s = (s[1] * layout[1] * 0.5, s[2] * layout[2] * 1.5))
+    layout[1] < layout[2] && (s = (s[1] * layout[1] * 1.25, s[2] * layout[2] * 0.5))
+
     if length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
             push!(p, plot_empty())
@@ -40,7 +44,7 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Union{Tuple{Int64, Int6
     end
 
     pc = GLMakie.Figure(size=s)
-    pc[1, 1] = GridLayout(layout[1], layout[2])
+    gl = pc[1, 1] = GridLayout(layout[1], layout[2])
     p_idx = 1
     for idx1 in 1:layout[1]
         for idx2 in 1:layout[2]

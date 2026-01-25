@@ -13,10 +13,11 @@ load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.
 isfile("test.png") && rm("test.png")
 
 @info "Test: plot_compose()"
-p1 = NeuroAnalyzer.mplot(e10, ch="Fp1", ep=1, xlabel="")
-p2 = plot_empty()
-pp = [p1, p2]
-l = (2, 1)
+p1 = NeuroAnalyzer.mplot(e10, ch="Fp1", ep=1, xlabel="");
+p2 = NeuroAnalyzer.mplot(e10, ch="Fp2", ep=1, xlabel="");
+p3 = NeuroAnalyzer.mplot(e10, ch="Cz", ep=1, xlabel="");
+pp = [p1, p2, p3]
+l = (2, 2)
 p = NeuroAnalyzer.plot_compose(pp, layout=l)
 @test p isa GLMakie.Figure
 
@@ -174,13 +175,16 @@ p = NeuroAnalyzer.plot_paired(s, xlabels=["V1", "V2", "V3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polar()"
-s = rand(0:0.1:10, 2, 10)
-p = NeuroAnalyzer.plot_polar(s')
+s = rand(0:0.1:10, 10, 2)
+p = NeuroAnalyzer.plot_polar(s)
 @test p isa GLMakie.Figure
 s = rand(10)
 p = NeuroAnalyzer.plot_polar(s)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_polar(s', m=(1, 1))
+p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
+@test p isa GLMakie.Figure
+s = rand(0:0.1:10, 10, 2)
+p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_weights()"

@@ -672,7 +672,7 @@ Polar plot.
 
 # Arguments
 
-- `s::Union{AbstractVector, AbstractArray}`
+- `s::Union{AbstractVector, AbstractMatrix}`
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
@@ -683,8 +683,9 @@ Polar plot.
 
 - `p::GLMakie.Figure`
 """
-function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=true, kwargs...)::GLMakie.Figure
+function plot_polar(s::Union{AbstractVector, AbstractMatrix}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=true, kwargs...)::GLMakie.Figure
 
+    size(s, 1) == 2 && (s = s')
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
     ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
 
