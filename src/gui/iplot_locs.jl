@@ -28,6 +28,7 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
 
     ch = get_channel(obj, ch=ch)
+    ch_n = length(ch)
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
@@ -41,7 +42,6 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     end
 
     msh = nothing
-    pov = (cam[1], cam[2])
 
     if mesh_type !== :disabled
         if mesh_type === :brain
@@ -85,21 +85,22 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
         z_lim = (-0.5, 1.0)
     end
 
-    marker_size = 15
+    marker_size = 10
     font_size = 15
 
     ch = setdiff(ch, selected)
 
     p = Figure(size=(850, 900))
 
-    but_t = Button(p[2, 1], label="Top", tellwidth=false)
-    but_r = Button(p[2, 2], label="Right", tellwidth=false)
-    but_l = Button(p[2, 3], label="Left", tellwidth=false)
-    but_f = Button(p[2, 4], label="Front", tellwidth=false)
-    but_b = Button(p[2, 5], label="Back", tellwidth=false)
-    but_png = Button(p[2, 6], label="Save as PNG", tellwidth=false)
+    but_r = Button(p[2, 1], label="Right", tellwidth=false)
+    but_l = Button(p[3, 1], label="Left", tellwidth=false)
+    but_f = Button(p[2, 2], label="Front", tellwidth=false)
+    but_b = Button(p[3, 2], label="Back", tellwidth=false)
+    but_t = Button(p[2, 3], label="Top", tellwidth=false)
+    but_reset = Button(p[3, 3], label="Reset", tellwidth=false)
+    but_png = Button(p[2:3, 4], label="Save as PNG", tellwidth=false)
 
-    ax = Axis3(p[1, 1:6],
+    ax = Axis3(p[1, 1:4],
                xlabel="X",
                ylabel="Y",
                zlabel="Z",
@@ -119,11 +120,7 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
 #        ax.azimuth[] = val
 #    end
 
-    GLMakie.scatter!(loc_x[ch],
-                     loc_y[ch],
-                     loc_z[ch],
-                     color=:gray,
-                     markersize=marker_size)
+    cmap = GLMakie.resample_cmap(pal, length(ch) + length(selected))
 
     if mesh_type !== :disabled
         GLMakie.mesh!(msh,
@@ -131,19 +128,28 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                       color=:gray)
     end
 
-    if selected != 0
-        if mono
-            GLMakie.scatter!(loc_x[selected],
-                             loc_y[selected],
-                             loc_z[selected],
-                             color=:gray,
-                             markersize=marker_size)
+    for idx in 1:ch_n
+        if idx in selected
+            if mono
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 loc_z[idx],
+                                 color=:gray,
+                                 markersize=marker_size)
+            else
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 loc_z[idx],
+                                 color=cmap[idx],
+                                 colormap=pal,
+                                 colorrange=1:ch_n,
+                                 markersize=marker_size)
+            end
         else
-            GLMakie.scatter!(loc_x[selected],
-                             loc_y[selected],
-                             loc_z[selected],
-                             colormap=pal,
-                             color=selected,
+            GLMakie.scatter!(loc_x[idx],
+                             loc_y[idx],
+                             loc_z[idx],
+                             color=:gray,
                              markersize=marker_size)
         end
     end
@@ -184,6 +190,11 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                 @info("Image saved as $file_name")
             end
         end
+    end
+
+    on(but_reset.clicks) do _
+        ax.elevation[] = deg2rad(cam[1])
+        ax.azimuth[] = deg2rad(cam[2])
     end
 
     on(but_r.clicks) do _

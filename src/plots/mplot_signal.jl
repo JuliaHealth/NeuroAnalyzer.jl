@@ -158,6 +158,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     # plot channels
     if length(ctypes_uni) > 1
         cmap = GLMakie.resample_cmap(pal, length(ctypes_uni))
+    else
+        cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
     end
     for idx in 1:ch_n
         if !bad[idx]
@@ -181,7 +183,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                                    t,
                                    s[idx, :],
                                    linewidth=0.75,
-                                   colormap=pal)
+                                   color=cmap[idx],
+                                   colormap=pal,
+                                   colorrange=1:ch_n)
                 end
             end
         else

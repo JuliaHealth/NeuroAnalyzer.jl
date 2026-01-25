@@ -148,7 +148,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
     ax.yticklabelsize = ch_n <= 64 ? 12 : 10;
 
     # plot channels
-    cmap = GLMakie.resample_cmap(pal, ch_n)
+    cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
     for idx in 1:ch_n
         Makie.lines!(sf,
                      sp[idx, :],
