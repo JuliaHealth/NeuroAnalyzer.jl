@@ -13,12 +13,12 @@ load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.
 isfile("test.png") && rm("test.png")
 
 @info "Test: plot_compose()"
-p1 = NeuroAnalyzer.plot(e10, ch="Fp1", ep=1, xlabel="")
+p1 = NeuroAnalyzer.mplot(e10, ch="Fp1", ep=1, xlabel="")
 p2 = plot_empty()
 pp = [p1, p2]
 l = (2, 1)
 p = NeuroAnalyzer.plot_compose(pp, layout=l)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_connections()"
 p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
@@ -44,8 +44,8 @@ p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: plot_filter_response()"
-p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_locs()"
 p = NeuroAnalyzer.plot_locs(e10, ch="eeg")
@@ -174,8 +174,14 @@ p = NeuroAnalyzer.plot_paired(s, xlabels=["V1", "V2", "V3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polar()"
-p = NeuroAnalyzer.plot_polar(stats')
-@test p isa Plots.Plot{Plots.GRBackend}
+s = rand(0:0.1:10, 2, 10)
+p = NeuroAnalyzer.plot_polar(s')
+@test p isa GLMakie.Figure
+s = rand(10)
+p = NeuroAnalyzer.plot_polar(s)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_polar(s', m=(1, 1))
+@test p isa GLMakie.Figure
 
 @info "Test: plot_weights()"
 p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg")
@@ -193,13 +199,21 @@ p = NeuroAnalyzer.mplot_dipole3d(d)
 
 @info "Test: plot_eros()"
 s, f, t = eros(e10, ch="Fp1")
+p = NeuroAnalyzer.plot_eros(s, f, t, tm=1000)
+@test p isa GLMakie.Figure
+e10_erp = average_epochs(e10)
+s, f, t = eros(e10_erp, ch="Fp1")
 p = NeuroAnalyzer.plot_eros(s, f, t)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_erop()"
-p, f = erop(e10, ch="Fp1")
-p = NeuroAnalyzer.plot_erop(p, f)
-@test p isa Plots.Plot{Plots.GRBackend}
+sp, sf = erop(e10, ch="Fp1")
+p = NeuroAnalyzer.plot_erop(sp, sf)
+@test p isa GLMakie.Figure
+e10_erp = average_epochs(e10)
+sp, sf = erop(e10_erp, ch="Fp1")
+p = NeuroAnalyzer.plot_erop(sp, sf)
+@test p isa GLMakie.Figure
 
 @info "Test: plot(obj1, obj2)"
 p = NeuroAnalyzer.mplot(e10, e10, ch="all")

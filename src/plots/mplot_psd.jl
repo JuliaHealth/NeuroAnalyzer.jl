@@ -662,8 +662,8 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
         GLMakie.scatter!(loc_x[idx],
                          loc_y[idx],
                          marker=pp,
-                         markersize = marker_size,
-                         markerspace = :pixel)
+                         markersize=marker_size,
+                         markerspace=:pixel)
     end
 
     return p

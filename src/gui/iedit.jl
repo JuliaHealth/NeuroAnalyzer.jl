@@ -68,7 +68,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                 entry_loc_theta_sph.sensitive = true
                 entry_loc_radius_sph.sensitive = true
                 entry_loc_phi_sph.sensitive = true
-                if isa(NeuroAnalyzer._find_bylabel(locs, ch_labels[current_channel]), Int64)
+                if isa(_find_bylabel(locs, ch_labels[current_channel]), Int64)
                     entry_loc_theta.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_theta]
                     entry_loc_radius.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_radius]
                     entry_loc_x.value = locs[_find_bylabel(locs, ch_labels[current_channel]), :loc_x]

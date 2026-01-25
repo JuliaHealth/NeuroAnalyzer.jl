@@ -18,9 +18,9 @@ function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 
     _check_datatype(obj, "tpt")
 
-    p_idx1 = NeuroAnalyzer._tpt_peaks(obj.data[4, :, 1])
-    p_idx2 = NeuroAnalyzer._tpt_peaks(obj.data[5, :, 1])
-    p_idx3 = NeuroAnalyzer._tpt_peaks(.-obj.data[6, :, 1])
+    p_idx1 = _tpt_peaks(obj.data[4, :, 1])
+    p_idx2 = _tpt_peaks(obj.data[5, :, 1])
+    p_idx3 = _tpt_peaks(.-obj.data[6, :, 1])
     p_idx = sort(union(p_idx1, p_idx2, p_idx3))
     _info("Detected pinches: $(length(p_idx))")
 

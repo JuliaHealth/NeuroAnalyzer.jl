@@ -421,7 +421,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
                   cart=cart,
                   threshold=threshold,
                   threshold_type=threshold_type,
-                  kwargs=kwargs)
+                  kwargs...)
 
     return p
 
@@ -585,7 +585,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
                   cart=cart,
                   threshold=threshold,
                   threshold_type=threshold_type,
-                  kwargs=kwargs)
+                  kwargs...)
 
     return p
 

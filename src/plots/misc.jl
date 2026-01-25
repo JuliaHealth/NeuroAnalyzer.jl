@@ -19,39 +19,46 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
 # Returns
 
-- `pc::Plots.Plot{Plots.GRBackend}`
+- `pc::GLMakie.Figure`
 """
-function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}, mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_compose(p::Vector{GLMakie.Figure}; layout::Union{Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)::GLMakie.Figure
 
     @assert layout[1] * layout[2] >= length(p) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(p)))."
 
-    pal = mono ? :grays : :darktest
-
     s =(0, 0)
     for idx in eachindex(p)
-        p[idx].attr[:size] > s && (s = p[idx].attr[:size])
+        size(p[idx].scene) > s && (s = size(p[idx].scene))
     end
     for idx in eachindex(p)
-        p[idx].attr[:size] != s && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
+        size(p[idx].scene) != s && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
     end
 
-    if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
+    if length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
             push!(p, plot_empty())
         end
     end
 
-    pc = plot_empty()
-    layout[1] == layout[2] && (s = (s[1] * layout[1] * 0.75, s[2] * layout[2] * 0.75))
-    layout[1] > layout[2] && (s = (s[1] * layout[1] * 0.5, s[2] * layout[2] * 1.5))
-    layout[1] < layout[2] && (s = (s[1] * layout[1] * 1.25, s[2] * layout[2] * 0.5))
-    pc = Plots.plot!(p...,
-                     size=s,
-                     layout=layout,
-                     palette=pal,
-                     top_margin=25Plots.px,
-                     bottom_margin=75Plots.px;
-                     kwargs...)
+    pc = GLMakie.Figure(size=s)
+    pc[1, 1] = GridLayout(layout[1], layout[2])
+    p_idx = 1
+    for idx1 in 1:layout[1]
+        for idx2 in 1:layout[2]
+            fname = tempname()*".png"
+            GLMakie.save(fname, p[p_idx])
+            pp = FileIO.load(fname)
+            rm(fname)
+            ax = GLMakie.Axis(pc[idx1, idx2],
+                              topspinevisible=false,
+                              bottomspinevisible=false,
+                              leftspinevisible=false,
+                              rightspinevisible=false,
+                              aspect=DataAspect())
+            GLMakie.image!(ax, rotr90(pp))
+            hidedecorations!(ax)
+            p_idx += 1
+        end
+    end
 
     return pc
 
@@ -64,14 +71,11 @@ Return an empty plot, useful for filling matrices of plots.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_empty()::Plots.Plot{Plots.GRBackend}
+function plot_empty()::GLMakie.Figure
 
-    p = Plots.plot(grid=false,
-                   framestyle=:none,
-                   border=:none,
-                   margins=0Plots.px)
+    p = GLMakie.Figure()
 
     return p
 

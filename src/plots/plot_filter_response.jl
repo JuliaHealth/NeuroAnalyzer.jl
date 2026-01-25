@@ -357,7 +357,7 @@ Plot filter response.
 """
 function plot_filter_response(obj::NeuroAnalyzer.NEURO; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Int64, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), kwargs...)::Plots.Plot{Plots.GRBackend}
 
-    p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono, frq_lim=frq_lim, kwargs=kwargs)
+    p = plot_filter_response(fs=sr(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono, frq_lim=frq_lim, kwargs...)
 
     return p
 

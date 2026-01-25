@@ -126,7 +126,7 @@ function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     # return epoch numbers of markers
     mrk_start = obj.markers[!, :start]
     mrk_epoch = zeros(Int64, length(mrk_start))
-    epochs_tps = NeuroAnalyzer._epochs_tps(obj)
+    epochs_tps = _epochs_tps(obj)
     for mrk_idx in eachindex(mrk_start)
         for ep_idx in 1:nepochs(obj)
             mrk_start[mrk_idx] >= epochs_tps[1, ep_idx] && mrk_start[mrk_idx] <= epochs_tps[2, ep_idx] && (mrk_epoch[mrk_idx] = ep_idx)

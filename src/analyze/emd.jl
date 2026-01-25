@@ -36,10 +36,10 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Fl
         imf_tmp = @. s_tmp - e_avg
 
         maxs = findpeaks(imf_tmp, d=2)
-        mins = findpeaks(NeuroAnalyzer._flipx(imf_tmp), d=2)
+        mins = findpeaks(_flipx(imf_tmp), d=2)
         n_extrema = length(maxs) + length(mins)
 
-        n_roots = NeuroAnalyzer._zeros(imf_tmp)
+        n_roots = _zeros(imf_tmp)
 
         res = @. s_tmp - imf_tmp
         sd = sum(@. abs2(s_tmp - imf_tmp) / s_tmp^2 )

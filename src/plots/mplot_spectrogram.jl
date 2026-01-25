@@ -76,7 +76,7 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=NeuroAnalyzer._ticks(st),
+                      xticks=_ticks(st),
                       yticks=yt,
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),

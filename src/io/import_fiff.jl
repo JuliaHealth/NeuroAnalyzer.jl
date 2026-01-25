@@ -71,7 +71,7 @@ function load_fiff(file_name::String)::Tuple{Dict{Symbol, Dict{Any, Any}}, Vecto
             # epoch
             # decoupler_matrix
             # proj_item_vectors
-            d = @views NeuroAnalyzer._fiff_matrix(tag_dt, buf_tmp)
+            d = @views _fiff_matrix(tag_dt, buf_tmp)
         elseif tag_type in [115]
             # role
             d = @views _i32i64(buf_tmp)

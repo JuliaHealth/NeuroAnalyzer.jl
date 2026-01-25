@@ -184,7 +184,7 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
         end
     end
 
-    ch_locs = NeuroAnalyzer._find_bylabel(obj.locs, labels(obj)[ch])
+    ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
     if average
         obj_new.header.recording[:label][ch] .*= weighted ? "-wavg" : "-avg"
         obj_new.locs[ch_locs, :label] .*= weighted ? "-wavg" : "-avg"
@@ -352,7 +352,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:label][ch] .*= ref_label
-    ch_locs = NeuroAnalyzer._find_bylabel(obj.locs, labels(obj)[ch])
+    ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
     obj_new.locs[ch_locs, :label] .*= ref_label
     if type === :l
         obj_new.header.recording[:reference] = "auricular (linked)"
@@ -514,7 +514,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:label][ch] .*= ref_label
-    ch_locs = NeuroAnalyzer._find_bylabel(obj.locs, labels(obj)[ch])
+    ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
     obj_new.locs[ch_locs, :label] .*= ref_label
     if type === :l
         obj_new.header.recording[:reference] = "mastoid (linked)"
@@ -643,7 +643,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:label][ch] .*= weighted ? "-wplap" : "-plap"
-    ch_locs = NeuroAnalyzer._find_bylabel(obj.locs, labels(obj)[ch])
+    ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
     obj_new.locs[ch_locs, :label] .*= weighted ? "-wplap" : "-plap"
     obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
@@ -767,7 +767,7 @@ function reference_slap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:label][ch] .*= weighted ? "-wslap" : "-slap"
-    ch_locs = NeuroAnalyzer._find_bylabel(obj.locs, labels(obj)[ch])
+    ch_locs = _find_bylabel(obj.locs, labels(obj)[ch])
     obj_new.locs[ch_locs, :label] .*= weighted ? "-wslap" : "-slap"
     obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"

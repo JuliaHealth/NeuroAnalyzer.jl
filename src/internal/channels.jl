@@ -162,7 +162,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
         end
     end
     l = l_tmp
-    NeuroAnalyzer._check_channels(cl, l)
+    _check_channels(cl, l)
     ch = Int64[]
     for ch_idx in eachindex(l)
         @assert l[ch_idx] in cl "$(l[ch_idx]) does not match signal labels."

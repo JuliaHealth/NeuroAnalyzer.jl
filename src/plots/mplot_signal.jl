@@ -37,11 +37,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
-    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.xlims!(ax, _xlims(t))
     if minimum(s) == 0
-        GLMakie.ylims!(ax, 0, NeuroAnalyzer._ylims(s)[2])
+        GLMakie.ylims!(ax, 0, _ylims(s)[2])
     else
-        GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s))
+        GLMakie.ylims!(ax, _ylims(s))
     end
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -147,7 +147,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
-    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.xlims!(ax, _xlims(t))
     GLMakie.ylims!(ax, -1, ch_n)
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -257,25 +257,25 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
-    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.xlims!(ax, _xlims(t))
     if minimum(s1) == 0 || minimum(s2) == 0
         if maximum(s1) > maximum(s2)
-            GLMakie.ylims!(ax, 0, NeuroAnalyzer._ylims(s1)[2])
+            GLMakie.ylims!(ax, 0, _ylims(s1)[2])
         else
-            GLMakie.ylims!(ax, 0, NeuroAnalyzer._ylims(s2)[2])
+            GLMakie.ylims!(ax, 0, _ylims(s2)[2])
         end
     else
         if maximum(s1) < maximum(s2)
             if minimum(s1) < minimum(s2)
-                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s1)[1], NeuroAnalyzer._ylims(s2)[2])
+                GLMakie.ylims!(ax, _ylims(s1)[1], _ylims(s2)[2])
             else
-                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s2)[1], NeuroAnalyzer._ylims(s2)[2])
+                GLMakie.ylims!(ax, _ylims(s2)[1], _ylims(s2)[2])
             end
         else
             if minimum(s1) < minimum(s2)
-                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s1)[1], NeuroAnalyzer._ylims(s1)[2])
+                GLMakie.ylims!(ax, _ylims(s1)[1], _ylims(s1)[2])
             else
-                GLMakie.ylims!(ax, NeuroAnalyzer._ylims(s2)[1], NeuroAnalyzer._ylims(s1)[2])
+                GLMakie.ylims!(ax, _ylims(s2)[1], _ylims(s1)[2])
             end
         end
     end
@@ -344,7 +344,7 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
-    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.xlims!(ax, _xlims(t))
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -415,7 +415,7 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
-    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.xlims!(ax, _xlims(t))
     cmap = GLMakie.resample_cmap(pal, ch_n)
     for idx in 1:ch_n
         GLMakie.lines!(t,
@@ -510,7 +510,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
-    GLMakie.xlims!(ax, NeuroAnalyzer._xlims(t))
+    GLMakie.xlims!(ax, _xlims(t))
     GLMakie.ylims!(ax, -1, ch_n)
     ax.titlesize = 20
     ax.xlabelsize = 18

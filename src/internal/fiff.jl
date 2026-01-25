@@ -80,7 +80,7 @@ fiff_sss_job = Dict(:id=>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 
 function _fiff_matrix(fb::Int64, buf::Vector{UInt8})::Union{Vector{Float64}, Matrix{Float64}}
     d = nothing
-    df = NeuroAnalyzer._find_fiff_dt(fb)
+    df = _find_fiff_dt(fb)
     fs_mask = fb & 0xFF000000
     if fs_mask == 0x00000000 # scalar
         d = Float64[]
@@ -222,7 +222,7 @@ function _create_fiff_block(fid::IOStream)::Tuple{Vector{Vector{UInt8}}, Matrix{
         tag_size[tag_idx] = tags[tag_idx][4]
         if tag_ids[tag_idx] == bs
             block_level[tag_idx:end] .+= 1
-            block_type_current = NeuroAnalyzer._get_fiff_block_type(fid, tags[tag_idx])[]
+            block_type_current = _get_fiff_block_type(fid, tags[tag_idx])[]
             push!(block_type, block_type_current)
         elseif tag_ids[tag_idx] == be
             push!(block_type, block_type_current)
@@ -248,7 +248,7 @@ end
 function _get_fiff_data(d::Vector{Any}, id::Int64)::Any
     data = Any[]
     for idx in eachindex(d)
-        if d[idx][2] == NeuroAnalyzer._find_fiff_tag(id) && length(d[idx]) == 4
+        if d[idx][2] == _find_fiff_tag(id) && length(d[idx]) == 4
             push!(data, d[idx][4])
         end
     end

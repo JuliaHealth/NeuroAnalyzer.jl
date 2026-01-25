@@ -52,7 +52,7 @@ function cpsd(s1::AbstractVector, s2::AbstractVector; method::Symbol=:mt, fs::In
         f = f[f1_idx:f2_idx]
         pxy = pxy[1, 2, f1_idx:f2_idx]
     elseif method === :stft
-        chunks_idx = NeuroAnalyzer._fchunks(length(s1), wlen=wlen, woverlap=woverlap)
+        chunks_idx = _fchunks(length(s1), wlen=wlen, woverlap=woverlap)
         pxy = zeros(ComplexF64, nextpow(2, wlen + 1))
         w = w ? hanning(wlen) : ones(wlen)
         for idx in axes(chunks_idx, 1)

@@ -34,10 +34,12 @@ function mplot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
                                                              normals(brain_top, brain_top_fs)),
                                          brain_top_fs)
 
+#=
 uv_normal_mesh(brain_top)
 
 m = FileIO.load(GLMakie.assetpath("cat.obj"))
 GLMakie.mesh(m; color=load(GLMakie.assetpath("diffusemap.png")), axis=(; show_axis=false))
+=#
 
     brain_side = Point3f[[-1.2, -1.2, 0],
                          [-1.2, 1.2, 0],
@@ -45,7 +47,7 @@ GLMakie.mesh(m; color=load(GLMakie.assetpath("diffusemap.png")), axis=(; show_ax
                          [-1.2, -1.2, 1.2]]
     brain_side_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
     brain_side_fs = GLMakie.GLTriangleFace[(1, 2, 3), (1, 3, 4)]
-    brain_side_mesh = GeometryBa?sics.Mesh(GeometryBasics.meta(brain_side,
+    brain_side_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_side,
                                                               uv = brain_side_uvs,
                                                               normals = normals(brain_side, brain_side_fs)), brain_side_fs)
 

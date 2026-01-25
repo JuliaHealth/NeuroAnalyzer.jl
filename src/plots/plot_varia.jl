@@ -35,7 +35,7 @@ Plot matrix.
 - `title::String=""`
 - `cb::Bool=true`: draw color bar
 - `cb_title::String=""`: color bar title
-- `xrot::Int64=0`: rotate xlabels by xrot degrees
+- `xrot::Int64=90`: rotate xlabels (in degrees)
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plotting
 
@@ -43,7 +43,7 @@ Plot matrix.
 
 - `p::GLMakie.Figure`
 """
-function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", xrot::Int64=0, mono::Bool=false, kwargs...)::GLMakie.Figure
+function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", xrot::Int64=90, mono::Bool=false, kwargs...)::GLMakie.Figure
 
     @assert size(m, 1) == size(m, 2) "Matrix must be square."
     @assert length(xlabels) == length(ylabels) "Lengths of xlabels ($(length(xlabels))) and ylabels ($(length(ylabels))) must be equal."
@@ -51,8 +51,6 @@ function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector
     @assert length(ylabels) == size(m, 2) "Length of ylabels ($(length(xlabels))) and matrix size $(size(m)) must be equal."
 
     n = size(m, 1)
-    xmar = maximum(length.(xlabels)) * 2
-    ymar = maximum(length.(ylabels)) * 2
     pal = mono ? :grays : :bluesreds
 
     # prepare plot
@@ -63,7 +61,7 @@ function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector
                       ylabel=ylabel,
                       title=title,
                       xticks=(1:n, xlabels),
-                      xticklabelrotation=pi/2,
+                      xticklabelrotation=deg2rad(xrot),
                       xticksvisible=false,
                       yticks=(1:n, ylabels),
                       yticksvisible=false,
@@ -683,67 +681,53 @@ Polar plot.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, ticks::Bool=true, kwargs...)::GLMakie.Figure
 
     @assert length(m) == 2 "m must have exactly 2 values: phases and lengths."
     ndims(s) > 1 && @assert size(s, 2) == 2 "signal must have exactly 2 columns: phases and lengths."
 
     pal = mono ? :grays : :darktest
 
+    # prepare plot
+    plot_size = (800, 800)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.PolarAxis(p[1, 1],
+                           title=title;
+                           kwargs...)
+    !ticks && hidespines!(ax)
+
     if ndims(s) == 1
-        p = Plots.plot([0, s[1]], [0, 1],
-                       size=(800, 800),
-                       projection=:polar,
-                       left_margin=30Plots.px,
-                       right_margin=50Plots.px,
-                       bottom_margin=30Plots.px,
-                       legend=false,
-                       xticks=ticks,
-                       yticks=ticks,
-                       title=title,
-                       color=:black,
-                       palette=pal,
+        GLMakie.lines!([0, s[1]],
+                       [0, 1],
                        linewidth=2,
-                       titlefontsize=8,
-                       xtickfontsize=7,
-                       ytickfontsize=7;
-                       kwargs...)
+                       color=:black)
         for idx in eachindex(s)[(begin + 1):end]
-            Plots.plot!([0, s[idx]], [0, 1],
-                        projection=:polar,
-                        color=:black)
+            GLMakie.lines!([0, s[idx]],
+                           [0, 1],
+                           linewidth=2,
+                           color=:black)
         end
     else
-        p = Plots.plot([0, s[1, 1]], [0, s[1, 2]],
-                       size=(800, 800),
-                       projection=:polar,
-                       left_margin=30Plots.px,
-                       right_margin=50Plots.px,
-                       bottom_margin=30Plots.px,
-                       legend=false,
-                       xticks=ticks,
-                       yticks=ticks,
-                       title=title,
-                       color=:black,
-                       palette=pal,
+        GLMakie.lines!([0, s[1, 1]],
+                       [0, s[1, 2]],
                        linewidth=2,
-                       titlefontsize=8,
-                       xtickfontsize=7,
-                       ytickfontsize=7;
-                       kwargs...)
+                       color=:black)
         for idx in axes(s, 1)[(begin + 1):end]
-            Plots.plot!([0, s[idx, 1]], [0, s[idx, 2]],
-                        projection=:polar,
-                        color=:black)
+            GLMakie.lines!([0, s[idx, 1]],
+                           [0, s[idx, 2]],
+                           linewidth=2,
+                           color=:black)
         end
+
     end
+
     if m != (0, 0)
-        Plots.plot!([0, m[1]], [0, m[2]],
-                    lw=2,
-                    projection=:polar,
-                    color=:red)
+            GLMakie.lines!([0, m[1]],
+                           [0, m[2]],
+                           linewidth=2,
+                           color=:red)
     end
 
     return p
@@ -757,9 +741,9 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 # Arguments
 
-- `s::AbstractArray`: ERO spectrogram
-- `f::AbstractVector`: ERO frequencies
-- `t::AbstractVector`: ERO time
+- `sp::AbstractArray`: ERO spectrogram
+- `sf::AbstractVector`: ERO frequencies
+- `st::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
@@ -776,176 +760,205 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_eros(s::AbstractArray, f::AbstractVector, t::AbstractVector; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(f[1], f[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3, kwargs...)::GLMakie.Figure
 
-    @assert size(s, 1) == length(f) "Length of f ($(length(f))) and number of spectrogram rows ($(size(s, 1))) must be equal."
-    @assert size(s, 2) == length(t) "Length of t ($(length(t))) and number of spectrogram columns ($(size(s, 2))) must be equal."
-    @assert ndims(s) == 3 "s must have 3 dimensions."
-    @assert size(s, 3) <= 2 "s must contain ≤ 2 epochs."
+    @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."
+    @assert size(sp, 2) == length(st) "Length of st ($(length(st))) and number of spectrogram columns ($(size(sp, 2))) must be equal."
+    @assert ndims(sp) == 3 "sp must have 3 dimensions."
+    @assert size(sp, 3) <= 2 "sp must contain ≤ 2 epochs."
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
-    cb_title = db ? "[dB/Hz]" : "[$units^2/Hz]"
+    cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
 
     if frq === :lin
-        ysc = :identity
-        yt = _ticks(frq_lim)
+        if frq_lim[2] > 100
+            yt = frq_lim[1]:10:frq_lim[2]
+        else
+            yt = frq_lim[1]:5:frq_lim[2]
+        end
     else
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            yt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
-        else
-            yt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
         end
-        ysc = :log10
+        yt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
 
     if smooth
-        for idx in axes(s, 3)
-            s[:, :, idx] = @views imfilter(s[:, :, idx], Kernel.gaussian(n))
+        for idx in axes(sp, 3)
+            sp[:, :, idx] = @views imfilter(sp[:, :, idx], Kernel.gaussian(n))
         end
     end
 
     # set time markers
     if tm != 0
-        for tm_idx in eachindex(tm)
-            @assert tm[tm_idx] / 1000 >= t[1] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
-            @assert tm[tm_idx] / 1000 <= t[end] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
-            tm[tm_idx] = vsearch(tm[tm_idx] / 1000, t)
+        if length(tm) > 1
+            for tm_idx in eachindex(tm)
+                @assert tm[tm_idx] / 1000 >= st[1] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(st[1]):$(st[end]))."
+                @assert tm[tm_idx] / 1000 <= st[end] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(st[1]):$(st[end]))."
+                tm[tm_idx] = vsearch(tm[tm_idx] / 1000, st)
+            end
+        else
+            tm = vsearch(tm / 1000, st)
         end
     end
 
-    t = t .* 1000
-
-    if size(s, 3) == 1
+    if size(sp, 3) == 1
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of epochs")
-        p = Plots.heatmap(t,
-                          f,
-                          s[:, :, 1],
-                          title=tt,
+
+        # prepare plot
+        plot_size = (1200, 800)
+        p = GLMakie.Figure(size=plot_size)
+        ax = GLMakie.Axis(p[1, 1],
                           xlabel=xl,
                           ylabel=yl,
-                          ylims=frq_lim,
-                          xticks=_ticks(t),
+                          title=tt,
+                          xticks=NeuroAnalyzer._ticks(st),
                           yticks=yt,
-                          yscale=ysc,
-                          ytick_direction=:out,
-                          xtick_direction=:out,
-                          seriescolor=pal,
-                          cb=cb,
-                          colorbar_title=cb_title,
-                          size=(1200, 800),
-                          left_margin=20*Plots.px,
-                          bottom_margin=20*Plots.px,
-                          titlefontsize=8,
-                          xlabelfontsize=8,
-                          ylabelfontsize=8,
-                          xtickfontsize=6,
-                          ytickfontsize=6;
+                          xminorticksvisible=true,
+                          xminorticks=IntervalsBetween(10),
+                          yscale=frq===:lin ? identity : log10,
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0);
                           kwargs...)
+        GLMakie.ylims!(ax, frq_lim)
+        ax.titlesize = 20
+        ax.xlabelsize = 18
+        ax.ylabelsize = 18
+        ax.xticklabelsize = 12
+        ax.yticklabelsize = 12
+
+        hm = GLMakie.heatmap!(ax,
+                              st,
+                              sf,
+                              sp[:, :, 1]',
+                              colormap=pal)
+        if cb
+            Colorbar(p[1, 2],
+                     hm,
+                     label=cb_title,
+                     labelsize=18)
+        end
 
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                p = Plots.vline!([t[tm[tm_idx]]],
-                                 linewidth=1,
-                                 linecolor=:black,
-                                 label=false)
+                GLMakie.vlines!(p[1, 1],
+                                [st[tm[tm_idx]]],
+                                color=:black,
+                                linewidth=1)
             end
         end
     else
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "ERP spectrogram")
-        p1 = Plots.heatmap(t,
-                           f,
-                           s[:, :, 1],
-                           title=tt,
+
+        # prepare plot
+        plot_size = (1200, 800)
+        p = GLMakie.Figure(size=plot_size)
+        ax1 = GLMakie.Axis(p[1, 1],
                            xlabel=xl,
                            ylabel=yl,
-                           ylims=frq_lim,
-                           xticks=_ticks(t),
+                           title=tt,
+                           xticks=_ticks(st),
                            yticks=yt,
-                           ytick_direction=:out,
-                           xtick_direction=:out,
-                           yscale=ysc,
-                           seriescolor=pal,
-                           cb=cb,
-                           colorbar_title=cb_title,
-                           size=(1200, 800),
-                           left_margin=20*Plots.px,
-                           bottom_margin=20*Plots.px,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=6,
-                           ytickfontsize=6;
+                           xminorticksvisible=true,
+                           xminorticks=IntervalsBetween(10),
+                           yscale=frq===:lin ? identity : log10,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0);
                            kwargs...)
+        GLMakie.ylims!(ax1, frq_lim)
+        ax1.titlesize = 20
+        ax1.xlabelsize = 18
+        ax1.ylabelsize = 18
+        ax1.xticklabelsize = 12
+        ax1.yticklabelsize = 12
+
+        hm1 = GLMakie.heatmap!(ax1,
+                               st,
+                               sf,
+                               sp[:, :, 1]',
+                               colormap=pal)
+
+        if cb
+            Colorbar(p[1, 2],
+                     hm1,
+                     label=cb_title,
+                     labelsize=18)
+        end
+
         # plot 0 v-line
-        p1 = Plots.vline!([0],
-                          linestyle=:dash,
-                          linewidth=0.5,
-                          linecolor=:black,
-                          label=false)
+        GLMakie.vlines!(ax1,
+                         [0],
+                         linestyle=:dash,
+                         linewidth=0.5,
+                         color=:black)
 
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                p1 = Plots.vline!([t[tm[tm_idx]]],
-                                  linewidth=1,
-                                  linecolor=:black,
-                                  label=false)
+                GLMakie.vlines!(p[1, 1],
+                                [st[tm[tm_idx]]],
+                                color=:black,
+                                linewidth=1)
             end
         end
 
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs")
-        p2 = Plots.heatmap(t,
-                           f,
-                           s[:, :, 2],
-                           title=tt,
+        ax2 = GLMakie.Axis(p[2, 1],
                            xlabel=xl,
                            ylabel=yl,
-                           ylims=frq_lim,
-                           xticks=_ticks(t),
+                           title=tt,
+                           xticks=_ticks(st),
                            yticks=yt,
-                           ytick_direction=:out,
-                           xtick_direction=:out,
-                           yscale=ysc,
-                           seriescolor=pal,
-                           colorbar_title=cb_title,
-                           size=(1200, 800),
-                           cb=cb,
-                           left_margin=20*Plots.px,
-                           bottom_margin=20*Plots.px,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=6,
-                           ytickfontsize=6;
+                           xminorticksvisible=true,
+                           xminorticks=IntervalsBetween(10),
+                           yscale=frq===:lin ? identity : log10,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0);
                            kwargs...)
+        GLMakie.ylims!(ax2, frq_lim)
+        ax2.titlesize = 20
+        ax2.xlabelsize = 18
+        ax2.ylabelsize = 18
+        ax2.xticklabelsize = 12
+        ax2.yticklabelsize = 12
+
+        hm2 = GLMakie.heatmap!(ax2,
+                               st,
+                               sf,
+                               sp[:, :, 2]',
+                               colormap=pal)
+
+        if cb
+            Colorbar(p[2, 2],
+                     hm2,
+                     label=cb_title,
+                     labelsize=18)
+        end
+
         # plot 0 v-line
-        p2 = Plots.vline!([0],
-                          linestyle=:dash,
-                          linewidth=0.5,
-                          linecolor=:black,
-                          label=false)
+        GLMakie.vlines!(ax2,
+                        [0],
+                        linestyle=:dash,
+                        linewidth=0.5,
+                        color=:black)
 
         # draw time markers
         if tm != 0
             for tm_idx in eachindex(tm)
-                p2 = Plots.vline!([t[tm[tm_idx]]],
-                                  linewidth=1,
-                                  linecolor=:black,
-                                  label=false)
+                GLMakie.vlines!(p[2, 1],
+                                [st[tm[tm_idx]]],
+                                color=:black,
+                                linewidth=1)
             end
         end
-
-        p = Plots.plot(p1, p2, layout=(2, 1))
 
     end
 
@@ -967,149 +980,138 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `ylabel::String="default"`
 - `title::String="default"`
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-    - `:linlog`: linear-log10
-    - `:loglog`: log10-log10
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `units::String="μV"`
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_erop(p::AbstractArray, f::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(f[1], f[end]), ax::Symbol=:linlin, units::String="μV", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), frq::Symbol=:lin, units::String="μV", mono::Bool=false, kwargs...)::GLMakie.Figure
 
-    _in(frq_lim[1], (f[1], f[end]), "frq_lim")
-    _in(frq_lim[2], (f[1], f[end]), "frq_lim")
-    @assert size(p, 1) == length(f) "Length of f ($(length(f))) and number of powers rows ($(size(p, 1)))) must be equal."
-    @assert ndims(p) == 2 "p must have 2 dimensions."
-    @assert size(p, 2) <= 2 "p must contain ≤ 2 epochs."
+    _in(frq_lim[1], (sf[1], sf[end]), "frq_lim")
+    _in(frq_lim[2], (sf[1], sf[end]), "frq_lim")
+    @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of powers rows ($(size(sp, 1)))) must be equal."
+    @assert ndims(sp) == 2 "sp must have 2 dimensions."
+    @assert size(sp, 2) <= 2 "sp must contain ≤ 2 epochs."
 
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
-    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
     pal = mono ? :grays : :darktest
 
-    if ax === :linlin
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
-        if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+    if frq === :lin
+        if frq_lim[2] > 100
+            xt = frq_lim[1]:10:frq_lim[2]
         else
-            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            xt = frq_lim[1]:5:frq_lim[2]
         end
-        xsc = :log10
-        ysc = :identity
-    elseif ax === :linlog
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = !db ? :log10 : :identity
-    elseif ax === :loglog
+    else
         if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
-        else
-            xt = (round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3), string.(round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=3)))
+            _warn("Lower frequency bound truncated to $(sf[2]) Hz")
+            frq_lim = (sf[2], frq_lim[2])
         end
-        xsc = :log10
-        ysc = !db ? :log10 : :identity
+        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
     end
 
-    if size(p, 2) == 1
+    if size(sp, 2) == 1
         if db
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB/Hz]", "Averaged power-spectra of epochs")
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB $units^2/Hz]", "Averaged power-spectra of epochs")
         else
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [$units^2/Hz]", "Averaged power-spectra of epochs")
         end
-        p = Plots.plot(f,
-                       p[:, 1],
-                       title=tt,
-                       xlabel=xl,
-                       ylabel=yl,
-                       xlims=frq_lim,
-                       xticks=xt,
-                       ytick_direction=:out,
-                       xtick_direction=:out,
-                       xscale=xsc,
-                       yscale=ysc,
-                       seriescolor=pal,
-                       size=(1200, 800),
-                       margins=20Plots.px,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6,
-                       label=false;
-                       kwargs...)
+
+        # prepare plot
+        plot_size = (1200, 600)
+        p = GLMakie.Figure(size=plot_size)
+        ax = GLMakie.Axis(p[1, 1],
+                          xlabel=xl,
+                          ylabel=yl,
+                          title=tt,
+                          xticks=xt,
+                          xminorticksvisible=true,
+                          xminorticks=IntervalsBetween(10),
+                          xscale=frq===:lin ? identity : log10,
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0);
+                          kwargs...)
+        GLMakie.xlims!(ax, frq_lim)
+        ax.titlesize = 20
+        ax.xlabelsize = 18
+        ax.ylabelsize = 18
+        ax.xticklabelsize = 12
+        ax.yticklabelsize = 12
+
+        # plot powers
+        Makie.lines!(sf,
+                     sp[:, 1],
+                     color=:black)
+
     else
         if db
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB/Hz]", "ERP power-spectrum")
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB $units^2/Hz]", "ERP power-spectrum")
         else
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [$units^2/Hz]", "ERP power-spectrum")
         end
-        p1 = Plots.plot(f,
-                        p[:, 1],
-                        title=tt,
-                        xlabel=xl,
-                        ylabel=yl,
-                        xlims=frq_lim,
-                        xticks=xt,
-                        ytick_direction=:out,
-                        xtick_direction=:out,
-                        xscale=xsc,
-                        yscale=ysc,
-                        seriescolor=pal,
-                        size=(1200, 800),
-                        margins=20Plots.px,
-                        titlefontsize=8,
-                        xlabelfontsize=8,
-                        ylabelfontsize=8,
-                        xtickfontsize=6,
-                        ytickfontsize=6,
-                        label=false;
-                        kwargs...)
+
+        # prepare plot
+        plot_size = (1200, 600)
+        p = GLMakie.Figure(size=plot_size)
+        ax1 = GLMakie.Axis(p[1, 1],
+                           xlabel=xl,
+                           ylabel=yl,
+                           title=tt,
+                           xticks=xt,
+                           xminorticksvisible=true,
+                           xminorticks=IntervalsBetween(10),
+                           xscale=frq===:lin ? identity : log10,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0);
+                           kwargs...)
+        GLMakie.xlims!(ax1, frq_lim)
+        ax1.titlesize = 20
+        ax1.xlabelsize = 18
+        ax1.ylabelsize = 18
+        ax1.xticklabelsize = 12
+        ax1.yticklabelsize = 12
+
+        # plot powers
+        Makie.lines!(ax1,
+                     sf,
+                     sp[:, 1],
+                     color=:black)
 
         if db
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB/Hz]", "Averaged power-spectra of epochs")
+            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [dB $units^2/Hz]", "Averaged power-spectra of epochs")
         else
             xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Frequency [Hz]", "Power [$units^2/Hz]", "Averaged power-spectra of epochs")
         end
-        p2 = Plots.plot(f,
-                        p[:, 2],
-                        title=tt,
-                        xlabel=xl,
-                        ylabel=yl,
-                        xlims=frq_lim,
-                        xticks=xt,
-                        ytick_direction=:out,
-                        xtick_direction=:out,
-                        xscale=xsc,
-                        yscale=ysc,
-                        seriescolor=pal,
-                        size=(1200, 800),
-                        left_margin=20*Plots.px,
-                        bottom_margin=20*Plots.px,
-                        titlefontsize=8,
-                        xlabelfontsize=8,
-                        ylabelfontsize=8,
-                        xtickfontsize=6,
-                        ytickfontsize=6,
-                        label=false;
-                        kwargs...)
 
-        p = Plots.plot(p1, p2, layout=(2, 1))
+        ax2 = GLMakie.Axis(p[2, 1],
+                           xlabel=xl,
+                           ylabel=yl,
+                           title=tt,
+                           xticks=xt,
+                           xminorticksvisible=true,
+                           xminorticks=IntervalsBetween(10),
+                           xscale=frq===:lin ? identity : log10,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0);
+                           kwargs...)
+        GLMakie.xlims!(ax2, frq_lim)
+        ax2.titlesize = 20
+        ax2.xlabelsize = 18
+        ax2.ylabelsize = 18
+        ax2.xticklabelsize = 12
+        ax2.yticklabelsize = 12
 
+        # plot powers
+        Makie.lines!(ax2,
+                     sf,
+                     sp[:, 2],
+                     color=:black)
     end
 
     return p
