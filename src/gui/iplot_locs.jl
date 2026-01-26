@@ -85,10 +85,8 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
         z_lim = (-0.5, 1.0)
     end
 
-    marker_size = 10
+    marker_size = length(ch) > 64 ? 8 : 16
     font_size = 15
-
-    ch = setdiff(ch, selected)
 
     p = Figure(size=(850, 900))
 
@@ -120,13 +118,15 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
 #        ax.azimuth[] = val
 #    end
 
-    cmap = GLMakie.resample_cmap(pal, ch_n)
-
     if mesh_type !== :disabled
         GLMakie.mesh!(msh,
                       alpha=mesh_alpha,
                       color=:gray)
     end
+
+    ch_n = length(ch)
+    cmap = GLMakie.resample_cmap(pal, ch_n)
+    ch = setdiff(ch, selected)
 
     for idx in 1:ch_n
         if idx in selected
@@ -134,37 +134,44 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                 GLMakie.scatter!(loc_x[idx],
                                  loc_y[idx],
                                  loc_z[idx],
+                                 markersize=marker_size,
                                  color=:gray,
-                                 markersize=marker_size)
+                                 strokewidth=1,
+                                 strokecolor=:black)
+
             else
                 GLMakie.scatter!(loc_x[idx],
                                  loc_y[idx],
                                  loc_z[idx],
+                                 markersize=marker_size,
                                  color=cmap[idx],
                                  colormap=pal,
                                  colorrange=1:ch_n,
-                                 markersize=marker_size)
+                                 strokewidth=1,
+                                 strokecolor=:black)
             end
         else
             GLMakie.scatter!(loc_x[idx],
                              loc_y[idx],
                              loc_z[idx],
+                             markersize=marker_size,
                              color=:gray,
-                             markersize=marker_size)
+                             strokewidth=1,
+                             strokecolor=:black)
         end
     end
 
     if ch_labels
-        GLMakie.text!(loc_x[ch] * 1.1,
-                      loc_y[ch] * 1.1,
-                      loc_z[ch] * 1.1,
+        GLMakie.text!(loc_x[ch] * 1.15,
+                      loc_y[ch] * 1.15,
+                      loc_z[ch] * 1.15,
                       text=locs[ch, :label],
                       fontsize=font_size,
                       align=(:center, :center))
         if selected != 0
-            GLMakie.text!(loc_x[selected] * 1.1,
-                          loc_y[selected] * 1.1,
-                          loc_z[selected] * 1.1,
+            GLMakie.text!(loc_x[selected] * 1.15,
+                          loc_y[selected] * 1.15,
+                          loc_z[selected] * 1.15,
                           text=locs[selected, :label],
                           fontsize=font_size,
                           align=(:center, :center))

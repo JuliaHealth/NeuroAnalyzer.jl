@@ -193,6 +193,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                                        scale=scale,
                                        bad=bad)
             end
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end
@@ -872,6 +873,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                                        scale=scale,
                                        bad=bad)
             end
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end
@@ -1312,6 +1314,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
                                    seg=(time1, time2),
                                    title="",
                                    scale=scale)
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end
@@ -1655,6 +1658,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
                                    ep=ep,
                                    title="",
                                    scale=scale)
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end
@@ -1918,6 +1922,7 @@ function iview(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; zoom::
                                    mono=mono,
                                    scale=scale,
                                    title="")
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end
@@ -2278,6 +2283,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep:
                                    mono=mono,
                                    scale=scale,
                                    title="")
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end
@@ -2457,6 +2463,7 @@ function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
         Gtk4.show(win)
 
         @guarded draw(can) do widget
+            io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
             end

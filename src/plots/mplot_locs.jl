@@ -920,7 +920,7 @@ end
 
 - `f::GLMakie.Figure`
 """
-function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95)::GLMakie.Figure
+function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95)::GLMakie.Figure
 
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
@@ -970,10 +970,8 @@ function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
     end
 
     plot_size = 850
-    marker_size = 10
-    font_size = 10
-
-    ch = setdiff(ch, selected)
+    marker_size = length(ch) > 64 ? 8 : 16
+    font_size = 14
 
     p = Figure(size=(plot_size, plot_size))
 
@@ -990,46 +988,60 @@ function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
           elevation=deg2rad(cam[1]),
           azimuth=deg2rad(cam[2]))
 
-    GLMakie.scatter!(loc_x[ch],
-                     loc_y[ch],
-                     loc_z[ch],
-                     color=:gray,
-                     markersize=marker_size)
-
     if mesh_type !== :disabled
         GLMakie.mesh!(msh,
                       alpha=mesh_alpha,
                       color=:gray)
     end
 
-    if selected != 0
-        if mono
-            GLMakie.scatter!(loc_x[selected],
-                             loc_y[selected],
-                             loc_z[selected],
-                             color=:gray,
-                             markersize=marker_size)
+    ch_n = length(ch)
+    cmap = GLMakie.resample_cmap(pal, ch_n)
+    ch = setdiff(ch, selected)
+
+    for idx in 1:ch_n
+        if idx in selected
+            if mono
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 loc_z[idx],
+                                 markersize=marker_size,
+                                 color=:gray,
+                                 strokewidth=1,
+                                 strokecolor=:black)
+
+            else
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 loc_z[idx],
+                                 markersize=marker_size,
+                                 color=cmap[idx],
+                                 colormap=pal,
+                                 colorrange=1:ch_n,
+                                 strokewidth=1,
+                                 strokecolor=:black)
+            end
         else
-            GLMakie.scatter!(loc_x[selected],
-                             loc_y[selected],
-                             loc_z[selected],
-                             colormap=pal,
-                             color=selected,
-                             markersize=marker_size)
+            GLMakie.scatter!(loc_x[idx],
+                             loc_y[idx],
+                             loc_z[idx],
+                             markersize=marker_size,
+                             color=:gray,
+                             strokewidth=1,
+                             strokecolor=:black)
         end
     end
 
     if ch_labels
-        GLMakie.text!(loc_x[ch] * 1.1,
-                      loc_y[ch] * 1.1,
-                      loc_z[ch] * 1.1,
+        GLMakie.text!(loc_x[ch] * 1.15,
+                      loc_y[ch] * 1.15,
+                      loc_z[ch] * 1.15,
                       text=locs[ch, :label],
                       fontsize=font_size,
                       align=(:center, :center))
         if selected != 0
-            GLMakie.text!(loc_x[selected] * 1.1,
-                          loc_y[selected] * 1.1,
-                          loc_z[selected] * 1.1,
+            GLMakie.text!(loc_x[selected] * 1.15,
+                          loc_y[selected] * 1.15,
+                          loc_z[selected] * 1.15,
                           text=locs[selected, :label],
                           fontsize=font_size,
                           align=(:center, :center))
