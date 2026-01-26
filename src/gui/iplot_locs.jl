@@ -120,7 +120,7 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
 #        ax.azimuth[] = val
 #    end
 
-    cmap = GLMakie.resample_cmap(pal, length(ch) + length(selected))
+    cmap = GLMakie.resample_cmap(pal, ch_n)
 
     if mesh_type !== :disabled
         GLMakie.mesh!(msh,

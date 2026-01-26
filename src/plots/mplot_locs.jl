@@ -86,63 +86,68 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
-    loc_y .= -loc_y
+    # loc_y .= -loc_y
 
     head12 = false
     maximum(abs.(locs[:, :loc_x])) <= 1.2 && maximum(abs.(locs[:, :loc_y])) <= 1.2 && maximum(abs.(locs[:, :loc_z])) <= 1.5 && (head12 = true)
 
     if head12
-        xt = round.(linspace(0, size(head_shape, 1), 25))
-        yt = round.(linspace(0, size(head_shape, 2), 25))
-        xl = (0, size(head_shape, 1))
-        yl = (0, size(head_shape, 2))
-        origin = size(head_shape) .÷ 2
+        xl = (-1.2, 1.2)
+        yl = (-1.2, 1.2)
+#        xt = round.(linspace(0, size(head_shape, 1), 25))
+#        yt = round.(linspace(0, size(head_shape, 2), 25))
+#        xl = (0, size(head_shape, 1))
+#        yl = (0, size(head_shape, 2))
+#        origin = size(head_shape) .÷ 2
         if large
             marker_size = length(ch) > 64 ? 10 : 20
-            font_size = 12
-            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+            font_size = 14
+#            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+#            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
             length(ch) > 64 && (ch_labels = false)
         else
             marker_size = length(ch) > 64 ? 5 : 10
-            font_size = 6
+            font_size = 8
             ch_labels = false
             sch_labels = false
             grid = false
-            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+#            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+#            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
         end
     else
-        m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
-        m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
-        head_shape = m
-        xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
-        yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
-        xl = (0, size(head_shape, 1))
-        yl = (0, size(head_shape, 2))
-        origin = size(head_shape) ./ 2 .+ 1
+        xl = (-1.6, 1.6)
+        yl = (-1.6, 1.6)
+
+#        m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
+#        m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
+#        head_shape = m
+#        xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
+#        yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
+#        xl = (0, size(head_shape, 1))
+#        yl = (0, size(head_shape, 2))
+#        origin = size(head_shape) ./ 2 .+ 1
         if large
-            marker_size = length(ch) > 64 ? 20 : 10
-            font_size = 12
-            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
+            marker_size = length(ch) > 64 ? 10 : 20
+            font_size = 14
+#            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
+#            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
             length(ch) > 64 && (ch_labels = false)
         else
             marker_size = length(ch) > 64 ? 10 : 5
-            font_size = 6
+            font_size = 8
             ch_labels = false
             sch_labels = false
             grid = false
-            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+#            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
+#            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
         end
     end
 
-    ma = ch_labels ? 0.5 : 1.0
-
     # prepare plot
-    plot_size = size(head_shape)
-    p = GLMakie.Figure(size=plot_size)
+    plot_size = (size(head_shape))
+    plot_size = large ? (800, 800) : (300, 300)
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=0)
     if grid
         ax = GLMakie.Axis(p[1, 1],
                           aspect=1,
@@ -174,7 +179,47 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
 
-    head && GLMakie.image!(head_shape)
+#     head && GLMakie.image!(head_shape)
+    if head
+        if plane === :xy
+            # nose
+            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=3, color=:black)
+
+            # ears
+            # left
+            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=3, color=:black)
+            # right
+            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=3, color=:black)
+
+            # head
+            GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=3, color=:black)
+        elseif plane === :yz
+            # head
+            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=3, color=:black)
+        elseif plane === :xz
+            # head
+            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=3, color=:black)
+        end
+    end
 
     # draw connections
     if connections != [0 0; 0 0]
@@ -229,19 +274,19 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                     GLMakie.text!(l_pos[1],
                                                   l_pos[2],
                                                   text=string(connections[idx1, idx2]),
-                                                  fontsize=font_size+2)
+                                                  fontsize=font_size)
                                 else
                                     if connections[idx1, idx2] >= 0
                                         GLMakie.text!(l_pos[1],
                                                       l_pos[2],
                                                       text=string(connections[idx1, idx2]),
-                                                      fontsize=font_size+2,
+                                                      fontsize=font_size,
                                                       color=:red)
                                     else
                                         GLMakie.text!(l_pos[1],
                                                       l_pos[2],
                                                       text=string(connections[idx1, idx2]),
-                                                      fontsize=font_size+2,
+                                                      fontsize=font_size,
                                                       color=:blue)
                                     end
                                 end
@@ -289,17 +334,17 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                 if mono
                                     GLMakie.text!(l_pos[1], l_pos[2],
                                                              text=string(connections[idx1, idx2]),
-                                                             fontsize=font_size+2)
+                                                             fontsize=font_size)
                                 else
                                     if connections[idx1, idx2] >= 0
                                         GLMakie.text!(l_pos[1], l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:red)
                                     else
                                         GLMakie.text!(l_pos[1], l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:blue)
                                     end
                                 end
@@ -348,19 +393,19 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                     GLMakie.text!(l_pos[1],
                                                              l_pos[2],
                                                              text=string(connections[idx1, idx2]),
-                                                             fontsize=font_size+2)
+                                                             fontsize=font_size)
                                 else
                                     if connections[idx1, idx2] >= 0
                                         GLMakie.text!(l_pos[1],
                                                                  l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:red)
                                     else
                                         GLMakie.text!(l_pos[1],
                                                                  l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:blue)
                                     end
                                 end
@@ -409,19 +454,19 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                     GLMakie.text!(l_pos[1],
                                                              l_pos[2],
                                                              text=string(connections[idx1, idx2]),
-                                                             fontsize=font_size+2)
+                                                             fontsize=font_size)
                                 else
                                     if connections[idx1, idx2] >= 0
                                         GLMakie.text!(l_pos[1],
                                                                  l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:red)
                                     else
                                         GLMakie.text!(l_pos[1],
                                                                  l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:blue)
                                     end
                                 end
@@ -469,19 +514,19 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                     GLMakie.text!(l_pos[1],
                                                              l_pos[2],
                                                              text=string(connections[idx1, idx2]),
-                                                             fontsize=font_size+2)
+                                                             fontsize=font_size)
                                 else
                                     if connections[idx1, idx2] >= 0
                                         GLMakie.text!(l_pos[1],
                                                                  l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:red)
                                     else
                                         GLMakie.text!(l_pos[1],
                                                                  l_pos[2],
                                                                  text=string(connections[idx1, idx2]),
-                                                                 fontsize=font_size+2,
+                                                                 fontsize=font_size,
                                                                  color=:blue)
                                     end
                                 end
@@ -530,19 +575,19 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                     GLMakie.text!(l_pos[1],
                                                   l_pos[2],
                                                   text=string(connections[idx1, idx2]),
-                                                  fontsize=font_size+2)
+                                                  fontsize=font_size)
                                 else
                                     if connections[idx1, idx2] >= 0
                                         GLMakie.text!(l_pos[1],
                                                       l_pos[2],
                                                       text=string(connections[idx1, idx2]),
-                                                      fontsize=font_size+2,
+                                                      fontsize=font_size,
                                                       color=:red)
                                     else
                                         GLMakie.text!(l_pos[1],
                                                       l_pos[2],
                                                       text=string(connections[idx1, idx2]),
-                                                      fontsize=font_size+2,
+                                                      fontsize=font_size,
                                                       color=:blue)
                                     end
                                 end
@@ -554,39 +599,42 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         end
     end
 
-    cmap = GLMakie.resample_cmap(pal, length(ch))
+    ch_n = length(ch)
+    cmap = GLMakie.resample_cmap(pal, ch_n)
     ch = setdiff(ch, selected)
 
-    for idx in eachindex(locs[!, :label])
-        if idx in ch
-            GLMakie.scatter!((loc_x[idx], loc_y[idx]),
-                             color=:darkgrey,
-                             markersize=marker_size,
-                             alpha=ma)
-        end
-    end
-
-    for idx in eachindex(locs[!, :label])
+    for idx in 1:ch_n
         if idx in selected
-            if mono != true
-                GLMakie.scatter!((loc_x[idx], loc_y[idx]),
+            if mono
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 markersize=marker_size,
+                                 color=:gray,
+                                 strokewidth=large ? 2 : 1,
+                                 strokecolor=:black)
+
+            else
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 markersize=marker_size,
                                  color=cmap[idx],
                                  colormap=pal,
-                                 colorrange=length(selected),
-                                 markersize=marker_size,
-                                 alpha=ma)
-            else
-                GLMakie.scatter!((loc_x[idx], loc_y[idx]),
-                                 color=:lightgrey,
-                                 colormap=pal,
-                                 colorrange=length(selected),
-                                 markersize=marker_size)
+                                 colorrange=1:ch_n,
+                                 strokewidth=large ? 2 : 1,
+                                 strokecolor=:black)
             end
+        else
+            GLMakie.scatter!(loc_x[idx],
+                             loc_y[idx],
+                             markersize=marker_size,
+                             color=:gray,
+                             strokewidth=large ? 2 : 1,
+                             strokecolor=:black)
         end
     end
 
-    label_offset_x = 10
-    label_offset_y = -10
+    label_offset_x = 0.0
+    label_offset_y = -0.08
 
     if ch_labels
         for idx in eachindex(locs[!, :label])
@@ -594,6 +642,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                 GLMakie.text!(loc_x[idx] + label_offset_x,
                               loc_y[idx] + label_offset_y,
                               text=locs[!, :label][idx],
+                              align=(:center, :bottom),
                               fontsize=font_size)
             end
         end
@@ -604,6 +653,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                 GLMakie.text!(loc_x[idx] + label_offset_x,
                               loc_y[idx] + label_offset_y,
                               text=locs[!, :label][idx],
+                              align=(:center, :bottom),
                               fontsize=font_size)
             end
         end
@@ -622,30 +672,25 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                 fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
                 fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
             end
-            if large
-                fid_loc_x = @. origin[1] + (fid_loc_x * 260)
-                fid_loc_y = @. origin[2] + (fid_loc_y * 260)
-            else
-                fid_loc_x = @. origin[1] + (fid_loc_x * 100)
-                fid_loc_y = @. origin[2] + (fid_loc_y * 100)
-            end
+#            if large
+#                fid_loc_x = @. origin[1] + (fid_loc_x * 260)
+#                fid_loc_y = @. origin[2] + (fid_loc_y * 260)
+#            else
+#                fid_loc_x = @. origin[1] + (fid_loc_x * 100)
+#                fid_loc_y = @. origin[2] + (fid_loc_y * 100)
+#            end
             GLMakie.text!(fid_loc_x,
                           fid_loc_y,
                           text=fid_names[idx],
-                          fontsize=font_size + 2,
+                          fontsize=font_size,
                           align = (:center, :center))
         end
     end
 
     # draw weights
     if typeof(weights) <: Vector
-        if ch_labels
-            label_offset_x = -10
-            label_offset_y = 10
-        else
-            label_offset_x = 10
-            label_offset_y = -10
-        end
+        label_offset_x = 0.0
+        label_offset_y = 0.07
         @assert length(weights) <= length(ch) "Number of weights must be ≤ number of channels to plot ($(length(ch)))."
         @assert length(weights) >= 1 "weights must contain at least one value."
         for idx in eachindex(locs[ch, :label])
@@ -654,20 +699,23 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                     GLMakie.text!(loc_x[idx] + label_offset_x,
                                   loc_y[idx] + label_offset_y,
                                   text=string(weights[idx]),
-                                  fontsize=font_size)
+                                  fontsize=font_size,
+                                  align=(:center, :top))
                 else
                     if weights[idx] >= 0
                         GLMakie.text!(loc_x[idx] + label_offset_x,
                                       loc_y[idx] + label_offset_y,
                                       text=string(weights[idx]),
                                       fontsize=font_size,
-                                      color=:red)
+                                      color=:red,
+                                      align=(:center, :top))
                     else
                         GLMakie.text!(loc_x[idx] + label_offset_x,
                                       loc_y[idx] + label_offset_y,
                                       text=string(weights[idx]),
                                       fontsize=font_size,
-                                      color=:blue)
+                                      color=:blue,
+                                      align=(:center, :top))
                     end
                 end
             end
@@ -792,7 +840,8 @@ function mplot_gridlocs(; mono::Bool=false)::GLMakie.Figure
     pal = mono ? :grays : :darktest
 
     plot_size=(800, 800)
-    p = GLMakie.Figure(size=plot_size)
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],
                       aspect=1,
                       xlabel="",

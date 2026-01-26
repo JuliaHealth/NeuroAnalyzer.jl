@@ -279,20 +279,25 @@ Plots spectrogram.
     - `:l`: draw region is values are < to threshold
 - `topo::Bool=false`: plot topographical map of spectrograms
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, kwargs...)::GLMakie.Figure where {T <: CWT}
+function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert seg[1] != seg[2] "Signal is too short for analysis."
     @assert n > 0 "n must be ≥ 1."
 
     ch = get_channel(obj, ch=ch)
-
+    if method === :cwt
+        if !topo
+            @assert length(ch) == 1 "For :cwt method only one channel must be selected."
+        end
+    end
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
@@ -375,45 +380,25 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
 
         st .+= t[1]
 
-        if method === :cwt
-            p = mplot_spectrogram(st,
-                                  sf,
-                                  sp,
-                                  db=db,
-                                  frq=frq,
-                                  frq_lim=frq_lim,
-                                  xlabel=xlabel,
-                                  ylabel=ylabel,
-                                  title=title,
-                                  mono=mono,
-                                  units=units,
-                                  smooth=smooth,
-                                  n=n,
-                                  cb=cb,
-                                  cb_title="Magnitude",
-                                  threshold=threshold,
-                                  threshold_type=threshold_type;
-                                  kwargs...)
-        else
-            db && (sp = pow2db.(sp))
-            p = mplot_spectrogram(st,
-                                  sf,
-                                  sp,
-                                  db=db,
-                                  frq=frq,
-                                  frq_lim=frq_lim,
-                                  xlabel=xlabel,
-                                  ylabel=ylabel,
-                                  title=title,
-                                  mono=mono,
-                                  units=units,
-                                  smooth=smooth,
-                                  n=n,
-                                  cb=cb,
-                                  threshold=threshold,
-                                  threshold_type=threshold_type;
-                                  kwargs...)
-        end
+        method !== :cwt && db && (sp = pow2db.(sp))
+        p = mplot_spectrogram(st,
+                              sf,
+                              sp,
+                              db=db,
+                              frq=frq,
+                              frq_lim=frq_lim,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              mono=mono,
+                              units=units,
+                              smooth=smooth,
+                              n=n,
+                              cb=cb,
+                              cb_title=method === :cwt ? "Magnitude" : "",
+                              threshold=threshold,
+                              threshold_type=threshold_type;
+                              kwargs...)
 
         # plot markers if available
         # TODO: draw markers length
@@ -534,34 +519,20 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
             sp = sp[f1:f2, :, :]
 
             st .+= t[1]
-            if method === :cwt
-                p = mplot_spectrogram_topo(locs,
-                                           st,
-                                           sf,
-                                           sp,
-                                           frq=frq,
-                                           frq_lim=frq_lim,
-                                           title=title,
-                                           mono=mono,
-                                           cart=cart,
-                                           smooth=smooth,
-                                           n=n,
-                                           kwargs...)
-            else
-                db && (sp = pow2db.(sp))
-                p = mplot_spectrogram_topo(locs,
-                                           st,
-                                           sf,
-                                           sp,
-                                           frq=frq,
-                                           frq_lim=frq_lim,
-                                           title=title,
-                                           mono=mono,
-                                           cart=cart,
-                                           smooth=smooth,
-                                           n=n,
-                                           kwargs...)
-            end
+            method !== :cwt && db && (sp = pow2db.(sp))
+            p = mplot_spectrogram_topo(locs,
+                                       st,
+                                       sf,
+                                       sp,
+                                       frq=frq,
+                                       frq_lim=frq_lim,
+                                       title=title,
+                                       mono=mono,
+                                       cart=cart,
+                                       smooth=smooth,
+                                       n=n,
+                                       head=head;
+                                       kwargs...)
         end
     end
 
@@ -845,15 +816,16 @@ Plot topographical map of spectrograms.
 - `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
 
-    @assert size(sp, 3) == nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(nrow(locs))) do not match."
+    @assert size(sp, 3) == DataFrames.nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
     @assert n > 0 "n must be ≥ 1."
@@ -872,8 +844,8 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
     if size(sp, 3) <= 64
         mplot_size = 1000
         marker_size = (120, 100)
-        xl = 1.1
-        yl = 1.1
+        xl = 1.2
+        yl = 1.2
     elseif _in(size(sp, 3), (64, 100))
         mplot_size = 1200
         marker_size = (120, 100)
@@ -902,10 +874,11 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
         sp = imfilter(sp, Kernel.gaussian(n))
     end
 
-    # prepare PSD plots
+    # prepare spectrogram plots
     pp_vec = GLMakie.Figure[]
     for idx in axes(sp, 3)
-        pp = GLMakie.Figure(size=marker_size)
+        pp = GLMakie.Figure(size=marker_size,
+                            figure_padding=0)
         ax = GLMakie.Axis(pp[1, 1],
                           xlabel="",
                           ylabel="",
@@ -925,12 +898,13 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
 
     # prepare plot
     plot_size = (mplot_size, mplot_size)
-    p = GLMakie.Figure(size=plot_size)
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel="",
                       ylabel="",
                       title=title,
-                      aspect = AxisAspect(1),
+                      aspect=1,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -939,6 +913,40 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
     hidespines!(ax)
     hidedecorations!(ax)
     ax.titlesize = 20
+
+    if head
+        # nose
+        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=3, color=:black)
+
+        # ears
+        # left
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=3, color=:black)
+        # right
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=3, color=:black)
+
+        # head
+        GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=3, color=:black)
+    end
+
     for idx in axes(sp, 3)
         fname = tempname()*".png"
         GLMakie.save(fname, pp_vec[idx])

@@ -476,13 +476,14 @@ Plot topographical map of PSDs.
 - `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -497,8 +498,8 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
     if size(sp, 1) <= 64
         mplot_size = 1000
         marker_size = (120, 80)
-        xl = 1.1
-        yl = 1.1
+        xl = 1.2
+        yl = 1.2
     elseif _in(size(sp, 1), (64, 100))
         mplot_size = 1200
         marker_size = (120, 80)
@@ -526,7 +527,8 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
     # prepare PSD plots
     pp_vec = GLMakie.Figure[]
     for idx in axes(sp, 1)
-        pp = GLMakie.Figure(size=marker_size)
+        pp = GLMakie.Figure(size=marker_size,
+                            figure_padding=0)
         ax = GLMakie.Axis(pp[1, 1],
                           xlabel="",
                           ylabel="",
@@ -535,7 +537,6 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0);
                           kwargs...)
-        #hidespines!(ax)
         hidedecorations!(ax)
         GLMakie.xlims!(ax, frq_lim)
         ax.titlesize = 8
@@ -549,7 +550,8 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
 
     # prepare plot
     plot_size = (mplot_size, mplot_size)
-    p = GLMakie.Figure(size=plot_size)
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel="",
                       ylabel="",
@@ -563,6 +565,40 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
     hidespines!(ax)
     hidedecorations!(ax)
     ax.titlesize = 20
+
+    if head
+        # nose
+        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=3, color=:black)
+
+        # ears
+        # left
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=3, color=:black)
+        # right
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=3, color=:black)
+
+        # head
+        GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=3, color=:black)
+    end
+
     for idx in axes(sp, 1)
         fname = tempname()*".png"
         GLMakie.save(fname, pp_vec[idx])
@@ -620,13 +656,14 @@ Plot power spectrum density.
     - `:s3d`: 3-d surface
     - `:topo`: topographical
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -877,7 +914,8 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           title=title,
                           frq_lim=frq_lim,
                           frq=frq,
-                          cart=cart;
+                          cart=cart,
+                          head=head;
                           kwargs...)
     end
 
@@ -927,13 +965,14 @@ Plot power spectrum density of embedded or external component.
     - `:s3d`: 3-d surface
     - `:topo`: topographical
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
+- `head::Bool=true`: plot head shape
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -1153,7 +1192,8 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                           title=title,
                           frq_lim=frq_lim,
                           frq=frq,
-                          cart=cart;
+                          cart=cart,
+                          head=head;
                           kwargs...)
     end
 

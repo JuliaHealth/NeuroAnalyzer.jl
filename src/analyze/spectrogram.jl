@@ -63,7 +63,6 @@ function spectrogram(s::AbstractVector; fs::Int64, db::Bool=true, method::Symbol
 
 end
 
-
 """
     spectrogram(s; <keyword arguments>)
 
@@ -268,6 +267,44 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     t = linspace(t[1], t[end - 1], size(p, 2))
 
     return (cs=cs, p=p, ph=ph, f=f, t=t)
+
+end
+
+"""
+    mwspectrogram(s; <keyword arguments>)
+
+Calculate spectrogram using wavelet convolution.
+
+# Arguments
+
+- `s::AbstractMatrix`
+- `pad::Int64`: pad with `pad` zeros
+- `db::Bool=true`: normalize powers to dB
+- `fs::Int64`: sampling rate
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
+- `w::Bool=true`: if true, apply Hanning window
+
+# Returns
+
+Named tuple containing:
+- `cs::Array{ComplexF64, 3}`: convoluted signal
+- `p::Array{Float64, 3}`: powers
+- `ph::Array{Float64, 3}`: phases
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
+"""
+function mwspectrogram(s::AbstractMatrix; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, w::Bool=true)::@NamedTuple{cs::Array{ComplexF64, 3}, p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
+
+    _, _, _, f_tmp, t_tmp = mwspectrogram(s[1, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+
+    cs = zeros(ComplexF64, length(f_tmp), length(t_tmp), size(s, 1))
+    p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    Threads.@threads for ch_idx in axes(s, 1)
+        cs[:, :, ch_idx], p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views mwspectrogram(s[ch_idx, :], pad=pad, db=db, fs=fs, ncyc=ncyc, w=w)
+    end
+
+    return (cs=cs, p=p, ph=ph, f=f_tmp, t=t_tmp)
 
 end
 

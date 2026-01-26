@@ -161,6 +161,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     else
         cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
     end
+
     for idx in 1:ch_n
         if !bad[idx]
             if mono
