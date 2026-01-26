@@ -298,6 +298,10 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
             @assert length(ch) == 1 "For :cwt method only one channel must be selected."
         end
     end
+    if topo
+        @assert method !== :hht "For :hht method topographical map is not available."
+    end
+
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else

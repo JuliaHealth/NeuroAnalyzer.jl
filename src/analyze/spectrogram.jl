@@ -90,7 +90,7 @@ Named tuple containing:
 """
 function spectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
 
-    p_tmp, f_tmp, t_tmp = spectrogram(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    _, f_tmp, t_tmp = spectrogram(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
     p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
@@ -361,6 +361,41 @@ function ghtspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10
 end
 
 """
+    ghtspectrogram(s; <keyword arguments>)
+
+Calculate spectrogram using Gaussian and Hilbert transform.
+
+# Arguments
+
+- `s::AbstractArray`
+- `fs::Int64`: sampling rate
+- `db::Bool=true`: normalize powers to dB
+- `gw::Real=10`: Gaussian width in Hz
+- `w::Bool=true`: if true, apply Hanning window
+
+# Returns
+
+Named tuple containing:
+- `p::Array{Float64, 3}`: powers
+- `ph::Array{Float64, 3}`: phases
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
+"""
+function ghtspectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true, gw::Real=10, w::Bool=true)::@NamedTuple{p::Array{Float64, 3}, ph::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
+
+    _, _, f_tmp, t_tmp = ghtspectrogram(s[1, :], fs=fs, db=db, gw=gw, w=w)
+
+    p = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    ph = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    Threads.@threads for ch_idx in axes(s, 1)
+        p[:, :, ch_idx], ph[:, :, ch_idx], _, _ = @views ghtspectrogram(s[ch_idx, :], fs=fs, db=db, gw=gw, w=w)
+    end
+
+    return (p=p, ph=ph, f=f_tmp, t=t_tmp)
+
+end
+
+"""
     cwtspectrogram(s; <keyword arguments>)
 
 Calculate scaleogram using continuous wavelet transformation (CWT).
@@ -395,6 +430,37 @@ function cwtspectrogram(s::AbstractVector; fs::Int64, wt::T=wavelet(Morlet(2π),
     t = linspace(t[1], t[end - 1], size(m, 2))
 
     return (m=m, f=f, t=t)
+
+end
+
+"""
+    cwtspectrogram(s; <keyword arguments>)
+
+Calculate scaleogram using continuous wavelet transformation (CWT).
+
+# Arguments
+
+- `s::AbstractMatrix`
+- `fs::Int64`: sampling rate
+- `wt::T where {T <: CWT}=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+
+# Returns
+
+Named tuple containing:
+- `m::Array{Float64, 3}`: magnitude
+- `f::Vector{Float64}`: frequencies
+- `t::Vector{Float64}`: time
+"""
+function cwtspectrogram(s::AbstractMatrix; fs::Int64, wt::T=wavelet(Morlet(2π), β=2))::@NamedTuple{m::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}} where {T <: CWT}
+
+    _, f_tmp, t_tmp = cwtspectrogram(s[1, :], fs=fs, wt=wt)
+
+    m = zeros(length(f_tmp), length(t_tmp), size(s, 1))
+    Threads.@threads for ch_idx in axes(s, 1)
+        m[:, :, ch_idx], _, _ = @views cwtspectrogram(s[ch_idx, :], fs=fs, wt=wt)
+    end
+
+    return (m=m, f=f_tmp, t=t_tmp)
 
 end
 
