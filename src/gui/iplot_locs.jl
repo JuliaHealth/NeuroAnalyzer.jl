@@ -92,12 +92,12 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
 
     p = Figure(size=(850, 900))
 
-    but_r = Button(p[2, 1], label="Right", tellwidth=false)
-    but_l = Button(p[3, 1], label="Left", tellwidth=false)
-    but_f = Button(p[2, 2], label="Front", tellwidth=false)
-    but_b = Button(p[3, 2], label="Back", tellwidth=false)
-    but_t = Button(p[2, 3], label="Top", tellwidth=false)
-    but_reset = Button(p[3, 3], label="Reset", tellwidth=false)
+    but_r = Button(p[2, 1], label="Right [r]", tellwidth=false)
+    but_l = Button(p[3, 1], label="Left [l]", tellwidth=false)
+    but_f = Button(p[2, 2], label="Front [f]", tellwidth=false)
+    but_b = Button(p[3, 2], label="Back [b]", tellwidth=false)
+    but_t = Button(p[2, 3], label="Top [t]", tellwidth=false)
+    but_reset = Button(p[3, 3], label="Reset [Home]", tellwidth=false)
     but_png = Button(p[2:3, 4], label="Save as PNG", tellwidth=false)
 
     ax = Axis3(p[1, 1:4],
@@ -180,6 +180,22 @@ function iplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                           text=fid_names[idx],
                           fontsize=font_size,
                           align=(:center, :center))
+        end
+    end
+
+    screen = display(GLMakie.Screen(), p)
+
+    on(events(p).keyboardbutton) do event
+        new_pov = (0, 0)
+        event.key == Keyboard.home && (new_pov = (20, 45))
+        event.key == Keyboard.r && (new_pov = (10, 10))
+        event.key == Keyboard.l && (new_pov = (10, 190))
+        event.key == Keyboard.f && (new_pov = (10, 100))
+        event.key == Keyboard.b && (new_pov = (10, 280))
+        event.key == Keyboard.t && (new_pov = (90, 270))
+        if new_pov != (0, 0)
+            ax.elevation[] = deg2rad(new_pov[1])
+            ax.azimuth[] = deg2rad(new_pov[2])
         end
     end
 
