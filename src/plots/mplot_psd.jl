@@ -600,10 +600,9 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
     end
 
     for idx in axes(sp, 1)
-        fname = tempname()*".png"
-        GLMakie.save(fname, pp_vec[idx])
-        pp = FileIO.load(fname)
-        rm(fname)
+        io = IOBuffer()
+        show(io, MIME"image/png"(), pp_vec[idx])
+        pp = FileIO.load(io)
         GLMakie.scatter!(loc_x[idx],
                          loc_y[idx],
                          marker=pp,

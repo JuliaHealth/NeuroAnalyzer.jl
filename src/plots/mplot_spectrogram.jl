@@ -952,10 +952,9 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
     end
 
     for idx in axes(sp, 3)
-        fname = tempname()*".png"
-        GLMakie.save(fname, pp_vec[idx])
-        pp = FileIO.load(fname)
-        rm(fname)
+        io = IOBuffer()
+        show(io, MIME"image/png"(), pp_vec[idx])
+        pp = FileIO.load(io)
         GLMakie.scatter!(loc_x[idx],
                          loc_y[idx],
                          marker=pp,
