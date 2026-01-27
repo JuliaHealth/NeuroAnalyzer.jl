@@ -14,7 +14,7 @@ module NeuroAnalyzer
 
 const VER = v"0.26.2-dev"
 const allow_wip = occursin("dev", string(VER))          # false for the stable branch, true for the devel branch
-const io = PipeBuffer()                                 # required for interactive preview
+# const io = PipeBuffer()                                 # required for interactive preview
 const data_types = ["eeg",
                     "ecog",
                     "seeg",
@@ -56,10 +56,10 @@ const channel_units = ["μV",
                        "μS",
                        "rad/s",
                        ""]
-const fiducial_points = (nasion = (0.0, 1.0, -0.2),
-                         inion  = (0.0, -1.0, -0.2),
-                         lpa    = (-1.02, 0.15, -0.2),
-                         rpa    = (1.02, 0.15, -0.2))
+const fiducial_points = (nasion = (0.0, 1.03, -0.2),
+                         inion  = (0.0, -1.03, -0.2),
+                         lpa    = (-1.04, 0.2, -0.2),
+                         rpa    = (1.04, 0.2, -0.2))
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
@@ -563,6 +563,7 @@ include("gui/iselect_seg.jl")
 include("gui/ispectrogram.jl")
 include("gui/itopo.jl")
 include("gui/iview.jl")
+include("gui/miview.jl")
 include("gui/iview_ica.jl")
 
 # recorder

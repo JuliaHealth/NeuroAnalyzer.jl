@@ -87,7 +87,6 @@ function na_info()::Nothing
             "ImageBinarization",
             "ImageMorphology",
             "InformationMeasures",
-            "InteractiveUtils",
             "Interpolations",
             "Jacobi",
             "JLD2",
