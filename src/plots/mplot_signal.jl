@@ -102,13 +102,12 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
 
     # time line marker
     # define a square: Rect(x, y, width, height)
-    square = Observable(Rect(seg_pos.val, seg_pos.val, seg_len, 1))
-    _ = on(seg_pos) do val
-        square = Observable(Rect(val, val, seg_len, 1))
-        println("Got an update: ")
+    seg_pos_listener = on(seg_pos) do val
+        println("Got an update: ", val)
     end
+
     poly!(ax2,
-          square.val,
+          Rect(seg_pos.val, seg_pos.val, seg_len, 1),
           color=:darkgrey,
           strokecolor=:black,
           strokewidth=2)
@@ -123,7 +122,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                 seg = (ax2_x, ax2_x + seg_len)
                 if ax2_y >= ax2.limits[][2][1] && ax2_y <= ax2.limits[][2][2]
                     ax1.limits[] = (seg, ax1.limits[][2])
-                    # seg_pos[] = ax2_x
+                    seg_pos[] = ax2_x
                 end
             end
         end

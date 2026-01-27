@@ -52,7 +52,7 @@ function load(file_name::String)::NeuroAnalyzer.NEURO
 
     obj = JLD2.load_object(file_name)
 
-    _info("Loaded: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(obj.time_pts[end]) s)")
+    _info("Loaded: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 
