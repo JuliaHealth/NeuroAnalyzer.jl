@@ -821,6 +821,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          kwargs...)
         end
     elseif type === :butterfly
+        pl = mplot_locs(obj, ch=labels(obj)[ch], selected=ch=labels(obj)[ch], ps=:s)
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
@@ -836,6 +837,8 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                                frq=frq,
                                mono=mono;
                                kwargs...)
+        GLMakie.scatter!(p[1, 1],
+                         pl)
     elseif type === :mean
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])

@@ -15,7 +15,7 @@ Preview channel locations.
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
+- `ps::Symbol=:l`: plot size (`:l`: large, `:m`: medium, `:s`: small)
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
@@ -37,14 +37,15 @@ Preview channel locations.
 
 - `p::GLMakie.Figure`
 """
-function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::GLMakie.Figure
+function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::GLMakie.Figure
 
+    _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
     pal = mono ? :grays : :darktest
     sch_labels = ch_labels
 
     if plane === :xy
-        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_t_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_t_small.png")))
+#        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_t_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_t_small.png")))
         if !cart
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
@@ -56,7 +57,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
             loc_y = locs[ch, :loc_y]
         end
     elseif plane === :xz
-        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_f_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_f_small.png")))
+#        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_f_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_f_small.png")))
         if !cart
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
@@ -68,7 +69,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
             loc_y = locs[ch, :loc_z]
         end
     elseif plane === :yz
-        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_s_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_s_small.png")))
+#        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_s_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_s_small.png")))
         if !cart
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
@@ -91,30 +92,41 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
     if head12
         xl = (-1.2, 1.2)
         yl = (-1.2, 1.2)
+    else
+        xl = (-1.6, 1.6)
+        yl = (-1.6, 1.6)
+    end
+
 #        xt = round.(linspace(0, size(head_shape, 1), 25))
 #        yt = round.(linspace(0, size(head_shape, 2), 25))
 #        xl = (0, size(head_shape, 1))
 #        yl = (0, size(head_shape, 2))
 #        origin = size(head_shape) .÷ 2
-        if large
-            marker_size = length(ch) > 64 ? 10 : 20
-            font_size = 14
+    if ps === :l
+        plot_size = (800, 800)
+        marker_size = length(ch) > 64 ? 10 : 20
+        font_size = 14
 #            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
 #            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-            length(ch) > 64 && (ch_labels = false)
-        else
-            marker_size = length(ch) > 64 ? 5 : 10
-            font_size = 8
-            ch_labels = false
-            sch_labels = false
-            grid = false
+        length(ch) > 64 && (ch_labels = false)
+    elseif ps === :m
+        plot_size = (300, 300)
+        marker_size = length(ch) > 64 ? 5 : 10
+        font_size = 8
+        ch_labels = false
+        sch_labels = false
+        grid = false
 #            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
 #            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
-        end
-    else
-        xl = (-1.6, 1.6)
-        yl = (-1.6, 1.6)
-
+    elseif ps === :s
+        plot_size = (100, 100)
+        marker_size = length(ch) > 64 ? 4 : 8
+        font_size = 8
+        head_labels = false
+        ch_labels = false
+        sch_labels = false
+        grid = false
+    end
 #        m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
 #        m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
 #        head_shape = m
@@ -123,26 +135,26 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 #        xl = (0, size(head_shape, 1))
 #        yl = (0, size(head_shape, 2))
 #        origin = size(head_shape) ./ 2 .+ 1
-        if large
-            marker_size = length(ch) > 64 ? 10 : 20
-            font_size = 14
+#        if large
+#            marker_size = length(ch) > 64 ? 10 : 20
+#            font_size = 14
 #            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
 #            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-            length(ch) > 64 && (ch_labels = false)
-        else
-            marker_size = length(ch) > 64 ? 10 : 5
-            font_size = 8
-            ch_labels = false
-            sch_labels = false
-            grid = false
+#            length(ch) > 64 && (ch_labels = false)
+#        else
+#            marker_size = length(ch) > 64 ? 10 : 5
+#            font_size = 8
+#            ch_labels = false
+#            sch_labels = false
+#            grid = false
 #            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
 #            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
-        end
-    end
+#        end
+#    end
 
     # prepare plot
-    plot_size = (size(head_shape))
-    plot_size = large ? (800, 800) : (300, 300)
+#    plot_size = (size(head_shape))
+
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
     if grid
@@ -178,43 +190,46 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 
 #     head && GLMakie.image!(head_shape)
     if head
+        ps === :l && (lw = 3)
+        ps === :m && (lw = 2)
+        ps === :s && (lw = 1)
         if plane === :xy
             # nose
-            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=lw, color=:black)
 
             # ears
             # left
-            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=lw, color=:black)
             # right
-            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=3, color=:black)
-            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=3, color=:black)
+            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=lw, color=:black)
 
             # head
-            GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=3, color=:black)
+            GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=lw, color=:black)
         elseif plane === :yz
             # head
-            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=3, color=:black)
+            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=lw, color=:black)
         elseif plane === :xz
             # head
-            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=3, color=:black)
+            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=lw, color=:black)
         end
     end
 
@@ -600,6 +615,10 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
     cmap = GLMakie.resample_cmap(pal, ch_n)
     ch = setdiff(ch, selected)
 
+    ps === :l && (sw = 2)
+    ps === :m && (sw = 1)
+    ps === :s && (sw = 0.0)
+
     for idx in 1:ch_n
         if idx in selected
             if mono
@@ -607,7 +626,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                  loc_y[idx],
                                  markersize=marker_size,
                                  color=:gray,
-                                 strokewidth=large ? 2 : 1,
+                                 strokewidth=sw,
                                  strokecolor=:black)
 
             else
@@ -617,7 +636,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                  color=cmap[idx],
                                  colormap=pal,
                                  colorrange=1:ch_n,
-                                 strokewidth=large ? 2 : 1,
+                                 strokewidth=sw,
                                  strokecolor=:black)
             end
         else
@@ -625,7 +644,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                              loc_y[idx],
                              markersize=marker_size,
                              color=:gray,
-                             strokewidth=large ? 2 : 1,
+                             strokewidth=sw,
                              strokecolor=:black)
         end
     end
@@ -741,7 +760,7 @@ Preview of channel locations.
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `large::Bool=true`: draw large (size of electrodes area 600×600 px, more details) or small (size of electrodes area 240×240 px, less details) plot
+- `ps::Symbol=:l`: plot size (`:l`: large, `:m`: medium, `:s`: small)
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
@@ -763,7 +782,7 @@ Preview of channel locations.
 
 - `Union{GLMakie.Figure, Nothing}`
 """
-function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Union{GLMakie.Figure, Nothing}
+function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Union{GLMakie.Figure, Nothing}
 
     @assert datatype(obj) != "ecog" "Use mplot_locs_ecog() for ECoG data."
 
@@ -804,7 +823,7 @@ function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                       head=head,
                       head_labels=head_labels,
                       grid=grid,
-                      large=large,
+                      ps=ps,
                       mono=mono,
                       cart=cart,
                       plane=plane,
