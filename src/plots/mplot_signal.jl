@@ -37,7 +37,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
                        xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0))
+                       yautolimitmargin=(0, 0),
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
     if minimum(s) == 0
         GLMakie.ylims!(ax1, 0, _ylims(s)[2])
@@ -117,12 +121,12 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
             if event.action == Mouse.press # || event.action == Mouse.release
                 # @show round(mouseposition(ax1)[1])
                 # @show round(mouseposition(ax1)[2])
-                ax2_x = round(Int64, mouseposition(ax2)[1])
-                ax2_y = round(mouseposition(ax2)[2])
-                seg = (ax2_x, ax2_x + seg_len)
-                if ax2_y >= ax2.limits[][2][1] && ax2_y <= ax2.limits[][2][2]
+                ax2_x = mouseposition(ax2)[1]
+                ax2_y = mouseposition(ax2)[2]
+                seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
+                if ax2_x > 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
                     ax1.limits[] = (seg, ax1.limits[][2])
-                    seg_pos[] = ax2_x
+                    seg_pos[] = round(Int64, ax2_x)
                 end
             end
         end
