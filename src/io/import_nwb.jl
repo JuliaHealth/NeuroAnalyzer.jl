@@ -138,8 +138,8 @@ function import_nwb(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     end
     sampling_rate === nothing && (sampling_rate = Int64(1 / (timepts[2] - timepts[1])))
 
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3) .+ t_start
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3) .+ t_start
+    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4) .+ t_start
+    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4) .+ t_start
 
     # events
     "acquisition/Stimulus/data" in k && (stim = dataset["acquisition/Stimulus/data"])
@@ -162,7 +162,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         event_start_sample = events[!, :sample] .+ 1
         event_start = zeros(length(event_start_sample))
         [event_start[idx] = time_pts[event_start_sample[idx]] for idx in eachindex(event_start_sample)]
-        event_length = round.(events[!, :duration], digits=3)
+        event_length = round.(events[!, :duration], digits=4)
         event_channel = zeros(Int64, DataFrames.nrow(events))
         markers = DataFrame(:id=>event_id,
                             :start=>event_start,
@@ -249,7 +249,7 @@ function import_nwb(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

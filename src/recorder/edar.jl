@@ -143,7 +143,7 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
     Gtk4.run(app)
 
     eda_signal = eda_signal[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits=3)
+    t = round.(t[1:(end - 1)], digits=4)
     eda_signal = reshape(eda_signal, 1, :, 1)
 
     obj = create_object(data_type="eda")
@@ -232,7 +232,7 @@ function edar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     println("Recording finished.")
 
     eda_signal = eda_signal[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits=3)
+    t = round.(t[1:(end - 1)], digits=4)
     eda_signal = reshape(eda_signal, 1, :, 1)
 
     obj = create_object(data_type="eda")

@@ -125,8 +125,8 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     for idx in 1:ch_n
         clabels[idx] *= string(idx)
     end
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
+    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
+    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
 
     s = _create_subject(id="",
                         first_name="",
@@ -174,7 +174,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

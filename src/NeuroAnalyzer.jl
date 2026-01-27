@@ -564,7 +564,6 @@ include("gui/iselect_seg.jl")
 include("gui/ispectrogram.jl")
 include("gui/itopo.jl")
 include("gui/iview.jl")
-include("gui/miview.jl")
 include("gui/iview_ica.jl")
 
 # recorder

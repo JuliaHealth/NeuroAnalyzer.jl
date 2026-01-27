@@ -64,7 +64,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     eeg_idx = eeg_idx[1]
     sampling_rate = round(Int64, streams[s_names[eeg_idx]]["srate"])
     time_pts0 = time[eeg_idx][1]
-    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0, digits=3)
+    time_pts = round.(Float64.(time[eeg_idx]) .- time_pts0, digits=4)
     ep_time = time_pts
     eeg_data = reshape(Float64.(data[eeg_idx]'), size(data[eeg_idx], 2), :, 1)
     ch_n = size(eeg_data, 1)
@@ -135,7 +135,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, eeg_data, components, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

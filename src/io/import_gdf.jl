@@ -491,14 +491,14 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             end
             if etp_sr == 0
                 markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ sampling_rate, digits=3),
-                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :start=>round.(start ./ sampling_rate, digits=4),
+                                    :length=>round.(len ./ sampling_rate, digits=4),
                                     :value=>value,
                                     :channel=>ch)
             else
                 markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ etp_sr, digits=3),
-                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :start=>round.(start ./ etp_sr, digits=4),
+                                    :length=>round.(len ./ sampling_rate, digits=4),
                                     :value=>value,
                                     :channel=>ch)
             end
@@ -554,14 +554,14 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             end
             if etp_sr == 0
                 markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ sampling_rate, digits=3),
-                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :start=>round.(start ./ sampling_rate, digits=4),
+                                    :length=>round.(len ./ sampling_rate, digits=4),
                                     :value=>value,
                                     :channel=>ch)
             else
                 markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ etp_sr, digits=3),
-                                    :length=>round.(len ./ sampling_rate, digits=3),
+                                    :start=>round.(start ./ etp_sr, digits=4),
+                                    :length=>round.(len ./ sampling_rate, digits=4),
                                     :value=>value,
                                     :channel=>ch)
             end
@@ -575,8 +575,8 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         ch_type = repeat(["eeg"], ch_n)
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
+    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
+    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
 
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
@@ -626,7 +626,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

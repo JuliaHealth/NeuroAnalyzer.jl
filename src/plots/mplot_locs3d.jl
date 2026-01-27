@@ -17,12 +17,13 @@ export mplot_locs3d
 - `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
 - `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `f::GLMakie.Figure`
 """
-function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95)::GLMakie.Figure
+function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
 
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
@@ -187,7 +188,7 @@ function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
         end
     end
 
-    wait(display(p))
+    gui && wait(display(p))
 
     return p
 
@@ -209,12 +210,13 @@ Preview of channel locations.
 - `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
 - `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
 - `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `GLMakie.Figure`
 """
-function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, cam::Tuple{Real, Real}=(20, 45))::GLMakie.Figure
+function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
 
     @assert datatype(obj) in ["eeg"] "Currently mplot_locs3d() works for EEG objects only."
 
@@ -238,9 +240,10 @@ function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
                      head_labels=head_labels,
                      mono=mono,
                      cart=cart,
+                     cam=cam,
                      mesh_type=mesh_type,
                      mesh_alpha=mesh_alpha,
-                     cam=cam)
+                     gui=gui)
 
     return p
 

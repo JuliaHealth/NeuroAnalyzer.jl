@@ -146,15 +146,15 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 else
                     time_pts .+= abs(time_pts[1])
                 end
-                epoch_time = round.(epoch_time, digits=3)
-                time_pts = round.(time_pts, digits=3)
+                epoch_time = round.(epoch_time, digits=4)
+                time_pts = round.(time_pts, digits=4)
             else
-                epoch_time = round.(dataset["time"][1][:], digits=3)
-                time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
+                epoch_time = round.(dataset["time"][1][:], digits=4)
+                time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
             end
         else
-            epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
-            time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
+            epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+            time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
         end
 
         _info("FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`")
@@ -430,7 +430,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
         data_type == "eeg" && _initialize_locs!(obj)
 
-        _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+        _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
         return obj
 

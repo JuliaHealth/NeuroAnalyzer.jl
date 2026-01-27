@@ -181,8 +181,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     end
     ch_n = size(nirs_int, 1)
 
-    time_pts = round.(collect(0:1/sampling_rate:(size(nirs_int, 2) / sampling_rate))[1:end - 1], digits=3)
-    epoch_time = round.(collect(0:1/sampling_rate:(size(nirs_int, 2) / sampling_rate))[1:end - 1], digits=3)
+    time_pts = round.(collect(0:1/sampling_rate:(size(nirs_int, 2) / sampling_rate))[1:end - 1], digits=4)
+    epoch_time = round.(collect(0:1/sampling_rate:(size(nirs_int, 2) / sampling_rate))[1:end - 1], digits=4)
 
     # parse events if .evt is not available
     stim_onset = nothing
@@ -324,7 +324,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=3)) s)")
+    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj
 

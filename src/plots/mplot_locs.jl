@@ -45,7 +45,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
     sch_labels = ch_labels
 
     if plane === :xy
-#        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_t_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_t_small.png")))
         if !cart
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
@@ -57,7 +56,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
             loc_y = locs[ch, :loc_y]
         end
     elseif plane === :xz
-#        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_f_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_f_small.png")))
         if !cart
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
@@ -69,7 +67,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
             loc_y = locs[ch, :loc_z]
         end
     elseif plane === :yz
-#        head_shape = large ? rotr90(FileIO.load(joinpath(res_path, "head_s_large.png"))) : rotr90(FileIO.load(joinpath(res_path, "head_s_small.png")))
         if !cart
             loc_x = zeros(length(ch))
             loc_y = zeros(length(ch))
@@ -84,7 +81,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
-    # loc_y .= -loc_y
 
     head12 = false
     maximum(abs.(locs[:, :loc_x])) <= 1.2 && maximum(abs.(locs[:, :loc_y])) <= 1.2 && maximum(abs.(locs[:, :loc_z])) <= 1.5 && (head12 = true)
@@ -97,17 +93,10 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         yl = (-1.6, 1.6)
     end
 
-#        xt = round.(linspace(0, size(head_shape, 1), 25))
-#        yt = round.(linspace(0, size(head_shape, 2), 25))
-#        xl = (0, size(head_shape, 1))
-#        yl = (0, size(head_shape, 2))
-#        origin = size(head_shape) .÷ 2
     if ps === :l
         plot_size = (800, 800)
         marker_size = length(ch) > 64 ? 10 : 20
         font_size = 14
-#            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-#            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
         length(ch) > 64 && (ch_labels = false)
     elseif ps === :m
         plot_size = (300, 300)
@@ -116,8 +105,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         ch_labels = false
         sch_labels = false
         grid = false
-#            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-#            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
     elseif ps === :s
         plot_size = (100, 100)
         marker_size = length(ch) > 64 ? 4 : 8
@@ -127,34 +114,8 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         sch_labels = false
         grid = false
     end
-#        m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
-#        m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
-#        head_shape = m
-#        xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
-#        yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
-#        xl = (0, size(head_shape, 1))
-#        yl = (0, size(head_shape, 2))
-#        origin = size(head_shape) ./ 2 .+ 1
-#        if large
-#            marker_size = length(ch) > 64 ? 10 : 20
-#            font_size = 14
-#            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-#            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-#            length(ch) > 64 && (ch_labels = false)
-#        else
-#            marker_size = length(ch) > 64 ? 10 : 5
-#            font_size = 8
-#            ch_labels = false
-#            sch_labels = false
-#            grid = false
-#            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-#            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
-#        end
-#    end
 
     # prepare plot
-#    plot_size = (size(head_shape))
-
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
     if grid
@@ -173,7 +134,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                           yautolimitmargin=(0, 0),
                           backgroundcolor=transparent ? :transparent : :white)
     else
-        # prepare plot
         ax = GLMakie.Axis(p[1, 1],
                           aspect=1,
                           xlabel="",
@@ -188,7 +148,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
 
-#     head && GLMakie.image!(head_shape)
+    # draw head
     if head
         ps === :l && (lw = 3)
         ps === :m && (lw = 2)
@@ -688,13 +648,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                 fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
                 fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
             end
-#            if large
-#                fid_loc_x = @. origin[1] + (fid_loc_x * 260)
-#                fid_loc_y = @. origin[2] + (fid_loc_y * 260)
-#            else
-#                fid_loc_x = @. origin[1] + (fid_loc_x * 100)
-#                fid_loc_y = @. origin[2] + (fid_loc_y * 100)
-#            end
             GLMakie.text!(fid_loc_x,
                           fid_loc_y,
                           text=fid_names[idx],

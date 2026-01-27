@@ -120,7 +120,7 @@ function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=1152
     # calculate sampling rate
     sr = round(Int64, 1 / (tp[end] - tp[end - 1]))
     _info("Sampling rate: $sr Hz")
-    tp = round.(tp, digits=3)
+    tp = round.(tp, digits=4)
 
     # create data frame
     names = String[]

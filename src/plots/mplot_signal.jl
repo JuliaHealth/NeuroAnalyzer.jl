@@ -6,62 +6,130 @@ export mplot
 """
     mplot_signal(t, s; <keyword arguments>)
 
-Plot amplitude of single-channel signal.
+Plot amplitude of single-channel continuous signal.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractVector`: data to plot
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `bad::Bool=false`: is this a bad channel
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; seg::Tuple{Real, Real}, xlabel::String="", ylabel::String="", title::String="", bad::Bool=false)::GLMakie.Figure
+
+    seg_len = (seg[2] - seg[1])
+    seg_pos = Observable(seg[1])
 
     # prepare plot
     plot_size = (1200, 400)
     p = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(p[1, 1],
-                      xlabel=xlabel,
-                      ylabel=ylabel,
-                      title=title,
-                      xticks=LinearTicks(10),
-                      xminorticksvisible=true,
-                      xminorticks=IntervalsBetween(10),
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
-    GLMakie.xlims!(ax, _xlims(t))
+    ax1 = GLMakie.Axis(p[1, 1],
+                       xlabel="",
+                       ylabel=ylabel,
+                       title=title,
+                       xticks=LinearTicks(10),
+                       xminorticksvisible=true,
+                       xminorticks=IntervalsBetween(10),
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax1, seg)
     if minimum(s) == 0
-        GLMakie.ylims!(ax, 0, _ylims(s)[2])
+        GLMakie.ylims!(ax1, 0, _ylims(s)[2])
     else
-        GLMakie.ylims!(ax, _ylims(s))
+        GLMakie.ylims!(ax1, _ylims(s))
     end
-    ax.titlesize = 20
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
+    ax1.titlesize = 20
+    ax1.xlabelsize = 18
+    ax1.ylabelsize = 18
+    ax1.xticklabelsize = 12
+    ax1.yticklabelsize = 12
 
     # plot signal
     if bad
-        GLMakie.lines!(t,
+        GLMakie.lines!(ax1,
+                       t,
                        s,
                        linewidth=1,
                        alpha=0.2,
                        color=:black)
     else
-        GLMakie.lines!(t,
-                      s,
-                      linewidth=1,
-                      color=:black)
+        GLMakie.lines!(ax1,
+                       t,
+                       s,
+                       linewidth=1,
+                       color=:black)
     end
+
+    ax2 = GLMakie.Axis(p[2, 1],
+                      xlabel=xlabel,
+                      ylabel="",
+                      title="",
+                      xticks=LinearTicks(25),
+                      yticksvisible=false,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      backgroundcolor = :white)
+    GLMakie.xlims!(ax2, t[1], t[end])
+    GLMakie.ylims!(ax2, 0, 1)
+    hideydecorations!(ax2)
+    ax2.xticklabelsize = 12
+
+    # epoch lengths
+    # epoch number
+#    for idx in 0:10:t[end]
+#        GLMakie.vlines!(ax2,
+#                       seg[1] + idx,
+#                       linewidth=0.5,
+#                       color=:black)
+#    end
+
+    # selection
+    # define a square: Rect(x, y, width, height)
+    square = Rect(2, ax1.limits[][2][1],
+                  6, (ax1.limits[][2][2] - ax1.limits[][2][1]))
+    poly!(ax1,
+          square,
+          alpha=0.25,
+          color=:darkgrey,
+          strokecolor=:black,
+          strokewidth=2)
+
+    # time line marker
+    # define a square: Rect(x, y, width, height)
+    square = Observable(Rect(seg_pos.val, seg_pos.val, seg_len, 1))
+    _ = on(seg_pos) do val
+        square = Observable(Rect(val, val, seg_len, 1))
+        println("Got an update: ")
+    end
+    poly!(ax2,
+          square.val,
+          color=:darkgrey,
+          strokecolor=:black,
+          strokewidth=2)
+
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press # || event.action == Mouse.release
+                # @show round(mouseposition(ax1)[1])
+                # @show round(mouseposition(ax1)[2])
+                ax2_x = round(Int64, mouseposition(ax2)[1])
+                ax2_y = round(mouseposition(ax2)[2])
+                seg = (ax2_x, ax2_x + seg_len)
+                if ax2_y >= ax2.limits[][2][1] && ax2_y <= ax2.limits[][2][2]
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                    # seg_pos[] = ax2_x
+                end
+            end
+        end
+    end
+
+    rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
     return p
 
@@ -70,12 +138,146 @@ end
 """
     mplot_signal(t, s; <keyword arguments>)
 
-Plot amplitude of multi-channel signal.
+Plot amplitude of single-channel epoched signal.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractArray`: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `bad::Bool=false`: is this a bad channel
+
+# Returns
+
+- `p::GLMakie.Figure`
+"""
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false)::GLMakie.Figure
+
+    @assert size(s, 1) == 1 "Signal must contain only one channel."
+
+    fs = round(Int64, 1/(t[2] - t[1]))
+    ep_len = size(s, 2)
+    ep_n = size(s, 3)
+    seg = (0, 5 * (ep_len / fs))
+
+    # prepare plot
+    plot_size = (1200, 400)
+    p = GLMakie.Figure(size=plot_size)
+    ax1 = GLMakie.Axis(p[1, 1],
+                       xlabel="",
+                       ylabel=ylabel,
+                       title=title,
+                       xticks=LinearTicks(10),
+                       xminorticksvisible=true,
+                       xminorticks=IntervalsBetween(10),
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax1, seg)
+    if minimum(s) == 0
+        GLMakie.ylims!(ax1, 0, _ylims(s[1, :, :][:])[2])
+    else
+        GLMakie.ylims!(ax1, _ylims(s[1, :, :][:]))
+    end
+    ax1.titlesize = 20
+    ax1.xlabelsize = 18
+    ax1.ylabelsize = 18
+    ax1.xticklabelsize = 12
+    ax1.yticklabelsize = 12
+
+    # plot signal
+    if bad
+        GLMakie.lines!(ax1,
+                       t,
+                       s[1, :, :][:],
+                       linewidth=1,
+                       alpha=0.2,
+                       color=:black)
+    else
+        GLMakie.lines!(ax1,
+                       t,
+                       s[1, :, :][:],
+                       linewidth=1,
+                       color=:black)
+    end
+
+    ax2 = GLMakie.Axis(p[2, 1],
+                       xlabel=xlabel,
+                       ylabel="",
+                       title="",
+                       xticks=LinearTicks(25),
+                       yticksvisible=false,
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0),
+                       backgroundcolor = :white)
+    GLMakie.xlims!(ax2, t[1], t[end])
+    GLMakie.ylims!(ax2, 0, 1)
+    hideydecorations!(ax2)
+    ax2.xticklabelsize = 12
+
+    # epoch lengths
+    for idx in 1:ep_n
+        GLMakie.vlines!(ax1,
+                        idx * ep_len / fs,
+                        linewidth=0.5,
+                        linestyle=:dash,
+                        color=:black)
+    end
+
+    # time line marker
+    # define a square: Rect(x, y, width, height)
+    square = Rect(0, 0, 5, 1)
+    poly!(ax2,
+          square,
+          color=:darkgrey,
+          strokecolor=:black,
+          strokewidth=2)
+
+    ep_selected = zeros(Bool, ep_n)
+
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press
+                ax1_x = mouseposition(ax1)[1]
+                ax1_y = mouseposition(ax1)[2]
+                nep = ceil(Int64, ax1_x / (ep_len / fs))
+                if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
+                    ep_selected[nep] = !ep_selected[nep]
+                    @show ep_selected
+                end
+
+                ax2_x = mouseposition(ax2)[1]
+                ax2_y = mouseposition(ax2)[2]
+                @show ax2_x
+                nep = round(Int64, ax2_x)
+                if ax2_y >= ax2.limits[][2][1] && ax2_y <= ax2.limits[][2][2]
+                    @show nep
+                end
+
+                #@show round(mouseposition(ax2)[1])
+                #@show round(mouseposition(ax2)[2])
+                # push!(points[], mp)
+                # notify(points)
+            end
+        end
+    end
+
+    rowsize!(p.layout, 2, GLMakie.Fixed(20))
+
+    return p
+
+end
+
+"""
+    mplot_signal(t, s; <keyword arguments>)
+
+Plot amplitude of multi-channel continuous signal.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
+- `s::AbstractMatrix`: data to plot
 - `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
@@ -85,13 +287,12 @@ Plot amplitude of multi-channel signal.
 - `mono::Bool=false`: use color or gray palette
 - `scale::Bool=true`: draw scale
 - `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), kwargs...)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
 
     ch_n = size(s, 1)
 
@@ -145,9 +346,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                       yticks=((ch_n - 1):-1:0, clabels),
                       yticksvisible=false,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
-    GLMakie.xlims!(ax, _xlims(t))
+                      yautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax, seg)
     GLMakie.ylims!(ax, -1, ch_n)
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -198,7 +398,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                            color=:black)
         end
     end
-
+@show ax.limits[][1]
     # draw scales
     if scale
         idx2 = 1
@@ -206,7 +406,166 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
                 GLMakie.lines!(ax,
-                               [_xlims(t)[1], _xlims(t)[1]],
+                               #[_xlims(t)[1], _xlims(t)[1]],
+                               [ax.limits[][1][1], ax.limits[][1][1]],
+                               [(s_pos - 1.5), (s_pos - 0.5)],
+                               color=:red,
+                               linewidth=5)
+                GLMakie.text!(ax,
+                              (_xlims(t)[1], s_pos - 1),
+                              text="$(r[idx2]) $(cunits[idx1])  ",
+                              fontsize=8,
+                              align=(:center, :top),
+                              rotation=pi/2,
+                              offset=(5, 0))
+                idx2 += 1
+            end
+        end
+    end
+
+    return p
+
+end
+
+"""
+    mplot_signal(t, s; <keyword arguments>)
+
+Plot amplitude of multi-channel signal.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
+- `s::AbstractArray`: data to plot
+- `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
+- `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
+- `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or gray palette
+- `scale::Bool=true`: draw scale
+- `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
+
+# Returns
+
+- `p::GLMakie.Figure`
+"""
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
+
+    ch_n = size(s, 1)
+
+    ctypes_uni = unique(ctypes)
+    t_pos = zeros(Int64, length(ctypes_uni))
+    for idx in eachindex(ctypes_uni)
+         t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
+    end
+    ctypes_uni_pos = zeros(Int64, length(ctypes))
+    ctypes_uni_pos[t_pos] .= 1
+
+    # set colors
+    if mono
+        pal = :grays
+        channel_color = repeat([:black], ch_n)
+    else
+        pal = :darktest
+        channel_color = zeros(Int64, ch_n)
+        for idx in eachindex(ctypes_uni)
+            channel_color[ctypes .== ctypes_uni[idx]] .= idx
+        end
+    end
+
+    # get ranges of the original signal for the scales
+    # normalize and shift so all channels are visible
+    r = Float64[]
+    @inbounds for ch_idx in eachindex(ctypes_uni)
+        push!(r, round(_get_range(s[ctypes .== ctypes_uni[ch_idx], :])))
+        s[ctypes .== ctypes_uni[ch_idx], :] = @views normalize_minmax(s[ctypes .== ctypes_uni[ch_idx], :])
+    end
+    # reverse so 1st channel is on top
+    s = @views reverse(s[:, eachindex(t)], dims = 1)
+    channel_color = reverse(channel_color)
+    bad = reverse(bad)
+    # each channel is between -1.0 and +1.0
+    # scale by 0.5 so maxima do not overlap
+    @inbounds for idx in 1:ch_n
+        s[idx, :] = @views (s[idx, :] .* 0.5) .+ (idx - 1)
+    end
+
+    # prepare plot
+    plot_size = (1200, 100 + 40 * ch_n)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      yticks=((ch_n - 1):-1:0, clabels),
+                      yticksvisible=false,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax, seg)
+    GLMakie.ylims!(ax, -1, ch_n)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = ch_n <= 64 ? 12 : 10;
+
+    # plot channels
+    if length(ctypes_uni) > 1
+        cmap = GLMakie.resample_cmap(pal, length(ctypes_uni))
+    else
+        cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
+    end
+
+    for idx in 1:ch_n
+        if !bad[idx]
+            if mono
+                GLMakie.lines!(ax,
+                               t,
+                               s[idx, :],
+                               linewidth=0.75,
+                               color=:black)
+            else
+                if length(ctypes_uni) > 1
+                    GLMakie.lines!(ax,
+                                   t,
+                                   s[idx, :],
+                                   linewidth=0.75,
+                                   color=cmap[channel_color[idx]],
+                                   colormap=pal,
+                                   colorrange=1:length(ctypes_uni))
+                else
+                    GLMakie.lines!(ax,
+                                   t,
+                                   s[idx, :],
+                                   linewidth=0.75,
+                                   color=cmap[idx],
+                                   colormap=pal,
+                                   colorrange=1:ch_n)
+                end
+            end
+        else
+            GLMakie.lines!(ax,
+                           t,
+                           s[idx, :],
+                           linewidth=0.75,
+                           alpha=0.2,
+                           color=:black)
+        end
+    end
+@show ax.limits[][1]
+    # draw scales
+    if scale
+        idx2 = 1
+        for idx1 in 1:ch_n
+            if ctypes_uni_pos[idx1] == 1
+                s_pos = ch_n - idx1 + 1
+                GLMakie.lines!(ax,
+                               #[_xlims(t)[1], _xlims(t)[1]],
+                               [ax.limits[][1][1], ax.limits[][1][1]],
                                [(s_pos - 1.5), (s_pos - 0.5)],
                                color=:red,
                                linewidth=5)
@@ -239,13 +598,12 @@ Plot amplitude of single-channel signal.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="", kwargs...)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVector, s2::AbstractVector; xlabel::String="", ylabel::String="", title::String="")::GLMakie.Figure
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -260,8 +618,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, _xlims(t))
     if minimum(s1) == 0 || minimum(s2) == 0
         if maximum(s1) > maximum(s2)
@@ -319,13 +676,12 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -347,8 +703,7 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, _xlims(t))
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -388,13 +743,12 @@ Butterfly plot of `s` channels.
 - `title::String=""`: plot title
 - `avg::Bool=false`: plot average channels
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", avg::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -418,8 +772,7 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, _xlims(t))
     cmap = GLMakie.resample_cmap(pal, ch_n)
     for idx in 1:ch_n
@@ -464,13 +817,12 @@ Plot amplitude of multi-channel signals.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `scale::Bool=true`: draw scale
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, kwargs...)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true)::GLMakie.Figure
 
     ch_n = size(s1, 1)
 
@@ -513,8 +865,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
                       yticks=((ch_n - 1):-1:0, clabels),
                       yticksvisible=false,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, _xlims(t))
     GLMakie.ylims!(ax, -1, ch_n)
     ax.titlesize = 20
@@ -589,13 +940,13 @@ Plot signal.
 - `avg::Bool=false`: plot average EDA
 - `bad::Bool=false`: plot bad channels
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
-- `kwargs`: optional arguments for plotting
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), kwargs...)::GLMakie.Figure
+function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), gui::Bool=true)::GLMakie.Figure
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
@@ -606,7 +957,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
     else
         _check_segment(obj, seg)
     end
-    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+    # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
 
@@ -633,15 +984,16 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
     ch = get_channel(obj, ch=ch)
 
     # get time vector
-    if seg[2] <= epoch_len(obj)
-        s = obj.data[:, seg[1]:seg[2], 1]
-    else
-        s = epoch(obj, ep_n=1).data[:, seg[1]:seg[2], 1]
-    end
-    t = obj.time_pts[seg[1]:seg[2]]
-
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, seg[1], seg[2])
+#    if seg[2] <= epoch_len(obj)
+#        s = obj.data[:, seg[1]:seg[2], 1]
+#    else
+#        s = epoch(obj, ep_n=1).data[:, seg[1]:seg[2], 1]
+#    end
+#    t = obj.time_pts[seg[1]:seg[2]]
+t_s1 = seg[1]
+t_s2 = seg[2]
+#    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
+#    ep = _s2epoch(obj, seg[1], seg[2])
 
     length(ch) == 1 && (ch = ch[1])
 
@@ -650,6 +1002,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
     bm = obj.header.recording[:bad_channel]
     ctypes = obj.header.recording[:channel_type]
     clabels = labels(obj)
+
     # sort channels by their type
     if !isa(ch, Int64)
         ctypes = ctypes[ch]
@@ -689,18 +1042,17 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                              xlabel=xl,
                              ylabel=yl,
                              title=tt,
-                             mono=mono;
-                             kwargs...)
+                             mono=mono)
             else
                 ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, clabels[ch]))]")
-                p = mplot_signal(t,
-                                s[ch, :],
+                p = @views mplot_signal(
+                                obj.time_pts,
+                                obj.data[ch, :, :][:],
+                                seg=seg,
                                 xlabel=xl,
                                 ylabel=yl,
                                 title=tt,
-                                bad=bm;
-                                # mono=mono;
-                                kwargs...)
+                                bad=bm[ch])
             end
         else
             xl, yl, tt = _set_defaults(xlabel,
@@ -709,8 +1061,10 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                                        "Time [s]",
                                        "",
                                        "")
-            p = mplot_signal(t,
-                            s[ch, :],
+            p = @views mplot_signal(
+                                obj.time_pts,
+                                obj.data[ch, :, :][:, :],
+                                seg=seg,
                             ctypes=ctypes,
                             clabels=clabels,
                             cunits=cunits,
@@ -719,8 +1073,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                             title=tt,
                             bad=bm,
                             scale=scale,
-                            mono=mono;
-                            kwargs...)
+                            mono=mono)
         end
     end
 
@@ -742,8 +1095,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                                    ylabel=yl,
                                    title=tt,
                                    avg=avg,
-                                   mono=mono;
-                                   kwargs...)
+                                   mono=mono)
         else
             p = mplot_signal_butterfly(t,
                                       s[ch, :],
@@ -752,8 +1104,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                                       ylabel=yl,
                                       title=tt,
                                       avg=avg,
-                                      mono=mono;
-                                      kwargs...)
+                                      mono=mono)
         end
     end
 
@@ -773,16 +1124,14 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                              xlabel=xl,
                              ylabel=yl,
                              title=tt,
-                             mono=mono;
-                             kwargs...)
+                             mono=mono)
         else
             p = mplot_signal_avg(t,
                                 s[ch, :],
                                 xlabel=xl,
                                 ylabel=yl,
                                 title=tt,
-                                mono=mono;
-                                kwargs...)
+                                mono=mono)
         end
     end
 
@@ -838,6 +1187,15 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                     color=:black,
                     linewidth=1)
 
+    if gui
+        t = obj.time_pts
+#        time_s = Slider(p[2, 1],
+#                        range = LinRange(t[1], t[end], length(t)),
+#                        horizontal = true)
+#
+#        wait(display(p))
+    end
+
     return p
 
 end
@@ -865,13 +1223,12 @@ Plot embedded or external component.
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
 - `avg::Bool=false`: plot average EDA
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true)::Plots.Plot{Plots.GRBackend}
 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -945,8 +1302,7 @@ function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Un
                             xlabel=xl,
                             ylabel=yl,
                             title=tt,
-                            mono=mono;
-                            kwargs...)
+                            mono=mono)
         else
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
@@ -961,8 +1317,7 @@ function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Un
                             ylabel=yl,
                             title=tt,
                             scale=scale,
-                            mono=mono;
-                            kwargs...)
+                            mono=mono)
         end
     end
 
@@ -981,8 +1336,7 @@ function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Un
                                   ylabel=yl,
                                   title=tt,
                                   avg=avg,
-                                  mono=mono;
-                                  kwargs...)
+                                  mono=mono)
     end
 
     if type === :mean
@@ -993,8 +1347,7 @@ function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Un
                             xlabel=xl,
                             ylabel=yl,
                             title=tt,
-                            mono=mono;
-                            kwargs...)
+                            mono=mono)
     end
 
     # add epochs markers
@@ -1027,13 +1380,12 @@ Plot signal.
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
 - `scale::Bool=true`: draw scale
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, kwargs...)::GLMakie.Figure
+function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true)::GLMakie.Figure
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."
@@ -1107,8 +1459,7 @@ function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{I
                         vec(s2[ch, :]),
                         xlabel=xl,
                         ylabel=yl,
-                        title=tt,
-                        kwargs...)
+                        title=tt)
     else
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
@@ -1125,8 +1476,7 @@ function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{I
                         xlabel=xl,
                         ylabel=yl,
                         title=tt,
-                        scale=scale;
-                        kwargs...)
+                        scale=scale)
     end
 
     return p
