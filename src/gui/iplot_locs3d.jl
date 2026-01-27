@@ -1,139 +1,38 @@
 export iplot_locs3d
 
 """
-    iplot_locs3d(locs; <keyword arguments>)
+    mplot_locs(obj; <keyword arguments>)
 
-3D interactive preview of channel locations.
-
-# Arguments
-
-- `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: channel(s) to plot, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
-- `ch_labels::Bool=true`: plot channel labels
-- `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
-
-# Returns
-
-Nothing
-"""
-function iplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
-
-    camera_pos = camera
-    x_pos_last = 0
-    y_pos_last = 0
-
-    p = NeuroAnalyzer.plot_locs3d(locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, camera=camera)
-
-    function _activate(app)
-
-        win = GtkApplicationWindow(app, "NeuroAnalyzer: iplot_locs3d()")
-        Gtk4.default_size(win, p.attr[:size][1], p.attr[:size][2])
-
-        can = GtkCanvas()
-        can.content_width = p.attr[:size][1]
-        can.content_height = p.attr[:size][2]
-        push!(win, can)
-
-        Gtk4.show(win)
-
-        @guarded draw(can) do widget
-            p = NeuroAnalyzer.plot_locs3d(locs, camera=camera_pos, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, cart=cart, mono=mono)
-            img = read_from_png(io)
-            ctx = getgc(can)
-            withenv("GKSwstype" => "100") do
-                png(p, io)
-            end
-            img = read_from_png(io)
-            set_source_surface(ctx, img, 0, 0)
-            paint(ctx)
-        end
-
-        function _lmb_click(_, x, y)
-            x_pos = round(Int64, x)
-            y_pos = round(Int64, y)
-            x_pos > x_pos_last && (camera_pos = (camera_pos[1] - 5, camera_pos[2]))
-            x_pos < x_pos_last && (camera_pos = (camera_pos[1] + 5, camera_pos[2]))
-            y_pos > y_pos_last && (camera_pos = (camera_pos[1], camera_pos[2] + 5))
-            y_pos < y_pos_last && (camera_pos = (camera_pos[1], camera_pos[2] - 5))
-            x_pos_last = x_pos
-            y_pos_last = y_pos
-            draw(can)
-        end
-        ggc_l = GtkGestureDrag()
-        ggc_l.button = 1
-        push!(can, ggc_l)
-        signal_connect(_lmb_click, ggc_l, "drag-begin")
-        signal_connect(_lmb_click, ggc_l, "drag-update")
-
-        function _rmb_click(_, _, x, y)
-            camera_pos = camera
-            draw(can)
-        end
-        ggc_r = GtkGestureClick()
-        ggc_r.button = 3
-        push!(can, ggc_r)
-        signal_connect(_rmb_click, ggc_r, "pressed")
-
-        help = "Keyboard shortcuts:\n\nLeft click\t\tRotate view\nRight click\t\tReset view\n\nCtrl + t\t\t\tTop view\nCtrl + s\t\t\tSide view\nCtrl + f\t\t\tFront view\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-
-        win_key = Gtk4.GtkEventControllerKey(win)
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
-                close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('t'))
-                camera_pos = (0, 90)
-                draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
-                camera_pos = (90, 0)
-                draw(can)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('f'))
-                camera_pos = (180, 0)
-                draw(can)
-            end
-        end
-    end
-
-    app = GtkApplication("org.neuroanalyzer.iplot_locs3d")
-    Gtk4.signal_connect(_activate, app, :activate)
-    Gtk4.GLib.stop_main_loop()
-    Gtk4.run(app)
-
-    return nothing
-
-end
-
-"""
-    iplot_locs3d(obj; <keyword arguments>)
-
-3D interactive preview of channel locations.
+Preview of channel locations.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel(s) to plot
-- `selected::Union{String, Vector{String}}=""`: selected channel(s) to plot
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `selected::Union{String, Vector{String}, Regex}`: which channels should be highlighted
 - `ch_labels::Bool=true`: plot channel labels
-- `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or gray palette
-- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use spherical coordinates
-- `camera::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
+- `head_labels::Bool=false`: plot head labels
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `cam::Tuple{Real, Real}=(20, 45)`: camera position - (XY plane angle, XZ plane angle)
+- `mesh_type::Symbol=:disabled`: type of mesh to plot (`:disabled`, `:brain` or `:head`)
+- `mesh_alpha::Float64=0.95`: mesh opacity, from 1 (no opacity) to 0 (complete opacity)
 
 # Returns
 
-Nothing
+- `Nothing`
 """
-function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Nothing
+function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, cam::Tuple{Real, Real}=(20, 45))::Nothing
 
-    # select channels, default is all channels
+    @assert datatype(obj) in ["eeg"] "Currently iplot_locs3d() works for EEG objects only."
+    _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
+    _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
+
     ch = get_channel(obj, ch=ch)
+    ch_n = length(ch)
+    chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+    locs = Base.filter(:label => in(chs), obj.locs)
+    ch = collect(1:DataFrames.nrow(locs))
 
-    # get selected channels
     if selected == ""
         selected = 0
     else
@@ -142,7 +41,209 @@ function iplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         selected = _find_bylabel(locs, selected)
     end
 
-    iplot_locs3d(obj.locs, ch=ch, selected=selected, ch_labels=ch_labels, head_labels=head_labels, mono=mono, cart=cart, camera=camera)
+    msh = nothing
+
+    if mesh_type !== :disabled
+        if mesh_type === :brain
+            msh = FileIO.load(joinpath(res_path, "mesh/brain_hires.stl"))
+        else
+            msh = FileIO.load(joinpath(res_path, "mesh/head.stl"))
+            mesh_alpha = 1.0
+        end
+        # scale mesh
+        if mesh_type === :brain
+            msh.position ./= _mesh_normalize_xyz(msh)
+            msh.position .*= 0.95
+        else
+            msh.position ./= _mesh_normalize_xy(msh)
+            msh.position .*= 1.1
+        end
+    end
+
+    pal = mono ? :grays : :darktest
+
+    if !cart
+        loc_x = zeros(DataFrames.nrow(locs))
+        loc_y = zeros(DataFrames.nrow(locs))
+        loc_z = zeros(DataFrames.nrow(locs))
+        for idx in 1:DataFrames.nrow(locs)
+            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
+        end
+    else
+        loc_x = locs[!, :loc_x]
+        loc_y = locs[!, :loc_y]
+        loc_z = locs[!, :loc_z]
+    end
+
+    if maximum(locs[:, :loc_x]) <= 1.2 && maximum(locs[:, :loc_y]) <= 1.2 && maximum(locs[:, :loc_z]) <= 1.5
+        x_lim = (-1.5, 1.5)
+        y_lim = (-1.5, 1.5)
+        z_lim = (-1.5, 1.5)
+    else
+        x_lim = (-2.0, 2.0)
+        y_lim = (-2.0, 2.0)
+        z_lim = (-0.5, 1.0)
+    end
+
+    marker_size = 10
+    font_size = 15
+
+    ch = setdiff(ch, selected)
+
+    p = Figure(size=(850, 900))
+
+    but_r = Button(p[2, 1], label="Right [r]", tellwidth=false)
+    but_l = Button(p[3, 1], label="Left [l]", tellwidth=false)
+    but_f = Button(p[2, 2], label="Front [f]", tellwidth=false)
+    but_b = Button(p[3, 2], label="Back [b]", tellwidth=false)
+    but_t = Button(p[2, 3], label="Top [t]", tellwidth=false)
+    but_reset = Button(p[3, 3], label="Reset [Home]", tellwidth=false)
+    but_png = Button(p[2:3, 4], label="Save as PNG", tellwidth=false)
+
+    ax = Axis3(p[1, 1:4],
+               xlabel="X",
+               ylabel="Y",
+               zlabel="Z",
+               limits=(x_lim, y_lim, z_lim),
+               title="",
+               aspect=(1, 1, 1),
+               xticks=[-1, 0, 1],
+               yticks=[-1, 0, 1],
+               zticks=[-1, 0, 1],
+               elevation=deg2rad(cam[1]),
+               azimuth=deg2rad(cam[2]))
+
+#    on(sl_xy.value) do val
+#        ax.elevation[] = val
+#    end
+#    on(sl_yz.value) do val
+#        ax.azimuth[] = val
+#    end
+
+    cmap = GLMakie.resample_cmap(pal, length(ch) + length(selected))
+
+    if mesh_type !== :disabled
+        GLMakie.mesh!(msh,
+                      alpha=mesh_alpha,
+                      color=:gray)
+    end
+
+    for idx in 1:ch_n
+        if idx in selected
+            if mono
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 loc_z[idx],
+                                 color=:gray,
+                                 markersize=marker_size)
+            else
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 loc_z[idx],
+                                 color=cmap[idx],
+                                 colormap=pal,
+                                 colorrange=1:ch_n,
+                                 markersize=marker_size)
+            end
+        else
+            GLMakie.scatter!(loc_x[idx],
+                             loc_y[idx],
+                             loc_z[idx],
+                             color=:gray,
+                             markersize=marker_size)
+        end
+    end
+
+    if ch_labels
+        GLMakie.text!(loc_x[ch] * 1.1,
+                      loc_y[ch] * 1.1,
+                      loc_z[ch] * 1.1,
+                      text=locs[ch, :label],
+                      fontsize=font_size,
+                      align=(:center, :center))
+        if selected != 0
+            GLMakie.text!(loc_x[selected] * 1.1,
+                          loc_y[selected] * 1.1,
+                          loc_z[selected] * 1.1,
+                          text=locs[selected, :label],
+                          fontsize=font_size,
+                          align=(:center, :center))
+        end
+    end
+
+    if head_labels
+        fid_names = ["NAS", "IN", "LPA", "RPA"]
+        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+            GLMakie.text!(NeuroAnalyzer.fiducial_points[idx][1],
+                          NeuroAnalyzer.fiducial_points[idx][2],
+                          NeuroAnalyzer.fiducial_points[idx][3],
+                          text=fid_names[idx],
+                          fontsize=font_size,
+                          align=(:center, :center))
+        end
+    end
+
+    on(events(p).keyboardbutton) do event
+        new_pov = (0, 0)
+        event.key == Keyboard.home && (new_pov = (20, 45))
+        event.key == Keyboard.r && (new_pov = (10, 10))
+        event.key == Keyboard.l && (new_pov = (10, 190))
+        event.key == Keyboard.f && (new_pov = (10, 100))
+        event.key == Keyboard.b && (new_pov = (10, 280))
+        event.key == Keyboard.t && (new_pov = (90, 270))
+        if new_pov != (0, 0)
+            ax.elevation[] = deg2rad(new_pov[1])
+            ax.azimuth[] = deg2rad(new_pov[2])
+        end
+    end
+
+    on(but_png.clicks) do _
+        save_dialog("Pick an image file", nothing, ["*.png"]) do file_name
+            if file_name != ""
+                GLMakie.save(file_name, p.scene)
+                @info("Image saved as $file_name")
+            end
+        end
+    end
+
+    on(but_reset.clicks) do _
+        ax.elevation[] = deg2rad(cam[1])
+        ax.azimuth[] = deg2rad(cam[2])
+    end
+
+    on(but_r.clicks) do _
+        ax.elevation[] = deg2rad(10)
+        ax.azimuth[] = deg2rad(10)
+    end
+
+    on(but_l.clicks) do _
+        ax.elevation[] = deg2rad(10)
+        ax.azimuth[] = deg2rad(190)
+    end
+
+    on(but_t.clicks) do _
+        ax.elevation[] = deg2rad(90)
+        ax.azimuth[] = deg2rad(270)
+    end
+
+    on(but_f.clicks) do _
+        ax.elevation[] = deg2rad(10)
+        ax.azimuth[] = deg2rad(100)
+    end
+
+    on(but_b.clicks) do _
+        ax.elevation[] = deg2rad(10)
+        ax.azimuth[] = deg2rad(280)
+    end
+
+#    on(sl_xy.value) do val
+#        ax.elevation[] = val
+#    end
+#    on(sl_yz.value) do val
+#        ax.azimuth[] = val
+#    end
+
+    wait(display(p))
 
     return nothing
 
