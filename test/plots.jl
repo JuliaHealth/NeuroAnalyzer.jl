@@ -229,10 +229,10 @@ ic, ic_mw, ic_var = ica_decompose(eeg_new, ch="eeg", iter=10)
 p = plot_icatopo(eeg_new, ch="eeg", ic, ic_mw)
 @test p isa Plots.Plot{Plots.GRBackend}
 
-@info "Test: add_plot_locs()"
+@info "Test: add_pl()"
 p = mplot(e10, ep=1)
 pl = mplot_locs(eeg, ch="eeg", selected="eeg", ps=:s)
-pp = add_plot_locs(p, pl)
+pp = add_pl(p, pl)
 @test pp isa GLMakie.Figure
 
 @info "Test: plot2canvas()"

@@ -1,6 +1,6 @@
 export plot_compose
 export plot_empty
-export add_plot_locs
+export add_pl
 
 """
     plot_compose(p; <keyword arguments>)
@@ -86,7 +86,7 @@ function plot_empty()::GLMakie.Figure
 end
 
 """
-    add_plot_locs(p, pl; <keyword arguments>)
+    add_pl(p, pl; <keyword arguments>)
 
 Add locations to a plot. Locations are placed in the top right corner.
 
@@ -99,7 +99,7 @@ Add locations to a plot. Locations are placed in the top right corner.
 
 - `p::GLMakie.Figure`
 """
-function add_plot_locs(p::GLMakie.Figure, pl::GLMakie.Figure; view::Bool=true, file_name::String="")::GLMakie.Figure
+function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure; view::Bool=true, file_name::String="")::GLMakie.Figure
 
         io = IOBuffer()
         show(io, MIME"image/png"(), pl)
