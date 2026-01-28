@@ -299,8 +299,8 @@ p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
 @info "Test: plot_connectivity_circle()"
 l = get_channel(eeg, type="eeg")
 m = rand(-10:0.1:10, length(l), length(l))
-p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_connectivity_circle(m, clabels=l)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_imf()"
 imf = rand(5, 100)

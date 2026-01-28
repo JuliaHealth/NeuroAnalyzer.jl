@@ -408,7 +408,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
             Makie.lines!(sf,
                          ones(length(sf)) .* idx,
                          sp[idx, :],
-                         linewidth=1,
+                         linewidth=2,
                          color=mono ? :black : cmap[idx],
                          colormap=pal,
                          colorrange=1:ch_n)
@@ -841,11 +841,11 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          frq_lim=frq_lim,
                          frq=frq,
                          mono=mono)
-    elseif type === :w3d
+    elseif type === :w3d || type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
+        @assert ndims(sp) >= 2 "For type=:$type plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
@@ -860,27 +860,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
-                        variant=:w)
-    elseif type === :s3d
-        ch_t = obj.header.recording[:channel_type]
-        ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
-        xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "")
-        zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
-        title = replace(title, "channel" => "channels")
-        p = mplot_psd_3d(sf,
-                        sp,
-                        clabels=clabels[ch],
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        zlabel=zlabel,
-                        title=title,
-                        frq_lim=frq_lim,
-                        frq=frq,
-                        mono=mono,
-                        variant=:s)
+                        variant=type === :w3d ? :w : :s)
     elseif type === :topo
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
