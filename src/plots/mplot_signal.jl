@@ -27,7 +27,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     seg_pos = Observable(seg[1])
 
     # prepare plot
-    plot_size = (1200, 400)
+    plot_size = (1200, 450)
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel="",
@@ -71,14 +71,18 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     end
 
     ax2 = GLMakie.Axis(p[2, 1],
-                      xlabel=xlabel,
-                      ylabel="",
-                      title="",
-                      xticks=LinearTicks(25),
-                      yticksvisible=false,
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0),
-                      backgroundcolor = :white)
+                       xlabel=xlabel,
+                       ylabel="",
+                       title="",
+                       xticks=LinearTicks(25),
+                       yticksvisible=false,
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0),
+                       backgroundcolor = :white,
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
     GLMakie.xlims!(ax2, t[1], t[end])
     GLMakie.ylims!(ax2, 0, 1)
     hideydecorations!(ax2)
@@ -106,12 +110,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
 
     # time line marker
     # define a square: Rect(x, y, width, height)
-    seg_pos_listener = on(seg_pos) do val
-        println("Got an update: ", val)
+    rectangle = lift(seg_pos) do seg_pos
+        Rect(seg_pos, 0, seg_len, 1)
     end
-
     poly!(ax2,
-          Rect(seg_pos.val, seg_pos.val, seg_len, 1),
+          rectangle,
           color=:darkgrey,
           strokecolor=:black,
           strokewidth=2)
@@ -156,14 +159,16 @@ Plot amplitude of single-channel epoched signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", bad::Bool=false)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; ylabel::String="", title::String="", bad::Bool=false)::GLMakie.Figure
 
     @assert size(s, 1) == 1 "Signal must contain only one channel."
 
     fs = round(Int64, 1/(t[2] - t[1]))
-    ep_len = size(s, 2)
+    ep_len = size(s, 2) / fs
     ep_n = size(s, 3)
-    seg = (0, 5 * (ep_len / fs))
+    seg = (0, 5 * ep_len)
+    seg_pos = Observable(seg[1])
+    seg_len = 5 * ep_len
 
     # prepare plot
     plot_size = (1200, 400)
@@ -176,7 +181,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
                        xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0))
+                       yautolimitmargin=(0, 0),
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
     if minimum(s) == 0
         GLMakie.ylims!(ax1, 0, _ylims(s[1, :, :][:])[2])
@@ -206,15 +215,19 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     end
 
     ax2 = GLMakie.Axis(p[2, 1],
-                       xlabel=xlabel,
+                       xlabel="Epochs",
                        ylabel="",
                        title="",
                        xticks=LinearTicks(25),
                        yticksvisible=false,
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0, 0),
-                       backgroundcolor = :white)
-    GLMakie.xlims!(ax2, t[1], t[end])
+                       backgroundcolor = :white,
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
+    GLMakie.xlims!(ax2, 0, ep_n)
     GLMakie.ylims!(ax2, 0, 1)
     hideydecorations!(ax2)
     ax2.xticklabelsize = 12
@@ -222,17 +235,19 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     # epoch lengths
     for idx in 1:ep_n
         GLMakie.vlines!(ax1,
-                        idx * ep_len / fs,
+                        idx * ep_len,
                         linewidth=0.5,
                         linestyle=:dash,
                         color=:black)
     end
 
-    # time line marker
+    # epoch marker
     # define a square: Rect(x, y, width, height)
-    square = Rect(0, 0, 5, 1)
+    rectangle = lift(seg_pos) do seg_pos
+        Rect(seg_pos, 0, seg_len, 1)
+    end
     poly!(ax2,
-          square,
+          rectangle,
           color=:darkgrey,
           strokecolor=:black,
           strokewidth=2)
@@ -244,7 +259,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
             if event.action == Mouse.press
                 ax1_x = mouseposition(ax1)[1]
                 ax1_y = mouseposition(ax1)[2]
-                nep = ceil(Int64, ax1_x / (ep_len / fs))
+                nep = ceil(Int64, ax1_x / ep_len)
                 if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
                     ep_selected[nep] = !ep_selected[nep]
                     @show ep_selected
@@ -252,10 +267,12 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
 
                 ax2_x = mouseposition(ax2)[1]
                 ax2_y = mouseposition(ax2)[2]
-                @show ax2_x
                 nep = round(Int64, ax2_x)
-                if ax2_y >= ax2.limits[][2][1] && ax2_y <= ax2.limits[][2][2]
-                    @show nep
+                nep < 1 && (nep = 1)
+                seg = ((nep - 1) * ep_len, (nep + 4) * ep_len)
+                if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                    seg_pos[] = nep
                 end
 
                 #@show round(mouseposition(ax2)[1])
@@ -265,6 +282,26 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
             end
         end
     end
+
+    on(events(p).keyboardbutton) do event
+        if event.action == Keyboard.press
+            if event.key == Keyboard.left
+                if seg_pos[] >= ep_len
+                    seg_pos[] -= ep_len
+                    seg = ((seg_pos[] - 1) * ep_len, (seg_pos[] + 4) * ep_len)
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                end
+            end
+            if event.key == Keyboard.right
+                if seg_pos[] <= ep_n - ep_len
+                    seg_pos[] += ep_len
+                    seg = ((seg_pos[] - 1) * ep_len, (seg_pos[] + 4) * ep_len)
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                end
+            end
+        end
+    end
+
 
     rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
