@@ -230,8 +230,10 @@ p = plot_icatopo(eeg_new, ch="eeg", ic, ic_mw)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: add_plot_locs()"
-c = add_plot_locs(NeuroAnalyzer.plot(e10, ch="Fp1"), NeuroAnalyzer.plot_locs(e10, ch="Fp1", large=false), view=false, file_name="")
-@test c isa Cairo.CairoSurfaceBase{UInt32}
+p = mplot(e10, ep=1)
+pl = mplot_locs(eeg, ch="eeg", selected="eeg", ps=:s)
+pp = add_plot_locs(p, pl)
+@test pp isa GLMakie.Figure
 
 @info "Test: plot2canvas()"
 @test plot2canvas(p) isa Cairo.CairoSurfaceBase{UInt32}

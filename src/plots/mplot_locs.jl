@@ -15,7 +15,7 @@ Preview channel locations.
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `ps::Symbol=:l`: plot size (`:l`: large, `:m`: medium, `:s`: small)
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)
@@ -115,6 +115,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         grid = false
     end
 
+transparent = false
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
@@ -132,7 +133,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                           yminorticks=IntervalsBetween(2),
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0),
-                          backgroundcolor=transparent ? :transparent : :white)
+                          backgroundcolor=:transparent)
     else
         ax = GLMakie.Axis(p[1, 1],
                           aspect=1,
@@ -141,7 +142,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                           title="",
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0),
-                          backgroundcolor=transparent ? :transparent : :white)
+                          backgroundcolor=:transparent)
         hidedecorations!(ax, grid=true)
         hidespines!(ax)
     end
@@ -713,7 +714,7 @@ Preview of channel locations.
 - `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `ps::Symbol=:l`: plot size (`:l`: large, `:m`: medium, `:s`: small)
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `plane::Symbol=:xy`: which plane to plot:
     - `:xy`: horizontal (top)

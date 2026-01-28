@@ -50,7 +50,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
+                      yautolimitmargin=(0.1, 0.1);
                       kwargs...)
     GLMakie.xlims!(ax, frq_lim)
     ax.titlesize = 20
@@ -62,6 +62,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
     # plot powers
     Makie.lines!(sf,
                  sp,
+                 linewidth=2,
                  color=:black)
 
     return p
@@ -137,7 +138,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                       yticksvisible=false,
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
+                      yautolimitmargin=(0.1, 0.1);
                       kwargs...)
     GLMakie.xlims!(ax, frq_lim)
     GLMakie.ylims!(ax, -0.5, ch_n)
@@ -152,7 +153,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
     for idx in 1:ch_n
         Makie.lines!(sf,
                      sp[idx, :],
-                     linewidth=1,
+                     linewidth=2,
                      color=mono ? :black : cmap[idx],
                      colormap=pal,
                      colorrange=1:ch_n)
@@ -211,9 +212,10 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
+                      yautolimitmargin=(0.1, 0.1);
                       kwargs...)
     GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, minimum(s_l) * 1.1, maximum(s_u) * 1.1)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -231,7 +233,7 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
     Makie.lines!(sf,
                  s_m,
                  color=:black,
-                 linewidth=1)
+                 linewidth=2)
 
     return p
 
@@ -289,9 +291,10 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
+                      yautolimitmargin=(0.1, 0.1);
                       kwargs...)
     GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, extrema(sp) .* 1.1)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -305,16 +308,17 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                      color=cmap[idx],
                      colormap=pal,
                      colorrange=1:ch_n,
-                     linewidth=0.5,
+                     linewidth=2,
                      label=clabels[idx])
     end
-    ch_n < 40 && axislegend(position = :rb)
+    # ch_n < 40 && axislegend(position = :rb)
 
     # plot averaged channels
     if avg
         s = mean(sp, dims=1)[:]
         Makie.lines!(sf,
                      s,
+                     colormap=pal,
                      linewidth=2,
                      color=:black)
     end
@@ -535,7 +539,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                           title=locs[idx, :label],
                           xscale=frq === :lin ? identity : log10,
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0);
+                          yautolimitmargin=(0.1, 0.1);
                           kwargs...)
         hidedecorations!(ax)
         GLMakie.xlims!(ax, frq_lim)
@@ -558,7 +562,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                       title=title,
                       aspect=1,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
+                      yautolimitmargin=(0.1, 0.1);
                       kwargs...)
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
@@ -819,9 +823,30 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          frq=frq,
                          mono=mono;
                          kwargs...)
+            if ch_t_uni[1] in ["eeg", "grad", "mag"]
+                pl = mplot_locs(obj, ch=labels(obj)[ch], selected=ch=labels(obj)[ch], ps=:s, transparent=true)
+                io = IOBuffer()
+                show(io, MIME"image/png"(), pl)
+                pp = FileIO.load(io)
+                transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
+                transparent_pp[transparent_pp .== RGBA(1.0, 1.0, 1.0, 1.0)] .= RGBA(1.0, 1.0, 1.0, 0.0)
+                transparent_pp[transparent_pp .== RGBA(0.999, 0.999, 0.999, 1.0)] .= RGBA(0.999, 0.999, 0.999, 0.0)
+                transparent_pp[transparent_pp .== RGBA(0.998, 0.998, 0.998, 1.0)] .= RGBA(0.998, 0.998, 0.998, 0.0)
+                # top right corner
+                ax = contents(p[1, 1])[1]
+                ax = ax.targetlimits[].origin .+ ax.targetlimits[].widths
+                pos_x = ax[1]
+                pos_y = ax[2]
+                GLMakie.scatter!(p[1, 1],
+                                 pos_x,
+                                 pos_y,
+                                 marker_offset=size(transparent_pp) ./ -2,
+                                 marker=transparent_pp,
+                                 markersize=size(transparent_pp),
+                                 markerspace=:pixel)
+            end
         end
     elseif type === :butterfly
-        pl = mplot_locs(obj, ch=labels(obj)[ch], selected=ch=labels(obj)[ch], ps=:s)
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
@@ -837,8 +862,26 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                                frq=frq,
                                mono=mono;
                                kwargs...)
-        GLMakie.scatter!(p[1, 1],
-                         pl)
+        if ch_t_uni[1] in ["eeg", "grad", "mag"]
+            pl = mplot_locs(obj, ch=labels(obj)[ch], selected=ch=labels(obj)[ch], ps=:s, transparent=true)
+            io = IOBuffer()
+            show(io, MIME"image/png"(), pl)
+            pp = FileIO.load(io)
+            transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
+            transparent_pp[transparent_pp .== RGBA(1.0, 1.0, 1.0, 1.0)] .= RGBA(1.0, 1.0, 1.0, 0.0)
+            # top right corner
+            ax = contents(p[1, 1])[1]
+            ax = ax.targetlimits[].origin .+ ax.targetlimits[].widths
+            pos_x = ax[1]
+            pos_y = ax[2]
+            GLMakie.scatter!(p[1, 1],
+                             pos_x,
+                             pos_y,
+                             marker_offset=size(transparent_pp) ./ -2,
+                             marker=transparent_pp,
+                             markersize=size(transparent_pp),
+                             markerspace=:pixel)
+        end
     elseif type === :mean
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
