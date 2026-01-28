@@ -201,7 +201,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                                       line_frequency=50,
                                       sampling_rate=sampling_rate,
                                       gain=ones(ch_n),
-                                      bad_channels=zeros(Bool, size(data, 1), ep_n))
+                                      bad_channels=zeros(Bool, size(data, 1)))
 
         elseif data_type == "meg"
 
@@ -332,7 +332,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                                       magnetometers=magnetometers,
                                       gradiometers=gradiometers,
                                       coil_type=coil_type,
-                                      bad_channels=zeros(Bool, size(data, 1), ep_n),
+                                      bad_channels=zeros(Bool, size(data, 1)),
                                       ssp_labels=ssp_labels,
                                       ssp_channels=ssp_channels,
                                       ssp_data=ssp_data)
@@ -404,7 +404,7 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                                        det_labels=det_labels,
                                        opt_labels=opt_labels,
                                        sampling_rate=sampling_rate,
-                                       bad_channels=zeros(Bool, size(data, 1), ep_n))
+                                       bad_channels=zeros(Bool, size(data, 1)))
         end
 
         s = _create_subject(id="",

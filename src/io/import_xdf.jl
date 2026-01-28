@@ -120,7 +120,7 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
                               line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=ones(ch_n),
-                              bad_channels=zeros(Bool, size(data, 1), 1))
+                              bad_channels=zeros(Bool, size(data, 1)))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

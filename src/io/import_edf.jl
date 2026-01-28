@@ -282,7 +282,7 @@ function import_edf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                               line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=gain,
-                              bad_channels=zeros(Bool, size(data, 1), 1))
+                              bad_channels=zeros(Bool, size(data, 1)))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

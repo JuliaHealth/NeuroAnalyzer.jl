@@ -139,7 +139,7 @@ function _ch_idx(obj::NeuroAnalyzer.NEURO, l::Union{String, Vector{String}, Rege
     end
     if any(occursin.("bad", l))
         idx = findfirst(isequal("bad"), l)
-        bads = vec(sum(obj.header.recording[:bad_channel], dims=2))
+        bads = sum(obj.header.recording[:bad_channel])
         bad_ch = labels(obj)[bads.>0]
         deleteat!(l, idx)
         if length(bad_ch) > 0

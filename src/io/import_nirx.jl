@@ -311,7 +311,7 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
                                det_labels=string.(det_labels),
                                opt_labels=opt_labels,
                                sampling_rate=sampling_rate,
-                               bad_channels=zeros(Bool, size(data, 1), 1))
+                               bad_channels=zeros(Bool, size(data, 1)))
     e = _create_experiment(name=string(study_type1), notes=string(study_type2), design=string(study_type3))
 
     hdr = _create_header(s,

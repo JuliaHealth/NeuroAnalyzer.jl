@@ -37,10 +37,10 @@ Detect bad channels and epochs.
 # Returns
 
 Named tuple containing:
-- `bm::Matrix{Bool}`: matrix of bad channels × epochs
+- `bm::Vector{Bool}`: matrix of bad channels
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)::@NamedTuple{bm::Matrix{Bool}, be::Vector{Int64}}
+function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)::@NamedTuple{bm::Vector{Bool}, be::Vector{Int64}}
 
     @assert !(p < 0 || p > 1) "p must in [0.0, 1.0]."
     @assert !(tc < 0 || tc > 1) "tc must in [0.0, 1.0]."
@@ -61,7 +61,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     :rmsd in method && @assert ch_n > 1 ":rmsd method requires > 1 channel."
     :euclid in method && @assert ch_n > 1 ":euclid method requires > 1 channel."
 
-    bm = zeros(Bool, ch_n, ep_n)
+    bm = zeros(Bool, ch_n)
     be = Vector{Int64}()
 
     if :flat in method
@@ -82,7 +82,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -103,7 +103,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -125,7 +125,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -147,7 +147,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -172,7 +172,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -201,7 +201,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                 end
             end
             for ch_idx in 1:ch_n
-                bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true)
+                bad_chs[ch_idx] && (bm[ch_idx] = true)
             end
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
@@ -228,7 +228,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -253,7 +253,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -281,7 +281,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
 
@@ -304,7 +304,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
 
@@ -365,7 +365,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end
@@ -387,7 +387,7 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
                     bad_chs[ch_idx] = true
                 end
             end
-            [bad_chs[ch_idx] && (bm[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            [bad_chs[ch_idx] && (bm[ch_idx] = true) for ch_idx in 1:ch_n]
             (bad_chs_score / ch_n) > tc && push!(be, ep_idx)
         end
     end

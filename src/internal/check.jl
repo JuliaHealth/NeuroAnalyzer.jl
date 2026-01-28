@@ -92,43 +92,26 @@ function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
-    from = seg[1]
-    to = seg[2]
-    @assert to > from "to must be > from."
-    @assert from >= obj.time_pts[1] "from must be ≥ $(obj.time_pts[1])."
-    @assert to >= obj.time_pts[1] "to must be ≥ $(obj.time_pts[1])."
-    @assert from <= obj.time_pts[end] "from must be ≤ $(obj.time_pts[end])."
-    @assert to <= obj.time_pts[end] "to must be ≤ $(obj.time_pts[end])."
-    return nothing
-end
-
-function _check_segment_topo(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
-    from = seg[1]
-    to = seg[2]
-    @assert to >= from "to must be >= from."
-    @assert from >= obj.time_pts[1] "from must be ≥ $(obj.time_pts[1])."
-    @assert to >= obj.time_pts[1] "to must be ≥ $(obj.time_pts[1])."
-    @assert from <= obj.time_pts[end] "from must be ≤ $(obj.time_pts[end])."
-    @assert to <= obj.time_pts[end] "to must be ≤ $(obj.time_pts[end])."
+function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Int64, Int64})::Nothing
+    _check_segment(obj, seg[1], seg[2])
     return nothing
 end
 
 function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)::Nothing
-    @assert from >= 0 "from must be ≥ 0."
-    @assert to >= 0 "to must be ≥ 0."
-    @assert to >= from "to must be ≥ $(obj.time_pts[vsearch(from / sr(obj), obj.time_pts)])."
-    @assert from <= signal_len(obj) "from must be ≤ $(signal_len(obj))."
-    @assert to <= signal_len(obj) "to must be ≤ $(signal_len(obj))."
+    @assert to > from "Segment end must be greater than segment start."
+    @assert from >= obj.time_pts[1] "Segment start must be ≥ $(obj.time_pts[1])."
+    @assert to >= obj.time_pts[1] "Segment end must be ≥ $(obj.time_pts[1])."
+    @assert from <= obj.time_pts[end] "Segment start must be ≤ $(obj.time_pts[end])."
+    @assert to <= obj.time_pts[end] "Segment end must be ≤ $(obj.time_pts[end])."
     return nothing
 end
 
 function _check_segment(signal::AbstractVector, from::Int64, to::Int64)::Nothing
-    @assert from > 0 "from must be > 0."
-    @assert to > 0 "to must be > 0."
-    @assert to >= from "to must be ≥ $from."
-    @assert from <= length(signal) "from must be ≤ $(length(signal))."
-    @assert to <= length(signal) "to must be ≤ $(length(signal))."
+    @assert from > 0 "Segment start must be > 0."
+    @assert to > 0 "Segment end must be > 0."
+    @assert to >= from "Segment end must be ≥ $from."
+    @assert from <= length(signal) "Segment start must be ≤ $(length(signal))."
+    @assert to <= length(signal) "Segment end must be ≤ $(length(signal))."
     return nothing
 end
 

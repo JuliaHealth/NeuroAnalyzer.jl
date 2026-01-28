@@ -12,16 +12,18 @@ Plot amplitude of single-channel continuous signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractVector`: data to plot
+- `seg::Tuple{Int64, Int64}`: segment (from, to) in seconds to display
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `bad::Bool=false`: is this a bad channel
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; seg::Tuple{Real, Real}, xlabel::String="", ylabel::String="", title::String="", bad::Bool=false)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; seg::Tuple{Int64, Int64}, xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, gui::Bool=true)::Union{GLMakie.Figure, Nothing}
 
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
@@ -30,7 +32,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     plot_size = (1200, 450)
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
-                       xlabel="",
+                       xlabel=gui ? "" : xlabel,
                        ylabel=ylabel,
                        title=title,
                        xticks=LinearTicks(10),
@@ -38,15 +40,17 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                        xminorticks=IntervalsBetween(10),
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0, 0),
+                       xzoomlock=true,
+                       yzoomlock=true,
                        xpanlock=true,
                        ypanlock=true,
                        xrectzoom=false,
                        yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
     if minimum(s) == 0
-        GLMakie.ylims!(ax1, 0, _ylims(s)[2])
+        GLMakie.ylims!(ax1, 0, maximum(s)[2])
     else
-        GLMakie.ylims!(ax1, _ylims(s))
+        GLMakie.ylims!(ax1, extrema(s))
     end
     ax1.titlesize = 20
     ax1.xlabelsize = 18
@@ -70,91 +74,81 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                        color=:black)
     end
 
-    ax2 = GLMakie.Axis(p[2, 1],
-                       xlabel=xlabel,
-                       ylabel="",
-                       title="",
-                       xticks=LinearTicks(25),
-                       yticksvisible=false,
-                       xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0),
-                       backgroundcolor = :white,
-                       xpanlock=true,
-                       ypanlock=true,
-                       xrectzoom=false,
-                       yrectzoom=false)
-    GLMakie.xlims!(ax2, t[1], t[end])
-    GLMakie.ylims!(ax2, 0, 1)
-    hideydecorations!(ax2)
-    ax2.xticklabelsize = 12
+    if gui
 
-    # epoch lengths
-    # epoch number
-#    for idx in 0:10:t[end]
-#        GLMakie.vlines!(ax2,
-#                       seg[1] + idx,
-#                       linewidth=0.5,
-#                       color=:black)
-#    end
+        ax2 = GLMakie.Axis(p[2, 1],
+                           xlabel=xlabel,
+                           ylabel="",
+                           title="",
+                           xticks=LinearTicks(25),
+                           yticksvisible=false,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0),
+                           backgroundcolor = :white,
+                           xpanlock=true,
+                           ypanlock=true,
+                           xrectzoom=false,
+                           yrectzoom=false)
+        GLMakie.xlims!(ax2, t[1], t[end])
+        GLMakie.ylims!(ax2, 0, 1)
+        hideydecorations!(ax2)
+        ax2.xticklabelsize = 12
 
-    # selection
-    # define a square: Rect(x, y, width, height)
-    square = Rect(2, ax1.limits[][2][1],
-                  6, (ax1.limits[][2][2] - ax1.limits[][2][1]))
-    poly!(ax1,
-          square,
-          alpha=0.25,
-          color=:darkgrey,
-          strokecolor=:black,
-          strokewidth=2)
+        # time line marker
+        # define a square: Rect(x, y, width, height)
+        rectangle = lift(seg_pos) do seg_pos
+            Rect(seg_pos, 0, seg_len, 1)
+        end
+        poly!(ax2,
+              rectangle,
+              color=:darkgrey,
+              strokecolor=:black,
+              strokewidth=2)
 
-    # time line marker
-    # define a square: Rect(x, y, width, height)
-    rectangle = lift(seg_pos) do seg_pos
-        Rect(seg_pos, 0, seg_len, 1)
-    end
-    poly!(ax2,
-          rectangle,
-          color=:darkgrey,
-          strokecolor=:black,
-          strokewidth=2)
-
-    on(events(p).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press # || event.action == Mouse.release
-                # @show round(mouseposition(ax1)[1])
-                # @show round(mouseposition(ax1)[2])
-                ax2_x = mouseposition(ax2)[1]
-                ax2_y = mouseposition(ax2)[2]
-                seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
-                if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                    ax1.limits[] = (seg, ax1.limits[][2])
-                    seg_pos[] = round(Int64, ax2_x)
+        on(events(p).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press
+                    ax2_x = mouseposition(ax2)[1]
+                    ax2_y = mouseposition(ax2)[2]
+                    seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
+                    if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                        seg_pos[] = round(Int64, ax2_x)
+                    end
                 end
             end
         end
-    end
 
-    on(events(p).keyboardbutton) do event
-        if event.action == Keyboard.press
-            if event.key == Keyboard.left
-                if seg_pos[] > 0
-                    seg_pos[] -= 1
-                    seg = (seg_pos[], seg_pos[] + seg_len)
-                    ax1.limits[] = (seg, ax1.limits[][2])
+        on(events(p).keyboardbutton) do event
+            if event.action == Keyboard.press
+                if event.key == Keyboard.home
+                    seg_pos[] = 0
                 end
-            end
-            if event.key == Keyboard.right
-                if seg_pos[] <= t[end] - seg_len
-                    seg_pos[] += 1
-                    seg = (seg_pos[], seg_pos[] + seg_len)
-                    ax1.limits[] = (seg, ax1.limits[][2])
+                if event.key == Keyboard._end
+                    seg_pos[] = ceil(Int64, t[end] - seg_len)
                 end
+                if event.key == Keyboard.left
+                    if seg_pos[] > 0
+                        seg_pos[] -= 1
+                    end
+                end
+                if event.key == Keyboard.right
+                    if seg_pos[] <= t[end] - seg_len
+                        seg_pos[] += 1
+                    end
+                end
+                seg = (seg_pos[], seg_pos[] + seg_len)
+                ax1.limits[] = (seg, ax1.limits[][2])
             end
         end
-    end
 
-    rowsize!(p.layout, 2, GLMakie.Fixed(20))
+        rowsize!(p.layout, 2, GLMakie.Fixed(20))
+
+#        wait(display(p))
+
+#        return nothing
+
+    end
 
     return p
 
@@ -173,12 +167,13 @@ Plot amplitude of single-channel epoched signal.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `bad::Bool=false`: is this a bad channel
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; ylabel::String="", title::String="", bad::Bool=false)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; ylabel::String="", title::String="", bad::Bool=false, gui::Bool=true)::GLMakie.Figure
 
     @assert size(s, 1) == 1 "Signal must contain only one channel."
 
@@ -201,15 +196,17 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                        xminorticks=IntervalsBetween(10),
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0, 0),
+                       xzoomlock=true,
+                       yzoomlock=true,
                        xpanlock=true,
                        ypanlock=true,
                        xrectzoom=false,
                        yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
     if minimum(s) == 0
-        GLMakie.ylims!(ax1, 0, _ylims(s[1, :, :][:])[2])
+        GLMakie.ylims!(ax1, 0, maximum(s)[2])
     else
-        GLMakie.ylims!(ax1, _ylims(s[1, :, :][:]))
+        GLMakie.ylims!(ax1, extrema(s))
     end
     ax1.titlesize = 20
     ax1.xlabelsize = 18
@@ -233,97 +230,98 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                        color=:black)
     end
 
-    ax2 = GLMakie.Axis(p[2, 1],
-                       xlabel="Epochs",
-                       ylabel="",
-                       title="",
-                       xticks=LinearTicks(25),
-                       yticksvisible=false,
-                       xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0),
-                       backgroundcolor = :white,
-                       xpanlock=true,
-                       ypanlock=true,
-                       xrectzoom=false,
-                       yrectzoom=false)
-    GLMakie.xlims!(ax2, 0, ep_n)
-    GLMakie.ylims!(ax2, 0, 1)
-    hideydecorations!(ax2)
-    ax2.xticklabelsize = 12
+    if gui
 
-    # epoch lengths
-    for idx in 1:ep_n
-        GLMakie.vlines!(ax1,
-                        idx * ep_len,
-                        linewidth=0.5,
-                        linestyle=:dash,
-                        color=:black)
-    end
+        ax2 = GLMakie.Axis(p[2, 1],
+                           xlabel="Epochs",
+                           ylabel="",
+                           title="",
+                           xticks=LinearTicks(25),
+                           yticksvisible=false,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0),
+                           backgroundcolor = :white,
+                           xpanlock=true,
+                           ypanlock=true,
+                           xrectzoom=false,
+                           yrectzoom=false)
+        GLMakie.xlims!(ax2, 0, ep_n)
+        GLMakie.ylims!(ax2, 0, 1)
+        hideydecorations!(ax2)
+        ax2.xticklabelsize = 12
 
-    # epoch marker
-    # define a square: Rect(x, y, width, height)
-    rectangle = lift(seg_pos) do seg_pos
-        Rect(seg_pos, 0, seg_len, 1)
-    end
-    poly!(ax2,
-          rectangle,
-          color=:darkgrey,
-          strokecolor=:black,
-          strokewidth=2)
-
-    ep_selected = zeros(Bool, ep_n)
-
-    on(events(p).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press
-                ax1_x = mouseposition(ax1)[1]
-                ax1_y = mouseposition(ax1)[2]
-                nep = ceil(Int64, ax1_x / ep_len)
-                if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
-                    ep_selected[nep] = !ep_selected[nep]
-                    @show ep_selected
-                end
-
-                ax2_x = mouseposition(ax2)[1]
-                ax2_y = mouseposition(ax2)[2]
-                nep = round(Int64, ax2_x)
-                nep < 1 && (nep = 1)
-                seg = ((nep - 1) * ep_len, (nep + 4) * ep_len)
-                if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                    ax1.limits[] = (seg, ax1.limits[][2])
-                    seg_pos[] = nep
-                end
-
-                #@show round(mouseposition(ax2)[1])
-                #@show round(mouseposition(ax2)[2])
-                # push!(points[], mp)
-                # notify(points)
-            end
+        # epoch lengths
+        for idx in 1:ep_n
+            GLMakie.vlines!(ax1,
+                            idx * ep_len,
+                            linewidth=0.5,
+                            linestyle=:dash,
+                            color=:black)
         end
-    end
 
-    on(events(p).keyboardbutton) do event
-        if event.action == Keyboard.press
-            if event.key == Keyboard.left
-                if seg_pos[] >= 1
-                    @show seg_pos[]
-                    seg_pos[] -= 1
-                    seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
-                    ax1.limits[] = (seg, ax1.limits[][2])
-                end
-            end
-            if event.key == Keyboard.right
-                if seg_pos[] <= ep_n - 5
-                    @show seg_pos[]
-                    seg_pos[] += 1
-                    seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
-                    ax1.limits[] = (seg, ax1.limits[][2])
+        # epoch marker
+        # define a square: Rect(x, y, width, height)
+        rectangle = lift(seg_pos) do seg_pos
+            Rect(seg_pos, 0, seg_len, 1)
+        end
+        poly!(ax2,
+              rectangle,
+              color=:darkgrey,
+              strokecolor=:black,
+              strokewidth=2)
+
+        ep_selected = zeros(Bool, ep_n)
+
+        on(events(p).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press
+                    ax1_x = mouseposition(ax1)[1]
+                    ax1_y = mouseposition(ax1)[2]
+                    nep = ceil(Int64, ax1_x / ep_len)
+                    if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
+                        ep_selected[nep] = !ep_selected[nep]
+                        @show ep_selected
+                    end
+
+                    ax2_x = mouseposition(ax2)[1]
+                    ax2_y = mouseposition(ax2)[2]
+                    nep = round(Int64, ax2_x)
+                    nep < 1 && (nep = 1)
+                    seg = ((nep - 1) * ep_len, (nep + 4) * ep_len)
+                    if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                        seg_pos[] = nep
+                    end
                 end
             end
         end
-    end
 
-    rowsize!(p.layout, 2, GLMakie.Fixed(20))
+        on(events(p).keyboardbutton) do event
+            if event.action == Keyboard.press
+                if event.key == Keyboard.left
+                    if seg_pos[] >= 1
+                        @show seg_pos[]
+                        seg_pos[] -= 1
+                        seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                    end
+                end
+                if event.key == Keyboard.right
+                    if seg_pos[] <= ep_n - 5
+                        @show seg_pos[]
+                        seg_pos[] += 1
+                        seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                    end
+                end
+            end
+        end
+
+        rowsize!(p.layout, 2, GLMakie.Fixed(20))
+
+        wait(display(p))
+
+    end
 
     return p
 
@@ -338,63 +336,64 @@ Plot amplitude of multi-channel continuous signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractMatrix`: data to plot
+- `seg::Tuple{Int64, Int64}`: segment (from, to) in seconds to display
 - `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `scale::Bool=true`: draw scale
 - `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Int64, Int64}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
 
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
 
     ch_n = size(s, 1)
 
+    if ch_n > 15
+        ch1 = 1
+        ch2 = 15
+    else
+        ch1 = 1
+        ch2 = ch_n
+    end
+
     ctypes_uni = unique(ctypes)
+#=
     t_pos = zeros(Int64, length(ctypes_uni))
     for idx in eachindex(ctypes_uni)
          t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
     end
     ctypes_uni_pos = zeros(Int64, length(ctypes))
     ctypes_uni_pos[t_pos] .= 1
-
-    # set colors
-    if mono
-        pal = :grays
-        channel_color = repeat([:black], ch_n)
-    else
-        pal = :darktest
-        channel_color = zeros(Int64, ch_n)
-        for idx in eachindex(ctypes_uni)
-            channel_color[ctypes .== ctypes_uni[idx]] .= idx
-        end
-    end
-
+=#
     # get ranges of the original signal for the scales
     # normalize and shift so all channels are visible
     r = Float64[]
-    @inbounds for ch_idx in eachindex(ctypes_uni)
-        push!(r, round(_get_range(s[ctypes .== ctypes_uni[ch_idx], :])))
-        s[ctypes .== ctypes_uni[ch_idx], :] = @views normalize_minmax(s[ctypes .== ctypes_uni[ch_idx], :])
+    @inbounds for idx in eachindex(ctypes_uni)
+        push!(r, round(NeuroAnalyzer._get_range(s[ctypes .== ctypes_uni[idx], :])))
+        s[ctypes .== ctypes_uni[idx], :] = @views normalize_minmax(s[ctypes .== ctypes_uni[idx], :])
     end
+
     # reverse so 1st channel is on top
-    s = @views reverse(s[:, eachindex(t)], dims = 1)
-    channel_color = reverse(channel_color)
-    bad = reverse(bad)
+#    reverse!(clabels)
+#    reverse!(ctypes)
+#    reverse!(s, dims=1)
+#    bad = reverse(bad)
+
     # each channel is between -1.0 and +1.0
     # scale by 0.5 so maxima do not overlap
-    @inbounds for idx in 1:ch_n
-        s[idx, :] = @views (s[idx, :] .* 0.5) .+ (idx - 1)
-    end
+#    @inbounds for idx in 1:ch_n
+#        s[idx, :] = @views (s[idx, :] .* 0.5) .+ idx
+#    end
 
     # prepare plot
     plot_size = (1250, 950)
@@ -406,66 +405,41 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        xticks=LinearTicks(10),
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
-                       yticks=(0.5:1:10.5, clabels[1:11]),
+                       yticks=(1:ch_n, clabels),
+                       yreversed=true,
                        xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0),
+                       yautolimitmargin=(0.5, 0.5),
+                       xzoomlock=false,
+                       yzoomlock=false,
                        xpanlock=true,
                        ypanlock=true,
                        xrectzoom=false,
                        yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
-    GLMakie.ylims!(ax1, -0.5, 10.5)
+    if ch_n > 15
+        GLMakie.ylims!(ax1, ch2 - 15 + 0.5, ch2 + 0.5)
+        GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - 15 + 0.5)
+    else
+        GLMakie.ylims!(ax1, 0.5, ch_n + 0.5)
+    end
     ax1.titlesize = 20
     ax1.xlabelsize = 18
     ax1.ylabelsize = 18
     ax1.xticklabelsize = 12
     ax1.yticklabelsize = 12
 
-    # plot channels
-    if length(ctypes_uni) > 1
-        cmap = GLMakie.resample_cmap(pal, length(ctypes_uni))
-    else
-        cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
-    end
-
-    for idx in 1:ch_n
-        if !bad[idx]
-            if mono
-                GLMakie.lines!(ax1,
-                               t,
-                               s[idx, :],
-                               linewidth=1,
-                               color=:black)
-            else
-                if length(ctypes_uni) > 1
-                    GLMakie.lines!(ax1,
-                                   t,
-                                   s[idx, :],
-                                   linewidth=1,
-                                   color=cmap[channel_color[idx]],
-                                   colormap=pal,
-                                   colorrange=1:length(ctypes_uni))
-                else
-                    GLMakie.lines!(ax1,
-                                   t,
-                                   s[idx, :],
-                                   linewidth=1,
-                                   color=cmap[idx],
-                                   colormap=pal,
-                                   colorrange=1:ch_n)
-                end
-            end
-        else
-            GLMakie.lines!(ax1,
-                           t,
-                           s[idx, :],
-                           linewidth=1,
-                           alpha=0.2,
-                           color=:black)
-        end
+    # draw channels
+    for idx in ch_n:-1:1
+        GLMakie.lines!(ax1,
+                       t,
+                       (s[idx, :] .* 0.5) .+ idx,
+                       linewidth=1.5,
+                       alpha=!bad[idx] ? 1 : 0.25,
+                       color=:black)
     end
 
     # draw scales
+    scale = false
     if scale
         idx2 = 1
         for idx1 in 1:ch_n
@@ -488,89 +462,118 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
         end
     end
 
-    ax2 = GLMakie.Axis(p[2, 1],
-                       xlabel=xlabel,
-                       ylabel="",
-                       title="",
-                       xticks=LinearTicks(25),
-                       yticksvisible=false,
-                       xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0),
-                       backgroundcolor = :white,
-                       xpanlock=true,
-                       ypanlock=true,
-                       xrectzoom=false,
-                       yrectzoom=false)
-    GLMakie.xlims!(ax2, t[1], t[end])
-    GLMakie.ylims!(ax2, 0, 1)
-    hideydecorations!(ax2)
-    ax2.xticklabelsize = 12
+    if gui
 
-    # time line marker
-    # define a square: Rect(x, y, width, height)
-    rectangle = lift(seg_pos) do seg_pos
-        Rect(seg_pos, 0, seg_len, 1)
-    end
-    poly!(ax2,
-          rectangle,
-          color=:darkgrey,
-          strokecolor=:black,
-          strokewidth=2)
+        # selection
+        # define a square: Rect(x, y, width, height)
+        square = Rect(2, ax1.limits[][2][1],
+                      6, (ax1.limits[][2][2] - ax1.limits[][2][1]))
+        poly!(ax1,
+              square,
+              alpha=0.25,
+              color=:darkgrey,
+              strokecolor=:black,
+              strokewidth=2)
 
-    ax3 = GLMakie.Axis(p[1, 2],
-                       xlabel="",
-                       ylabel="",
-                       title="",
-                       xticksvisible=false,
-                       yticksvisible=false,
-                       xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0),
-                       backgroundcolor = :white,
-                       xpanlock=true,
-                       ypanlock=true,
-                       xrectzoom=false,
-                       yrectzoom=false)
-    GLMakie.xlims!(ax3, 0, 1)
-    GLMakie.ylims!(ax3, 1, ch_n)
-    hidedecorations!(ax3)
+        # time bar
+        ax2 = GLMakie.Axis(p[2, 1],
+                           xlabel=xlabel,
+                           ylabel="",
+                           title="",
+                           xticks=LinearTicks(25),
+                           yticksvisible=false,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0),
+                           backgroundcolor = :white,
+                           xpanlock=true,
+                           ypanlock=true,
+                           xrectzoom=false,
+                           yrectzoom=false)
+        GLMakie.xlims!(ax2, t[1], t[end])
+        GLMakie.ylims!(ax2, 0, 1)
+        hideydecorations!(ax2)
+        ax2.xticklabelsize = 12
 
-    on(events(p).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press # || event.action == Mouse.release
-                # @show round(mouseposition(ax1)[1])
-                # @show round(mouseposition(ax1)[2])
-                ax2_x = mouseposition(ax2)[1]
-                ax2_y = mouseposition(ax2)[2]
-                seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
-                if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                    ax1.limits[] = (seg, ax1.limits[][2])
-                    seg_pos[] = round(Int64, ax2_x)
+        # time line marker
+        # define a square: Rect(x, y, width, height)
+        t_rectangle = lift(seg_pos) do seg_pos
+            Rect(seg_pos, 0, seg_len, 1)
+        end
+        poly!(ax2,
+              t_rectangle,
+              color=:darkgrey,
+              strokecolor=:black,
+              strokewidth=2)
+
+        # channel bar
+        ax3 = GLMakie.Axis(p[1, 2],
+                           xlabel="",
+                           ylabel="",
+                           title="",
+                           yticks=1:ch_n,
+                           xticksvisible=false,
+                           yticksvisible=true,
+                           yreversed=true,
+                           xautolimitmargin=(0, 0),
+                           yautolimitmargin=(0, 0),
+                           backgroundcolor = :white,
+                           xpanlock=true,
+                           ypanlock=true,
+                           xrectzoom=false,
+                           yrectzoom=false)
+        GLMakie.ylims!(ax3, ch_n, 1)
+        hidedecorations!(ax3)
+
+        # channel marker
+        # define a square: Rect(x, y, width, height)
+        ch_rectangle = Rect(0, 1, 1, ch2 - 1)
+        poly!(ax3,
+              ch_rectangle,
+              color=:darkgrey,
+              strokecolor=:black,
+              strokewidth=1)
+
+        on(events(p).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press # || event.action == Mouse.release
+                    # @show round(mouseposition(ax1)[1])
+                    # @show round(mouseposition(ax1)[2])
+                    ax2_x = mouseposition(ax2)[1]
+                    ax2_y = mouseposition(ax2)[2]
+                    seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
+                    if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                        seg_pos[] = round(Int64, ax2_x)
+                    end
                 end
             end
         end
-    end
 
-    on(events(p).keyboardbutton) do event
-        if event.action == Keyboard.press
-            if event.key == Keyboard.left
-                if seg_pos[] > 0
-                    seg_pos[] -= 1
-                    seg = (seg_pos[], seg_pos[] + seg_len)
-                    ax1.limits[] = (seg, ax1.limits[][2])
+        on(events(p).keyboardbutton) do event
+            if event.action == Keyboard.press
+                if event.key == Keyboard.left
+                    if seg_pos[] > 0
+                        seg_pos[] -= 1
+                        seg = (seg_pos[], seg_pos[] + seg_len)
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                    end
                 end
-            end
-            if event.key == Keyboard.right
-                if seg_pos[] <= t[end] - seg_len
-                    seg_pos[] += 1
-                    seg = (seg_pos[], seg_pos[] + seg_len)
-                    ax1.limits[] = (seg, ax1.limits[][2])
+                if event.key == Keyboard.right
+                    if seg_pos[] <= t[end] - seg_len
+                        seg_pos[] += 1
+                        seg = (seg_pos[], seg_pos[] + seg_len)
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                    end
                 end
             end
         end
-    end
 
-    colsize!(p.layout, 2, GLMakie.Fixed(20))
-    rowsize!(p.layout, 2, GLMakie.Fixed(20))
+        colsize!(p.layout, 2, GLMakie.Fixed(20))
+        rowsize!(p.layout, 2, GLMakie.Fixed(20))
+
+        wait(display(p))
+
+    end
 
     return p
 
@@ -579,12 +582,13 @@ end
 """
     mplot_signal(t, s; <keyword arguments>)
 
-Plot amplitude of multi-channel signal.
+Plot amplitude of multi-channel epoched signal.
 
 # Arguments
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractArray`: data to plot
+- `seg::Tuple{Int64, Int64}`: segment (from, to) in seconds to display
 - `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
@@ -599,7 +603,7 @@ Plot amplitude of multi-channel signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Int64, Int64}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
 
     ch_n = size(s, 1)
 
@@ -611,18 +615,6 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     ctypes_uni_pos = zeros(Int64, length(ctypes))
     ctypes_uni_pos[t_pos] .= 1
 
-    # set colors
-    if mono
-        pal = :grays
-        channel_color = repeat([:black], ch_n)
-    else
-        pal = :darktest
-        channel_color = zeros(Int64, ch_n)
-        for idx in eachindex(ctypes_uni)
-            channel_color[ctypes .== ctypes_uni[idx]] .= idx
-        end
-    end
-
     # get ranges of the original signal for the scales
     # normalize and shift so all channels are visible
     r = Float64[]
@@ -632,7 +624,6 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     end
     # reverse so 1st channel is on top
     s = @views reverse(s[:, eachindex(t)], dims = 1)
-    channel_color = reverse(channel_color)
     bad = reverse(bad)
     # each channel is between -1.0 and +1.0
     # scale by 0.5 so maxima do not overlap
@@ -1074,7 +1065,7 @@ Plot signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
@@ -1095,7 +1086,7 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), gui::Bool=true)::GLMakie.Figure
+function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), gui::Bool=true)::GLMakie.Figure
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
@@ -1153,27 +1144,29 @@ t_s2 = seg[2]
     clabels = labels(obj)
 
     # sort channels by their type
-    if !isa(ch, Int64)
-        ctypes = ctypes[ch]
-        clabels = clabels[ch]
+#    if !isa(ch, Int64)
+#        ctypes = ctypes[ch]
+#        clabels = clabels[ch]
         cunits = obj.header.recording[:unit][ch]
-        if bad
-            bm = bm[ch, ep]
-            if isa(bm, Matrix{Bool})
-                bm_tmp = zeros(Bool, size(bm, 1))
-                [sum(bm[idx, :]) > 0 && (bm_tmp[idx] = true) for idx in 1:size(bm, 1)]
-                bm = bm_tmp
-            end
-        else
-            bm = zeros(Bool, length(ch))
-        end
-    else
-        if bad
-            bm = bm[ch]
-        else
-            bm = false
-        end
-    end
+#        if bad
+#            bm = bm[ch, ep]
+#            if isa(bm, Matrix{Bool})
+#                bm_tmp = zeros(Bool, size(bm, 1))
+#                [sum(bm[idx, :]) > 0 && (bm_tmp[idx] = true) for idx in 1:size(bm, 1)]
+#                bm = bm_tmp
+#            end
+#        else
+#            bm = zeros(Bool, length(ch))
+#        end
+#    else
+#        if bad
+#            bm = bm[ch]
+#        else
+#            bm = false
+#        end
+#    end
+
+# bm = zeros(Bool, length(ch))
 
     if type === :normal
         if isa(ch, Int64)
@@ -1194,14 +1187,15 @@ t_s2 = seg[2]
                              mono=mono)
             else
                 ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, clabels[ch]))]")
-                p = @views mplot_signal(
+                p = mplot_signal(
                                 obj.time_pts,
                                 obj.data[ch, :, :][:],
                                 seg=seg,
                                 xlabel=xl,
                                 ylabel=yl,
                                 title=tt,
-                                bad=bm[ch])
+                                bad=bm,
+                                gui=gui)
             end
         else
             xl, yl, tt = _set_defaults(xlabel,
@@ -1210,7 +1204,7 @@ t_s2 = seg[2]
                                        "Time [s]",
                                        "",
                                        "")
-            p = @views mplot_signal(
+            p = mplot_signal(
                                 obj.time_pts,
                                 obj.data[ch, :, :][:, :],
                                 seg=seg,
@@ -1220,9 +1214,9 @@ t_s2 = seg[2]
                             xlabel=xl,
                             ylabel=yl,
                             title=tt,
-                            bad=bm,
+                            bad=bm[ch],
                             scale=scale,
-                            mono=mono)
+                                gui=gui)
         end
     end
 
@@ -1360,7 +1354,7 @@ Plot embedded or external component.
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
-- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
@@ -1377,7 +1371,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true)::Plots.Plot{Plots.GRBackend}
+function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true)::Plots.Plot{Plots.GRBackend}
 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -1524,7 +1518,7 @@ Plot signal.
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
@@ -1534,7 +1528,7 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true)::GLMakie.Figure
+function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true)::GLMakie.Figure
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."

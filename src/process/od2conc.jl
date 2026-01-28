@@ -85,7 +85,7 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     end
     obj_new.header.recording[:channel_order] = vcat(obj_new.header.recording[:channel_order], collect(obj_new.header.recording[:channel_order][end]+1:size(obj_new.data, 1)))
     obj_new.header.recording[:label] = replace.(obj_new.header.recording[:label], ".0"=>"")
-    obj_new.header.recording[:bad_channel] = m_pad0(obj_new.header.recording[:bad_channel], size(obj_new.data, 1), size(obj_new.data, 3))
+    obj_new.header.recording[:bad_channel] = [obj_new.header.recording[:bad_channel]; zeros(Bool, size(obj_new.data, 1))]
 
     #=
     for idx in axes(dc, 3)

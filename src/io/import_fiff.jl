@@ -440,7 +440,7 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
         end
     end
 
-    bad_channels = zeros(Bool, ch_n, 1)
+    bad_channels = zeros(Bool, ch_n)
     !isnothing(fiff[:meas_info][:bad_chs]) && _warn("bad_channels tag is not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
 
     # HPI

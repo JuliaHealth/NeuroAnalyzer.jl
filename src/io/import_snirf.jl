@@ -549,7 +549,7 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
                                det_labels=det_labels,
                                opt_labels=opt_labels,
                                sampling_rate=round(Int64, sampling_rate),
-                               bad_channels=zeros(Bool, size(data, 1), 1))
+                               bad_channels=zeros(Bool, size(data, 1)))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

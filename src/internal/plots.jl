@@ -3,13 +3,13 @@ _xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} = floor(t[1],
 function _ylims(s::AbstractVector)::Tuple{Real, Real}
     if maximum(abs.(s)) > 100
         n = 2
-    elseif maximum(abs.(s)) >= 0
+    elseif maximum(abs.(s)) >= 10
         n = 1
-    elseif maximum(abs.(s)) < 0
+    elseif maximum(abs.(s)) < 10
         n = 0
     end
-    max = ceil(Int64, round(maximum(s) * 1.5, digits=n))
-    min = floor(Int64, round(minimum(s) * 1.5, digits=n))
+    max = ceil(Int64, round(maximum(s), digits=n))
+    min = floor(Int64, round(minimum(s), digits=n))
     if abs(min) == 0 && abs(max) == 0 
         max = 1.0
         min = -1.0

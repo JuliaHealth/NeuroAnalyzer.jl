@@ -462,7 +462,7 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
                               line_frequency=50,
                               sampling_rate=sampling_rate,
                               gain=ones(ch_n),
-                              bad_channels=zeros(Bool, size(data, 1), 1))
+                              bad_channels=zeros(Bool, size(data, 1)))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,

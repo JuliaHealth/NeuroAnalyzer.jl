@@ -235,7 +235,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
                               stimulation_sample=stim_sample,
                               markers_pos=markers_pos,
                               markers_neg=markers_neg,
-                              bad_channels=zeros(Bool, size(data, 1), 1))
+                              bad_channels=zeros(Bool, size(data, 1)))
     e = _create_experiment(name="", notes="", design="")
 
     hdr = _create_header(s,
