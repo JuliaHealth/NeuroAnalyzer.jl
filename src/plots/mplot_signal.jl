@@ -127,9 +127,28 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                 ax2_x = mouseposition(ax2)[1]
                 ax2_y = mouseposition(ax2)[2]
                 seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
-                if ax2_x > 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
                     ax1.limits[] = (seg, ax1.limits[][2])
                     seg_pos[] = round(Int64, ax2_x)
+                end
+            end
+        end
+    end
+
+    on(events(p).keyboardbutton) do event
+        if event.action == Keyboard.press
+            if event.key == Keyboard.left
+                if seg_pos[] > 0
+                    seg_pos[] -= 1
+                    seg = (seg_pos[], seg_pos[] + seg_len)
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                end
+            end
+            if event.key == Keyboard.right
+                if seg_pos[] <= t[end] - seg_len
+                    seg_pos[] += 1
+                    seg = (seg_pos[], seg_pos[] + seg_len)
+                    ax1.limits[] = (seg, ax1.limits[][2])
                 end
             end
         end
@@ -286,22 +305,23 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     on(events(p).keyboardbutton) do event
         if event.action == Keyboard.press
             if event.key == Keyboard.left
-                if seg_pos[] >= ep_len
-                    seg_pos[] -= ep_len
-                    seg = ((seg_pos[] - 1) * ep_len, (seg_pos[] + 4) * ep_len)
+                if seg_pos[] >= 1
+                    @show seg_pos[]
+                    seg_pos[] -= 1
+                    seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
                     ax1.limits[] = (seg, ax1.limits[][2])
                 end
             end
             if event.key == Keyboard.right
-                if seg_pos[] <= ep_n - ep_len
-                    seg_pos[] += ep_len
-                    seg = ((seg_pos[] - 1) * ep_len, (seg_pos[] + 4) * ep_len)
+                if seg_pos[] <= ep_n - 5
+                    @show seg_pos[]
+                    seg_pos[] += 1
+                    seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
                     ax1.limits[] = (seg, ax1.limits[][2])
                 end
             end
         end
     end
-
 
     rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
