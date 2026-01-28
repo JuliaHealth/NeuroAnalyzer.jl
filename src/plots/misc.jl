@@ -1,6 +1,6 @@
 export plot_compose
 export plot_empty
-export add_plot_locs
+export add_pl
 
 """
     plot_compose(p; <keyword arguments>)
@@ -86,50 +86,41 @@ function plot_empty()::GLMakie.Figure
 end
 
 """
-    add_plot_locs(p1, p2; <keyword arguments>)
+    add_pl(p, pl; <keyword arguments>)
 
-Add locations to a plot. Locations are placed in the top right corner. If `file_name` is provided, the plot is saved as PNG file.
+Add locations to a plot. Locations are placed in the top right corner.
 
 # Arguments
 
-- `p1::Plots.Plot{Plots.GRBackend}`: signal plot
-- `p2::Plots.Plot{Plots.GRBackend}`: locations plot
-- `view::Bool=true`: view the output image
-- `file_name::String=""`: output image filename
+- `p1::GLMakie.Figure`: primary plot
+- `p2::GLMakie.Figure`: locations plot
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+- `p::GLMakie.Figure`
 """
-function add_plot_locs(p1::Plots.Plot{Plots.GRBackend}, p2::Plots.Plot{Plots.GRBackend}; view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
+function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure; view::Bool=true, file_name::String="")::GLMakie.Figure
 
-    p1_size = p1.attr[:size]
-    p2_size = p2.attr[:size]
-    c = CairoRGBSurface(p1_size[1], p1_size[2])
-    cr = CairoContext(c)
-    withenv("GKSwstype" => "100") do
-        png(p1, io)
-    end
-    img = read_from_png(io)
-    Cairo.set_source_surface(cr, img, 0, 0)
-    Cairo.paint(cr)
-    Cairo.scale(cr, 0.5, 0.5)
-    withenv("GKSwstype" => "100") do
-        png(p2, io)
-    end
-    img = read_from_png(io)
-    Cairo.set_source_surface(cr, img, (2 * p1_size[1]) - p2_size[1], 0)
-    Cairo.paint(cr)
+        io = IOBuffer()
+        show(io, MIME"image/png"(), pl)
+        pp = FileIO.load(io)
+        transparent_pp = map(c -> RGBA(color(c), 1.0), pp)
+        transparent_pp[transparent_pp .== RGBA(1.0, 1.0, 1.0, 1.0)] .= RGBA(1.0, 1.0, 1.0, 0.0)
+        transparent_pp[transparent_pp .== RGBA(0.999, 0.999, 0.999, 1.0)] .= RGBA(0.999, 0.999, 0.999, 0.0)
+        transparent_pp[transparent_pp .== RGBA(0.998, 0.998, 0.998, 1.0)] .= RGBA(0.998, 0.998, 0.998, 0.0)
+        # top right corner
+        ax = contents(p[1, 1])[1]
+        ax = ax.targetlimits[].origin .+ ax.targetlimits[].widths
+        pos_x = ax[1]
+        pos_y = ax[2]
+        GLMakie.scatter!(p[1, 1],
+                         pos_x,
+                         pos_y,
+                         marker_offset=size(transparent_pp) ./ -2,
+                         marker=transparent_pp,
+                         markersize=size(transparent_pp),
+                         markerspace=:pixel)
 
-    if file_name != ""
-        ext = lowercase(splitext(file_name)[2])
-        @assert ext == ".png" "Filename extension must be .png"
-        (isfile(file_name) && verbose) && _warn("File $file_name will be overwritten.")
-        Cairo.write_to_png(c, file_name)
-    else
-        view && iview(c)
-    end
-
-    return c
+        return p
 
 end

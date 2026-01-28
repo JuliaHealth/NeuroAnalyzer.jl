@@ -19,13 +19,12 @@ Plot PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::GLMakie.Figure
+function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -50,8 +49,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -62,6 +60,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
     # plot powers
     Makie.lines!(sf,
                  sp,
+                 linewidth=2,
                  color=:black)
 
     return p
@@ -84,13 +83,12 @@ Plot multi-channel PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::GLMakie.Figure
+function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
 
     ch_n = size(sp, 1)
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -137,8 +135,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                       yticksvisible=false,
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
     GLMakie.ylims!(ax, -0.5, ch_n)
     ax.titlesize = 20
@@ -152,7 +149,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
     for idx in 1:ch_n
         Makie.lines!(sf,
                      sp[idx, :],
-                     linewidth=1,
+                     linewidth=2,
                      color=mono ? :black : cmap[idx],
                      colormap=pal,
                      colorrange=1:ch_n)
@@ -177,13 +174,12 @@ Plot PSD mean and ±95% CI of averaged channels.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, kwargs...)::GLMakie.Figure
+function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -211,9 +207,9 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, minimum(s_l) * 1.1, maximum(s_u) * 1.1)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -231,7 +227,7 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
     Makie.lines!(sf,
                  s_m,
                  color=:black,
-                 linewidth=1)
+                 linewidth=2)
 
     return p
 
@@ -254,13 +250,13 @@ Butterfly PSD plot.
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `avg::Bool=false`: plot average channels
-- `kwargs`: optional arguments for plotting
+- `leg::Bool=true`: if true, add legend with channel labels
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, kwargs...)::GLMakie.Figure
+function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -289,9 +285,9 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log10,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, extrema(sp) .* 1.1)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -305,16 +301,18 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                      color=cmap[idx],
                      colormap=pal,
                      colorrange=1:ch_n,
-                     linewidth=0.5,
+                     linewidth=2,
                      label=clabels[idx])
     end
-    ch_n < 40 && axislegend(position = :rb)
+    (leg && ch_n < 40) && axislegend(position = :rt,
+                                     colormap=pal)
 
     # plot averaged channels
     if avg
         s = mean(sp, dims=1)[:]
         Makie.lines!(sf,
                      s,
+                     colormap=pal,
                      linewidth=2,
                      color=:black)
     end
@@ -342,13 +340,12 @@ Plot 3-d waterfall PSD plot.
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol, kwargs...)::GLMakie.Figure
+function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol)::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -397,8 +394,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            aspect=(1, 1, 0.5),
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
-                           zautolimitmargin=(0, 0);
-                           kwargs...)
+                           zautolimitmargin=(0, 0))
         GLMakie.xlims!(ax, frq_lim)
         ax.titlesize = 20
         ax.xlabelsize = 18
@@ -412,7 +408,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
             Makie.lines!(sf,
                          ones(length(sf)) .* idx,
                          sp[idx, :],
-                         linewidth=1,
+                         linewidth=2,
                          color=mono ? :black : cmap[idx],
                          colormap=pal,
                          colorrange=1:ch_n)
@@ -439,8 +435,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            aspect=(1, 1, 0.5),
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
-                           zautolimitmargin=(0, 0);
-                           kwargs...)
+                           zautolimitmargin=(0, 0))
         ax.titlesize = 20
         ax.xlabelsize = 18
         ax.ylabelsize = 18
@@ -477,13 +472,12 @@ Plot topographical map of PSDs.
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
+function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -535,8 +529,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                           title=locs[idx, :label],
                           xscale=frq === :lin ? identity : log10,
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0);
-                          kwargs...)
+                          yautolimitmargin=(0.1, 0.1))
         hidedecorations!(ax)
         GLMakie.xlims!(ax, frq_lim)
         ax.titlesize = 8
@@ -558,8 +551,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                       title=title,
                       aspect=1,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
@@ -656,13 +648,13 @@ Plot power spectrum density.
     - `:topo`: topographical
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
-- `kwargs`: optional arguments for plotting
+- `leg::Bool=true`: if true, add legend with channel labels
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -806,8 +798,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          title=title,
                          frq_lim=frq_lim,
                          frq=frq,
-                         mono=mono;
-                         kwargs...)
+                         mono=mono)
         else
             p = mplot_psd(sf,
                          sp,
@@ -817,11 +808,9 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          title=title,
                          frq_lim=frq_lim,
                          frq=frq,
-                         mono=mono;
-                         kwargs...)
+                         mono=mono)
         end
     elseif type === :butterfly
-        pl = mplot_locs(obj, ch=labels(obj)[ch], selected=ch=labels(obj)[ch], ps=:s)
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
@@ -835,10 +824,8 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                                title=title,
                                frq_lim=frq_lim,
                                frq=frq,
-                               mono=mono;
-                               kwargs...)
-        GLMakie.scatter!(p[1, 1],
-                         pl)
+                               mono=mono,
+                               leg=leg)
     elseif type === :mean
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
@@ -853,13 +840,12 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          title=title,
                          frq_lim=frq_lim,
                          frq=frq,
-                         mono=mono;
-                         kwargs...)
-    elseif type === :w3d
+                         mono=mono)
+    elseif type === :w3d || type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
         @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
+        @assert ndims(sp) >= 2 "For type=:$type plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
@@ -874,29 +860,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
-                        variant=:w;
-                        kwargs...)
-    elseif type === :s3d
-        ch_t = obj.header.recording[:channel_type]
-        ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
-        xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "")
-        zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
-        title = replace(title, "channel" => "channels")
-        p = mplot_psd_3d(sf,
-                        sp,
-                        clabels=clabels[ch],
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        zlabel=zlabel,
-                        title=title,
-                        frq_lim=frq_lim,
-                        frq=frq,
-                        mono=mono,
-                        variant=:s;
-                        kwargs...)
+                        variant=type === :w3d ? :w : :s)
     elseif type === :topo
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
@@ -917,8 +881,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           frq_lim=frq_lim,
                           frq=frq,
                           cart=cart,
-                          head=head;
-                          kwargs...)
+                          head=head)
     end
 
     return p
@@ -968,13 +931,12 @@ Plot power spectrum density of embedded or external component.
     - `:topo`: topographical
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -1111,8 +1073,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                      title=title,
                      frq_lim=frq_lim,
                      frq=frq,
-                     mono=mono;
-                     kwargs...)
+                     mono=mono)
     elseif type === :butterfly
         @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 c_idxs."
         title = replace(title, "component" => "components")
@@ -1124,8 +1085,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                                title=title,
                                frq_lim=frq_lim,
                                frq=frq,
-                               mono=mono;
-                               kwargs...)
+                               mono=mono)
     elseif type === :mean
         @assert ndims(sp) >= 2 "For type=:mean plot the signal must contain ≥ 2 c_idxs."
         title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
@@ -1137,10 +1097,9 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                          title=title,
                          frq_lim=frq_lim,
                          frq=frq,
-                         mono=mono;
-                         kwargs...)
-    elseif type === :w3d
-        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
+                         mono=mono)
+    elseif type === :w3d || type === :s3d
+        @assert ndims(sp) >= 2 "For type=:$(type) plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
@@ -1155,26 +1114,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                         frq_lim=frq_lim,
                         frq=frq,
                         mono=mono,
-                        variant=:w;
-                        kwargs...)
-    elseif type === :s3d
-        @assert ndims(sp) >= 2 "For type=:w3d plot the signal must contain ≥ 2 channels."
-        xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = "")
-        zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
-        title = replace(title, "channel" => "channels")
-        p = mplot_psd_3d(sf,
-                        sp,
-                        clabels=clabels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        zlabel=zlabel,
-                        title=title,
-                        frq_lim=frq_lim,
-                        frq=frq,
-                        mono=mono,
-                        variant=:s;
-                        kwargs...)
+                        variant=type === :w3d ? :w : :s)
     elseif type === :topo
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
@@ -1195,8 +1135,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
                           frq_lim=frq_lim,
                           frq=frq,
                           cart=cart,
-                          head=head;
-                          kwargs...)
+                          head=head)
     end
 
     return p

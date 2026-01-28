@@ -229,9 +229,11 @@ ic, ic_mw, ic_var = ica_decompose(eeg_new, ch="eeg", iter=10)
 p = plot_icatopo(eeg_new, ch="eeg", ic, ic_mw)
 @test p isa Plots.Plot{Plots.GRBackend}
 
-@info "Test: add_plot_locs()"
-c = add_plot_locs(NeuroAnalyzer.plot(e10, ch="Fp1"), NeuroAnalyzer.plot_locs(e10, ch="Fp1", large=false), view=false, file_name="")
-@test c isa Cairo.CairoSurfaceBase{UInt32}
+@info "Test: add_pl()"
+p = mplot(e10, ep=1)
+pl = mplot_locs(eeg, ch="eeg", selected="eeg", ps=:s)
+pp = add_pl(p, pl)
+@test pp isa GLMakie.Figure
 
 @info "Test: plot2canvas()"
 @test plot2canvas(p) isa Cairo.CairoSurfaceBase{UInt32}
@@ -297,8 +299,8 @@ p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
 @info "Test: plot_connectivity_circle()"
 l = get_channel(eeg, type="eeg")
 m = rand(-10:0.1:10, length(l), length(l))
-p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.mplot_connectivity_circle(m, clabels=l)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_imf()"
 imf = rand(5, 100)
