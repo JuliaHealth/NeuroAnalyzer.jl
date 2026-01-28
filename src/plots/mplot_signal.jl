@@ -190,7 +190,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     seg_len = 5 * ep_len
 
     # prepare plot
-    plot_size = (1200, 400)
+    plot_size = (1200, 450)
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel="",
@@ -354,6 +354,9 @@ Plot amplitude of multi-channel continuous signal.
 """
 function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
 
+    seg_len = (seg[2] - seg[1])
+    seg_pos = Observable(seg[1])
+
     ch_n = size(s, 1)
 
     ctypes_uni = unique(ctypes)
@@ -394,26 +397,29 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     end
 
     # prepare plot
-    plot_size = (1200, 100 + 40 * ch_n)
+    plot_size = (1250, 950)
     p = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(p[1, 1],
-                      xlabel=xlabel,
-                      ylabel=ylabel,
-                      title=title,
-                      xticks=LinearTicks(10),
-                      xminorticksvisible=true,
-                      xminorticks=IntervalsBetween(10),
-                      yticks=((ch_n - 1):-1:0, clabels),
-                      yticksvisible=false,
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0))
-    GLMakie.xlims!(ax, seg)
-    GLMakie.ylims!(ax, -1, ch_n)
-    ax.titlesize = 20
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = ch_n <= 64 ? 12 : 10;
+    ax1 = GLMakie.Axis(p[1, 1],
+                       xlabel="",
+                       ylabel=ylabel,
+                       title=title,
+                       xticks=LinearTicks(10),
+                       xminorticksvisible=true,
+                       xminorticks=IntervalsBetween(10),
+                       yticks=(0.5:1:10.5, clabels[1:11]),
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0),
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
+    GLMakie.xlims!(ax1, seg)
+    GLMakie.ylims!(ax1, -0.5, 10.5)
+    ax1.titlesize = 20
+    ax1.xlabelsize = 18
+    ax1.ylabelsize = 18
+    ax1.xticklabelsize = 12
+    ax1.yticklabelsize = 12
 
     # plot channels
     if length(ctypes_uni) > 1
@@ -425,53 +431,52 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     for idx in 1:ch_n
         if !bad[idx]
             if mono
-                GLMakie.lines!(ax,
+                GLMakie.lines!(ax1,
                                t,
                                s[idx, :],
-                               linewidth=0.75,
+                               linewidth=1,
                                color=:black)
             else
                 if length(ctypes_uni) > 1
-                    GLMakie.lines!(ax,
+                    GLMakie.lines!(ax1,
                                    t,
                                    s[idx, :],
-                                   linewidth=0.75,
+                                   linewidth=1,
                                    color=cmap[channel_color[idx]],
                                    colormap=pal,
                                    colorrange=1:length(ctypes_uni))
                 else
-                    GLMakie.lines!(ax,
+                    GLMakie.lines!(ax1,
                                    t,
                                    s[idx, :],
-                                   linewidth=0.75,
+                                   linewidth=1,
                                    color=cmap[idx],
                                    colormap=pal,
                                    colorrange=1:ch_n)
                 end
             end
         else
-            GLMakie.lines!(ax,
+            GLMakie.lines!(ax1,
                            t,
                            s[idx, :],
-                           linewidth=0.75,
+                           linewidth=1,
                            alpha=0.2,
                            color=:black)
         end
     end
-@show ax.limits[][1]
+
     # draw scales
     if scale
         idx2 = 1
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
                 s_pos = ch_n - idx1 + 1
-                GLMakie.lines!(ax,
-                               #[_xlims(t)[1], _xlims(t)[1]],
-                               [ax.limits[][1][1], ax.limits[][1][1]],
+                GLMakie.lines!(ax1,
+                               [ax1.limits[][1][1], ax1.limits[][1][1]],
                                [(s_pos - 1.5), (s_pos - 0.5)],
                                color=:red,
                                linewidth=5)
-                GLMakie.text!(ax,
+                GLMakie.text!(ax1,
                               (_xlims(t)[1], s_pos - 1),
                               text="$(r[idx2]) $(cunits[idx1])  ",
                               fontsize=8,
@@ -482,6 +487,90 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
             end
         end
     end
+
+    ax2 = GLMakie.Axis(p[2, 1],
+                       xlabel=xlabel,
+                       ylabel="",
+                       title="",
+                       xticks=LinearTicks(25),
+                       yticksvisible=false,
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0),
+                       backgroundcolor = :white,
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
+    GLMakie.xlims!(ax2, t[1], t[end])
+    GLMakie.ylims!(ax2, 0, 1)
+    hideydecorations!(ax2)
+    ax2.xticklabelsize = 12
+
+    # time line marker
+    # define a square: Rect(x, y, width, height)
+    rectangle = lift(seg_pos) do seg_pos
+        Rect(seg_pos, 0, seg_len, 1)
+    end
+    poly!(ax2,
+          rectangle,
+          color=:darkgrey,
+          strokecolor=:black,
+          strokewidth=2)
+
+    ax3 = GLMakie.Axis(p[1, 2],
+                       xlabel="",
+                       ylabel="",
+                       title="",
+                       xticksvisible=false,
+                       yticksvisible=false,
+                       xautolimitmargin=(0, 0),
+                       yautolimitmargin=(0, 0),
+                       backgroundcolor = :white,
+                       xpanlock=true,
+                       ypanlock=true,
+                       xrectzoom=false,
+                       yrectzoom=false)
+    GLMakie.xlims!(ax3, 0, 1)
+    GLMakie.ylims!(ax3, 1, ch_n)
+    hidedecorations!(ax3)
+
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press # || event.action == Mouse.release
+                # @show round(mouseposition(ax1)[1])
+                # @show round(mouseposition(ax1)[2])
+                ax2_x = mouseposition(ax2)[1]
+                ax2_y = mouseposition(ax2)[2]
+                seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
+                if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                    seg_pos[] = round(Int64, ax2_x)
+                end
+            end
+        end
+    end
+
+    on(events(p).keyboardbutton) do event
+        if event.action == Keyboard.press
+            if event.key == Keyboard.left
+                if seg_pos[] > 0
+                    seg_pos[] -= 1
+                    seg = (seg_pos[], seg_pos[] + seg_len)
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                end
+            end
+            if event.key == Keyboard.right
+                if seg_pos[] <= t[end] - seg_len
+                    seg_pos[] += 1
+                    seg = (seg_pos[], seg_pos[] + seg_len)
+                    ax1.limits[] = (seg, ax1.limits[][2])
+                end
+            end
+        end
+    end
+
+    colsize!(p.layout, 2, GLMakie.Fixed(20))
+    rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
     return p
 
