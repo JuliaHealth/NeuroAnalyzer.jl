@@ -61,20 +61,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     ax1.yticklabelsize = 12
 
     # plot signal
-    if bad
-        GLMakie.lines!(ax1,
-                       t,
-                       s,
-                       linewidth=1,
-                       alpha=0.2,
-                       color=:black)
-    else
-        GLMakie.lines!(ax1,
-                       t,
-                       s,
-                       linewidth=1,
-                       color=:black)
-    end
+    GLMakie.lines!(ax1,
+                   t,
+                   s,
+                   linewidth=1.5,
+                   color=bad ? :lightgray : :black)
 
     if gui
 
@@ -217,20 +208,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     ax1.yticklabelsize = 12
 
     # plot signal
-    if bad
-        GLMakie.lines!(ax1,
-                       t,
-                       s[1, :, :][:],
-                       linewidth=1,
-                       alpha=0.2,
-                       color=:black)
-    else
-        GLMakie.lines!(ax1,
-                       t,
-                       s[1, :, :][:],
-                       linewidth=1,
-                       color=:black)
-    end
+    GLMakie.lines!(ax1,
+                   t,
+                   s[1, :, :][:],
+                   linewidth=1.5,
+                   color=bad ? :lightgray : :black)
 
     if gui
 
@@ -398,6 +380,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     #        s[idx, :] = @views (s[idx, :] .* 0.5) .+ idx
     #    end
 
+    ytc = repeat([:black], ch_n)
+    ytc[bad] .= :lightgray
+
     # prepare plot
     plot_size = (1650, 950)
     p = GLMakie.Figure(size=plot_size)
@@ -409,6 +394,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
                        yticks=clabels==repeat([""], ch_n) ? (1:ch_n) : (1:ch_n, clabels),
+                       yticklabelcolor=ytc,
                        yreversed=true,
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0.5, 0.5),
@@ -436,8 +422,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        t,
                        (s[idx, :] .* -0.5) .+ idx,
                        linewidth=1.5,
-                       alpha=!bad[idx] ? 1 : 0.25,
-                       color=:black)
+                       color=bad[idx] ? :lightgray : :black)
     end
 
     # draw scale bars
@@ -1099,7 +1084,6 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
     else
         _check_segment(obj, seg)
     end
-    # seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
 
@@ -1193,13 +1177,13 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
 
     if type === :butterfly
         @assert length(unique(ctypes)) == 1 "For plot type=:butterfly all channels must be of the same type."
-        @assert size(s, 1) >= 2 "For plot type=:butterfly the signal must contain ≥ 2 channels."
+        @assert ch_n > 1 "For plot type=:butterfly the signal must contain ≥ 2 channels."
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
                                    "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
-                                   "$(size(s[ch, :], 1)) $(uppercase(unique(ctypes)[1])) channels")
+                                   "$ch_n $(uppercase(unique(ctypes)[1])) channels")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
             p = plot_eda_butterfly(t,
@@ -1211,8 +1195,8 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                                    avg=avg,
                                    mono=mono)
         else
-            p = mplot_signal_butterfly(t,
-                                      s[ch, :],
+            p = mplot_signal_butterfly(obj.time_pts,
+                                      obj.data[ch, :, :][:, :],
                                       clabels=clabels,
                                       xlabel=xl,
                                       ylabel=yl,
@@ -1224,13 +1208,13 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
 
     if type === :mean
         @assert length(unique(ctypes)) == 1 "For plot type=:mean all channels must be of the same type."
-        @assert size(s, 1) >= 2 "For plot type=:mean the signal must contain ≥ 2 channels."
+        @assert ch_n > 1 "For plot type=:mean the signal must contain ≥ 2 channels."
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [s]",
                                    "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
-                                   "$(size(s[ch, :], 1)) $(uppercase(unique(ctypes)[1])) channels")
+                                   "$ch_n $(uppercase(unique(ctypes)[1])) channels")
         if datatype(obj) == "eda"
             (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
             p = plot_eda_avg(t,
@@ -1240,8 +1224,8 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                              title=tt,
                              mono=mono)
         else
-            p = mplot_signal_avg(t,
-                                s[ch, :],
+            p = mplot_signal_avg(obj.time_pts,
+                                obj.data[ch, :, :][:, :],
                                 xlabel=xl,
                                 ylabel=yl,
                                 title=tt,
