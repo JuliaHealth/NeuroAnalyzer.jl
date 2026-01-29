@@ -367,6 +367,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     end
 
     ctypes_uni = unique(ctypes)
+
 #=
     t_pos = zeros(Int64, length(ctypes_uni))
     for idx in eachindex(ctypes_uni)
@@ -375,8 +376,10 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     ctypes_uni_pos = zeros(Int64, length(ctypes))
     ctypes_uni_pos[t_pos] .= 1
 =#
+
     # get ranges of the original signal for the scales
-    # normalize and shift so all channels are visible
+    # normalize in groups by channel type
+    # between -1.0 and +1.0 and shift so all channels are visible
     r = Float64[]
     @inbounds for idx in eachindex(ctypes_uni)
         push!(r, round(NeuroAnalyzer._get_range(s[ctypes .== ctypes_uni[idx], :])))
@@ -384,16 +387,16 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     end
 
     # reverse so 1st channel is on top
-#    reverse!(clabels)
-#    reverse!(ctypes)
-#    reverse!(s, dims=1)
-#    bad = reverse(bad)
+    # reverse!(clabels)
+    # reverse!(ctypes)
+    # reverse!(s, dims=1)
+    # bad = reverse(bad)
 
-    # each channel is between -1.0 and +1.0
+    # each channel is 
     # scale by 0.5 so maxima do not overlap
-#    @inbounds for idx in 1:ch_n
-#        s[idx, :] = @views (s[idx, :] .* 0.5) .+ idx
-#    end
+    #    @inbounds for idx in 1:ch_n
+    #        s[idx, :] = @views (s[idx, :] .* 0.5) .+ idx
+    #    end
 
     # prepare plot
     plot_size = (1250, 950)
@@ -536,8 +539,6 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
         on(events(p).mousebutton) do event
             if event.button == Mouse.left
                 if event.action == Mouse.press # || event.action == Mouse.release
-                    # @show round(mouseposition(ax1)[1])
-                    # @show round(mouseposition(ax1)[2])
                     ax2_x = mouseposition(ax2)[1]
                     ax2_y = mouseposition(ax2)[2]
                     seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
