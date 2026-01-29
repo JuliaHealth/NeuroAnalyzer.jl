@@ -29,7 +29,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     seg_pos = Observable(seg[1])
 
     # prepare plot
-    plot_size = (1200, 450)
+    plot_size = (1600, 450)
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel=gui ? "" : xlabel,
@@ -185,7 +185,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     seg_len = 5 * ep_len
 
     # prepare plot
-    plot_size = (1200, 450)
+    plot_size = (1600, 450)
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel="",
@@ -399,7 +399,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     #    end
 
     # prepare plot
-    plot_size = (1250, 950)
+    plot_size = (1650, 950)
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel="",
@@ -529,7 +529,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
 
         # channel marker
         # define a square: Rect(x, y, width, height)
-        ch_rectangle = Rect(0, 1, 1, ch2 - 1)
+        ch_rectangle = Rect(0, ch1, 1, ch2 - 1)
         poly!(ax3,
               ch_rectangle,
               color=:darkgrey,
@@ -572,7 +572,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
         colsize!(p.layout, 2, GLMakie.Fixed(20))
         rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
-        wait(display(p))
+#        wait(display(p))
 
     end
 
@@ -633,7 +633,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
     end
 
     # prepare plot
-    plot_size = (1200, 100 + 40 * ch_n)
+    plot_size = (1600, 100 + 40 * ch_n)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -749,7 +749,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractVecto
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # prepare plot
-    plot_size = (1200, 400)
+    plot_size = (1600, 400)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -834,7 +834,7 @@ function mplot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractAr
     ylim = _tuple_max(ylim)
 
     # prepare plot
-    plot_size = (1200, 500)
+    plot_size = (1600, 500)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -903,7 +903,7 @@ function mplot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abst
     clabels == [""] && (clabels = repeat([""], ch_n))
 
     # plot channels
-    plot_size = (1200, 500)
+    plot_size = (1600, 500)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -994,7 +994,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray
     end
 
     # prepare plot
-    plot_size = (1200, 100 + 40 * ch_n)
+    plot_size = (1600, 100 + 40 * ch_n)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
