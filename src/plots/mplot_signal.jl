@@ -165,7 +165,6 @@ Plot amplitude of single-channel epoched signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractArray`: data to plot
-- `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `bad::Bool=false`: is this a bad channel
@@ -234,6 +233,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            backgroundcolor = :white,
+                           xzoomlock=true,
+                           yzoomlock=true,
                            xpanlock=true,
                            ypanlock=true,
                            xrectzoom=false,
@@ -491,6 +492,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            backgroundcolor = :white,
+                           xzoomlock=true,
+                           yzoomlock=true,
                            xpanlock=true,
                            ypanlock=true,
                            xrectzoom=false,
@@ -523,6 +526,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            backgroundcolor = :white,
+                           xzoomlock=true,
+                           yzoomlock=true,
                            xpanlock=true,
                            ypanlock=true,
                            xrectzoom=false,
@@ -1090,7 +1095,7 @@ Plot signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ep::Union{Int64, AbstractRange}=0`: epoch to display
+- `ep::Int64=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -1112,13 +1117,13 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, gui::Bool=true)::GLMakie.Figure
+function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, gui::Bool=true)::GLMakie.Figure
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
     datatype(obj) == "mep" && _warn("For MEP objects, use plot_mep()")
 
-    if signal_len(obj) <= 10 * sr(obj) && seg == (0, 10)
+    if signal_len(obj) <= seg[2] * sr(obj)
         seg = (obj.time_pts[1], obj.time_pts[end])
     else
         _check_segment(obj, seg)
@@ -1126,17 +1131,14 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
 
+    ep1 = nothing
+    ep2 = nothing
     if ep != 0
         _check_epochs(obj, ep)
-        if nepochs(obj) == 1
-            ep = 1
-        else
-            if ep isa Int64
-                seg = (((ep - 1) * epoch_len(obj) + 1), (ep * epoch_len(obj)))
-            else
-                seg = (((ep[1] - 1) * epoch_len(obj) + 1), (ep[end] * epoch_len(obj)))
-            end
-        end
+        @assert nepochs(obj) > 1 "To use ep the signal must be epoched."
+        ep1 = (ep - 1) * epoch_len(obj) + 1
+        ep2 = ep * epoch_len(obj)
+        seg = (obj.time_pts[ep1], obj.time_pts[ep2])
     end
 
     # do not show epoch markers if there are no epochs
@@ -1163,7 +1165,6 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
         clabels = clabels[ch]
         cunits = obj.header.recording[:unit][ch]
     end
-
     if type === :normal
         if isa(ch, Int64)
             ch_name = _ch_rename(ctypes[ch])
@@ -1183,14 +1184,35 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
                              mono=mono)
             else
                 ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, clabels[ch]))]")
-                p = mplot_signal(obj.time_pts,
-                                obj.data[ch, :, :][:],
-                                seg=seg,
-                                xlabel=xl,
-                                ylabel=yl,
-                                title=tt,
-                                bad=bm[ch],
-                                gui=gui)
+                if ep == 0
+
+                    if nepochs(obj) == 1
+                        p = mplot_signal(obj.time_pts,
+                                        obj.data[ch, :, :][:],
+                                        seg=seg,
+                                        xlabel=xl,
+                                        ylabel=yl,
+                                        title=tt,
+                                        bad=bm[ch],
+                                        gui=gui)
+                    else
+                        p = mplot_signal(obj.time_pts,
+                                        reshape(obj.data[ch, :, :], 1, :, nepochs(obj)),
+                                        ylabel=yl,
+                                        title=tt,
+                                        bad=bm[ch],
+                                        gui=gui)
+                    end
+                else
+                    p = mplot_signal(obj.time_pts[ep1:ep2],
+                                    obj.data[ch, :, ep],
+                                        seg=round.(Int64, seg),
+                                        xlabel=xl,
+                                        ylabel=yl,
+                                    title=tt,
+                                    bad=bm[ch],
+                                    gui=false)
+                end
             end
         else
             xl, yl, tt = _set_defaults(xlabel,

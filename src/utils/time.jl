@@ -2,6 +2,7 @@ export t2s
 export s2t
 export markers_s2t
 export markers_s2t!
+export e2t
 
 """
     t2s(t, fs)
@@ -181,5 +182,51 @@ function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
     obj.markers[:, :length] = s2t.(obj.markers[:, :length], fs)
 
     return nothing
+
+end
+
+"""
+    e2t(obj; <keyword arguments>)
+
+Convert epoch number to time segment in seconds.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::Int64`: epoch number
+
+# Returns
+
+- `e2t::Tuple{Real, Real}`: time in seconds
+"""
+function e2t(obj::NeuroAnalyzer.NEURO; ep::Int64)::Tuple{Real, Real}
+
+    el = epoch_len(obj)
+    es = (ep - 1) * el + 1
+    ee = es + el - 1
+    return (obj.time_pts[es], obj.time_pts[ee])
+
+end
+
+"""
+    e2t(obj; <keyword arguments>)
+
+Convert epoch number to time segment in seconds.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::AbstractVector`: epoch number
+
+# Returns
+
+- `e2t::Tuple{Real, Real}`: time in seconds
+"""
+function e2t(obj::NeuroAnalyzer.NEURO; ep::AbstractVector)::Tuple{Real, Real}
+
+    el = epoch_len(obj)
+    es = (ep - 1) * el + 1
+    ee = es + el - 1
+    return (obj.time_pts[es], obj.time_pts[ee])
 
 end
