@@ -338,7 +338,7 @@ Plot amplitude of multi-channel continuous signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractMatrix`: data to plot
-- `seg::Tuple{Int64, Int64}`: segment (from, to) in seconds to display
+- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display
 - `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
@@ -353,7 +353,7 @@ Plot amplitude of multi-channel continuous signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Int64, Int64}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Int64, Int64}=(0, 10), clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
 
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
@@ -408,7 +408,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        xticks=LinearTicks(10),
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
-                       yticks=1:ch_n,#(1:ch_n, clabels),
+                       yticks=clabels==repeat([""], ch_n) ? (1:ch_n) : (1:ch_n, clabels),
                        yreversed=true,
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0.5, 0.5),
@@ -420,10 +420,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
     if ch_n > 15
-        GLMakie.ylims!(ax1, ch2 - 15 + 0.5, ch2 + 0.5)
         GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - 15 + 0.5)
     else
-        GLMakie.ylims!(ax1, 0.5, ch_n + 0.5)
+        GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
     ax1.titlesize = 20
     ax1.xlabelsize = 18
@@ -455,9 +454,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                 GLMakie.text!(ax1,
                               x,
                               idx1,
-                              text="$(r[idx2]) $(cunits[idx1])",
+                              text=cunits == repeat([""], ch_n) ? "$(r[idx2])" : "$(r[idx2]) $(cunits[idx1])",
                               fontsize=8,
-                              color=:black,
+                              color=:red,
                               align=(:center, :top),
                               rotation=pi/2,
                               offset=(5, 0))
@@ -553,20 +552,22 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
 
         on(events(p).keyboardbutton) do event
             if event.action == Keyboard.press
+                if event.key == Keyboard.home
+                    seg_pos[] = 0
+                end
+                if event.key == Keyboard._end
+                    seg_pos[] = ceil(Int64, t[end] - seg_len)
+                end
                 if event.key == Keyboard.left
-                    if seg_pos[] > 0
-                        seg_pos[] -= 1
-                        seg = (seg_pos[], seg_pos[] + seg_len)
-                        ax1.limits[] = (seg, ax1.limits[][2])
-                    end
+                    seg_pos[] > 0 && (seg_pos[] -= 1)
                 end
                 if event.key == Keyboard.right
                     if seg_pos[] <= t[end] - seg_len
                         seg_pos[] += 1
-                        seg = (seg_pos[], seg_pos[] + seg_len)
-                        ax1.limits[] = (seg, ax1.limits[][2])
                     end
                 end
+                seg = (seg_pos[], seg_pos[] + seg_len)
+                ax1.limits[] = (seg, ax1.limits[][2])
             end
         end
 
@@ -1081,14 +1082,13 @@ Plot signal.
     - `:butterfly`: butterfly plot
 - `avg::Bool=false`: plot average EDA
 - `bad::Bool=false`: plot bad channels
-- `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
 - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, s_pos::Tuple{Real, Real}=(0, 0), gui::Bool=true)::GLMakie.Figure
+function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, gui::Bool=true)::GLMakie.Figure
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
@@ -1124,18 +1124,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::
 
     # check channels
     ch = get_channel(obj, ch=ch)
-
-    # get time vector
-#    if seg[2] <= epoch_len(obj)
-#        s = obj.data[:, seg[1]:seg[2], 1]
-#    else
-#        s = epoch(obj, ep_n=1).data[:, seg[1]:seg[2], 1]
-#    end
-#    t = obj.time_pts[seg[1]:seg[2]]
-t_s1 = seg[1]
-t_s2 = seg[2]
-#    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-#    ep = _s2epoch(obj, seg[1], seg[2])
+    ch_n = length(ch)
 
     length(ch) == 1 && (ch = ch[1])
 
@@ -1146,29 +1135,11 @@ t_s2 = seg[2]
     clabels = labels(obj)
 
     # sort channels by their type
-#    if !isa(ch, Int64)
-#        ctypes = ctypes[ch]
-#        clabels = clabels[ch]
+    if !isa(ch, Int64)
+        ctypes = ctypes[ch]
+        clabels = clabels[ch]
         cunits = obj.header.recording[:unit][ch]
-#        if bad
-#            bm = bm[ch, ep]
-#            if isa(bm, Matrix{Bool})
-#                bm_tmp = zeros(Bool, size(bm, 1))
-#                [sum(bm[idx, :]) > 0 && (bm_tmp[idx] = true) for idx in 1:size(bm, 1)]
-#                bm = bm_tmp
-#            end
-#        else
-#            bm = zeros(Bool, length(ch))
-#        end
-#    else
-#        if bad
-#            bm = bm[ch]
-#        else
-#            bm = false
-#        end
-#    end
-
-# bm = zeros(Bool, length(ch))
+    end
 
     if type === :normal
         if isa(ch, Int64)
@@ -1189,8 +1160,7 @@ t_s2 = seg[2]
                              mono=mono)
             else
                 ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, clabels[ch]))]")
-                p = mplot_signal(
-                                obj.time_pts,
+                p = mplot_signal(obj.time_pts,
                                 obj.data[ch, :, :][:],
                                 seg=seg,
                                 xlabel=xl,
@@ -1206,10 +1176,9 @@ t_s2 = seg[2]
                                        "Time [s]",
                                        "",
                                        "")
-            p = mplot_signal(
-                                obj.time_pts,
-                                obj.data[ch, :, :][:, :],
-                                seg=seg,
+            p = mplot_signal(obj.time_pts,
+                            obj.data[ch, :, :][:, :],
+                            seg=seg,
                             ctypes=ctypes,
                             clabels=clabels,
                             cunits=cunits,
@@ -1218,7 +1187,7 @@ t_s2 = seg[2]
                             title=tt,
                             bad=bm[ch],
                             scale=scale,
-                                gui=gui)
+                            gui=gui)
         end
     end
 
@@ -1291,28 +1260,34 @@ t_s2 = seg[2]
     end
 
     # plot markers if available
-    # TODO: draw markers length
     if markers && _has_markers(obj)
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :value]
+        if gui
+            GLMakie.vlines!(p[2, 1],
+                            markers_pos,
+                            linestyle=:dash,
+                            linewidth=1,
+                            color=:black)
+        end
         for idx in eachindex(markers_pos)
-            if _in(markers_pos[idx], (t[1], t[end]))
+            if _in(markers_pos[idx], (obj.time_pts[1], obj.time_pts[end]))
                 GLMakie.vlines!(p[1, 1],
-                                [markers_pos[idx]],
+                                markers_pos[idx],
                                 linestyle=:dash,
                                 linewidth=1,
                                 color=:black)
                 if length(ch) > 1
                     GLMakie.textlabel!(p[1, 1],
-                                       (markers_pos[idx], -0.75),
+                                       (markers_pos[idx] + 0.07, ch_n > 15 ? 15.4 : ch_n + 0.4),
                                        text="$(markers_id[idx]) / $(markers_desc[idx])",
                                        text_align=(:left, :center),
                                        fontsize=8,
                                        text_rotation=pi/2)
                 else
                     GLMakie.textlabel!(p[1, 1],
-                                       (markers_pos[idx], _ylims(s[ch, :])[1] * 0.95),
+                                       (markers_pos[idx] + 0.07, 0.97 * minimum(obj.data[ch, :, :])),
                                        text="$(markers_id[idx]) / $(markers_desc[idx])",
                                        text_align=(:left, :center),
                                        fontsize=8,
@@ -1322,18 +1297,7 @@ t_s2 = seg[2]
         end
     end
 
-    # draw segment borders
-    GLMakie.vlines!(p[1, 1],
-                    [s_pos[1]],
-                    color=:black,
-                    linewidth=1)
-    GLMakie.vlines!(p[1, 1],
-                    [s_pos[2]],
-                    color=:black,
-                    linewidth=1)
-
     if gui
-        t = obj.time_pts
 #        time_s = Slider(p[2, 1],
 #                        range = LinRange(t[1], t[end], length(t)),
 #                        horizontal = true)

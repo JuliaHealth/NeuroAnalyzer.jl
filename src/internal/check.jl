@@ -92,12 +92,12 @@ function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Int64, Int64})::Nothing
+function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
     _check_segment(obj, seg[1], seg[2])
     return nothing
 end
 
-function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)::Nothing
+function _check_segment(obj::NeuroAnalyzer.NEURO, from::Real, to::Real)::Nothing
     @assert to > from "Segment end must be greater than segment start."
     @assert from >= obj.time_pts[1] "Segment start must be ≥ $(obj.time_pts[1])."
     @assert to >= obj.time_pts[1] "Segment end must be ≥ $(obj.time_pts[1])."
@@ -106,7 +106,7 @@ function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)::Nothi
     return nothing
 end
 
-function _check_segment(signal::AbstractVector, from::Int64, to::Int64)::Nothing
+function _check_segment(signal::AbstractVector, from::Real, to::Real)::Nothing
     @assert from > 0 "Segment start must be > 0."
     @assert to > 0 "Segment end must be > 0."
     @assert to >= from "Segment end must be ≥ $from."
