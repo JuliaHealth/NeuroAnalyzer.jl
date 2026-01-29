@@ -28,6 +28,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
 
+    s = remove_dc(s)
+
     # prepare plot
     plot_size = (1600, 450)
     p = GLMakie.Figure(size=plot_size)
@@ -368,14 +370,12 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
 
     ctypes_uni = unique(ctypes)
 
-#=
     t_pos = zeros(Int64, length(ctypes_uni))
     for idx in eachindex(ctypes_uni)
          t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
     end
     ctypes_uni_pos = zeros(Int64, length(ctypes))
     ctypes_uni_pos[t_pos] .= 1
-=#
 
     # get ranges of the original signal for the scales
     # normalize in groups by channel type
@@ -408,7 +408,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        xticks=LinearTicks(10),
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
-                       yticks=(1:ch_n, clabels),
+                       yticks=1:ch_n,#(1:ch_n, clabels),
                        yreversed=true,
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0.5, 0.5),
@@ -435,28 +435,29 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     for idx in ch_n:-1:1
         GLMakie.lines!(ax1,
                        t,
-                       (s[idx, :] .* 0.5) .+ idx,
+                       (s[idx, :] .* -0.5) .+ idx,
                        linewidth=1.5,
                        alpha=!bad[idx] ? 1 : 0.25,
                        color=:black)
     end
 
-    # draw scales
-    scale = false
+    # draw scale bars
     if scale
         idx2 = 1
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
-                s_pos = ch_n - idx1 + 1
+                x = ax1.limits[][1][1]
                 GLMakie.lines!(ax1,
-                               [ax1.limits[][1][1], ax1.limits[][1][1]],
-                               [(s_pos - 1.5), (s_pos - 0.5)],
+                               [x, x],
+                               [(idx1 - 0.5), (idx1 + 0.5)],
                                color=:red,
                                linewidth=5)
                 GLMakie.text!(ax1,
-                              (_xlims(t)[1], s_pos - 1),
-                              text="$(r[idx2]) $(cunits[idx1])  ",
+                              x,
+                              idx1,
+                              text="$(r[idx2]) $(cunits[idx1])",
                               fontsize=8,
+                              color=:black,
                               align=(:center, :top),
                               rotation=pi/2,
                               offset=(5, 0))
@@ -1195,7 +1196,7 @@ t_s2 = seg[2]
                                 xlabel=xl,
                                 ylabel=yl,
                                 title=tt,
-                                bad=bm,
+                                bad=bm[ch],
                                 gui=gui)
             end
         else

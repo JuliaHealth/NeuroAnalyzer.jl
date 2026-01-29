@@ -39,6 +39,33 @@ Remove mean value (DC offset).
 
 # Arguments
 
+- `s::AbstractMatrix`
+- `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+
+# Returns
+
+- `s::Matrix{Float64}`
+"""
+function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}}=0)::Matrix{Float64}
+
+    ch_n = size(s, 1)
+
+    s_new = similar(s)
+    Threads.@threads for ch_idx in 1:ch_n
+        s_new[ch_idx, :] = @views remove_dc(s[ch_idx, :], n)
+    end
+
+    return s_new
+
+end
+
+"""
+    remove_dc(s, n)
+
+Remove mean value (DC offset).
+
+# Arguments
+
 - `s::AbstractArray`
 - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
