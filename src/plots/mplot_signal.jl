@@ -28,8 +28,6 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
 
-    s = remove_dc(s)
-
     # prepare plot
     plot_size = (1600, 450)
     p = GLMakie.Figure(size=plot_size)
@@ -69,6 +67,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
 
     if gui
 
+        # time line
         ax2 = GLMakie.Axis(p[2, 1],
                            xlabel=xlabel,
                            ylabel="",
@@ -113,7 +112,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
         end
 
         on(events(p).keyboardbutton) do event
-            if event.action == Keyboard.press
+            if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if event.key == Keyboard.home
                     seg_pos[] = 0
                 end
@@ -125,9 +124,19 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                         seg_pos[] -= 1
                     end
                 end
+                if ispressed(p, Keyboard.left_shift & Keyboard.left)
+                    if seg_pos[] >= 9
+                        seg_pos[] -= 9
+                    end
+                end
                 if event.key == Keyboard.right
                     if seg_pos[] <= t[end] - seg_len
                         seg_pos[] += 1
+                    end
+                end
+                if ispressed(p, Keyboard.left_shift & Keyboard.right)
+                    if seg_pos[] <= t[end] - seg_len - 9
+                        seg_pos[] += 9
                     end
                 end
                 seg = (seg_pos[], seg_pos[] + seg_len)
@@ -281,7 +290,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
         end
 
         on(events(p).keyboardbutton) do event
-            if event.action == Keyboard.press
+            if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if event.key == Keyboard.left
                     if seg_pos[] >= 1
                         @show seg_pos[]
@@ -337,16 +346,24 @@ Plot amplitude of multi-channel continuous signal.
 """
 function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Int64, Int64}=(0, 10), clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
 
+    if clabels != repeat([""], size(s, 1))
+        l = length.(clabels)
+        ml = maximum(l)
+        for idx in eachindex(clabels)
+            length(clabels[idx]) < ml && (clabels[idx] = lpad(clabels[idx], ml, ' '))
+        end
+    end
+
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
 
     ch_n = size(s, 1)
 
     if ch_n > 15
-        ch1 = 1
-        ch2 = 15
+        ch1 = Observable(1)
+        ch2 = ch1[] + 14
     else
-        ch1 = 1
+        ch1 = Observable(1)
         ch2 = ch_n
     end
 
@@ -380,6 +397,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     #        s[idx, :] = @views (s[idx, :] .* 0.5) .+ idx
     #    end
 
+    # y-axis labels colors
     ytc = repeat([:black], ch_n)
     ytc[bad] .= :lightgray
 
@@ -394,7 +412,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
                        yticks=clabels==repeat([""], ch_n) ? (1:ch_n) : (1:ch_n, clabels),
-                       yticklabelcolor=ytc,
+                       # TO DO: yticklabelcolor=ytc[1:end],
                        yreversed=true,
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0.5, 0.5),
@@ -514,7 +532,9 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
 
         # channel marker
         # define a square: Rect(x, y, width, height)
-        ch_rectangle = Rect(0, ch1, 1, ch2 - 1)
+        ch_rectangle = lift(ch1) do ch1
+            Rect(0, ch1, 1, 14)
+        end
         poly!(ax3,
               ch_rectangle,
               color=:darkgrey,
@@ -531,12 +551,19 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = round(Int64, ax2_x)
                     end
+                    ax3_x = mouseposition(ax3)[1]
+                    ax3_y = mouseposition(ax3)[2]
+                    if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 && ax3_y <= ax3.limits[][2][2]
+                        ch1[] = floor(Int64, ax3_y)
+                        ch1[] > ch_n - 14 && (ch1[] = ch_n - 14)
+                        ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 14 - 0.5))
+                    end
                 end
             end
         end
 
         on(events(p).keyboardbutton) do event
-            if event.action == Keyboard.press
+            if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if event.key == Keyboard.home
                     seg_pos[] = 0
                 end
@@ -544,11 +571,23 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                     seg_pos[] = ceil(Int64, t[end] - seg_len)
                 end
                 if event.key == Keyboard.left
-                    seg_pos[] > 0 && (seg_pos[] -= 1)
+                    if seg_pos[] > 0
+                        seg_pos[] -= 1
+                    end
+                end
+                if ispressed(p, Keyboard.left_shift & Keyboard.left)
+                    if seg_pos[] >= 9
+                        seg_pos[] -= 9
+                    end
                 end
                 if event.key == Keyboard.right
                     if seg_pos[] <= t[end] - seg_len
                         seg_pos[] += 1
+                    end
+                end
+                if ispressed(p, Keyboard.left_shift & Keyboard.right)
+                    if seg_pos[] <= t[end] - seg_len - 9
+                        seg_pos[] += 9
                     end
                 end
                 seg = (seg_pos[], seg_pos[] + seg_len)
