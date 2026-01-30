@@ -51,6 +51,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, extrema(sp))
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -83,103 +84,17 @@ Plot multi-channel PSD (power spectrum density).
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `avg::Bool=false`: if true, plot averaged PSD
+- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
+- `leg::Bool=true`: if true, add legend with channel labels
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
+function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     ch_n = size(sp, 1)
-    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
-
-    # reverse so 1st channel is on top
-    sp = @views reverse(sp[:, eachindex(sf)], dims = 1)
-    # also, reverse colors if palette is not mono
-    if mono
-        pal = :grays
-        channel_color = repeat([:black], ch_n)
-    else
-        pal = :darktest
-        channel_color = ch_n:-1:1
-    end
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(sp, 1)))
-
-    # normalize and shift so all channels are visible
-    # each channel is between -1.0 and +1.0
-    for idx in 1:ch_n
-        # scale by 0.5 so maxima do not overlap
-        sp[idx, :] = @views normalize_minmax(sp[idx, :]) .* 0.5 .+ (idx - 1)
-    end
-
-    if frq === :log && frq_lim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        frq_lim = (sf[2], frq_lim[2])
-    end
-
-    # prepare plot
-    plot_size = 100 + 40 * ch_n <= 800 ? (1200, 600) : (1200, 100 + 40 * ch_n)
-    p = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(p[1, 1],
-                      xlabel=100 + 40 * ch_n < 800 ? xlabel : "",
-                      ylabel=ylabel,
-                      title=title,
-                      xticks=LinearTicks(15),
-                      xminorticksvisible=true,
-                      xminorticks=IntervalsBetween(10),
-                      yticks=((ch_n - 1):-1:0, clabels),
-                      yticksvisible=false,
-                      xscale=frq === :lin ? identity : log10,
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0.1, 0.1))
-    GLMakie.xlims!(ax, frq_lim)
-    GLMakie.ylims!(ax, -0.5, ch_n)
-    ax.titlesize = 20
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = ch_n <= 64 ? 12 : 10;
-
-    # plot channels
-    cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
-    for idx in 1:ch_n
-        Makie.lines!(sf,
-                     sp[idx, :],
-                     linewidth=2,
-                     color=mono ? :black : cmap[idx],
-                     colormap=pal,
-                     colorrange=1:ch_n)
-    end
-
-    return p
-
-end
-
-"""
-    mplot_psd_avg(sf, sp; <keyword arguments>)
-
-Plot PSD mean and ±95% CI of averaged channels.
-
-# Arguments
-
-- `sf::Vector{Float64}`: frequencies
-- `sp::Matrix{Float64}`: powers
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-
-# Returns
-
-- `p::GLMakie.Figure`
-"""
-function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -188,89 +103,8 @@ function mplot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; frq_lim::Tuple{
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp)
-
-    if frq === :log && frq_lim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        frq_lim = (sf[2], frq_lim[2])
-    end
-
-    # prepare plot
-    plot_size = (1200, 500)
-    p = GLMakie.Figure(size=plot_size)
-    ax = GLMakie.Axis(p[1, 1],
-                      xlabel=xlabel,
-                      ylabel=ylabel,
-                      title=title,
-                      xticks=LinearTicks(15),
-                      xminorticksvisible=true,
-                      xminorticks=IntervalsBetween(10),
-                      xscale=frq === :lin ? identity : log10,
-                      xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0.1, 0.1))
-    GLMakie.xlims!(ax, frq_lim)
-    GLMakie.ylims!(ax, minimum(s_l) * 1.1, maximum(s_u) * 1.1)
-    ax.titlesize = 20
-    ax.xlabelsize = 18
-    ax.ylabelsize = 18
-    ax.xticklabelsize = 12
-    ax.yticklabelsize = 12
-
-    # plot upper 95% CI
-    Makie.band!(sf,
-                s_u,
-                s_l,
-                alpha=0.25,
-                color=:grey,
-                strokewidth=0.5)
-    # plot mean
-    Makie.lines!(sf,
-                 s_m,
-                 color=:black,
-                 linewidth=2)
-
-    return p
-
-end
-
-"""
-    mplot_psd_butterfly(sf, sp; <keyword arguments>)
-
-Butterfly PSD plot.
-
-# Arguments
-
-- `sf::Vector{Float64}`: frequencies
-- `sp::Array{Float64, 3}`: powers
-- `clabels::Vector{String}=[""]`: signal channel labels vector
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `avg::Bool=false`: plot average channels
-- `leg::Bool=true`: if true, add legend with channel labels
-
-# Returns
-
-- `p::GLMakie.Figure`
-"""
-function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, leg::Bool=true)::GLMakie.Figure
-
-    @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
-    _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
-
-    ch_n = size(sp, 1)
-    pal = mono ? :grays : :darktest
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(sp, 1)))
-
-    if frq === :log && frq_lim[1] == 0
-        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        frq_lim = (sf[2], frq_lim[2])
+    if ci95
+        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(sp)
     end
 
     # prepare plot
@@ -287,34 +121,54 @@ function mplot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
-    GLMakie.ylims!(ax, extrema(sp) .* 1.1)
+    if ci95
+        GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
+    else
+        GLMakie.ylims!(ax, extrema(sp))
+    end
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    cmap = GLMakie.resample_cmap(pal, ch_n)
-    for idx in 1:ch_n
-        Makie.lines!(sf,
-                     sp[idx, :],
-                     color=cmap[idx],
-                     colormap=pal,
-                     colorrange=1:ch_n,
-                     linewidth=2,
-                     label=clabels[idx])
-    end
-    (leg && ch_n < 40) && axislegend(position = :rt,
-                                     colormap=pal)
+    if ci95
+        # plot upper 95% CI
+        Makie.band!(sf,
+                    s_u,
+                    s_l,
+                    alpha=0.25,
+                    color=:grey,
+                    strokewidth=0.5)
 
-    # plot averaged channels
-    if avg
-        s = mean(sp, dims=1)[:]
+        # plot mean
         Makie.lines!(sf,
-                     s,
-                     colormap=pal,
-                     linewidth=2,
-                     color=:black)
+                     s_m,
+                     color=:black,
+                     linewidth=2)
+    else
+        cmap = GLMakie.resample_cmap(pal, ch_n)
+        for idx in 1:ch_n
+            Makie.lines!(sf,
+                         sp[idx, :],
+                         color=cmap[idx],
+                         colormap=pal,
+                         colorrange=1:ch_n,
+                         linewidth=2,
+                         label=clabels[idx])
+        end
+        (leg && ch_n < 40) && axislegend(position = :rt,
+                                         colormap=pal)
+
+        # plot averaged channels
+        if avg
+            s = mean(sp, dims=1)[:]
+            Makie.lines!(sf,
+                         s,
+                         colormap=pal,
+                         linewidth=2,
+                         color=:black)
+        end
     end
 
     return p
@@ -641,22 +495,24 @@ Plot power spectrum density.
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type:
     - `:normal`
-    - `:butterfly`
-    - `:mean`
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
+- `avg::Bool=false`: 
 - `leg::Bool=true`: if true, add legend with channel labels
+- `avg::Bool=false`: if true, plot averaged PSD
+- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
+- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false, gui::Bool=true)::GLMakie.Figure
 
-    _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
+    _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(frq, [:lin, :log], "frq")
@@ -785,11 +641,6 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     end
 
     if type === :normal
-        ch_t = obj.header.recording[:channel_type]
-        if length(ch) > 1
-            ch_t_uni = unique(ch_t[ch])
-            @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        end
         if size(sp, 1) == 1
             p = mplot_psd(sf,
                          sp[1, :],
@@ -800,6 +651,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          frq=frq,
                          mono=mono)
         else
+            title = replace(title, "channel" => "channels")
             p = mplot_psd(sf,
                          sp,
                          xlabel=xlabel,
@@ -808,39 +660,11 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          title=title,
                          frq_lim=frq_lim,
                          frq=frq,
+                         avg=avg,
+                         ci95=ci95,
+                         leg=leg,
                          mono=mono)
         end
-    elseif type === :butterfly
-        ch_t = obj.header.recording[:channel_type]
-        ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 channels."
-        title = replace(title, "channel" => "channels")
-        p = mplot_psd_butterfly(sf,
-                               sp,
-                               clabels=clabels[ch],
-                               xlabel=xlabel,
-                               ylabel=ylabel,
-                               title=title,
-                               frq_lim=frq_lim,
-                               frq=frq,
-                               mono=mono,
-                               leg=leg)
-    elseif type === :mean
-        ch_t = obj.header.recording[:channel_type]
-        ch_t_uni = unique(ch_t[ch])
-        @assert length(ch_t_uni) == 1 "For multi-channel PSD plots all channels must be of the same type."
-        @assert ndims(sp) >= 2 "For type=:mean plot the signal must contain ≥ 2 channels."
-        title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
-        title = replace(title, "channel" => "averaged channels")
-        p = mplot_psd_avg(sf,
-                         sp,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         frq_lim=frq_lim,
-                         frq=frq,
-                         mono=mono)
     elseif type === :w3d || type === :s3d
         ch_t = obj.header.recording[:channel_type]
         ch_t_uni = unique(ch_t[ch])
