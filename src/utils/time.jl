@@ -199,11 +199,13 @@ Convert epoch number to time segment in seconds.
 
 - `e2t::Tuple{Real, Real}`: time in seconds
 """
-function e2t(obj::NeuroAnalyzer.NEURO; ep::Int64)::Tuple{Real, Real}
+function e2t(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Real, Real}
 
+    _check_epochs(obj, ep)
     el = epoch_len(obj)
     es = (ep - 1) * el + 1
     ee = es + el - 1
+
     return (obj.time_pts[es], obj.time_pts[ee])
 
 end
@@ -222,11 +224,13 @@ Convert epoch number to time segment in seconds.
 
 - `e2t::Tuple{Real, Real}`: time in seconds
 """
-function e2t(obj::NeuroAnalyzer.NEURO; ep::AbstractVector)::Tuple{Real, Real}
+function e2t(obj::NeuroAnalyzer.NEURO, ep::AbstractVector)::Tuple{Real, Real}
 
+    _check_epochs(obj, ep)
     el = epoch_len(obj)
-    es = (ep - 1) * el + 1
-    ee = es + el - 1
+    es = (ep[1] - 1) * el + 1
+    ee = ep[end] * el
+
     return (obj.time_pts[es], obj.time_pts[ee])
 
 end

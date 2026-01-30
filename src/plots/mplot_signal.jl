@@ -12,7 +12,7 @@ Plot amplitude of single-channel continuous signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractVector`: data to plot
-- `seg::Tuple{Int64, Int64}`: segment (from, to) in seconds to display
+- `seg::Tuple{Real, Real}=(t[1], t[end])`: segment (from, to) in seconds to display
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -23,7 +23,7 @@ Plot amplitude of single-channel continuous signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; seg::Tuple{Int64, Int64}, xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, gui::Bool=true)::Union{GLMakie.Figure, Nothing}
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; seg::Tuple{Real, Real}=(t[1], t[end]), xlabel::String="", ylabel::String="", title::String="", bad::Bool=false, gui::Bool=false)::Union{GLMakie.Figure, Nothing}
 
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
@@ -330,7 +330,7 @@ Plot amplitude of multi-channel continuous signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractMatrix`: data to plot
-- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display
 - `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
@@ -345,7 +345,7 @@ Plot amplitude of multi-channel continuous signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Int64, Int64}=(0, 10), clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}=(0, 10), clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
 
     if clabels != repeat([""], size(s, 1))
         l = length.(clabels)
@@ -360,13 +360,21 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
 
     ch_n = size(s, 1)
 
-    if ch_n > 15
-        ch1 = Observable(1)
-        ch2 = ch1[] + 14
+    if gui
+        if ch_n > 20
+            ch1 = Observable(1)
+            ch2 = ch1[] + 19
+        else
+            ch1 = Observable(1)
+            ch2 = ch_n
+        end
     else
         ch1 = Observable(1)
         ch2 = ch_n
     end
+
+    # order by ctypes
+    # and markers for ax3
 
     ctypes_uni = unique(ctypes)
 
@@ -403,7 +411,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     ytc[bad] .= :lightgray
 
     # prepare plot
-    plot_size = (1650, 950)
+    if gui
+        plot_size = (1650, 950)
+    else
+        plot_size = (1650, ch_n * 50)
+    end
     p = GLMakie.Figure(size=plot_size)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel="",
@@ -417,15 +429,15 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        yreversed=true,
                        xautolimitmargin=(0, 0),
                        yautolimitmargin=(0.5, 0.5),
-                       xzoomlock=false,
-                       yzoomlock=false,
+                       xzoomlock=true,
+                       yzoomlock=true,
                        xpanlock=true,
                        ypanlock=true,
                        xrectzoom=false,
                        yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
-    if ch_n > 15
-        GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - 15 + 0.5)
+    if gui
+        GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - 20 + 0.5)
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
@@ -538,7 +550,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
         # channel marker
         # define a square: Rect(x, y, width, height)
         ch_rectangle = lift(ch1) do ch1
-            Rect(0, ch1, 1, 14)
+            Rect(0, ch1, 1, 19)
         end
         poly!(ax3,
               ch_rectangle,
@@ -560,8 +572,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                     ax3_y = mouseposition(ax3)[2]
                     if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 && ax3_y <= ax3.limits[][2][2]
                         ch1[] = floor(Int64, ax3_y)
-                        ch1[] > ch_n - 14 && (ch1[] = ch_n - 14)
-                        ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 14 - 0.5))
+                        ch1[] > ch_n - 19 && (ch1[] = ch_n - 19)
+                        ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 19 - 0.5))
                     end
                 end
             end
@@ -620,7 +632,7 @@ Plot amplitude of multi-channel epoched signal.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractArray`: data to plot
-- `seg::Tuple{Int64, Int64}`: segment (from, to) in seconds to display
+- `seg::Tuple{Real, Real}`: segment (from, to) in seconds to display
 - `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
@@ -635,7 +647,7 @@ Plot amplitude of multi-channel epoched signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Int64, Int64}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
 
     ch_n = size(s, 1)
 
@@ -1097,7 +1109,7 @@ Plot signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Int64=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
@@ -1117,7 +1129,7 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, gui::Bool=true)::GLMakie.Figure
+function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true, bad::Bool=true, gui::Bool=true)::GLMakie.Figure
 
     datatype(obj) == "erp" && _warn("For ERP objects, use plot_erp()")
     datatype(obj) == "erf" && _warn("For ERF objects, use plot_erp()")
@@ -1138,7 +1150,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{S
         @assert nepochs(obj) > 1 "To use ep the signal must be epoched."
         ep1 = (ep - 1) * epoch_len(obj) + 1
         ep2 = ep * epoch_len(obj)
-        seg = (obj.time_pts[ep1], obj.time_pts[ep2])
+        seg = e2t(obj, ep)
     end
 
     # do not show epoch markers if there are no epochs
@@ -1325,7 +1337,7 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{S
                                 color=:black)
                 if length(ch) > 1
                     GLMakie.textlabel!(p[1, 1],
-                                       (markers_pos[idx] + 0.07, ch_n > 15 ? 15.4 : ch_n + 0.4),
+                                       (markers_pos[idx] + 0.07, ch_n > 20 ? 20.4 : ch_n + 0.4),
                                        text="$(markers_id[idx]) / $(markers_desc[idx])",
                                        text_align=(:left, :center),
                                        fontsize=8,
@@ -1365,7 +1377,7 @@ Plot embedded or external component.
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
-- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
@@ -1382,7 +1394,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true)::Plots.Plot{Plots.GRBackend}
+function mplot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, scale::Bool=true, type::Symbol=:normal, avg::Bool=true)::Plots.Plot{Plots.GRBackend}
 
     if signal_len(obj) < 10 * sr(obj) && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -1529,7 +1541,7 @@ Plot signal.
 - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `seg::Tuple{Int64, Int64}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title
@@ -1539,7 +1551,7 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Int64, Int64}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true)::GLMakie.Figure
+function mplot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true)::GLMakie.Figure
 
     @assert sr(obj1) == sr(obj2) "OBJ1 and OBJ2 must have the same sampling rate."
     @assert size(obj1.data) == size(obj2.data) "Signals of OBJ1 and OBJ2 must have the same size."

@@ -113,6 +113,10 @@ x[10] *= 1000
 @info "Test: f2t()"
 @test f2t(1.0) == 1000.0
 
+@info "Test: e2t()"
+@test e2t(e10, 1) == (0.0, 9.9961)
+@test e2t(e10, 1:10) == (0.0, 99.9961)
+
 @info "Test: freqs()"
 f, nf = NeuroAnalyzer.freqs(0:1/10:10)
 @test length(f) == 51
