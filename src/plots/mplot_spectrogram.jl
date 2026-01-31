@@ -73,7 +73,7 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                       yticks=LinearTicks(15),
                       yminorticksvisible=true,
                       yminorticks=IntervalsBetween(10),
-                      yscale=frq===:lin ? identity : log10,
+                      yscale=frq===:lin ? identity : log,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)
@@ -193,7 +193,7 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
                       xminorticks=IntervalsBetween(10),
                       yticks=(0.5:1:ch_n, reverse(clabels)),
                       yticksvisible=false,
-                      xscale=frq===:lin ? identity : log10,
+                      xscale=frq===:lin ? identity : log,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0);
                       kwargs...)

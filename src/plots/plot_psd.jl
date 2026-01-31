@@ -43,7 +43,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real,
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
         xsc = :log10
     end
 
@@ -134,7 +134,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
         xsc = :log10
     end
 
@@ -246,7 +246,7 @@ function plot_psd_avg(sf::Vector{Float64}, sp::Matrix{Float64}; db::Bool=true, f
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
         xsc = :log10
     end
 
@@ -342,7 +342,7 @@ function plot_psd_butterfly(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::V
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
         xsc = :log10
     end
 
@@ -428,7 +428,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
         xsc = :log10
     end
 
@@ -563,7 +563,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
             _warn("Lower frequency bound truncated to 0.1 Hz")
             sf[1] == 0 && (sf[1] = 0.1)
         end
-        xt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        xt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
         xsc = :log10
     end
 

@@ -44,7 +44,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
                       xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
-                      xscale=frq === :lin ? identity : log10,
+                      xscale=frq === :lin ? identity : log,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
@@ -114,7 +114,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                       xticks=LinearTicks(15),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
-                      xscale=frq === :lin ? identity : log10,
+                      xscale=frq === :lin ? identity : log,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0.1, 0.1))
     GLMakie.xlims!(ax, frq_lim)
@@ -210,7 +210,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
     pal = mono ? :grays : :darktest
 
     if frq === :log && frq_lim[1] == 0
-        _warn("Currently log10 scale is not supported by Makie.")
+        _warn("Currently log scale is not supported by Makie.")
         _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
         frq_lim = (sf[2], frq_lim[2])
     end
@@ -235,7 +235,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            xticks=LinearTicks(15),
                            # xminorticksvisible=true,
                            # xminorticks=IntervalsBetween(10),
-                           # xscale=frq === :lin ? identity : log10,
+                           # xscale=frq === :lin ? identity : log,
                            yticks=(1:yts:ch_n, clabels[1:yts:end]),
                            zoommode=:disable,
                            xtranslationlock=true,
@@ -276,7 +276,7 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
                            xticks=LinearTicks(15),
                            # xminorticksvisible=true,
                            # xminorticks=IntervalsBetween(10),
-                           # xscale=frq === :lin ? identity : log10,
+                           # xscale=frq === :lin ? identity : log,
                            yticks=(1:yts:ch_n, clabels[1:yts:end]),
                            zoommode=:disable,
                            xtranslationlock=true,
@@ -377,7 +377,7 @@ function mplot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64
                           xlabel="",
                           ylabel="",
                           title=locs[idx, :label],
-                          xscale=frq === :lin ? identity : log10,
+                          xscale=frq === :lin ? identity : log,
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0.1, 0.1))
         hidedecorations!(ax)
@@ -490,7 +490,7 @@ Plot power spectrum density.
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type:
-    - `:normal`
+    - `:normal` single channel or butterfly for multichannel
     - `:w3d`: 3-d waterfall
     - `:s3d`: 3-d surface
     - `:topo`: topographical

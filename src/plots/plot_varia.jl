@@ -788,7 +788,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
             _warn("Lower frequency bound truncated to $(sf[2]) Hz")
             frq_lim = (sf[2], frq_lim[2])
         end
-        yt = round.(log10space(log10(frq_lim[1]), log10(frq_lim[2]), 10), digits=1)
+        yt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
     end
 
     if smooth
@@ -824,7 +824,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           yticks=yt,
-                          yscale=frq===:lin ? identity : log10,
+                          yscale=frq===:lin ? identity : log,
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0);
                           kwargs...)
@@ -870,7 +870,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                            xminorticksvisible=true,
                            xminorticks=IntervalsBetween(10),
                            yticks=yt,
-                           yscale=frq===:lin ? identity : log10,
+                           yscale=frq===:lin ? identity : log,
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0);
                            kwargs...)
@@ -920,7 +920,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                            xminorticksvisible=true,
                            xminorticks=IntervalsBetween(10),
                            yticks=yt,
-                           yscale=frq===:lin ? identity : log10,
+                           yscale=frq===:lin ? identity : log,
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0);
                            kwargs...)
@@ -1025,7 +1025,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                           xticks=LinearTicks(15),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
-                          xscale=frq===:lin ? identity : log10,
+                          xscale=frq===:lin ? identity : log,
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0);
                           kwargs...)
@@ -1058,7 +1058,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                            xticks=LinearTicks(15),
                            xminorticksvisible=true,
                            xminorticks=IntervalsBetween(10),
-                           xscale=frq===:lin ? identity : log10,
+                           xscale=frq===:lin ? identity : log,
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0);
                            kwargs...)
@@ -1088,7 +1088,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                            xticks=LinearTicks(15),
                            xminorticksvisible=true,
                            xminorticks=IntervalsBetween(10),
-                           xscale=frq===:lin ? identity : log10,
+                           xscale=frq===:lin ? identity : log,
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0);
                            kwargs...)

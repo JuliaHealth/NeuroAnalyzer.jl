@@ -246,11 +246,8 @@ s = rand(100)
 @info "Test: linspace()"
 @test linspace(1, 10, 10) == 1:10
 
-@info "Test: log10space()"
-@test log10space(1, 2, 2) == [10.0, 100.0]
-
-@info "Test: log2space()"
-@test log2space(1, 2, 2) == [2.0, 4.0]
+@info "Test: logspace()"
+@test logspace(1, 10, 5) == [1.0, 1.7782794100389228, 3.1622776601683795, 5.623413251903491, 10.0]
 
 @info "Test: cmax()"
 @test cmax([1 + 2im, 10 + 10im]) == 10 + 10im

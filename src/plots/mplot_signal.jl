@@ -77,6 +77,8 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            backgroundcolor = :white,
+                           xzoomlock=false,
+                           yzoomlock=true,
                            xpanlock=true,
                            ypanlock=true,
                            xrectzoom=false,
