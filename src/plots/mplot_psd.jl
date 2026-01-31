@@ -17,20 +17,17 @@ Plot PSD (power spectrum density).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
+function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", frq::Symbol=:lin)::GLMakie.Figure
 
     @assert length(sp) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
-
-    pal = mono ? :grays : :darktest
 
     if frq === :log && frq_lim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
@@ -77,7 +74,7 @@ Plot multi-channel PSD (power spectrum density).
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -92,7 +89,7 @@ Plot multi-channel PSD (power spectrum density).
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=string.(1:size(sp, 1)), frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     ch_n = size(sp, 1)
 
@@ -157,8 +154,6 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                          linewidth=2,
                          label=clabels[idx])
         end
-        (leg && ch_n < 40) && axislegend(position = :rt,
-                                         colormap=pal)
 
         # plot averaged channels
         if avg
@@ -169,6 +164,10 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                          linewidth=2,
                          color=:black)
         end
+
+        (leg && ch_n < 30) && axislegend(position=:rt,
+                                         colormap=pal)
+
     end
 
     return p
@@ -184,7 +183,7 @@ Plot 3-d waterfall PSD plot.
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
@@ -199,7 +198,7 @@ Plot 3-d waterfall PSD plot.
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol)::GLMakie.Figure
+function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{String}=string.(1:size(sp, 1)), db::Bool=true, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol)::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
@@ -209,9 +208,6 @@ function mplot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{
     ch_n = size(sp, 1)
 
     pal = mono ? :grays : :darktest
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], ch_n))
 
     if frq === :log && frq_lim[1] == 0
         _warn("Currently log10 scale is not supported by Makie.")
@@ -481,7 +477,7 @@ Plot power spectrum density.
     - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
@@ -510,7 +506,7 @@ Plot power spectrum density.
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false, gui::Bool=true)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false, gui::Bool=true)::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")
@@ -519,9 +515,7 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
 
     ch = get_channel(obj, ch=ch)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
-
-    @assert seg[1] != seg[2] "Signal is too short for analysis."
-
+    length(ch) == 1 && (ch = ch[1])
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
     else
@@ -641,15 +635,14 @@ function mplot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     end
 
     if type === :normal
-        if size(sp, 1) == 1
+        if length(ch) == 1
             p = mplot_psd(sf,
-                         sp[1, :],
+                         sp,
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
                          frq_lim=frq_lim,
-                         frq=frq,
-                         mono=mono)
+                         frq=frq)
         else
             title = replace(title, "channel" => "channels")
             p = mplot_psd(sf,
@@ -734,7 +727,7 @@ Plot power spectrum density of embedded or external component.
     - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
@@ -760,7 +753,7 @@ Plot power spectrum density of embedded or external component.
 
 - `p::GLMakie.Figure`
 """
-function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function mplot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, db::Bool=true, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, ref::Symbol=:abs, frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :fft, :stft, :mt, :mw, :gh], "method")

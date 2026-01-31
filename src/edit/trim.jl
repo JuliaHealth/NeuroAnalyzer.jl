@@ -10,17 +10,17 @@ Remove segment from the signal.
 
 - `v::AbstractVector`
 - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-- `inverse::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
 - `trim::Vector{Float64}`
 """
-function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, inverse::Bool=false)::Vector{Float64}
+function trim(v::AbstractVector; seg::Tuple{Int64, Int64}, keep::Bool=false)::Vector{Float64}
 
     _check_segment(v, seg[1], seg[2])
 
-    if inverse
+    if keep
         return v[seg[1]:seg[2]]
     else
         return vcat(v[1:seg[1] - 1], v[(seg[2] + 1):end])
@@ -37,17 +37,17 @@ Remove segment from the signal.
 
 - `m::AbstractMatrix`
 - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-- `inverse::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
 - `trim::Matrix{Float64}`
 """
-function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, inverse::Bool=false)::Matrix{Float64}
+function trim(m::AbstractMatrix; seg::Tuple{Int64, Int64}, keep::Bool=false)::Matrix{Float64}
 
     _check_segment(m[1, :], seg[1], seg[2])
 
-    if inverse
+    if keep
         return m[:, seg[1]:seg[2]]
     else
         return hcat(m[:, 1:(seg[1] - 1)], m[:, (seg[2] + 1):end])
@@ -64,18 +64,18 @@ Remove segment from the signal.
 
 - `a::AbstractArray`
 - `seg::Tuple{Int64, Int64}`: segment (from, to) in samples
-- `inverse::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
 - `trim::Array{Float64, 3}`
 """
-function trim(a::AbstractArray; seg::Tuple{Int64, Int64}, inverse::Bool=false)::Array{Float64, 3}
+function trim(a::AbstractArray; seg::Tuple{Int64, Int64}, keep::Bool=false)::Array{Float64, 3}
 
     _chk3d(a)
     _check_segment(a[1, :, 1], seg[1], seg[2])
 
-    if inverse
+    if keep
         return a[:, seg[1]:seg[2], :]
     else
         return hcat(a[:, 1:(seg[1] - 1), :], a[:, (seg[2] + 1):end, :])
@@ -92,14 +92,14 @@ Trim signal by removing parts of the signal.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
-- `inverse::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if true, keep the segment
 - `remove_epochs::Bool=false`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false)::NeuroAnalyzer.NEURO
+function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=false)::NeuroAnalyzer.NEURO
 
     @assert nepochs(obj) == 1 "trim() must be applied to a continuous object."
     NeuroAnalyzer._check_segment(obj, seg)
@@ -110,7 +110,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     obj_new = deepcopy(obj)
-    obj_new.data = trim(obj_new.data, seg=seg, inverse=inverse)
+    obj_new.data = trim(obj_new.data, seg=seg, keep=keep)
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
     obj_new.markers = _delete_markers(obj_new.markers, seg, sr(obj))
@@ -119,7 +119,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=fa
     add_marker!(obj_new, id="NA", start=obj_new.time_pts[s_idx - 1], value="DELETED")
 
     reset_components!(obj_new)
-    push!(obj_new.history, "trim(OBJ, seg=$seg, inverse=$inverse")
+    push!(obj_new.history, "trim(OBJ, seg=$seg, keep=$keep")
 
     return obj_new
 
@@ -134,17 +134,17 @@ Trim signal by removing parts of the signal.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `seg::Tuple{Real, Real}`: segment to be removed (from, to) in seconds
-- `inverse::Bool=false`: if true, keep the segment
+- `keep::Bool=false`: if true, keep the segment
 
 # Returns
 
 Nothing
 """
-function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, inverse::Bool=false)::Nothing
+function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=false)::Nothing
 
     @assert nepochs(obj) == 1 "trim!() must be applied to a continuous object."
 
-    obj_new = trim(obj, seg=seg, inverse=inverse)
+    obj_new = trim(obj, seg=seg, keep=keep)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.components = obj_new.components

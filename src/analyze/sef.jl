@@ -19,7 +19,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 
@@ -27,7 +27,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 - `sef_frq::Float64`: spectral edge frequency
 """
-function sef(s::AbstractVector; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
+function sef(s::AbstractVector; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(f, "f", (0, fs / 2))
@@ -77,7 +77,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
     - `:mw`: Morlet wavelet convolution
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 
@@ -85,7 +85,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 - `sef_frq::Matrix{Float64}`: spectral edge frequency
 """
-function sef(s::AbstractArray; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
+function sef(s::AbstractArray; x::Float64=0.95, fs::Int64, f::Tuple{Real, Real}=(0, fs / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -120,7 +120,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
     - `:stft`: short time Fourier transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 
@@ -128,7 +128,7 @@ Calculate spectral edge frequency (SEF) - the frequency below which x percent of
 
 - `sef_frq::Matrix{Float64}`: spectral edge frequency
 """
-function sef(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, x::Float64=0.95, f::Tuple{Real, Real}=(0, sr(obj) / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
+function sef(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, x::Float64=0.95, f::Tuple{Real, Real}=(0, sr(obj) / 2), method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32)::Matrix{Float64}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     sef_frq = @views sef(obj.data[ch, :, :], x=x, fs=sr(obj), f=f, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc)
