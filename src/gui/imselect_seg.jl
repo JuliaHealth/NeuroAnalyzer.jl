@@ -171,6 +171,14 @@ function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, 
         end
     end
 
+    on(events(p).keyboardbutton) do event
+        if event.action == Keyboard.press
+            if event.key == Keyboard.enter
+                close(display(p))
+            end
+        end
+    end
+
     wait(display(p))
 
     if length(points[]) == 0
