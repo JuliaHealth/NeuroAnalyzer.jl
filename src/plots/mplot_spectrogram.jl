@@ -209,6 +209,8 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
                           ch,
                           sp',
                           colormap=pal)
+
+    # draw thresholded region
     if !isnothing(threshold)
         _, bm = seg_extract(sp, threshold=threshold, threshold_type=threshold_type)
         reg = ones(size(sp)) .* minimum(sp)
@@ -222,6 +224,7 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
                          linewidth=2)
     end
 
+    # draw colorbar
     if cb
         Colorbar(p[1, 2],
                  hm,

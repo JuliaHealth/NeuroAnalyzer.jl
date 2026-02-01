@@ -99,7 +99,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     if head12
         xl = (-1.2, 1.2)
         yl = (-1.2, 1.2)
-        r = 1.19
+        r = 1.2
     else
         xl = (-1.6, 1.6)
         yl = (-1.6, 1.6)
@@ -116,7 +116,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
             d[idx1, idx2] = distance((0, 0), (interpolated_x[idx1], interpolated_y[idx2]))
         end
     end
-    s_interpolated[d .> xl[2]] .= NaN
+    s_interpolated[d .>= xl[2]] .= NaN
 
 #=
     if head12
@@ -204,124 +204,23 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
 
-#=
-    if large
-        if cb
-            p = Plots.plot(grid=false,
-                           framestyle=:none,
-                           border=:none,
-                           palette=pal,
-                           aspect_ratio=1,
-                           size=head12 ? size(head_shape) .+ 150 : size(head_shape) .+ 175,
-                           right_margin=10*Plots.px,
-                           bottom_margin=0*Plots.px,
-                           top_margin=-50*Plots.px,
-                           left_margin=0*Plots.px,
-                           titlefontsize=font_size,
-                           colorbar=cb,
-                           colorbar_title=cb_title,
-                           colorbar_tickfontsize=1,
-                           colorbar_titlefontsize=8,
-                           xlims=xl,
-                           ylims=yl,
-                           title=title)
-        else
-            p = Plots.plot(grid=false,
-                           framestyle=:none,
-                           border=:none,
-                           colorbar=cb,
-                           palette=pal,
-                           aspect_ratio=1,
-                           size=head12 ? size(head_shape) .+ 105 : size(head_shape) .+ 110,
-                           right_margin=-10*Plots.px,
-                           bottom_margin=10*Plots.px,
-                           top_margin=20*Plots.px,
-                           left_margin=-30*Plots.px,
-                           ticks_fontsize=font_size,
-                           xticks=xt,
-                           yticks=yt,
-                           xlims=xl,
-                           ylims=yl,
-                           titlefontsize=font_size,
-                           title=title)
-        end
-    else
-        if cb
-            p = Plots.plot(grid=false,
-                           framestyle=:none,
-                           border=:none,
-                           palette=pal,
-                           aspect_ratio=1,
-                           size=head12 ? size(head_shape) .+ 45 : (size(head_shape)[1] + 58, size(head_shape)[2] + 55),
-                           right_margin=head12 ? -30*Plots.px : -20*Plots.px,
-                           bottom_margin=head12 ? -30*Plots.px : -25*Plots.px,
-                           top_margin=head12 ? -30*Plots.px : -20*Plots.px,
-                           left_margin=head12 ? -20*Plots.px : -20*Plots.px,
-                           titlefontsize=font_size,
-                           colorbar=cb,
-                           colorbar_titlefontsize=font_size - 2,
-                           colorbar_title=cb_title,
-                           colorbar_ticks=false,
-                           xlims=xl,
-                           ylims=yl,
-                           title=title)
-        else
-            p = Plots.plot(grid=false,
-                           framestyle=:none,
-                           border=:none,
-                           colorbar=cb,
-                           palette=pal,
-                           aspect_ratio=1,
-                           size=head12 ? size(head_shape) .+ 2 : size(head_shape) .+ 1,
-                           right_margin=-10*Plots.px,
-                           bottom_margin=-30*Plots.px,
-                           top_margin=-20*Plots.px,
-                           left_margin=-40*Plots.px,
-                           xticks=xt,
-                           yticks=yt,
-                           xlims=xl,
-                           ylims=yl,
-                           foreground_color=:black)
-        end
-    end
-=#
+    hm = GLMakie.heatmap!(ax,
+                          interpolated_x,
+                          interpolated_y,
+                          s_interpolated,
+                          colormap=pal)
 
-        hm = GLMakie.heatmap!(ax,
-                              interpolated_x,
-                              interpolated_y,
-                              s_interpolated,
-                              colormap=pal)
+    # draw contours
     if plot_contours
         GLMakie.contour!(ax,
                          interpolated_x,
                          interpolated_y,
                          s_interpolated,
+                         linestyle=:dash,
                          levels=5,
                          linewidth=0.5,
                          color=:black)
     end
-#=
-    p = Plots.plot!(interpolated_x,
-                    interpolated_y,
-                    s_interpolated,
-                    fill=:bluesreds,
-                    seriestype=:heatmap,
-                    seriescolor=pal,
-                    levels=10,
-                    linewidth=0)
-    if plot_contours
-        p = Plots.plot!(interpolated_x,
-                        interpolated_y,
-                        s_interpolated,
-                        fill=:bluesreds,
-                        seriestype=:contour,
-                        seriescolor=pal,
-                        colorbar_title=cb_title,
-                        levels=5,
-                        linecolor=:black,
-                        linewidth=0.2)
-    end
-=#
 
     # draw head
     if head
@@ -374,33 +273,39 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
         end
     end
 
-    # draw region
+    # draw thresholded region
     if !isnothing(threshold)
         _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
         reg = ones(size(s_interpolated)) .* minimum(s_interpolated)
         reg[bm] .= maximum(s_interpolated)
-        p = Plots.plot!(interpolated_x,
-                        interpolated_y,
-                        reg,
-                        seriestype=:contour,
-                        levels=1,
-                        linecolor=:black,
-                        colorbar_entry=false,
-                        linewidth=2)
+        GLMakie.contour!(ax,
+                         interpolated_x,
+                         interpolated_y,
+                         reg',
+                         levels=1,
+                         color=:black,
+                         linewidth=2)
     end
 
+    # draw mask
+    GLMakie.arc!(Point2f(0),
+                 r,
+                 -pi, pi,
+                 linewidth=5,
+                 color=:white)
+
+    # draw colorbar
     if cb
-        Colorbar(p[1, 2],
-                 hm,
-                 label=cb_title,
-                 labelsize=font_size,
-                 ticklabelsize=font_size,
-                 width=ps === :l ? 25 : 10,
-                 tellheight=true)
+        GLMakie.Colorbar(p[1, 2],
+                         hm,
+                         label=cb_title,
+                         labelsize=font_size,
+                         ticklabelsize=font_size,
+                         width=ps === :l ? 25 : 10,
+                         tellheight=true)
         rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
         colgap!(p.layout, 10)
     end
-
 
     return p
 
