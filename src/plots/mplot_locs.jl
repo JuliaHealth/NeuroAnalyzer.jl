@@ -115,7 +115,6 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         grid = false
     end
 
-transparent = false
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
