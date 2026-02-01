@@ -3,195 +3,227 @@ export iselect_seg
 """
     iselect_seg(m; <keyword arguments>)
 
-Interactive selection of matrix area.
+Interactive selection of a matrix area.
 
 # Arguments
 
 - `m::AbstractMatrix`
 - `shape::Symbol=:r`: selection shape:
     - `:r`: rectangular
-    - `:c`: circular
     - `:p`: point
+    - `:c`: circular
 - `extract::Bool=false`: if true, return values of the matrix
-- `v::Bool=false`: if true, return as vector (matrix m by rows over columns)
+- `v::Bool=false`: if true, return as vector (matrix m by rows over columns), always true if `shape=:c`
 
 # Returns
-
-- `r1::Int64`: upper-left corner
-- `r2::Int64`: bottom-right corner
-- `c1::Int64`: upper-left corner
-- `c2::Int64`: bottom-right corner
-
-or
 
 - `seg::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}`: extracted segment or its coordinates
 """
 function iselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}
 
-    _check_var(shape, [:r, :c, :p], "shape")
+    _check_var(shape, [:r, :p, :c], "shape")
 
     size_x = size(m, 2)
     size_y = size(m, 1)
 
-    p = Plots.heatmap(m,
-                      framestyle=:none,
-                      cb=false;
-                      fill=:darktest,
-                      margins=-100Plots.px,
-                      legend=false,
-                      size=(size_x, size_y))
+    p = GLMakie.Figure(size=(size_x, size_y))
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel="",
+                      ylabel="",
+                      title="",
+                      aspect=DataAspect(),
+                      xticksvisible=false,
+                      yticksvisible=false,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
+    hidedecorations!(ax)
+    hm = GLMakie.heatmap!(m[end:-1:1, :]',
+                          colormap=:darktest)
 
-    x_pos = Int64[]
-    y_pos = Int64[]
+    poins = nothing
+    if shape in [:p, :r]
+        points = Observable(Point2i[])
+    else
+        points = Observable(Point2i(div(size_x, 2), div(size_y, 2)))
+    end
+    radius = Observable(1)
 
-    function _activate(app)
+    if shape === :p
 
-        win = GtkApplicationWindow(app, "NeuroAnalyzer: iview()")
-        Gtk4.default_size(win, p.attr[:size][1] + 4, p.attr[:size][2] + 4)
+        GLMakie.scatter!(ax,
+                         points,
+                         marker=:rect,
+                         markersize=10,
+                         color=:red)
 
-        can = GtkCanvas()
-        can.content_width = p.attr[:size][1]
-        can.content_height = p.attr[:size][2]
-        can.margin_start = 2
-        can.margin_end = 2
-        can.margin_top = 2
-        can.margin_bottom = 2
-        push!(win, can)
-
-        Gtk4.show(win)
-
-        @guarded draw(can) do widget
-            withenv("GKSwstype" => "100") do
-                png(p, io)
-            end
-            img = read_from_png(io)
-            ctx = getgc(can)
-            Cairo.set_source_surface(ctx, img, 1, 1)
-            Cairo.paint(ctx)
-        end
-
-        function _lmb_click(_, _, x, y)
-            x = round(x)
-            y = round(y)
-            ctx = getgc(can)
-            if length(x) >= 0 && length(x_pos) < 2 && shape in [:r, :c]
-                push!(x_pos, x)
-                push!(y_pos, y)
-            elseif shape === :p && length(x_pos) == 0
-                push!(x_pos, x)
-                push!(y_pos, y)
-            end
-            if length(x_pos) == 1
-                Gtk4.arc(ctx, x_pos[1], y_pos[1], 2, 0, 2*pi)
-                Gtk4.set_source_rgb(ctx, 0, 0, 0)
-                Gtk4.fill(ctx)
-                Gtk4.stroke(ctx)
-                Gtk4.reveal(can)
-            else length(x) == 2
-                if shape === :c
-                    Gtk4.arc(ctx, x_pos[1], y_pos[1], distance((x_pos[1], y_pos[1]), (x_pos[2], y_pos[2])), 0, 2*pi)
-                elseif shape === :r
-                    Gtk4.rectangle(ctx, x_pos[1], y_pos[1], x_pos[2] - x_pos[1], y_pos[2] - y_pos[1])
+        on(events(ax).mousebutton) do event
+            if event.button == Mouse.left && event.action == Mouse.press
+                pos = round.(Int64, mouseposition(ax))
+                if length(points[]) == 0
+                    push!(points[], pos)
+                    notify(points)
+                elseif length(points[]) == 1
+                    pop!(points[])
+                    push!(points[], pos)
+                    notify(points)
                 end
-                Gtk4.set_source_rgb(ctx, 0, 0, 0)
-                Gtk4.set_line_width(ctx, 4.0);
-                Gtk4.stroke(ctx)
-                Gtk4.reveal(can)
             end
-        end
-        ggc_l = GtkGestureClick()
-        ggc_l.button = 1
-        push!(can, ggc_l)
-        signal_connect(_lmb_click, ggc_l, "pressed")
-
-        function _rmb_click(_, _, x, y)
-            withenv("GKSwstype" => "100") do
-                png(p, io)
-            end
-            img = read_from_png(io)
-            ctx = getgc(can)
-            Cairo.set_source_surface(ctx, img, 1, 1)
-            Cairo.paint(ctx)
-            if length(x_pos) > 0
-                pop!(x_pos)
-                pop!(y_pos)
-            end
-            if length(x_pos) == 1
-                Gtk4.arc(ctx, x_pos[1], y_pos[1], 2, 0, 2*pi)
-                Gtk4.set_source_rgb(ctx, 0, 0, 0)
-                Gtk4.fill(ctx)
-                Gtk4.stroke(ctx)
-            end
-            Gtk4.reveal(can)
-        end
-        ggc_r = GtkGestureClick()
-        ggc_r.button = 3
-        push!(can, ggc_r)
-        signal_connect(_rmb_click, ggc_r, "pressed")
-
-        win_key = Gtk4.GtkEventControllerKey(win)
-
-        help = "Keyboard shortcuts:\n\nCtrl + Enter\t\tReturn selected segment\nCtrl + s\t\t\tSave selected segment as PNG\n\nCtrl + h\t\t\tThis info\nCtrl + q\t\t\tClose\n"
-
-        signal_connect(win_key, "key-pressed") do widget, keyval, keycode, state
-            if ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('s'))
-                save_dialog("Pick an image file", win, ["*.png"]) do file_name
-                    if file_name != ""
-                        surface_buf = Gtk4.cairo_surface(can)
-                        if Cairo.write_to_png(surface_buf, file_name) == Cairo.STATUS_SUCCESS
-                            _info("Plot saved as: $file_name")
-                        else
-                            warn_dialog(_nill, "File $file_name cannot be written!", win)
-                        end
-                    end
+            if event.button == Mouse.right && event.action == Mouse.press
+                if length(points[]) > 0
+                    pop!(points[])
+                    notify(points)
                 end
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('h'))
-                info_dialog(_nill, help, win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == 0x0000ff0d) # Enter
-                close(win)
-            elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == UInt('q'))
-                x_pos = nothing
-                y_pos = nothing
-                close(win)
+            end
+        end
+
+    elseif shape === :c
+
+        GLMakie.arc!(ax,
+                     points,
+                     radius,
+                     -pi,
+                     pi,
+                     linewidth=5,
+                     color=:red)
+
+        on(events(p).scroll, priority=1) do (dx, dy)
+            if dy == 1.0
+                radius[] <= size_x && (radius[] += dy)
+            elseif dy == -1.0
+                radius[] > 1 && (radius[] += dy)
+            end
+            notify(radius)
+        end
+
+        on(events(ax).mousebutton) do event
+            if event.button == Mouse.left && event.action == Mouse.press
+                pos = round.(Int64, mouseposition(ax))
+                points[] = Point2i(pos)
+                notify(points)
+            end
+            if event.button == Mouse.right && event.action == Mouse.press
+                points[] = Point2i(0, 0)
+                radius[] = 1
+                notify(points)
+            end
+        end
+
+    elseif shape === :r
+
+        GLMakie.lines!(ax,
+                       points,
+                       linewidth=5,
+                       color=:red)
+        on(events(ax).mousebutton) do event
+            if event.button == Mouse.left && event.action == Mouse.press
+                pos = round.(Int64, mouseposition(ax))
+                if length(points[]) == 0
+                    push!(points[], pos)
+                    push!(points[], pos)
+                    push!(points[], pos)
+                    push!(points[], pos)
+                    notify(points)
+                elseif length(points[]) == 1
+                    push!(points[], Point2i(points[][end][1], pos[2]))
+                    push!(points[], pos)
+                    push!(points[], Point2i(pos[1], points[][end - 2][2]))
+                    push!(points[], Point2i(points[][end - 3]))
+                    notify(points)
+                elseif length(points[]) == 4
+                    pop!(points[])
+                    pop!(points[])
+                    pop!(points[])
+                    push!(points[], Point2i(points[][end][1], pos[2]))
+                    push!(points[], pos)
+                    push!(points[], Point2i(pos[1], points[][end - 2][2]))
+                    push!(points[], Point2i(points[][end - 3]))
+                    notify(points)
+                elseif length(points[]) == 5
+                    pop!(points[])
+                    pop!(points[])
+                    pop!(points[])
+                    pop!(points[])
+                    push!(points[], Point2i(points[][end][1], pos[2]))
+                    push!(points[], pos)
+                    push!(points[], Point2i(pos[1], points[][end - 2][2]))
+                    push!(points[], Point2i(points[][end - 3]))
+                    notify(points)
+                end
+            end
+            if event.button == Mouse.right && event.action == Mouse.press
+                for _ in length(points[]):-1:1
+                    pop!(points[])
+                end
+                notify(points)
             end
         end
     end
 
-    app = GtkApplication("org.neuroanalyzer.iselect_seg")
-    Gtk4.signal_connect(_activate, app, :activate)
-    Gtk4.GLib.stop_main_loop()
-    Gtk4.run(app)
+    on(events(p).keyboardbutton) do event
+        if event.action == Keyboard.press
+            if event.key == Keyboard.enter
+                close(display(p))
+            end
+        end
+    end
 
-    if x_pos === nothing && y_pos === nothing
-        return nothing
+    wait(display(p))
+
+    if length(points[]) == 0
+       return nothing
+    elseif length(points[]) == 1
+        c = points[][1][1]
+        r = size_y - points[][1][2]
+        c < 1 && (c = 1)
+        r < 1 && (r = 1)
+        c > size_x && (c = size_x)
+        r > size_y && (r = size_y)
+    elseif length(points[]) == 2
+        if radius[] == 0
+            return nothing
+        else
+            c1 = points[][1]
+            r1 = size_y - points[][2]
+            c1 < 1 && (c1 = 1)
+            r1 < 1 && (r1 = 1)
+            c1 > size_x && (c1 = size_x)
+            r1 > size_y && (r1 = size_y)
+
+            c2 = c1 + radius[]
+            r2 = r1 + radius[]
+            c2 < 1 && (c2 = 1)
+            r2 < 1 && (r2 = 1)
+            c2 > size_x && (c2 = size_x)
+            r2 > size_y && (r2 = size_y)
+        end
+    elseif length(points[]) == 5
+        c1 = points[][1][1]
+        r1 = size_y - points[][1][2]
+        c1 < 1 && (c1 = 1)
+        r1 < 1 && (r1 = 1)
+        c1 > size_x && (c1 = size_x)
+        r1 > size_y && (r1 = size_y)
+
+        c2 = points[][3][1]
+        r2 = size_y - points[][3][2]
+        c2 < 1 && (c2 = 1)
+        r2 < 1 && (r2 = 1)
+        c2 > size_x && (c2 = size_x)
+        r2 > size_y && (r2 = size_y)
     end
 
     if shape in [:r, :c]
-        if x_pos !== nothing && y_pos !== nothing && length(x_pos) > 0 && length(y_pos) > 0
-            if length(x_pos) > 1 && length(y_pos) > 1 && x_pos[end] == x_pos[1] && y_pos[end] == y_pos[1]
-                pop!(x_pos)
-                pop!(y_pos)
-            end
-            x_pos[1] > size_x && (x_pos[1] = size_x)
-            x_pos[2] > size_x && (x_pos[2] = size_x)
-            y_pos[1] > size_y && (y_pos[1] = size_y)
-            y_pos[2] > size_y && (y_pos[2] = size_y)
-            c1 = x_pos[1]
-            c2 = x_pos[2]
-            r1 = y_pos[1]
-            r2 = y_pos[2]
-            if shape === :r
-                r1 > r2 && ((r1, r2) = _swap(r1, r2))
-                c1 > c2 && ((c1, c2) = _swap(c1, c2))
-            end
-            c = shape == :c
-            return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
-        end
+        r1 > r2 && ((r1, r2) = _swap(r1, r2))
+        c1 > c2 && ((c1, c2) = _swap(c1, c2))
+        c = shape == :c
+        return !extract ? (r1, c1, r2, c2) : seg_extract(m, (r1, c1, r2, c2), v=v, c=c)
     else
-        x_pos[1] > size_x && (x_pos[1] = size_x)
-        y_pos[1] > size_y && (y_pos[1] = size_y)
-        c = x_pos[1]
-        r = y_pos[1]
         return !extract ? (r, c) : m[r, c]
     end
 
