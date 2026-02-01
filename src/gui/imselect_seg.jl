@@ -27,7 +27,7 @@ or
 """
 function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, v::Bool=false)::Union{Nothing, <:Real, Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64, Int64}, Union{AbstractMatrix, AbstractVector, Tuple{AbstractVector, AbstractVector}}}
 
-    _check_var(shape, [:r, :p], "shape")
+    _check_var(shape, [:r, :p, :c], "shape")
 
     size_x = size(m, 2)
     size_y = size(m, 1)
@@ -52,7 +52,13 @@ function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, 
     hm = GLMakie.heatmap!(m[end:-1:1, :]',
                           colormap=:darktest)
 
-    points = Observable(Point2i[])
+    poins = nothing
+    if shape in [:p, :r]
+        points = Observable(Point2i[])
+    else
+        points = Observable(Point2i(div(size_x, 2), div(size_y, 2)))
+    end
+    radius = Observable(1)
 
     if shape === :p
 
@@ -62,7 +68,7 @@ function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, 
                          markersize=10,
                          color=:red)
 
-        on(events(p).mousebutton) do event
+        on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
                 pos = round.(Int64, mouseposition(ax))
                 if length(points[]) == 0
@@ -82,13 +88,45 @@ function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, 
             end
         end
 
+    elseif shape === :c
+
+        GLMakie.arc!(ax,
+                     points,
+                     radius,
+                     -pi,
+                     pi,
+                     linewidth=5,
+                     color=:red)
+
+        on(events(p).scroll, priority=1) do (dx, dy)
+            if dy == 1.0
+                radius[] <= size_x && (radius[] += dy)
+            elseif dy == -1.0
+                radius[] > 1 && (radius[] += dy)
+            end
+            notify(radius)
+        end
+
+        on(events(ax).mousebutton) do event
+            if event.button == Mouse.left && event.action == Mouse.press
+                pos = round.(Int64, mouseposition(ax))
+                points[] = Point2i(pos)
+                notify(points)
+            end
+            if event.button == Mouse.right && event.action == Mouse.press
+                points[] = Point2i(0, 0)
+                radius[] = 1
+                notify(points)
+            end
+        end
+
     elseif shape === :r
 
         GLMakie.lines!(ax,
                        points,
                        linewidth=5,
                        color=:red)
-        on(events(p).mousebutton) do event
+        on(events(ax).mousebutton) do event
             if event.button == Mouse.left && event.action == Mouse.press
                 pos = round.(Int64, mouseposition(ax))
                 if length(points[]) == 0
@@ -144,6 +182,24 @@ function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, 
         r < 1 && (r = 1)
         c > size_x && (c = size_x)
         r > size_y && (r = size_y)
+    elseif length(points[]) == 2
+        if radius[] == 0
+            return nothing
+        else
+            c1 = points[][1]
+            r1 = size_y - points[][2]
+            c1 < 1 && (c1 = 1)
+            r1 < 1 && (r1 = 1)
+            c1 > size_x && (c1 = size_x)
+            r1 > size_y && (r1 = size_y)
+
+            c2 = c1 + radius[]
+            r2 = r1 + radius[]
+            c2 < 1 && (c2 = 1)
+            r2 < 1 && (r2 = 1)
+            c2 > size_x && (c2 = size_x)
+            r2 > size_y && (r2 = size_y)
+        end
     elseif length(points[]) == 5
         c1 = points[][1][1]
         r1 = size_y - points[][1][2]
@@ -160,7 +216,7 @@ function imselect_seg(m::AbstractMatrix; shape::Symbol=:r, extract::Bool=false, 
         r2 > size_y && (r2 = size_y)
     end
 
-    if shape === :r
+    if shape in [:r, :c]
         r1 > r2 && ((r1, r2) = _swap(r1, r2))
         c1 > c2 && ((c1, c2) = _swap(c1, c2))
         c = shape == :c
