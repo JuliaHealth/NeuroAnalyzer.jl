@@ -49,16 +49,6 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     ch_n = length(ch)
     locs = locs[ch, :]
 
-#=
-    if large
-        head_shape = FileIO.load(joinpath(res_path, "head_t_outline_large.png"))
-        head_mask = FileIO.load(joinpath(res_path, "mask_large.png"))
-    else
-        head_shape = FileIO.load(joinpath(res_path, "head_t_small.png"))
-        head_mask = FileIO.load(joinpath(res_path, "mask_small.png"))
-    end
-=#
-
     if cart == false
         loc_x = zeros(length(ch))
         loc_y = zeros(length(ch))
@@ -73,28 +63,49 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, 1024, imethod, nmethod)
+    if ps === :l
+        plot_size = (800, 800)
+        marker_size = length(ch) > 64 ? 8 : 16
+        length(ch) > 64 && (ch_labels = false)
+        iter = 512
+        font_size = 20
+        !occursin("\n", title) && title !== "" && (title *= "\n")
+    elseif ps === :m
+        plot_size = (300, 300)
+        marker_size = length(ch) > 64 ? 2 : 4
+        font_size = 8
+        iter = 256
+        title=""
+        cb_title=""
+        font_size = 10
+    elseif ps === :s
+        plot_size = (100, 100)
+        marker_size = length(ch) > 64 ? 1 : 2
+        iter = 128
+        title=""
+        cb = false
+        plot_contours = false
+        cb_title=""
+        font_size = 5
+    end
+
+    s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod)
     s_interpolated = s_interpolated'[:, end:-1:1]
 
-    # s_interpolated[1:10, 1:10] .= NaN
+    # we need to calculate thresholded region before removing peripherals
+    if !isnothing(threshold)
+        _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
+        # _, bm = seg_extract(s, threshold=1.0, threshold_type=:geq)
+        # reg = ones(size(s_interpolated)) .* minimum(s_interpolated)
+        reg = zeros(size(s_interpolated))
+        # reg = zeros(size(s))
+        # reg[bm] .= maximum(s_interpolated)
+        reg[bm] .= 1.0
+        # reg = reg[:, end:-1:1]
+    end
 
     head12 = false
     maximum(abs.(locs[:, :loc_x])) <= 1.2 && maximum(abs.(locs[:, :loc_y])) <= 1.2 && maximum(abs.(locs[:, :loc_z])) <= 1.5 && (head12 = true)
-
-    if ps === :l
-        plot_size = (800, 800)
-        marker_size = length(ch) > 64 ? 10 : 20
-        font_size = 14
-        length(ch) > 64 && (ch_labels = false)
-    elseif ps === :m
-        plot_size = (300, 300)
-        marker_size = length(ch) > 64 ? 5 : 10
-        font_size = 8
-    elseif ps === :s
-        plot_size = (100, 100)
-        marker_size = length(ch) > 64 ? 4 : 8
-        cb = false
-    end
 
     if head12
         xl = (-1.2, 1.2)
@@ -117,75 +128,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
         end
     end
     s_interpolated[d .>= xl[2]] .= NaN
-
-#=
-    if head12
-        xl = (0, size(head_shape, 1))
-        yl = (0, size(head_shape, 2))
-        !head && (loc_y .= -loc_y)
-        origin = size(head_shape) ./ 2 .+ 1
-        if large
-            marker_size = length(ch) > 64 ? 4 : 8
-            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-        else
-            marker_size = length(ch) > 64 ? 2 : 4
-            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
-        end
-    else
-        if large
-            m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 200)
-            m[101:100+size(head_shape, 1), 101:100+size(head_shape, 2)] .= head_shape
-            head_shape = m
-            xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
-            yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
-            interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
-            interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
-            xl = (0, size(head_shape, 1))
-            yl = (0, size(head_shape, 2))
-            !head && (loc_y .= -loc_y)
-            origin = size(head_shape) ./ 2 .+ 1
-            marker_size = length(ch) > 64 ? 4 : 8
-            loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-            length(ch) > 64 && (ch_labels = false)
-        else
-            m = zeros(RGBA{FixedPointNumbers.N0f8}, size(head_shape) .+ 100)
-            m[51:50+size(head_shape, 1), 51:50+size(head_shape, 2)] .= head_shape
-            head_shape = m
-            xt = (round.(linspace(0, size(head_shape, 1), 25)), string.(round.(linspace(-1.6, 1.6, 25), digits=1)))
-            yt = (round.(linspace(0, size(head_shape, 2), 25)), string.(round.(linspace(1.6, -1.6, 25), digits=1)))
-            interpolated_x = round.(linspace(0, size(head_shape, 1), length(interpolated_x)), digits=2)
-            interpolated_y = round.(linspace(0, size(head_shape, 2), length(interpolated_y)), digits=2)
-            xl = (0, size(head_shape, 1))
-            yl = (0, size(head_shape, 2))
-            !head && (loc_y .= -loc_y)
-            origin = size(head_shape) ./ 2 .+ 1
-            marker_size = length(ch) > 64 ? 2 : 4
-            font_size = 4
-            ch_labels = false
-            sch_labels = false
-            grid = false
-            loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-            loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
-        end
-    end
-=#
-    if ps === :l
-        font_size = 20
-        !occursin("\n", title) && title !== "" && (title *= "\n")
-    elseif ps === :m
-        title=""
-        cb_title=""
-        marker_size = 4
-        font_size = 10
-    elseif ps === :s
-        title=""
-        cb_title=""
-        marker_size = 2
-        font_size = 5
-    end
+    !isnothing(threshold) && (reg[d .>= xl[2]] .= NaN)
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
@@ -211,7 +154,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
                           colormap=pal)
 
     # draw contours
-    if plot_contours
+    if plot_contours && isnothing(threshold)
         GLMakie.contour!(ax,
                          interpolated_x,
                          interpolated_y,
@@ -275,20 +218,18 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
 
     # draw thresholded region
     if !isnothing(threshold)
-        _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
-        reg = ones(size(s_interpolated)) .* minimum(s_interpolated)
-        reg[bm] .= maximum(s_interpolated)
-        GLMakie.contour!(ax,
-                         interpolated_x,
+        GLMakie.contour!(interpolated_x,
                          interpolated_y,
-                         reg',
+                         reg,
                          levels=1,
+                         linestyle=:dash,
                          color=:black,
-                         linewidth=2)
+                         linewidth=1)
     end
 
     # draw mask
-    GLMakie.arc!(Point2f(0),
+    GLMakie.arc!(ax,
+                 Point2f(0),
                  r,
                  -pi, pi,
                  linewidth=5,
