@@ -35,16 +35,18 @@ Plot topographical view.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), cb::Bool=true, cb_title::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
+function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), cb::Bool=true, cb_title::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
 
     pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(ps, [:l, :m, :s], "ps")
+    _check_var(threshold_method, [:reg, :loc], "threshold_method")
 
     ch_n = length(ch)
     locs = locs[ch, :]
@@ -91,17 +93,30 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
 
     s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, iter, imethod, nmethod)
     s_interpolated = s_interpolated'[:, end:-1:1]
+    s_interpolated_threshold = deepcopy(s_interpolated)
 
     # we need to calculate thresholded region before removing peripherals
     if !isnothing(threshold)
-        _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
-        # _, bm = seg_extract(s, threshold=1.0, threshold_type=:geq)
-        # reg = ones(size(s_interpolated)) .* minimum(s_interpolated)
-        reg = zeros(size(s_interpolated))
-        # reg = zeros(size(s))
-        # reg[bm] .= maximum(s_interpolated)
-        reg[bm] .= 1.0
-        # reg = reg[:, end:-1:1]
+        if threshold_method === :loc
+            s_norm = normalize(s, method=nmethod)
+            threshold_idx = nothing
+            if threshold_type === :eq
+                threshold_idx = findall(x->x == threshold, s_norm)
+            elseif threshold_type === :neq
+                threshold_idx = findall(x->x != threshold, s_norm)
+            elseif threshold_type === :geq
+                threshold_idx = findall(x->x >= threshold, s_norm)
+            elseif threshold_type === :leq
+                threshold_idx = findall(x->x <= threshold, s_norm)
+            elseif threshold_type === :g
+                threshold_idx = findall(x->x > threshold, s_norm)
+            elseif threshold_type === :l
+                threshold_idx = findall(x->x < threshold, s_norm)
+            end
+        else
+            _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
+            s_interpolated_threshold[.!bm] .= NaN
+        end
     end
 
     head12 = false
@@ -116,19 +131,20 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
         yl = (-1.6, 1.6)
         r = 1.6
     end
-    xt = (round.(linspace(xl[1], xl[2], 25), digits=1))
-    yt = (round.(linspace(yl[1], yl[2], 25), digits=1))
-    interpolated_x = round.(linspace(xl[1], xl[2], length(interpolated_x)), digits=2)
-    interpolated_y = round.(linspace(yl[1], yl[2], length(interpolated_y)), digits=2)
 
+#    interpolated_x = round.(linspace(xl[1], xl[2], length(interpolated_x)), digits=2)
+#    interpolated_y = round.(linspace(yl[1], yl[2], length(interpolated_y)), digits=2)
+
+    # get distances from (0, 0)
     d = zeros(length(interpolated_x), length(interpolated_y))
     for idx1 in eachindex(interpolated_x)
         for idx2 in eachindex(interpolated_y)
             d[idx1, idx2] = distance((0, 0), (interpolated_x[idx1], interpolated_y[idx2]))
         end
     end
+    # remove everything outside the radius
     s_interpolated[d .>= xl[2]] .= NaN
-    !isnothing(threshold) && (reg[d .>= xl[2]] .= NaN)
+    !isnothing(threshold) && (s_interpolated_threshold[d .>= xl[2]] .= NaN)
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
@@ -146,15 +162,37 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     hidespines!(ax)
     GLMakie.xlims!(ax, xl)
     GLMakie.ylims!(ax, yl)
+    if !isnothing(threshold) && threshold_method === :reg
+        hm = GLMakie.heatmap!(ax,
+                              interpolated_x,
+                              interpolated_y,
+                              s_interpolated_threshold,
+                              colorrange=extrema(s_interpolated[.!isnan.(s_interpolated)]),
+                              colormap=pal)
+    else
+        hm = GLMakie.heatmap!(ax,
+                              interpolated_x,
+                              interpolated_y,
+                              s_interpolated,
+                              colormap=pal)
+    end
 
-    hm = GLMakie.heatmap!(ax,
-                          interpolated_x,
-                          interpolated_y,
-                          s_interpolated,
-                          colormap=pal)
+    # draw colorbar
+    if cb
+        GLMakie.Colorbar(p[1, 2],
+                         hm,
+                         label=cb_title,
+                         labelsize=font_size,
+                         ticklabelsize=font_size,
+                         width=ps === :l ? 25 : 10,
+                         tellheight=true)
+        rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
+        colgap!(p.layout, 10)
+    end
+
 
     # draw contours
-    if plot_contours && isnothing(threshold)
+    if plot_contours && ((isnothing(threshold) && threshold_method === :reg) || (!isnothing(threshold) && threshold_method === :loc))
         GLMakie.contour!(ax,
                          interpolated_x,
                          interpolated_y,
@@ -203,28 +241,36 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     end
 
     # draw electrodes
+    # mark thresholded channels
     if plot_electrodes
-        ps === :l && (sw = 2)
-        ps === :m && (sw = 1)
-        ps === :s && (sw = 0.0)
+        ps === :l && (sw = 4)
+        ps === :m && (sw = 2)
+        ps === :s && (sw = 1)
 
-        for idx in 1:ch_n
-            GLMakie.scatter!(loc_x[idx],
-                             loc_y[idx],
-                             markersize=marker_size,
-                             color=:black)
+        if isnothing(threshold) || (!isnothing(threshold) && threshold_method === :reg)
+            for idx in 1:ch_n
+                GLMakie.scatter!(loc_x[idx],
+                                 loc_y[idx],
+                                 markersize=marker_size,
+                                 color=:black)
+            end
+        elseif threshold_method === :loc
+            for idx in 1:ch_n
+                if idx in threshold_idx
+                    GLMakie.scatter!(loc_x[idx],
+                                     loc_y[idx],
+                                     markersize=marker_size * 2,
+                                     color=:gray,
+                                     strokewidth=sw,
+                                     strokecolor=:black)
+                else
+                    GLMakie.scatter!(loc_x[idx],
+                                     loc_y[idx],
+                                     markersize=marker_size,
+                                     color=:black)
+                end
+            end
         end
-    end
-
-    # draw thresholded region
-    if !isnothing(threshold)
-        GLMakie.contour!(interpolated_x,
-                         interpolated_y,
-                         reg,
-                         levels=1,
-                         linestyle=:dash,
-                         color=:black,
-                         linewidth=1)
     end
 
     # draw mask
@@ -236,7 +282,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
                  color=:white)
 
     # draw colorbar
-    if cb
+    if cb && (isnothing(threshold) || (!isnothing(threshold) && threshold_method === :loc))
         GLMakie.Colorbar(p[1, 2],
                          hm,
                          label=cb_title,
@@ -291,12 +337,13 @@ Topographical plot.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
+function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -373,7 +420,8 @@ function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0,
                   head=head,
                   cart=cart,
                   threshold=threshold,
-                  threshold_type=threshold_type)
+                  threshold_type=threshold_type,
+                  threshold_method=threshold_method)
 
     return p
 
@@ -535,7 +583,8 @@ function mplot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; e
                   head=head,
                   cart=cart,
                   threshold=threshold,
-                  threshold_type=threshold_type)
+                  threshold_type=threshold_type,
+                  threshold_method=threshold_method)
 
     return p
 
