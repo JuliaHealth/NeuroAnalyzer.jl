@@ -198,7 +198,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
         sch = ""
         @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
         _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
-        if threshold_type in [:eq, :neq, :geq, :leq, :g, :l, :in]
+        if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
             @assert length(threshold) == 1 "threshold must contain a single value."
         else
             @assert length(threshold) == 2 "threshold must contain two values."

@@ -48,6 +48,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
 
     pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(threshold_method, [:reg, :loc], "threshold_method")
     @assert contours >= 0 "contours must be ≥ 0."
@@ -107,6 +108,12 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     threshold_idx = nothing
     if !isnothing(threshold)
         if threshold_method === :loc
+            if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
+                @assert length(threshold) == 1 "threshold must contain a single value."
+            else
+                @assert length(threshold) == 2 "threshold must contain two values."
+                _check_tuple(threshold, "threshold")
+            end
             s_norm = normalize(s, method=nmethod)
             if threshold_type === :eq
                 threshold_idx = findall(x->x == threshold, s_norm)
@@ -120,6 +127,10 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
                 threshold_idx = findall(x->x > threshold, s_norm)
             elseif threshold_type === :l
                 threshold_idx = findall(x->x < threshold, s_norm)
+            elseif threshold_type === :in
+                threshold_idx = findall(x->(x >= threshold[1] && x <= threshold[2]), s_norm)
+            elseif threshold_type === :bin
+                threshold_idx = findall(x->(x > threshold[1] && x < threshold[2]), s_norm)
             end
         else
             _, bm = seg_extract(s_interpolated, threshold=threshold, threshold_type=threshold_type)
