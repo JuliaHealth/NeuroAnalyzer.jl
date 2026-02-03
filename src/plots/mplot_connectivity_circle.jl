@@ -10,7 +10,7 @@ Plot connectivity circle.
 - `m::AbstractMatrix`: matrix of connectivities (channel vs. channel)
 - `clabels=Vector{String}`: channels labels
 - `title::String=""`: plot title
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -18,13 +18,15 @@ Plot connectivity circle.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 - `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function mplot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
 
     @assert size(m, 1) == length(clabels) "Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."
     @assert size(m, 1) >= 2 "m must contain data for ≥ 2 channels."
@@ -70,12 +72,20 @@ function mplot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, ti
     for idx1 in 1:s
         for idx2 in (idx1 + 1):s
             if !isnothing(threshold)
+                if threshold_type in [:eq, :neq, :geq, :leq, :g, :l, :in]
+                    @assert length(threshold) == 1 "threshold must contain a single value."
+                else
+                    @assert length(threshold) == 2 "threshold must contain two values."
+                    _check_tuple(threshold, "threshold")
+                end
                 (threshold_type === :eq && m[idx1, idx2] != threshold) && break
                 (threshold_type === :neq && m[idx1, idx2] == threshold) && break
                 (threshold_type === :g && m[idx1, idx2] <= threshold) && break
                 (threshold_type === :l && m[idx1, idx2] >= threshold) && break
                 (threshold_type === :geq && m[idx1, idx2] < threshold) && break
                 (threshold_type === :leq && m[idx1, idx2] > threshold) && break
+                (threshold_type === :in && (m[idx1, idx2] >= threshold[1] && m[idx1, idx2] <= threshold[2])) && break
+                (threshold_type === :bin && (m[idx1, idx2] > threshold[1] && m[idx1, idx2] < threshold[2])) && break
             end
             mid_x = (pos_x[idx1] + pos_x[idx2]) / 2
             mid_y = (pos_y[idx1] + pos_y[idx2]) / 2

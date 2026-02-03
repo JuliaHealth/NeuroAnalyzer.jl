@@ -23,7 +23,7 @@ Plot single-channel spectrogram.
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar label
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -31,13 +31,14 @@ Plot single-channel spectrogram.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plotting
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
 
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
@@ -75,8 +76,7 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                       yminorticks=IntervalsBetween(10),
                       yscale=frq===:lin ? identity : log,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, (st[1], st[end]))
     GLMakie.ylims!(ax, frq_lim)
     ax.titlesize = 20
@@ -137,7 +137,7 @@ Plot multiple-channel spectrogram.
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar label
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -145,13 +145,14 @@ Plot multiple-channel spectrogram.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plotting
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=[""], db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
 
     @assert size(sp, 1) == length(clabels) "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
@@ -195,8 +196,7 @@ function mplot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vec
                       yticksvisible=false,
                       xscale=frq===:lin ? identity : log,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, frq_lim)
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -272,7 +272,7 @@ Plots spectrogram.
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `cb::Bool=true`: plot color bar
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -280,16 +280,17 @@ Plots spectrogram.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 - `topo::Bool=false`: plot topographical map of spectrograms
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure where {T <: CWT}
+function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, head::Bool=true)::GLMakie.Figure where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert seg[1] != seg[2] "Signal is too short for analysis."
@@ -404,8 +405,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
                               cb=cb,
                               cb_title=method === :cwt ? "Magnitude" : "",
                               threshold=threshold,
-                              threshold_type=threshold_type;
-                              kwargs...)
+                              threshold_type=threshold_type)
 
         # plot markers if available
         # TODO: draw markers length
@@ -486,8 +486,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
                                   n=n,
                                   cb=cb,
                                   threshold=threshold,
-                                  threshold_type=threshold_type;
-                                  kwargs...)
+                                  threshold_type=threshold_type)
         else
             @assert length(ch) > 1 "For topographical plot, the number of channels must be >1."
             _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
@@ -538,8 +537,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 
                                        cart=cart,
                                        smooth=smooth,
                                        n=n,
-                                       head=head;
-                                       kwargs...)
+                                       head=head)
         end
     end
 
@@ -585,7 +583,7 @@ Plots spectrogram of embedded or external component.
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `cb::Bool=true`: plot color bar
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -593,13 +591,14 @@ Plots spectrogram of embedded or external component.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
-- `kwargs`: optional arguments for plotting
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure where {T <: CWT}
+function mplot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; seg::Tuple{Real, Real}=(0, 10), ep::Union{Int64, AbstractRange}=1, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert seg[1] != seg[2] "Signal is too short for analysis."
@@ -710,8 +709,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractAr
                               n=n,
                               cb=cb,
                               threshold=threshold,
-                              threshold_type=threshold_type;
-                              kwargs...)
+                              threshold_type=threshold_type)
 
         # plot markers if available
         # TODO: draw markers length
@@ -795,8 +793,7 @@ function mplot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractAr
                              n=n,
                              cb=cb,
                              threshold=threshold,
-                             threshold_type=threshold_type;
-                             kwargs...)
+                             threshold_type=threshold_type)
     end
 
     return p
@@ -824,13 +821,12 @@ Plot topographical map of spectrograms.
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true, kwargs...)::GLMakie.Figure
+function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 3) == DataFrames.nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
@@ -891,8 +887,7 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
                           ylabel="",
                           title=locs[idx, :label],
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0);
-                          kwargs...)
+                          yautolimitmargin=(0, 0))
         hidespines!(ax)
         hidedecorations!(ax)
         GLMakie.xlims!(ax, frq_lim)
@@ -913,8 +908,7 @@ function mplot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector
                       title=title,
                       aspect=1,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0);
-                      kwargs...)
+                      yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, (-xl, xl))
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)

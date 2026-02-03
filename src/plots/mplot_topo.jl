@@ -10,6 +10,7 @@ Plot topographical view.
 - `s::Vector{<:Real}`: values to plot (one value per channel)
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
+- `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: list of significant channels
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="[A.U.]"`: color bar title
 - `title::String=""`: plot title
@@ -22,12 +23,12 @@ Plot topographical view.
     - `:nn`: NearestNeighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `plot_contours::Bools=true`: plot contours over topo plot
-- `plot_electrodes::Bools=true`: plot electrodes over topo plot
+- `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
+- `electrodes::Bools=true`: plot electrodes over topo plot
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `head::Bool=true`: draw head
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -35,18 +36,25 @@ Plot topographical view.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), cb::Bool=true, cb_title::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
+function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), sch::Union{Nothing, Int64, Vector{Int64}}=nothing, cb::Bool=true, cb_title::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
 
     pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(threshold_method, [:reg, :loc], "threshold_method")
+    @assert contours >= 0 "contours must be ≥ 0."
+    if !isnothing(sch)
+        @assert length(intersect(ch, sch)) == length(sch) "Some sch channels were not found in ch."
+        @assert isnothing(threshold) "Both sch and threshold cannot be specified."
+    end
 
     ch_n = length(ch)
     locs = locs[ch, :]
@@ -86,7 +94,7 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
         iter = 128
         title=""
         cb = false
-        plot_contours = false
+        contours = 0
         cb_title=""
         font_size = 5
     end
@@ -96,10 +104,10 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     s_interpolated_threshold = deepcopy(s_interpolated)
 
     # we need to calculate thresholded region before removing peripherals
+    threshold_idx = nothing
     if !isnothing(threshold)
         if threshold_method === :loc
             s_norm = normalize(s, method=nmethod)
-            threshold_idx = nothing
             if threshold_type === :eq
                 threshold_idx = findall(x->x == threshold, s_norm)
             elseif threshold_type === :neq
@@ -192,13 +200,13 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
 
 
     # draw contours
-    if plot_contours && ((isnothing(threshold) && threshold_method === :reg) || (!isnothing(threshold) && threshold_method === :loc))
+    if contours > 0 && ((isnothing(threshold) && threshold_method === :reg) || (!isnothing(threshold) && threshold_method === :loc))
         GLMakie.contour!(ax,
                          interpolated_x,
                          interpolated_y,
                          s_interpolated,
                          linestyle=:dash,
-                         levels=5,
+                         levels=contours,
                          linewidth=0.5,
                          color=:black)
     end
@@ -241,13 +249,12 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
     end
 
     # draw electrodes
-    # mark thresholded channels
-    if plot_electrodes
+    # mark thresholded or significant channels
+    if electrodes
         ps === :l && (sw = 4)
         ps === :m && (sw = 2)
         ps === :s && (sw = 1)
-
-        if isnothing(threshold) || (!isnothing(threshold) && threshold_method === :reg)
+        if (isnothing(threshold) && isnothing(sch)) || (!isnothing(threshold) && threshold_method === :reg)
             for idx in 1:ch_n
                 GLMakie.scatter!(loc_x[idx],
                                  loc_y[idx],
@@ -257,6 +264,22 @@ function mplot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{
         elseif threshold_method === :loc
             for idx in 1:ch_n
                 if idx in threshold_idx
+                    GLMakie.scatter!(loc_x[idx],
+                                     loc_y[idx],
+                                     markersize=marker_size * 2,
+                                     color=:gray,
+                                     strokewidth=sw,
+                                     strokecolor=:black)
+                else
+                    GLMakie.scatter!(loc_x[idx],
+                                     loc_y[idx],
+                                     markersize=marker_size,
+                                     color=:black)
+                end
+            end
+        elseif !isnothing(sch)
+            for idx in 1:ch_n
+                if idx in sch
                     GLMakie.scatter!(loc_x[idx],
                                      loc_y[idx],
                                      markersize=marker_size * 2,
@@ -308,6 +331,7 @@ Topographical plot.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+- `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or gray palette
@@ -324,12 +348,12 @@ Topographical plot.
     - `:nn`: NearestNeighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `plot_contours::Bools=true`: plot contours over topo plot
-- `plot_electrodes::Bools=true`: plot electrodes over topo plot
+- `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
+- `electrodes::Bools=true`: plot electrodes over topo plot
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `head::Bool=true`: draw head
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -337,13 +361,17 @@ Topographical plot.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
+function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
+
+    @assert contours >= 0 "contours must be ≥ 0."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -371,10 +399,18 @@ function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0,
     end
 
     ch = get_channel(obj, ch=ch)
+    if !isnothing(sch)
+        if isa(sch, String)
+            @assert length(intersect(ch, get_channel(obj, ch=sch))) == 1 "sch channel was not found in ch."
+        else
+            @assert length(intersect(ch, get_channel(obj, ch=sch))) == length(sch) "Some sch channels were not found in ch."
+        end
+    end
     @assert length(ch) >= 2 "plot_topo() requires ≥ 2 channels."
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+    !isnothing(sch) && (sch = _find_bylabel(locs, sch))
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -406,16 +442,17 @@ function mplot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0,
     cb_title == "default" && (cb_title = "[A.U.]")
 
     p = mplot_topo(s,
-                  ch=collect(1:DataFrames.nrow(locs)),
                   locs=locs,
+                  ch=collect(1:DataFrames.nrow(locs)),
+                  sch=sch,
                   cb=cb,
                   cb_title=cb_title,
                   title=title,
                   mono=mono,
                   imethod=imethod,
                   nmethod=nmethod,
-                  plot_contours=plot_contours,
-                  plot_electrodes=plot_electrodes,
+                  contours=contours,
+                  electrodes=electrodes,
                   ps=ps,
                   head=head,
                   cart=cart,
@@ -454,12 +491,12 @@ Topographical plot of embedded or external component.
     - `:nn`: NearestNeighbour
     - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
-- `plot_contours::Bools=true`: plot contours over topo plot
-- `plot_electrodes::Bools=true`: plot electrodes over topo plot
+- `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
+- `electrodes::Bools=true`: plot electrodes over topo plot
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
 - `head::Bool=true`: draw head
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
-- `threshold::Union{Nothing, Real}=nothing`: if set, use threshold to mark a region
+- `threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing`: if set, use threshold to mark a region
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: draw region is values are equal to threshold
     - `:neq`: draw region is values are not equal to threshold
@@ -467,12 +504,17 @@ Topographical plot of embedded or external component.
     - `:leq`: draw region is values are ≤ to threshold
     - `:g`: draw region is values are > to threshold
     - `:l`: draw region is values are < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
+- `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function mplot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
+function mplot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
+
+    @assert contours >= 0 "contours must be ≥ 0."
 
     if obj.time_pts[end] < 10 && seg == (0, 10)
         seg = (0, obj.time_pts[end])
@@ -569,16 +611,17 @@ function mplot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; e
     cb_title == "default" && (cb_title = "[A.U.]")
 
     p = mplot_topo(s,
-                  ch=c_idx,
                   locs=locs,
+                  ch=c_idx,
+                  sch=nothing,
                   cb=cb,
                   cb_title=cb_title,
                   title=title,
                   mono=mono,
                   imethod=imethod,
                   nmethod=nmethod,
-                  plot_contours=plot_contours,
-                  plot_electrodes=plot_electrodes,
+                  contours=contours,
+                  electrodes=electrodes,
                   ps=ps,
                   head=head,
                   cart=cart,

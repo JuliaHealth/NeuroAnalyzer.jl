@@ -9,7 +9,7 @@ Preview channel locations.
 
 - `locs::DataFrame`: columns: `channel`, `labels`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`
 - `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels should be highlighted
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels are selected
 - `ch_labels::Bool=true`: plot locations labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
@@ -37,7 +37,7 @@ Preview channel locations.
 
 - `p::GLMakie.Figure`
 """
-function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::GLMakie.Figure
+function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), sch::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::GLMakie.Figure
 
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
@@ -195,11 +195,16 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 
     # draw connections
     if connections != [0 0; 0 0]
-        selected = ""
+        sch = ""
         @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
-        _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
+        _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
+        if threshold_type in [:eq, :neq, :geq, :leq, :g, :l, :in]
+            @assert length(threshold) == 1 "threshold must contain a single value."
+        else
+            @assert length(threshold) == 2 "threshold must contain two values."
+            _check_tuple(threshold, "threshold")
+        end
         m_tmp = normalize_n(abs.(connections))
-
         for idx1 in axes(connections, 1)
             for idx2 in 2:size(connections, 1)
                 if idx1 != idx2
@@ -565,6 +570,128 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
                                 end
                             end
                         end
+                    elseif threshold_type === :in
+                        if connections[idx1, idx2] >= threshold[1] && connections[idx1, idx2] <= threshold[2]
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:black)
+                                    else
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:red)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:black,
+                                                    linestyle=:dot)
+                                    else
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:blue)
+                                    end
+                                end
+                            else
+                                GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                            [loc_y[idx1], loc_y[idx2]],
+                                            linewidth=0.2,
+                                            color=:black)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    GLMakie.text!(l_pos[1],
+                                                  l_pos[2],
+                                                  text=string(connections[idx1, idx2]),
+                                                  fontsize=font_size)
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        GLMakie.text!(l_pos[1],
+                                                      l_pos[2],
+                                                      text=string(connections[idx1, idx2]),
+                                                      fontsize=font_size,
+                                                      color=:red)
+                                    else
+                                        GLMakie.text!(l_pos[1],
+                                                      l_pos[2],
+                                                      text=string(connections[idx1, idx2]),
+                                                      fontsize=font_size,
+                                                      color=:blue)
+                                    end
+                                end
+                            end
+                        end
+                    elseif threshold_type === :bin
+                        if connections[idx1, idx2] > threshold[1] && connections[idx1, idx2] < threshold[2]
+                            if weights
+                                if connections[idx1, idx2] > 0
+                                    if mono
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:black)
+                                    else
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:red)
+                                    end
+                                elseif connections[idx1, idx2] < 0
+                                    if mono
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:black,
+                                                    linestyle=:dot)
+                                    else
+                                        GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                                    [loc_y[idx1], loc_y[idx2]],
+                                                    linewidth=6 * m_tmp[idx1, idx2],
+                                                    alpha=0.25 * m_tmp[idx1, idx2],
+                                                    color=:blue)
+                                    end
+                                end
+                            else
+                                GLMakie.lines!([loc_x[idx1], loc_x[idx2]],
+                                            [loc_y[idx1], loc_y[idx2]],
+                                            linewidth=0.2,
+                                            color=:black)
+                                l_pos = _midxy(loc_x[idx1], loc_y[idx1], loc_x[idx2], loc_y[idx2])
+                                if mono
+                                    GLMakie.text!(l_pos[1],
+                                                  l_pos[2],
+                                                  text=string(connections[idx1, idx2]),
+                                                  fontsize=font_size)
+                                else
+                                    if connections[idx1, idx2] >= 0
+                                        GLMakie.text!(l_pos[1],
+                                                      l_pos[2],
+                                                      text=string(connections[idx1, idx2]),
+                                                      fontsize=font_size,
+                                                      color=:red)
+                                    else
+                                        GLMakie.text!(l_pos[1],
+                                                      l_pos[2],
+                                                      text=string(connections[idx1, idx2]),
+                                                      fontsize=font_size,
+                                                      color=:blue)
+                                    end
+                                end
+                            end
+                        end
                     end
                 end
             end
@@ -573,14 +700,14 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
 
     ch_n = length(ch)
     cmap = GLMakie.resample_cmap(pal, ch_n)
-    ch = setdiff(ch, selected)
+    ch = setdiff(ch, sch)
 
     ps === :l && (sw = 2)
     ps === :m && (sw = 1)
     ps === :s && (sw = 0.0)
 
     for idx in 1:ch_n
-        if idx in selected
+        if idx in sch
             if mono
                 GLMakie.scatter!(loc_x[idx],
                                  loc_y[idx],
@@ -625,7 +752,7 @@ function mplot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRan
     end
     if sch_labels
         for idx in eachindex(locs[!, :label])
-            if idx in selected
+            if idx in sch
                 GLMakie.text!(loc_x[idx] + label_offset_x,
                               loc_y[idx] + label_offset_y,
                               text=locs[!, :label][idx],
@@ -704,7 +831,7 @@ Preview of channel locations.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `selected::Union{String, Vector{String}, Regex}`: which channels should be highlighted
+- `sch::Union{String, Vector{String}, Regex}`: which channels are selected
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
@@ -735,7 +862,7 @@ Preview of channel locations.
 
 - `Union{GLMakie.Figure, Nothing}`
 """
-function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Union{GLMakie.Figure, Nothing}
+function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, sch::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Union{GLMakie.Figure, Nothing}
 
     @assert datatype(obj) != "ecog" "Use mplot_locs_ecog() for ECoG data."
 
@@ -744,12 +871,12 @@ function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
 
-    if selected == ""
-        selected = 0
+    if sch == ""
+        sch = 0
     else
-        selected = get_channel(obj, ch=selected)
-        selected = intersect(locs[!, :label], labels(obj)[selected])
-        selected = _find_bylabel(locs, selected)
+        sch = get_channel(obj, ch=sch)
+        sch = intersect(locs[!, :label], labels(obj)[sch])
+        sch = _find_bylabel(locs, sch)
     end
 
     if datatype(obj) == "nirs"
@@ -771,7 +898,7 @@ function mplot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     else
         p = mplot_locs(locs,
                       ch=ch,
-                      selected=selected,
+                      sch=sch,
                       ch_labels=ch_labels,
                       head=head,
                       head_labels=head_labels,

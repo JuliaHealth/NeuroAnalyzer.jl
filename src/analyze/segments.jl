@@ -106,7 +106,7 @@ Extract segment from a matrix using thresholding.
 # Arguments
 
 - `m::AbstractMatrix`
-- `threshold::Real=0`: threshold
+- `threshold::Union{Real, Tuple{Real, Real}}=0`: threshold
 - `threshold_type::Symbol=:neq`: rule for thresholding:
     - `:eq`: return equal to threshold
     - `:neq`: return not equal to threshold
@@ -114,6 +114,8 @@ Extract segment from a matrix using thresholding.
     - `:leq`: return ≤ to threshold
     - `:g`: return > to threshold
     - `:l`: return < to threshold
+    - `:in`: draw region is values are in the threshold values, including threshold boundaries
+    - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 
 # Returns
 
@@ -121,9 +123,16 @@ Named tuple containing:
 - `idx::Vector{CartesianIndex{2}}`: Cartesian coordinates of matrix elements
 - `bm::Matrix{Bool}`: map of the segment
 """
-function seg_extract(m::AbstractMatrix; threshold::Real=0, threshold_type::Symbol=:neq)::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
+function seg_extract(m::AbstractMatrix; threshold::Union{Real, Tuple{Real, Real}}=0, threshold_type::Symbol=:neq)::@NamedTuple{idx::Vector{CartesianIndex{2}}, bm::Matrix{Bool}}
 
-    _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
+    _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l, :in, :bin], "threshold_type")
+
+    if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
+        @assert length(threshold) == 1 "threshold must contain a single value."
+    else
+        @assert length(threshold) == 2 "threshold must contain two values."
+        _check_tuple(threshold, "threshold")
+    end
 
     if threshold_type === :eq
         idx = findall(x->x == threshold, m)
@@ -137,6 +146,10 @@ function seg_extract(m::AbstractMatrix; threshold::Real=0, threshold_type::Symbo
         idx = findall(x->x > threshold, m)
     elseif threshold_type === :l
         idx = findall(x->x < threshold, m)
+    elseif threshold_type === :in
+        idx = findall(x->(x >= threshold[1] && x <= threshold[2]), m)
+    elseif threshold_type === :bin
+        idx = findall(x->(x > threshold[1] && x < threshold[2]), m)
     end
 
     bm = zeros(Bool, size(m))

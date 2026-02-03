@@ -9,7 +9,7 @@ export mplot_locs3d
 
 - `locs::DataFrame`: columns: `channel`, `labels`, `loc_radius`, `loc_theta`, `loc_x`, `loc_y`, `loc_z`, `loc_radius_sph`, `loc_theta_sph`, `loc_phi_sph`
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
@@ -23,7 +23,7 @@ export mplot_locs3d
 
 - `f::GLMakie.Figure`
 """
-function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
+function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), sch::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
 
     _check_var(mesh_type, [:disabled, :brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
@@ -99,10 +99,10 @@ function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
 
     ch_n = length(ch)
     cmap = GLMakie.resample_cmap(pal, ch_n)
-    ch = setdiff(ch, selected)
+    ch = setdiff(ch, sch)
 
     for idx in 1:ch_n
-        if idx in selected
+        if idx in sch
             if mono
                 GLMakie.scatter!(loc_x[idx],
                                  loc_y[idx],
@@ -141,11 +141,11 @@ function mplot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractR
                       text=locs[ch, :label],
                       fontsize=font_size,
                       align=(:center, :center))
-        if selected != 0
-            GLMakie.text!(loc_x[selected] * 1.15,
-                          loc_y[selected] * 1.15,
-                          loc_z[selected] * 1.15,
-                          text=locs[selected, :label],
+        if sch != 0
+            GLMakie.text!(loc_x[sch] * 1.15,
+                          loc_y[sch] * 1.15,
+                          loc_z[sch] * 1.15,
+                          text=locs[sch, :label],
                           fontsize=font_size,
                           align=(:center, :center))
         end
@@ -203,7 +203,7 @@ Preview of channel locations.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `selected::Union{String, Vector{String}, Regex}`: which channels should be highlighted
+- `sch::Union{String, Vector{String}, Regex}`: which channels should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=false`: plot head labels
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
@@ -216,7 +216,7 @@ Preview of channel locations.
 
 - `GLMakie.Figure`
 """
-function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
+function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, sch::Union{String, Vector{String}, Regex}="", ch_labels::Bool=true, head_labels::Bool=false, cart::Bool=false, mono::Bool=false, cam::Tuple{Real, Real}=(20, 45), mesh_type::Symbol=:disabled, mesh_alpha::Float64=0.95, gui::Bool=true)::GLMakie.Figure
 
     @assert datatype(obj) in ["eeg"] "Currently mplot_locs3d() works for EEG objects only."
 
@@ -225,17 +225,17 @@ function mplot_locs3d(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
 
-    if selected == ""
-        selected = 0
+    if sch == ""
+        sch = 0
     else
-        selected = get_channel(obj, ch=selected)
-        selected = intersect(locs[!, :label], labels(obj)[selected])
-        selected = _find_bylabel(locs, selected)
+        sch = get_channel(obj, ch=sch)
+        sch = intersect(locs[!, :label], labels(obj)[sch])
+        sch = _find_bylabel(locs, sch)
     end
 
     p = mplot_locs3d(locs,
                      ch=ch,
-                     selected=selected,
+                     sch=sch,
                      ch_labels=ch_labels,
                      head_labels=head_labels,
                      mono=mono,

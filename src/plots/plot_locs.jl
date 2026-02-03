@@ -12,7 +12,7 @@ Preview channel locations.
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs)`: list of locations to plot, default is all locations
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels should be highlighted
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channels should be selected
 - `ch_labels::Bool=true`: plot locations labels
 - `head::Bool=true`: draw head
 - `head_labels::Bool=false`: plot head labels
@@ -40,7 +40,7 @@ Preview channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), sch::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head::Bool=true, head_labels::Bool=false, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true)::Plots.Plot{Plots.GRBackend}
 
     _check_var(plane, [:xy, :yz, :xz], "plane")
     pal = mono ? :grays : :darktest
@@ -201,7 +201,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
 
     # draw connections
     if connections != [0 0; 0 0]
-        selected = ""
+        sch = ""
         @assert size(connections, 1) == length(ch) "Length of channel and number of connections rows must be equal."
         _check_var(threshold_type, [:eq, :neq, :geq, :leq, :g, :l], "threshold_type")
         m_tmp = normalize_n(abs.(connections))
@@ -395,7 +395,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         end
     end
 
-    ch = setdiff(ch, selected)
+    ch = setdiff(ch, sch)
 
     for idx in eachindex(locs[!, :label])
         if idx in ch
@@ -411,7 +411,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
     end
 
     for idx in eachindex(locs[!, :label])
-        if idx in selected
+        if idx in sch
             if mono != true
                 Plots.scatter!((loc_x[idx], loc_y[idx]),
                                color=idx,
@@ -442,7 +442,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
             if idx in ch
                 p = Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
-#=            if idx in selected
+#=            if idx in sch
                 p = Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + 1, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
 =#
@@ -450,7 +450,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
     end
     if sch_labels
         for idx in eachindex(locs[!, :label])
-            if idx in selected
+            if idx in sch
                 p = Plots.plot!(annotations=(loc_x[idx], loc_y[idx] + label_offset_y, Plots.text(locs[!, :label][idx], pointsize=font_size)))
             end
         end
@@ -514,7 +514,7 @@ end
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
@@ -525,7 +525,7 @@ end
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Plots.Plot{Plots.GRBackend}
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), sch::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, 45))::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -557,7 +557,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
     marker_size = 6
     font_size = 6
 
-    ch = setdiff(ch, selected)
+    ch = setdiff(ch, sch)
 
     p = Plots.scatter3d(grid=true,
                         palette=pal,
@@ -587,9 +587,9 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
                      markerstrokewidth=0,
                      markerstrokealpha=0)
 
-    if selected != 0
+    if sch != 0
         if mono
-            Plots.scatter3d!((loc_x[selected], loc_y[selected], loc_z[selected]),
+            Plots.scatter3d!((loc_x[sch], loc_y[sch], loc_z[sch]),
                              markercolor=:gray,
                              markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
                              markershape=:circle,
@@ -597,7 +597,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
                              markerstrokewidth=0,
                              markerstrokealpha=0)
         else
-            for idx in selected
+            for idx in sch
                 Plots.scatter3d!((loc_x[idx], loc_y[idx], loc_z[idx]),
                                  markercolor=idx,
                                  markerstrokecolor=Colors.RGBA(255/255, 255/255, 255/255, 0/255),
@@ -615,7 +615,7 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
                                          loc_y[idx] * 1.1,
                                          loc_z[idx] * 1.1,
                                          Plots.text(locs[idx, :label], font_size))
-            idx in selected && Plots.annotate!(loc_x[idx] * 1.1,
+            idx in sch && Plots.annotate!(loc_x[idx] * 1.1,
                                                loc_y[idx] * 1.1,
                                                loc_z[idx] * 1.1,
                                                Plots.text(locs[idx, :label], font_size))
@@ -645,7 +645,7 @@ Preview of channel locations.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `selected::Union{String, Vector{String}}`: which channels should be highlighted
+- `sch::Union{String, Vector{String}}`: which channels should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
@@ -681,7 +681,7 @@ Preview of channel locations.
 
 - `Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure, Nothing}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, selected::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, d::Int64=2, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, mesh_type::Union{Nothing, Symbol}=nothing, mesh_alpha::Float64=0.95, camera::Tuple{Real, Real}=(20, 45))::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure, Nothing}
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, sch::Union{String, Vector{String}}="", ch_labels::Bool=true, src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=false, d::Int64=2, mono::Bool=false, grid::Bool=false, large::Bool=true, cart::Bool=false, plane::Symbol=:xy, interactive::Bool=true, transparent::Bool=false, connections::Matrix{<:Real}=[0 0; 0 0], threshold::Real=0, threshold_type::Symbol=:neq, weights::Union{Bool, Vector{<:Real}}=true, mesh_type::Union{Nothing, Symbol}=nothing, mesh_alpha::Float64=0.95, camera::Tuple{Real, Real}=(20, 45))::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure, Nothing}
 
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
     @assert (d == 2 || d == 3) "d must be 2 or 3."
@@ -691,12 +691,12 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))
 
-    if selected == ""
-        selected = 0
+    if sch == ""
+        sch = 0
     else
-        selected = get_channel(obj, ch=selected)
-        selected = intersect(locs[!, :label], labels(obj)[selected])
-        selected = _find_bylabel(locs, selected)
+        sch = get_channel(obj, ch=sch)
+        sch = intersect(locs[!, :label], labels(obj)[sch])
+        sch = _find_bylabel(locs, sch)
     end
 
     if datatype(obj) == "nirs"
@@ -721,7 +721,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         if interactive
             iplot_locs3d(locs,
                          ch=ch,
-                         selected=selected,
+                         sch=sch,
                          ch_labels=ch_labels,
                          head_labels=head_labels,
                          mono=mono)
@@ -729,7 +729,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         else
             p = plot_locs3d(locs,
                             ch=ch,
-                            selected=selected,
+                            sch=sch,
                             ch_labels=ch_labels,
                             head_labels=head_labels,
                             mono=mono)
@@ -737,7 +737,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     elseif isnothing(mesh_type)
         p = plot_locs(locs,
                       ch=ch,
-                      selected=selected,
+                      sch=sch,
                       ch_labels=ch_labels,
                       head=head,
                       head_labels=head_labels,
@@ -754,7 +754,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     elseif mesh_type === :head || mesh_type === :brain
         p = plot_locs3d_mesh(locs,
                              ch=ch,
-                             selected=selected,
+                             sch=sch,
                              ch_labels=ch_labels,
                              head_labels=head_labels,
                              mono=mono,
@@ -843,7 +843,7 @@ end
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+- `sch::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be selected
 - `ch_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
@@ -856,7 +856,7 @@ end
 
 - `f::GLMakie.Figure`
 """
-function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:brain, mesh_alpha::Float64=0.95)::GLMakie.Figure
+function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:DataFrames.nrow(locs), sch::Union{Int64, Vector{Int64}, AbstractRange}=0, ch_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, cart::Bool=false, camera::Tuple{Real, Real}=(20, -45), mesh_type::Symbol=:brain, mesh_alpha::Float64=0.95)::GLMakie.Figure
 
     _check_var(mesh_type, [:brain, :head], "mesh_type")
     _in(mesh_alpha, (0.0, 1.0), "mesh_alpha")
@@ -906,7 +906,7 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
     marker_size = 10
     font_size = 10
 
-    ch = setdiff(ch, selected)
+    ch = setdiff(ch, sch)
 
     f = Figure(size=(plot_size, plot_size))
 
@@ -933,19 +933,19 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
                   alpha=mesh_alpha,
                   color=:gray)
 
-    if selected != 0
+    if sch != 0
         if mono
-            GLMakie.scatter!(loc_x[selected],
-                             loc_y[selected],
-                             loc_z[selected],
+            GLMakie.scatter!(loc_x[sch],
+                             loc_y[sch],
+                             loc_z[sch],
                              color=:gray,
                              markersize=marker_size)
         else
-            GLMakie.scatter!(loc_x[selected],
-                             loc_y[selected],
-                             loc_z[selected],
+            GLMakie.scatter!(loc_x[sch],
+                             loc_y[sch],
+                             loc_z[sch],
                              colormap=pal,
-                             color=selected,
+                             color=sch,
                              markersize=marker_size)
         end
     end
@@ -957,11 +957,11 @@ function plot_locs3d_mesh(locs::DataFrame; ch::Union{Int64, Vector{Int64}, Abstr
                       text=locs[ch, :label],
                       fontsize=font_size,
                       align=(:center, :center))
-        if selected != 0
-            GLMakie.text!(loc_x[selected] * 1.1,
-                          loc_y[selected] * 1.1,
-                          loc_z[selected] * 1.1,
-                          text=locs[selected, :label],
+        if sch != 0
+            GLMakie.text!(loc_x[sch] * 1.1,
+                          loc_y[sch] * 1.1,
+                          loc_z[sch] * 1.1,
+                          text=locs[sch, :label],
                           fontsize=font_size,
                           align=(:center, :center))
         end
