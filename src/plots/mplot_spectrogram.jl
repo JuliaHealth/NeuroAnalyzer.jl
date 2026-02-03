@@ -56,6 +56,14 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
         sp = imfilter(sp, Kernel.gaussian(n))
     end
 
+    sp = sp'
+
+    if !isnothing(threshold)
+        sp_threshold = deepcopy(sp)
+        _, bm = seg_extract(sp, threshold=threshold, threshold_type=threshold_type)
+        sp_threshold[.!bm] .= NaN
+    end
+
     if frq === :log && frq_lim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz")
         frq_lim = (sf[2], frq_lim[2])
@@ -75,6 +83,8 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                       yminorticksvisible=true,
                       yminorticks=IntervalsBetween(10),
                       yscale=frq===:lin ? identity : log,
+                      xgridvisible = false,
+                      ygridvisible = false,
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, (st[1], st[end]))
@@ -85,23 +95,19 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    hm = GLMakie.heatmap!(ax,
-                          st,
-                          sf,
-                          sp',
-                          colormap=pal)
-
     if !isnothing(threshold)
-        _, bm = seg_extract(sp, threshold=threshold, threshold_type=threshold_type)
-        reg = ones(size(sp)) .* minimum(sp)
-        reg[bm] .= maximum(sp)
-        GLMakie.contour!(ax,
-                         st,
-                         sf,
-                         reg',
-                         levels=1,
-                         color=:black,
-                         linewidth=2)
+        hm = GLMakie.heatmap!(ax,
+                              st,
+                              sf,
+                              sp_threshold,
+                              colorrange=extrema(sp[.!isnan.(sp)]),
+                              colormap=pal)
+    else
+        hm = GLMakie.heatmap!(ax,
+                              st,
+                              sf,
+                              sp,
+                              colormap=pal)
     end
 
     if cb
