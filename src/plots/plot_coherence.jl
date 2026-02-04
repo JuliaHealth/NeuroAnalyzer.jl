@@ -160,7 +160,7 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
             Makie.lines!(f,
                          coh_avg,
                          colormap=pal,
-                         linewidth=2,
+                         linewidth=4,
                          color=:black)
         end
 

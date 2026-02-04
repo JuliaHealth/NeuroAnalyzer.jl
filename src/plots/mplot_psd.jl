@@ -161,7 +161,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
             Makie.lines!(sf,
                          s,
                          colormap=pal,
-                         linewidth=2,
+                         linewidth=4,
                          color=:black)
         end
 
