@@ -55,7 +55,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Vector{Float64}; frq_lim::Tuple{Real
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    # plot powers
+    # draw powers
     Makie.lines!(sf,
                  sp,
                  linewidth=2,
@@ -130,7 +130,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
     ax.yticklabelsize = 12
 
     if ci95
-        # plot upper 95% CI
+        # draw upper 95% CI
         Makie.band!(sf,
                     s_u,
                     s_l,
@@ -138,7 +138,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                     color=:grey,
                     strokewidth=0.5)
 
-        # plot mean
+        # draw mean
         Makie.lines!(sf,
                      s_m,
                      color=:black,
@@ -155,7 +155,7 @@ function mplot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Str
                          label=clabels[idx])
         end
 
-        # plot averaged channels
+        # draw averaged channels
         if avg
             s = mean(sp, dims=1)[:]
             Makie.lines!(sf,

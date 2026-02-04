@@ -95,6 +95,7 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
+    # draw spectrogram
     if !isnothing(threshold)
         hm = GLMakie.heatmap!(ax,
                               st,
@@ -110,6 +111,7 @@ function mplot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{F
                               colormap=pal)
     end
 
+    # draw colorbar
     if cb
         Colorbar(p[1, 2],
                  hm,

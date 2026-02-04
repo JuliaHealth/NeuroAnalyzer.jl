@@ -20,13 +20,12 @@ Plot connectivity circle.
     - `:l`: draw region is values are < to threshold
     - `:in`: draw region is values are in the threshold values, including threshold boundaries
     - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, kwargs...)::GLMakie.Figure
+function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
 
     @assert size(m, 1) == length(clabels) "Number of channels in m ($(size(m, 1))) and clabels length ($(length(clabels))) differ."
     @assert size(m, 1) >= 2 "m must contain data for ≥ 2 channels."
@@ -72,7 +71,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
     for idx1 in 1:s
         for idx2 in (idx1 + 1):s
             if !isnothing(threshold)
-                if threshold_type in [:eq, :neq, :geq, :leq, :g, :l, :in]
+                if threshold_type in [:eq, :neq, :geq, :leq, :g, :l]
                     @assert length(threshold) == 1 "threshold must contain a single value."
                 else
                     @assert length(threshold) == 2 "threshold must contain two values."
