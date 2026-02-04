@@ -270,15 +270,15 @@ p = plot_ci(s_avg, s_l, s_u, t)
 
 @info "Test: plot_phsd()"
 p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="Fp1")
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:mean)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch=["Fp1", "Fp2"], type=:topo)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", avg=true)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", ci95=true)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", type=:w3d)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", type=:topo)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_coherence()"
 coh, imcoh, mscoh, f = coherence(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=1, ep2=1, frq_lim=(15, 25))

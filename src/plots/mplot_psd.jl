@@ -1,6 +1,4 @@
 export mplot_psd
-export mplot_psd_avg
-export mplot_psd_butterfly
 export mplot_psd_3d
 export mplot_psd_topo
 
@@ -13,7 +11,7 @@ Plot PSD (power spectrum density).
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Vector{Float64}`: powers
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -75,7 +73,7 @@ Plot multi-channel PSD (power spectrum density).
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the X-axis
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -185,7 +183,7 @@ Plot 3-d waterfall PSD plot.
 - `sp::Array{Float64, 3}`: powers
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
@@ -314,7 +312,7 @@ Plot topographical map of PSDs.
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
+- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title

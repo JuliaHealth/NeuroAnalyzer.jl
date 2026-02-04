@@ -1,6 +1,4 @@
 export plot_phsd
-export plot_phsd_avg
-export plot_phsd_butterfly
 export plot_phsd_3d
 export plot_phsd_topo
 
@@ -654,7 +652,6 @@ Plot phase spectral density.
 - `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
