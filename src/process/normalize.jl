@@ -25,10 +25,10 @@ Normalize.
 # Arguments
 
 - `s::AbstractVector`
-- `n::Real=1.0`
+- `n::Real=1`
 - `method::Symbol`:
     - `:zscore`: by z-score
-    - `:minmax`: in [-1, +1]
+    - `:minmax`: in [-n, +n]
     - `:log`: using log-transformation
     - `:log10`: using log10-transformation
     - `:neglog`: using -log-transformation
@@ -49,14 +49,14 @@ Normalize.
 
 - `normalized::AbstractVector`
 """
-function normalize(s::AbstractVector, n::Float64=1.0; method::Symbol)::AbstractVector
+function normalize(s::AbstractVector, n::Real=1; method::Symbol)::AbstractVector
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :mad, :rank, :none], "method")
 
     if method === :zscore
         return normalize_zscore(s)
     elseif method === :minmax
-        return normalize_minmax(s)
+        return normalize_minmax(s, n)
     elseif method === :log
         return normalize_log(s)
     elseif method === :log10
@@ -99,11 +99,11 @@ Normalize.
 # Arguments
 
 - `s::AbstractArray`
-- `n::Real=1.0`
+- `n::Real=1`
 - `bych::Bool=false`: if true, normalize each channel separately
 - `method::Symbol`:
     - `:zscore`: by z-score
-    - `:minmax`: in [-1, +1]
+    - `:minmax`: in [-n, +n]
     - `:log`: using log-transformation
     - `:log10`: using log10-transformation
     - `:neglog`: using -log-transformation
@@ -122,14 +122,14 @@ Normalize.
 
 - `sn::AbstractArray`
 """
-function normalize(s::AbstractArray, n::Float64=1.0; bych::Bool=false, method::Symbol)::AbstractArray
+function normalize(s::AbstractArray, n::Real=1; bych::Bool=false, method::Symbol)::AbstractArray
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :none], "method")
 
     if method === :zscore
         return normalize_zscore(s, bych=bych)
     elseif method === :minmax
-        return normalize_minmax(s, bych=bych)
+        return normalize_minmax(s, n, bych=bych)
     elseif method === :log
         return normalize_log(s, bych=bych)
     elseif method === :log10
@@ -172,7 +172,7 @@ Normalize channel(s).
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `method::Symbol`:
     - `:zscore`: by z-score
-    - `:minmax`: in [-1, +1]
+    - `:minmax`: in [-n, +n]
     - `:log`: using log-transformation
     - `:log10`: using log10-transformation
     - `:neglog`: using -log-transformation
@@ -189,12 +189,13 @@ Normalize channel(s).
     - `:rank`: using tiedranks
     - `:none`
 - `bych::Bool=false`: if true, normalize each channel separately
+- `n::Real=1`
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false)::NeuroAnalyzer.NEURO
+function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false, n::Real=1)::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     ch_n = length(ch)
@@ -204,15 +205,16 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     if bych
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                @views obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(obj_new.data[ch[ch_idx], :, ep_idx], method=method)
+                @views obj_new.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer.normalize(obj_new.data[ch[ch_idx], :, ep_idx], n, method=method)
             end
         end
     else
-        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], method=method, bych=false)
+        obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], n, method=method, bych=false)
     end
 
     reset_components!(obj_new)
-    push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$method)")
+    push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$methodn, n=$n- `n::Real=1`
+          )")
 
     return obj_new
 
@@ -229,7 +231,7 @@ Normalize channel(s).
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `method::Symbol`:
     - `:zscore`: by z-score
-    - `:minmax`: in [-1, +1]
+    - `:minmax`: in [-n, +n]
     - `:log`: using log-transformation
     - `:log10`: using log10-transformation
     - `:neglog`: using -log-transformation
@@ -246,14 +248,15 @@ Normalize channel(s).
     - `:rank`: using tiedranks
     - `:none`
 - `bych::Bool=false`: if true, normalize each channel separately
+- `n::Real=1`
 
 # Returns
 
 Nothing
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false)::Nothing
+function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false, n::Real=1)::Nothing
 
-    obj_new = NeuroAnalyzer.normalize(obj, ch=ch, method=method, bych=bych)
+    obj_new = NeuroAnalyzer.normalize(obj, ch=ch, method=method, bych=bych, n=n)
     obj.data = obj_new.data
     obj.components = obj_new.components
     obj.history = obj_new.history
@@ -335,26 +338,27 @@ function normalize_zscore(s::AbstractArray; bych::Bool=false)::AbstractArray
 end
 
 """
-    normalize_minmax(s)
+    normalize_minmax(s, n)
 
-Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0.
+Normalize in [-n, +n]. If all elements are the same, they are normalized to +1.0.
 
 # Arguments
 
 - `s::AbstractVector`
+- `n::Real=1`
 
 # Returns
 
 - `sn::AbstractVector`
 """
-function normalize_minmax(s::AbstractVector)::AbstractVector
+function normalize_minmax(s::AbstractVector, n::Real=1)::AbstractVector
 
     if length(unique(s)) == 1
         sn = ones(length(s))
     else
         mi, mx = extrema(s)
         mxi = mx - mi
-        sn = @. (2 * (s - mi) / mxi) - 1
+        sn = @. ((2 * (s - mi) / mxi) - 1) * n
     end
 
     return sn
@@ -362,13 +366,14 @@ function normalize_minmax(s::AbstractVector)::AbstractVector
 end
 
 """
-    normalize_minmax(s; <keyword arguments>)
+    normalize_minmax(s, n; <keyword arguments>)
 
-Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0.
+Normalize in [-n, +n]. If all elements are the same, they are normalized to +1.0.
 
 # Arguments
 
 - `s::AbstractArray`
+- `n::Real=1`
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
@@ -376,7 +381,7 @@ Normalize in [-1, +1]. If all elements are the same, they are normalized to +1.0
 - `sn::AbstractArray`
 """
 
-function normalize_minmax(s::AbstractArray; bych::Bool=false)::AbstractArray
+function normalize_minmax(s::AbstractArray, n::Real=1; bych::Bool=false)::AbstractArray
 
     length(unique(s)) == 1 && return ones(length(s))
 
@@ -385,17 +390,17 @@ function normalize_minmax(s::AbstractArray; bych::Bool=false)::AbstractArray
     if bych == false
         mi, mx = extrema(s)
         mxi = mx - mi
-        sn = @. (2 * (s - mi) / mxi) - 1
+        sn = @. ((2 * (s - mi) / mxi) - 1) * n
     else
         sn = zeros(size(s))
         if ndims(s) == 2
             for idx in axes(s, 1)
-                sn[idx, :] = @views normalize_minmax(s[idx, :])
+                sn[idx, :] = @views normalize_minmax(s[idx, :], n)
             end
         elseif ndims(s) == 3
             for idx1 in axes(s, 3)
                 for idx2 in axes(s, 1)
-                    sn[idx2, :, idx1] = @views normalize_minmax(s[idx2, :, idx1])
+                    sn[idx2, :, idx1] = @views normalize_minmax(s[idx2, :, idx1], n)
                 end
             end
         end
@@ -413,13 +418,13 @@ Normalize in [0, n], default is [0, +1].
 # Arguments
 
 - `s::AbstractVector`
-- `n::Real=1.0`
+- `n::Real=1`
 
 # Returns
 
 - `sn::AbstractVector`
 """
-function normalize_n(s::AbstractVector, n::Real=1.0)::AbstractVector
+function normalize_n(s::AbstractVector, n::Real=1)::AbstractVector
 
     if length(unique(s)) == 1
         sn = ones(length(s)) .* n
@@ -440,14 +445,14 @@ Normalize in [0, n], default is [0, +1].
 # Arguments
 
 - `s::AbstractArray`
-- `n::Real=1.0`
+- `n::Real=1`
 - `bych::Bool=false`: if true, normalize each channel separately
 
 # Returns
 
 - `sn::AbstractArray`
 """
-function normalize_n(s::AbstractArray, n::Real=1.0; bych::Bool=false)::AbstractArray
+function normalize_n(s::AbstractArray, n::Real=1; bych::Bool=false)::AbstractArray
 
     @assert ndims(s) <= 3 "normalize_n() only works for arrays of ≤ 3 dimensions."
 

@@ -118,10 +118,10 @@ Add marker.
 """
 function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::NeuroAnalyzer.NEURO
 
-    @assert start > 0 "start must be > 0."
+    @assert start >= 0 "start must be ≥ 0."
     @assert len > 0 "len must be > 0."
-    @assert start < signal_len(obj) "start must be < $(signal_len(obj) - 1)."
-    @assert start + len <= signal_len(obj) "start + len must be ≤ $(signal_len(obj))."
+    @assert start < obj.time_pts[end] "start must be < $(obj.time_pts[end])."
+    @assert start + len <= obj.time_pts[end] "start + len must be ≤ $(obj.time_pts[end])."
 
     obj_new = deepcopy(obj)
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :value=>value, :channel=>ch))

@@ -333,7 +333,7 @@ Plot amplitude of multi-channel continuous signal.
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractMatrix`: data to plot
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display
-- `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
+- `clabels::Vector{String}=string.(1:size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
 - `xlabel::String=""`: x-axis label
@@ -347,15 +347,18 @@ Plot amplitude of multi-channel continuous signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}=(0, 10), clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}=(0, 10), clabels::Vector{String}=string.(1:size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
 
-    if clabels != repeat([""], size(s, 1))
+    if clabels != string.(1:size(s, 1))
         l = length.(clabels)
         ml = maximum(l)
         for idx in eachindex(clabels)
             length(clabels[idx]) < ml && (clabels[idx] = lpad(clabels[idx], ml, ' '))
         end
     end
+
+    # zooming factor
+    zoom = Observable(1.0)
 
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
@@ -394,6 +397,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     @inbounds for idx in eachindex(ctypes_uni)
         push!(r, round(NeuroAnalyzer._get_range(s[ctypes .== ctypes_uni[idx], :])))
         s[ctypes .== ctypes_uni[idx], :] = @views normalize_minmax(s[ctypes .== ctypes_uni[idx], :])
+#        s = normalize_minmax(s, bych=true)
     end
 
     # reverse so 1st channel is on top
@@ -426,11 +430,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        xticks=LinearTicks(10),
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
-                       yticks=clabels==repeat([""], ch_n) ? (1:ch_n) : (1:ch_n, clabels),
+                       yticks=clabels==string.(1:ch_n) ? (1:ch_n, string.(1:ch_n)) : (1:ch_n, clabels),
                        # TO DO: yticklabelcolor=ytc[1:end],
                        yreversed=true,
                        xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0.5, 0.5),
+                       yautolimitmargin=(0, 0),
                        xzoomlock=true,
                        yzoomlock=true,
                        xpanlock=true,
@@ -439,7 +443,11 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                        yrectzoom=false)
     GLMakie.xlims!(ax1, seg)
     if gui
-        GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - 20 + 0.5)
+        if ch_n > 20
+            GLMakie.ylims!(ax1, ch2 + 0.5, ch2 - 20 + 0.5)
+        else
+            GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
+        end
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
@@ -453,7 +461,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
     for idx in ch_n:-1:1
         GLMakie.lines!(ax1,
                        t,
-                       (s[idx, :] .* -0.5) .+ idx,
+                       @lift((s[idx, :] .* $zoom .* 0.5) .+ idx),
                        linewidth=1.5,
                        color=bad[idx] ? :lightgray : :black)
     end
@@ -535,7 +543,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                            title="",
                            yticks=1:ch_n,
                            xticksvisible=false,
-                           yticksvisible=true,
+                           yticksvisible=false,
                            yreversed=true,
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
@@ -575,7 +583,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
                     if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 && ax3_y <= ax3.limits[][2][2]
                         ch1[] = floor(Int64, ax3_y)
                         ch1[] > ch_n - 19 && (ch1[] = ch_n - 19)
-                        ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 19 - 0.5))
+                        ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 20 - 0.5))
                     end
                 end
             end
@@ -583,6 +591,16 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
 
         on(events(p).keyboardbutton) do event
             if event.action == Keyboard.press || event.action == Keyboard.repeat
+                if event.key == Keyboard.kp_add
+                    if zoom[] < 20
+                        zoom[] += 0.25
+                    end
+                end
+                if event.key == Keyboard.kp_subtract
+                    if zoom[] > 1
+                        zoom[] -= 0.25
+                    end
+                end
                 if event.key == Keyboard.home
                     seg_pos[] = 0
                 end
@@ -635,7 +653,7 @@ Plot amplitude of multi-channel epoched signal.
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
 - `s::AbstractArray`: data to plot
 - `seg::Tuple{Real, Real}`: segment (from, to) in seconds to display
-- `clabels::Vector{String}=repeat([""], size(s, 1))`: channel labels
+- `clabels::Vector{String}=string.(1:size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
 - `xlabel::String=""`: x-axis label
@@ -649,7 +667,7 @@ Plot amplitude of multi-channel epoched signal.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Real, Real}, clabels::Vector{String}=repeat([""], size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Real, Real}, clabels::Vector{String}=string.(1:size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
 
     ch_n = size(s, 1)
 
@@ -995,7 +1013,7 @@ Plot amplitude of multi-channel signals.
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s1::AbstractArray`: data to plot
 - `s2::AbstractArray`: data to plot
-- `clabels::Vector{String}=repeat([""], size(s1, 1))`: channel labels
+- `clabels::Vector{String}=string.(1:size(s, 1))`: channel labels
 - `ctypes:::Vector{String}=repeat([""], size(s1, 1))`: channel types
 - `cunits::Vector{String}=repeat([""], size(s1, 1))`: channel units
 - `xlabel::String=""`: x-axis label
@@ -1008,7 +1026,7 @@ Plot amplitude of multi-channel signals.
 
 - `p::GLMakie.Figure`
 """
-function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=repeat([""], size(s1, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true)::GLMakie.Figure
+function mplot_signal(t::Union{AbstractVector, AbstractRange}, s1::AbstractArray, s2::AbstractArray; clabels::Vector{String}=string.(1:size(s, 1)), ctypes::Vector{String}=repeat([""], size(s1, 1)), cunits::Vector{String}=repeat([""], size(s1, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true)::GLMakie.Figure
 
     ch_n = size(s1, 1)
 

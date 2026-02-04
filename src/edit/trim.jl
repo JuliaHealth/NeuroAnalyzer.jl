@@ -104,19 +104,33 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=false
     @assert nepochs(obj) == 1 "trim() must be applied to a continuous object."
     NeuroAnalyzer._check_segment(obj, seg)
 
-    s_idx = findfirst(x -> x == seg[1], obj.time_pts) - 1
+    s_idx = findfirst(x -> x == seg[1], obj.time_pts)
     seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
     (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     obj_new = deepcopy(obj)
     obj_new.data = trim(obj_new.data, seg=seg, keep=keep)
-    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+
+    if keep
+        obj_new.time_pts = obj.time_pts[seg[1]:seg[2]]
+        obj_new.epoch_time = obj.time_pts[seg[1]:seg[2]]
+    else
+        obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+    end
 
     obj_new.markers = _delete_markers(obj_new.markers, seg, sr(obj))
     obj_new.markers = _shift_markers(obj_new.markers, seg[1], length(seg[1]:seg[2]), sr(obj))
 
-    add_marker!(obj_new, id="NA", start=obj_new.time_pts[s_idx - 1], value="DELETED")
+    if keep
+        obj_new.time_pts = obj.time_pts[1:size(obj_new.data, 2)]
+        obj_new.epoch_time = obj.time_pts[1:size(obj_new.data, 2)]
+    end
+
+    if !keep
+        add_marker!(obj_new, id="NA", start=obj_new.time_pts[s_idx], value="DELETED")
+        obj_new.markers = unique(obj_new.markers)
+    end
 
     reset_components!(obj_new)
     push!(obj_new.history, "trim(OBJ, seg=$seg, keep=$keep")

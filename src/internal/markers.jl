@@ -1,6 +1,6 @@
 function _delete_markers(markers::DataFrame, segment::Tuple{Real, Real}, fs::Int64)::DataFrame
     for marker_idx in DataFrames.nrow(markers):-1:1
-        round(Int64, fs * markers[marker_idx, :start]) in segment[1]:segment[2] && deleteat!(markers, marker_idx)
+        !(round(Int64, fs * markers[marker_idx, :start]) in segment[1]:segment[2]) && deleteat!(markers, marker_idx)
     end
     return markers
 end
