@@ -1,7 +1,7 @@
-export mplot_gridlocs
+export plot_gridlocs
 
 """
-    mplot_gridlocs()
+    plot_gridlocs()
 
 Plot a simplified plot of 10-20 EEG channels on a grid.
 
@@ -13,7 +13,7 @@ Plot a simplified plot of 10-20 EEG channels on a grid.
 
 - `p::GLMakie.Figure`
 """
-function mplot_gridlocs(; mono::Bool=false)::GLMakie.Figure
+function plot_gridlocs(; mono::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 

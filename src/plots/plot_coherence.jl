@@ -1,6 +1,4 @@
 export plot_coherence
-export plot_coherence_avg
-export plot_coherence_butterfly
 
 """
     plot_coherence(coh, f; <keyword arguments>)
@@ -16,68 +14,51 @@ Plot coherence.
 - `ylabel::String="Coherence"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plotting
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
 
-    if ax === :linlin
-        xt = collect(_ticks(frq_lim))
-        xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
-        if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        else
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        end
-        xsc = :log10
-        ysc = :identity
+    if frq === :log && frq_lim[1] == 0
+        _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
+        frq_lim = (sf[2], frq_lim[2])
     end
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   legend=false,
-                   xlims=frq_lim,
-                   ylim=(-0.1, 1.1),
-                   yticks=[0, 0.25, 0.5, 0.75, 1.0],
-                   title=title,
-                   palette=pal,
-                   t=:line,
-                   c=:black,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6)
+    plot_size = (1200, 600)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      yticks=[0, 0.25, 0.5, 0.75, 1.0],
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xscale=frq === :lin ? identity : log,
+                      xautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, -0.1, 1.1)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
-    # plot coherence
-    p = Plots.plot!(f,
-                    coh,
-                    linewidth=1,
-                    alpha=0.5,
-                    xticks=xt,
-                    xscale=xsc,
-                    yscale=ysc;
-                    kwargs...)
+    # draw coherence
+    Makie.lines!(f,
+                 coh,
+                 linewidth=2,
+                 color=:black)
 
     max_coh = maxat(coh, f)
     min_coh = minat(coh, f)
@@ -97,358 +78,95 @@ Plot multi-channel coherence.
 
 - `coh::Matrix{Float64}`: coherence
 - `f::Vector{Float64}`: frequencies
-- `clabels::Vector{String}=[""]`: channel pairs labels vector
+- `clabels::Vector{String}=string.(1:size(coh, 1))`: channel pairs labels vector
 - `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plotting
+- `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `avg::Bool=false`: if true, plot averaged PSD
+- `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
+- `leg::Bool=true`: if true, add legend with channel labels
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=string.(1:size(coh, 1)), frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     ch_n = size(coh, 1)
-    @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin], "ax")
-    _check_tuple(frq_lim, "frq_lim")
-
-    # reverse so 1st channel is on top
-    coh_tmp = deepcopy(coh)
-    coh = @views reverse(coh[:, eachindex(f)], dims = 1)
-    # also, reverse colors if palette is not mono
-    if mono
-        pal = :grays
-        channel_color = repeat([:black], ch_n)
-    else
-        pal = :darktest
-        channel_color = ch_n:-1:1
-    end
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(coh, 1)))
-
-    # normalize and shift so all channels are visible
-    # each channel is between 0 and +1.0
-    for idx in 1:ch_n
-        # scale by 0.5 so maxima do not overlap
-        coh[idx, :] = @views normalize_n(coh[idx, :]) .+ (idx - 1)
-    end
-
-    if ax === :linlin
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
-        if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        else
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        end
-        xsc = :log10
-        ysc = :identity
-    end
-
-    # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   legend=false,
-                   xlims=frq_lim,
-                   title=title,
-                   palette=pal,
-                   t=:line,
-                   c=:black,
-                   size=(1200, 800),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6)
-
-    # plot zero line
-    p = Plots.hline!(collect((ch_n - 1):-1:0),
-                     color=:grey,
-                     lw=0.5,
-                     label="")
-    # plot 0.25 line
-    p = Plots.hline!(collect((ch_n - 0.25):-1:0),
-                     color=:grey,
-                     ls=:dot,
-                     lw=0.5,
-                     label="")
-    # plot 0.5 line
-    p = Plots.hline!(collect((ch_n - 0.5):-1:0),
-                     color=:grey,
-                     ls=:dot,
-                     lw=0.5,
-                     label="")
-    # plot 0.75 line
-    p = Plots.hline!(collect((ch_n - 0.75):-1:0),
-                     color=:grey,
-                     ls=:dot,
-                     lw=0.5,
-                     label="")
-    # plot 1.0 line
-    p = Plots.hline!([ch_n],
-                     color=:grey,
-                     ls=:dot,
-                     lw=0.5,
-                     label="")
-
-    # plot channels
-    for idx in 1:ch_n
-        p = @views Plots.plot!(f,
-                               coh[idx, :],
-                               linewidth=1,
-                               alpha=0.5,
-                               label="",
-                               xticks=xt,
-                               xscale=xsc,
-                               color=channel_color[idx])
-    end
-
-    # plot labels
-    p = Plots.plot!(yticks=((ch_n - 1):-1:0, clabels))
-    for idx in axes(coh, 1)
-        max_coh = maxat(coh_tmp[idx, :], f)
-        min_coh = minat(coh_tmp[idx, :], f)
-        if clabels == repeat([""], size(coh, 1))
-            _info("Channel pair $idx minimum coherence $(round(coh_tmp[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-            _info("Channel pair $idx maximum coherence $(round(coh_tmp[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
-        else
-            _info("Channel pair $(clabels[idx]) minimum coherence $(round(coh_tmp[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-            _info("Channel pair $(clabels[idx]) maximum coherence $(round(coh_tmp[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
-        end
-    end
-
-    return p
-
-end
-
-"""
-    plot_coherence_avg(coh, f; <keyword arguments>)
-
-Plot coherence mean and ±95% CI of averaged channels.
-
-# Arguments
-
-- `coh::Matrix{Float64}`: coherence
-- `f::Vector{Float64}`: frequencies
-- `clabels::Vector{String}=[""]`: channel pairs labels vector
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Coherence"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plotting
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_coherence_avg(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
-    _check_var(ax,[:linlin, :loglin], "ax")
+    _check_var(frq, [:lin, :log], "frq")
     _check_tuple(frq_lim, "frq_lim")
 
     pal = mono ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = NeuroAnalyzer.msci95(coh)
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(coh, 1)))
-
-    if ax === :linlin
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
-        if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        else
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        end
-        xsc = :log10
-        ysc = :identity
+    if ci95
+        coh_m, _, coh_u, coh_l = NeuroAnalyzer.msci95(coh)
     end
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   legend=false,
-                   xlims=frq_lim,
-                   ylim=(-0.1, 1.1),
-                   xticks=xt,
-                   yticks=[0, 0.25, 0.5, 0.75, 1.0],
-                   xscale=xsc,
-                   yscale=ysc,
-                   title=title,
-                   palette=pal,
-                   t=:line,
-                   c=:black,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
+    plot_size = (1200, 600)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xscale=frq === :lin ? identity : log,
+                      xautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.ylims!(ax, -0.1, 1.1)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
 
-    # plot upper 95% CI
-    p = Plots.plot!(f,
-                    s_u,
-                    fillrange=s_l,
-                    fillalpha=0.35,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
-    # plot lower 95% CI
-    p = Plots.plot!(f,
-                    s_l,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
-    # plot mean
-    p = Plots.plot!(f,
-                    s_m,
-                    label=false,
-                    t=:line,
-                    c=:black,
-                    lw=0.5)
+    if ci95
+        # draw upper 95% CI
+        Makie.band!(f,
+                    coh_u,
+                    coh_l,
+                    alpha=0.25,
+                    color=:grey,
+                    strokewidth=0.5)
 
-    for idx in axes(coh, 1)
-        max_coh = maxat(coh[idx, :], f)
-        min_coh = minat(coh[idx, :], f)
-        if clabels == repeat([""], size(coh, 1))
-            _info("Channel pair $idx minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-            _info("Channel pair $idx maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
-        else
-            _info("Channel pair $(clabels[idx]) minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-            _info("Channel pair $(clabels[idx]) maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
+        # draw mean
+        Makie.lines!(f,
+                     coh_m,
+                     color=:black,
+                     linewidth=2)
+    else
+        cmap = GLMakie.resample_cmap(pal, ch_n)
+        for idx in 1:ch_n
+            Makie.lines!(f,
+                         coh[idx, :],
+                         color=cmap[idx],
+                         colormap=pal,
+                         colorrange=1:ch_n,
+                         linewidth=2,
+                         label=clabels[idx])
         end
-    end
 
-    return p
-
-end
-
-"""
-    plot_coherence_butterfly(coh, f; <keyword arguments>)
-
-Butterfly PSD plot.
-
-# Arguments
-
-- `coh::Array{Float64, 3}`: coherence
-- `f::Vector{Float64}`: frequencies
-- `clabels::Vector{String}=[""]`: signal channel labels vector
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for the x-axis
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Coherence"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `ax::Symbol=:linlin`: type of axes scaling:
-    - `:linlin`: linear-linear
-    - `:loglin`: log10-linear
-- `kwargs`: optional arguments for plotting
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_coherence_butterfly(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=[""], frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)::Plots.Plot{Plots.GRBackend}
-
-    @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
-    _check_var(ax, [:linlin, :loglin], "ax")
-    _check_tuple(frq_lim, "frq_lim")
-
-    pal = mono ? :grays : :darktest
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(coh, 1)))
-
-    if ax === :linlin
-        xt = _ticks(frq_lim)
-        xsc = :identity
-        ysc = :identity
-    elseif ax === :loglin
-        if frq_lim[1] == 0
-            frq_lim = (0.001, frq_lim[2])
-            _warn("Lower frequency bound truncated to 0.001 Hz")
-            f[1] == 0 && (f[1] = 0.001)
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
-        else
-            xt = (round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3), string.(round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)))
+        # draw averaged channels
+        if avg
+            coh_avg = mean(coh, dims=1)[:]
+            Makie.lines!(f,
+                         coh_avg,
+                         colormap=pal,
+                         linewidth=2,
+                         color=:black)
         end
-        xsc = :log10
-        ysc = :identity
-    end
 
-    # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   legend=false,
-                   xlims=frq_lim,
-                   ylim=(-0.1, 1.1),
-                   xticks=xt,
-                   yticks=[0.0, 0.25, 0.5, 0.75, 1.0],
-                   xscale=xsc,
-                   yscale=ysc;
-                   title=title,
-                   palette=pal,
-                   t=:line,
-                   c=:black,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6)
+        (leg && ch_n < 30) && axislegend(position=:rt,
+                                         colormap=pal)
 
-    # plot coherence
-    for idx in axes(coh, 1)
-        p = Plots.plot!(f,
-                        coh[idx, :],
-                        t=:line,
-                        linecolor=idx,
-                        linewidth=0.5,
-                        label=clabels[idx],
-                        legend=true;
-                        kwargs...)
-    end
-
-    for idx in axes(coh, 1)
-        max_coh = maxat(coh[idx, :], f)
-        min_coh = minat(coh[idx, :], f)
-        if clabels == repeat([""], size(coh, 1))
-            _info("Channel pair $idx minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-            _info("Channel pair $idx maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
-        else
-            _info("Channel pair $(clabels[idx]) minimum coherence $(round(coh[idx, min_coh[2]], digits=3)) at $(round(min_coh[1], digits=2)) Hz")
-            _info("Channel pair $(clabels[idx]) maximum coherence $(round(coh[idx, max_coh[2]], digits=3)) at $(round(max_coh[1], digits=2)) Hz")
-        end
     end
 
     return p

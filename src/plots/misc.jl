@@ -99,7 +99,7 @@ Add locations to a plot. Locations are placed in the top right corner.
 
 - `p::GLMakie.Figure`
 """
-function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure; view::Bool=true, file_name::String="")::GLMakie.Figure
+function add_pl(p::GLMakie.Figure, pl::GLMakie.Figure)::GLMakie.Figure
 
         io = IOBuffer()
         show(io, MIME"image/png"(), pl)
