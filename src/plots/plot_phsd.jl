@@ -506,57 +506,43 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     _check_var(frq, [:lin, :log], "frq")
 
     ch = get_channel(obj, ch=ch)
-    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
     length(ch) == 1 && (ch = ch[1])
-    if obj.time_pts[end] < 10 && seg == (0, 10)
-        seg = (0, obj.time_pts[end])
-    else
-        _check_segment(obj, seg)
-    end
-    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
 
-    if ep != 0
-        _check_epochs(obj, ep)
-        if nepochs(obj) == 1
-            ep = 0
+    if nepochs(obj) == 1
+        @assert ep == 0 "For continuous object, ep must not be specified."
+        if obj.time_pts[end] < 10 && seg == (0, 10)
+            seg = (0, obj.time_pts[end])
         else
-            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-            if ep isa Int64
-                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
-            else
-                seg = (seg[1], (ep[end] * epoch_len(obj)))
-            end
-            ep = 0
+            _check_segment(obj, seg)
         end
-    end
-
-    # get time vector
-    if seg[2] <= epoch_len(obj)
-        signal = obj.data[ch, seg[1]:seg[2], 1]
+        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+        signal = @views obj.data[ch, seg[1]:seg[2], 1]
+        t = obj.time_pts[seg[1]:seg[2]]
+        _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
-        signal = epoch(obj, ep_n=1).data[ch, seg[1]:seg[2], 1]
+        @assert ep != 0 "For epoched object, ep must be specified."
+        t = obj.epoch_time
+        _check_epochs(obj, ep)
+        signal = @views obj.data[ch, :, ep]
     end
-    # t = _get_t(seg[1], seg[2], sr(obj))
-    t = obj.time_pts[seg[1]:seg[2]]
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, seg[1], seg[2])
 
-    clabels = labels(obj)
+    # channel labels
+    clabels = labels(obj)[ch]
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
 
-    ref !== :abs && (frq_lim = band_frq(obj, band=ref))
-
-    # get frequency range
+    # frequency limits
     fs = sr(obj)
     _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
 
-    # # get time vector
-    # _, t_s1, _, t_s2 = _convert_t(obj.epoch_time[1], obj.epoch_time[end])
-
+    # calculate PHSD
     sp, sf = phsd(signal, fs=fs)
-    title == "default" && (title = "PHSD [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $ep, time window: $t_s1:$t_s2]")
+    if ep != 0
+        title == "default" && (title = "PHSD\n[epoch: $ep]")
+    else
+        title == "default" && (title = "PHSD\n[time window: $t_s1:$t_s2]")
+    end
 
     # set labels
     if type !== :w3d && type !== :s3d && type !== :topo
@@ -579,7 +565,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           sp,
                           xlabel=xlabel,
                           ylabel="",
-                          clabels=clabels[ch],
+                          clabels=clabels,
                           title=title,
                           frq_lim=frq_lim,
                           frq=frq,
@@ -597,7 +583,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         title = replace(title, "channel" => "channels")
         p = plot_phsd_3d(sf,
                          sp,
-                         clabels=clabels[ch],
+                         clabels=clabels,
                          xlabel=xlabel,
                          ylabel=ylabel,
                          zlabel=zlabel,
@@ -671,32 +657,6 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(frq, [:lin, :log], "frq")
 
-    units = "A.U."
-
-    @assert seg[1] != seg[2] "Signal is too short for analysis."
-
-    if obj.time_pts[end] < 10 && seg == (0, 10)
-        seg = (0, obj.time_pts[end])
-    else
-        _check_segment(obj, seg)
-    end
-    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-
-    if ep != 0
-        _check_epochs(obj, ep)
-        if nepochs(obj) == 1
-            ep = 0
-        else
-            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-            if ep isa Int64
-                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
-            else
-                seg = (seg[1], (ep[end] * epoch_len(obj)))
-            end
-            ep = 0
-        end
-    end
-
     # select component channel, default is all channels
     c isa Symbol && (c = _get_component(obj, c))
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
@@ -704,128 +664,79 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
     clabels = _gen_clabels(c)[c_idx]
     length(c_idx) == 1 && (clabels = [clabels])
 
-    ref !== :abs && (frq_lim = band_frq(obj, band=ref))
-
-    # get frequency range
-    fs = sr(obj)
-    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
-
-    # get time vector
-    if seg[2] <= epoch_len(obj)
-        signal = c[c_idx, seg[1]:seg[2], 1]
+    if nepochs(obj) == 1
+        @assert ep == 0 "For continuous object, ep must not be specified."
+        if obj.time_pts[end] < 10 && seg == (0, 10)
+            seg = (0, obj.time_pts[end])
+        else
+            _check_segment(obj, seg)
+        end
+        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
+        signal = @views c[c_idx, seg[1]:seg[2], 1]
+        t = obj.time_pts[seg[1]:seg[2]]
+        _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
-        signal = reshape(c, size(c, 1), :, 1)[c_idx, seg[1]:seg[2], 1]
+        @assert ep != 0 "For epoched object, ep must be specified."
+        t = obj.epoch_time
+        _check_epochs(obj, ep)
+        signal = @views c[c_idx, :, ep]
     end
-    # t = _get_t(seg[1], seg[2], sr(obj))
-    t = obj.time_pts[seg[1]:seg[2]]
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, seg[1], seg[2])
 
-    if ref === :abs
-        if method === :welch
-            sp, sf = psd(signal, fs=fs, db=db, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Absolute PSD (Welch's periodogram)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :fft
-            sp, sf = psd(signal, fs=fs, db=db, method=:fft, w=w)
-            title == "default" && (title = "Absolute PSD (fast Fourier transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :stft
-            sp, sf = psd(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Absolute PSD (short-time Fourier transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mt
-            sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Absolute PSD (multi-taper)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mw
-            sp, sf = psd(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
-            title == "default" && (title = "Absolute PSD (Morlet wavelet convolution)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :gh
-            sp, sf = psd(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
-            title == "default" && (title = "Absolute PSD (Gaussian and Hilbert transform)\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        end
-    elseif ref === :total
-        if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, db=db, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "PSD (Welch's periodogram) relative to total power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:fft, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "PSD (fast Fourier transform) relative to total power\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "PSD (short-time Fourier transform) relative to total power\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mt, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "PSD (multi-taper) relative to total power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, ncyc=ncyc, w=w)
-            title == "default" && (title = "PSD (Morlet wavelet convolution) relative to total power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :gh
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
-            title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to total power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        end
+    # set units
+    units = "A.U."
+
+    # frequency limits
+    fs = sr(obj)
+    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
+
+    # calculate PHSD
+    sp, sf = phsd(signal, fs=fs)
+    if ep != 0
+        title == "default" && (title = "PHSD\n[epoch: $ep]")
     else
-        if method === :welch
-            sp, sf = psd_rel(signal, fs=fs, db=db, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :fft
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:fft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "PSD (fast Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :stft
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:stft, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "PSD (short-time Fourier transform) relative to $(replace(string(ref), "_"=>" ")) power\n[epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mt
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mt, frq_lim=frq_lim, wlen=wlen, woverlap=woverlap, w=w)
-            title == "default" && (title = "Absolute PSD (multi-taper) relative to $(replace(string(ref), "_"=>" ")) power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :mw
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:mw, frq_lim=frq_lim, ncyc=ncyc, w=w)
-            title == "default" && (title = "PSD (Morlet wavelet convolution) relative to $(replace(string(ref), "_"=>" ")) power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        elseif method === :gh
-            sp, sf = psd_rel(signal, fs=fs, db=db, method=:gh, gw=gw, w=w)
-            title == "default" && (title = "PSD (Gaussian and Hilbert transform) relative to $(replace(string(ref), "_"=>" ")) power\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
-        end
+        title == "default" && (title = "PHSD\n[time window: $t_s1:$t_s2]")
     end
 
     # set labels
     if type !== :w3d && type !== :s3d && type !== :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-        if ref !== :abs
-            ylabel == "default" && (ylabel = "Power ratio")
-        end
-        ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
+        ylabel == "default" && (ylabel = "Phase [rad]")
     end
 
     if type === :normal
         @assert ndims(sp) == 1 "For type=:normal the signal must contain 1 c_idx."
         p = plot_phsd(sf,
-                     sp,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title,
-                     frq_lim=frq_lim,
-                     frq=frq,
-                     mono=mono)
+                      sp,
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      frq_lim=frq_lim,
+                      frq=frq,
+                      mono=mono)
     elseif type === :butterfly
         @assert ndims(sp) >= 2 "For type=:butterfly plot the signal must contain ≥ 2 c_idxs."
         title = replace(title, "component" => "components")
         p = plot_phsd_butterfly(sf,
-                               sp,
-                               clabels=clabels,
-                               xlabel=xlabel,
-                               ylabel=ylabel,
-                               title=title,
-                               frq_lim=frq_lim,
-                               frq=frq,
-                               mono=mono)
+                                sp,
+                                clabels=clabels,
+                                xlabel=xlabel,
+                                ylabel=ylabel,
+                                title=title,
+                                frq_lim=frq_lim,
+                                frq=frq,
+                                mono=mono)
     elseif type === :mean
         @assert ndims(sp) >= 2 "For type=:mean plot the signal must contain ≥ 2 c_idxs."
         title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
         title = replace(title, "component" => "averaged components")
         p = plot_phsd_avg(sf,
-                         sp,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         frq_lim=frq_lim,
-                         frq=frq,
-                         mono=mono)
+                          sp,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          frq_lim=frq_lim,
+                          frq=frq,
+                          mono=mono)
     elseif type === :w3d || type === :s3d
         @assert ndims(sp) >= 2 "For type=:$(type) plot the signal must contain ≥ 2 channels."
         xlabel == "default" && (xlabel = "Frequency [Hz]")
@@ -833,16 +744,16 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_phsd_3d(sf,
-                        sp,
-                        clabels=clabels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        zlabel=zlabel,
-                        title=title,
-                        frq_lim=frq_lim,
-                        frq=frq,
-                        mono=mono,
-                        variant=type === :w3d ? :w : :s)
+                         sp,
+                         clabels=clabels,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         title=title,
+                         frq_lim=frq_lim,
+                         frq=frq,
+                         mono=mono,
+                         variant=type === :w3d ? :w : :s)
     elseif type === :topo
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
@@ -855,15 +766,15 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; se
         ylabel == "default" && (ylabel = "")
         title = replace(title, "channel" => "channels")
         p = plot_phsd_topo(locs,
-                          sf,
-                          sp,
-                          xlabel=xlabel,
-                          ylabel=ylabel,
-                          title=title,
-                          frq_lim=frq_lim,
-                          frq=frq,
-                          cart=cart,
-                          head=head)
+                           sf,
+                           sp,
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title,
+                           frq_lim=frq_lim,
+                           frq=frq,
+                           cart=cart,
+                           head=head)
     end
 
     return p

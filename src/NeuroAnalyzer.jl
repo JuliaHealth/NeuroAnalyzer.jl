@@ -536,7 +536,10 @@ include("plots/plot_save.jl")
 include("plots/plot_topo.jl")
 include("plots/plot_connectivity_circle.jl")
 include("plots/plot_coherence.jl")
+
 include("plots/plot_phsd.jl")
+include("plots/plot_psd.jl")
+include("plots/plot_spectrogram.jl")
 
 include("plots/plot_dipole2d.jl")
 include("plots/mplot_dipole2d.jl")
@@ -549,14 +552,8 @@ include("plots/plot_erp.jl")
 include("plots/plot_locs_nirs.jl")
 include("plots/plot_mep.jl")
 
-include("plots/plot_psd.jl")
-include("plots/mplot_psd.jl")
-
 include("plots/plot_signal.jl")
 include("plots/mplot_signal.jl")
-
-include("plots/plot_spectrogram.jl")
-include("plots/mplot_spectrogram.jl")
 
 include("plots/plot_varia.jl")
 
