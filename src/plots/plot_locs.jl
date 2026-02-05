@@ -132,7 +132,13 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
                           yminorticks=IntervalsBetween(2),
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0),
-                          backgroundcolor=:transparent)
+                          backgroundcolor=:transparent,
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
     else
         ax = GLMakie.Axis(p[1, 1],
                           aspect=1,
@@ -141,7 +147,13 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
                           title="",
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0),
-                          backgroundcolor=:transparent)
+                          backgroundcolor=:transparent,
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
         hidedecorations!(ax, grid=true)
         hidespines!(ax)
     end

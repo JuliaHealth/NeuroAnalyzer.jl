@@ -176,7 +176,13 @@ function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{I
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0),
                       backgroundcolor=:transparent,
-                      titlesize=font_size)
+                      titlesize=font_size,
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
     hidedecorations!(ax)
     hidespines!(ax)
     GLMakie.xlims!(ax, xl)

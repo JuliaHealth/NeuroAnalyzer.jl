@@ -26,7 +26,13 @@ function plot_gridlocs(; mono::Bool=false)::GLMakie.Figure
                       ylabel="",
                       title="",
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0, 0))
+                      yautolimitmargin=(0, 0),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
     hidedecorations!(ax, grid=true)
     hidespines!(ax)
     GLMakie.xlims!(ax, (-1.2, 1.2))

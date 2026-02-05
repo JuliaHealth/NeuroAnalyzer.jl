@@ -76,7 +76,13 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0))
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
         GLMakie.xlims!(ax1, frq_lim)
         GLMakie.ylims!(ax1, (-100, 20))
         ax1.titlesize = 20
@@ -124,7 +130,13 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0))
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
         GLMakie.xlims!(ax2, frq_lim)
         ax2.titlesize = 20
         ax2.xlabelsize = 18
@@ -168,7 +180,13 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0))
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
         GLMakie.xlims!(ax3, frq_lim)
         ax3.titlesize = 20
         ax3.xlabelsize = 18
@@ -227,7 +245,13 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0))
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
         GLMakie.xlims!(ax1, frq_lim)
         GLMakie.ylims!(ax1, (-100, 20))
         ax1.titlesize = 20
@@ -276,7 +300,13 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0))
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
         GLMakie.xlims!(ax2, frq_lim)
         ax2.titlesize = 20
         ax2.xlabelsize = 18
@@ -320,7 +350,13 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                            xminorticksvisible=true,
                            xminorticks=IntervalsBetween(10),
                            xautolimitmargin=(0, 0),
-                           yautolimitmargin=(0, 0))
+                           yautolimitmargin=(0, 0),
+                           xzoomlock=true,
+                           yzoomlock=true,
+                           xpanlock=true,
+                           ypanlock=true,
+                           xrectzoom=false,
+                           yrectzoom=false)
         GLMakie.xlims!(ax3, frq_lim)
         ax3.titlesize = 20
         ax3.xlabelsize = 18

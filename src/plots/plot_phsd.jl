@@ -44,7 +44,13 @@ function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; frq_lim::Tuple{Real,
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0.1, 0.1))
+                      yautolimitmargin=(0.1, 0.1),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
     GLMakie.xlims!(ax, frq_lim)
     GLMakie.ylims!(ax, extrema(ph))
     ax.titlesize = 20
@@ -114,7 +120,13 @@ function plot_phsd(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{Stri
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0.1, 0.1))
+                      yautolimitmargin=(0.1, 0.1),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
     GLMakie.xlims!(ax, frq_lim)
     if ci95
         GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
@@ -468,8 +480,8 @@ Plot PHSD (phase spectral density).
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-- `ylabel::String="default"`: y-axis label, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
-- `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
+- `ylabel::String="default"`: y-axis label, default is Phase [rad]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
 - `title::String="default"`: plot title, default is PHSD [frequency limit: 0-128 Hz] [epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type:
@@ -636,8 +648,8 @@ Plot PHSD (phase spectral density) of embedded or external component.
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
-- `ylabel::String="default"`: y-axis label, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
-- `zlabel::String="default"`: z-axis label for 3-d plots, default is `Power [dB units^2/Hz] or Power [units^2/Hz]`
+- `ylabel::String="default"`: y-axis label, default is Phase [rad]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Phase [rad]
 - `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or gray palette
 - `type::Symbol=:normal`: plot type:
