@@ -386,17 +386,20 @@ Topographical plot.
 
 - `p::GLMakie.Figure`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, seg::Tuple{Real, Real}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
+function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, seg::Union{Real, Tuple{Real, Real}}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
 
     @assert contours >= 0 "contours must be ≥ 0."
 
-    if obj.time_pts[end] < 10 && seg == (0, 10)
-        seg = (0, obj.time_pts[end])
+    if length(seg) == 2
+        if obj.time_pts[end] < 10 && seg == (0, 10)
+            seg = (0, obj.time_pts[end])
+        else
+            _check_segment(obj, seg)
+        end
+        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
     else
-        _check_segment(obj, seg)
+        seg = (vsearch(seg, obj.time_pts), vsearch(seg, obj.time_pts))
     end
-    seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
 
