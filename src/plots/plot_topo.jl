@@ -349,8 +349,8 @@ Topographical plot.
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
-- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-- `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
+- `seg::Union{Real, Tuple{Real, Real}}=(0, 10)`: time point in seconds or time segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `title::String="default"`: plot title, default is Amplitude [mean over time window: 0 ms:10.0 s]
 - `mono::Bool=false`: use color or gray palette
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="[A.U.]"`: color bar title
