@@ -66,7 +66,7 @@ Plot EDA.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractMatrix`: data to plot
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -77,7 +77,7 @@ Plot EDA.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     ch_n = size(s, 1)
     @assert size(s, 2) == length(t) "Length of EDA values must equal length of time points vector."
@@ -101,9 +101,6 @@ function plot_eda(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; cl
         # scale by 0.5 so maxima do not overlap
         s[idx, :] = @views normalize_n(s[idx, :]) .+ (idx - 1)
     end
-
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(s, 1)))
 
     # prepare plot
     p = Plots.plot(xlabel=xlabel,
@@ -144,7 +141,7 @@ Butterfly plot of EDA.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractArray`: data to plot
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -156,7 +153,7 @@ Butterfly plot of EDA.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_eda_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_eda_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 

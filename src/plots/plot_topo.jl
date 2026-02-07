@@ -394,6 +394,10 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}
     if length(tpos) > 1
         if nr == 1
             nc = length(tpos)
+        elseif nr > 1 & nc == 0
+            nc = ceil(Int64, length(tpos) / nr)
+        elseif nc != 0
+            nr = ceil(Int64, length(tpos) / nc)
         end
         _warn("Vector of tpos is not supported yet.")
         tpos = collect(tpos)[1]

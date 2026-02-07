@@ -11,7 +11,7 @@ Plot PHSD (phase spectral density).
 
 - `f::Vector{Float64}`: frequencies
 - `ph::Vector{Float64}`: phases
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -79,7 +79,7 @@ Plot multi-channel PHSD (phase spectral density).
 - `f::Vector{Float64}`: frequencies
 - `ph::Matrix{Float64}`: phases
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -195,7 +195,7 @@ Plot 3-d PHSD (phase phectral density).
 - `ph::Array{Float64, 3}`: phases
 - `clabels::Vector{String}=string.(1:size(ph, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
-- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
@@ -324,7 +324,7 @@ Plot topographical map of PHSDs (phase spectral density).
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `f::Vector{Float64}`: frequencies
 - `ph::Array{Float64, 3}`: phases
-- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title

@@ -529,8 +529,6 @@ include("plots/mplot_signal.jl")
 include("plots/plot_varia.jl")
 
 # gui
-include("gui/iselect_seg.jl")
-
 include("gui/iedit.jl")
 include("gui/ifilter.jl")
 include("gui/ipsd.jl")

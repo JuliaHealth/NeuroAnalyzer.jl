@@ -96,7 +96,7 @@ Butterfly plot of ERP.
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractArray`: data to plot
 - `rt::Union{Nothing, Real}=nothing`:: response time value
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -109,7 +109,7 @@ Butterfly plot of ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -324,7 +324,7 @@ Plot topographical map ERPs.
 - `t::Vector{Float64}`: time vector
 - `s::Matrix{Float64}`: ERPs
 - `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -337,7 +337,7 @@ Plot topographical map ERPs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert size(s, 2) == length(t) "Signal length and time length must be equal."
 
@@ -472,7 +472,7 @@ Plot EPRs stacked by channels or by epochs.
 - `t::AbstractVector`: x-axis values
 - `s::AbstractArray`
 - `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -487,7 +487,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, AbstractVector}=nothing; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, AbstractVector}=nothing; clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     _chk2d(s)
     @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must be equal to length of t ($(length(t)))."
@@ -498,11 +498,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, 
 
     pal = mono ? :grays : :darktest
 
-    if clabels == [""]
-        yticks = round.(Int64, range(1, size(s, 1), length=10))
-    else
-        yticks = (axes(s, 1), clabels)
-    end
+    yticks = (axes(s, 1), clabels)
 
     if smooth
         s = imfilter(s, Kernel.gaussian(n))

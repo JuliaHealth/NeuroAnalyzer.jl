@@ -11,7 +11,7 @@ Plot PSD (power spectrum density).
 
 - `sf::Vector{Float64}`: frequencies
 - `sp::Vector{Float64}`: powers
-- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -79,7 +79,7 @@ Plot multi-channel PSD (power spectrum density).
 - `sf::Vector{Float64}`: frequencies
 - `sp::Matrix{Float64}`: powers
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -195,7 +195,7 @@ Plot 3-d PSD (power spectrum density).
 - `sp::Array{Float64, 3}`: powers
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
-- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
@@ -324,7 +324,7 @@ Plot topographical map of PSDs (power spectrum density).
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
-- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title

@@ -85,7 +85,7 @@ Butterfly plot of MEP.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractArray`: data to plot
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -98,7 +98,7 @@ Butterfly plot of MEP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     pal = mono ? :grays : :darktest
 
@@ -138,33 +138,13 @@ function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
 
     # plot signals
     for idx in 1:ch_n
-        if clabels == [""]
-            p = Plots.plot!(t,
-                            s[idx, :],
-                            t=:line,
-                            linecolor=idx,
-                            linewidth=0.2,
-                            alpha=0.2,
-                            legend=false)
-        else
-            if clabels == repeat([""], ch_n)
-                p = Plots.plot!(t,
-                                s[idx, :],
-                                t=:line,
-                                legend=false,
-                                linecolor=idx,
-                                linewidth=0.5,
-                                alpha=0.5)
-            else
-                p = Plots.plot!(t,
-                                s[idx, :],
-                                t=:line,
-                                label=clabels[idx],
-                                linecolor=idx,
-                                linewidth=0.5,
-                                alpha=0.5)
-            end
-        end
+        p = Plots.plot!(t,
+                        s[idx, :],
+                        t=:line,
+                        label=clabels[idx],
+                        linecolor=idx,
+                        linewidth=0.5,
+                        alpha=0.5)
     end
 
     # plot averaged MEP
@@ -289,13 +269,13 @@ end
 """
     plot_mep_stack(s; <keyword arguments>)
 
-Plot EPRs stacked by channels or by epochs.
+Plot ERPs stacked by channels or by epochs.
 
 # Arguments
 
 - `t::AbstractVector`: x-axis values
 - `s::AbstractArray`
-- `clabels::Vector{String}=[""]`: signal channel labels vector
+- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -308,7 +288,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
 
     @assert ndims(s) == 2 "signal must have 2 dimensions."
     @assert length(t) == size(s, 2) "Number of signal columns ($(size(s, 2))) must be equal to length of x-axis values ($(length(t)))."
