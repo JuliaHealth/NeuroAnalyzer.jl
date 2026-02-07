@@ -90,11 +90,11 @@ Named tuple containing:
 """
 function spectrogram(s::AbstractMatrix; fs::Int64, db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}, t::Vector{Float64}}
 
-    _, f, t = spectrogram(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+    _, f, t = NeuroAnalyzer.spectrogram(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
 
-    p = zeros(length(f), length(f), size(s, 1))
+    p = zeros(length(f), length(t), size(s, 1))
     Threads.@threads for ch_idx in axes(s, 1)
-        p[:, :, ch_idx], _, _ = @views spectrogram(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
+        p[:, :, ch_idx], _, _ = @views NeuroAnalyzer.spectrogram(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
     end
 
     return (p=p, f=f, t=t)

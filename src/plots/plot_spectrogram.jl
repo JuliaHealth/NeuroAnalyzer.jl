@@ -268,10 +268,14 @@ Plot topographical map of spectrograms.
 - `st::Vector{Float64}`: time
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
+- `db::Bool=true`: whether powers are normalized to dB
 - `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
+- `units::String=""`
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar label
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `mono::Bool=false`: unused, for compatibility only
@@ -283,7 +287,7 @@ Plot topographical map of spectrograms.
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; flim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; db::Bool=true, flim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", units::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 3) == DataFrames.nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
@@ -303,17 +307,17 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
     # plot parameters
     if size(sp, 3) <= 64
         plot_size = 1000
-        marker_size = (120, 100)
+        marker_size = (1200, 800) ./ 10
         xl = 1.2
         yl = 1.2
     elseif _in(size(sp, 3), (64, 100))
         plot_size = 1200
-        marker_size = (120, 100)
+        marker_size = (1200, 800) ./ 12
         xl = 1.5
         yl = 1.5
     else
         plot_size = 1500
-        marker_size = (100, 80)
+        marker_size = (1200, 800) ./ 14
         xl = 1.5
         yl = 1.5
     end
@@ -336,23 +340,42 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
 
     # prepare spectrogram plots
     pp_vec = GLMakie.Figure[]
+    pp_full_vec = GLMakie.Figure[]
     for idx in axes(sp, 3)
         pp = GLMakie.Figure(size=marker_size,
                             figure_padding=0)
         ax = GLMakie.Axis(pp[1, 1],
                           xlabel="",
                           ylabel="",
+                          aspect=nothing,
                           title=locs[idx, :label],
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0, 0))
-        hidespines!(ax)
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
-        GLMakie.heatmap!(sp[:, :, idx]',
+        GLMakie.heatmap!(sf,
+                         st,
+                         sp[:, :, idx]',
                          colormap=pal)
         push!(pp_vec, pp)
+        pp_full = plot_spectrogram(st,
+                                   sf,
+                                   sp[:, :, idx],
+                                   db=db,
+                                   frq=frq,
+                                   flim=flim,
+                                   xlabel=xlabel,
+                                   ylabel=ylabel,
+                                   title=locs[idx, :label] * ": " * title,
+                                   mono=mono,
+                                   units=units,
+                                   smooth=smooth,
+                                   n=n,
+                                   cb=cb,
+                                   cb_title=cb_title)
+        push!(pp_full_vec, pp_full)
     end
 
     # prepare plot
@@ -422,6 +445,27 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
                          markerspace=:pixel)
     end
 
+    loc_x_range = Tuple{Float64, Float64}[]
+    loc_y_range = Tuple{Float64, Float64}[]
+    for idx in eachindex(loc_x)
+        push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
+        push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
+    end
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press
+                ax_x = mouseposition(ax)[1]
+                ax_y = mouseposition(ax)[2]
+                for idx in eachindex(loc_x)
+                    if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] && ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                    end
+                end
+            end
+        end
+    end
+
     return p
 
 end
@@ -472,7 +516,9 @@ Plots spectrogram.
     - `:l`: draw region is values are < to threshold
     - `:in`: draw region is values are in the threshold values, including threshold boundaries
     - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
-- `topo::Bool=false`: plot topographical map of spectrograms
+- `type::Symbol=:normal`:
+    - `:normal`
+    - `:topo`
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
 
@@ -480,18 +526,19 @@ Plots spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}=datatype(obj), db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, flim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, head::Bool=true)::GLMakie.Figure where {T <: CWT}
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}=datatype(obj), db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, flim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, type::Symbol=:normal, cart::Bool=false, head::Bool=true)::GLMakie.Figure where {T <: CWT}
 
+    _check_var(type, [:normal, :topo], "type")
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert n > 0 "n must be ≥ 1."
 
     ch = get_channel(obj, ch=ch)
     if method === :cwt
-        if !topo
+        if type === :normal
             @assert length(ch) == 1 "For :cwt method only one channel must be selected."
         end
     end
-    if topo
+    if type === :topo
         @assert method !== :hht "For :hht method topographical map is not available."
     end
     length(ch) == 1 && (ch = ch[1])
@@ -523,9 +570,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     # frequency limits
     fs = sr(obj)
     _check_tuple(flim, "flim", (0, sr(obj) / 2))
-
     # calculate spectrogram
-    if length(ch) == 1 || topo
+    if length(ch) == 1 || type === :topo
         if method === :stft
             sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=false, method=:stft, wlen=wlen, woverlap=woverlap, w=w)
             if ep != 0
@@ -574,7 +620,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                 title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[time window: $t_s1:$t_s2]")
             end
         end
-    elseif length(ch) > 1 && !topo
+    elseif length(ch) > 1 && type === :normal
         if method === :stft
             sp, sf = psd(signal, fs=fs, db=db, method=:stft, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             if ep != 0
@@ -634,8 +680,12 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     f1 = vsearch(flim[1], sf)
     f2 = vsearch(flim[2], sf)
     sf = sf[f1:f2]
-    if length(ch) == 1 || topo
+    if length(ch) == 1 && type === :normal
         sp = sp[f1:f2, :]
+        st .+= t[1]
+        method !== :cwt && db && (sp = pow2db.(sp))
+    elseif length(ch) >= 1 && type === :topo
+        sp = sp[f1:f2, :, :]
         st .+= t[1]
         method !== :cwt && db && (sp = pow2db.(sp))
     else
@@ -645,10 +695,12 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     if length(ch) == 1
         xlabel == "default" && (xlabel = "Time [s]")
         ylabel == "default" && (ylabel = "Frequency [Hz]")
-    elseif length(ch) > 1 && !topo
+    elseif length(ch) > 1 && type === :normal
         ylabel == "default" && (ylabel = "")
         xlabel == "default" && (xlabel = "Frequency [Hz]")
-    elseif topo
+    elseif type === :topo
+        xlabel == "default" && (xlabel = "Time [s]")
+        ylabel == "default" && (ylabel = "Frequency [Hz]")
         @assert length(ch) > 1 "For topographical plot, the number of channels must be >1."
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         _has_locs(obj)
@@ -657,7 +709,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     end
 
-    if length(ch) == 1 && !topo
+    if length(ch) == 1 && type === :normal
         p = plot_spectrogram(st,
                              sf,
                              sp,
@@ -675,7 +727,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              cb_title=method === :cwt ? "Magnitude" : "",
                              threshold=threshold,
                              threshold_type=threshold_type)
-    elseif length(ch) > 1 && !topo
+    elseif length(ch) > 1 && type === :normal
         p = plot_spectrogram(sf,
                              sp,
                              clabels=clabels,
@@ -693,19 +745,24 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              cb_title=method === :cwt ? "Magnitude" : "",
                              threshold=threshold,
                              threshold_type=threshold_type)
-    else
+    elseif type === :topo
         p = plot_spectrogram_topo(locs,
-                                   st,
-                                   sf,
-                                   sp,
-                                   frq=frq,
-                                   flim=flim,
-                                   title=title,
-                                   mono=mono,
-                                   cart=cart,
-                                   smooth=smooth,
-                                   n=n,
-                                   head=head)
+                                  st,
+                                  sf,
+                                  sp,
+                                  frq=frq,
+                                  flim=flim,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  mono=mono,
+                                  units=units,
+                                  cart=cart,
+                                  smooth=smooth,
+                                  n=n,
+                                  cb=cb,
+                                  cb_title=method === :cwt ? "Magnitude" : "",
+                                  head=head)
     end
 
     # plot markers if available
