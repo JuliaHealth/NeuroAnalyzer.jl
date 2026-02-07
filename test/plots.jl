@@ -226,7 +226,7 @@ p = NeuroAnalyzer.mplot(e10, e10, ch="all")
 @info "Test: plot_icatopo()"
 eeg_new = keep_epoch(e10, ep=1)
 ic, ic_mw, ic_var = ica_decompose(eeg_new, ch="eeg", iter=10)
-p = plot_icatopo(eeg_new, ch="eeg", ic, ic_mw)
+p = plot_icatopo(eeg_new, ch="eeg", ic=ic, ic_mw=ic_mw, ic_idx=1:3, tpos=0)
 @test p isa Plots.Plot{Plots.GRBackend}
 
 @info "Test: add_pl()"

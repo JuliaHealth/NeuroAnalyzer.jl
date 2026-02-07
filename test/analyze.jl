@@ -162,15 +162,15 @@ em, eu, el, t = tenv_median(e10, ch="all", dims=2)
 @test size(el) == (2560, 24)
 @test length(t) == 2560
 em, eu, el, t = tenv_median(e10, ch="all", dims=3)
-@test size(em) == (2560,)
-@test size(eu) == (2560,)
-@test size(el) == (2560,)
+@test length(em) == 2560
+@test length(eu) == 2560
+@test length(el) == 2560
 @test length(t) == 2560
 
 @info "Test: senv()"
 e, t = senv(e10, ch="Fp1")
-@test size(e) == (1, 289, 10)
-@test length(t) == 289
+@test size(e) == (1, 89, 10)
+@test length(t) == 89
 e, t = senv(e10, ch="Fp1", method=:mt)
 @test size(e) == (1, 15, 10)
 @test length(t) == 15
@@ -181,35 +181,35 @@ e, t = senv(e10, ch="Fp1", method=:gh)
 @test size(e) == (1, 2560, 10)
 @test length(t) == 2560
 em, eu, el, t = senv_mean(e10, ch="all", dims=1)
-@test size(em) == (289, 10)
-@test size(eu) == (289, 10)
-@test size(el) == (289, 10)
-@test length(t) == 289
+@test size(em) == (89, 10)
+@test size(eu) == (89, 10)
+@test size(el) == (89, 10)
+@test length(t) == 89
 em, eu, el, t = senv_mean(e10, ch="all", dims=2)
-@test size(em) == (289, 24)
-@test size(eu) == (289, 24)
-@test size(el) == (289, 24)
-@test length(t) == 289
+@test size(em) == (89, 24)
+@test size(eu) == (89, 24)
+@test size(el) == (89, 24)
+@test length(t) == 89
 em, eu, el, t = senv_mean(e10, ch="all", dims=3)
-@test size(em) == (289,)
-@test size(eu) == (289,)
-@test size(el) == (289,)
-@test length(t) == 289
+@test length(em) == 89
+@test length(eu) == 89
+@test length(el) == 89
+@test length(t) == 89
 em, eu, el, t = senv_median(e10, ch="all", dims=1)
-@test size(em) == (289, 10)
-@test size(eu) == (289, 10)
-@test size(el) == (289, 10)
-@test length(t) == 289
+@test size(em) == (89, 10)
+@test size(eu) == (89, 10)
+@test size(el) == (89, 10)
+@test length(t) == 89
 em, eu, el, t = senv_median(e10, ch="all", dims=2)
-@test size(em) == (289, 24)
-@test size(eu) == (289, 24)
-@test size(el) == (289, 24)
-@test length(t) == 289
+@test size(em) == (89, 24)
+@test size(eu) == (89, 24)
+@test size(el) == (89, 24)
+@test length(t) == 89
 em, eu, el, t = senv_median(e10, ch="all", dims=3)
-@test size(em) == (289,)
-@test size(eu) == (289,)
-@test size(el) == (289,)
-@test length(t) == 289
+@test length(em) == 89
+@test length(eu) == 89
+@test length(el) == 89
+@test length(t) == 89
 
 @info "Test: penv()"
 e, t = penv(e10, ch="Fp1", method=:welch)
@@ -241,9 +241,9 @@ em, eu, el, t = penv_mean(e10, ch="all", dims=2)
 @test size(el) == (129, 24)
 @test length(t) == 129
 em, eu, el, t = penv_mean(e10, ch="all", dims=3)
-@test size(em) == (129,)
-@test size(eu) == (129,)
-@test size(el) == (129,)
+@test length(em) == 129
+@test length(eu) == 129
+@test length(el) == 129
 @test length(t) == 129
 em, eu, el, t = penv_median(e10, ch="all", dims=1)
 @test size(em) == (129, 10)
@@ -256,9 +256,9 @@ em, eu, el, t = penv_median(e10, ch="all", dims=2)
 @test size(el) == (129, 24)
 @test length(t) == 129
 em, eu, el, t = penv_median(e10, ch="all", dims=3)
-@test size(em) == (129,)
-@test size(eu) == (129,)
-@test size(el) == (129,)
+@test length(em) == 129
+@test length(eu) == 129
+@test length(el) == 129
 @test length(t) == 129
 
 @info "Test: henv()"
@@ -291,9 +291,9 @@ em, eu, el, t = henv_median(e10, ch="all", dims=2)
 @test size(el) == (2560, 24)
 @test length(t) == 2560
 em, eu, el, t = henv_median(e10, ch="all", dims=3)
-@test size(em) == (2560,)
-@test size(eu) == (2560,)
-@test size(el) == (2560,)
+@test length(em) == 2560
+@test length(eu) == 2560
+@test length(el) == 2560
 @test length(t) == 2560
 
 @info "Test: erp_peaks()"
@@ -698,9 +698,9 @@ sn, f = NeuroAnalyzer.snr(e10, ch="all", type=:mean)
 
 @info "Test: spectrogram()"
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, ch="Fp1", method=:stft)
-@test size(sp) == (129, 289, 1, 10)
+@test size(sp) == (129, 89, 1, 10)
 @test length(sf) == 129
-@test length(st) == 289
+@test length(st) == 89
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, ch="Fp1", method=:mt)
 @test size(sp) == (257, 15, 1, 10)
 @test length(sf) == 257

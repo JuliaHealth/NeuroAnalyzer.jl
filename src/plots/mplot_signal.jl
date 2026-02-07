@@ -114,6 +114,32 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
         end
 
         on(events(p).keyboardbutton) do event
+            if event.action == Keyboard.press
+                if event.key == Keyboard.p
+                    seg = (vsearch(seg_pos[], t), vsearch(seg_pos[] + seg_len, t))
+                    sp, sf = psd(s[seg[1]:seg[2]],
+                               fs=round(Int64, 1 / (t[2] - t[1])),
+                               db=true)
+                    pp = plot_psd(sf,
+                                  sp,
+                                  title="PSD [time segment: $(t[seg[1]]):$(t[seg[2]]) s]",
+                                  xlabel="Frequency [s]",
+                                  ylabel="Power [dB]")
+                    display(GLMakie.Screen(), pp)
+                elseif event.key == Keyboard.s
+                    seg = (vsearch(seg_pos[], t), vsearch(seg_pos[] + seg_len, t))
+                    sp, sf, st = NeuroAnalyzer.spectrogram(s[seg[1]:seg[2]],
+                                                           fs=round(Int64, 1 / (t[2] - t[1])),
+                                                           db=true)
+                    pp = plot_spectrogram(st,
+                                          sf,
+                                          sp,
+                                          title="Spectrogram [time segment: $(t[seg[1]]):$(t[seg[2]]) s]",
+                                          xlabel="Time [s]",
+                                          ylabel="Frequency [s]")
+                    display(GLMakie.Screen(), pp)
+                end
+            end
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if event.key == Keyboard.home
                     seg_pos[] = 0
@@ -148,9 +174,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector
 
         rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
-#        wait(display(p))
-
-#        return nothing
+        wait(display(p))
 
     end
 
@@ -635,7 +659,7 @@ function mplot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix
         colsize!(p.layout, 2, GLMakie.Fixed(20))
         rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
-#        wait(display(p))
+        wait(display(p))
 
     end
 
@@ -1344,14 +1368,6 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{S
                 end
             end
         end
-    end
-
-    if gui
-#        time_s = Slider(p[2, 1],
-#                        range = LinRange(t[1], t[end], length(t)),
-#                        horizontal = true)
-#
-#        wait(display(p))
     end
 
     return p

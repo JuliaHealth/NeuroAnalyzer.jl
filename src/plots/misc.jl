@@ -13,15 +13,13 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 # Arguments
 
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
-- `layout::Union(Matrix{Any}, Tuple{Int64, Int64}, Plots.GridLayout}`: layout
-- `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for `p` vector plots
+- `layout::Tuple{Int64, Int64}`: layout
 
 # Returns
 
 - `pc::GLMakie.Figure`
 """
-function plot_compose(p::Vector{GLMakie.Figure}; layout::Union{Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)::GLMakie.Figure
+function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::GLMakie.Figure
 
     @assert layout[1] * layout[2] >= length(p) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(p)))."
 
@@ -33,9 +31,7 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Union{Tuple{Int64, Int6
         size(p[idx].scene) != s && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
     end
 
-    layout[1] == layout[2] && (s = (s[1] * layout[1] * 0.75, s[2] * layout[2] * 0.75))
-    layout[1] > layout[2] && (s = (s[1] * layout[1] * 0.5, s[2] * layout[2] * 1.5))
-    layout[1] < layout[2] && (s = (s[1] * layout[1] * 1.25, s[2] * layout[2] * 0.5))
+    s = (s[1] * layout[2], s[2] * layout[1])
 
     if length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
@@ -53,13 +49,16 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Union{Tuple{Int64, Int6
             pp = FileIO.load(fname)
             rm(fname)
             ax = GLMakie.Axis(pc[idx1, idx2],
-                              topspinevisible=false,
-                              bottomspinevisible=false,
-                              leftspinevisible=false,
-                              rightspinevisible=false,
-                              aspect=DataAspect())
+                              aspect=DataAspect(),
+                              xzoomlock=true,
+                              yzoomlock=true,
+                              xpanlock=true,
+                              ypanlock=true,
+                              xrectzoom=false,
+                              yrectzoom=false)
             GLMakie.image!(ax, rotr90(pp))
             hidedecorations!(ax)
+            hidespines!(ax)
             p_idx += 1
         end
     end

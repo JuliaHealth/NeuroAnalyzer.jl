@@ -1,7 +1,7 @@
 export plot_topo
 
 """
-    plot_topo(c; <keyword arguments>)
+    plot_topo(s; <keyword arguments>)
 
 Plot topographical view.
 
@@ -11,8 +11,8 @@ Plot topographical view.
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
 - `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: list of significant channels
-- `cb::Bool=true`: plot color bar
-- `cb_title::String="[A.U.]"`: color bar title
+- `cb::Bool=true`: plot colorbar
+- `cb_title::String="[A.U.]"`: colorbar title
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `imethod::Symbol=:sh`: interpolation method:
@@ -86,7 +86,6 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         marker_size = length(ch) > 64 ? 2 : 4
         font_size = 8
         iter = 256
-        title=""
         cb_title=""
         font_size = 10
     elseif ps === :s
@@ -167,7 +166,7 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
-                       figure_padding=10)
+                       figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],
                       aspect=1,
                       xlabel="",
@@ -352,8 +351,8 @@ Topographical plot.
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
 - `title::String="default"`: plot title, default is tpos value
 - `mono::Bool=false`: use color or gray palette
-- `cb::Bool=true`: plot color bar
-- `cb_title::String="[A.U.]"`: color bar title
+- `cb::Bool=true`: plot colorbar
+- `cb_title::String="[A.U.]"`: colorbar title
 - `amethod::Symbol=:mean`: averaging method:
     - `:mean`
     - `:median`

@@ -165,7 +165,6 @@ function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRa
 
     on(events(p).keyboardbutton) do event
         if event.action == Keyboard.press
-            @show event.key
             new_pov = (0, 0)
             event.key == Keyboard.home && (new_pov = (20, 45))
             event.key == Keyboard.r && (new_pov = (10, 10))
