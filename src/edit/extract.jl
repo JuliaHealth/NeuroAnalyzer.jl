@@ -52,7 +52,6 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)::NeuroAnalyzer.NEURO
     obj_new.time_pts = obj.epoch_time
     obj_new.epoch_time = obj.epoch_time
 
-    reset_components!(obj_new)
     push!(obj_new.history, "extract_epoch(OBJ, ep=$ep)")
 
     return obj_new
@@ -79,7 +78,6 @@ function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
 
     return nothing

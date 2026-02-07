@@ -105,12 +105,11 @@ function import_csv(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                          r,
                          e)
 
-    components = Dict()
 
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

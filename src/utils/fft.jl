@@ -23,27 +23,10 @@ function fft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
 
     @assert n >=0 "n must be ≥ 0."
 
-    if na_gpu === :cuda
-        # CUDA.memory_status()
-        _free_gpumem()
-        if n == 0
-            return Vector(fft(CuVector(x)))
-        else
-            return Vector(fft(CuVector(pad0(x, n))))
-        end
-    elseif na_gpu === :amdgpu
-        _free_gpumem()
-        if n == 0
-            return Vector(fft(ROCVector(x)))
-        else
-            return Vector(fft(ROCVector(pad0(x, n))))
-        end
+    if n == 0
+        return fft(x)
     else
-        if n == 0
-            return fft(x)
-        else
-            return fft(pad0(x, n))
-        end
+        return fft(pad0(x, n))
     end
 
 end
@@ -66,17 +49,7 @@ function ifft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
-    if na_gpu === :cuda
-        _free_gpumem()
-        x = Vector(ifft(CuVector(x)))
-    elseif na_gpu === :amdgpu
-        _free_gpumem()
-        x = Vector(ifft(ROCVector(x)))
-    else
-        x = ifft(x)
-    end
-
-    return x[1:(length(x) - n)]
+    return ifft(x)[1:(length(x) - n)]
 
 end
 
@@ -139,27 +112,10 @@ function rfft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
 
     @assert n >=0 "n must be ≥ 0."
 
-    if na_gpu === :cuda
-        # CUDA.memory_status()
-        _free_gpumem()
-        if n == 0
-            return Vector(rfft(CuVector(x)))
-        else
-            return Vector(rfft(CuVector(pad0(x, n))))
-        end
-    elseif na_gpu === :amdgpu
-        _free_gpumem()
-        if n == 0
-            return Vector(rfft(ROCVector(x)))
-        else
-            return Vector(rfft(ROCVector(pad0(x, n))))
-        end
+    if n == 0
+        return rfft(x)
     else
-        if n == 0
-            return rfft(x)
-        else
-            return rfft(pad0(x, n))
-        end
+        return rfft(pad0(x, n))
     end
 
 end

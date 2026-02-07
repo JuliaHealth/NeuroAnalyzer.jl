@@ -469,12 +469,11 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
                          r,
                          e)
 
-    components = Dict()
 
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

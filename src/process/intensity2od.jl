@@ -58,7 +58,6 @@ function intensity2od(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     obj_new.header.recording[:unit] = vcat(obj.header.recording[:unit][ch], obj.header.recording[:unit][ch], obj.header.recording[:unit][setdiff(collect(axes(obj.data, 1)), ch)])
     obj_new.header.recording[:bad_channel] = vcat(obj.header.recording[:bad_channel][ch], obj.header.recording[:bad_channel][ch], obj.header.recording[:bad_channel][setdiff(collect(axes(obj.data, 1)), ch)])
 
-    reset_components!(obj_new)
     push!(obj_new.history, "intensity2od(OBJ, ch=$ch)")
 
     return obj_new
@@ -84,7 +83,6 @@ function intensity2od!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String
     obj_new = intensity2od(obj, ch=ch)
     obj.data = obj_new.data
     obj.header = obj_new.header
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

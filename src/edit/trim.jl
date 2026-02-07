@@ -132,7 +132,6 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=false
         obj_new.markers = unique(obj_new.markers)
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "trim(OBJ, seg=$seg, keep=$keep")
 
     return obj_new
@@ -161,7 +160,6 @@ function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=fals
     obj_new = trim(obj, seg=seg, keep=keep)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
     obj.markers = obj_new.markers

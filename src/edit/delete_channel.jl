@@ -69,7 +69,6 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Strin
     # remove channel
     obj_new.data = obj_new.data[setdiff(_c(ch_n), ch), :, :]
 
-    reset_components!(obj_new)
     push!(obj_new.history, "delete_channel(OBJ, ch=$ch)")
 
     return obj_new
@@ -97,7 +96,6 @@ function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -150,7 +148,6 @@ function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing

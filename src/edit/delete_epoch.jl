@@ -40,7 +40,6 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, 
     # update time
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
 
-    reset_components!(obj_new)
     push!(obj_new.history, "delete_epoch(OBJ, $ep)")
 
     return obj_new
@@ -67,7 +66,6 @@ function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64},
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.markers = obj_new.markers
 
@@ -102,7 +100,6 @@ function keep_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, Ab
     length(ep_to_remove) > 1 && (ep_to_remove = sort!(ep_to_remove, rev=true))
 
     obj_new = delete_epoch(obj, ep=ep_to_remove)
-    reset_components!(obj_new)
     push!(obj_new.history, "keep_epoch(OBJ, $ep)")
 
     return obj_new
@@ -129,7 +126,6 @@ function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, A
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.markers = obj_new.markers
 

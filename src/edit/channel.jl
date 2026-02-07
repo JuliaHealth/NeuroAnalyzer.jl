@@ -299,7 +299,6 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = s
 
-    reset_components!(obj_new)
     push!(obj_new.history, "replace_channel(OBJ, ch=$ch, s")
 
     return obj_new
@@ -327,7 +326,6 @@ function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

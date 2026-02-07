@@ -411,20 +411,6 @@ function header(obj::NeuroAnalyzer.NEURO)::Nothing
             println("      Channel locations: no")
         end
     end
-    if length(keys(obj.components)) > 0
-        print("             Components: ")
-        c = list_components(obj)
-        if length(c) == 1
-            println(c[1])
-        else
-            for idx in 1:(length(c) - 1)
-                print(c[idx], ", ")
-            end
-            println(c[end])
-        end
-    else
-        println("             Components: no")
-    end
     if datatype(obj) in ["eeg", "ecog", "seeg", "ieeg", "erp"]
         nch = 0
         for idx in ["eeg", "ecog", "seeg", "ieeg", "erp"]
@@ -528,20 +514,6 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool=false)::Union{Nothing, DataFram
         else
             println("      Channel locations: no")
         end
-    end
-    if length(keys(obj.components)) > 0
-        print("             Components: ")
-        c = list_components(obj)
-        if length(c) == 1
-            println(c[1])
-        else
-            for idx in 1:(length(c) - 1)
-                print(c[idx], ", ")
-            end
-            println(c[end])
-        end
-    else
-        println("             Components: no")
     end
     if datatype(obj) in ["eeg", "ecog", "seeg", "ieeg", "erp"]
         nch = 0

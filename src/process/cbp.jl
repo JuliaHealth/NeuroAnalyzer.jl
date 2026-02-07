@@ -59,7 +59,6 @@ function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
         end
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "cbp(OBJ, ch=$ch, pad=$pad, frq=$frq)")
 
     return obj_new
@@ -86,7 +85,6 @@ function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
 
     obj_new = cbp(obj, ch=ch, pad=pad, frq=frq)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

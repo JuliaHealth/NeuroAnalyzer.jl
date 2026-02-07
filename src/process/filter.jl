@@ -376,7 +376,6 @@ function filter_apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         end
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "filter_apply(OBJ, ch=$ch, dir=$dir)")
 
     return obj_new
@@ -412,7 +411,6 @@ function filter_apply!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String
                                          dir=dir)
 
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing
@@ -541,7 +539,6 @@ function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
                                    w=w)
 
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

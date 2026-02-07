@@ -51,7 +51,6 @@ function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
         end
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "add_signal(OBJ, ch=$ch)")
 
     return obj_new
@@ -77,7 +76,6 @@ function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
 
     obj_new = add_signal(obj, ch=ch, s=s)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

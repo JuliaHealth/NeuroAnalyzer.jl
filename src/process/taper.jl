@@ -75,7 +75,6 @@ function taper(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = taper(obj.data[ch, :, :], t=t)
-    reset_components!(obj_new)
     push!(obj_new.history, "taper(OBJ, ch=$ch), t=$t")
 
     return obj_new
@@ -102,7 +101,6 @@ function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Rege
     obj_new = taper(obj, ch=ch, t=t)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

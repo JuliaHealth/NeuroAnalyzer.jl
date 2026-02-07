@@ -121,86 +121,29 @@ function pca_reconstruct(s::AbstractArray; pc::AbstractArray, pc_model::Multivar
 end
 
 """
-    pca_reconstruct(obj; <keyword arguments>)
-
-Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`).
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-
-# Returns
-
-- `obj_new::NeuroAnalyzer.NEURO`
-"""
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
-
-    @assert :pc in keys(obj.components) "OBJ does not contain :pc component. Perform pca_decompose() first."
-    @assert :pc_model in keys(obj.components) "OBJ does not contain :pc_model component. Perform pca_decompose() first."
-
-    ch = get_channel(obj, ch=ch)
-    obj_new = deepcopy(obj)
-
-    obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=obj_new.components[:pc], pc_model=obj_new.components[:pc_model])
-
-    reset_components!(obj_new)
-    push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")
-
-    return obj_new
-
-end
-
-"""
-    pca_reconstruct!(obj; <keyword arguments>)
-
-Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`).
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-
-# Returns
-
-Nothing
-"""
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    obj_new = pca_reconstruct(obj, ch=ch)
-    obj.data = obj_new.data
-    obj.history = obj_new.history
-    obj.components = obj_new.components
-
-    return nothing
-
-end
-
-"""
     pca_reconstruct(obj, pc, pc_model; <keyword arguments>)
 
-Reconstruct signal using external PCA components (`pc` and `pca`).
+Reconstruct signal using PCA components (`pc` and `pca`).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
+function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64})::NeuroAnalyzer.NEURO
 
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
 
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=pc, pc_model=pc_model)
 
-    reset_components!(obj_new)
-    push!(obj_new.history, "pca_reconstruct(OBJ, pc, pc_model, ch=$ch)")
+    push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")
 
     return obj_new
 
@@ -209,25 +152,24 @@ end
 """
     pca_reconstruct!(obj, pc, pc_model; <keyword arguments>)
 
-Reconstruct signals using external PCA components (`pc` and `pc_model`).
+Reconstruct signals using PCA components (`pc` and `pc_model`).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
 Nothing
 """
-function pca_reconstruct!(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{String, Vector{String}, Regex})::Nothing
+function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64})::Nothing
 
-    obj_new = pca_reconstruct(obj, pc, pc_model, ch=ch)
+    obj_new = pca_reconstruct(obj, ch=ch, pc=pc, pc_model=pc_model)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

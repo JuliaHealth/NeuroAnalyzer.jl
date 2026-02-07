@@ -20,7 +20,6 @@ function invert_polarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Stri
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = .- obj_new.data[ch, :, :]
-    reset_components!(obj_new)
     push!(obj_new.history, "invert_polarity(OBJ, ch=$ch)")
 
     return obj_new
@@ -45,7 +44,6 @@ function invert_polarity!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
 
     obj_new = invert_polarity(obj, ch=ch)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

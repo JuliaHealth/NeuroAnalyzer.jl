@@ -60,7 +60,6 @@ function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     keep_channel!(obj_new, ch=labels(obj)[1])
     obj_new.data = @views average(obj.data[ch, :, :])
     obj_new.header.recording[:label]=["averaged ch"]
-    reset_components!(obj_new)
     push!(obj_new.history, "average(OBJ, ch=$ch)")
 
     return obj_new
@@ -86,7 +85,6 @@ function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     obj_new = average(obj, ch=ch)
     obj.header = obj_new.header
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing
@@ -121,7 +119,6 @@ function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAna
         end
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "average(OBJ1, OBJ2)")
 
     return obj_new

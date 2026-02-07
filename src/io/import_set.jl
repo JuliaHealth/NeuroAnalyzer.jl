@@ -264,9 +264,8 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                          r,
                          e)
 
-    components = Dict()
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")

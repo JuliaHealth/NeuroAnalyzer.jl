@@ -88,7 +88,6 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
     obj_new.epoch_time .-= offset
 
-    reset_components!(obj_new)
     push!(obj_new.history, "epoch(OBJ, marker=$marker, offset=$offset, ep_n=$ep_n, ep_len=$ep_len)")
 
     return obj_new
@@ -118,7 +117,6 @@ function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
 
@@ -230,7 +228,6 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
 
     obj_new.markers[!, :start] = mrk_start
 
-    reset_components!(obj_new)
     push!(obj_new.history, "subepoch(OBJ, ep_start=$ep_start, ep_start=$ep_end)")
 
     return obj_new
@@ -258,7 +255,6 @@ function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Noth
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
 

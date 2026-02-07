@@ -123,7 +123,6 @@ function filter_poly(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_poly(obj.data[ch, :, :], order=order, window=window)
-    reset_components!(obj_new)
     push!(obj_new.history, "filter_poly(OBJ, ch=$ch, order=$order, window=$window")
 
     return obj_new
@@ -150,7 +149,6 @@ function filter_poly!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     obj_new = filter_poly(obj, ch=ch, order=order, window=window)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

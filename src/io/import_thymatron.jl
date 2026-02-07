@@ -161,7 +161,6 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
                          r,
                          e)
 
-    components = Dict()
 
     history = String[]
 
@@ -172,7 +171,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
                         :channel=>Int64[])
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 

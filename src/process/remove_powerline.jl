@@ -153,8 +153,7 @@ function remove_powerline(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{Str
 
         NeuroAnalyzer.verbose = verbose_tmp
 
-        reset_components!(obj_new)
-        push!(obj_new.history, "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)")
+            push!(obj_new.history, "remove_powerline(OBJ, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)")
 
         return obj_new, df
 
@@ -185,7 +184,6 @@ function remove_powerline!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{St
 
     obj_new, df = remove_powerline(obj, ch=ch, pl_frq=pl_frq, method=method, pr=pr, d=d, q=q)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return df

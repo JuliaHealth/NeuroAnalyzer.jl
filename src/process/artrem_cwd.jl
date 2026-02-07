@@ -81,7 +81,6 @@ function artrem_cwd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wavel
     _log_off()
     obj_new.data[ch, :, ep] = @views artrem_cwd(obj.data[ch, :, ep], obj.epoch_time, fs=sr(obj), wt=wt, tseg=tseg, fseg=fseg, type=type)
     _log_on()
-    reset_components!(obj_new)
     push!(obj_new.history, "artrem_cwd(OBJ, ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)")
 
     return obj_new
@@ -110,7 +109,6 @@ function artrem_cwd!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, wt::T=wave
 
     obj_new = artrem_cwd(obj, ch=ch, ep=ep, wt=wt, tseg=tseg, fseg=fseg, type=type)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

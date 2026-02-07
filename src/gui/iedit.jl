@@ -716,8 +716,7 @@ function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
                     obj.header = obj_new.header
                     obj.data = obj_new.data
                     obj.locs = locs
-                    obj.components = obj_new.components
-                    obj.history = obj_new.history
+                                    obj.history = obj_new.history
                     obj.markers = obj_new.markers
                     close(win)
                     return nothing

@@ -29,30 +29,6 @@ z, b = perm_cmp(a1, a2)
 @test round.(z) == -2.0 .* ones(2, 3)
 @test size(b) == (2, 3)
 
-@info "Test: add_component()"
-x = collect(1:10)
-e10_tmp = add_component(e10, c=:x, v=x)
-@test e10_tmp.components[:x] == x
-
-@info "Test: component_type()"
-@test component_type(e10_tmp, c=:x) == Vector{Int64}
-
-@info "Test: extract_component()"
-@test extract_component(e10_tmp, c=:x) == x
-
-@info "Test: delete_component()"
-e10_tmp2 = deepcopy(e10_tmp)
-delete_component!(e10_tmp2, c=:x)
-@test e10_tmp2.components == Dict()
-
-@info "Test: rename_component()"
-rename_component!(e10_tmp, c_old=:x, c_new=:y)
-@test e10_tmp.components[:y] == 1:10
-
-@info "Test: reset_components()"
-reset_components!(e10_tmp)
-@test e10_tmp.components == Dict()
-
 @info "Test: vsearch()"
 @test vsearch(2.1, [1, 2, 3, 4]) == 2
 @test vsearch([2.1, 2.9], [1, 2, 3, 4]) == [2.0, 3.0]

@@ -87,7 +87,6 @@ function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_fft(obj.data[ch, :, :], pad=pad, t=t)
-    reset_components!(obj_new)
     push!(obj_new.history, "denoise_fft(OBJ, ch=$ch, pad=$pad, t=$t)")
 
     return obj_new
@@ -115,7 +114,6 @@ function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     obj_new = denoise_fft(obj, ch=ch, pad=pad, t=t)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

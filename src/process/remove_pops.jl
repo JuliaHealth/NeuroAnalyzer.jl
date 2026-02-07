@@ -245,8 +245,7 @@ function remove_pops(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
 
     if repair
         obj_new.data[ch, :, :] = s
-        reset_components!(obj_new)
-        push!(obj_new.history, "remove_pops(OBJ, ch=$ch, repair=true, window=$window)")
+            push!(obj_new.history, "remove_pops(OBJ, ch=$ch, repair=true, window=$window)")
         return obj_new, pop_loc, l_seg, r_seg
     else
         return pop_loc, l_seg, r_seg
@@ -278,8 +277,7 @@ function remove_pops!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     obj_new, pop_loc, l_seg, r_seg = remove_pops(obj, ch=ch, repair=true, window=window, r=r)
     if repair
         obj.data = obj_new.data
-        obj.components = obj_new.components
-        obj.history = obj_new.history
+            obj.history = obj_new.history
     end
 
     return pop_loc, l_seg, r_seg

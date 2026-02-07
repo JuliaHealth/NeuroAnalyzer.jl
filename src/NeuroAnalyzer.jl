@@ -69,7 +69,6 @@ end
 
 # initialize preferences
 
-use_gpu = nothing
 progress_bar = nothing
 verbose = nothing
 exclude_bads = nothing
@@ -77,14 +76,12 @@ colors = nothing
 
 # load dependencies
 
-using AMDGPU
 using Artifacts
 using Cairo
 using ColorSchemes
 using ComplexityMeasures
 using ContinuousWavelets
 using Crayons.Box
-using CUDA
 using Dates
 using Deconvolution
 using DICOM
@@ -160,16 +157,9 @@ mutable struct NEURO
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}
     data::Array{<:Number, 3}
-    components::Dict{Any}
     markers::DataFrame
     locs::DataFrame
     history::Vector{String}
-end
-
-mutable struct STUDY
-    header::Dict{Symbol, Any}
-    objects::Vector{NeuroAnalyzer.NEURO}
-    groups::Vector{Symbol}
 end
 
 mutable struct DIPOLE
@@ -185,33 +175,17 @@ include("na/plugins.jl")
 
 # load preferences
 
-global use_gpu = @load_preference("use_gpu", false)
 global progress_bar = @load_preference("progress_bar", true)
 global verbose = @load_preference("verbose", true)
 global exclude_bads = @load_preference("exclude_bads", false)
 global colors = @load_preference("colors", true)
-global na_gpu = ""
-na_set_prefs(use_gpu=use_gpu, progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
+na_set_prefs(progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
 
 # show major parameters
 
 _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
 _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
 _info("Preferences:")
-if use_gpu
-    if CUDA.functional()
-        na_gpu = :cuda
-    elseif AMDGPU.functional()
-        na_gpu = :amdgpu
-    else
-        use_gpu = false
-    end
-end
-if use_gpu == false
-    _info("        Use GPU: $use_gpu")
-else
-    _info("        Use GPU: $use_gpu ($(uppercase(string(na_gpu))))")
-end
 _info("   Progress bar: $progress_bar")
 _info("        Verbose: $verbose")
 _info("   Exclude bads: $exclude_bads")
@@ -254,7 +228,6 @@ include("deps/FIRLSFilterDesign.jl/FIRLSFilterDesign.jl")
 # internal
 include("internal/channels.jl")
 include("internal/check.jl")
-include("internal/components.jl")
 include("internal/convolution.jl")
 include("internal/create_header.jl")
 include("internal/draw_head.jl")
@@ -262,7 +235,6 @@ include("internal/epochs.jl")
 include("internal/fiff.jl")
 include("internal/fir_response.jl")
 include("internal/gdf_etp.jl")
-include("internal/gpu.jl")
 include("internal/gradient.jl")
 include("internal/gui.jl")
 include("internal/interpolate.jl")
@@ -289,7 +261,6 @@ include("internal/vec.jl")
 # utils
 include("utils/apply.jl")
 include("utils/array.jl")
-include("utils/components.jl")
 include("utils/fft.jl")
 include("utils/findpeaks.jl")
 include("utils/frequency.jl")

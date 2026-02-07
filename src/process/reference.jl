@@ -60,7 +60,6 @@ function reference_ce(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     obj_new.locs[:, :label][referenced_channels] .*= ch isa Int64 ? "-$(labels(obj)[ch])" : "-cavg"
     obj_new.data[referenced_channels, :, :] = s
     obj_new.header.recording[:reference] = length(ch) == 1 ? "common ($(labels(obj)[ch]))" : obj_new.header.recording[:reference] = "common ($(labels(obj)[ch]) averaged)"
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_ce(OBJ, ch=$ch, med=$med)")
 
     return obj_new
@@ -88,7 +87,6 @@ function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -199,7 +197,6 @@ function reference_avg(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     else
         obj_new.header.recording[:reference] = weighted ? "sum (weighted)" : "sum"
     end
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_avg(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)")
 
     return obj_new
@@ -230,7 +227,6 @@ function reference_avg!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclu
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -361,7 +357,6 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     elseif type === :c
         obj_new.header.recording[:reference] = "auricular (contralateral)"
     end
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_a(OBJ, type=$type, med=$med)")
 
     return obj_new
@@ -392,7 +387,6 @@ function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -523,7 +517,6 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     elseif type === :c
         obj_new.header.recording[:reference] = "mastoid (contralateral)"
     end
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_m(OBJ, type=$type, med=$med)")
 
     return obj_new
@@ -554,7 +547,6 @@ function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -647,7 +639,6 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     obj_new.locs[ch_locs, :label] .*= weighted ? "-wplap" : "-plap"
     obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_plap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
 
     return obj_new
@@ -676,7 +667,6 @@ function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=f
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -771,7 +761,6 @@ function reference_slap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=fa
     obj_new.locs[ch_locs, :label] .*= weighted ? "-wslap" : "-slap"
     obj_new.data[ch, :, :] = s_ref
     obj_new.header.recording[:reference] = weighted ? "weighted Laplacian ($nn)" : "Laplacian ($nn)"
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_slap(OBJ, nn=$nn, weighted=$weighted, med=$med)")
 
     return obj_new
@@ -800,7 +789,6 @@ function reference_slap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=f
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing
@@ -880,7 +868,6 @@ function reference_custom(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["F
     # TO DO
     # modify locs
 
-    reset_components!(obj_new)
     push!(obj_new.history, "reference_custom(OBJ, ref_list=$ref_list, ref_name=$ref_name)")
 
     return obj_new
@@ -918,7 +905,6 @@ function reference_custom!(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing

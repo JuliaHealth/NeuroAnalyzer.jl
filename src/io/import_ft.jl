@@ -423,10 +423,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                              r,
                              e)
 
-        components = Dict()
-        history = [""]
+            history = [""]
 
-        obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+        obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
 
         data_type == "eeg" && _initialize_locs!(obj)
 

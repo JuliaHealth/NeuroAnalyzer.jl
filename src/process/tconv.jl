@@ -88,8 +88,7 @@ function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         return tconv(obj.data[ch, :, :], kernel=kernel)
     else
         obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)
-        reset_components!(obj_new)
-        push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
+            push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
         return obj_new
     end
 
@@ -113,8 +112,7 @@ function tconv!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Rege
     else
         obj_new = tconv(obj, ch=ch, kernel=kernel)
         obj.data = obj_new.data
-        obj.components = obj_new.components
-        obj.history = obj_new.history
+            obj.history = obj_new.history
         return nothing
     end
 

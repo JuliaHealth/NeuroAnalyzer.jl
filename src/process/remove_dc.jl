@@ -110,7 +110,6 @@ function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
-    reset_components!(obj_new)
     push!(obj_new.history, "remove_dc(OBJ, ch=$ch, n=$n)")
 
     return obj_new
@@ -137,7 +136,6 @@ function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     obj_new = remove_dc(obj, ch=ch, n=n)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

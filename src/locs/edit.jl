@@ -45,7 +45,6 @@ function edit_locs(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing}
     radius_sph !== nothing && (obj_new.locs[loc_idx, :loc_radius_sph] = radius_sph)
     phi_sph !== nothing && (obj_new.locs[loc_idx, :loc_phi_sph] = phi_sph)
 
-    reset_components!(obj_new)
     push!(obj_new.history, "edit_locs(OBJ; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
 
     return obj_new
@@ -81,7 +80,6 @@ function edit_locs!(obj::NeuroAnalyzer.NEURO; ch::String, x::Union{Real, Nothing
     obj_new = edit_locs(obj, ch=ch, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
     obj.locs = obj_new.locs
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

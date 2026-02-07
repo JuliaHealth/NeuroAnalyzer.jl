@@ -69,29 +69,6 @@ function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int6
     return nothing
 end
 
-function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
-    c, _ = _get_component(obj, c)
-    if ndims(c) == 1
-        @assert cc == 1 "cc must be 1."
-    else
-        for idx in cc
-            @assert !(idx < 1 || idx > size(c, 1)) "cc must be in [1, $(size(c, 1))]."
-        end
-    end
-    return nothing
-end
-
-function _check_cidx(c::Union{AbstractVector, AbstractMatrix, AbstractArray}, cc::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
-    if ndims(c) == 1
-        @assert cc == 1 "cc must be in 1."
-    else
-        for idx in cc
-            @assert !(idx < 1 || idx > size(c, 1)) "cc must be in [1, $(size(c, 1))]."
-        end
-    end
-    return nothing
-end
-
 function _check_segment(obj::NeuroAnalyzer.NEURO, seg::Tuple{Real, Real})::Nothing
     _check_segment(obj, seg[1], seg[2])
     return nothing

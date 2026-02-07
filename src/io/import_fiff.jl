@@ -608,12 +608,11 @@ function import_fiff(file_name::String)::NeuroAnalyzer.NEURO
                          r,
                          e)
 
-    components = Dict()
 
     history = String[]
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
     _initialize_locs!(obj)
     l = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
     add_locs!(obj, locs=l)

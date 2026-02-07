@@ -71,7 +71,6 @@ function normpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = normpower(obj.data[ch, :, :])
-    reset_components!(obj_new)
     push!(obj_new.history, "normpower(OBJ, ch=$ch)")
 
     return obj_new
@@ -97,7 +96,6 @@ function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
     obj_new = normpower(obj, ch=ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

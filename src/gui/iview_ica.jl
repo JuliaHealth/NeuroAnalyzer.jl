@@ -1,32 +1,9 @@
 export iview_ica
 
 """
-    iview_ica(obj; <keyword arguments>)
-
-Interactive view of embedded ("ic" and "ic_mw") ICA components.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-
-# Returns
-
-Nothing
-"""
-function iview_ica(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
-
-    @assert :ic in keys(obj.components) "OBJ does not contain :ic component. Perform ica_decompose() first."
-    @assert :ic_mw in keys(obj.components) "OBJ does not contain :ic_mw component. Perform ica_decompose() first."
-
-    iview_ica(obj, obj.components[:ic], obj.components[:ic_mw], ch=ch)
-
-end
-
-"""
     iview_ica(obj, ic, ic_mw; <keyword arguments>)
 
-Interactive view of external ICA components.
+Interactive view of ICA components.
 
 # Arguments
 
@@ -45,7 +22,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
     plot_psd_type = 0
 
     # select all ICA components
-    ic_idx = _select_cidx(ic, 1:size(ic, 1))
+    ic_idx = axes(ic, 1)
 
     zoom = 10
     obj.time_pts[end] < zoom && (zoom = obj.time_pts[end])
@@ -493,8 +470,7 @@ function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{
                         obj.header = obj_new.header
                         obj.data = obj_new.data
                         obj.locs = obj_new.locs
-                        obj.components = obj_new.components
-                        obj.history = obj_new.history
+                                            obj.history = obj_new.history
                         obj.markers = obj_new.markers
                         close(win)
                         return nothing

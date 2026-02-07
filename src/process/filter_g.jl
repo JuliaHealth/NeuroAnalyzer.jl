@@ -94,7 +94,6 @@ function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs=sr(obj), pad=pad, f=f, gw=gw)
-    reset_components!(obj_new)
     push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
 
     return obj_new
@@ -122,7 +121,6 @@ function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
     obj_new = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

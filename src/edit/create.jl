@@ -216,8 +216,6 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
                          r,
                          e)
 
-    components = Dict()
-
     history = String[]
 
     locs = DataFrame(:label=>String[],
@@ -230,7 +228,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
 
     return obj
 
@@ -258,7 +256,6 @@ function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     obj_new.header.recording[:sampling_rate] = fs
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
-    reset_components!(obj_new)
     push!(obj_new.history, "create_time(OBJ, fs=$fs)")
 
     return obj_new
@@ -283,7 +280,6 @@ function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
 
     obj_new = create_time(obj, fs=fs)
     obj.header = obj_new.header
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
 
@@ -323,7 +319,6 @@ function create_data(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int6
     obj_new.header.recording[:channel_type] = repeat([type], size(data, 1))
     obj_new.header.recording[:bad_channel] = zeros(Bool, size(data, 1))
     obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
-    reset_components!(obj_new)
     push!(obj_new.history, "create_data(OBJ, data, fs=$fs)")
 
     return obj_new
@@ -351,7 +346,6 @@ function create_data!(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int
     obj_new = create_data(obj, data=data, fs=fs, type=type)
     obj.header = obj_new.header
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
 

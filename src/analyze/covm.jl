@@ -17,13 +17,7 @@ Calculate covariance matrix of `s * s'`.
 function covm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
-    if na_gpu === :cuda
-        cm = Matrix(cov(CuVector(s) * CuVector(s)'))
-    elseif na_gpu === :amdgpu
-        cm = cov(Matrix(ROCVector(s) * ROCVector(s)'))
-    else
-        cm = cov(s * s')
-    end
+    cm = cov(s * s')
 
     # normalize
     norm && (cm = m_norm(cm))
@@ -52,13 +46,7 @@ function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # channels-vs-channels
-    if na_gpu === :cuda
-        cm = Matrix(cov(CuVector(s1) * CuVector(s2)'))
-    elseif na_gpu === :amdgpu
-        cm = cov(Matrix(ROCVector(s1) * ROCVector(s2)'))
-    else
-        cm = cov(s1 * s2')
-    end
+    cm = cov(s1 * s2')
 
     # normalize
     norm && (cm = m_norm(cm))

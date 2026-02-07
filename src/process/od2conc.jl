@@ -94,7 +94,6 @@ function od2conc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     obj_new.header.recording[:wavelength_index] = vcat(obj_new.header.recording[:wavelength_index], repeat([-1], 3 * size(dc, 3)))
     =#
 
-    reset_components!(obj_new)
     push!(obj_new.history, "od2conc(OBJ, ch=$ch)")
 
     return obj_new
@@ -121,7 +120,6 @@ function od2conc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     obj_new = od2conc(obj, ch=ch, ppf=ppf)
     obj.data = obj_new.data
     obj.header = obj_new.header
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

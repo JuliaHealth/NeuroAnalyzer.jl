@@ -242,7 +242,6 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
                          r,
                          e)
 
-    components = Dict()
 
     history = String[]
 
@@ -253,7 +252,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
                         :channel=>Int64[])
 
     locs = _initialize_locs()
-    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, components, markers, locs, history)
+    obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
 
     return obj

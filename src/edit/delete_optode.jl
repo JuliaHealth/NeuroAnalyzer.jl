@@ -60,7 +60,6 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
         end
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "delete_optode(OBJ, opt=$opt)")
 
     chs_to_delete = labels(obj_new)[sort(unique(chs_to_delete))]
@@ -91,7 +90,6 @@ function delete_optode!(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
     obj.locs = obj_new.locs
 
     return nothing

@@ -58,24 +58,3 @@ function _clean_eeg_labels(clabels::Vector{String})::Vector{String}
     l = replace.(l, "EOG 0" => "EOG ")
     return l
 end
-
-function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)::Vector{String}
-    c = _get_component(obj, c)
-    clabels = Vector{String}()
-    for idx in axes(c, 1)
-        push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
-    end
-    return clabels
-end
-
-function _gen_clabels(c::Union{AbstractVector, AbstractArray})::Vector{String}
-    clabels = Vector{String}()
-    if ndims(c) == 1
-        push!(clabels, "1")
-    else
-        for idx in axes(c, 1)
-            push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
-        end
-    end
-    return clabels
-end

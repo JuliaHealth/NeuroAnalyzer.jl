@@ -22,7 +22,6 @@ function npl(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     for ep_idx = 2:nepochs(obj_new)
         obj_new.data[:, :, ep_idx] = @views obj_new.data[:, :, ep_idx] - obj_new.data[:, :, 1]
     end
-    reset_components!(obj_new)
     push!(obj_new.history, "npl(OBJ)")
 
     return obj_new
@@ -46,7 +45,6 @@ function npl!(obj::NeuroAnalyzer.NEURO)::Nothing
 
     obj_new = npl(obj)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

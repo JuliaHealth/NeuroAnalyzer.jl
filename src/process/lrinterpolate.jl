@@ -57,7 +57,6 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, 
     df = @views DataFrame(hcat(signal_src[ch, :], signal_src[ch_ref, :]'), :auto)
     obj_new.data[ch, :, ep] = GLM.predict(linear_regressor, df)
 
-    reset_components!(obj_new)
     push!(obj_new.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep, ep_ref=$ep_ref)")
 
     return obj_new
@@ -84,7 +83,6 @@ function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64,
 
     obj_new = lrinterpolate_channel(obj, ch=ch, ep=ep, ep_ref=ep_ref)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

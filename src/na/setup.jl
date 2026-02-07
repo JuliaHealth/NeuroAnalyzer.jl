@@ -1,5 +1,4 @@
 export na_info
-export na_set_use_gpu
 export na_set_progress_bar
 export na_set_prefs
 export na_set_verbose
@@ -28,17 +27,6 @@ function na_info()::Nothing
     println("      Plugins path: $plugins_path")
     println("    Resources path: $res_path")
     println(" Show progress bar: $progress_bar")
-    println("           Use GPU: $use_gpu")
-    if NeuroAnalyzer.use_gpu
-        if NeuroAnalyzer.na_gpu === :cuda
-#            println("          CUDA GPU: $(CUDA.runtime_version())")
-            println("              CUDA: $(CUDA.runtime_version())")
-        elseif NeuroAnalyzer.na_gpu === :amdgpu
-            println("           AMD GPU: $(AMDGPU.HIP.name(AMDGPU.device()))")
-            println("        AMDGPU HIP: $(string(AMDGPU.HIP.runtime_version()))")
-            println("     AMDGPU rocFFT: $(string(AMDGPU.rocFFT.version()))")
-        end
-    end
     println("           Verbose: $(NeuroAnalyzer.verbose)")
     println("      Exclude bads: $(NeuroAnalyzer.exclude_bads)")
     println("            Colors: $(NeuroAnalyzer.colors)")
@@ -55,14 +43,12 @@ function na_info()::Nothing
     if isfile(joinpath(na_pkg, "Manifest.toml"))
         println("Imported packages:")
         required_packages = [
-            "AMDGPU",
             "Cairo",
             "ColorSchemes",
             "ComplexityMeasures",
             "ContinuousWavelets",
             "Crayons",
             "CSV",
-            "CUDA",
             "DataFrames",
             "Deconvolution",
             "DICOM",
@@ -127,37 +113,6 @@ function na_info()::Nothing
     else
         _warn("Manifest.toml file could not be found in $(na_pkg), cannot report versions of imported packages.")
     end
-
-    return nothing
-
-end
-
-"""
-    na_set_use_gpu(value)
-
-Change `use_gpu` preference.
-
-# Arguments
-
-- `value::Bool`: value
-
-# Returns
-
-Nothing
-"""
-function na_set_use_gpu(value::Bool)::Nothing
-
-    NeuroAnalyzer.use_gpu = value
-    if NeuroAnalyzer.use_gpu
-        if CUDA.functional()
-            NeuroAnalyzer.na_gpu = :cuda
-        elseif AMDGPU.functional()
-            NeuroAnalyzer.na_gpu = :amdgpu
-        end
-    else
-        NeuroAnalyzer.na_gpu = ""
-    end
-    @set_preferences!("use_gpu" => value)
 
     return nothing
 
@@ -230,13 +185,12 @@ function na_set_colors(value::Bool)::Nothing
 end
 
 """
-    na_set_prefs(; use_gpu, progress_bar, verbose, exclude_bads, colors)
+    na_set_prefs(; progress_bar, verbose, exclude_bads, colors)
 
 Set and save NeuroAnalyzer preferences.
 
 # Arguments
 
-- `use_gpu::Bool`
 - `progress_bar::Bool`
 - `verbose::Bool`
 - `exclude_bads::Bool`
@@ -246,9 +200,8 @@ Set and save NeuroAnalyzer preferences.
 
 Nothing
 """
-function na_set_prefs(; use_gpu::Bool, progress_bar::Bool, verbose::Bool, exclude_bads::Bool, colors::Bool)::Nothing
+function na_set_prefs(; progress_bar::Bool, verbose::Bool, exclude_bads::Bool, colors::Bool)::Nothing
 
-    @set_preferences!("use_gpu" => use_gpu)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
     @set_preferences!("exclude_bads" => exclude_bads)

@@ -17,13 +17,7 @@ Calculate correlation matrix of `s * s'`.
 function corm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
 
     # channels-vs-channels
-    if na_gpu === :cuda
-        cm = cor(Matrix(CuVector(s) * CuVector(s)'))
-    elseif na_gpu === :amdgpu
-        cm = cor(Matrix(ROCVector(s) * ROCVector(s)'))
-    else
-        cm = cor(s * s')
-    end
+    cm = cor(s * s')
 
     # normalize
     norm && (cm = m_norm(cm))
@@ -52,13 +46,7 @@ function corm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
     # channels-vs-channels
-    if na_gpu === :cuda
-        cm = Matrix(cor(CuVector(s1) * CuVector(s2)'))
-    elseif na_gpu === :amdgpu
-        cm = cor(Matrix(ROCVector(s1) * ROCVector(s2)'))
-    else
-        cm = cor(s1 * s2')
-    end
+    cm = cor(s1 * s2')
 
     # normalize
     norm && (cm = m_norm(cm))

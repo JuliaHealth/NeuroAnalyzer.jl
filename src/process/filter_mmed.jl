@@ -121,7 +121,6 @@ function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_mmed(obj.data[ch, :, :], k=k, t=t, ww=ww)
-    reset_components!(obj_new)
     push!(obj_new.history, "filter_mmed(OBJ, ch=$ch, k=$k, t=$t, ww=$ww")
 
     return obj_new
@@ -149,7 +148,6 @@ function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     obj_new = filter_mmed(obj, ch=ch, k=k, t=t, ww=ww)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

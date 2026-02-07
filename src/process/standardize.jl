@@ -52,7 +52,6 @@ function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
-    reset_components!(obj_new)
     push!(obj_new.history, "standardize(OBJ)")
 
     return obj_new, scaler
@@ -78,7 +77,6 @@ function standardize!(obj::NeuroAnalyzer.NEURO)::Vector{ZScoreTransform{Float64,
     obj_new, scaler = standardize(obj, ch=ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return scaler
 

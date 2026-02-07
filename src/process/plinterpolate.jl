@@ -75,7 +75,6 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{I
 
     obj_new.data[ch, :, ep] = s_interpolated
 
-    reset_components!(obj_new)
     push!(obj_new.history, "plinterpolate_channel(OBJ, ch=$ch, ep=$ep, imethod=$imethod, ifactor=$ifactor)")
 
     return obj_new
@@ -104,7 +103,6 @@ function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{
     obj_new = plinterpolate_channel(obj, ch=ch, ep=ep, imethod=imethod, ifactor=ifactor)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 

@@ -4,10 +4,8 @@ version = "0.26.2-dev"
 authors = ["Adam Wysokiński <adam.wysokinski@neuroanalyzer.org>"]
 
 [deps]
-AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 ComplexityMeasures = "ab4b797d-85ee-42ba-b621-05d793b346a2"
@@ -80,10 +78,8 @@ WaveletsExt = "8f464e1e-25db-479f-b0a5-b7680379e03f"
 XDF = "31bc19ec-0089-417f-990e-a2b5e7515868"
 
 [compat]
-AMDGPU = "2.1.0"
 Artifacts = "1.11"
 CSV = "0.10"
-CUDA = "5"
 Cairo = "1.1"
 ColorSchemes = "3.28"
 ComplexityMeasures = "3.8"

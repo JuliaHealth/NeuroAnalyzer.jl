@@ -62,7 +62,6 @@ function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), 
     end
     obj_new.markers[!, :start] .+= (obj_new.epoch_time[1] * sr(obj_new))
 
-    reset_components!(obj_new)
     push!(obj_new.history, "average(OBJ, bl=$bl, blfirst=$blfirst)")
 
     return obj_new
@@ -88,7 +87,6 @@ function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0),
 
     obj_new = average_epochs(obj, bl=bl, blfirst=blfirst)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
     obj.header = obj_new.header
     obj.time_pts = obj_new.time_pts
@@ -124,7 +122,6 @@ function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.
     # to do: markers should be sorted
     _warn("Markers are not sorted.")
 
-    reset_components!(obj_new)
     push!(obj_new.history, "sort_epochs(OBJ, s=$s)")
 
     return obj_new
@@ -149,7 +146,6 @@ function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
 
     obj_new = sort_epochs(obj, s=s)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 

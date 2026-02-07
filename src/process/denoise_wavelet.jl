@@ -124,7 +124,6 @@ function denoise_cwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_cwd(obj.data[ch, :, :], fs=sr(obj), wt=wt, nf=nf, w=w, type=type)
-    reset_components!(obj_new)
     push!(obj_new.history, "denoise_cwd(OBJ, ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
 
     return obj_new
@@ -156,7 +155,6 @@ function denoise_cwd!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     obj_new = denoise_cwd(obj, ch=ch, wt=wt, nf=nf, type=type)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing
@@ -266,7 +264,6 @@ function denoise_dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String},
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_dwd(obj.data[ch, :, :], wt=wt, l=l, dnt=dnt, smooth=smooth)
-    reset_components!(obj_new)
     push!(obj_new.history, "denoise_dwd(OBJ, ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth))")
 
     return obj_new
@@ -295,7 +292,6 @@ function denoise_dwd!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
     obj_new = denoise_dwd(obj, ch=ch, wt=wt, l=l, dnt=dnt, smooth=smooth)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

@@ -212,7 +212,6 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], n, method=method, bych=false)
     end
 
-    reset_components!(obj_new)
     push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$methodn, n=$n- `n::Real=1`
           )")
 
@@ -258,7 +257,6 @@ function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, 
 
     obj_new = NeuroAnalyzer.normalize(obj, ch=ch, method=method, bych=bych, n=n)
     obj.data = obj_new.data
-    obj.components = obj_new.components
     obj.history = obj_new.history
 
     return nothing

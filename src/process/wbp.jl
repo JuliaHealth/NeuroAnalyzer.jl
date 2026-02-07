@@ -92,7 +92,6 @@ function wbp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
     ch = get_channel(obj, ch=ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views wbp(obj.data[ch, :, :], pad=pad, frq=frq, fs=sr(obj), ncyc=ncyc)
-    reset_components!(obj_new)
     push!(obj_new.history, "wbp(OBJ, ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
     return obj_new
@@ -121,7 +120,6 @@ function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     obj_new = wbp(obj, ch=ch, pad=pad, frq=frq, ncyc=ncyc)
     obj.data = obj_new.data
     obj.history = obj_new.history
-    obj.components = obj_new.components
 
     return nothing
 
