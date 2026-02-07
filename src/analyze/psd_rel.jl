@@ -9,7 +9,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize do dB
-- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
+- `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -30,9 +30,9 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd_rel(s::AbstractVector; fs::Int64, db::Bool=false, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+function psd_rel(s::AbstractVector; fs::Int64, db::Bool=false, flim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
-    ref_pw = frq_lim === nothing ? total_power(s, fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw) : band_power(s, fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    ref_pw = flim === nothing ? total_power(s, fs=fs, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw) : band_power(s, fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
     p, f = psd(s, fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
@@ -51,7 +51,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 - `s::AbstractMatrix`
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize do dB
-- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
+- `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -72,16 +72,16 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd_rel(s::AbstractMatrix; fs::Int64, db::Bool=false, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+function psd_rel(s::AbstractMatrix; fs::Int64, db::Bool=false, flim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     ch_n = size(s, 1)
 
-    _, f = psd_rel(s[1, :, 1], fs=fs, db=db, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    _, f = psd_rel(s[1, :, 1], fs=fs, db=db, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
     p = zeros(ch_n, length(f))
 
     @inbounds for ch_idx in 1:ch_n
-        p[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, db=db, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+        p[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, db=db, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     end
 
     return (p=p, f=f)
@@ -97,7 +97,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `db::Bool=false`: normalize do dB
-- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
+- `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -118,7 +118,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd_rel(s::AbstractArray; fs::Int64, db::Bool=false, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+function psd_rel(s::AbstractArray; fs::Int64, db::Bool=false, flim::Union{Tuple{Real, Real}, Nothing}=nothing, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -130,7 +130,7 @@ function psd_rel(s::AbstractArray; fs::Int64, db::Bool=false, frq_lim::Union{Tup
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            p[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, db=db, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            p[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, db=db, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
         end
     end
 
@@ -148,7 +148,7 @@ Calculate relative power spectrum density. Default method is Welch's periodogram
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `db::Bool=false`: normalize do dB
-- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
+- `flim::Union{Tuple{Real, Real}, Nothing}=nothing`: frequency range to calculate relative power to; if nothing, than calculate relative to total power
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -169,10 +169,10 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd_rel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+function psd_rel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, flim::Union{Tuple{Real, Real}, Nothing}=nothing, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    p, f = @views psd_rel(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    p, f = @views psd_rel(obj.data[ch, :, :], fs=sr(obj), flim=flim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
     return (p=p, f=f)
 

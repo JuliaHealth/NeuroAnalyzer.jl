@@ -800,7 +800,7 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:stft, pad::Int64=0, db::Bool=true, nt::Int64=7, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{s_env_m::Union{Vector{Float64}, Matrix{Float64}}, s_env_u::Union{Vector{Float64}, Matrix{Float64}}, s_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_env_t::Vector{Float64}} where {T <: CWT}
+function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, dims::Int64, d::Int64=2, t::Union{Real, Nothing}=nothing, flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(flim), method::Symbol=:stft, pad::Int64=0, db::Bool=true, nt::Int64=7, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, wt::T=wavelet(Morlet(2π), β=2), wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true)::@NamedTuple{s_env_m::Union{Vector{Float64}, Matrix{Float64}}, s_env_u::Union{Vector{Float64}, Matrix{Float64}}, s_env_l::Union{Vector{Float64}, Matrix{Float64}}, s_env_t::Vector{Float64}} where {T <: CWT}
 
     if dims == 1
         @assert nchannels(obj) >= 2 "Number of channels must be ≥ 2."

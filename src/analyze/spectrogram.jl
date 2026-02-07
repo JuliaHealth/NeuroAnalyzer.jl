@@ -236,9 +236,9 @@ function mwspectrogram(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64
     end
 
     # get frequency range
-    frq_lim = (0, fs / 2)
-    frq_n = _tlength(frq_lim)
-    f = linspace(frq_lim[1], frq_lim[2], frq_n)
+    flim = (0, fs / 2)
+    frq_n = _tlength(flim)
+    f = linspace(flim[1], flim[2], frq_n)
 
     cs = zeros(ComplexF64, length(f), length(s))
     p = zeros(length(f), length(s))
@@ -333,9 +333,9 @@ function ghtspectrogram(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=10
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    frq_lim = (0, fs / 2)
-    frq_n = _tlength(frq_lim)
-    f = linspace(frq_lim[1], frq_lim[2], frq_n)
+    flim = (0, fs / 2)
+    frq_n = _tlength(flim)
+    f = linspace(flim[1], flim[2], frq_n)
 
     w = w ? hanning(length(s)) : ones(length(s))
 

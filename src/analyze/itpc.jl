@@ -152,8 +152,8 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::String`: channel to analyze
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
-- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
+- `frq_n::Int64=_tlength(flim)`: number of frequencies
 - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -164,17 +164,17 @@ Named tuple containing:
 - `itpcz_s::Matrix{Float64}`: spectrogram of ITPCZ values
 - `itpc_f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, itpc_f::Vector{Float64}}
+function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq_n::Int64=_tlength(flim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, itpc_f::Vector{Float64}}
 
     _check_var(frq, [:log, :lin], "frq")
-    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
+    _check_tuple(flim, "flim", (0, sr(obj) / 2))
     @assert frq_n >= 2 "frq_n must be ≥ 2."
     if frq === :log
-        frq_lim = frq_lim[1] == 0 ? (0.01, frq_lim[2]) : (frq_lim[1], frq_lim[2])
-        frq_lim = (frq_lim[1], frq_lim[2])
-        frq_list = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=3)
+        flim = flim[1] == 0 ? (0.01, flim[2]) : (flim[1], flim[2])
+        flim = (flim[1], flim[2])
+        frq_list = round.(logspace(flim[1], flim[2], frq_n), digits=3)
     else
-        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+        frq_list = linspace(flim[1], flim[2], frq_n)
     end
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")[1]

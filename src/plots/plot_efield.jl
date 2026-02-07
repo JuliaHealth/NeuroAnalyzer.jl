@@ -65,6 +65,7 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
+    # draw field lines
     streamplot!(ax,
                 fieldE,
                 -5..5, -5..5;
@@ -72,6 +73,8 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
                 linewidth = 1,
                 colorrange = (-3, 3),
                 colormap=:bluesreds)
+
+    # draw charges
     for idx in eachindex(qs)
         GLMakie.scatter!(ax,
                          Point(qs[idx][2:3]),

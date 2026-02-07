@@ -20,7 +20,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
@@ -31,7 +31,7 @@ Named tuple containing:
 - `p::Vector{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
+function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Vector{Float64}, f::Vector{Float64}}
 
     _check_var(method, [:fft, :welch, :mt, :mw, :stft, :gh], "method")
     @assert nt >= 1 "nt must be ≥ 1."
@@ -76,10 +76,6 @@ function psd(s::AbstractVector; fs::Int64, db::Bool=false, method::Symbol=:welch
         p, f = ghpsd(s, fs=fs, db=db, gw=gw, w=w)
     end
 
-    # replace powers at extreme frequencies
-    # pw[1] = pw[2]
-    # pw[end] = pw[end - 1]
-
     return (p=p, f=f)
 
 end
@@ -103,7 +99,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 
@@ -113,7 +109,7 @@ Named tuple containing:
 - `p::Matrix{Float64}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
+function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Matrix{Float64}, f::Vector{Float64}}
 
     _, f = @views psd(s[1, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
@@ -146,7 +142,7 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
@@ -157,7 +153,7 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -197,11 +193,11 @@ Calculate power spectrum density. Default method is Welch's periodogram.
     - `:gh`: Gaussian and Hilbert transform
 - `nt::Int64=7`: number of Slepian tapers
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.97)`: window overlap (in samples)
+- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 - `gw::Real=5`: Gaussian width in Hz
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 
 # Returns
 
@@ -209,17 +205,17 @@ Named tuple containing:
 - `p::Array{Float64, 3}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.97), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
+function psd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5, flim::Tuple{Real, Real}=(0, sr(obj) / 2))::@NamedTuple{p::Array{Float64, 3}, f::Vector{Float64}}
 
-    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
+    _check_tuple(flim, "flim", (0, sr(obj) / 2))
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _log_off()
     p, f = @views psd(obj.data[ch, :, :], fs=sr(obj), db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     _log_on()
 
-    f1 = vsearch(frq_lim[1], f)
-    f2 = vsearch(frq_lim[2], f)
+    f1 = vsearch(flim[1], f)
+    f2 = vsearch(flim[2], f)
     f = f[f1:f2]
     p = p[:, f1:f2, :]
 
@@ -256,9 +252,9 @@ function mwpsd(s::AbstractVector; pad::Int64=0, db::Bool=true, fs::Int64, ncyc::
 
     w = w ? hanning(length(s)) : ones(length(s))
 
-    frq_lim = (0, fs / 2)
-    frq_n = _tlength(frq_lim)
-    f = linspace(frq_lim[1], frq_lim[2], frq_n)
+    flim = (0, fs / 2)
+    frq_n = _tlength(flim)
+    f = linspace(flim[1], flim[2], frq_n)
 
     if ncyc isa Int64
         @assert ncyc >= 1 "ncyc must be ≥ 1"
@@ -306,9 +302,9 @@ function ghpsd(s::AbstractVector; fs::Int64, db::Bool=true, gw::Real=5, w::Bool=
 
     @assert fs >= 1 "fs must be ≥ 1."
 
-    frq_lim = (0, fs / 2)
-    frq_n = _tlength(frq_lim)
-    f = linspace(frq_lim[1], frq_lim[2], frq_n)
+    flim = (0, fs / 2)
+    frq_n = _tlength(flim)
+    f = linspace(flim[1], flim[2], frq_n)
 
     w = w ? hanning(length(s)) : ones(length(s))
 

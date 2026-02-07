@@ -11,7 +11,7 @@ Plot PHSD (phase spectral density).
 
 - `f::Vector{Float64}`: frequencies
 - `ph::Vector{Float64}`: phases
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -21,15 +21,15 @@ Plot PHSD (phase spectral density).
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", title::String="", frq::Symbol=:lin)::GLMakie.Figure
+function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", title::String="", frq::Symbol=:lin)::GLMakie.Figure
 
     @assert length(ph) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(f[2]) Hz.")
-        frq_lim = (f[2], frq_lim[2])
+        flim = (f[2], flim[2])
     end
 
     # prepare plot
@@ -51,7 +51,7 @@ function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; frq_lim::Tuple{Real,
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(ph))
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -79,7 +79,7 @@ Plot multi-channel PHSD (phase spectral density).
 - `f::Vector{Float64}`: frequencies
 - `ph::Matrix{Float64}`: phases
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -93,13 +93,13 @@ Plot multi-channel PHSD (phase spectral density).
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{String}=string.(1:size(ph, 1)), frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_phsd(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{String}=string.(1:size(ph, 1)), flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     ch_n = size(ph, 1)
 
     @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
 
@@ -127,7 +127,7 @@ function plot_phsd(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{Stri
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.xlims!(ax, flim)
     if ci95
         GLMakie.ylims!(ax, minimum(s_l), maximum(s_u))
     else
@@ -195,7 +195,7 @@ Plot 3-d PHSD (phase phectral density).
 - `ph::Array{Float64, 3}`: phases
 - `clabels::Vector{String}=string.(1:size(ph, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `zlabel::String=""`: y-axis label
@@ -208,21 +208,21 @@ Plot 3-d PHSD (phase phectral density).
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{String}=string.(1:size(ph, 1)), db::Bool=true, frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol)::GLMakie.Figure
+function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{String}=string.(1:size(ph, 1)), db::Bool=true, flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, variant::Symbol)::GLMakie.Figure
 
     _check_var(variant, [:w, :s], "variant")
     @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     ch_n = size(ph, 1)
 
     pal = mono ? :grays : :darktest
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Currently log scale is not supported by Makie.")
         _warn("Lower frequency bound truncated to $(f[2]) Hz.")
-        frq_lim = (f[2], frq_lim[2])
+        flim = (f[2], flim[2])
     end
 
     if ch_n > 64
@@ -255,7 +255,7 @@ function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{S
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            zautolimitmargin=(0, 0))
-        GLMakie.xlims!(ax, frq_lim)
+        GLMakie.xlims!(ax, flim)
         ax.titlesize = 20
         ax.xlabelsize = 18
         ax.ylabelsize = 18
@@ -274,8 +274,8 @@ function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{S
                          colorrange=1:ch_n)
         end
     else
-        f1 = vsearch(frq_lim[1], f)
-        f2 = vsearch(frq_lim[2], f)
+        f1 = vsearch(flim[1], f)
+        f2 = vsearch(flim[2], f)
         plot_size = (1200, 600)
         p = GLMakie.Figure(size=plot_size)
         ax = GLMakie.Axis3(p[1, 1],
@@ -324,7 +324,7 @@ Plot topographical map of PHSDs (phase spectral density).
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `f::Vector{Float64}`: frequencies
 - `ph::Array{Float64, 3}`: phases
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for x-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end]): frequency limit for x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -337,15 +337,15 @@ Plot topographical map of PHSDs (phase spectral density).
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(f[2]) Hz.")
-        frq_lim = (f[2], frq_lim[2])
+        flim = (f[2], flim[2])
     end
 
     # plot parameters
@@ -391,7 +391,7 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
                           xautolimitmargin=(0, 0),
                           yautolimitmargin=(0.1, 0.1))
         hidedecorations!(ax)
-        GLMakie.xlims!(ax, frq_lim)
+        GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
         GLMakie.lines!(f,
@@ -477,7 +477,7 @@ Plot PHSD (phase spectral density).
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `ep::Int64=0`: epoch to display
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
 - `ylabel::String="default"`: y-axis label, default is Phase [rad]
@@ -500,7 +500,7 @@ Plot PHSD (phase spectral density).
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false, gui::Bool=true)::GLMakie.Figure
+function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false, gui::Bool=true)::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
@@ -534,7 +534,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
 
     # frequency limits
     fs = sr(obj)
-    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
+    _check_tuple(flim, "flim", (0, sr(obj) / 2))
 
     # calculate PHSD
     sp, sf = phsd(signal, fs=fs)
@@ -557,7 +557,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,
-                          frq_lim=frq_lim,
+                          flim=flim,
                           frq=frq)
         else
             title = replace(title, "channel" => "channels")
@@ -567,7 +567,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           ylabel="",
                           clabels=clabels,
                           title=title,
-                          frq_lim=frq_lim,
+                          flim=flim,
                           frq=frq,
                           avg=avg,
                           ci95=ci95,
@@ -588,7 +588,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          ylabel=ylabel,
                          zlabel=zlabel,
                          title=title,
-                         frq_lim=frq_lim,
+                         flim=flim,
                          frq=frq,
                          mono=mono,
                          variant=type === :w3d ? :w : :s)
@@ -609,7 +609,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                            xlabel=xlabel,
                            ylabel=ylabel,
                            title=title,
-                           frq_lim=frq_lim,
+                           flim=flim,
                            frq=frq,
                            cart=cart,
                            head=head)

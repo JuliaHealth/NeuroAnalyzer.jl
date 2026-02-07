@@ -791,7 +791,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `st::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`
 - `ylabel::String="default"`
@@ -806,7 +806,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3)::GLMakie.Figure
+function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db::Bool=true, frq::Symbol=:lin, flim::Tuple{Real, Real}=(sf[1], sf[end]), tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, mono::Bool=false, units::String="μV", smooth::Bool=false, n::Int64=3)::GLMakie.Figure
 
     @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of spectrogram rows ($(size(sp, 1))) must be equal."
     @assert size(sp, 2) == length(st) "Length of st ($(length(st))) and number of spectrogram columns ($(size(sp, 2))) must be equal."
@@ -815,23 +815,23 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
     cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
 
     if frq === :lin
-        if frq_lim[2] > 100
-            yt = frq_lim[1]:10:frq_lim[2]
+        if flim[2] > 100
+            yt = flim[1]:10:flim[2]
         else
-            yt = frq_lim[1]:5:frq_lim[2]
+            yt = flim[1]:5:flim[2]
         end
     else
-        if frq_lim[1] == 0
+        if flim[1] == 0
             _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-            frq_lim = (sf[2], frq_lim[2])
+            flim = (sf[2], flim[2])
         end
-        yt = round.(logspace(frq_lim[1], frq_lim[2], frq_n), digits=1)
+        yt = round.(logspace(flim[1], flim[2], frq_n), digits=1)
     end
 
     if smooth
@@ -876,7 +876,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                           ypanlock=true,
                           xrectzoom=false,
                           yrectzoom=false)
-        GLMakie.ylims!(ax, frq_lim)
+        GLMakie.ylims!(ax, flim)
         ax.titlesize = 20
         ax.xlabelsize = 18
         ax.ylabelsize = 18
@@ -927,7 +927,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                            ypanlock=true,
                            xrectzoom=false,
                            yrectzoom=false)
-        GLMakie.ylims!(ax1, frq_lim)
+        GLMakie.ylims!(ax1, flim)
         ax1.titlesize = 20
         ax1.xlabelsize = 18
         ax1.ylabelsize = 18
@@ -982,7 +982,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                            ypanlock=true,
                            xrectzoom=false,
                            yrectzoom=false)
-        GLMakie.ylims!(ax2, frq_lim)
+        GLMakie.ylims!(ax2, flim)
         ax2.titlesize = 20
         ax2.xlabelsize = 18
         ax2.ylabelsize = 18
@@ -1038,7 +1038,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `units::String="μV"`
 - `mono::Bool=false`: use color or gray palette
@@ -1047,22 +1047,22 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 
 - `p::GLMakie.Figure`
 """
-function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), frq::Symbol=:lin, units::String="μV", mono::Bool=false)::GLMakie.Figure
+function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel::String="default", ylabel::String="default", title::String="default", flim::Tuple{Real, Real}=(sf[1], sf[end]), frq::Symbol=:lin, units::String="μV", mono::Bool=false)::GLMakie.Figure
 
-    _in(frq_lim[1], (sf[1], sf[end]), "frq_lim")
-    _in(frq_lim[2], (sf[1], sf[end]), "frq_lim")
+    _in(flim[1], (sf[1], sf[end]), "flim")
+    _in(flim[2], (sf[1], sf[end]), "flim")
     @assert size(sp, 1) == length(sf) "Length of sf ($(length(sf))) and number of powers rows ($(size(sp, 1)))) must be equal."
     @assert ndims(sp) == 2 "sp must have 2 dimensions."
     @assert size(sp, 2) <= 2 "sp must contain ≤ 2 epochs."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        frq_lim = (sf[2], frq_lim[2])
+        flim = (sf[2], flim[2])
     end
 
     if size(sp, 2) == 1
@@ -1091,7 +1091,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                           ypanlock=true,
                           xrectzoom=false,
                           yrectzoom=false)
-        GLMakie.xlims!(ax, frq_lim)
+        GLMakie.xlims!(ax, flim)
         ax.titlesize = 20
         ax.xlabelsize = 18
         ax.ylabelsize = 18
@@ -1129,7 +1129,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                            ypanlock=true,
                            xrectzoom=false,
                            yrectzoom=false)
-        GLMakie.xlims!(ax1, frq_lim)
+        GLMakie.xlims!(ax1, flim)
         ax1.titlesize = 20
         ax1.xlabelsize = 18
         ax1.ylabelsize = 18
@@ -1164,7 +1164,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                            ypanlock=true,
                            xrectzoom=false,
                            yrectzoom=false)
-        GLMakie.xlims!(ax2, frq_lim)
+        GLMakie.xlims!(ax2, flim)
         ax2.titlesize = 20
         ax2.xlabelsize = 18
         ax2.ylabelsize = 18

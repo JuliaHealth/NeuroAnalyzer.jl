@@ -9,7 +9,7 @@ Plot coherence.
 
 - `coh::Vector{Float64}`: coherence
 - `f::Vector{Float64}`: frequencies
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Coherence"`: y-axis label
 - `title::String=""`: plot title
@@ -20,17 +20,17 @@ Plot coherence.
 
 - `p::GLMakie.Figure`
 """
-function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
+function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
-        frq_lim = (sf[2], frq_lim[2])
+        flim = (sf[2], flim[2])
     end
 
     # prepare plot
@@ -46,7 +46,7 @@ function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; frq_lim::Tuple
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log,
                       xautolimitmargin=(0, 0))
-    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
     ax.titlesize = 20
     ax.xlabelsize = 18
@@ -79,7 +79,7 @@ Plot multi-channel coherence.
 - `coh::Matrix{Float64}`: coherence
 - `f::Vector{Float64}`: frequencies
 - `clabels::Vector{String}=string.(1:size(coh, 1))`: channel pairs labels vector
-- `frq_lim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the X-axis
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -93,13 +93,13 @@ Plot multi-channel coherence.
 
 - `p::GLMakie.Figure`
 """
-function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=string.(1:size(coh, 1)), frq_lim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=string.(1:size(coh, 1)), flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     ch_n = size(coh, 1)
 
     @assert size(coh, 2) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
 
@@ -120,7 +120,7 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
                       xminorticks=IntervalsBetween(10),
                       xscale=frq === :lin ? identity : log,
                       xautolimitmargin=(0, 0))
-    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
     ax.titlesize = 20
     ax.xlabelsize = 18

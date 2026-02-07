@@ -88,7 +88,7 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 
 - `p::AbstractArray`: powers
 - `f::AbstractVector`: frequencies
-- `frq_lim::Tuple{Real, Real}`: frequency bounds
+- `flim::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
@@ -96,14 +96,14 @@ Named tuple containing:
 - `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
 - `f::Vector{Float64}`: frequencies
 """
-function flim(p::AbstractArray, f::AbstractVector; frq_lim::Tuple{Real, Real})::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
+function flim(p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real})::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
 
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
-    _check_tuple(frq_lim, "frq_lim", (f[1], f[end]))
+    _check_tuple(flim, "flim", (f[1], f[end]))
 
-    f1_idx = vsearch(frq_lim[1], f)
-    f2_idx = vsearch(frq_lim[2], f)
+    f1_idx = vsearch(flim[1], f)
+    f2_idx = vsearch(flim[2], f)
     f_new = f[f1_idx:f2_idx]
 
     if ndims(p) == 3

@@ -9,7 +9,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `frq_lim[1]` to `frq_lim[2]`
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -32,14 +32,14 @@ Named tuple containing:
 - `ls::Float64`: slopes of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
+function psd_slope(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{lf::Vector{Float64}, ls::Float64, pf::Vector{Float64}}
 
-    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
+    _check_tuple(flim, "flim", (0, fs / 2))
 
     pw, pf = psd(s, fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
-    f1_idx = vsearch(frq_lim[1], pf)
-    f2_idx = vsearch(frq_lim[2], pf)
+    f1_idx = vsearch(flim[1], pf)
+    f2_idx = vsearch(flim[2], pf)
     lr = NeuroAnalyzer.linreg(pf[f1_idx:f2_idx], pw[f1_idx:f2_idx])
     lf = lr.lf
     ls = lf[2] - lf[1]
@@ -57,7 +57,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `frq_lim[1]` to `frq_lim[2]`
+- `flim::Tuple{Real, Real}=(0, fs / 2)`: calculate slope of the total power (default) or frequency range `flim[1]` to `flim[2]`
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -80,20 +80,20 @@ Named tuple containing:
 - `ls::Matrix{Float64}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
+function psd_slope(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}=(0, fs / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
     ep_n = size(s, 3)
 
-    lf, ls, pf = psd_slope(s[1, :, 1], fs=fs, frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    lf, ls, pf = psd_slope(s[1, :, 1], fs=fs, flim=flim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
     lf = zeros(ch_n, length(lf), ep_n)
     ls = zeros(ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            lf[ch_idx, :, ep_idx], ls[ch_idx, ep_idx], _ = psd_slope(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            lf[ch_idx, :, ep_idx], ls[ch_idx, ep_idx], _ = psd_slope(s[ch_idx, :, ep_idx], fs=fs, flim=flim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
         end
     end
 
@@ -110,7 +110,7 @@ Calculate PSD linear fit and slope. Default method is Welch's periodogram.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range frq_lim[1] to frq_lim[2]
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: calculate slope of the total power (default) or frequency range flim[1] to flim[2]
 - `db::Bool=false`: normalize do dB
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
@@ -133,11 +133,11 @@ Named tuple containing:
 - `ls::Matrix{Float64}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
+function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}=(0, sr(obj) / 2), db::Bool=false, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{lf::Array{Float64, 3}, ls::Matrix{Float64}, pf::Vector{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     _log_off()
-    lf, ls, pf = psd_slope(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    lf, ls, pf = psd_slope(obj.data[ch, :, :], fs=sr(obj), flim=flim, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     _log_on()
 
     return (lf=lf, ls=ls, pf=pf)

@@ -9,7 +9,7 @@ Calculate mean and maximum band power and its frequency and amplitude.
 
 - `s::AbstractVector`
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
+- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -31,15 +31,15 @@ Named tuple containing:
 - `maxbp::Float64`: power at maximum band frequency
 - `maxba::Float64`: power at maximum band frequency
 """
-function band_mpower(s::AbstractVector; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
+function band_mpower(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
-    _check_tuple(frq_lim, "frq_lim", (0, fs / 2))
+    _check_tuple(flim, "flim", (0, fs / 2))
 
     pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
 
-    f1_idx = vsearch(frq_lim[1], pf)
-    f2_idx = vsearch(frq_lim[2], pf)
+    f1_idx = vsearch(flim[1], pf)
+    f2_idx = vsearch(flim[2], pf)
     mbp = mean(pw[f1_idx:f2_idx])
     maxfrq = pf[f1_idx:f2_idx][findmax(pw[f1_idx:f2_idx])[2]]
     maxbp = pw[vsearch(maxfrq, pf)]
@@ -57,7 +57,7 @@ Calculate mean and maximum band power and its frequency and amplitude.
 
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
-- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
+- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -79,7 +79,7 @@ Named tuple containing:
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
 - `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
-function band_mpower(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+function band_mpower(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -91,7 +91,7 @@ function band_mpower(s::AbstractArray; fs::Int64, frq_lim::Tuple{Real, Real}, me
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx], maxba[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx], maxba[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
         end
     end
 
@@ -108,7 +108,7 @@ Calculate mean and maximum band power and its frequency and amplitude.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `frq_lim::Tuple{Real, Real}`: lower and upper frequency bounds
+- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: method used to calculate PSD:
     - `:welch`: Welch's periodogram
     - `:fft`: fast Fourier transform
@@ -130,12 +130,12 @@ Named tuple containing:
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
 - `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
-function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, frq_lim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
 
     _log_off()
-    mbp, maxfrq, maxbp, maxba = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), frq_lim=frq_lim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    mbp, maxfrq, maxbp, maxba = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     _log_on()
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)

@@ -42,41 +42,41 @@ ad = ampdiff(e10, ch="all")
 @test size(ad) == (24, 2560, 10)
 
 @info "Test: band_power()"
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20))) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:welch)) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:fft)) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:stft)) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:mt)) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:mw)) == (1, 10)
-@test size(band_power(e10, ch="Fp1", frq_lim=(10, 20), method=:gh)) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20))) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20), method=:welch)) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20), method=:fft)) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20), method=:stft)) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20), method=:mt)) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20), method=:mw)) == (1, 10)
+@test size(band_power(e10, ch="Fp1", flim=(10, 20), method=:gh)) == (1, 10)
 
 @info "Test: band_mpower()"
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20))
+mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", flim=(10, 20))
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
 @test size(maxba) == (1, 10)
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:mt)
+mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", flim=(10, 20), method=:mt)
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
 @test size(maxba) == (1, 10)
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:stft)
+mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", flim=(10, 20), method=:stft)
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
 @test size(maxba) == (1, 10)
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:fft)
+mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", flim=(10, 20), method=:fft)
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
 @test size(maxba) == (1, 10)
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:mw)
+mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", flim=(10, 20), method=:mw)
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
 @test size(maxba) == (1, 10)
-mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", frq_lim=(10, 20), method=:gh)
+mbp, maxf, maxbp, maxba = band_mpower(e10, ch="Fp1", flim=(10, 20), method=:gh)
 @test size(mbp) == (1, 10)
 @test size(maxf) == (1, 10)
 @test size(maxbp) == (1, 10)
@@ -418,7 +418,7 @@ iv, izv, ia, ip = itpc(e10, ch="Fp1", t=256)
 @test ip[1] ≈ 0.03175562541176744
 
 @info "Test: itpc_spec()"
-iv, izv, f = itpc_spec(e10, ch="Fp1", frq_lim=(0, 4), frq_n=5)
+iv, izv, f = itpc_spec(e10, ch="Fp1", flim=(0, 4), frq_n=5)
 @test size(iv) == (5, 2560)
 @test size(izv) == (5, 2560)
 @test f == [0.01, 0.045, 0.2, 0.894, 4.0]
@@ -587,41 +587,41 @@ ec, p = env_cor(e1, e2)
 @test p[1] <= 1.0
 
 @info "Test: psd_rel()"
-p, f = psd_rel(rand(100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=5)
+p, f = psd_rel(rand(100), fs=10, flim=(0, 1), wlen=10, woverlap=5)
 @test length(p) == 6
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
-p, f = psd_rel(rand(10, 100), fs=10, frq_lim=(0, 1), wlen=10, woverlap=5)
+p, f = psd_rel(rand(10, 100), fs=10, flim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 6)
-p, f = psd_rel(rand(10, 100, 10), fs=10, frq_lim=(0, 1), wlen=10, woverlap=5)
+p, f = psd_rel(rand(10, 100, 10), fs=10, flim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 6, 10)
-p, f = psd_rel(rand(100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=5)
+p, f = psd_rel(rand(100), fs=10, method=:mt, flim=(0, 1), wlen=10, woverlap=5)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
-p, f = psd_rel(rand(10, 100), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=5)
+p, f = psd_rel(rand(10, 100), fs=10, method=:mt, flim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 51)
-p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, frq_lim=(0, 1), wlen=10, woverlap=5)
+p, f = psd_rel(rand(10, 100, 10), fs=10, method=:mt, flim=(0, 1), wlen=10, woverlap=5)
 @test size(p) == (10, 51, 10)
-p, f = psd_rel(e10, ch="Fp1", frq_lim=(0, 1))
+p, f = psd_rel(e10, ch="Fp1", flim=(0, 1))
 @test size(p) == (1, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = psd_rel(e10, ch="Fp1", method=:mt, frq_lim=(0, 1))
+p, f = psd_rel(e10, ch="Fp1", method=:mt, flim=(0, 1))
 @test size(p) == (1, 1281, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = psd_rel(e10, ch="Fp1", method=:fft, frq_lim=(0, 1))
+p, f = psd_rel(e10, ch="Fp1", method=:fft, flim=(0, 1))
 @test size(p) == (1, 1281, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = psd_rel(e10, ch="Fp1", method=:stft, frq_lim=(0, 1))
+p, f = psd_rel(e10, ch="Fp1", method=:stft, flim=(0, 1))
 @test size(p) == (1, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = psd_rel(e10, ch="Fp1", method=:mw, frq_lim=(0, 1))
+p, f = psd_rel(e10, ch="Fp1", method=:mw, flim=(0, 1))
 @test size(p) == (1, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
-p, f = psd_rel(e10, ch="Fp1", method=:gh, frq_lim=(0, 1))
+p, f = psd_rel(e10, ch="Fp1", method=:gh, flim=(0, 1))
 @test size(p) == (1, 129, 10)
 @test f[1] == 0.0
 @test f[end] == 128.0
@@ -874,15 +874,15 @@ h_act, h_mob, h_comp = hjorth(e10, ch="all")
 @test size(h_comp) == (24, 10)
 
 @info "Test: peak_frq()"
-pf = peak_frq(e10, ch="all", frq_lim=(8, 13))
+pf = peak_frq(e10, ch="all", flim=(8, 13))
 @test size(pf) == (24, 10)
 
 @info "Test: peak_amp()"
-pa = peak_amp(e10, ch="all", frq_lim=(8, 13))
+pa = peak_amp(e10, ch="all", flim=(8, 13))
 @test size(pa) == (24, 10)
 
 @info "Test: peak_pow()"
-pp = peak_pow(e10, ch="all", frq_lim=(8, 13))
+pp = peak_pow(e10, ch="all", flim=(8, 13))
 @test size(pp) == (24, 10)
 
 @info "Test: phsd()"
@@ -891,12 +891,12 @@ ph, f = phsd(e10, ch="all")
 @test length(f) == 1281
 
 @info "Test: band_asymmetry()"
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:welch) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:fft) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:mt) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:stft) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:mw) == (ba = 0.0, ba_norm = 0.0)
-@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", frq_lim=(0, 10), method=:gh) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:welch) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:fft) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:mt) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:stft) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:mw) == (ba = 0.0, ba_norm = 0.0)
+@test band_asymmetry(e10, ch1="Fp1", ch2="Fp1", flim=(0, 10), method=:gh) == (ba = 0.0, ba_norm = 0.0)
 
 @info "Test: symmetry()"
 @test symmetry(v) == 5
@@ -921,12 +921,12 @@ f, p = NeuroAnalyzer.vartest(e10, e10, ch1="all", ch2="all")
 @info "Test: flim()"
 p = ones(10, 100, 5)
 f = collect(1:100)
-p2, f2 = flim(p, f, frq_lim=(5, 10))
+p2, f2 = flim(p, f, flim=(5, 10))
 @test size(p2) == (10, 6, 5)
 @test length(f2) == 6
 p = ones(100, 200, 10, 5)
 f = collect(1:100)
-p2, f2 = flim(p, f, frq_lim=(5, 10))
+p2, f2 = flim(p, f, flim=(5, 10))
 @test size(p2) == (6, 200, 10, 5)
 @test length(f2) == 6
 

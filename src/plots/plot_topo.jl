@@ -7,7 +7,7 @@ Plot topographical view.
 
 # Arguments
 
-- `s::Vector{<:Real}`: values to plot (one value per channel)
+- `s::AbstractVector`: values to plot (one value per channel)
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs)`: list of channels, default is all channels
 - `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: list of significant channels
@@ -44,7 +44,7 @@ Plot topographical view.
 
 - `p::GLMakie.Figure`
 """
-function plot_topo(s::Vector{<:Real}; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), sch::Union{Nothing, Int64, Vector{Int64}}=nothing, cb::Bool=true, cb_title::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
+function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{Int64}}=1:DataFrames.nrow(locs), sch::Union{Nothing, Int64, Vector{Int64}}=nothing, cb::Bool=true, cb_title::String="[A.U.]", title::String="", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
 
     pal = mono ? :grays : :bluesreds
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -346,11 +346,11 @@ Topographical plot.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ep::Union{Int64, AbstractRange}=0`: epoch to display
+- `data::Union{Nothing, AbstractVector, AbstractMatrix}=nothing`: external data to plot; vector: one value per channel; matrix: channels × values, will be averaged by channels
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: list of significant channels
-- `seg::Union{Real, Tuple{Real, Real}}=(0, 10)`: time point in seconds or time segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
-- `title::String="default"`: plot title, default is Amplitude [mean over time window: 0 ms:10.0 s]
+- `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot, ignored if `data` is provided
+- `title::String="default"`: plot title, default is tpos value
 - `mono::Bool=false`: use color or gray palette
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="[A.U.]"`: color bar title
@@ -381,43 +381,30 @@ Topographical plot.
     - `:in`: draw region is values are in the threshold values, including threshold boundaries
     - `:bin`: draw region is values are between the threshold values, excluding threshold boundaries
 - `threshold_method::Symbol=:reg`: thresholding method: threshold the whole topomap region (`:reg`) or only signal at channels locations (`:loc`)
+- `nr::Int64=0`: number of rows to place topomaps
+- `nc::Int64=0`: number of columns to place topomaps
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, seg::Union{Real, Tuple{Real, Real}}=(0, 10), title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg)::GLMakie.Figure
+function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}=nothing, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, tpos::Union{Nothing, Real, AbstractVector}=nothing, title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg, nr::Int64=1, nc::Int64=0)::GLMakie.Figure
+
+    # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one common colorbar
+    if length(tpos) > 1
+        if nr == 1
+            nc = length(tpos)
+        end
+        _warn("Vector of tpos is not supported yet.")
+        tpos = collect(tpos)[1]
+    end
 
     @assert contours >= 0 "contours must be ≥ 0."
-
-    if length(seg) == 2
-        if obj.time_pts[end] < 10 && seg == (0, 10)
-            seg = (0, obj.time_pts[end])
-        else
-            _check_segment(obj, seg)
-        end
-        seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
-    else
-        seg = (vsearch(seg, obj.time_pts), vsearch(seg, obj.time_pts))
-    end
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
+    _check_var(nmethod, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :mad, :rank, :none], "nmethod")
 
-    if ep != 0
-        _check_epochs(obj, ep)
-        if nepochs(obj) == 1
-            ep = 0
-        else
-            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-            if ep isa Int64
-                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
-            else
-                seg = (seg[1], (ep[end] * epoch_len(obj)))
-            end
-            ep = 0
-        end
-    end
-
+    # get channels and selected channels
     ch = get_channel(obj, ch=ch)
     if !isnothing(sch)
         if isa(sch, String)
@@ -432,36 +419,30 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
     !isnothing(sch) && (sch = _find_bylabel(locs, sch))
 
-    # get time vector
-    if seg[2] <= epoch_len(obj)
-        s = obj.data[ch, seg[1]:seg[2], 1]
-    else
-        s = epoch(obj, ep_n=1).data[ch, seg[1]:seg[2], 1]
-    end
-    # t = _get_t(seg[1], seg[2], sr(obj))
-    t = obj.time_pts[seg[1]:seg[2]]
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, seg[1], seg[2])
-
-    # average signal and convert to vector
-    if size(s, 2) > 1
-        if amethod === :mean
-            s = vec(mean(s, dims=2))
-        elseif amethod === :median
-            s = vec(median(s, dims=2))
+    # prepare data or time position
+    if isnothing(data)
+        @assert !isnothing(tpos) "Either tpos or data must be provided."
+        @assert tpos >= obj.time_pts[1] "tpos must be ≥ $(obj.time_pts[1])"
+        @assert tpos <= obj.time_pts[end] "tpos must be ≤ $(obj.time_pts[end])"
+        tpos = vsearch(tpos, obj.time_pts)
+        if nepochs(obj) == 1
+            data = obj.data[ch, tpos, 1]
+        else
+            data = epoch(obj, ep_n=1).data[ch, tpos, 1]
         end
+        title == "default" && (title = "$(obj.time_pts[tpos]) s")
     else
-        s = vec(s)
+        !isnothing(tpos) && _info("If data is provided, tpos is ignored")
+        if ndims(data) == 2
+            data = amethod === :mean ? mean(data, dims=2)[:] : median(data, dims=2)[:]
+        end
+        @assert length(data) == length(ch) "Number of channels in data ($(length(data))) must equal the number of channels to plot ($(length(ch)))."
+        title == "default" && (title = "")
     end
 
-    if seg[2] != seg[1]
-        title == "default" && (title = "Amplitude\n[$(string(amethod)) over time window: $t_s1:$t_s2]")
-    else
-        title == "default" && (title = "Amplitude\n[time point: $t_s1]")
-    end
     cb_title == "default" && (cb_title = "[A.U.]")
 
-    p = plot_topo(s,
+    p = plot_topo(data,
                   locs=locs,
                   ch=collect(1:DataFrames.nrow(locs)),
                   sch=sch,

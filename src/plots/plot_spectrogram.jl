@@ -13,7 +13,7 @@ Plot single-channel spectrogram.
 - `sp::Matrix{Float64}`: powers
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -38,14 +38,14 @@ Plot single-channel spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
+function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Float64}; db::Bool=true, frq::Symbol=:lin, flim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
 
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
     @assert size(sp, 1) == length(sf) "Size of powers ($(size(sp, 1))) and frequencies vector ($(length(sf))) do not match."
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
     if cb_title == ""
@@ -64,9 +64,9 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
         sp_threshold[.!bm] .= NaN
     end
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        frq_lim = (sf[2], frq_lim[2])
+        flim = (sf[2], flim[2])
     end
 
     # prepare plot
@@ -94,7 +94,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.xlims!(ax, (st[1], st[end]))
-    GLMakie.ylims!(ax, frq_lim)
+    GLMakie.ylims!(ax, flim)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -141,7 +141,7 @@ Plot multiple-channel spectrogram.
 - `clabels::Vector{String}=string.(1:size(sp, 1))`: channel labels
 - `db::Bool=true`: whether powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end])`: frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -166,14 +166,14 @@ Plot multiple-channel spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=string.(1:size(sp, 1)), db::Bool=true, frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
+function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vector{String}=string.(1:size(sp, 1)), db::Bool=true, frq::Symbol=:lin, flim::Tuple{Real, Real}=(sf[1], sf[end]), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", smooth::Bool=false, n::Int64=3, cb::Bool=true, cb_title::String="", threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq)::GLMakie.Figure
 
     @assert size(sp, 1) == length(clabels) "Size of powers ($(size(sp, 1))) and channels vector ($(length(clabels))) do not match."
     @assert size(sp, 2) == length(sf) "Size of powers ($(size(sp, 2))) and frequencies vector ($(length(sf))) do not match."
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
     if cb_title == ""
@@ -187,9 +187,9 @@ function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vect
     # channel labels
     clabels == [""] && (clabels = repeat([""], size(sp, 1)))
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        frq_lim = (sf[2], frq_lim[2])
+        flim = (sf[2], flim[2])
     end
 
     ch = collect(eachindex(clabels)) .- 0.5
@@ -217,7 +217,7 @@ function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vect
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    GLMakie.xlims!(ax, frq_lim)
+    GLMakie.xlims!(ax, flim)
     ax.titlesize = 20
     ax.xlabelsize = 18
     ax.ylabelsize = 18
@@ -268,7 +268,7 @@ Plot topographical map of spectrograms.
 - `st::Vector{Float64}`: time
 - `sf::Vector{Float64}`: frequencies
 - `sp::Array{Float64, 3}`: powers
-- `frq_lim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
+- `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limit for the x-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -283,7 +283,7 @@ Plot topographical map of spectrograms.
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; frq_lim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 3}; flim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", smooth::Bool=false, n::Int64=3, mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 3) == DataFrames.nrow(locs) "Size of powers ($(size(sp, 3))) and number of locs ($(DataFrames.nrow(locs))) do not match."
     @assert size(sp, 2) == length(st) "Size of powers ($(size(sp, 2))) and time vector ($(length(st))) do not match."
@@ -291,13 +291,13 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
     @assert n > 0 "n must be ≥ 1."
 
     _check_var(frq, [:lin, :log], "frq")
-    _check_tuple(frq_lim, "frq_lim")
+    _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
 
-    if frq === :log && frq_lim[1] == 0
+    if frq === :log && flim[1] == 0
         _warn("Lower frequency bound truncated to $(sf[2]) Hz")
-        frq_lim = (sf[2], frq_lim[2])
+        flim = (sf[2], flim[2])
     end
 
     # plot parameters
@@ -347,7 +347,7 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
                           yautolimitmargin=(0, 0))
         hidespines!(ax)
         hidedecorations!(ax)
-        GLMakie.xlims!(ax, frq_lim)
+        GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
         GLMakie.heatmap!(sp[:, :, idx]',
@@ -453,7 +453,7 @@ Plots spectrogram.
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
+- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title
@@ -480,7 +480,7 @@ Plots spectrogram.
 
 - `p::GLMakie.Figure`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}=datatype(obj), db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, frq_lim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, head::Bool=true)::GLMakie.Figure where {T <: CWT}
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}=datatype(obj), db::Bool=true, method::Symbol=:stft, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, gw::Real=10, wt::T=wavelet(Morlet(2π), β=2), frq::Symbol=:lin, flim::Tuple{Real, Real}=(0, sr(obj) / 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=32, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, smooth::Bool=false, n::Int64=3, cb::Bool=true, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, topo::Bool=false, cart::Bool=false, head::Bool=true)::GLMakie.Figure where {T <: CWT}
 
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert n > 0 "n must be ≥ 1."
@@ -522,7 +522,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
 
     # frequency limits
     fs = sr(obj)
-    _check_tuple(frq_lim, "frq_lim", (0, sr(obj) / 2))
+    _check_tuple(flim, "flim", (0, sr(obj) / 2))
 
     # calculate spectrogram
     if length(ch) == 1 || topo
@@ -558,8 +558,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             _log_off()
             sp, sf, st = NeuroAnalyzer.cwtspectrogram(signal, fs=fs, wt=wt)
             _log_on()
-            sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
-            sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
+            sf[1] > flim[1] && (flim = (sf[1], flim[2]))
+            sf[end] < flim[2] && (flim = (flim[1], sf[end]))
             if ep != 0
                 title == "default" && (title = "CWT Scaleogram\n[epoch: $ep]")
             else
@@ -607,8 +607,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             _log_off()
             sp, sf = psd(signal, fs=fs, method=:cwt, wt=wt)
             _log_on()
-            sf[1] > frq_lim[1] && (frq_lim = (sf[1], frq_lim[2]))
-            sf[end] < frq_lim[2] && (frq_lim = (frq_lim[1], sf[end]))
+            sf[1] > flim[1] && (flim = (sf[1], flim[2]))
+            sf[end] < flim[2] && (flim = (flim[1], sf[end]))
             if ep != 0
                 title == "default" && (title = "CWT Scaleogram\n[epoch: $ep]")
             else
@@ -631,8 +631,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         end
     end
 
-    f1 = vsearch(frq_lim[1], sf)
-    f2 = vsearch(frq_lim[2], sf)
+    f1 = vsearch(flim[1], sf)
+    f2 = vsearch(flim[2], sf)
     sf = sf[f1:f2]
     if length(ch) == 1 || topo
         sp = sp[f1:f2, :]
@@ -663,7 +663,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              sp,
                              db=db,
                              frq=frq,
-                             frq_lim=frq_lim,
+                             flim=flim,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              title=title,
@@ -681,7 +681,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              clabels=clabels,
                              db=db,
                              frq=frq,
-                             frq_lim=frq_lim,
+                             flim=flim,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              title=title,
@@ -699,7 +699,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                                    sf,
                                    sp,
                                    frq=frq,
-                                   frq_lim=frq_lim,
+                                   flim=flim,
                                    title=title,
                                    mono=mono,
                                    cart=cart,
