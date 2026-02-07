@@ -115,8 +115,7 @@ function psd(s::AbstractMatrix; fs::Int64, db::Bool=false, method::Symbol=:welch
 
     p = zeros(size(s, 1), length(f))
 
-    # Threads.@threads for ch_idx in axes(s, 1)
-    for ch_idx in axes(s, 1)
+    Threads.@threads for ch_idx in axes(s, 1)
         @inbounds p[ch_idx, :], _ = @views psd(s[ch_idx, :], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
     end
 
@@ -164,8 +163,7 @@ function psd(s::AbstractArray; fs::Int64, db::Bool=false, method::Symbol=:welch,
     p = zeros(ch_n, length(f), ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        # Threads.@threads for ch_idx in 1:ch_n
-        for ch_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             p[ch_idx, :, ep_idx], _ = @views psd(s[ch_idx, :, ep_idx], fs=fs, db=db, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
         end
     end

@@ -600,26 +600,32 @@ Show channel info.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `ch::Int64`
+- `pr::Bool=true`: if true, print to output, otherwise return a string
 
 # Returns
 
-Nothing
+- `channel_info::Union{Nothing, String}`
 """
-function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64)::Nothing
+function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64, pr::Bool=true)::Union{Nothing, String}
 
     _check_channels(obj, labels(obj)[ch])
 
     if obj.header.recording[:data_type] != "nirs"
-        println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) bad: $(obj.header.recording[:bad_channel][ch])")
+        chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) bad: $(obj.header.recording[:bad_channel][ch])"
     else
         if obj.header.recording[:channel_type][ch] !== "nirs_aux"
-            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))")
+            chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))"
         else
-            println(" ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))")
+            chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))"
         end
     end
 
-    return nothing
+    if pr
+        println(chi)
+        return nothing
+    else
+        return chi
+    end
 
 end
 
@@ -903,12 +909,12 @@ function band_frq(fs::Int64; band::Symbol)::Tuple{Float64, Float64}
     band === :gamma_higher && (bf = (80.0, 150.0))
 
     if bf[1] > fs / 2
-        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1)).")
-        bf = (fs / 2 - 0.2, fs / 2 - 0.1)
+        _warn("Nyquist frequency based on sampling rate ($(fs / 2 - 0.1)) is lower than $band range: $bf, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1)).")
+        bf = (fs / 2 - 0.2, fs / 2)
     end
     if bf[2] > fs / 2
-        _warn("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(fs / 2 - 0.1)).")
-        bf = (bf[1], fs / 2 - 0.1)
+        _warn("Nyquist frequency based on sampling rate ($(fs / 2 - 0.1)) is lower than $band range: $bf, band frequency truncated to: ($(bf[1]), $(fs / 2 - 0.1)).")
+        bf = (bf[1], fs / 2)
     end
 
     return bf

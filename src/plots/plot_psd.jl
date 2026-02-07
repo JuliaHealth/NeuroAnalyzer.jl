@@ -337,7 +337,7 @@ Plot topographical map of PSDs (power spectrum density).
 
 - `p::GLMakie.Figure`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; flim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; flim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", xlabel::String="", ylabel::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -347,6 +347,8 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         _warn("Lower frequency bound truncated to $(sf[2]) Hz.")
         flim = (sf[2], flim[2])
     end
+
+    pos = collect(1:DataFrames.nrow(locs))
 
     # plot parameters
     if size(sp, 1) <= 64
@@ -380,6 +382,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
 
     # prepare PSD plots
     pp_vec = GLMakie.Figure[]
+    pp_full_vec = GLMakie.Figure[]
     for idx in axes(sp, 1)
         pp = GLMakie.Figure(size=marker_size,
                             figure_padding=0)
@@ -399,6 +402,14 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                        linewidth=1,
                        color=:black)
         push!(pp_vec, pp)
+        pp_full = plot_psd(sf,
+                           sp[idx, :],
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=locs[idx, :label] * ": " * title,
+                           flim=flim,
+                           frq=frq)
+        push!(pp_full_vec, pp_full)
     end
 
     # prepare plot
@@ -466,6 +477,27 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                          marker=pp,
                          markersize=marker_size,
                          markerspace=:pixel)
+    end
+
+    loc_x_range = Tuple{Float64, Float64}[]
+    loc_y_range = Tuple{Float64, Float64}[]
+    for idx in eachindex(loc_x)
+        push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
+        push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
+    end
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press
+                ax_x = mouseposition(ax)[1]
+                ax_y = mouseposition(ax)[2]
+                for idx in eachindex(loc_x)
+                    if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] && ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                    end
+                end
+            end
+        end
     end
 
     return p
@@ -752,8 +784,8 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
-        xlabel == "default" && (xlabel = "")
-        ylabel == "default" && (ylabel = "")
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         title = replace(title, "channel" => "channels")
         p = plot_psd_topo(locs,
                           sf,

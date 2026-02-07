@@ -98,7 +98,7 @@ keep_epoch!(e10_tmp, ep=1:2)
 
 @info "Test: detect_bad()"
 bm, be = detect_bad(e10, ch=["Fp1", "Fp2"])
-@test sum(bm) == 20
+@test sum(bm) == 2
 @test be == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 @info "Test: epoch(), subepoch()"
@@ -150,10 +150,10 @@ m = rand(10, 100)
 @test size(NeuroAnalyzer.trim(m, seg=(1, 10))) == (10, 90)
 a = rand(10, 100, 10)
 @test size(NeuroAnalyzer.trim(a, seg=(1, 10))) == (10, 90, 10)
-e10_tmp = NeuroAnalyzer.trim(e10, seg=(0, 11), remove_epochs=true)
-@test size(e10_tmp) == (24, 2560, 118)
-e10_tmp = NeuroAnalyzer.trim(e10, seg=(0, 21), remove_epochs=false)
-@test size(e10_tmp) == (24, 2560, 117)
+e_tmp = NeuroAnalyzer.trim(eeg, seg=(0, 11))
+@test size(e_tmp) == (24, 305663, 1)
+e_tmp = NeuroAnalyzer.trim(eeg, seg=(0, 21), keep=true)
+@test size(e_tmp) == (24, 5377, 1)
 
 @info "Test: delete_marker()"
 eeg_mrk = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))

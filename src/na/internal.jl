@@ -13,6 +13,7 @@ function _info(s::String)::Nothing
     end
     return nothing
 end
+
 function _warn(s::String)::Nothing
     if verbose
         if colors
@@ -33,6 +34,7 @@ function _deprecated(s::String)::Nothing
     end
     return nothing
 end
+
 function _deprecated(s1::String, s2::String)::Nothing
     if verbose
         if colors
@@ -43,6 +45,7 @@ function _deprecated(s1::String, s2::String)::Nothing
     end
     return nothing
 end
+
 function _wip()::Nothing
     if verbose
         if allow_wip

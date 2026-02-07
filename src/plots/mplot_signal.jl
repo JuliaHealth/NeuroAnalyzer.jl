@@ -1141,7 +1141,7 @@ Plot signal.
     - `:normal`
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
-- `avg::Bool=false`: plot average EDA
+- `avg::Bool=false`: plot averaged channel in butterfly plot
 - `bad::Bool=false`: plot bad channels
 - `gui::Bool=true`: if true, keep window open and use it interactively
 
@@ -1208,43 +1208,37 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{S
                                        "Channel $ch: $(clabels[ch]) ($ch_name)")
             if datatype(obj) == "eda"
                 ylabel == "default" && (yl = "Impedance [μS]")
-                p = plot_eda(t,
-                             s[ch, :],
-                             xlabel=xl,
-                             ylabel=yl,
-                             title=tt,
-                             mono=mono)
             else
                 ylabel == "default" && (yl = "Amplitude [$(_ch_units(obj, clabels[ch]))]")
-                if ep == 0
+            end
+            if ep == 0
 
-                    if nepochs(obj) == 1
-                        p = mplot_signal(obj.time_pts,
-                                        obj.data[ch, :, :][:],
-                                        seg=seg,
-                                        xlabel=xl,
-                                        ylabel=yl,
-                                        title=tt,
-                                        bad=bm[ch],
-                                        gui=gui)
-                    else
-                        p = mplot_signal(obj.time_pts,
-                                        reshape(obj.data[ch, :, :], 1, :, nepochs(obj)),
-                                        ylabel=yl,
-                                        title=tt,
-                                        bad=bm[ch],
-                                        gui=gui)
-                    end
-                else
-                    p = mplot_signal(obj.time_pts[ep1:ep2],
-                                    obj.data[ch, :, ep],
-                                        seg=round.(Int64, seg),
-                                        xlabel=xl,
-                                        ylabel=yl,
+                if nepochs(obj) == 1
+                    p = mplot_signal(obj.time_pts,
+                                    obj.data[ch, :, :][:],
+                                    seg=seg,
+                                    xlabel=xl,
+                                    ylabel=yl,
                                     title=tt,
                                     bad=bm[ch],
-                                    gui=false)
+                                    gui=gui)
+                else
+                    p = mplot_signal(obj.time_pts,
+                                    reshape(obj.data[ch, :, :], 1, :, nepochs(obj)),
+                                    ylabel=yl,
+                                    title=tt,
+                                    bad=bm[ch],
+                                    gui=gui)
                 end
+            else
+                p = mplot_signal(obj.time_pts[ep1:ep2],
+                                obj.data[ch, :, ep],
+                                seg=round.(Int64, seg),
+                                xlabel=xl,
+                                ylabel=yl,
+                                title=tt,
+                                bad=bm[ch],
+                                gui=false)
             end
         else
             xl, yl, tt = _set_defaults(xlabel,
@@ -1275,28 +1269,16 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{S
                                    ylabel,
                                    title,
                                    "Time [s]",
-                                   "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
+                                   datatype(obj) == "eda" ? "Impedance [μS]" : "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
                                    "$ch_n $(uppercase(unique(ctypes)[1])) channels")
-        if datatype(obj) == "eda"
-            (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
-            p = plot_eda_butterfly(t,
-                                   s[ch, :],
-                                   clabels=clabels,
-                                   xlabel=xl,
-                                   ylabel=yl,
-                                   title=tt,
-                                   avg=avg,
-                                   mono=mono)
-        else
-            p = mplot_signal_butterfly(obj.time_pts,
-                                      obj.data[ch, :, :][:, :],
-                                      clabels=clabels,
-                                      xlabel=xl,
-                                      ylabel=yl,
-                                      title=tt,
-                                      avg=avg,
-                                      mono=mono)
-        end
+        p = mplot_signal_butterfly(obj.time_pts,
+                                  obj.data[ch, :, :][:, :],
+                                  clabels=clabels,
+                                  xlabel=xl,
+                                  ylabel=yl,
+                                  title=tt,
+                                  avg=avg,
+                                  mono=mono)
     end
 
     if type === :mean
@@ -1306,24 +1288,14 @@ function mplot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{S
                                    ylabel,
                                    title,
                                    "Time [s]",
-                                   "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
+                                   datatype(obj) == "eda" ? "Impedance [μS]" : "Amplitude [$(obj.header.recording[:unit][ch[1]])]",
                                    "$ch_n $(uppercase(unique(ctypes)[1])) channels")
-        if datatype(obj) == "eda"
-            (datatype(obj) == "eda" && ylabel == "default") && (yl = "Impedance [μS]")
-            p = plot_eda_avg(t,
-                             s[ch, :],
-                             xlabel=xl,
-                             ylabel=yl,
-                             title=tt,
-                             mono=mono)
-        else
-            p = mplot_signal_avg(obj.time_pts,
-                                obj.data[ch, :, :][:, :],
-                                xlabel=xl,
-                                ylabel=yl,
-                                title=tt,
-                                mono=mono)
-        end
+        p = mplot_signal_avg(obj.time_pts,
+                            obj.data[ch, :, :][:, :],
+                            xlabel=xl,
+                            ylabel=yl,
+                            title=tt,
+                            mono=mono)
     end
 
     # add epochs markers

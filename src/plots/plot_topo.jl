@@ -71,8 +71,8 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         loc_y = locs[ch, :loc_y]
     end
 
-    loc_x = _s2v(loc_x)
-    loc_y = _s2v(loc_y)
+    loc_x = _n2v(loc_x)
+    loc_y = _n2v(loc_y)
 
     if ps === :l
         plot_size = (800, 800)

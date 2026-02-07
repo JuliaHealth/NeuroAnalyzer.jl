@@ -9,7 +9,8 @@ _c(n)::Vector{Int64} = collect(1:n)
 
 _tuple_max(t::Tuple{Real, Real})::Tuple{Real, Real} = abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1])) : (-abs(t[2]), abs(t[2]))
 
-_s2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = typeof(s) <: Number ? [s] : s
+# number to vector
+_n2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = typeof(s) <: Number ? [s] : s
 
 function _v2s(v::Vector{String})::String
     s = ""

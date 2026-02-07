@@ -23,13 +23,11 @@ a2 = zeros(2, 3, 2)
 @test NeuroAnalyzer._check_channels(e10, ["F3", "F4"]) === nothing
 @test NeuroAnalyzer._check_channels(1:19, 2) === nothing
 @test NeuroAnalyzer._check_epochs(e10, 1:10) === nothing
-@test NeuroAnalyzer._check_cidx(a1, 1) === nothing
-@test NeuroAnalyzer._check_segment(e10, 1, 256) === nothing
+@test NeuroAnalyzer._check_segment(e10, 1, 10) === nothing
 @test NeuroAnalyzer._check_segment(v1, 1, 2) === nothing
 @test NeuroAnalyzer._check_var(:a, [:a], "a") === nothing
 @test NeuroAnalyzer._check_var("a", ["a"], "a") === nothing
 @test NeuroAnalyzer._check_markers(["aa", "bb"], "aa") === nothing
-@test NeuroAnalyzer._select_cidx(rand(2, 2), 1) == 1
 s = NeuroAnalyzer._create_subject(id="001", first_name="A", middle_name="B", last_name="C", head_circumference=64, handedness="left", weight=90, height=180)
 @test s isa Dict{Symbol, Any}
 r = NeuroAnalyzer._create_recording_eeg(; data_type="a", file_name="a", file_size_mb=1, file_type="a", recording="a", recording_date="a", recording_time="a", recording_notes="a", channel_type=["a"], reference="a", clabels=["a"], transducers=["a"],units=["a"], prefiltering=["a"], sampling_rate=1, gain=[0.0], channel_order=[1], line_frequency=50, bad_channels=[false])
@@ -57,10 +55,6 @@ lmt = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
 @test lmt == Dict("a"=>[1.0])
 @test NeuroAnalyzer._dict2labeled_matrix(lmt) == (["a"], [[1.0]])
 @test NeuroAnalyzer._clean_labels(["eeg fp1"]) == ["fp1"]
-add_component!(e10, c=:x, v=rand(4, 100))
-l = NeuroAnalyzer._gen_clabels(e10, :x)
-@test l == ["1", "2", "3", "4"]
-@test NeuroAnalyzer._gen_clabels(a1) == ["1", "2"]
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test NeuroAnalyzer._initialize_locs(e10) isa DataFrame

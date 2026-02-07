@@ -382,8 +382,8 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
     end
-    loc_x = _s2v(loc_x)
-    loc_y = _s2v(loc_y)
+    loc_x = _n2v(loc_x)
+    loc_y = _n2v(loc_y)
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2) .* rx
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2) .* ry

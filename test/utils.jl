@@ -271,8 +271,8 @@ delete_note!(e10)
 @test t2s(e10, t=1.0) == 256
 
 @info "Test: s2t()"
-@test s2t(2560, 256) == 9.996
-@test s2t(e10, s=256) == 0.996
+@test s2t(2560, 256) == 9.9961
+@test s2t(e10, s=256) == 0.9961
 
 @info "Test: get_channel(wl)"
 @test length(get_channel(n, wl=760)) == 36

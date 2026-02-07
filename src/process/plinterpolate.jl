@@ -154,8 +154,8 @@ function plinterpolate(s::Matrix{Float64}; locs::DataFrame, ch::Int64, imethod::
         loc_y = locs[ch, :loc_y]
     end
 
-    loc_x = _s2v(loc_x)
-    loc_y = _s2v(loc_y)
+    loc_x = _n2v(loc_x)
+    loc_y = _n2v(loc_y)
 
     s_interpolated, interpolated_x, interpolated_y = _interpolate2d(s, loc_x, loc_y, ifactor, imethod, nmethod)
 

@@ -445,9 +445,7 @@ pc, pcv, pcm, pc_model = pca_decompose(rand(4, 4, 2), n=2)
 s = pca_reconstruct(rand(4, 4, 2); pc=pc, pc_model=pc_model)
 @test size(s) == (4, 4, 2)
 pc, pcv, pcm, pc_model = pca_decompose(e10, ch="all", n=4)
-e10_rec = pca_reconstruct(e10_tmp, pc=pc, pc_model=pc_model, ch="all")
-@test size(e10_rec.data) == size(e10)
-e10_rec = pca_reconstruct(e10_tmp, ch="all", pc, pc_model)
+e10_rec = pca_reconstruct(e10, ch="all", pc=pc, pc_model=pc_model)
 @test size(e10_rec.data) == size(e10)
 
 @info "Test: reference_custom()"
@@ -459,7 +457,7 @@ ic, ic_mw = ica_decompose(rand(10, 1000), n=5)
 s = ica_reconstruct(ic=ic, ic_mw=ic_mw, ic_idx=5)
 @test size(s) == (10, 1000)
 ic, ic_mw = ica_decompose(eeg, ch="all", n=5, iter=10)
-eeg_tmp = ica_reconstruct(eeg, ch="all", ic, ic_mw, ic_idx=1)
+eeg_tmp = ica_reconstruct(eeg, ch="all", ic=ic, ic_mw=ic_mw, ic_idx=1)
 @test size(eeg_tmp) == size(eeg)
 eeg_tmp = deepcopy(eeg)
 eeg_tmp = ica_reconstruct(eeg_tmp, ch="all", ic_idx=1, ic=ic, ic_mw=ic_mw);
@@ -467,7 +465,7 @@ eeg_tmp = ica_reconstruct(eeg_tmp, ch="all", ic_idx=1, ic=ic, ic_mw=ic_mw);
 
 @info "Test: ica_remove()"
 ic, ic_mw = ica_decompose(eeg, ch="all", n=5, iter=10)
-eeg_tmp = ica_remove(eeg, ch="all", ic, ic_mw, ic_idx=1)
+eeg_tmp = ica_remove(eeg, ch="all", ic_idx=1, ic=ic, ic_mw=ic_mw)
 @test size(eeg_tmp) == size(eeg)
 eeg_tmp = deepcopy(eeg)
 eeg_tmp = ica_remove(eeg_tmp, ch="all", ic_idx=1, ic=ic, ic_mw=ic_mw)

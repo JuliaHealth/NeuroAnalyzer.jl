@@ -17,126 +17,268 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
-- `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+- `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
+- `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `plane::Symbol=:xy`: which plane to plot:
+    - `:xy`: horizontal (top)
+    - `:xz`: coronary (front)
+    - `:yz`: sagittal (side)
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, plot_size::Int64=400, large::Bool=true)::Plots.Plot{Plots.GRBackend}
+function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy)::GLMakie.Figure
 
     # TO DO: plot channel numbers
 
-    if plot_size > 400
-        marker_size = plot_size ÷ 100
-        font_size = plot_size ÷ 50
-    else
-        marker_size = plot_size ÷ 200
-        font_size = plot_size ÷ 100
+    _check_var(ps, [:l, :m, :s], "ps")
+    _check_var(plane, [:xy, :yz, :xz], "plane")
+    pal = mono ? :grays : :darktest
+
+    if plane === :xy
+        if !cart
+            loc_x = zeros(length(ch))
+            loc_y = zeros(length(ch))
+            for idx in 1:length(ch)
+                loc_x[idx], loc_y[idx] = pol2cart(locs[ch, :loc_radius][idx], locs[ch, :loc_theta][idx])
+            end
+        else
+            loc_x = locs[ch, :loc_x]
+            loc_y = locs[ch, :loc_y]
+        end
+    elseif plane === :xz
+        if !cart
+            loc_x = zeros(length(ch))
+            loc_y = zeros(length(ch))
+            for idx in 1:length(ch)
+                loc_x[idx], _, loc_y[idx] = sph2cart(locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx], locs[ch, :loc_phi_sph][idx])
+            end
+        else
+            loc_x = locs[ch, :loc_x]
+            loc_y = locs[ch, :loc_z]
+        end
+    elseif plane === :yz
+        if !cart
+            loc_x = zeros(length(ch))
+            loc_y = zeros(length(ch))
+            for idx in 1:length(ch)
+                _, loc_x[idx], loc_y[idx] = sph2cart(locs[ch, :loc_radius_sph][idx], locs[ch, :loc_theta_sph][idx], locs[ch, :loc_phi_sph][idx])
+            end
+        else
+            loc_x = locs[ch, :loc_y]
+            loc_y = locs[ch, :loc_z]
+        end
     end
 
-    if large
-        marker_size = 4
-        font_size = 6
-        # loc_x = @. round(origin[1] + (loc_x * 250), digits=2)
-        # loc_y = @. round(origin[2] - (loc_y * 250), digits=2)
-    else
-        marker_size = 4
-        font_size = 4
+    xl = (-1.2, 1.2)
+    yl = (-1.2, 1.2)
+
+    if ps === :l
+        plot_size = (800, 800)
+        marker_size = length(ch) > 64 ? 10 : 20
+        font_size = 14
+        length(ch) > 64 && (ch_labels = false)
+    elseif ps === :m
+        plot_size = (300, 300)
+        marker_size = length(ch) > 64 ? 5 : 10
+        font_size = 8
         src_labels = false
         det_labels = false
         grid = false
-        # loc_x = @. round(origin[1] + (loc_x * 100), digits=2)
-        # loc_y = @. round(origin[2] - (loc_y * 100), digits=2)
+    elseif ps === :s
+        plot_size = (100, 100)
+        marker_size = length(ch) > 64 ? 4 : 8
+        font_size = 8
+        head_labels = false
+        src_labels = false
+        det_labels = false
+        grid = false
     end
 
+    # prepare plot
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=0)
     if grid
-        p = Plots.plot(grid=true,
-                       xlim=(-1.2, 1.2),
-                       ylim=(-1.2, 1.2),
-                       ratio=1,
-                       legend=false,
-                       xticks=-1.2:0.1:1.2,
-                       yticks=-1.2:0.1:1.2,
-                       xtickfontsize=4,
-                       ytickfontsize=4;
-                       right_margin=-20*Plots.px,
-                       bottom_margin=-10*Plots.px,
-                       top_margin=-20*Plots.px,
-                       left_margin=-5*Plots.px,
-                       size=(plot_size, plot_size))
+        ax = GLMakie.Axis(p[1, 1],
+                          aspect=1,
+                          xlabel="",
+                          ylabel="",
+                          title="",
+                          xticks=xt,
+                          xminorticksvisible=true,
+                          xminorticks=IntervalsBetween(2),
+                          yticks=yt,
+                          yminorticksvisible=true,
+                          yminorticks=IntervalsBetween(2),
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0),
+                          backgroundcolor=:transparent,
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
     else
-        p = Plots.plot(border=:none,
-                       grid=false,
-                       xlim=(-1.2, 1.2),
-                       ylim=(-1.2, 1.2),
-                       ratio=1,
-                       legend=false,
-                       xticks=-1.2:0.1:1.2,
-                       yticks=-1.2:0.1:1.2,
-                       xtickfontsize=4,
-                       ytickfontsize=4;
-                       right_margin=-20*Plots.px,
-                       bottom_margin=-10*Plots.px,
-                       top_margin=-20*Plots.px,
-                       left_margin=-5*Plots.px,
-                       size=(plot_size, plot_size))
+        ax = GLMakie.Axis(p[1, 1],
+                          aspect=1,
+                          xlabel="",
+                          ylabel="",
+                          title="",
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0),
+                          backgroundcolor=:transparent,
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
+        hidedecorations!(ax, grid=true)
+        hidespines!(ax)
     end
+    GLMakie.xlims!(ax, xl)
+    GLMakie.ylims!(ax, yl)
 
-    x = locs[!, :loc_x]
-    y = locs[!, :loc_y]
+    # draw head
+    if head
+        ps === :l && (lw = 3)
+        ps === :m && (lw = 2)
+        ps === :s && (lw = 1)
+        if plane === :xy
+            # nose
+            GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=lw, color=:black)
 
-    for idx in axes(opt_pairs, 1)
-        xs = x[opt_pairs[idx, 1]]
-        xd = x[src_n + opt_pairs[idx, 2]]
-        ys = y[opt_pairs[idx, 1]]
-        yd = y[src_n + opt_pairs[idx, 2]]
-        if mono
-            p = Plots.plot!([xs, xd], [ys, yd], lc=:gray, lw=1, alpha=0.5)
-        else
-            p = Plots.plot!([xs, xd], [ys, yd], lc=:blue, lw=1, alpha=0.5)
+            # ears
+            # left
+            GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=lw, color=:black)
+            # right
+            GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=lw, color=:black)
+            GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=lw, color=:black)
+
+            # head
+            GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=lw, color=:black)
+        elseif plane === :yz
+            # head
+            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=lw, color=:black)
+        elseif plane === :xz
+            # head
+            GLMakie.arc!(ax,(0, 0), 1, 0, pi, linewidth=lw, color=:black)
         end
     end
+
+    ch_n = length(ch)
+    cmap = GLMakie.resample_cmap(pal, ch_n)
+    ch = setdiff(ch, sch)
+
+    ps === :l && (sw = 2)
+    ps === :m && (sw = 1)
+    ps === :s && (sw = 0.5)
+
+    for idx in axes(opt_pairs, 1)
+        xs = loc_x[opt_pairs[idx, 1]]
+        xd = loc_x[src_n + opt_pairs[idx, 2]]
+        ys = loc_y[opt_pairs[idx, 1]]
+        yd = loc_y[src_n + opt_pairs[idx, 2]]
+        GLMakie.lines!([xs, xd],
+                       [ys, yd],
+                       color= mono ? :gray : :blue,
+                       alpha=0.5)
+    end
+
+    label_offset_x = 0.0
+    label_offset_y = -0.08
 
     if src_labels
         for idx in 1:src_n
-            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            GLMakie.text!(loc_x[idx] + label_offset_x,
+                          loc_y[idx] + label_offset_y,
+                          text=locs[!, :label][idx],
+                          align=(:center, :bottom),
+                          fontsize=font_size)
         end
     elseif !opt_labels
-        if mono
-            p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:black, msc=:black, ms=marker_size, msa=1)
-        else
-            p = Plots.scatter!(x[1:src_n], y[1:src_n], c=:red, msc=:red, ms=marker_size, msa=1)
-        end
+        GLMakie.scatter!(loc_x[1:src_n],
+                         loc_y[1:src_n],
+                         markersize=marker_size,
+                         color=mono ? :black : :red,
+                         strokewidth=sw,
+                         strokecolor=:black)
     end
 
     if det_labels
         for idx in (src_n + 1):(src_n + det_n)
-            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text(locs[!, :label][idx], pointsize=font_size)))
+            GLMakie.text!(loc_x[idx] + label_offset_x,
+                          loc_y[idx] + label_offset_y,
+                          text=locs[!, :label][idx],
+                          align=(:center, :bottom),
+                          fontsize=font_size)
         end
     elseif !opt_labels
-        if mono
-            p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:white, msc=:black, ms=marker_size, msa=1)
-        else
-            p = Plots.scatter!(x[(src_n + 1):end], y[(src_n + 1):end], c=:green, msc=:green, ms=marker_size, msa=1)
-        end
+        GLMakie.scatter!(loc_x[(src_n + 1):end],
+                         loc_y[(src_n + 1):end],
+                         markersize=marker_size,
+                         color=mono ? :white : :green,
+                         strokewidth=sw,
+                         strokecolor=mono ? :black : :green)
     end
 
     if opt_labels
         for idx in 1:src_n
-            p = Plots.plot!(annotations=(x[idx], y[idx], Plots.text("S" * string(idx), pointsize=font_size)))
+            GLMakie.text!(loc_x[idx] + label_offset_x,
+                          loc_y[idx] + label_offset_y,
+                          text="S" * string(idx),
+                          align=(:center, :bottom),
+                          fontsize=font_size)
         end
-        # for idx in (src_n + 1):(src_n + det_n)
         for idx in 1:det_n
-            p = Plots.plot!(annotations=(x[src_n + idx], y[src_n + idx], Plots.text("D" * string(idx), pointsize=font_size)))
+            GLMakie.text!(loc_x[idx] + label_offset_x,
+                          loc_y[idx] + label_offset_y,
+                          text="D" * string(idx),
+                          align=(:center, :bottom),
+                          fontsize=font_size)
         end
     end
 
-    if head
-        _warn("TO DO: add head outline.")
+    if head_labels
+        fid_names = ["NAS", "IN", "LPA", "RPA"]
+        for idx in 1:length(NeuroAnalyzer.fiducial_points)
+            if plane === :xy
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][2]
+            elseif plane === :xz
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][1]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+            elseif plane === :yz
+                fid_loc_x = NeuroAnalyzer.fiducial_points[idx][2]
+                fid_loc_y = NeuroAnalyzer.fiducial_points[idx][3]
+            end
+            GLMakie.text!(fid_loc_x,
+                          fid_loc_y,
+                          text=fid_names[idx],
+                          fontsize=font_size,
+                          align = (:center, :center))
+        end
     end
-
-    p = Plots.plot!()
 
     return p
 

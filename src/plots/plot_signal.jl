@@ -555,7 +555,7 @@ Plot signal.
     - `:normal`
     - `:mean`: mean ± 95%CI
     - `:butterfly`: butterfly plot
-- `avg::Bool=false`: plot average EDA
+- `avg::Bool=false`: plot averaged channel in butterfly plot
 - `bad::Bool=false`: plot bad channels
 - `s_pos::Tuple{Real, Real}=(0, 0)`: draw segment borders if different than (0, 0), used by `iedit()`
 - `kwargs`: optional arguments for plotting

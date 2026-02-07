@@ -212,8 +212,7 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         obj_new.data[ch, :, :] = NeuroAnalyzer.normalize(obj_new.data[ch, :, :], n, method=method, bych=false)
     end
 
-    push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$methodn, n=$n- `n::Real=1`
-          )")
+    push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$method, n=$n)")
 
     return obj_new
 
