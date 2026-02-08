@@ -517,7 +517,6 @@ include("plots/mplot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/mplot_dipole3d.jl")
 
-include("plots/plot_eda.jl")
 include("plots/plot_efield.jl")
 include("plots/plot_erp.jl")
 include("plots/plot_locs_nirs.jl")

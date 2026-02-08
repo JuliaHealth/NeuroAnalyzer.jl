@@ -104,13 +104,12 @@ Plot cross/auto-covariance/correlation.
 - `ylabel::String=""`
 - `title::String=""`
 - `cb_title::String=""`: colorbar title
-- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="", mono::Bool=false)::GLMakie.Figure
+function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="")::GLMakie.Figure
 
     if minimum(m) >= -1.0 && maximum(m) <= 1.0
         ylim = (-1.0, 1.0)
@@ -118,7 +117,6 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
         ylim = extrema(m)
     end
 
-    pal = mono ? :grays : :darktest
     r = length(string(lags[1])) > 4 ? 90 : 0
 
     # prepare plot
@@ -165,18 +163,18 @@ Plot histogram.
 - `x::Union{Nothing, Real}=nothing`: value to plot against the histogram
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
 - `bins::Int64=15`: histogram bins: number of bins
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `draw_mean::Bool=true`
 - `draw_median::Bool=true`
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type::Symbol=:hist, bins::Int64=15, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, draw_mean::Bool=true, draw_median::Bool=true)::GLMakie.Figure
+function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type::Symbol=:hist, bins::Int64=15, xlabel::String="", ylabel::String="", title::String="", draw_mean::Bool=true, draw_median::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     _check_var(type, [:hist, :kd], "type")
 
@@ -253,8 +251,8 @@ Bar plot.
 
 - `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -269,7 +267,7 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
 
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -311,22 +309,19 @@ Line plot.
 
 - `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false)::GLMakie.Figure
+function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="")::GLMakie.Figure
 
     @assert length(s) == length(xlabels) "Lengths of signal ($(length(s))) and xlabels ($(length(xlabels))) must be equal."
 
-    pal = mono ? :grays : :darktest
-
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -353,8 +348,7 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
 
     GLMakie.lines!(eachindex(xlabels),
                    s,
-                   color=:black,
-                   colormap=pal)
+                   color=:black)
 
     return p
 
@@ -370,8 +364,8 @@ Line plot.
 - `s::AbstractArray`
 - `rlabels::Vector{String}`: signal rows labels
 - `xlabels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -387,7 +381,7 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
 
     pal = mono ? :grays : :darktest
 
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -437,8 +431,8 @@ Box plot.
 
 - `s::AbstractArray`
 - `xlabels::Vector{String}`: group labels (X ticks)
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -454,7 +448,7 @@ function plot_box(s::AbstractArray; xlabels::Vector{String}, xlabel::String="", 
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
 
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -497,8 +491,8 @@ Violin plot.
 
 - `s::AbstractArray`
 - `glabels::Vector{String}`: group labels (X ticks)
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -514,7 +508,7 @@ function plot_violin(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
     pal = mono ? :grays : :darktest
     color = mono ? :lightgrey : :lightblue
 
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -543,7 +537,8 @@ function plot_violin(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
                     s[:],
                     strokecolor=:black,
                     strokewidth=0.25,
-                    color=color)
+                    color=color,
+                    colormap=pal)
 
     return p
 
@@ -558,8 +553,8 @@ Dots plot.
 
 - `s::AbstractArray`
 - `xlabels::Vector{String}`: group labels (X ticks)
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -573,7 +568,7 @@ function plot_dots(s::AbstractArray; xlabels::Vector{String}, xlabel::String="",
 
     pal = mono ? :grays : :darktest
 
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -600,16 +595,16 @@ function plot_dots(s::AbstractArray; xlabels::Vector{String}, xlabel::String="",
 
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in eachindex(xlabels)
-        if !mono
+        if mono
+            GLMakie.scatter!(repeat([idx], size(s, 2)),
+                             s[idx, :],
+                             color=:black)
+        else
             GLMakie.scatter!(repeat([idx], size(s, 2)),
                              s[idx, :],
                              color=cmap[idx],
                              colormap=pal,
                              colorrange=eachindex(xlabels))
-        else
-            GLMakie.scatter!(repeat([idx], size(s, 2)),
-                             s[idx, :],
-                             color=:black)
         end
     end
 
@@ -625,9 +620,9 @@ Plot paired data.
 # Arguments
 
 - `s::AbstractArray`
-- `xlabels::Vector{String}`: group labels (X ticks)
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabels::Vector{String}`: group labels (x-axis ticks)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -640,7 +635,7 @@ function plot_paired(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
     @assert size(s, 1) == length(xlabels) "Number of signal columns ($(size(s, 1))) and length of xlabels ($(length(xlabels))) must be equal."
 
     pal = mono ? :grays : :darktest
-    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : ylims = (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
+    yl = minimum(s) > 0 ? (0, ceil(Int64, round(maximum(s) * 1.5, digits=1))) : (floor(Int64, round(minimum(s) * 1.5, digits=1)), ceil(Int64, round(maximum(s) * 1.5, digits=1)))
 
     # prepare plot
     plot_size = (800, 500)
@@ -667,31 +662,31 @@ function plot_paired(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
 
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in eachindex(xlabels)
-        if !mono
+        if mono
+            GLMakie.scatter!(repeat([idx], size(s, 2)),
+                             s[idx, :],
+                             color=:black)
+        else
             GLMakie.scatter!(repeat([idx], size(s, 2)),
                              s[idx, :],
                              color=cmap[idx],
                              colormap=pal,
                              colorrange=eachindex(xlabels))
-        else
-            GLMakie.scatter!(repeat([idx], size(s, 2)),
-                             s[idx, :],
-                             color=:black)
         end
     end
 
     cmap = GLMakie.resample_cmap(pal, length(xlabels))
     for idx in eachindex(xlabels)
-        if !mono
+        if mono
+            GLMakie.scatter!(repeat([idx], size(s, 2)),
+                             s[idx, :],
+                             color=:black)
+        else
             GLMakie.scatter!(repeat([idx], size(s, 2)),
                              s[idx, :],
                              color=cmap[idx],
                              colormap=pal,
                              colorrange=eachindex(xlabels))
-        else
-            GLMakie.scatter!(repeat([idx], size(s, 2)),
-                             s[idx, :],
-                             color=:black)
         end
     end
     for idx in axes(s, 2)
@@ -716,7 +711,7 @@ Polar plot.
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `ticks::Bool=false`: draw X and Y ticks
+- `ticks::Bool=false`: draw x- and y-axis ticks
 
 # Returns
 
@@ -772,7 +767,7 @@ function plot_polar(s::Union{AbstractVector, AbstractMatrix}; m::Tuple{Real, Rea
             GLMakie.lines!([0, m[1]],
                            [0, m[2]],
                            linewidth=2,
-                           color=:red)
+                           color=mono ? :darkgray : :red)
     end
 
     return p
@@ -791,7 +786,7 @@ Plot ERO (Event-Related Oscillations) spectrogram.
 - `st::AbstractVector`: ERO time
 - `db::Bool=true`: whether ERO powers are normalized to dB
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the y-axis
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in milliseconds) to be plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`
 - `ylabel::String="default"`
@@ -1038,7 +1033,7 @@ Plot ERO (Event-Related Oscillations) power-spectrum.
 - `xlabel::String="default"`
 - `ylabel::String="default"`
 - `title::String="default"`
-- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the Y axis
+- `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limit for the y-axis
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `units::String="μV"`
 - `mono::Bool=false`: use color or gray palette
@@ -1245,18 +1240,20 @@ Confidence interval plot.
 - `s_l::AbstractVector`: CI lower bound
 - `s_u::AbstractVector`: CI upper bound
 - `t::AbstractVector`: time points
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false)::Plots.Plot{Plots.GRBackend}
+function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false)::GLMakie.Figure
 
     @assert length(s) == length(s_l) == length(s_u) "All input signals must be of the same length."
+
+    pal = mono ? :grays : :darktest
 
     pal = mono ? :grays : :darktest
 
@@ -1265,46 +1262,44 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
     yticks = [ylim[1], 0, ylim[2]]
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ylims=ylim,
-                   yticks=yticks,
-                   ytick_direction=:out,
-                   xtick_direction=:out,
-                   title=title,
-                   palette=pal,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6)
-    # plot upper bound
-    Plots.plot!(t,
+    plot_size = (800, 500)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      yticks=yticks,
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
+    GLMakie.ylims!(ax, yl)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
+
+    # draw 95% CI
+    Makie.band!(t,
                 s_u,
-                fillrange=s_l,
-                fillalpha=0.35,
-                label=false,
-                t=:line,
-                c=:grey,
-                lw=0.5)
-    # plot lower bound
-    Plots.plot!(t,
                 s_l,
-                label=false,
-                t=:line,
-                c=:grey,
-                lw=0.5)
-    # plot signal
-    Plots.plot!(t,
-                s,
-                label=false,
-                t=:line,
-                c=:black,
-                lw=0.5)
+                alpha=0.25,
+                color=:grey,
+                strokewidth=0.5)
+
+    # draw signal
+    Makie.lines!(t,
+                 s,
+                 color=:black,
+                 linewidth=2)
 
     return p
 
@@ -1320,8 +1315,8 @@ Plot heatmap.
 - `m::AbstractMatrix`
 - `x::AbstractVector`
 - `y::AbstractVector`
-- `xlabel::String=""`: X axis label
-- `ylabel::String=""`: Y axis label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `cb::Bool=true`: draw colorbar
@@ -1407,19 +1402,16 @@ Plot intrinsic mode functions (IMF), the residual and reconstructed signal.
 - `imf::Matrix{Float64}`: IMFs
 - `n::Int64=size(imf, 1) - 1`: number of IMFs to plot
 - `t::AbstractVector`: time points
-- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVector, mono::Bool=false)::Plots.Plot{Plots.GRBackend}
+function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVector)::GLMakie.Figure
 
     @assert n > 0 "n must be ≥ 1."
     @assert n + 1 <= size(imf, 1) "n must be ≤ $(size(imf, 1) - 1)."
     @assert size(imf, 2) == length(t) "Length of t $(size(imf, 2)) and number of imf columns ($(size(m, 2))) must be equal."
-
-    pal = mono ? :grays : :darktest
 
     s_restored = sum(imf, dims=1)[:]
     imf = vcat(imf, s_restored')
@@ -1428,79 +1420,96 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
     ylim = _tuple_max(ylim)
     yticks = [ylim[1], 0, ylim[2]]
 
-    # prepare plots
-    p_imf = Vector{Plots.Plot{Plots.GRBackend}}()
-    for idx in 1:n
-        p = Plots.plot(t,
-                       imf[idx, :],
-                       xlabel="time [s]",
-                       ylabel="",
-                       xlims=_xlims(t),
-                       xticks=_ticks(t),
-                       ylims=ylim,
-                       yticks=yticks,
-                       ytick_direction=:out,
-                       xtick_direction=:out,
-                       title="IMF: $idx",
-                       palette=pal,
-                       size=(500, 250),
-                       margins=10Plots.px,
-                       label=false,
-                       line_width=0.5,
-                       titlefontsize=6,
-                       xlabelfontsize=6,
-                       ylabelfontsize=6,
-                       xtickfontsize=4,
-                       ytickfontsize=4)
-        push!(p_imf, p)
-    end
-    p = Plots.plot(t,
-                   imf[end - 1, :],
-                   xlabel="time [s]",
-                   ylabel="",
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ylims=ylim,
-                   yticks=yticks,
-                   ytick_direction=:out,
-                   xtick_direction=:out,
-                   title="Residual",
-                   palette=pal,
-                   size=(500, 250),
-                   margins=10Plots.px,
-                   label=false,
-                   line_width=0.5,
-                   titlefontsize=6,
-                   xlabelfontsize=6,
-                   ylabelfontsize=6,
-                   xtickfontsize=4,
-                   ytickfontsize=4)
-    push!(p_imf, p)
-    p = Plots.plot(t,
-                   s_restored,
-                   xlabel="time [s]",
-                   ylabel="",
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ylims=ylim,
-                   yticks=yticks,
-                   ytick_direction=:out,
-                   xtick_direction=:out,
-                   title="Reconstruced signal",
-                   palette=pal,
-                   size=(500, 250),
-                   margins=10Plots.px,
-                   label=false,
-                   line_width=0.5,
-                   titlefontsize=6,
-                   xlabelfontsize=6,
-                   ylabelfontsize=6,
-                   xtickfontsize=4,
-                   ytickfontsize=4)
-    push!(p_imf, p)
-    mod(n + 2, 2) != 0 && push!(p_imf, plot_empty())
+    # prepare plot
+    plot_size = (1200, 800)
+    p = GLMakie.Figure(size=plot_size)
 
-    p = plot_compose(p_imf, layout=(ceil(Int64, (n + 2) / 2), 2))
+    nr = ceil(Int64, (n + 1) / 2)
+
+    idx = 1
+    cidx = 1
+    for idx1 in 1:nr
+        cidx = 1
+        for idx2 in 1:2
+            if idx <= n + 1
+                ax = GLMakie.Axis(p[idx1, idx2],
+                                  xlabel="Time [s]",
+                                  ylabel="",
+                                  title=idx == n + 1 ? "Residual" : "IMF: $idx",
+                                  xticks=LinearTicks(10),
+                                  xminorticksvisible=true,
+                                  xminorticks=IntervalsBetween(10),
+                                  yticks=yticks,
+                                  xautolimitmargin=(0, 0),
+                                  yautolimitmargin=(0, 0),
+                                  xzoomlock=true,
+                                  yzoomlock=true,
+                                  xpanlock=true,
+                                  ypanlock=true,
+                                  xrectzoom=false,
+                                  yrectzoom=false)
+                GLMakie.ylims!(ax, ylim)
+                ax.titlesize = 20
+                ax.xlabelsize = 18
+                ax.ylabelsize = 18
+                ax.xticklabelsize = 12
+                ax.yticklabelsize = 12
+
+                GLMakie.lines!(ax,
+                               t,
+                               imf[idx, :],
+                               color=:black)
+                idx += 1
+                cidx += 1
+            end
+        end
+    end
+
+    if cidx == 1
+        ax = GLMakie.Axis(p[nr, 1:2],
+                          xlabel="Time [s]",
+                          ylabel="",
+                          title="Reconstructed signal",
+                          xticks=LinearTicks(10),
+                          xminorticksvisible=true,
+                          xminorticks=IntervalsBetween(10),
+                          yticks=yticks,
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
+    else
+        ax = GLMakie.Axis(p[nr + 1, 1:2],
+                          xlabel="Time [s]",
+                          ylabel="",
+                          title="Reconstructed signal",
+                          xticks=LinearTicks(10),
+                          xminorticksvisible=true,
+                          xminorticks=IntervalsBetween(10),
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0),
+                          xzoomlock=true,
+                          yzoomlock=true,
+                          xpanlock=true,
+                          ypanlock=true,
+                          xrectzoom=false,
+                          yrectzoom=false)
+    end
+    GLMakie.ylims!(ax, ylim)
+    ax.titlesize = 20
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
+
+    GLMakie.lines!(ax,
+                   t,
+                   s_restored,
+                   color=:black)
 
     return p
 
@@ -1515,8 +1524,8 @@ Plot Hilbert spectrum.
 
 - `sp::Vector{Float64}`: Hilbert transform powers
 - `st::Vector{Float64}`: time
-- `xlabel::String="default"`: X axis label, default is Time [s]
-- `ylabel::String="default"`: Y axis label, default is Power [μV^2/Hz]
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
 - `mono::Bool=false`: use color or gray palette
 
@@ -1581,20 +1590,17 @@ Plot instantaneous frequencies.
 
 - `fi::Vector{Float64}`: instantaneous frequencies
 - `st::Vector{Float64}`: time
-- `xlabel::String="default"`: X axis label, default is Time [s]
-- `ylabel::String="default"`: Y axis label, default is Power [μV^2/Hz]
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
-- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false)::GLMakie.Figure
+function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="default", ylabel::String="default", title::String="default")::GLMakie.Figure
 
     @assert length(fi) == length(st) "Length of frequencies ($(length(fi))) and time points ($(length(st))) must be equal."
-
-    pal = mono ? :grays : :darktest
 
     xl, yl, tt = _set_defaults(xlabel,
                                ylabel,
@@ -1652,19 +1658,16 @@ Plot phases.
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is Power [μV^2/Hz]
 - `title::String="default"`: plot title
-- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad, type::Symbol=:line, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false)::GLMakie.Figure
+function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad, type::Symbol=:line, xlabel::String="default", ylabel::String="default", title::String="default")::GLMakie.Figure
 
     _check_var(unit, [:rad, :deg], "unit")
     _check_var(type, [:line, :stem], "type")
     @assert length(ph) == length(sf) "Length of phases ($(length(fi))) and frequencies ($(length(st))) must be equal."
-
-    pal = mono ? :grays : :darktest
 
     xl, yl, tt = _set_defaults(xlabel,
                                ylabel,
@@ -1707,7 +1710,8 @@ function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad,
     else
         GLMakie.stem!(sf,
                       ph,
-                      markersize=10)
+                      markersize=10,
+                      color=:black)
     end
 
     return p
@@ -1725,17 +1729,15 @@ Polar pole-zero map.
 - `z::Vector{Complex{Float64}}`: vector of zeros
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `ticks::Bool=false`: draw X and Y ticks
+- `ticks::Bool=false`: draw x- and y-axis ticks
 - `ms::Symbol=:circle`: marker shape for drawing complex numbers (`:circle` or `:xcross`)
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
 function plot_polezero(pol::Vector{Complex{Float64}}, zer::Vector{Complex{Float64}}; title::String="default", mono::Bool=false)::GLMakie.Figure
-
-    pal = mono ? :grays : :darktest
 
     # prepare plot
     plot_size = (600, 600)
@@ -1751,12 +1753,14 @@ function plot_polezero(pol::Vector{Complex{Float64}}, zer::Vector{Complex{Float6
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    GLMakie.scatter!(real.(pol),
+    GLMakie.scatter!(ax,
+                     real.(pol),
                      imag.(pol),
                      markersize=15,
                      color=mono ? :black : :blue,
                      marker=:xcross)
-    GLMakie.scatter!(real.(zer),
+    GLMakie.scatter!(ax,
+                     real.(zer),
                      imag.(zer),
                      markersize=15,
                      strokecolor=mono ? :black : :blue,
@@ -1783,19 +1787,16 @@ Plot discrete wavelet decomposition coefficients.
 - `dc::Matrix{Float64}`: coefficients
 - `n::Int64=size(dc, 1) - 1`: number of coefficients to plot
 - `t::AbstractVector`: time points
-- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVector, mono::Bool=false)::GLMakie.Figure
+function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVector)::GLMakie.Figure
 
     @assert n > 1 "n must be > 1."
     @assert n <= size(dc, 1) - 1 "n must be ≤ $(size(dc, 1) - 1)."
     @assert size(dc, 2) == length(t) "Length of t $(size(dc, 2)) and number of dc columns ($(size(m, 2))) must be equal."
-
-    pal = mono ? :grays : :darktest
 
     ylim = (floor(minimum(dc), digits=0), ceil(maximum(dc), digits=1))
     ylim = _tuple_max(ylim)
@@ -1814,19 +1815,21 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVect
         for idx2 in 1:2
             if idx < n + 2
                 ax = GLMakie.Axis(p[idx1, idx2],
-                                  xlabel="time [s]",
+                                  xlabel="Time [s]",
                                   ylabel="",
                                   title="Coefficient #$(idx - 1)",
+                                  xticks=LinearTicks(10),
+                                  xminorticksvisible=true,
+                                  xminorticks=IntervalsBetween(10),
                                   yticks=yticks,
-                                  xautolimitmargin=(0.1, 0.1),
-                                  yautolimitmargin=(0.1, 0.1),
+                                  xautolimitmargin=(0, 0),
+                                  yautolimitmargin=(0, 0),
                                   xzoomlock=true,
                                   yzoomlock=true,
                                   xpanlock=true,
                                   ypanlock=true,
                                   xrectzoom=false,
                                   yrectzoom=false)
-                GLMakie.xlims!(ax, _xlims(t))
                 GLMakie.ylims!(ax, ylim)
                 ax.titlesize = 20
                 ax.xlabelsize = 18
@@ -1846,22 +1849,21 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVect
 
     if cidx == 1
         ax = GLMakie.Axis(p[nr, 1:2],
-                          xlabel="time [s]",
+                          xlabel="Time [s]",
                           ylabel="",
                           title="Original signal",
                           xticks=LinearTicks(10),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
                           yticks=yticks,
-                          xautolimitmargin=(0.1, 0.1),
-                          yautolimitmargin=(0.1, 0.1),
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0),
                           xzoomlock=true,
                           yzoomlock=true,
                           xpanlock=true,
                           ypanlock=true,
                           xrectzoom=false,
                           yrectzoom=false)
-        GLMakie.xlims!(ax, _xlims(t))
         GLMakie.ylims!(ax, ylim)
         ax.titlesize = 20
         ax.xlabelsize = 18
@@ -1875,14 +1877,14 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVect
                        color=:black)
     else
         ax = GLMakie.Axis(p[nr + 1, 1:2],
-                          xlabel="time [s]",
+                          xlabel="Time [s]",
                           ylabel="",
                           title="Original signal",
                           xticks=LinearTicks(10),
                           xminorticksvisible=true,
                           xminorticks=IntervalsBetween(10),
-                          xautolimitmargin=(0.1, 0.1),
-                          yautolimitmargin=(0.1, 0.1),
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0, 0),
                           xzoomlock=true,
                           yzoomlock=true,
                           xpanlock=true,

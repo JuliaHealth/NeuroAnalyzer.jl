@@ -18,7 +18,7 @@ Plot ERP/ERF.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `kwargs`: optional arguments for plotting
 
 # Returns
@@ -51,7 +51,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
-    # reverse Y axis
+    # reverse y-axis
     yrev && yflip!(true)
 
     # plot 0 h-line
@@ -102,7 +102,7 @@ Butterfly plot of ERP.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average ERP
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `kwargs`: optional arguments for plotting
 
 # Returns
@@ -139,7 +139,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                    ytickfontsize=6;
                    kwargs...)
 
-    # reverse Y axis
+    # reverse y-axis
     yrev && yflip!(true)
 
     # plot 0 h-line
@@ -224,7 +224,7 @@ Plot ERP/ERF amplitude mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `kwargs`: optional arguments for plotting
 
 # Returns
@@ -261,7 +261,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                    ytickfontsize=6;
                    kwargs...)
 
-    # reverse Y axis
+    # reverse y-axis
     yrev && yflip!(true)
 
     # plot 0 h-line
@@ -328,7 +328,7 @@ Plot topographical map ERPs.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `mono::Bool=false`: use color or gray palette
 - `kwargs`: optional arguments for plotting
@@ -415,7 +415,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
                        xtickfontsize=6,
                        ytickfontsize=6;
                        kwargs...)
-        # reverse Y axis
+        # reverse y-axis
         yrev && yflip!(true)
 
         # plot 0 h-line
@@ -570,7 +570,7 @@ Plot ERP/ERF.
     - `:butterfly`: butterfly plot
     - `:topo`: topographical plot of ERPs
     - `:stack`: stacked epochs/channels
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `avg::Bool=false`: plot average ERP for `:butterfly` plot
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)

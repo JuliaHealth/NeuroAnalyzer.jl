@@ -140,7 +140,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     ax.yticklabelsize = 12
 
     if ci95
-        # draw upper 95% CI
+        # draw 95% CI
         Makie.band!(sf,
                     s_u,
                     s_l,

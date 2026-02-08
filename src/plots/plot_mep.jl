@@ -16,7 +16,7 @@ Plot MEP.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `kwargs`: optional arguments for plotting
 
 # Returns
@@ -49,7 +49,7 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xl
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
-    # reverse Y axis
+    # reverse y-axis
     yrev && yflip!(true)
 
     # plot 0 h-line
@@ -91,7 +91,7 @@ Butterfly plot of MEP.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `avg::Bool=false`: plot average MEP
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `kwargs`: optional arguments for plotting
 
 # Returns
@@ -127,7 +127,7 @@ function plot_mep_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
                    ytickfontsize=6;
                    kwargs...)
 
-    # reverse Y axis
+    # reverse y-axis
     yrev && yflip!(true)
 
     # plot 0 h-line
@@ -185,7 +185,7 @@ Plot MEP amplitude mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `kwargs`: optional arguments for plotting
 
 # Returns
@@ -222,7 +222,7 @@ function plot_mep_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray;
                    ytickfontsize=6;
                    kwargs...)
 
-    # reverse Y axis
+    # reverse y-axis
     yrev && yflip!(true)
 
     # plot 0 h-line
@@ -353,7 +353,7 @@ Plot MEP.
 - `peaks_detect::Bool=true`: if true, detect MEP peaks, otherwise use embedded
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
-- `yrev::Bool=false`: reverse Y axis
+- `yrev::Bool=false`: reverse y-axis
 - `avg::Bool=false`: plot average MEP for `:butterfly` plot
 - `kwargs`: optional arguments for plotting
 

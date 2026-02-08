@@ -150,9 +150,6 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         r = 1.6
     end
 
-#    interpolated_x = round.(linspace(xl[1], xl[2], length(interpolated_x)), digits=2)
-#    interpolated_y = round.(linspace(yl[1], yl[2], length(interpolated_y)), digits=2)
-
     # get distances from (0, 0)
     d = zeros(length(interpolated_x), length(interpolated_y))
     for idx1 in eachindex(interpolated_x)
@@ -200,20 +197,6 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
                               s_interpolated,
                               colormap=pal)
     end
-
-    # draw colorbar
-    if cb
-        GLMakie.Colorbar(p[1, 2],
-                         hm,
-                         label=cb_title,
-                         labelsize=font_size,
-                         ticklabelsize=font_size,
-                         width=ps === :l ? 25 : 10,
-                         tellheight=true)
-        rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
-        colgap!(p.layout, 10)
-    end
-
 
     # draw contours
     if contours > 0 && ((isnothing(threshold) && threshold_method === :reg) || (!isnothing(threshold) && threshold_method === :loc))
@@ -320,8 +303,9 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
                  linewidth=5,
                  color=:white)
 
+
     # draw colorbar
-    if cb && (isnothing(threshold) || (!isnothing(threshold) && threshold_method === :loc))
+    if cb
         GLMakie.Colorbar(p[1, 2],
                          hm,
                          label=cb_title,

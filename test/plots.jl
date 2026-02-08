@@ -306,7 +306,7 @@ p = NeuroAnalyzer.mplot_connectivity_circle(m, clabels=l)
 imf = rand(5, 100)
 t = collect(1:100)
 p = NeuroAnalyzer.plot_imf(imf, t=t)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_gridlocs()"
 p = NeuroAnalyzer.mplot_gridlocs()
@@ -352,7 +352,7 @@ p = NeuroAnalyzer.plot_polezero(rand(ComplexF64, 2), rand(ComplexF64, 2))
 @info "Test: plot_dwc()"
 dc = rand(16, 100)
 t = collect(1:100)
-p = NeuroAnalyzer.plot_dwc(dc, t=t)
+p = NeuroAnalyzer.plot_dwc(dc, t=t, n=4)
 @test p isa GLMakie.Figure
 
 true
