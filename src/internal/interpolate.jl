@@ -3,8 +3,12 @@ function _interpolate2d(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
 
-    x_lim_int = (-1.2, 1.2)
-    y_lim_int = (-1.2, 1.2)
+    max_x = ceil(maximum(abs.(loc_x)), digits=1)
+    max_y = ceil(maximum(abs.(loc_y)), digits=1)
+    extr = max_x > max_y ? max_x : max_y
+    extr = extr > 1.2 ? 1.6 : 1.2
+    x_lim_int = (-extr, extr)
+    y_lim_int = (-extr, extr)
 
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], ifactor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], ifactor)

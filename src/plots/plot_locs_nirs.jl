@@ -14,7 +14,8 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
 - `src_labels::Bool=false`: plot source labels
 - `det_labels::Bool=false`: plot detector labels
 - `opt_labels::Bool=false`: plot optode type (S for source, D for detector) and number
-- `head_labels::Bool=true`: plot head labels
+- `head::Bool=true`: draw head
+- `head_labels::Bool=false`: plot head labels
 - `mono::Bool=false`: use color or gray palette
 - `grid::Bool=false`: draw grid, useful for locating positions
 - `ps::Symbol=:l`: plot size (`:l`: large (800×800 px), `:m`: medium (300×300 px), `:s`: small (100×100 px))
@@ -23,14 +24,17 @@ Preview of NIRS optodes and channel locations. It uses Cartesian `:loc_x` and `:
     - `:xy`: horizontal (top)
     - `:xz`: coronary (front)
     - `:yz`: sagittal (side)
+- `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channels info
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy)::GLMakie.Figure
+function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64, det_n::Int64; src_labels::Bool=false, det_labels::Bool=false, opt_labels::Bool=false, head::Bool=true, head_labels::Bool=true, mono::Bool=false, grid::Bool=false, ps::Symbol=:l, cart::Bool=false, plane::Symbol=:xy, ch_info::Vector{String}=string.(1:DataFrames.nrow(locs)))::GLMakie.Figure
 
     # TO DO: plot channel numbers
+
+    ch = 1:DataFrames.nrow(locs)
 
     _check_var(ps, [:l, :m, :s], "ps")
     _check_var(plane, [:xy, :yz, :xz], "plane")
@@ -188,7 +192,6 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
 
     ch_n = length(ch)
     cmap = GLMakie.resample_cmap(pal, ch_n)
-    ch = setdiff(ch, sch)
 
     ps === :l && (sw = 2)
     ps === :m && (sw = 1)
@@ -239,7 +242,7 @@ function plot_locs_nirs(locs::DataFrame, opt_pairs::Matrix{Int64}, src_n::Int64,
                          markersize=marker_size,
                          color=mono ? :white : :green,
                          strokewidth=sw,
-                         strokecolor=mono ? :black : :green)
+                         strokecolor=:black)
     end
 
     if opt_labels

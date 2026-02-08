@@ -71,9 +71,6 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         loc_y = locs[ch, :loc_y]
     end
 
-    loc_x = _n2v(loc_x)
-    loc_y = _n2v(loc_y)
-
     if ps === :l
         plot_size = (800, 800)
         marker_size = length(ch) > 64 ? 8 : 16
@@ -150,16 +147,18 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         r = 1.6
     end
 
+    if head12
     # get distances from (0, 0)
-    d = zeros(length(interpolated_x), length(interpolated_y))
-    for idx1 in eachindex(interpolated_x)
-        for idx2 in eachindex(interpolated_y)
-            d[idx1, idx2] = distance((0, 0), (interpolated_x[idx1], interpolated_y[idx2]))
+        d = zeros(length(interpolated_x), length(interpolated_y))
+        for idx1 in eachindex(interpolated_x)
+            for idx2 in eachindex(interpolated_y)
+                d[idx1, idx2] = distance((0, 0), (interpolated_x[idx1], interpolated_y[idx2]))
+            end
         end
+        # remove everything outside the radius
+        s_interpolated[d .>= xl[2]] .= NaN
+        !isnothing(threshold) && (s_interpolated_threshold[d .>= xl[2]] .= NaN)
     end
-    # remove everything outside the radius
-    s_interpolated[d .>= xl[2]] .= NaN
-    !isnothing(threshold) && (s_interpolated_threshold[d .>= xl[2]] .= NaN)
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
@@ -296,13 +295,14 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
     end
 
     # draw mask
-    GLMakie.arc!(ax,
-                 Point2f(0),
-                 r,
-                 -pi, pi,
-                 linewidth=5,
-                 color=:white)
-
+    if head12
+        GLMakie.arc!(ax,
+                     Point2f(0),
+                     r,
+                     -pi, pi,
+                     linewidth=5,
+                     color=:white)
+    end
 
     # draw colorbar
     if cb
