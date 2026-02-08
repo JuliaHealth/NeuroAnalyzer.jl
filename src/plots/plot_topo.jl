@@ -162,7 +162,7 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
-                       figure_padding=(10, 10, 0, 0)) # L R B T
+                       figure_padding=ps in [:l, :m] ? (10, 10, 10, 0) : (0, 0, 0, 0)) # L R B T
     ax = GLMakie.Axis(p[1, 1],
                       aspect=1,
                       xlabel="",
@@ -316,11 +316,14 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
                          label=cb_title,
                          labelsize=font_size - 4,
                          ticklabelsize=font_size - 4,
+                         height=div(plot_size[2], 2),
                          width=ps === :l ? 25 : 10,
-                         tellheight=true)
+                         tellheight=false)
         rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
         colgap!(p.layout, 10)
     end
+
+    resize_to_layout!(p)
 
     return p
 
@@ -378,7 +381,7 @@ Topographical plot.
 """
 function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}=nothing, ch::Union{String, Vector{String}, Regex}, sch::Union{Nothing, String, Vector{String}, Regex}=nothing, tpos::Union{Nothing, Real, AbstractVector}=nothing, title::String="default", mono::Bool=false, cb::Bool=true, cb_title::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l, head::Bool=true, cart::Bool=false, threshold::Union{Nothing, Real, Tuple{Real, Real}}=nothing, threshold_type::Symbol=:neq, threshold_method::Symbol=:reg, nr::Int64=1, nc::Int64=0)::GLMakie.Figure
 
-    # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one common colorbar
+    # TO DO: vector of tpos: generate separate plots, put them in nr × nc matrix and add one shared colorbar
     if length(tpos) > 1
         if nr == 1
             nc = length(tpos)

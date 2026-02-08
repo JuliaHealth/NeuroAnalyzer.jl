@@ -1205,7 +1205,7 @@ Topographical plot of external ICA components.
 
 - `p::GLMakie.figure`
 """
-function plot_icatopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1), tpos::Union{Nothing, Real, AbstractVector}, cb::Bool=false, cb_label::String="default", imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l)::GLMakie.Figure
+function plot_icatopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, ic::Matrix{Float64}, ic_mw::Matrix{Float64}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}=axes(ic_idx, 1), tpos::Union{Nothing, Real, AbstractVector}, imethod::Symbol=:sh, nmethod::Symbol=:minmax, contours::Int64=0, electrodes::Bool=true, ps::Symbol=:l)::GLMakie.Figure
 
     p_topo = GLMakie.Figure[]
     for idx in eachindex(ic_idx)
