@@ -509,13 +509,12 @@ include("plots/plot_connectivity_circle.jl")
 include("plots/plot_coherence.jl")
 include("plots/plot_efield.jl")
 include("plots/plot_varia.jl")
+include("plots/plot_dipole2d.jl")
 
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_spectrogram.jl")
 
-include("plots/plot_dipole2d.jl")
-include("plots/mplot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/mplot_dipole3d.jl")
 
