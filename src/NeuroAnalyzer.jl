@@ -510,6 +510,7 @@ include("plots/plot_coherence.jl")
 include("plots/plot_efield.jl")
 include("plots/plot_varia.jl")
 include("plots/plot_dipole2d.jl")
+include("plots/plot_locs_nirs.jl")
 
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
@@ -519,7 +520,6 @@ include("plots/plot_dipole3d.jl")
 include("plots/mplot_dipole3d.jl")
 
 include("plots/plot_erp.jl")
-include("plots/plot_locs_nirs.jl")
 include("plots/plot_mep.jl")
 
 include("plots/plot_signal.jl")
