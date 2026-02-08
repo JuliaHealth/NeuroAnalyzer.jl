@@ -221,6 +221,8 @@ end
 
 # load sub-modules
 
+@info "Loading sub-modules"
+
 # dependencies
 include("deps/PhaseSlopeIndex.jl/PhaseSlopeIndex.jl")
 include("deps/FIRLSFilterDesign.jl/FIRLSFilterDesign.jl")

@@ -1,85 +1,80 @@
 export plot_erp
-export plot_erp_butterfly
-export plot_erp_avg
 export plot_erp_topo
 export plot_erp_stack
 
 """
-    plot_erp(t, s, bad; <keyword arguments>)
+    plot_erp(t, s; <keyword arguments>)
 
-Plot ERP/ERF.
+Plot ERP/ERF (single channel).
 
 # Arguments
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractVector`: data to plot
-- `rt::Union{Nothing, Real}=nothing`:: response time value
+- `rt::Union{Nothing, Real, Vector{<:Real}}=nothing`: response time value(s)
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse y-axis
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real, Vector{<:Real}}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
-    # get limits
-    ylim = (floor(minimum(s) * 1.1, digits=0), ceil(maximum(s) * 1.1, digits=0))
-    ylim = _tuple_max(ylim)
-    yticks = [ylim[1], 0, ylim[2]]
-
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=(_erpticks(t), string.(_erpticks(t) .* 1000)),
-                   ylims=ylim,
-                   yticks=yticks,
-                   title=title,
-                   palette=pal,
-                   size=(1200, 400),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
-    # reverse y-axis
-    yrev && yflip!(true)
+    plot_size = (1600, 450)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0.1, 0.1),
+                      yreversed=yrev,
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
 
     # plot 0 h-line
-    p = Plots.hline!([0],
-                     color=:grey,
-                     lw=0.5,
-                     labels="")
-
-    # plot ERP
-    p = Plots.plot!(t,
-                    s,
-                    linewidth=1,
-                    label="",
-                    color=:black)
+    GLMakie.hlines!(ax,
+                    0,
+                    color=:black,
+                    linewidth=1)
 
     # plot 0 v-line
-    p = Plots.vline!([0],
-                     linestyle=:dash,
-                     linewidth=0.5,
-                     linecolor=:black,
-                     label=false)
+    GLMakie.vlines!(ax,
+                    0,
+                    color=:gray,
+                    linestyle=:dash,
+                    linewidth=1)
+
+    # plot ERP
+    GLMakie.lines!(ax,
+                   t,
+                   s,
+                   color=:black,
+                   linewidth=1)
 
     # plot RT v-line
     if !isnothing(rt)
-        p = Plots.vline!([rt],
-                         linewidth=1.0,
-                         linecolor=:red,
-                         label=false)
+        for idx in eachindex(rt)
+            if rt[idx] >= t[1] && rt[idx] <= t[end]
+                GLMakie.vlines!(rt[idx],
+                                linewidth=1.0,
+                                color=mono ? :black : :red)
+            end
+        end
     end
 
     return p
@@ -87,93 +82,101 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
 end
 
 """
-    plot_erp_butterfly(t, s; <keyword arguments>)
+    plot_erp(t, s; <keyword arguments>)
 
-Butterfly plot of ERP.
+Plot ERP/ERF (multi-channel).
 
 # Arguments
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-- `s::AbstractArray`: data to plot
-- `rt::Union{Nothing, Real}=nothing`:: response time value
-- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
+- `s::AbstractMatrix`: data to plot
+- `rt::Union{Nothing, Real, Vector{<:Real}}=nothing`: response time value(s)
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or gray palette
-- `avg::Bool=false`: plot average ERP
 - `yrev::Bool=false`: reverse y-axis
-- `kwargs`: optional arguments for plotting
+- `avg::Bool=false`: if true, plot averaged ERP
+- `ci95::Bool=false`: if true, plot mean and ±95% CI
+- `leg::Bool=true`: if true, add legend with channel labels
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real, Vector{<:Real}}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
     ch_n = size(s, 1)
 
-    # get limits
-    ylim = (floor(minimum(s) * 1.1, digits=0), ceil(maximum(s) * 1.1, digits=0))
-    ylim = _tuple_max(ylim)
-    yticks = [ylim[1], 0, ylim[2]]
+    pal = mono ? :grays : :darktest
 
-    # plot channels
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=(_erpticks(t), string.(_erpticks(t) .* 1000)),
-                   ylims=ylim,
-                   yticks=yticks,
-                   title=title,
-                   palette=pal,
-                   size=(1200, 400),
-                   margins=20Plots.px,
-                   legend=ch_n < 20,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
-
-    # reverse y-axis
-    yrev && yflip!(true)
+    # prepare plot
+    plot_size = (1600, 450)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0.1, 0.1),
+                      yreversed=yrev,
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
 
     # plot 0 h-line
-    p = Plots.hline!([0],
-                     color=:grey,
-                     lw=0.5,
-                     labels="")
+    GLMakie.hlines!(ax,
+                    0,
+                    color=:black,
+                    linewidth=1)
 
-    # plot signals
-    for idx in 1:ch_n
-        if clabels == [""]
-            p = Plots.plot!(t,
-                            s[idx, :],
-                            t=:line,
-                            linecolor=idx,
-                            linewidth=0.2,
-                            alpha=0.2)
-        else
-            if clabels == repeat([""], ch_n)
-                p = Plots.plot!(t,
-                                s[idx, :],
-                                t=:line,
-                                linecolor=idx,
-                                linewidth=0.5,
-                                alpha=0.5)
-            else
-                p = Plots.plot!(t,
-                                s[idx, :],
-                                t=:line,
-                                label=clabels[idx],
-                                linecolor=idx,
-                                linewidth=0.5,
-                                alpha=0.5)
-            end
+    # plot 0 v-line
+    GLMakie.vlines!(ax,
+                    0,
+                    color=:gray,
+                    linestyle=:dash,
+                    linewidth=1)
+
+    # plot ERPs
+    if ci95
+        avg = false
+        leg = false
+        s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s)
+        # draw 95% CI
+        Makie.band!(ax,
+                    t,
+                    s_u,
+                    s_l,
+                    alpha=0.25,
+                    color=:grey,
+                    strokewidth=0.5)
+
+        # draw mean
+        Makie.lines!(ax,
+                     t,
+                     s_m,
+                     color=:black,
+                     linewidth=2)
+    else
+        cmap = GLMakie.resample_cmap(pal, ch_n)
+        for idx in 1:ch_n
+            GLMakie.lines!(ax,
+                           t,
+                           s[idx, :],
+                           color=cmap[idx],
+                           colormap=pal,
+                           colorrange=1:ch_n,
+                           linewidth=1,
+                           label=clabels[idx])
         end
     end
 
@@ -184,130 +187,27 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, s::Abstract
         else
             s = mean(s, dims=1)[:]
         end
-        p = Plots.plot!(t,
-                        s,
-                        linewidth=2,
-                        linecolor=:black,
-                        label=false)
+        GLMakie.lines!(ax,
+                       t,
+                       s,
+                       color=:black,
+                       linewidth=2)
     end
-
-    # plot 0 v-line
-    p = Plots.vline!([0],
-                     linestyle=:dash,
-                     linewidth=0.5,
-                     linecolor=:black,
-                     label=false)
 
     # plot RT v-line
     if !isnothing(rt)
-        p = Plots.vline!([rt],
-                         linewidth=1.0,
-                         linecolor=:red,
-                         label=false)
+        for idx in eachindex(rt)
+            if rt[idx] >= t[1] && rt[idx] <= t[end]
+                GLMakie.vlines!(ax,
+                                rt[idx],
+                                linewidth=1.0,
+                                color=mono ? :black : :red)
+            end
+        end
     end
 
-    return p
-
-end
-
-"""
-    plot_erp_avg(t, s; <keyword arguments>)
-
-Plot ERP/ERF amplitude mean and ±95% CI.
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
-- `s::AbstractArray`: data to plot
-- `rt::Union{Nothing, Real}=nothing`:: response time value
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `yrev::Bool=false`: reverse y-axis
-- `kwargs`: optional arguments for plotting
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
-
-    pal = mono ? :grays : :darktest
-
-    # get mean and 95%CI
-    s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s)
-
-    # get limits
-    ylim = (floor(minimum(s_l) * 1.1, digits=0), ceil(maximum(s_u) * 1.1, digits=0))
-    ylim = _tuple_max(ylim)
-    yticks = [ylim[1], 0, ylim[2]]
-
-    # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=(_erpticks(t), string.(_erpticks(t) .* 1000)),
-                   ylims=ylim,
-                   yticks=yticks,
-                   title=title,
-                   palette=pal,
-                   size=(1200, 400),
-                   margins=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
-
-    # reverse y-axis
-    yrev && yflip!(true)
-
-    # plot 0 h-line
-    p = Plots.hline!([0],
-                     color=:grey,
-                     lw=0.5,
-                     labels="")
-
-    # plot upper 95% CI
-    p = Plots.plot!(t,
-                    s_u,
-                    fillrange=s_l,
-                    fillalpha=0.35,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
-    # plot lower 95% CI
-    p = Plots.plot!(t,
-                    s_l,
-                    label=false,
-                    t=:line,
-                    c=:grey,
-                    lw=0.5)
-    # plot mean
-    p = Plots.plot!(t,
-                    s_m,
-                    label=false,
-                    t=:line,
-                    c=:black,
-                    lw=0.5)
-
-    # plot 0 v-line
-    p = Plots.vline!([0],
-                     linestyle=:dash,
-                     linewidth=0.5,
-                     linecolor=:black,
-                     label=false)
-
-    # plot RT v-line
-    if !isnothing(rt)
-        p = Plots.vline!([rt],
-                         linewidth=1.0,
-                         linecolor=:red,
-                         label=false)
-    end
+    (leg && ch_n < 30) && axislegend(position=:rt,
+                                     colormap=pal)
 
     return p
 
