@@ -328,12 +328,11 @@ Plot topographical map of PSDs (power spectrum density).
 
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `sf::Vector{Float64}`: frequencies
-- `sp::Array{Float64, 3}`: powers
+- `sp::Matrix{Float64}`: powers
 - `flim::Tuple{Real, Real}=(sf[1], sf[end]): frequency limits
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
@@ -342,7 +341,7 @@ Plot topographical map of PSDs (power spectrum density).
 
 - `p::GLMakie.Figure`
 """
-function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; flim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", xlabel::String="", ylabel::String="", mono::Bool=false, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}; flim::Tuple{Real, Real}=(sf[1], sf[end]), title::String="", xlabel::String="", ylabel::String="", frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(sp, 2) == length(sf) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -402,12 +401,14 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
-        GLMakie.lines!(sf,
+        GLMakie.lines!(ax,
+                       sf,
                        sp[idx, :],
                        linewidth=1,
                        color=:black)
         push!(pp_vec, pp)
-        pp_full = plot_psd(sf,
+        pp_full = plot_psd(ax,
+                           sf,
                            sp[idx, :],
                            xlabel=xlabel,
                            ylabel=ylabel,
@@ -427,7 +428,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                       title=title,
                       aspect=1,
                       xautolimitmargin=(0, 0),
-                      yautolimitmargin=(0.1, 0.1),
+                      yautolimitmargin=(0, 0),
                       xzoomlock=true,
                       yzoomlock=true,
                       xpanlock=true,

@@ -11,7 +11,7 @@ Plot ERP/ERF (single channel).
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractVector`: data to plot
-- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time value(s)
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -22,12 +22,12 @@ Plot ERP/ERF (single channel).
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real, AbstractVector}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
     # prepare plot
-    plot_size = (1600, 450)
+    plot_size = (1200, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -68,12 +68,11 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
 
     # plot RT v-line
     if !isnothing(rt)
-        for idx in eachindex(rt)
-            if rt[idx] >= t[1] && rt[idx] <= t[end]
-                GLMakie.vlines!(rt[idx],
-                                linewidth=1.0,
-                                color=mono ? :black : :red)
-            end
+        if rt >= t[1] && rt <= t[end]
+            GLMakie.vlines!(ax,
+                            rt,
+                            linewidth=1,
+                            color=mono ? :black : :red)
         end
     end
 
@@ -90,7 +89,7 @@ Plot ERP/ERF (multi-channel).
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractMatrix`: data to plot
-- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time value(s)
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
 - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -105,16 +104,14 @@ Plot ERP/ERF (multi-channel).
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
     ch_n = size(s, 1)
 
-    pal = mono ? :grays : :darktest
-
     # prepare plot
-    plot_size = (1600, 450)
+    plot_size = (1200, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -196,13 +193,11 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt
 
     # plot RT v-line
     if !isnothing(rt)
-        for idx in eachindex(rt)
-            if rt[idx] >= t[1] && rt[idx] <= t[end]
-                GLMakie.vlines!(ax,
-                                rt[idx],
-                                linewidth=1.0,
-                                color=mono ? :black : :red)
-            end
+        if rt >= t[1] && rt <= t[end]
+            GLMakie.vlines!(ax,
+                            rt,
+                            linewidth=1.0,
+                            color=mono ? :black : :red)
         end
     end
 
@@ -223,52 +218,44 @@ Plot topographical map ERPs.
 - `locs::DataFrame`: columns: channel, labels, loc_radius, loc_theta, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `t::Vector{Float64}`: time vector
 - `s::Matrix{Float64}`: ERPs
-- `ch::Union{Vector{Int64}, AbstractRange}`: which channels to plot
-- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `yrev::Bool=false`: reverse y-axis
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
+- `head::Bool=true`: plot head shape
 - `mono::Bool=false`: use color or gray palette
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; ch=Union{Vector{Int64}, AbstractRange}, clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, cart::Bool=false, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), title::String="", xlabel::String="", ylabel::String="", yrev::Bool=false, cart::Bool=false, head::Bool=true, mono::Bool=false)::GLMakie.Figure
 
-    @assert size(s, 2) == length(t) "Signal length and time length must be equal."
+    @assert size(s, 2) == length(t) "Signal length must equal time length."
 
     pal = mono ? :grays : :darktest
 
-    # channel labels
-    clabels == [""] && (clabels = repeat([""], size(s, 1)))
-
-    # get limits
-    ylim = (floor(minimum(s) * 1.1, digits=0), ceil(maximum(s) * 1.1, digits=0))
-    ylim = _tuple_max(ylim)
+    pos = collect(1:DataFrames.nrow(locs))
 
     # plot parameters
     if size(s, 1) <= 64
-        plot_size = 800
-        marker_size = (120, 80)
-        rx = 1
-        ry = 1
-        offset = 0
-    elseif size(s, 1) <= 100
+        plot_size = 1000
+        marker_size = (1200, 600) ./ 10
+        xl = 1.2
+        yl = 1.2
+    elseif _in(size(s, 1), (64, 100))
         plot_size = 1200
-        marker_size = (120, 80)
-        rx = 0.9
-        ry = 0.7
-        offset = 150
+        marker_size = (1200, 600) ./ 12
+        xl = 1.5
+        yl = 1.5
     else
-        plot_size = 2500
-        marker_size = (90, 50)
-        rx = 0.6
-        ry = 0.4
-        offset = 250
+        plot_size = 1500
+        marker_size = (1200, 600) ./ 14
+        xl = 1.5
+        yl = 1.5
     end
 
     # get locations
@@ -282,97 +269,160 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
         loc_x = locs[!, :loc_x]
         loc_y = locs[!, :loc_y]
     end
-    loc_x = _n2v(loc_x)
-    loc_y = _n2v(loc_y)
-    # get marker centers
-    loc_x .*= ((plot_size / 2) - marker_size[1] / 2) .* rx
-    loc_y .*= ((plot_size / 2) - marker_size[2] / 2) .* ry
-    # origin is in the left top corner, convert positions
-    loc_x = round.(Int64, loc_x .+ (plot_size / 2) .- marker_size[1] / 2)
-    loc_y = (plot_size - marker_size[2]) .- round.(Int64, loc_y .+ (plot_size / 2) .- marker_size[2] / 2)
 
-    c = CairoRGBSurface(plot_size, plot_size - 3 * offset)
-    cr = CairoContext(c)
-    Cairo.set_source_rgb(cr, 256, 256, 256)
-    Cairo.rectangle(cr, 0.0, 0.0, plot_size, plot_size - 3 * offset)
-    Cairo.fill(cr)
+    # prepare ERP/ERF plots
+    pp_vec = GLMakie.Figure[]
+    pp_full_vec = GLMakie.Figure[]
     for idx in axes(s, 1)
-        p = Plots.plot(xlabel=xlabel,
-                       ylabel=ylabel,
-                       legend=false,
-                       xticks=false,
-                       yticks=false,
-                       grid=false,
-                       border=:none,
-                       xlims=(t[1], t[end]),
-                       ylims=ylim,
-                       title=clabels[idx],
-                       palette=pal,
-                       size=marker_size,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6;
-                       kwargs...)
-        # reverse y-axis
-        yrev && yflip!(true)
-
-        # plot 0 h-line
-        p = Plots.hline!([0],
-                         color=:grey,
-                         linewidth=0.5,
-                         labels="")
-
-        # plot ERP
-        p = Plots.plot!(t,
-                        s[idx, :],
-                        t=:line,
+        pp = GLMakie.Figure(size=marker_size,
+                            figure_padding=0)
+        ax = GLMakie.Axis(pp[1, 1],
+                          xlabel="",
+                          ylabel="",
+                          title=locs[idx, :label],
+                          yreversed=yrev,
+                          xautolimitmargin=(0, 0),
+                          yautolimitmargin=(0.1, 0.1))
+        hidedecorations!(ax)
+        ax.titlesize = 8
+        # plot ERPs
+        GLMakie.hlines!(ax,
+                        0,
                         color=:black,
-                        linewidth=0.5,
-                        alpha=0.75)
-
-        # plot 0 v-line
-        p = Plots.vline!([0],
-                         linestyle=:dash,
-                         linewidth=0.5,
-                         linecolor=:black,
-                         label=false)
-
-        withenv("GKSwstype" => "100") do
-            png(p, io)
+                        linewidth=1)
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=1)
+        GLMakie.lines!(ax,
+                       t,
+                       s[idx, :],
+                       linewidth=1,
+                       color=:black)
+        # plot RT v-line
+        if !isnothing(rt)
+            if rt >= t[1] && rt <= t[end]
+                GLMakie.vlines!(ax,
+                                rt,
+                                linewidth=1,
+                                color=mono ? :black : :red)
+            end
         end
-        img = read_from_png(io)
-        Cairo.set_source_surface(cr, img, loc_x[idx], loc_y[idx] - 1.5 * offset)
-        Cairo.paint(cr)
+        push!(pp_vec, pp)
+        pp_full = plot_erp(t,
+                           s[idx, :],
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title == "" ? clabels[idx] : clabels[idx] * ": " * title,
+                           rt=rt,
+                           yrev=yrev)
+        push!(pp_full_vec, pp_full)
     end
 
-    img_png = tempname() * ".png"
-    Cairo.write_to_png(c, img_png)
-    img = FileIO.load(img_png)
-    p = nothing
-    p = Plots.plot(img,
-                   size=(plot_size, plot_size - 3 * offset),
-                   title=title,
-                   titlefontsize=12,
-                   border=:none)
-    rm(img_png)
+    # prepare plot
+    plot_size = (plot_size, plot_size)
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=0)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel="",
+                      ylabel="",
+                      title=title,
+                      aspect=1,
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
+    GLMakie.xlims!(ax, (-xl, xl))
+    GLMakie.ylims!(ax, (-yl, yl))
+    hidespines!(ax)
+    hidedecorations!(ax)
+    ax.titlesize = 20
+
+    if head
+        # nose
+        GLMakie.lines!(ax, [-0.1, 0], [0.995, 1.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [0, 0.1], [1.1, 0.995], linewidth=3, color=:black)
+
+        # ears
+        # left
+        GLMakie.lines!(ax, [-0.995, -1.03], [0.1, 0.15], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.03, -1.06], [0.15, 0.16], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.06, -1.1], [0.16, 0.14], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.1, -1.12], [0.14, 0.05], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.12, -1.10], [0.05, -0.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.10, -1.13], [-0.1, -0.3], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.13, -1.09], [-0.3, -0.37], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.09, -1.02], [-0.37, -0.39], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-1.02, -0.98], [-0.39, -0.33], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [-0.98, -0.975], [-0.33, -0.22], linewidth=3, color=:black)
+        # right
+        GLMakie.lines!(ax, [0.995, 1.03], [0.1, 0.15], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.03, 1.06], [0.15, 0.16], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.06, 1.1], [0.16, 0.14], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.1, 1.12], [0.14, 0.05], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.12, 1.10], [0.05, -0.1], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.10, 1.13], [-0.1, -0.3], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.13, 1.09], [-0.3, -0.37], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.09, 1.02], [-0.37, -0.39], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [1.02, 0.98], [-0.39, -0.33], linewidth=3, color=:black)
+        GLMakie.lines!(ax, [0.98, 0.975], [-0.33, -0.22], linewidth=3, color=:black)
+
+        # head
+        GLMakie.arc!(ax,(0, 0), 1, 0, 2pi, linewidth=3, color=:black)
+    end
+
+    for idx in axes(s, 1)
+        io = IOBuffer()
+        show(io, MIME"image/png"(), pp_vec[idx])
+        pp = FileIO.load(io)
+        GLMakie.scatter!(loc_x[idx],
+                         loc_y[idx],
+                         marker=pp,
+                         markersize=marker_size,
+                         markerspace=:pixel)
+    end
+
+    loc_x_range = Tuple{Float64, Float64}[]
+    loc_y_range = Tuple{Float64, Float64}[]
+    for idx in eachindex(loc_x)
+        push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
+        push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
+    end
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press
+                ax_x = mouseposition(ax)[1]
+                ax_y = mouseposition(ax)[2]
+                for idx in eachindex(loc_x)
+                    if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] && ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                    end
+                end
+            end
+        end
+    end
 
     return p
 
 end
 
 """
-    plot_erp_stack(s; <keyword arguments>)
+    plot_erp_stack(t, s; <keyword arguments>)
 
 Plot EPRs stacked by channels or by epochs.
 
 # Arguments
 
 - `t::AbstractVector`: x-axis values
-- `s::AbstractArray`
+- `s::AbstractMatrix`
 - `rt::Union{Nothing, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
-- `clabels::Vector{String}=string(1:size(s, 1))`: signal channel labels vector
+- `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -381,67 +431,79 @@ Plot EPRs stacked by channels or by epochs.
 - `mono::Bool=false`: use color or gray palette
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
-- `kwargs`: optional arguments for plotting
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function plot_erp_stack(t::AbstractVector, s::AbstractArray, rt::Union{Nothing, AbstractVector}=nothing; clabels::Vector{String}=string(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3, kwargs...)::Plots.Plot{Plots.GRBackend}
+function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3)::GLMakie.Figure
 
-    _chk2d(s)
-    @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must be equal to length of t ($(length(t)))."
+    @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
 
     if !isnothing(rt)
-        @assert length(rt) == size(s, 1) "Length of the rt vector must be the same as the number of ERP epochs ($(size(s, 1)))."
+        @assert length(rt) == size(s, 1) "Length of the rt vector must equal number of ERP epochs ($(size(s, 1)))."
     end
 
     pal = mono ? :grays : :darktest
-
-    yticks = (axes(s, 1), clabels)
 
     if smooth
         s = imfilter(s, Kernel.gaussian(n))
     end
 
-    p = Plots.heatmap(t,
-                      axes(s, 1),
-                      s,
-                      size=size(s, 1) <= 64 ? (1200, 800) : (1200, 1200),
-                      margins=20Plots.px,
-                      legend=false,
-                      xticks=(_erpticks(t), string.(_erpticks(t) .* 1000)),
-                      yticks=yticks,
+    # prepare plot
+    plot_size = size(s, 1) <= 64 ? (1200, 800) : (1200, 1200)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
                       ylabel=ylabel,
-                      cb=cb,
-                      cbtitle=cb_title,
                       title=title,
-                      seriescolor=pal,
-                      linewidth=0.5,
-                      titlefontsize=8,
-                      xlabelfontsize=8,
-                      ylabelfontsize=8,
-                      xtickfontsize=8,
-                      ytickfontsize=size(s, 1) <= 64 ? 8 : 5;
-                      kwargs...)
+                      xticks=LinearTicks(10),
+                      yticks=(axes(s, 1), clabels),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      yticklabelsize=size(s, 1) <= 64 ? 8 : 5,
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
+
+    hm = GLMakie.heatmap!(ax,
+                          t,
+                          axes(s, 1),
+                          rotr90(s),
+                          colormap=pal)
 
     # plot 0 v-line
-    p = Plots.vline!([0],
-                     linestyle=:dash,
-                     linewidth=0.5,
-                     linecolor=:black,
-                     label=false)
+    GLMakie.vlines!(ax,
+                    0,
+                    color=:gray,
+                    linestyle=:dash,
+                    linewidth=1)
 
-    # plot RT line
+    # plot RT v-line
     if !isnothing(rt)
-        p = Plots.plot!(rt, 1:length(rt),
-                        linewidth=1,
-                        linecolor=:black,
-                        label=false)
+        for idx in eachindex(rt)
+            if rt[idx] >= t[1] && rt[idx] <= t[end]
+                GLMakie.lines!(ax,
+                               rt[idx],
+                               idx,
+                               linewidth=1,
+                               color=mono ? :black : :red)
+            end
+        end
     end
 
-    Plots.plot(p)
+    # draw colorbar
+    if cb
+        Colorbar(p[1, 2],
+                 hm,
+                 label=cb_title,
+                 labelsize=18)
+    end
 
     return p
 
