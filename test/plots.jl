@@ -194,7 +194,7 @@ p = NeuroAnalyzer.mplot_locs(e10, weights=rand(19), ch="eeg")
 @info "Test: plot_dipole2d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 0), (1, 1, 1))
 p = NeuroAnalyzer.plot_dipole2d(d)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_dipole3d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 1), (1, 1, 1))
