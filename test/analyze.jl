@@ -484,9 +484,9 @@ sm, ss, su, sl = msci95(e10, e10, ch1="Fp1", ch2="Fp2")
 
 @info "Test: eros()"
 s, f, t = eros(e10, ch="Fp1", method=:stft)
-@test size(s) == (129, 289, 1)
+@test size(s) == (129, 89, 1)
 @test length(f) == 129
-@test length(t) == 289
+@test length(t) == 89
 s, f, t = eros(e10, ch="Fp1", method=:mt)
 @test size(s) == (257, 15, 1)
 @test length(f) == 257

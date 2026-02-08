@@ -1255,11 +1255,9 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
 
     pal = mono ? :grays : :darktest
 
-    pal = mono ? :grays : :darktest
-
-    ylim = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0))
-    ylim = _tuple_max(ylim)
-    yticks = [ylim[1], 0, ylim[2]]
+    yl = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0))
+    yl = _tuple_max(yl)
+    yticks = [yl[1], 0, yl[2]]
 
     # prepare plot
     plot_size = (800, 500)

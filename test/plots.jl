@@ -117,11 +117,10 @@ p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="eeg", topo=true)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_topo()"
-p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1))
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1), amethod=:median)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_topo(e10, ch="eeg", seg=(0, 1), amethod=:median, imethod=:nn)
+p = NeuroAnalyzer.plot_topo(e10, ch="eeg", tpos=0)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_topo(e10, ch="eeg", tpos=0, imethod=:nn)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_matrix()"
 channels = get_channel(e10, ch=get_channel(e10, type=datatype(e10)))
@@ -199,7 +198,7 @@ p = NeuroAnalyzer.plot_dipole2d(d)
 @info "Test: plot_dipole3d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 1), (1, 1, 1))
 p = NeuroAnalyzer.plot_dipole3d(d)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_eros()"
 s, f, t = eros(e10, ch="Fp1")
@@ -227,7 +226,7 @@ p = NeuroAnalyzer.mplot(e10, e10, ch="all")
 eeg_new = keep_epoch(e10, ep=1)
 ic, ic_mw, ic_var = ica_decompose(eeg_new, ch="eeg", iter=10)
 p = plot_icatopo(eeg_new, ch="eeg", ic=ic, ic_mw=ic_mw, ic_idx=1:3, tpos=0)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: add_pl()"
 p = mplot(e10, ep=1)
@@ -266,7 +265,7 @@ s = eeg.data[1, 1:100, :]
 t = eeg.epoch_time[1:100]
 s_avg, s_l, s_u = NeuroAnalyzer.bootstrap_ci(s, cl=0.95)
 p = plot_ci(s_avg, s_l, s_u, t)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_phsd()"
 p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="Fp1")

@@ -183,15 +183,15 @@ na_set_prefs(progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_ba
 
 # show major parameters
 
-_info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
-_info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
-_info("Preferences:")
-_info("   Progress bar: $progress_bar")
-_info("        Verbose: $verbose")
-_info("   Exclude bads: $exclude_bads")
-_info("         Colors: $colors")
-_info("System info:")
-_info("    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB")
+@info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
+@info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
+@info "Preferences:"
+@info "   Progress bar: $progress_bar"
+@info "        Verbose: $verbose"
+@info "   Exclude bads: $exclude_bads"
+@info "         Colors: $colors"
+@info "System info:"
+@info "    Free memory: $(round(Sys.free_memory() / 2^20, digits=1)) MB"
 
 # set package options
 
@@ -204,15 +204,15 @@ BLAS.set_num_threads(Sys.CPU_THREADS)
 
 # setup resources
 
-_info("Preparing resources")
+@info "Preparing resources"
 global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
 
 # load plugins
 
+@info "Loading plugins"
 global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
 if isdir(plugins_path)
     if length(readdir(plugins_path)) > 0
-        _info("Loading plugins:")
         na_plugins_reload()
     end
 else
@@ -502,6 +502,7 @@ include("plots/misc.jl")
 include("plots/plot_filter_response.jl")
 include("plots/plot_locs.jl")
 include("plots/plot_locs3d.jl")
+include("plots/plot_locs_nirs.jl")
 include("plots/plot_gridlocs.jl")
 include("plots/plot_save.jl")
 include("plots/plot_topo.jl")
@@ -510,14 +511,11 @@ include("plots/plot_coherence.jl")
 include("plots/plot_efield.jl")
 include("plots/plot_varia.jl")
 include("plots/plot_dipole2d.jl")
-include("plots/plot_locs_nirs.jl")
+include("plots/plot_dipole3d.jl")
 
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_spectrogram.jl")
-
-include("plots/plot_dipole3d.jl")
-include("plots/mplot_dipole3d.jl")
 
 include("plots/plot_erp.jl")
 include("plots/plot_mep.jl")
