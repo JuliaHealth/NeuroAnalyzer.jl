@@ -11,7 +11,7 @@ Plot ERP/ERF (single channel).
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractVector`: data to plot
-- `rt::Union{Nothing, Real, Vector{<:Real}}=nothing`: response time value(s)
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time value(s)
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -22,7 +22,7 @@ Plot ERP/ERF (single channel).
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real, Vector{<:Real}}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real, AbstractVector}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -90,7 +90,7 @@ Plot ERP/ERF (multi-channel).
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `s::AbstractMatrix`: data to plot
-- `rt::Union{Nothing, Real, Vector{<:Real}}=nothing`: response time value(s)
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time value(s)
 - `clabels::Vector{String}=string.(1:size(s, 1))`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -105,7 +105,7 @@ Plot ERP/ERF (multi-channel).
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real, Vector{<:Real}}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
