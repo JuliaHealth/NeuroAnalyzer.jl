@@ -692,24 +692,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         sp = sp[:, f1:f2]
     end
 
-    if length(ch) == 1
-        xlabel == "default" && (xlabel = "Time [s]")
-        ylabel == "default" && (ylabel = "Frequency [Hz]")
-    elseif length(ch) > 1 && type === :normal
-        ylabel == "default" && (ylabel = "")
-        xlabel == "default" && (xlabel = "Frequency [Hz]")
-    elseif type === :topo
-        xlabel == "default" && (xlabel = "Time [s]")
-        ylabel == "default" && (ylabel = "Frequency [Hz]")
-        @assert length(ch) > 1 "For topographical plot, the number of channels must be >1."
-        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        _has_locs(obj)
-        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
-        locs = Base.filter(:label => in(chs), obj.locs)
-        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-    end
-
     if length(ch) == 1 && type === :normal
+        xlabel == "default" && (xlabel = "Time [s]")
+        ylabel == "default" && (ylabel = "Frequency [Hz]")
         p = plot_spectrogram(st,
                              sf,
                              sp,
@@ -728,6 +713,8 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              threshold=threshold,
                              threshold_type=threshold_type)
     elseif length(ch) > 1 && type === :normal
+        ylabel == "default" && (ylabel = "")
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
         p = plot_spectrogram(sf,
                              sp,
                              clabels=clabels,
@@ -746,6 +733,15 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              threshold=threshold,
                              threshold_type=threshold_type)
     elseif type === :topo
+        xlabel == "default" && (xlabel = "Time [s]")
+        ylabel == "default" && (ylabel = "Frequency [Hz]")
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
+        _has_locs(obj)
+        chs = intersect(obj.locs[!, :label], labels(obj)[ch])
+        locs = Base.filter(:label => in(chs), obj.locs)
+        _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
+        ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
         p = plot_spectrogram_topo(locs,
                                   st,
                                   sf,

@@ -60,7 +60,8 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; flim::Tuple{Real, Re
     ax.yticklabelsize = 12
 
     # draw powers
-    Makie.lines!(sf,
+    Makie.lines!(ax,
+                 sf,
                  sp,
                  linewidth=2,
                  color=:black)
@@ -141,7 +142,8 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
 
     if ci95
         # draw 95% CI
-        Makie.band!(sf,
+        Makie.band!(ax,
+                    sf,
                     s_u,
                     s_l,
                     alpha=0.25,
@@ -149,14 +151,16 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
                     strokewidth=0.5)
 
         # draw mean
-        Makie.lines!(sf,
+        Makie.lines!(ax,
+                     sf,
                      s_m,
                      color=:black,
                      linewidth=2)
     else
         cmap = GLMakie.resample_cmap(pal, ch_n)
         for idx in 1:ch_n
-            Makie.lines!(sf,
+            Makie.lines!(ax,
+                         sf,
                          sp[idx, :],
                          color=cmap[idx],
                          colormap=pal,
@@ -168,7 +172,8 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
         # draw averaged channels
         if avg
             s = mean(sp, dims=1)[:]
-            Makie.lines!(sf,
+            Makie.lines!(ax,
+                         sf,
                          s,
                          colormap=pal,
                          linewidth=4,
@@ -726,17 +731,13 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
         end
     end
 
-    # set labels
-    if type !== :w3d && type !== :s3d && type !== :topo
+    if type === :normal
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         if ref !== :abs
             ylabel == "default" && (ylabel = "Power ratio")
         else
             ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         end
-    end
-
-    if type === :normal
         if length(ch) == 1
             p = plot_psd(sf,
                          sp,
@@ -760,11 +761,10 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                          mono=mono)
         end
     elseif type === :w3d || type === :s3d
-        ch_t = obj.header.recording[:channel_type]
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
-        title = replace(title, "channel" => "channels")
+        ch_t = obj.header.recording[:channel_type]
         p = plot_psd_3d(sf,
                         sp,
                         clabels=clabels,
@@ -777,16 +777,15 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
                         mono=mono,
                         variant=type === :w3d ? :w : :s)
     elseif type === :topo
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PSD plots all channels must be of the same type."
+        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
-        xlabel == "default" && (xlabel = "Frequency [Hz]")
-        ylabel == "default" && (ylabel = db ? "Power [dB $units^2/Hz]" : "Power [$units^2/Hz]")
-        title = replace(title, "channel" => "channels")
         p = plot_psd_topo(locs,
                           sf,
                           sp,

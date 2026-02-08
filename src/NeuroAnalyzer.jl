@@ -508,6 +508,7 @@ include("plots/plot_topo.jl")
 include("plots/plot_connectivity_circle.jl")
 include("plots/plot_coherence.jl")
 include("plots/plot_efield.jl")
+include("plots/plot_varia.jl")
 
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
@@ -524,8 +525,6 @@ include("plots/plot_mep.jl")
 
 include("plots/plot_signal.jl")
 include("plots/mplot_signal.jl")
-
-include("plots/plot_varia.jl")
 
 # gui
 include("gui/iedit.jl")

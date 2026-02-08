@@ -33,7 +33,7 @@ function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; flim::Tuple{Real, Re
     end
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (1200, 500)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -328,7 +328,6 @@ Plot topographical map of PHSDs (phase spectral density).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: unused, for compatibility only
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates
 - `head::Bool=true`: plot head shape
@@ -337,7 +336,7 @@ Plot topographical map of PHSDs (phase spectral density).
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), title::String="", mono::Bool=true, frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
+function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="", ylabel::String="", title::String="", frq::Symbol=:lin, cart::Bool=false, head::Bool=true)::GLMakie.Figure
 
     @assert size(ph, 2) == length(f) "Length of powers vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -378,8 +377,9 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
         loc_y = locs[!, :loc_y]
     end
 
-    # prepare PSD plots
+    # prepare PHSD plots
     pp_vec = GLMakie.Figure[]
+    pp_full_vec = GLMakie.Figure[]
     for idx in axes(ph, 1)
         pp = GLMakie.Figure(size=marker_size,
                             figure_padding=0)
@@ -393,12 +393,20 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
         hidedecorations!(ax)
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
-        # plot powers
+        # plot phases
         GLMakie.lines!(f,
                        ph[idx, :],
                        linewidth=1,
                        color=:black)
         push!(pp_vec, pp)
+        pp_full = plot_phsd(f,
+                            ph[idx, :],
+                            xlabel=xlabel,
+                            ylabel=ylabel,
+                            title=locs[idx, :label] * ": " * title,
+                            flim=flim,
+                            frq=frq)
+        push!(pp_full_vec, pp_full)
     end
 
     # prepare plot
@@ -462,6 +470,27 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
                          markerspace=:pixel)
     end
 
+    loc_x_range = Tuple{Float64, Float64}[]
+    loc_y_range = Tuple{Float64, Float64}[]
+    for idx in eachindex(loc_x)
+        push!(loc_x_range, (loc_x[idx] - 0.15, loc_x[idx] + 0.15))
+        push!(loc_y_range, (loc_y[idx] - 0.1, loc_y[idx] + 0.1))
+    end
+    on(events(p).mousebutton) do event
+        if event.button == Mouse.left
+            if event.action == Mouse.press
+                ax_x = mouseposition(ax)[1]
+                ax_y = mouseposition(ax)[2]
+                for idx in eachindex(loc_x)
+                    if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] && ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
+                            display(GLMakie.Screen(), pp_full_vec[idx])
+                            break
+                    end
+                end
+            end
+        end
+    end
+
     return p
 
 end
@@ -494,13 +523,12 @@ Plot PHSD (phase spectral density).
 - `leg::Bool=true`: if true, add legend with channel labels
 - `avg::Bool=false`: if true, plot averaged PSD
 - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
-- `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false, gui::Bool=true)::GLMakie.Figure
+function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::Int64=0, ch::Union{String, Vector{String}, Regex}="all", flim::Tuple{Real, Real}=(0, sr(obj) / 2), frq::Symbol=:lin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, cart::Bool=false, head::Bool=true, leg::Bool=true, avg::Bool=false, ci95::Bool=false)::GLMakie.Figure
 
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
@@ -529,9 +557,6 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     # channel labels
     clabels = labels(obj)[ch]
 
-    # set units
-    units = _ch_units(obj, labels(obj)[ch[1]])
-
     # frequency limits
     fs = sr(obj)
     _check_tuple(flim, "flim", (0, sr(obj) / 2))
@@ -544,13 +569,9 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         title == "default" && (title = "PHSD\n[time window: $t_s1:$t_s2]")
     end
 
-    # set labels
-    if type !== :w3d && type !== :s3d && type !== :topo
+    if type === :normal
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "Phase [rad]")
-    end
-
-    if type === :normal
         if length(ch) == 1
             p = plot_phsd(sf,
                           sp,
@@ -560,7 +581,6 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                           flim=flim,
                           frq=frq)
         else
-            title = replace(title, "channel" => "channels")
             p = plot_phsd(sf,
                           sp,
                           xlabel=xlabel,
@@ -580,7 +600,6 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
         xlabel == "default" && (xlabel = "Frequency [Hz]")
         ylabel == "default" && (ylabel = "")
         zlabel == "default" && (zlabel = "Phase [rad]")
-        title = replace(title, "channel" => "channels")
         p = plot_phsd_3d(sf,
                          sp,
                          clabels=clabels,
@@ -593,16 +612,15 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
                          mono=mono,
                          variant=type === :w3d ? :w : :s)
     elseif type === :topo
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = "Phase [rad]")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel PHSD plots all channels must be of the same type."
+        @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
-        xlabel == "default" && (xlabel = "")
-        ylabel == "default" && (ylabel = "")
-        title = replace(title, "channel" => "channels")
         p = plot_phsd_topo(locs,
                            sf,
                            sp,

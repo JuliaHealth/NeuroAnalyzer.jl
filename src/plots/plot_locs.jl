@@ -117,7 +117,7 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
-                       figure_padding=0)
+                       figure_padding=(0, 0, 0, 0)) # L R B T
     if grid
         ax = GLMakie.Axis(p[1, 1],
                           aspect=1,

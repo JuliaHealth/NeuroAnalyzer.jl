@@ -162,7 +162,7 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
 
     # prepare plot
     p = GLMakie.Figure(size=plot_size,
-                       figure_padding=0)
+                       figure_padding=(10, 10, 0, 0)) # L R B T
     ax = GLMakie.Axis(p[1, 1],
                       aspect=1,
                       xlabel="",
@@ -254,7 +254,8 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         ps === :s && (sw = 1)
         if (isnothing(threshold) && isnothing(sch)) || (!isnothing(threshold) && threshold_method === :reg)
             for idx in 1:ch_n
-                GLMakie.scatter!(loc_x[idx],
+                GLMakie.scatter!(ax,
+                                 loc_x[idx],
                                  loc_y[idx],
                                  markersize=marker_size,
                                  color=:black)
@@ -262,14 +263,16 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         elseif threshold_method === :loc
             for idx in 1:ch_n
                 if idx in threshold_idx
-                    GLMakie.scatter!(loc_x[idx],
+                    GLMakie.scatter!(ax,
+                                     loc_x[idx],
                                      loc_y[idx],
                                      markersize=marker_size * 2,
                                      color=:gray,
                                      strokewidth=sw,
                                      strokecolor=:black)
                 else
-                    GLMakie.scatter!(loc_x[idx],
+                    GLMakie.scatter!(ax,
+                                     loc_x[idx],
                                      loc_y[idx],
                                      markersize=marker_size,
                                      color=:black)
@@ -278,14 +281,16 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         elseif !isnothing(sch)
             for idx in 1:ch_n
                 if idx in sch
-                    GLMakie.scatter!(loc_x[idx],
+                    GLMakie.scatter!(ax,
+                                     loc_x[idx],
                                      loc_y[idx],
                                      markersize=marker_size * 2,
                                      color=:gray,
                                      strokewidth=sw,
                                      strokecolor=:black)
                 else
-                    GLMakie.scatter!(loc_x[idx],
+                    GLMakie.scatter!(ax,
+                                     loc_x[idx],
                                      loc_y[idx],
                                      markersize=marker_size,
                                      color=:black)
@@ -309,8 +314,8 @@ function plot_topo(s::AbstractVector; locs::DataFrame, ch::Union{Int64, Vector{I
         GLMakie.Colorbar(p[1, 2],
                          hm,
                          label=cb_title,
-                         labelsize=font_size,
-                         ticklabelsize=font_size,
+                         labelsize=font_size - 4,
+                         ticklabelsize=font_size - 4,
                          width=ps === :l ? 25 : 10,
                          tellheight=true)
         rowsize!(p.layout, 1, ax.scene.viewport[].widths[2])
