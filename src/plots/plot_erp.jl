@@ -471,11 +471,11 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
                       ylabel=ylabel,
                       title=title,
                       xticks=LinearTicks(10),
-                      yticks=(axes(s, 1), clabels),
                       xminorticksvisible=true,
                       xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0),
+                      yticks=size(s, 1) <= 30 ? (1:length(clabels), clabels) : (5:5:length(clabels), clabels[5:5:end]),
                       yticklabelsize=size(s, 1) <= 64 ? 8 : 5,
                       xzoomlock=true,
                       yzoomlock=true,
@@ -499,7 +499,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
     if zl
         GLMakie.vlines!(ax,
                         0,
-                        color=:gray,
+                        color=:white,
                         linestyle=:dash,
                         linewidth=2)
     end
@@ -580,8 +580,12 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
     # get data
     ep_n = nepochs(obj) - 1
-    if eavg
-        s = obj.data[ch, :, 2:end]'
+    if length(ch) == 1
+        if eavg
+            s = obj.data[ch[1], :, 2:end]'
+        else
+            s = obj.data[ch, :, 1][:]
+        end
     else
         s = obj.data[ch, :, 1]
     end
@@ -591,7 +595,6 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
     # get time vector
     t = obj.epoch_time
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
 
     if length(ch) == 1
         if eavg
@@ -600,27 +603,34 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                        title,
                                        "Time [ms]",
                                        "Epochs",
-                                       "Averaged epochs: $ep_n, time window: $t_s1:$t_s2")
-                p = plot_erp(t,
-                             s,
-                             xlabel=xl,
-                             ylabel=yl,
-                             title=tt,
-                             clabels=clabels,
-                             mono=mono,
-                             rt=rt,
-                             yrev=yrev,
-                             avg=avg,
-                             ci95=ci95,
-                             leg=leg,
-                             zl=zl)
+                                       "$(clabels[1]), averaged epochs: $ep_n")
+            cb_title == "default" && (cb_title = "Amplitude [$units]")
+            if sort_epochs
+                if !isnothing(rt)
+                    rt_idx = sortperm(rt)
+                    rt = rt[rt_idx]
+                    s = s[rt_idx, :]
+                end
+            end
+            @show size(s)
+            p = plot_erp_stack(t,
+                               s,
+                               rt=rt,
+                               xlabel=xl,
+                               ylabel=yl,
+                               title=tt,
+                               cb_title=cb_title,
+                               smooth=smooth,
+                               n=n,
+                               zl=zl,
+                               mono=mono)
         else
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
                                        title,
                                        "Time [ms]",
                                        "Amplitude [$units]",
-                                       "Averaged epochs: $ep_n, time window: $t_s1:$t_s2")
+                                       "$(clabels[1]), averaged epochs: $ep_n")
             p = plot_erp(t,
                          s,
                          xlabel=xl,
@@ -628,17 +638,16 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                          title=tt,
                          rt=rt,
                          yrev=yrev,
-                         mono=mono,
-                         zl=zl)
+                         zl=zl,
+                         mono=mono)
         end
     elseif type === :normal
-        peaks = false
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [ms]",
                                    "Amplitude [$units]",
-                                   "Averaged epochs: $ep_n, time window: $t_s1:$t_s2")
+                                   "$(length(ch)) channels, averaged epochs: $ep_n")
         p = plot_erp(t,
                      s,
                      xlabel=xl,
@@ -650,36 +659,20 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                      avg=avg,
                      ci95=ci95,
                      leg=leg,
-                     mono=mono,
-                     zl=zl)
+                     zl=zl,
+                     mono=mono)
 
     elseif type === :stack
-        peaks = false
         cb_title == "default" && (cb_title = "Amplitude [$units]")
-        if ch isa Int64
-            xl, yl, tt = _set_defaults(xlabel,
-                                       ylabel,
-                                       title,
-                                       "Time [ms]",
-                                       "Epochs",
-                                       "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        else
-            xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "$(uppercase(datatype(obj))) amplitude\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
-        end
-        clabels = labels(obj)[ch]
-        if ch isa Int64
-            if sort_epochs
-                rt_idx = sortperm(rt)
-                rt = rt[rt_idx]
-                s = s[rt_idx, :]
-            end
-        else
-            rt = nothing
-            sort_epochs = false
-        end
+        xl, yl, tt = _set_defaults(xlabel,
+                                   ylabel,
+                                   title,
+                                   "Time [ms]",
+                                   "",
+                                   "$(length(ch)) channels, averaged epochs: $ep_n")
         p = plot_erp_stack(t,
                            s,
-                           rt,
+                           rt=rt,
                            xlabel=xl,
                            ylabel=yl,
                            title=tt,
@@ -688,25 +681,22 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                            cb_title=cb_title,
                            smooth=smooth,
                            n=n,
-                           mono=mono,
-                           zl=zl)
-
+                           zl=zl,
+                           mono=mono)
     elseif type === :topo
-        peaks = false
         _has_locs(obj)
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [ms]",
                                    "Amplitude [$units]",
-                                   "Averaged epochs: $ep_n, time window: $t_s1:$t_s2")
+                                   "$(length(ch)) channels, averaged epochs: $ep_n")
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
         @assert length(unique(obj.header.recording[:channel_type][ch])) == 1 "For multi-channel topo plot all channels must be of the same type."
         _has_locs(obj)
         chs = intersect(obj.locs[!, :label], labels(obj)[ch])
         locs = Base.filter(:label => in(chs), obj.locs)
         _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
-        ndims(sp) == 1 && (sp = reshape(sp, 1, length(sp)))
         p = plot_erp_topo(locs,
                           t,
                           s,
@@ -724,7 +714,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     end
 
     # draw time markers
-    if tm != 0
+    if !isnothing(tm)
         for idx in eachindex(tm)
             @assert tm[tm_idx] / 1000 >= t[1] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
             @assert tm[tm_idx] / 1000 <= t[end] "tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."
@@ -732,7 +722,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             GLMakie.vline!(p[1, 1],
                            t[tm[idx]],
                            linewidth=1,
-                           linecolor=:black)
+                           color=:black)
         end
     end
 
