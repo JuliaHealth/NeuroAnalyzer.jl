@@ -1,6 +1,6 @@
 _xlims(t::Union{AbstractVector, AbstractRange})::Tuple{Real, Real} = floor(t[1], digits=2), ceil(t[end], digits=2)
 
-function _ylims(s::AbstractVector)::Tuple{Real, Real}
+function _ylims(s::Union{AbstractVector,AbstractMatrix})::Tuple{Real, Real}
     if maximum(abs.(s)) > 100
         n = 2
     elseif maximum(abs.(s)) >= 10

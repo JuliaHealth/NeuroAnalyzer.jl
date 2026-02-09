@@ -19,7 +19,7 @@ Detect a pair of positive and negative peaks of ERP.
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
-    _check_datatype(obj, ["erp", "erf"])
+    _check_datatype(obj, ["erp", "erf", "mep"])
 
     ch_n = size(obj)[1]
     p = zeros(Int64, ch_n, 2)

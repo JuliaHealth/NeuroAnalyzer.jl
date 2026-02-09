@@ -122,7 +122,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
         Colorbar(p[1, 2],
                  hm,
                  label=cb_title,
-                 labelsize=18)
+                 labelsize=16)
     end
 
     return p
@@ -249,7 +249,7 @@ function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vect
         Colorbar(p[1, 2],
                  hm,
                  label=cb_title,
-                 labelsize=18)
+                 labelsize=16)
     end
 
     return p
