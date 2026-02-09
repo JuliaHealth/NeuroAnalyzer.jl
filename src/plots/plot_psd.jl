@@ -407,8 +407,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
                        linewidth=1,
                        color=:black)
         push!(pp_vec, pp)
-        pp_full = plot_psd(ax,
-                           sf,
+        pp_full = plot_psd(sf,
                            sp[idx, :],
                            xlabel=xlabel,
                            ylabel=ylabel,

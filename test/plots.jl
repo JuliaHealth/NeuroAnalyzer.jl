@@ -22,64 +22,62 @@ p = NeuroAnalyzer.plot_compose(pp, layout=l)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_connections()"
-p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", connections=rand(-10:1:10, 19, 19), threshold=12, threshold_type=:g)
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(-10:1:10, 19, 19), threshold=12, threshold_type=:g, gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_erp()"
 e10_erp = average_epochs(e10)
 p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:butterfly)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:butterfly)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:mean)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:mean)
-@test p isa Plots.Plot{Plots.GRBackend}
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=false)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", avg=true)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", ci95=true)
+@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:stack)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:stack)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:topo)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
 
 @info "Test: plot_filter_response()"
-p = NeuroAnalyzer.mplot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
+p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs()"
-p = NeuroAnalyzer.mplot_locs(e10, ch="eeg")
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_psd()"
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1")
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:mean)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:s3d)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:s3d)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_save()"
@@ -97,23 +95,23 @@ p = NeuroAnalyzer.mplot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_spectrogram()"
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1")
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_spectrogram(e10, db=true, ep=1, ch="eeg", topo=true)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="eeg", topo=true)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_topo()"
@@ -187,7 +185,7 @@ p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_weights()"
-p = NeuroAnalyzer.mplot_locs(e10, weights=rand(19), ch="eeg")
+p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg")
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dipole2d()"
@@ -230,7 +228,7 @@ p = plot_icatopo(eeg_new, ch="eeg", ic=ic, ic_mw=ic_mw, ic_idx=1:3, tpos=0)
 
 @info "Test: add_pl()"
 p = mplot(e10, ep=1)
-pl = mplot_locs(eeg, ch="eeg", selected="eeg", ps=:s)
+pl = plot_locs(eeg, ch="eeg", selected="eeg", ps=:s)
 pp = add_pl(p, pl)
 @test pp isa GLMakie.Figure
 
@@ -252,13 +250,15 @@ c = plot2canvas(p)
 @info "Test: plot_mep()"
 mep = import_duomag(joinpath(testfiles_path, "mep-duomag.m"))
 p = plot_mep(mep, ch="MEP1")
-@test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:butterfly)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:mean)
-@test p isa Plots.Plot{Plots.GRBackend}
-p = plot_mep(mep, ch=["MEP1", "MEP2"], type=:stack)
-@test p isa Plots.Plot{Plots.GRBackend}
+@test p isa GLMakie.Figure
+p = plot_mep(mep, ch=["MEP1", "MEP2"], avg=false)
+@test p isa GLMakie.Figure
+p = plot_mep(mep, ch=["MEP1", "MEP2"], avg=true)
+@test p isa GLMakie.Figure
+p = plot_mep(mep, ch=["MEP1", "MEP2"], ci95=true)
+@test p isa GLMakie.Figure
+p = plot_mep(mep, ch="all", type=:stack)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_ci()"
 s = eeg.data[1, 1:100, :]
@@ -298,7 +298,7 @@ p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
 @info "Test: plot_connectivity_circle()"
 l = get_channel(eeg, type="eeg")
 m = rand(-10:0.1:10, length(l), length(l))
-p = NeuroAnalyzer.mplot_connectivity_circle(m, clabels=l)
+p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_imf()"
@@ -308,7 +308,7 @@ p = NeuroAnalyzer.plot_imf(imf, t=t)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_gridlocs()"
-p = NeuroAnalyzer.mplot_gridlocs()
+p = NeuroAnalyzer.plot_gridlocs()
 @test p isa GLMakie.Figure
 
 @info "Test: plot_hs()"
@@ -337,11 +337,11 @@ p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs3d()"
-p = NeuroAnalyzer.mplot_locs3d(e10, ch="eeg", mesh_type=:disabled);
+p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:disabled);
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_locs3d(e10, ch="eeg", mesh_type=:brain);
+p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:brain);
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot_locs(e10, ch="eeg", mesh_type=:head);
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", mesh_type=:head);
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polezero()"

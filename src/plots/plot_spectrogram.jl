@@ -355,7 +355,8 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot powers
-        GLMakie.heatmap!(sf,
+        GLMakie.heatmap!(ax,
+                         sf,
                          st,
                          sp[:, :, idx]',
                          colormap=pal)

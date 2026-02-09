@@ -394,7 +394,8 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
         GLMakie.xlims!(ax, flim)
         ax.titlesize = 8
         # plot phases
-        GLMakie.lines!(f,
+        GLMakie.lines!(ax,
+                       f,
                        ph[idx, :],
                        linewidth=1,
                        color=:black)
