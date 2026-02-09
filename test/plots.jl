@@ -49,9 +49,9 @@ p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftyp
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs()"
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg")
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", selected=["Fp1", "Fp2"])
+p = NeuroAnalyzer.plot_locs(e10, ch="eeg", sch=["Fp1", "Fp2"], gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_psd()"
@@ -69,9 +69,11 @@ p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:mean)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:butterfly)
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=true)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], ci95=true)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
 @test p isa GLMakie.Figure
@@ -87,11 +89,11 @@ NeuroAnalyzer.plot_save(p, file_name="test.png")
 isfile("test.png") && rm("test.png")
 
 @info "Test: plot()"
-p = NeuroAnalyzer.mplot(e10, ch="Fp1")
+p = NeuroAnalyzer.plot(e10, ch="Fp1", gui=false);
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot(e10, ch=["Fp1", "Fp2"], type=:mean)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:mean)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.mplot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_spectrogram()"

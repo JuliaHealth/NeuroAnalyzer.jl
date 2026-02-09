@@ -4,8 +4,6 @@ Julia toolbox for analyzing neurophysiological data.
 https://neuroanalyzer.org
 """
 
-__precompile__(true)
-
 module NeuroAnalyzer
 
 @assert VERSION >= v"1.11.0" "NeuroAnalyzer requires Julia 1.11.0 or above."
@@ -14,7 +12,6 @@ module NeuroAnalyzer
 
 const VER = v"0.26.2-dev"
 const allow_wip = occursin("dev", string(VER))          # false for the stable branch, true for the devel branch
-# const io = PipeBuffer()                                 # required for interactive preview
 const data_types = ["eeg",
                     "ecog",
                     "seeg",
@@ -514,16 +511,16 @@ include("plots/plot_efield.jl")
 include("plots/plot_varia.jl")
 include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
+include("plots/plot_erp.jl")
+include("plots/plot_mep.jl")
 
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_spectrogram.jl")
 
-include("plots/plot_erp.jl")
-include("plots/plot_mep.jl")
-
 include("plots/plot_signal.jl")
-include("plots/mplot_signal.jl")
+
+# include("plots/plot_signal.jl")
 
 # gui
 include("gui/iedit.jl")

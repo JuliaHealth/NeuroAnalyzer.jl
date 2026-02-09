@@ -6,7 +6,7 @@ export cmp_stat
 export permute
 export logit
 export sumsq
-export na
+export rmna
 export df
 export center
 
@@ -274,7 +274,7 @@ function sumsq(x::AbstractVector)::Float64
 end
 
 """
-    na(x)
+    rmna(x)
 
 Return values of x ignoring NaNs and Missing values.
 
@@ -286,7 +286,7 @@ Return values of x ignoring NaNs and Missing values.
 
 - `x::Vector{Float64}`
 """
-function na(x::AbstractVector)::Vector{Float64}
+function rmna(x::AbstractVector)::Vector{Float64}
 
     x = x[.!ismissing.(x)]
     x = x[.!isnan.(x)]

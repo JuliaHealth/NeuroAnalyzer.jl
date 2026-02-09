@@ -27,7 +27,7 @@ Named tuple containing:
 """
 function summary(x::AbstractVector; g::String="")::@NamedTuple{n::Int64, ms::Int64, m::Float64, v::Float64, s::Float64, min::Float64, q1::Float64, me::Float64, q3::Float64, max::Float64, mo::Float64}
 
-    x_tmp = na(x)
+    x_tmp = rmna(x)
     n = length(x)
     ms = n - length(x_tmp)
     m = mean(x_tmp)
@@ -93,7 +93,7 @@ function summary(x::AbstractMatrix; g::Vector{String}, d::Int64=3)::DataFrame
     df = DataFrame(cols)
 
     for idx in axes(x, 2)
-        x_tmp = na(x[:, idx])
+        x_tmp = rmna(x[:, idx])
         n = length(x[:, idx])
         ms = n - length(x_tmp)
         m = round(mean(x_tmp), digits=d)
@@ -161,7 +161,7 @@ function summary(x::AbstractArray...; g::Vector{String}, d::Int64=3)::DataFrame
     df = DataFrame(cols)
 
     for idx in eachindex(x)
-        x_tmp = na(x[idx])
+        x_tmp = rmna(x[idx])
         n = length(x[idx])
         ms = n - length(x_tmp)
         m = round(mean(x_tmp), digits=d)
