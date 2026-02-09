@@ -15,14 +15,15 @@ Plot ERP/ERF (single channel).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse y-axis
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", yrev::Bool=false, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     # prepare plot
     plot_size = (1200, 450)
@@ -53,18 +54,14 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    # plot 0 h-line
-    GLMakie.hlines!(ax,
-                    0,
-                    color=:black,
-                    linewidth=1)
-
     # plot 0 v-line
-    GLMakie.vlines!(ax,
-                    0,
-                    color=:gray,
-                    linestyle=:dash,
-                    linewidth=1)
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
 
     # plot ERP
     GLMakie.lines!(ax,
@@ -101,17 +98,18 @@ Plot ERP/ERF (multi-channel).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse y-axis
 - `avg::Bool=true`: if true, plot averaged ERP
 - `ci95::Bool=false`: if true, plot mean and ±95% CI
 - `leg::Bool=true`: if true, add legend with channel labels
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", yrev::Bool=false, avg::Bool=true, ci95::Bool=false, leg::Bool=true, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -146,18 +144,14 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    # plot 0 h-line
-    GLMakie.hlines!(ax,
-                    0,
-                    color=:black,
-                    linewidth=1)
-
     # plot 0 v-line
-    GLMakie.vlines!(ax,
-                    0,
-                    color=:gray,
-                    linestyle=:dash,
-                    linewidth=1)
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
 
     # plot ERPs
     if ci95
@@ -243,13 +237,14 @@ Plot topographical map ERPs.
 - `yrev::Bool=false`: reverse y-axis
 - `cart::Bool=false`: if true, use Cartesian coordinates, otherwise use polar coordinates for XY plane and spherical coordinates for XZ and YZ planes
 - `head::Bool=true`: plot head shape
+- `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), title::String="", xlabel::String="", ylabel::String="", yrev::Bool=false, cart::Bool=false, head::Bool=true, mono::Bool=false)::GLMakie.Figure
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; rt::Union{Nothing, Real}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), title::String="", xlabel::String="", ylabel::String="", yrev::Bool=false, cart::Bool=false, head::Bool=true, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     @assert size(s, 2) == length(t) "Signal length must equal time length."
 
@@ -445,15 +440,16 @@ Plot EPRs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or gray palette
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3)::GLMakie.Figure
+function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, n::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
 
@@ -500,11 +496,13 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
                           colormap=pal)
 
     # plot 0 v-line
-    GLMakie.vlines!(ax,
-                    0,
-                    color=:gray,
-                    linestyle=:dash,
-                    linewidth=1)
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
 
     # plot RT v-line
     if !isnothing(rt)
@@ -560,13 +558,14 @@ Plot ERP/ERF.
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
 - `sort_epochs::Bool=false`:: sort epochs by rt vector
+- `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, tm::Union{Nothing, Int64, Vector{Int64}}=nothing, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, eavg::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false)::GLMakie.Figure
+function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, tm::Union{Nothing, Int64, Vector{Int64}}=nothing, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, eavg::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack], "type")
@@ -613,7 +612,8 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                              yrev=yrev,
                              avg=avg,
                              ci95=ci95,
-                             leg=leg)
+                             leg=leg,
+                             zl=zl)
         else
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
@@ -626,9 +626,10 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                          xlabel=xl,
                          ylabel=yl,
                          title=tt,
-                         mono=mono,
                          rt=rt,
-                         yrev=yrev)
+                         yrev=yrev,
+                         mono=mono,
+                         zl=zl)
         end
     elseif type === :normal
         peaks = false
@@ -644,12 +645,13 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                      ylabel=yl,
                      title=tt,
                      clabels=clabels,
-                     mono=mono,
                      rt=rt,
                      yrev=yrev,
                      avg=avg,
                      ci95=ci95,
-                     leg=leg)
+                     leg=leg,
+                     mono=mono,
+                     zl=zl)
 
     elseif type === :stack
         peaks = false
@@ -686,7 +688,8 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                            cb_title=cb_title,
                            smooth=smooth,
                            n=n,
-                           mono=mono)
+                           mono=mono,
+                           zl=zl)
 
     elseif type === :topo
         peaks = false
@@ -711,12 +714,13 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                           ylabel=yl,
                           title=tt,
                           clabels=clabels,
-                          mono=mono,
                           rt=rt,
                           yrev=yrev,
                           avg=avg,
                           ci95=ci95,
-                          leg=leg)
+                          leg=leg,
+                          mono=mono,
+                          zl=zl)
     end
 
     # draw time markers

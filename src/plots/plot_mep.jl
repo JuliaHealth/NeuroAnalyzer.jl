@@ -13,14 +13,15 @@ Plot MEP (single channel).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
+- `zl::Bool=true`: draw line at t = 0
 - `yrev::Bool=false`: reverse y-axis
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false)::GLMakie.Figure
+function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", zl::Bool=true, yrev::Bool=false, mono::Bool=false)::GLMakie.Figure
 
     # prepare plot
     plot_size = (1200, 450)
@@ -51,18 +52,14 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xl
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    # plot 0 h-line
-    GLMakie.hlines!(ax,
-                    0,
-                    color=:black,
-                    linewidth=1)
-
     # plot 0 v-line
-    GLMakie.vlines!(ax,
-                    0,
-                    color=:gray,
-                    linestyle=:dash,
-                    linewidth=2)
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
 
     # plot MEP
     GLMakie.lines!(ax,
@@ -88,17 +85,18 @@ Plot MEP (multi-channel).
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `yrev::Bool=false`: reverse y-axis
 - `avg::Bool=true`: if true, plot averaged MEP
 - `ci95::Bool=false`: if true, plot mean and ±95% CI
 - `leg::Bool=true`: if true, add legend with channel labels
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", yrev::Bool=false, avg::Bool=true, ci95::Bool=false, leg::Bool=true, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     pal = mono ? :grays : :darktest
 
@@ -133,18 +131,14 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; cl
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    # plot 0 h-line
-    GLMakie.hlines!(ax,
-                    0,
-                    color=:black,
-                    linewidth=1)
-
     # plot 0 v-line
-    GLMakie.vlines!(ax,
-                    0,
-                    color=:gray,
-                    linestyle=:dash,
-                    linewidth=2)
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
 
     # plot MEPs
     if ci95
@@ -217,15 +211,16 @@ Plot MEPs stacked by channels or by epochs.
 - `title::String=""`: plot title
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
-- `mono::Bool=false`: use color or gray palette
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, smooth::Bool=false, n::Int64=3)::GLMakie.Figure
+function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, n::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
 
@@ -268,11 +263,13 @@ function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
                           colormap=pal)
 
     # plot 0 v-line
-    GLMakie.vlines!(ax,
-                    0,
-                    color=:white,
-                    linestyle=:dash,
-                    linewidth=2)
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:white,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
 
     # draw colorbar
     if cb
@@ -310,13 +307,14 @@ Plot MEP.
 - `ci95::Bool=false`: if true, plot mean and ±95% CI
 - `smooth::Bool=false`: smooth the image using Gaussian blur
 - `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, n::Int64=3)::GLMakie.Figure
+function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, n::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     _check_datatype(obj, "mep")
     _check_var(type, [:normal, :stack], "type")
@@ -341,7 +339,6 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
     # get time vector
     t = obj.epoch_time
-    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
 
     if length(ch) == 1
         xl, yl, tt = NeuroAnalyzer._set_defaults(xlabel,
@@ -349,21 +346,22 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                    title,
                                    "Time [ms]",
                                    "Amplitude [$units]",
-                                   "MEP amplitude, channel: $(clabels[1]), time window: $t_s1:$t_s2")
+                                   "MEP amplitude, channel: $(clabels[1])")
         p = plot_mep(t,
                      s,
                      xlabel=xl,
                      ylabel=yl,
                      title=tt,
                      mono=mono,
-                     yrev=yrev)
+                     yrev=yrev,
+                     zl=zl)
     elseif type === :normal
         xl, yl, tt = NeuroAnalyzer._set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [ms]",
                                    "Amplitude [$units]",
-                                   "MEP amplitude, $(length(ch)) channels, time window: $t_s1:$t_s2")
+                                   "MEP amplitude, $(length(ch)) channels")
         p = plot_mep(t,
                      s,
                      xlabel=xl,
@@ -374,14 +372,15 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                      yrev=yrev,
                      avg=avg,
                      ci95=ci95,
-                     leg=leg)
+                     leg=leg,
+                     zl=zl)
     elseif type === :stack
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,
                                    "Time [ms]",
                                    "",
-                                   "MEP amplitude, $(length(ch)) channels, time window: $t_s1:$t_s2")
+                                   "MEP amplitude, $(length(ch)) channels")
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         p = plot_mep_stack(t,
                            s,
@@ -393,123 +392,48 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                            cb_title=cb_title,
                            mono=mono,
                            n=n,
-                           smooth=smooth)
+                           smooth=smooth,
+                           zl=zl)
     end
-
-#=
-    if type === :normal
-        @assert length(ch) == 1 "For :normal plot type, only one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude\n[time window: $t_s1:$t_s2]")
-        p = plot_mep(t,
-                     s,
-                     xlabel=xl,
-                     ylabel=yl,
-                     title=tt,
-                     mono=mono,
-                     yrev=yrev;
-                     kwargs...)
-    elseif type === :butterfly
-        @assert length(ch) > 1 "For :butterfly plot type, more than one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude\n[time window: $t_s1:$t_s2]")
-        if channel_labels
-            clabels = labels(obj)[ch]
-        else
-            clabels = repeat([""], length(ch))
-        end
-        p = plot_mep_butterfly(t,
-                               s,
-                               xlabel=xl,
-                               ylabel=yl,
-                               title=tt,
-                               clabels=clabels,
-                               mono=mono,
-                               avg=avg,
-                               yrev=yrev;
-                               kwargs...)
-    elseif type === :mean
-        @assert !(ch isa Int64) "For :mean plot type, more than one channel must be specified."
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "MEP amplitude [mean ± 95%CI]\n[time window: $t_s1:$t_s2]")
-        p = plot_mep_avg(t,
-                         s,
-                         xlabel=xl,
-                         ylabel=yl,
-                         title=tt,
-                         mono=mono,
-                         yrev=yrev;
-                         kwargs...)
-    elseif type === :stack
-        @assert !(ch isa Int64) "For :stack plot type, more than one channel must be specified."
-        peaks = false
-        cb_title == "default" && (cb_title = "Amplitude [$units]")
-        xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "MEP amplitude\n[time window: $t_s1:$t_s2]")
-        if channel_labels
-            clabels = labels(obj)[ch]
-        else
-            clabels = repeat([""], length(ch))
-        end
-        p = plot_mep_stack(t,
-                           s,
-                           xlabel=xl,
-                           ylabel=yl,
-                           title=tt,
-                           clabels=clabels,
-                           cb=cb,
-                           cb_title=cb_title,
-                           mono=mono;
-                           kwargs...)
-    end
-=#
 
     # draw peaks
     if peaks
         if length(ch) == 1
             pp = erp_peaks(obj)
             GLMakie.scatter!(p[1, 1],
-                             (t[pp[ch, 1]], obj.data[ch, pp[ch, 1], 1]),
+                             t[pp[ch, 1]][1], obj.data[ch, pp[ch, 1], 1][1],
                              marker=:xcross,
                              color=mono ? :black : :red,
-                             markersize=10)
+                             markersize=15)
             GLMakie.scatter!(p[1, 1],
-                             (t[pp[ch, 2]], obj.data[ch, pp[ch, 2], 1]),
+                             t[pp[ch, 2]][1], obj.data[ch, pp[ch, 2], 1][1],
                              marker=:xcross,
                              color=mono ? :black : :blue,
-                             markersize=10)
-            _info("Positive peak time: $(round(t[pp[ch, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1], digits=2)) $units")
-            _info("Negative peak time: $(round(t[pp[ch, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1], digits=2)) $units")
-        elseif (type === :normal && avg) || type === :mean
-            erp_tmp = mean(mean(obj.data[ch, :, 2:end], dims=1), dims=3)
+                             markersize=15)
+            _info("Positive peak time: $(round(t[pp[ch, 1]][1] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(obj.data[ch, pp[ch, 1], 1][1], digits=2)) $units")
+            _info("Negative peak time: $(round(t[pp[ch, 2]][1] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(obj.data[ch, pp[ch, 2], 1][1], digits=2)) $units")
+        elseif length(ch) > 1 && type === :normal
+            mep_tmp = mean(obj.data[ch, :, 1], dims=1)[:, :, :]
             obj_tmp = keep_channel(obj, ch=labels(obj)[1])
-            obj_tmp.data = erp_tmp
+            obj_tmp.data = mep_tmp
             pp = erp_peaks(obj_tmp)
-            if !mono
-                GLMakie.scatter!(p[1, 1,],
-                                 (t[pp[1, 1]], erp_tmp[pp[1, 1]]),
-                                 marker=:xcross,
-                                 color=:red,
-                                 markersize=3)
-                GLMakie.scatter!(p[1, 1,],
-                                 (t[pp[1, 2]], erp_tmp[pp[1, 2]]),
-                                 marker=:xcross,
-                                 color=:blue,
-                                 markersize=3)
-            else
-                GLMakie.scatter!(p[1, 1,],
-                                 (t[pp[1, 1]], erp_tmp[pp[1, 1]]),
-                                 marker=:xcross,
-                                 color=:black,
-                                 markersize=3)
-                GLMakie.scatter!(p[1, 1,],
-                                 (t[pp[1, 2]], erp_tmp[pp[1, 2]]),
-                                 marker=:xcross,
-                                 color=:black,
-                                 markersize=3)
-            end
+            GLMakie.scatter!(p[1, 1,],
+                             t[pp[1, 1]], mep_tmp[pp[1, 1]],
+                             marker=:xcross,
+                             color=mono ? :black : :red,
+                             markersize=15)
+            GLMakie.scatter!(p[1, 1,],
+                             t[pp[1, 2]],
+                             mep_tmp[pp[1, 2]],
+                             marker=:xcross,
+                             color=mono ? :black : :blue,
+                             markersize=15)
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp_tmp[pp[1, 1]], digits=2)) $units")
+            _info("Positive peak amplitude: $(round(mep_tmp[pp[1, 1]], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp_tmp[pp[1, 2]], digits=2)) $units")
+            _info("Negative peak amplitude: $(round(mep_tmp[pp[1, 2]], digits=2)) $units")
         end
     end
 

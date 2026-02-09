@@ -84,7 +84,7 @@ function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector
         Colorbar(p[1, 2],
                  hm,
                  label=cb_title,
-                 labelsize=18)
+                 labelsize=16)
     end
 
     return p
@@ -887,7 +887,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
             Colorbar(p[1, 2],
                      hm,
                      label=cb_title,
-                     labelsize=18)
+                     labelsize=16)
         end
 
         # draw time markers
@@ -939,7 +939,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
             Colorbar(p[1, 2],
                      hm1,
                      label=cb_title,
-                     labelsize=18)
+                     labelsize=16)
         end
 
         # plot 0 v-line
@@ -994,7 +994,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
             Colorbar(p[2, 2],
                      hm2,
                      label=cb_title,
-                     labelsize=18)
+                     labelsize=16)
         end
 
         # plot 0 v-line
@@ -1370,7 +1370,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
         Colorbar(p[1, 2],
                  hm,
                  label=cb_title,
-                 labelsize=18)
+                 labelsize=16)
     end
 
     if !isnothing(threshold)
