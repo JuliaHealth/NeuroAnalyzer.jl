@@ -115,32 +115,6 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector;
         end
 
         on(events(p).keyboardbutton) do event
-            if event.action == Keyboard.press
-                if event.key == Keyboard.p
-                    seg = (vsearch(seg_pos[], t), vsearch(seg_pos[] + seg_len, t))
-                    sp, sf = psd(s[seg[1]:seg[2]],
-                               fs=round(Int64, 1 / (t[2] - t[1])),
-                               db=true)
-                    pp = plot_psd(sf,
-                                  sp,
-                                  title="PSD [time segment: $(t[seg[1]]):$(t[seg[2]]) s]",
-                                  xlabel="Frequency [s]",
-                                  ylabel="Power [dB]")
-                    display(GLMakie.Screen(), pp)
-                elseif event.key == Keyboard.s
-                    seg = (vsearch(seg_pos[], t), vsearch(seg_pos[] + seg_len, t))
-                    sp, sf, st = NeuroAnalyzer.spectrogram(s[seg[1]:seg[2]],
-                                                           fs=round(Int64, 1 / (t[2] - t[1])),
-                                                           db=true)
-                    pp = plot_spectrogram(st,
-                                          sf,
-                                          sp,
-                                          title="Spectrogram [time segment: $(t[seg[1]]):$(t[seg[2]]) s]",
-                                          xlabel="Time [s]",
-                                          ylabel="Frequency [s]")
-                    display(GLMakie.Screen(), pp)
-                end
-            end
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if event.key == Keyboard.home
                     seg_pos[] = 0
@@ -207,11 +181,14 @@ Plot multi-channel continuous signal.
 """
 function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; seg::Tuple{Real, Real}=(0, 10), clabels::Vector{String}=string.(1:size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)), gui::Bool=true)::GLMakie.Figure
 
+#=
+    # pad labels with spaces
     l = length.(clabels)
     ml = maximum(l)
     for idx in eachindex(clabels)
         length(clabels[idx]) < ml && (clabels[idx] = lpad(clabels[idx], ml, ' '))
     end
+=#
 
     # zooming factor
     zoom = Observable(1.0)
@@ -278,7 +255,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
     else
         plot_size = (1650, ch_n * 50)
     end
-    p = GLMakie.Figure(size=plot_size)
+    p = GLMakie.Figure(size=plot_size,
+                       figure_padding=(10, 10, 10, 10)) # L R B T)
     ax1 = GLMakie.Axis(p[1, 1],
                        xlabel="",
                        ylabel=ylabel,
@@ -286,7 +264,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
                        xticks=LinearTicks(10),
                        xminorticksvisible=true,
                        xminorticks=IntervalsBetween(10),
-                       yticks=clabels==string.(1:ch_n) ? (1:ch_n, string.(1:ch_n)) : (1:ch_n, clabels),
+                       yticks=(1:ch_n, clabels),
                        # TO DO: yticklabelcolor=ytc[1:end],
                        yreversed=true,
                        xautolimitmargin=(0, 0),
@@ -296,7 +274,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
                        xpanlock=true,
                        ypanlock=true,
                        xrectzoom=false,
-                       yrectzoom=false)
+                       yrectzoom=false,
+                       yticklabelspace=60.0)
     GLMakie.xlims!(ax1, seg)
     if gui
         if ch_n > 20
@@ -424,16 +403,6 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
               strokecolor=:black,
               strokewidth=1)
 
-        on(events(p).scroll, priority=1) do (_, dy)
-            @show ch1[]
-            if dy == -1.0
-                ch1[] < ch_n - 19 && (ch1[] += 1)
-            elseif dy == 1
-                ch1[] > 1 && (ch1[] -= 1)
-            end
-            ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 20 - 0.5))
-        end
-
         on(events(p).mousebutton) do event
             if event.button == Mouse.left
                 if event.action == Mouse.press # || event.action == Mouse.release
@@ -456,7 +425,17 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
         end
 
         on(events(p).keyboardbutton) do event
+            update_ax2 = false
+            update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
+                if event.key == Keyboard.down
+                    ch1[] < ch_n - 19 && (ch1[] += 1)
+                    update_ax3 = true
+                end
+                if event.key == Keyboard.up
+                    ch1[] > 1 && (ch1[] -= 1)
+                    update_ax3 = true
+                end
                 if event.key == Keyboard.kp_add
                     if zoom[] < 20
                         zoom[] += 0.25
@@ -469,32 +448,39 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
                 end
                 if event.key == Keyboard.home
                     seg_pos[] = 0
+                    update_ax2 = true
                 end
                 if event.key == Keyboard._end
                     seg_pos[] = ceil(Int64, t[end] - seg_len)
+                    update_ax2 = true
                 end
                 if event.key == Keyboard.left
                     if seg_pos[] > 0
                         seg_pos[] -= 1
+                        update_ax2 = true
                     end
                 end
                 if ispressed(p, Keyboard.left_shift & Keyboard.left)
                     if seg_pos[] >= 9
                         seg_pos[] -= 9
+                        update_ax2 = true
                     end
                 end
                 if event.key == Keyboard.right
                     if seg_pos[] <= t[end] - seg_len
                         seg_pos[] += 1
+                        update_ax2 = true
                     end
                 end
                 if ispressed(p, Keyboard.left_shift & Keyboard.right)
                     if seg_pos[] <= t[end] - seg_len - 9
                         seg_pos[] += 9
+                        update_ax2 = true
                     end
                 end
-                seg = (seg_pos[], seg_pos[] + seg_len)
-                ax1.limits[] = (seg, ax1.limits[][2])
+                update_ax2 && (seg = (seg_pos[], seg_pos[] + seg_len))
+                update_ax2 && (ax1.limits[] = (seg, ax1.limits[][2]))
+                update_ax3 && (ax1.limits[] = (ax1.limits[][1], (ch1[] - 0.5, ch1[] + 20 - 0.5)))
             end
         end
 
