@@ -17,6 +17,7 @@ Plot single-channel continuous signal.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `bad::Bool=false`: is this a bad channel
+- `emarkers::Union{Nothing, AbstractVector}=nothing`: epoch markers
 - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
@@ -64,6 +65,16 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractVector;
                    s,
                    linewidth=1.5,
                    color=bad ? :lightgray : :black)
+
+    # draw epochs markers
+    # TODO: draw epoch numbers
+#    if !isnothing(emarkers)
+#        GLMakie.vlines!(ax1,
+#                        emarkers,
+#                        linestyle=:dot,
+#                        linewidth=0.5,
+#                        color=:blue)
+#    end
 
     if gui
 
@@ -173,6 +184,7 @@ Plot multi-channel continuous signal.
 - `title::String=""`: plot title
 - `scale::Bool=true`: draw scale
 - `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
+- `emarkers::Union{Nothing, AbstractVector}=nothing`: epoch markers
 - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
@@ -192,6 +204,9 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
 
     # zooming factor
     zoom = Observable(1.0)
+
+    # bad channels
+    ch_bad = Observable(bad)
 
     seg_len = (seg[2] - seg[1])
     seg_pos = Observable(seg[1])
@@ -301,7 +316,18 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
                        color=bad[idx] ? :lightgray : :black)
     end
 
+    # draw epochs markers
+    # TODO: draw epoch numbers
+#    if !isnothing(emarkers)
+#        GLMakie.vlines!(ax1,
+#                        emarkers,
+#                        linestyle=:dot,
+#                        linewidth=0.5,
+#                        color=:blue)
+#    end
+
     # draw scale bars
+    # TO DO: place scale values on the left side, below channel label
     if scale
         idx2 = 1
         for idx1 in 1:ch_n
@@ -314,12 +340,13 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
                                linewidth=5)
                 GLMakie.text!(ax1,
                               x,
-                              idx1,
-                              text=cunits == repeat([""], ch_n) ? "$(r[idx2])" : "$(r[idx2]) $(cunits[idx1])",
-                              fontsize=8,
+                              idx1 + 0.5,
+                              markerspace=:pixel,
+                              text="$(r[idx2]) $(cunits[idx1])",
+                              fontsize=10,
                               color=:red,
-                              align=(:center, :top),
-                              rotation=pi/2,
+                              align=(:left, :bottom),
+                              #rotation=pi/2,
                               offset=(5, 0))
                 idx2 += 1
             end
@@ -402,6 +429,16 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
               color=:darkgrey,
               strokecolor=:black,
               strokewidth=1)
+
+        # mark bad channels
+        for idx in 1:ch_n
+            if ch_bad[][idx]
+                GLMakie.hlines!(ax3,
+                                idx,
+                                linewidth=2,
+                                color=:black)
+            end
+        end
 
         on(events(p).mousebutton) do event
             if event.button == Mouse.left
@@ -496,7 +533,7 @@ end
 """
     plot_signal(t, s; <keyword arguments>)
 
-Plot amplitude of multi-channel epoched signal.
+Plot epoched signal.
 
 # Arguments
 
@@ -1169,7 +1206,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{St
     # do not show epoch markers if there are no epochs
     nepochs(obj) == 1 && (emarkers = false)
     if emarkers
-        epoch_markers = _get_epoch_markers(obj)
+        emarkers = _get_epoch_markers(obj)
+    else
+        emarkers = nothing
     end
 
     # check channels
@@ -1289,16 +1328,6 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Int64=0, ch::Union{String, Vector{St
                             ylabel=yl,
                             title=tt,
                             mono=mono)
-    end
-
-    # add epochs markers
-    # TODO: draw epoch numbers
-    if emarkers
-        GLMakie.vlines!(p[1, 1],
-                        epoch_markers,
-                        linestyle=:dot,
-                        linewidth=0.5,
-                        color=:blue)
     end
 
     # plot markers if available

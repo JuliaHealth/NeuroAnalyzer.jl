@@ -1,5 +1,7 @@
 export trim
 export trim!
+export crop
+export crop!
 
 """
     trim(s; <keyword arguments>)
@@ -165,5 +167,58 @@ function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=fals
     obj.markers = obj_new.markers
 
     return nothing
+
+end
+
+"""
+    crop(obj; <keyword arguments>)
+
+Crop signal by removing parts of the signal.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `seg::Tuple{Real, Real}`: segment to be cropped (from, to) in seconds
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`
+"""
+function crop(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::NeuroAnalyzer.NEURO
+
+    @assert nepochs(obj) == 1 "crop() must be applied to a continuous object."
+
+    obj_new = trim(obj, seg=seg, keep=true)
+
+    return obj_new
+
+end
+
+"""
+    crop!(obj; <keyword arguments>)
+
+Crop signal by removing parts of the signal.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `seg::Tuple{Real, Real}`: segment to be cropped (from, to) in seconds
+
+# Returns
+
+Nothing
+"""
+function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
+
+    @assert nepochs(obj) == 1 "crop!() must be applied to a continuous object."
+
+    obj_new = crop(obj, seg=seg)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
+    obj.markers = obj_new.markers
+
+    return Nothing
 
 end

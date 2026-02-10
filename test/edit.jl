@@ -155,6 +155,10 @@ e_tmp = NeuroAnalyzer.trim(eeg, seg=(0, 11))
 e_tmp = NeuroAnalyzer.trim(eeg, seg=(0, 21), keep=true)
 @test size(e_tmp) == (24, 5377, 1)
 
+@info "Test: crop()"
+e_tmp = NeuroAnalyzer.crop(eeg, seg=(0, 21))
+@test size(e_tmp) == (24, 5377, 1)
+
 @info "Test: delete_marker()"
 eeg_mrk = import_edf(joinpath(testfiles_path, "eeg-test-edfplus.edf"))
 @test nrow(eeg_mrk.markers) == 45
