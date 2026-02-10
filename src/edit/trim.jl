@@ -212,13 +212,13 @@ function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
 
     @assert nepochs(obj) == 1 "crop!() must be applied to a continuous object."
 
-    obj_new = crop(obj, seg=seg)
+    obj_new = trim(obj, seg=seg, keep=true)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.time_pts = obj_new.time_pts
     obj.epoch_time = obj_new.epoch_time
     obj.markers = obj_new.markers
 
-    return Nothing
+    return nothing
 
 end

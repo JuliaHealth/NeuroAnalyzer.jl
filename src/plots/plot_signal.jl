@@ -332,15 +332,19 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
         idx2 = 1
         for idx1 in 1:ch_n
             if ctypes_uni_pos[idx1] == 1
-                x = ax1.limits[][1][1]
-                GLMakie.lines!(ax1,
-                               [x, x],
-                               [(idx1 - 0.5), (idx1 + 0.5)],
-                               color=:red,
-                               linewidth=5)
+                s_rectangle = lift(seg_pos) do seg_pos
+                    Rect(seg_pos, (idx1 - 0.5), 0.01, 1)
+                end
+                l_pos = lift(seg_pos) do seg_pos
+                    (seg_pos, idx1 + 0.5)
+                end
+                GLMakie.poly!(ax1,
+                              s_rectangle,
+                              color=:red,
+                              strokecolor=:red,
+                              strokewidth=2)
                 GLMakie.text!(ax1,
-                              x,
-                              idx1 + 0.5,
+                              l_pos,
                               markerspace=:pixel,
                               text="$(r[idx2]) $(cunits[idx1])",
                               fontsize=10,
@@ -359,12 +363,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
         # define a square: Rect(x, y, width, height)
         square = Rect(2, ax1.limits[][2][1],
                       6, (ax1.limits[][2][2] - ax1.limits[][2][1]))
-        poly!(ax1,
-              square,
-              alpha=0.25,
-              color=:darkgrey,
-              strokecolor=:black,
-              strokewidth=2)
+        GLMakie.poly!(ax1,
+                      square,
+                      alpha=0.25,
+                      color=:darkgrey,
+                      strokecolor=:black,
+                      strokewidth=2)
 
         # time bar
         ax2 = GLMakie.Axis(p[2, 1],
@@ -424,11 +428,11 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix;
         ch_rectangle = lift(ch1) do ch1
             Rect(0, ch1, 1, 19)
         end
-        poly!(ax3,
-              ch_rectangle,
-              color=:darkgrey,
-              strokecolor=:black,
-              strokewidth=1)
+        GLMakie.poly!(ax3,
+                      ch_rectangle,
+                      color=:darkgrey,
+                      strokecolor=:black,
+                      strokewidth=1)
 
         # mark bad channels
         for idx in 1:ch_n
