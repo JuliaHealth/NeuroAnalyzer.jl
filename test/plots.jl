@@ -1,5 +1,4 @@
 using NeuroAnalyzer
-using Plots
 using Cairo
 using Test
 using GLMakie
@@ -22,64 +21,64 @@ p = NeuroAnalyzer.plot_compose(pp, layout=l)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_connections()"
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5, gui=false)
+p = plot_locs(e10, ch="eeg", connections=rand(19, 19), threshold=0.5, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(-10:1:10, 19, 19), threshold=12, threshold_type=:g, gui=false)
+p = plot_locs(e10, ch="eeg", connections=rand(-10:1:10, 19, 19), threshold=12, threshold_type=:g, gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_erp()"
 e10_erp = average_epochs(e10)
-p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1")
+p = plot_erp(e10_erp, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=true)
+p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=false)
+p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], ci95=true)
+p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], ci95=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:stack)
+p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:stack)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", type=:stack)
+p = plot_erp(e10_erp, ch="Fp1", type=:stack)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:topo)
+p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_filter_response()"
-p = NeuroAnalyzer.plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
+p = plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs()"
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", gui=false)
+p = plot_locs(e10, ch="eeg", gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", sch=["Fp1", "Fp2"], gui=false)
+p = plot_locs(e10, ch="eeg", sch=["Fp1", "Fp2"], gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_psd()"
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1")
+p = plot_psd(e10, db=true, ep=1, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
+p = plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mw)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
+p = plot_psd(e10, db=true, ep=1, ch="Fp1", method=:mt)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
+p = plot_psd(e10, db=true, ep=1, ch="Fp1", method=:stft)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
+p = plot_psd(e10, db=true, ep=1, ch="Fp1", method=:fft)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
+p = plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
+p = plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=true)
+p = plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=false)
+p = plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], ci95=true)
+p = plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], ci95=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
+p = plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:w3d)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:s3d)
+p = plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:s3d)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
+p = plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_save()"
@@ -99,125 +98,125 @@ p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, ci95=true)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_spectrogram()"
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1")
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:stft)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mt)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:mw)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:cwt)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
+p = plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
+p = plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="eeg", type=:topo)
+p = plot_spectrogram(e10, db=true, ep=1, ch="eeg", type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_topo()"
-p = NeuroAnalyzer.plot_topo(e10, ch="eeg", tpos=0)
+p = plot_topo(e10, ch="eeg", tpos=0)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_topo(e10, ch="eeg", tpos=0, imethod=:nn)
+p = plot_topo(e10, ch="eeg", tpos=0, imethod=:nn)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_matrix()"
 channels = get_channel(e10, ch=get_channel(e10, type=datatype(e10)))
 c = corm(e10, ch="eeg")
-p = NeuroAnalyzer.plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
+p = plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_xac()"
 ac, lags = acov(e10, ch="eeg")
-p = NeuroAnalyzer.plot_xac(ac[1, :, 1], lags)
+p = plot_xac(ac[1, :, 1], lags)
 @test p isa GLMakie.Figure
 xc, lags = xcov(e10, e10, ch1="Fp1", ch2="Fp2")
-p = NeuroAnalyzer.plot_xac(xc[1, :, 1], lags)
+p = plot_xac(xc[1, :, 1], lags)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_histogram()"
 stats = rand(2, 100)
-p = NeuroAnalyzer.plot_histogram(stats[1, :], 0.8)
+p = plot_histogram(stats[1, :], 0.8)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_bar()"
-p = NeuroAnalyzer.plot_bar([1, 2, 3, 4, 5], xlabels=["G1", "G2", "G3", "G4", "G5"])
+p = plot_bar([1, 2, 3, 4, 5], xlabels=["G1", "G2", "G3", "G4", "G5"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_line()"
-p = NeuroAnalyzer.plot_line([1, 2, 1, 4.1, 1.5], xlabels=["G1", "G2", "G3", "G4", "G5"])
+p = plot_line([1, 2, 1, 4.1, 1.5], xlabels=["G1", "G2", "G3", "G4", "G5"])
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_line(rand(2, 5), rlabels=["pre", "post"], xlabels=["G1", "G2", "G3", "G4", "G5"])
+p = plot_line(rand(2, 5), rlabels=["pre", "post"], xlabels=["G1", "G2", "G3", "G4", "G5"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_box()"
 s = rand(3, 10)
 s[1, :] .*= 2
-p = NeuroAnalyzer.plot_box(s, xlabels=["G1", "G2", "G3"])
+p = plot_box(s, xlabels=["G1", "G2", "G3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_violin()"
 s = rand(3, 10)
 s[1, :] .*= 2
-p = NeuroAnalyzer.plot_violin(s, xlabels=["G1", "G2", "G3"])
+p = plot_violin(s, xlabels=["G1", "G2", "G3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dots()"
 s = rand(2, 10)
-p = NeuroAnalyzer.plot_dots(s, xlabels=["G1", "G2"])
+p = plot_dots(s, xlabels=["G1", "G2"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_paired()"
 s = rand(3, 10)
-p = NeuroAnalyzer.plot_paired(s, xlabels=["V1", "V2", "V3"])
+p = plot_paired(s, xlabels=["V1", "V2", "V3"])
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polar()"
 s = rand(0:0.1:10, 10, 2)
-p = NeuroAnalyzer.plot_polar(s)
+p = plot_polar(s)
 @test p isa GLMakie.Figure
 s = rand(10)
-p = NeuroAnalyzer.plot_polar(s)
+p = plot_polar(s)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
+p = plot_polar(s, m=(1, 1))
 @test p isa GLMakie.Figure
 s = rand(0:0.1:10, 10, 2)
-p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
+p = plot_polar(s, m=(1, 1))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_weights()"
-p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg", gui=false)
+p = plot_locs(e10, weights=rand(19), ch="eeg", gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dipole2d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 0), (1, 1, 1))
-p = NeuroAnalyzer.plot_dipole2d(d)
+p = plot_dipole2d(d)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dipole3d()"
 d = NeuroAnalyzer.DIPOLE((0, 0, 1), (1, 1, 1))
-p = NeuroAnalyzer.plot_dipole3d(d)
+p = plot_dipole3d(d)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_eros()"
 s, f, t = eros(e10, ch="Fp1")
-p = NeuroAnalyzer.plot_eros(s, f, t, tm=1000)
+p = plot_eros(s, f, t, tm=1000)
 @test p isa GLMakie.Figure
 e10_erp = average_epochs(e10)
 s, f, t = eros(e10_erp, ch="Fp1")
-p = NeuroAnalyzer.plot_eros(s, f, t)
+p = plot_eros(s, f, t)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_erop()"
 sp, sf = erop(e10, ch="Fp1")
-p = NeuroAnalyzer.plot_erop(sp, sf)
+p = plot_erop(sp, sf)
 @test p isa GLMakie.Figure
 e10_erp = average_epochs(e10)
 sp, sf = erop(e10_erp, ch="Fp1")
-p = NeuroAnalyzer.plot_erop(sp, sf)
+p = plot_erop(sp, sf)
 @test p isa GLMakie.Figure
 
 # @info "Test: plot(obj1, obj2)"
@@ -272,63 +271,63 @@ p = plot_ci(s_avg, s_l, s_u, t)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_phsd()"
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="Fp1")
+p = plot_phsd(e10, ep=1, ch="Fp1")
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", avg=true)
+p = plot_phsd(e10, ep=1, ch="eeg", avg=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", avg=false)
+p = plot_phsd(e10, ep=1, ch="eeg", avg=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", ci95=true)
+p = plot_phsd(e10, ep=1, ch="eeg", ci95=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", type=:w3d)
+p = plot_phsd(e10, ep=1, ch="eeg", type=:w3d)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", type=:topo)
+p = plot_phsd(e10, ep=1, ch="eeg", type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_coherence()"
 coh, imcoh, mscoh, f = coherence(e10, e10, ch1=["Fp1", "Fp2"], ch2=["Fp1", "Fp2"], ep1=1, ep2=1, flim=(15, 25))
-p = NeuroAnalyzer.plot_coherence(abs.(coh[1, :, 1]), f)
+p = plot_coherence(abs.(coh[1, :, 1]), f)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f)
+p = plot_coherence(abs.(coh[:, :, 1]), f)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f, avg=true)
+p = plot_coherence(abs.(coh[:, :, 1]), f, avg=true)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f, avg=false)
+p = plot_coherence(abs.(coh[:, :, 1]), f, avg=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f, ci95=true)
+p = plot_coherence(abs.(coh[:, :, 1]), f, ci95=true)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_heatmap()"
 m = rand(nchannels(e10), epoch_len(e10))
-p = NeuroAnalyzer.plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
+p = plot_heatmap(m, x=e10.epoch_time, y=1:nchannels(e10))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_connectivity_circle()"
 l = get_channel(eeg, type="eeg")
 m = rand(-10:0.1:10, length(l), length(l))
-p = NeuroAnalyzer.plot_connectivity_circle(m, clabels=l)
+p = plot_connectivity_circle(m, clabels=l)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_imf()"
 imf = rand(5, 100)
 t = collect(1:100)
-p = NeuroAnalyzer.plot_imf(imf, t=t)
+p = plot_imf(imf, t=t)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_gridlocs()"
-p = NeuroAnalyzer.plot_gridlocs()
+p = plot_gridlocs()
 @test p isa GLMakie.Figure
 
 @info "Test: plot_hs()"
 hms, t = hmspectrum(e10, ch="Fp1")
 hms = vec(hms[:, :, 1])
-p = NeuroAnalyzer.plot_hs(hms, t)
+p = plot_hs(hms, t)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_fi()"
 t = e10.epoch_time
 fi = frqinst(e10, ch="Fp1")
-p = NeuroAnalyzer.plot_fi(fi[1, :, 1], t)
+p = plot_fi(fi[1, :, 1], t)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_phase()"
@@ -345,21 +344,21 @@ p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs3d()"
-p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:disabled, gui=false)
+p = plot_locs3d(e10, ch="eeg", mesh_type=:disabled, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:brain, gui=false)
+p = plot_locs3d(e10, ch="eeg", mesh_type=:brain, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:head, gui=false)
+p = plot_locs3d(e10, ch="eeg", mesh_type=:head, gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polezero()"
-p = NeuroAnalyzer.plot_polezero(rand(ComplexF64, 2), rand(ComplexF64, 2))
+p = plot_polezero(rand(ComplexF64, 2), rand(ComplexF64, 2))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dwc()"
 dc = rand(16, 100)
 t = collect(1:100)
-p = NeuroAnalyzer.plot_dwc(dc, t=t, n=4)
+p = plot_dwc(dc, t=t, n=4)
 @test p isa GLMakie.Figure
 
 true

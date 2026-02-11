@@ -1,5 +1,5 @@
 using DataFrames
-using Plots
+using GLMakie
 using StatsKit
 
 v = [1, 2, 3, 4, 5]

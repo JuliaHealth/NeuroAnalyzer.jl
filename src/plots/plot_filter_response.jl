@@ -66,11 +66,11 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
         end
 
         # prepare plot
-        plot_size = (900, 600)
+        plot_size = (1400, 900)
         p = GLMakie.Figure(size=plot_size)
         ax1 = GLMakie.Axis(p[1, 1],
                           xlabel="Frequency [Hz]",
-                          ylabel="Magnitude\n[dB]",
+                          ylabel="Magnitude [dB]",
                           title=title,
                           xticks=LinearTicks(15),
                           xminorticksvisible=true,
@@ -124,7 +124,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
 
         ax2 = GLMakie.Axis(p[2, 1],
                           xlabel="Frequency [Hz]",
-                          ylabel="Phase\n[deg]",
+                          ylabel="Phase [deg]",
                           title="Phase response",
                           xticks=LinearTicks(15),
                           xminorticksvisible=true,
@@ -174,7 +174,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
 
         ax3 = GLMakie.Axis(p[3, 1],
                           xlabel="Frequency [Hz]",
-                          ylabel="Group delay\n[samples]",
+                          ylabel="Group delay [samples]",
                           title="Group delay",
                           xticks=LinearTicks(15),
                           xminorticksvisible=true,

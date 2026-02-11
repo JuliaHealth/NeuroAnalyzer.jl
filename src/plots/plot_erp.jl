@@ -248,17 +248,19 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
     pos = collect(1:DataFrames.nrow(locs))
 
     # plot parameters
-    plot_size = (1200, 1200)
     if size(s, 1) <= 64
-        marker_size = round(plot_size[1] / 100)
+        plot_size = (1000, 1000)
+        marker_size = (150, 75)
         xl = 1.2
         yl = 1.2
     elseif _in(size(s, 1), (64, 100))
-        marker_size = round(plot_size[1] / 120)
+        plot_size = (1200, 1200)
+        marker_size = (110, 55)
         xl = 1.5
         yl = 1.5
     else
-        marker_size = round(plot_size[1] / 140)
+        plot_size = (1400, 1400)
+        marker_size = (90, 45)
         xl = 1.5
         yl = 1.5
     end
@@ -279,7 +281,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(s, 1)
-        pp = GLMakie.Figure(size=plot_size,
+        pp = GLMakie.Figure(size=marker_size,
                             figure_padding=0)
         ax = GLMakie.Axis(pp[1, 1],
                           xlabel="",
@@ -326,7 +328,6 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
     end
 
     # prepare plot
-    plot_size = (plot_size, plot_size)
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],
@@ -634,6 +635,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                          mono=mono)
         end
     elseif type === :normal
+        avg == false && (peaks = false)
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
                                    title,

@@ -350,17 +350,17 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
     # plot parameters
     if size(ph, 1) <= 64
         plot_size = (1000, 1000)
-        marker_size = (120, 80)
+        marker_size = (150, 75)
         xl = 1.2
         yl = 1.2
     elseif _in(size(ph, 1), (64, 100))
         plot_size = (1200, 1200)
-        marker_size = (120, 80)
+        marker_size = (110, 55)
         xl = 1.5
         yl = 1.5
     else
-        plot_size = (1500, 1500)
-        marker_size = (85, 50)
+        plot_size = (1400, 1400)
+        marker_size = (90, 45)
         xl = 1.5
         yl = 1.5
     end
