@@ -344,7 +344,7 @@ Show object header.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function header(obj::NeuroAnalyzer.NEURO)::Nothing
 

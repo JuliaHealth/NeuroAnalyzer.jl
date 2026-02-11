@@ -89,7 +89,7 @@ Return a signal with normalized power (amplitudes divided by the root-mean-squar
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function normpower!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

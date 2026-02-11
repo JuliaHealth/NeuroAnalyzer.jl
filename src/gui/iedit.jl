@@ -12,7 +12,7 @@ Interactive edit signal channels properties and locations.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iedit(obj::NeuroAnalyzer.NEURO; ch::String=labels(obj)[1])::Nothing
 

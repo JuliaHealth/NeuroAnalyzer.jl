@@ -436,7 +436,7 @@ Plot EPRs stacked by channels or by epochs.
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
 - `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
 
@@ -444,7 +444,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `p::GLMakie.Figure`
 """
-function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, n::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
+function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing, AbstractVector}=nothing, clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, ks::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
 
@@ -455,7 +455,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
     pal = mono ? :grays : :darktest
 
     if smooth
-        s = imfilter(s, Kernel.gaussian(n))
+        s = imfilter(s, Kernel.gaussian(ks))
     end
 
     # prepare plot
@@ -533,7 +533,7 @@ Plot ERP/ERF.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
+- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title
@@ -549,17 +549,18 @@ Plot ERP/ERF.
 - `avg::Bool=true`: if true, plot averaged ERP
 - `ci95::Bool=false`: if true, plot mean and ±95% CI
 - `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
 - `sort_epochs::Bool=false`:: sort epochs by rt vector
 - `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
+- `gui::Bool=false`: ignored
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, tm::Union{Nothing, Int64, Vector{Int64}}=nothing, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, n::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
+function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, tm::Union{Nothing, Int64, Vector{Int64}}=nothing, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, ks::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false, zl::Bool=true, mono::Bool=false, gui::Bool=false)::GLMakie.Figure
 
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack], "type")
@@ -614,7 +615,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                title=tt,
                                cb_title=cb_title,
                                smooth=smooth,
-                               n=n,
+                               ks=ks,
                                zl=zl,
                                mono=mono)
         else
@@ -673,7 +674,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                            cb=cb,
                            cb_title=cb_title,
                            smooth=smooth,
-                           n=n,
+                           ks=ks,
                            zl=zl,
                            mono=mono)
     elseif type === :topo

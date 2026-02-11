@@ -212,7 +212,7 @@ Plot MEPs stacked by channels or by epochs.
 - `cb::Bool=true`: plot color bar
 - `cb_title::String=""`: color bar title
 - `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
 
@@ -220,14 +220,14 @@ Plot MEPs stacked by channels or by epochs.
 
 - `p::GLMakie.Figure`
 """
-function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, n::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
+function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{String}=string.(1:size(s, 1)), xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", smooth::Bool=false, ks::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     @assert length(t) == size(s, 2) "Number of s columns ($(size(s, 2))) must equal length of t ($(length(t)))."
 
     pal = mono ? :grays : :darktest
 
     if smooth
-        s = imfilter(s, Kernel.gaussian(n))
+        s = imfilter(s, Kernel.gaussian(ks))
     end
 
     # prepare plot
@@ -306,15 +306,16 @@ Plot MEP.
 - `avg::Bool=true`: if true, plot averaged MEP
 - `ci95::Bool=false`: if true, plot mean and ±95% CI
 - `smooth::Bool=false`: smooth the image using Gaussian blur
-- `n::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
+- `ks::Int64=3`: kernel size of the Gaussian blur (larger kernel means more smoothing)
 - `zl::Bool=true`: draw line at t = 0
 - `mono::Bool=false`: use color or gray palette
+- `gui::Bool=false`: ignored
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, n::Int64=3, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
+function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, ks::Int64=3, zl::Bool=true, mono::Bool=false, gui::Bool=false)::GLMakie.Figure
 
     _check_datatype(obj, "mep")
     _check_var(type, [:normal, :stack], "type")
@@ -391,7 +392,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                            cb=cb,
                            cb_title=cb_title,
                            mono=mono,
-                           n=n,
+                           ks=ks,
                            smooth=smooth,
                            zl=zl)
     end

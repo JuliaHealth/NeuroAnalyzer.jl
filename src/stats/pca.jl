@@ -115,41 +115,41 @@ Plot PCA biplot.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `Union{Nothing, GLMakie.Figure}`
 """
-function biplot(df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64=length(vars), zstd::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function biplot(df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64=length(vars), zstd::Bool=true)::Union{Nothing, GLMakie.Figure}
 
     pca = pcacomp(df, vars, n=n, zstd=zstd)
     n = length(pca.pc_model.prinvars)
     if n >= 2
-        p = Plots.scatter(pca.pc[:, "PC1"],
-                          pca.pc[:, "PC2"],
+        p = GLMakie.Figure()
+        ax = GLMakie.Axis(p[1, 1],
+                          aspect=1,
                           title="Biplot",
                           xlabel="PC1 ($(round(pca.pcv[1], digits=1))%)",
-                          ylabel="PC2 ($(round(pca.pcv[2], digits=1))%)",
-                          xlims=(-4, 4),
-                          ylims=(-4, 4),
-                          aspect_ratio=1,
-                          palette=:darktest,
-                          markersize=2,
-                          markerstrokewidth=0,
-                          markerstrokealpha=0,
-                          framestyle=:box,
-                          label=false;
-                          kwargs...)
-        for i in 1:n
-            p = Plots.plot!([0, pca.pcp[i, 1] * 2],
-                            [0, pca.pcp[i, 2] * 2],
-                            arrow=true,
-                            label=vars[i],
-                            legend = :outerright)
+                          ylabel="PC2 ($(round(pca.pcv[2], digits=1))%)")
+        GLMakie.xlims!(ax, (-4, 4))
+        GLMakie.ylims!(ax, (-4, 4))
+        GLMakie.scatter!(ax,
+                         pca.pc[:, "PC1"],
+                         pca.pc[:, "PC2"],
+                         markersize=10,
+                         colormap=:darktest)
+        cmap = GLMakie.resample_cmap(:darktest, n)
+        for idx in 1:n
+            GLMakie.arrows2d!((0, 0),
+                              (pca.pcp[idx, 1] * 2, pca.pcp[idx, 2] * 2),
+                              color=cmap[idx],
+                              colormap=:darktest,
+                              colorrange=1:n,
+                              label=vars[idx])
         end
-
-        Plots.plot(p; kwargs...)
-
+        axislegend(position=:rt,
+                   colormap=:darktest)
         return p
     else
         _warn("Could not calculate ≥ 2 PCs.")
+        return nothing
     end
 
 end
@@ -168,42 +168,53 @@ Plot PCA scree plot.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::GLMakie.Figure`
 """
-function screeplot(df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64=length(vars), zstd::Bool=true, kwargs...)::Plots.Plot{Plots.GRBackend}
+function screeplot(df::DataFrame, vars::Union{Vector{String}, Vector{Symbol}}; n::Int64=length(vars), zstd::Bool=true)::GLMakie.Figure
 
     pca = pcacomp(df, vars, n=n, zstd=zstd)
     n = length(pca.pc_model.prinvars)
 
     xl = ["PC" * string(x) for x in 1:n]
-    p1 = Plots.bar(1:n,
-                   pca.pcv,
-                   title="",
-                   xticks=(1:n, xl),
-                   ylabel="% of variance\nexplained",
-                   ylims=(0, 100),
-                   palette=:darktest,
-                   framestyle=:box)
-    p2 = Plots.plot(1:n,
-                    pca.pc_model.prinvars,
-                    ylims=(0, ceil(maximum(pca.pc_model.prinvars), digits=0)),
-                    xticks=(1:n, xl),
-                    ylabel="Eigenvalues",
-                    palette=:darktest,
-                    framestyle=:box)
-    p2 = Plots.scatter!(1:n,
-                        pca.pc_model.prinvars,
-                        mc=1,
-                        markerstrokewidth=0,
-                        markerstrokealpha=0)
-    p2 = hline!([1],
-                ls=:dash,
-                lc=:black)
-    p = Plots.plot(p1, p2,
-                   legend=false,
-                   layout=(2, 1),
-                   plot_title="Scree plot")
-    Plots.plot(p; kwargs...)
+    p = GLMakie.Figure()
+    ax1 = GLMakie.Axis(p[1, 1],
+                      title="Scree plot",
+                      xticks=(1:n, xl),
+                      xlabel="",
+                      ylabel="% of variance explained",
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0))
+    GLMakie.xlims!(ax1, (0.5, n + 0.5))
+    GLMakie.ylims!(ax1, (0, 100))
+    cmap = GLMakie.resample_cmap(:darktest, n)
+    for idx in 1:n
+        GLMakie.barplot!(ax1,
+                         idx,
+                         pca.pcv[idx],
+                         color=cmap[idx],
+                         colorrange=1:n,
+                         colormap=:darktest)
+    end
+    ax2 = GLMakie.Axis(p[2, 1],
+                      title="",
+                      xticks=(1:n, xl),
+                      xlabel="",
+                      ylabel="Eigenvalues")
+    GLMakie.xlims!(ax2, (0.5, n + 0.5))
+    GLMakie.ylims!(ax2, (0, ceil(maximum(pca.pc_model.prinvars), digits=0)))
+    GLMakie.lines!(ax2,
+                   1:n,
+                   pca.pc_model.prinvars,
+                   color=:black)
+    GLMakie.scatter!(ax2,
+                     1:n,
+                     pca.pc_model.prinvars,
+                     markersize=10,
+                     color=:black)
+    GLMakie.hlines!(ax2,
+                    1,
+                    linestyle=:dash,
+                    color=:black)
 
     return p
 

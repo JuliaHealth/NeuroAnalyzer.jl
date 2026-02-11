@@ -36,7 +36,7 @@ Zero channels at the beginning and at the end.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ch_zero!(obj::NeuroAnalyzer.NEURO)::Nothing
 

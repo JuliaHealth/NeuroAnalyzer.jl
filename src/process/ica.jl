@@ -227,7 +227,7 @@ Reconstruct signals using ICA components.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, ic::Matrix{Float64}, ic_mw::Matrix{Float64}, keep::Bool=false)::Nothing
 
@@ -292,7 +292,7 @@ Remove ICA components from the signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ica_remove!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, ic_idx::Union{Int64, Vector{Int64}, AbstractRange}, ic::Matrix{Float64}, ic_mw::Matrix{Float64})::Nothing
 

@@ -58,7 +58,7 @@ Add recording note to the object header.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)::Nothing
 
@@ -101,7 +101,7 @@ Delete recording note from the object header.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function delete_note!(obj::NeuroAnalyzer.NEURO)::Nothing
 

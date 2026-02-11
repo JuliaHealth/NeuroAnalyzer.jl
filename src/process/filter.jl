@@ -399,7 +399,7 @@ Apply IIR or FIR filter.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function filter_apply!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)::Nothing
 
@@ -513,7 +513,7 @@ Apply filtering.
 
 # Returns
 
-Nothing
+- `Nothing`
 
 If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
 """

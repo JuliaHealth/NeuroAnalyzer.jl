@@ -70,7 +70,7 @@ Add signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
 

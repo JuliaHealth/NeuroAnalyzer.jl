@@ -14,7 +14,7 @@ Interactive view of ICA components.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iview_ica(obj::NeuroAnalyzer.NEURO, ic::Matrix{Float64}, ic_mw::Matrix{Float64}; ch::Union{String, Vector{String}, Regex})::Nothing
 

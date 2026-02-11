@@ -21,7 +21,7 @@ Show markers.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
 
@@ -85,7 +85,7 @@ Delete marker.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
 
@@ -147,7 +147,7 @@ Add marker.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::Nothing
 
@@ -214,7 +214,7 @@ Edit marker.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::Nothing
 
@@ -320,7 +320,7 @@ Convert event channel to markers.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function channel2marker!(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", value::String="")::Nothing
 
@@ -368,7 +368,7 @@ Add markers.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_markers!(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::Nothing
 

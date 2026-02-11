@@ -431,7 +431,7 @@ Detect bad channels and epochs and update the `:bad_channel` field in the OBJ he
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function detect_bad!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Union{Symbol, Vector{Symbol}}=[:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp], w::Int64=10, flat_tol::Float64=0.1, flat_fr::Float64=0.3, p::Float64=0.99, tc::Float64=0.2, tkeo_method::Symbol=:pow, z::Real=3, ransac_r::Float64=0.8, ransac_tr::Float64=0.4, ransac_t::Float64=100.0, amp_t::Float64=400.0)::Nothing
 

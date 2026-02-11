@@ -70,7 +70,7 @@ Rotate channel locations in the xy-plane.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_rotz!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
@@ -145,7 +145,7 @@ Rotate channel locations around the Y axis (in the XZ-plane).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_roty!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
@@ -220,7 +220,7 @@ Rotate channel locations around the X axis (in the YZ-plane).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_rotx!(locs::DataFrame; a::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 

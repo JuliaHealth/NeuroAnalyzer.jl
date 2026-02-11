@@ -13,7 +13,7 @@ Interactive topographical map of continuous signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
@@ -348,7 +348,7 @@ Interactive topographical map of epoched signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

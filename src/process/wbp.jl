@@ -113,7 +113,7 @@ Perform wavelet band-pass filtering.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function wbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, frq::Real, ncyc::Int64=6)::Nothing
 

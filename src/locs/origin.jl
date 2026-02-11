@@ -44,7 +44,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_origin!(obj::NeuroAnalyzer.NEURO; x::Real=0, y::Real=0, z::Real=0)::Nothing
 
@@ -68,7 +68,7 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_origin!(locs::DataFrame; x::Real=0, y::Real=0, z::Real=0)::Nothing
 

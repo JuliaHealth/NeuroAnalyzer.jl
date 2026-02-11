@@ -58,7 +58,7 @@ Scale channel locations.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_scale!(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
@@ -134,7 +134,7 @@ Normalize channel locations to fit the unit sphere.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_normalize!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 

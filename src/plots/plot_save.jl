@@ -12,7 +12,7 @@ Saves plot as file (PNG/PDF). File format is determined using `file_name` extens
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function plot_save(p::Union{Plots.Plot{Plots.GRBackend}, Makie.Figure}; file_name::String)::Nothing
 

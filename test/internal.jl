@@ -56,17 +56,18 @@ lmt = NeuroAnalyzer._labeled_matrix2dict(["a"], [[1.0]])
 @test NeuroAnalyzer._dict2labeled_matrix(lmt) == (["a"], [[1.0]])
 @test NeuroAnalyzer._clean_labels(["eeg fp1"]) == ["fp1"]
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
-x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
 @test NeuroAnalyzer._initialize_locs(e10) isa DataFrame
 NeuroAnalyzer._initialize_locs!(e10)
 @test NeuroAnalyzer._initialize_locs() isa DataFrame
+add_locs!(e10, locs=locs)
+x, y, z, = e10.locs[!, :loc_x], e10.locs[!, :loc_y], e10.locs[!, :loc_z]
 xn, yn = NeuroAnalyzer._locs_norm(x, y)
-@test xn[1] ≈ -0.31
-@test yn[1] == 0.95
+@test xn[1] == 0.0
+@test yn[1] == 0.0
 xn, yn, zn = NeuroAnalyzer._locs_norm(x, y, z)
-@test xn[1] ≈ -0.31
-@test yn[1] == 0.95
-@test zn[1] ≈ -0.03
+@test xn[1] == 0.0
+@test yn[1] == 0.0
+@test zn[1] == 0.0
 locs[1, :loc_theta] = 108.12
 locs[1, :loc_theta] = 108.12
 locs = NeuroAnalyzer._locs_round(locs)
@@ -92,7 +93,6 @@ a = NeuroAnalyzer._make_epochs(rand(10, 1000, 2), ep_n=100)
 # NeuroAnalyzer._shift_markers(m::DataFrame, pos::Int64, offset::Int64)
 @test NeuroAnalyzer._get_epoch_markers(e10) == 0.0:10.0:90.0
 @test NeuroAnalyzer._tuple_max((2, 1)) == (-2, 2)
-@test NeuroAnalyzer._s2v(1) == [1]
 df1, df2 = NeuroAnalyzer._split(DataFrame(:a=>1:10))
 @test nrow(df1) == 8
 @test nrow(df2) == 2

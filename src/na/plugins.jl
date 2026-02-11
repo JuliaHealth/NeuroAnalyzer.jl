@@ -15,7 +15,7 @@ Nothing
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_plugins_reload()::Nothing
 
@@ -51,7 +51,7 @@ Nothing
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_plugins_list()::Nothing
 
@@ -82,7 +82,7 @@ Remove NeuroAnalyzer plugin.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_plugins_remove(plugin::String)::Nothing
 
@@ -117,7 +117,7 @@ Install NeuroAnalyzer plugin from remote Git repository or from local .TAR.GZ/.Z
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_plugins_install(plugin::String)::Nothing
 
@@ -173,7 +173,7 @@ Update NeuroAnalyzer plugin(s).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_plugins_update(plugin::String="")::Nothing
 

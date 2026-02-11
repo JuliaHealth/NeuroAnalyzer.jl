@@ -274,7 +274,7 @@ Create time points vector for `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
 
@@ -339,7 +339,7 @@ Create data, channel labels, types and units and time points for `NeuroAnalyzer.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function create_data!(obj::NeuroAnalyzer.NEURO; data::Array{Float64, 3}, fs::Int64, type::String)::Nothing
 

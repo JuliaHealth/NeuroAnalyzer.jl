@@ -150,7 +150,7 @@ Filter using moving average filter (with threshold).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function filter_mavg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::Nothing
 

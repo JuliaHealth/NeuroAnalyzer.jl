@@ -129,7 +129,7 @@ Remove mean value (DC offset).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}}=0)::Nothing
 

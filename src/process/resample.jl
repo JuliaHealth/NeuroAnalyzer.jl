@@ -106,7 +106,7 @@ Resample (up- or down-sample).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
@@ -166,7 +166,7 @@ Upsample.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 
@@ -228,7 +228,7 @@ Downsample.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
 

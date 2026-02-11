@@ -13,7 +13,7 @@ Export `NeuroAnalyzer.NEURO` object markers to CSV.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function export_markers(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)::Nothing
 

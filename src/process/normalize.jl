@@ -250,7 +250,7 @@ Normalize channel(s).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function normalize!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol, bych::Bool=false, n::Real=1)::Nothing
 
@@ -337,7 +337,7 @@ end
 """
     normalize_minmax(s, n)
 
-Normalize in [-n, +n]. If all elements are the same, they are normalized to +1.0.
+Normalize in [-n, +n]. If all elements are the same, they are normalized to +n.
 
 # Arguments
 
@@ -350,8 +350,9 @@ Normalize in [-n, +n]. If all elements are the same, they are normalized to +1.0
 """
 function normalize_minmax(s::AbstractVector, n::Real=1)::AbstractVector
 
+    s[s .== -0] .= 0
     if length(unique(s)) == 1
-        sn = ones(length(s))
+        sn = ones(length(s)) .* n
     else
         mi, mx = extrema(s)
         mxi = mx - mi
@@ -365,7 +366,7 @@ end
 """
     normalize_minmax(s, n; <keyword arguments>)
 
-Normalize in [-n, +n]. If all elements are the same, they are normalized to +1.0.
+Normalize in [-n, +n]. If all elements are the same, they are normalized to 1.0.
 
 # Arguments
 
@@ -380,7 +381,8 @@ Normalize in [-n, +n]. If all elements are the same, they are normalized to +1.0
 
 function normalize_minmax(s::AbstractArray, n::Real=1; bych::Bool=false)::AbstractArray
 
-    length(unique(s)) == 1 && return ones(length(s))
+    s[s .== -0] .= 0
+    length(unique(s)) == 1 && return ones(size(s)) .* n
 
     @assert ndims(s) <= 3 "normalize_minmax() only works for arrays of ≤ 3 dimensions."
 
@@ -423,6 +425,7 @@ Normalize in [0, n], default is [0, +1].
 """
 function normalize_n(s::AbstractVector, n::Real=1)::AbstractVector
 
+    s[s .== -0] .= 0
     if length(unique(s)) == 1
         sn = ones(length(s)) .* n
     else
@@ -453,8 +456,9 @@ function normalize_n(s::AbstractArray, n::Real=1; bych::Bool=false)::AbstractArr
 
     @assert ndims(s) <= 3 "normalize_n() only works for arrays of ≤ 3 dimensions."
 
+    s[s .== -0] .= 0
     if length(unique(s)) == 1
-        sn = zeros(length(s))
+        sn = ones(size(s)) .* n
     else
         sn = zeros(size(s))
         if bych == false

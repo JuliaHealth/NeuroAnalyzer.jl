@@ -14,7 +14,7 @@ Play channel signal as audio.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function play(obj::NeuroAnalyzer.NEURO; ch::String, seg::Tuple{Real, Real}, ep::Int64)::Nothing
 

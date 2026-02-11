@@ -11,7 +11,7 @@ Edit montage file in the OS editor.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function edit_montage(file_name::String)::Nothing
 

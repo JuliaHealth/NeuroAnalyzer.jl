@@ -163,7 +163,7 @@ Reconstruct signals using PCA components (`pc` and `pc_model`).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64})::Nothing
 

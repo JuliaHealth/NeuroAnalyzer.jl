@@ -437,7 +437,7 @@ Generate spherical coordinates according to 10/5 system.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_generate!(locs::DataFrame)::Nothing
 
@@ -493,7 +493,7 @@ Generate spherical coordinates according to 10/5 system.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_generate!(obj::NeuroAnalyzer.NEURO)::Nothing
 

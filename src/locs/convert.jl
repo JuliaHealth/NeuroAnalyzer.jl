@@ -213,7 +213,7 @@ Convert polar coordinates to Cartesian.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_pol2cart!(locs::DataFrame)::Nothing
 
@@ -267,7 +267,7 @@ Convert polar coordinates to spherical.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_pol2sph!(locs::DataFrame)::Nothing
 
@@ -323,7 +323,7 @@ Convert spherical coordinates to Cartesian.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_sph2cart!(locs::DataFrame)::Nothing
 
@@ -377,7 +377,7 @@ Convert Cartesian coordinates to polar.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_sph2pol!(locs::DataFrame)::Nothing
 
@@ -432,7 +432,7 @@ Convert Cartesian coordinates to spherical.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_cart2sph!(locs::DataFrame)::Nothing
 
@@ -485,7 +485,7 @@ Convert Cartesian coordinates to polar.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_cart2pol!(locs::DataFrame)::Nothing
 

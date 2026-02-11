@@ -14,7 +14,7 @@ Interactive spectrogram of continuous signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
@@ -646,7 +646,7 @@ Interactive spectrogram of epoched signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 

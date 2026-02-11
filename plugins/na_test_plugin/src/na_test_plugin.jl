@@ -11,7 +11,7 @@ Nothing
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_test_plugin()::Nothing
     @info "This is a test plugin for NeuroAnalyzer"

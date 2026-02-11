@@ -12,7 +12,7 @@ Display data as a table.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function make_table(; header::Matrix{String}, data::Matrix{Any})::Nothing
 

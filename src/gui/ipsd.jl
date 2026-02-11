@@ -14,7 +14,7 @@ Interactive PSD of continuous signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ipsd(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
 
@@ -676,7 +676,7 @@ Interactive PSD of epoched signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function ipsd_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 

@@ -70,7 +70,7 @@ Extract epoch.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
 

@@ -96,7 +96,7 @@ Interpolate channel using planar interpolation.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, ifactor::Int64=100)::Nothing
 

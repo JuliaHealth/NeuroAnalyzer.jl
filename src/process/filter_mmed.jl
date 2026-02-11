@@ -142,7 +142,7 @@ Filter using moving median filter (with threshold).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, k::Int64=8, t::Real=0, ww::AbstractVector=ones(2 * k + 1))::Nothing
 

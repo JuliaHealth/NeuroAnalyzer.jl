@@ -17,7 +17,7 @@ Nothing
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_info()::Nothing
 
@@ -129,7 +129,7 @@ Change `progress_bar` preference.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_set_progress_bar(value::Bool)::Nothing
 
@@ -151,7 +151,7 @@ Change `verbose` preference.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_set_verbose(value::Bool)::Nothing
 
@@ -173,7 +173,7 @@ Change `colors` preference.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_set_colors(value::Bool)::Nothing
 
@@ -198,7 +198,7 @@ Set and save NeuroAnalyzer preferences.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_set_prefs(; progress_bar::Bool, verbose::Bool, exclude_bads::Bool, colors::Bool)::Nothing
 
@@ -243,7 +243,7 @@ Change `exclude_bads` preference.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function na_set_exclude_bads(value::Bool)::Nothing
 

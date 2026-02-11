@@ -271,7 +271,7 @@ Detect power line noise frequency.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function detect_powerline!(obj::NeuroAnalyzer.NEURO)::Nothing
 

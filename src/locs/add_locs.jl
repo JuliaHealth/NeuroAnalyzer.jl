@@ -74,7 +74,7 @@ Electrode locations:
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::Nothing
 

@@ -127,7 +127,7 @@ Convert markers start and length from samples to seconds.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
 
@@ -173,7 +173,7 @@ Convert markers start and length from samples to seconds.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
 

@@ -76,7 +76,7 @@ Convert NIRS intensity (RAW data) to optical density (OD).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function intensity2od!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))::Nothing
 

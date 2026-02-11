@@ -115,7 +115,7 @@ Filter using Gaussian in the frequency domain.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, f::Real, gw::Real=5)::Nothing
 

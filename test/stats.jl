@@ -305,8 +305,8 @@ y = ones(10) .+ 0.5
 @info "Test: angle()"
 @test NeuroAnalyzer.angle([1.0+1.0im, 2.0+2.0im]) == [0.7853981633974483, 0.7853981633974483]
 
-@info "Test: na()"
-@test NeuroAnalyzer.na([1, NaN, 2.0, missing]) == [1.0, 2.0]
+@info "Test: rmna()"
+@test NeuroAnalyzer.rmna([1, NaN, 2.0, missing]) == [1.0, 2.0]
 
 @info "Test: dap()"
 @test dap(collect(1:20)) == (zs = 0.0, zk = -1.215271012491787, d = 1.4768836338028128, p = 0.4778579258619382)
@@ -365,10 +365,10 @@ p = pcacomp(df, names(df))
 @test size(p.pc) == (4, 3)
 
 @info "Test: biplot()"
-@test biplot(df, names(df)) isa Plots.Plot{Plots.GRBackend}
+@test biplot(df, names(df)) isa GLMakie.Figure
 
 @info "Test: screeplot()"
-@test screeplot(df, names(df)) isa Plots.Plot{Plots.GRBackend}
+@test screeplot(df, names(df)) isa GLMakie.Figure
 
 @info "Test: sdi()"
 @test sdi([1, 2, 3, 4, 5], [1, 2, 3, 6, 7]) == 0.6

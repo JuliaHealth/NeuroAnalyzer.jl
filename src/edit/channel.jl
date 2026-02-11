@@ -144,7 +144,7 @@ Set channel type.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::Nothing
 
@@ -204,7 +204,7 @@ Rename channel.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::Nothing
 
@@ -262,7 +262,7 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String)::Nothing
 
@@ -318,7 +318,7 @@ Replace channel.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64,3})::Nothing
 
@@ -370,7 +370,7 @@ Add channel labels.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
 
@@ -451,7 +451,7 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function add_channel!(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::Union{String,Vector{String}}, type::Union{String,Vector{String}}, unit::Union{String,Vector{String}})::Nothing
 

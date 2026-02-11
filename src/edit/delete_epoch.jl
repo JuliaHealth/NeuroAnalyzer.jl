@@ -58,7 +58,7 @@ Remove epochs.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
 
@@ -118,7 +118,7 @@ Keep epochs.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
 

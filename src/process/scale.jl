@@ -40,7 +40,7 @@ Multiply channel(s) by `factor`.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, factor::Real)::Nothing
 

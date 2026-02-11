@@ -11,7 +11,7 @@ Show keys and values of the object header.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
 

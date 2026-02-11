@@ -143,7 +143,7 @@ Filter using polynomial filter.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function filter_poly!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64=8, window::Int64=10)::Nothing
 

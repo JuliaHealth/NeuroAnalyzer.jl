@@ -84,7 +84,7 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
 # Returns
 
-Nothing
+- `Nothing`
 
 # Source
 

@@ -103,7 +103,7 @@ Filter using Savitzky-Golay filter.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, order::Int64=6, window::Int64=11)::Nothing
 

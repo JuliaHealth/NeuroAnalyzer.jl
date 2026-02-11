@@ -13,9 +13,9 @@ load_locs!(e10, file_name=joinpath(testfiles_path, "standard-10-20-cap19-elmiko.
 isfile("test.png") && rm("test.png")
 
 @info "Test: plot_compose()"
-p1 = NeuroAnalyzer.mplot(e10, ch="Fp1", ep=1, xlabel="");
-p2 = NeuroAnalyzer.mplot(e10, ch="Fp2", ep=1, xlabel="");
-p3 = NeuroAnalyzer.mplot(e10, ch="Cz", ep=1, xlabel="");
+p1 = NeuroAnalyzer.plot(e10, ch="Fp1", ep=1, n_epochs=1, xlabel="", gui=false);
+p2 = NeuroAnalyzer.plot(e10, ch="Fp2", ep=1, n_epochs=1, xlabel="", gui=false);
+p3 = NeuroAnalyzer.plot(e10, ch="Cz", ep=1, n_epochs=1, xlabel="", gui=false);
 pp = [p1, p2, p3]
 l = (2, 2)
 p = NeuroAnalyzer.plot_compose(pp, layout=l)
@@ -31,11 +31,11 @@ p = NeuroAnalyzer.plot_locs(e10, ch="eeg", connections=rand(-10:1:10, 19, 19), t
 e10_erp = average_epochs(e10)
 p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1")
 @test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=true)
+@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], avg=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", avg=true)
-@test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_erp(e10_erp, ch="Fp1", ci95=true)
+p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], ci95=true)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:stack)
 @test p isa GLMakie.Figure
@@ -69,9 +69,9 @@ p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", method=:gh)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch="Fp1", ref=:delta)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=false)
-@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=true)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], avg=false)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], ci95=true)
 @test p isa GLMakie.Figure
@@ -83,7 +83,7 @@ p = NeuroAnalyzer.plot_psd(e10, db=true, ep=1, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_save()"
-p = NeuroAnalyzer.mplot(e10, ch="Fp1")
+p = NeuroAnalyzer.plot(e10, ch="Fp1")
 NeuroAnalyzer.plot_save(p, file_name="test.png")
 @test isfile("test.png")
 isfile("test.png") && rm("test.png")
@@ -91,9 +91,11 @@ isfile("test.png") && rm("test.png")
 @info "Test: plot()"
 p = NeuroAnalyzer.plot(e10, ch="Fp1", gui=false);
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:mean)
-@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, avg=false)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly, ci95=true)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_spectrogram()"
@@ -253,9 +255,9 @@ c = plot2canvas(p)
 mep = import_duomag(joinpath(testfiles_path, "mep-duomag.m"))
 p = plot_mep(mep, ch="MEP1")
 @test p isa GLMakie.Figure
-p = plot_mep(mep, ch=["MEP1", "MEP2"], avg=false)
-@test p isa GLMakie.Figure
 p = plot_mep(mep, ch=["MEP1", "MEP2"], avg=true)
+@test p isa GLMakie.Figure
+p = plot_mep(mep, ch=["MEP1", "MEP2"], avg=false)
 @test p isa GLMakie.Figure
 p = plot_mep(mep, ch=["MEP1", "MEP2"], ci95=true)
 @test p isa GLMakie.Figure
@@ -274,6 +276,8 @@ p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="Fp1")
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", avg=true)
 @test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", avg=false)
+@test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", ci95=true)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_phsd(e10, ep=1, ch="eeg", type=:w3d)
@@ -288,6 +292,8 @@ p = NeuroAnalyzer.plot_coherence(abs.(coh[1, :, 1]), f)
 p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f, avg=true)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f, avg=false)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_coherence(abs.(coh[:, :, 1]), f, ci95=true)
 @test p isa GLMakie.Figure

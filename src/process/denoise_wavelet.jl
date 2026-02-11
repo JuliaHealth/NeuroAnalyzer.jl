@@ -149,7 +149,7 @@ Perform denoising using continuous wavelet decomposition (CWD).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function denoise_cwd!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(Morlet(2π), β=2), nf::Real, type::Symbol=:nd)::Nothing where {T <: CWT}
 
@@ -286,7 +286,7 @@ Perform denoising using discrete wavelet decomposition (DWD).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function denoise_dwd!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T1=wavelet(WT.haar), l::Int64=0, dnt::T2=RelErrorShrink(SoftTH()), smooth::Symbol=:regular)::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
 

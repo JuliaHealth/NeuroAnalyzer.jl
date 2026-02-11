@@ -78,7 +78,7 @@ Return the average signal of channels.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

@@ -1212,7 +1212,7 @@ Interactive view of two continuous signals.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
 
@@ -1566,7 +1566,7 @@ Interactive view of two epoched signals.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)::Nothing
 
@@ -1822,7 +1822,7 @@ View plot object.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
 
@@ -1891,7 +1891,7 @@ View PNG image.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iview(file_name::String)::Nothing
 
@@ -1950,7 +1950,7 @@ View Cairo surface object.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
 

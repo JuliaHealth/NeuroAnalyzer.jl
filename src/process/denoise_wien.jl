@@ -68,7 +68,7 @@ Perform Wiener deconvolution denoising.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

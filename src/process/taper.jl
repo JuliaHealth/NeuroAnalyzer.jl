@@ -94,7 +94,7 @@ Taper the signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::Nothing
 

@@ -79,7 +79,7 @@ Reference to common electrode(s). Only signal channels are processed.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_ce!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, med::Bool=false)::Nothing
 
@@ -219,7 +219,7 @@ Reference to averaged reference. Only signal channels are processed.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_avg!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=false, average::Bool=true, med::Bool=false, weighted::Bool=false)::Nothing
 
@@ -379,7 +379,7 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)::Nothing
 
@@ -539,7 +539,7 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)::Nothing
 
@@ -659,7 +659,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::Nothing
 
@@ -781,7 +781,7 @@ Reference using spherical Laplacian (using `nn` adjacent electrodes). Only signa
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_slap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weighted::Bool=false, med::Bool=false)::Nothing
 
@@ -897,7 +897,7 @@ Examples of montages:
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reference_custom!(obj::NeuroAnalyzer.NEURO; ref_list::Vector{String}=["Fz-Cz", "Cz-Pz", "Fp1-F7", "Fp1-F3", "F7-T3", "T3-T5", "T5-O1", "F3-C3", "C3-P3", "P3-O1", "Fp2-F8", "Fp2-F4", "F8-T4", "T4-T6", "T6-O2", "F4-C4", "C4-P4", "P4-O2"], ref_name::String="BIP ||")::Nothing
 

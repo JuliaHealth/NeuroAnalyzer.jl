@@ -109,7 +109,7 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::Nothing
 
@@ -161,7 +161,7 @@ Edit OBJ epochs time start.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)::Nothing
 
@@ -247,7 +247,7 @@ Extract sub-epochs with a reduced time range.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Nothing
 

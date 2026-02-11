@@ -38,7 +38,7 @@ Invert polarity.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function invert_polarity!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

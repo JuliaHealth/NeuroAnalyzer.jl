@@ -19,7 +19,7 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, names::Bool=true, header::Bool=false, epoch_time::Bool=false, markers::Bool=false, locs::Bool=false, history::Bool=false, overwrite::Bool=false)::Nothing
 

@@ -77,7 +77,7 @@ Center locs at (0, 0).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_center!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 

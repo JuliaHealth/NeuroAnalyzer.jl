@@ -153,7 +153,7 @@ Trim signal by removing parts of the signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function trim!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}, keep::Bool=false)::Nothing
 
@@ -206,7 +206,7 @@ Crop signal by removing parts of the signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
 

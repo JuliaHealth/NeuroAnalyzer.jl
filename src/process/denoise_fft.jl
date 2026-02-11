@@ -107,7 +107,7 @@ Perform FFT denoising.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, t::Int64=100)::Nothing
 

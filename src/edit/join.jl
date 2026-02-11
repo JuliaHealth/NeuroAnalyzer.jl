@@ -53,7 +53,7 @@ Join two NeuroAnalyzer objects into the first object. Each `obj2` epoch are hori
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
 

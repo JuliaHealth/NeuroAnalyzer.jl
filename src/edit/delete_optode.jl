@@ -82,7 +82,7 @@ Delete optopode(s).
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function delete_optode!(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
 

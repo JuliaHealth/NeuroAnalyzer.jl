@@ -174,7 +174,7 @@ Perform piecewise detrending.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)::Nothing
 

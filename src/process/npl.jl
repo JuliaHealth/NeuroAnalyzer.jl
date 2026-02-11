@@ -39,7 +39,7 @@ Calculate non-phase-locked signal.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function npl!(obj::NeuroAnalyzer.NEURO)::Nothing
 

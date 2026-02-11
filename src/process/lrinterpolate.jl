@@ -77,7 +77,7 @@ Interpolate channel using linear regression.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep))::Nothing
 

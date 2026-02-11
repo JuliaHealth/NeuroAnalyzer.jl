@@ -513,23 +513,22 @@ include("plots/plot_dipole2d.jl")
 include("plots/plot_dipole3d.jl")
 include("plots/plot_erp.jl")
 include("plots/plot_mep.jl")
-
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_spectrogram.jl")
 
-include("plots/plot_signal.jl")
-
-# include("plots/plot_signal.jl")
+include("plots/plot.jl")
+include("plots/plot_signal_cont.jl")
+include("plots/plot_signal_ep.jl")
 
 # gui
-include("gui/iedit.jl")
-include("gui/ifilter.jl")
-include("gui/ipsd.jl")
-include("gui/ispectrogram.jl")
-include("gui/itopo.jl")
-include("gui/iview.jl")
-include("gui/iview_ica.jl")
+# include("gui/iedit.jl")
+# include("gui/ifilter.jl")
+# include("gui/ipsd.jl")
+# include("gui/ispectrogram.jl")
+# include("gui/itopo.jl")
+# include("gui/iview.jl")
+# include("gui/iview_ica.jl")
 
 # recorder
 include("recorder/edar.jl")

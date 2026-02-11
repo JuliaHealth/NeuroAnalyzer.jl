@@ -55,7 +55,7 @@ Expand signal by adding reflected signal before the signal and after the signal,
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))::nothing
 
@@ -121,7 +121,7 @@ Reduce signal by removing reflected signal before the signal and after the signa
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function chop!(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))::Nothing
 

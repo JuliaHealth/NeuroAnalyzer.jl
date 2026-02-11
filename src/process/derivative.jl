@@ -93,7 +93,7 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 

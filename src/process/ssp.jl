@@ -99,7 +99,7 @@ Apply SSP projectors from embedded projections.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function apply_ssp_projectors!(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::Nothing
 

@@ -73,7 +73,7 @@ Flip channel locations along y axis.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_flipy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
@@ -148,7 +148,7 @@ Flip channel locations along x axis.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_flipx!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 
@@ -215,7 +215,7 @@ Flip channel locations along z axis.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function locs_flipz!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
 

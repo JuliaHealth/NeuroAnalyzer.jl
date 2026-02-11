@@ -79,7 +79,7 @@ Perform convolution bandpass filtering.
 
 # Returns
 
-Nothing
+- `Nothing`
 """
 function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, frq::Real)::Nothing
 
