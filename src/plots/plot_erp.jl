@@ -26,7 +26,7 @@ Plot ERP/ERF (single channel).
 function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", yrev::Bool=false, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     # prepare plot
-    plot_size = (1200, 450)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -116,7 +116,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt
     ch_n = size(s, 1)
 
     # prepare plot
-    plot_size = (1200, 450)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -248,19 +248,17 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
     pos = collect(1:DataFrames.nrow(locs))
 
     # plot parameters
+    plot_size = (1200, 1200)
     if size(s, 1) <= 64
-        plot_size = 1000
-        marker_size = (1200, 600) ./ 10
+        marker_size = round(plot_size[1] / 100)
         xl = 1.2
         yl = 1.2
     elseif _in(size(s, 1), (64, 100))
-        plot_size = 1200
-        marker_size = (1200, 600) ./ 12
+        marker_size = round(plot_size[1] / 120)
         xl = 1.5
         yl = 1.5
     else
-        plot_size = 1500
-        marker_size = (1200, 600) ./ 14
+        marker_size = round(plot_size[1] / 140)
         xl = 1.5
         yl = 1.5
     end
@@ -281,7 +279,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
     pp_vec = GLMakie.Figure[]
     pp_full_vec = GLMakie.Figure[]
     for idx in axes(s, 1)
-        pp = GLMakie.Figure(size=marker_size,
+        pp = GLMakie.Figure(size=plot_size,
                             figure_padding=0)
         ax = GLMakie.Axis(pp[1, 1],
                           xlabel="",
@@ -459,7 +457,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
     end
 
     # prepare plot
-    plot_size = size(s, 1) <= 64 ? (1200, 800) : (1200, 1200)
+    plot_size = size(s, 1) <= 64 ? (900, 600) : (900, 900)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,

@@ -33,7 +33,7 @@ function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; flim::Tuple{Real, Re
     end
 
     # prepare plot
-    plot_size = (1200, 500)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -109,7 +109,7 @@ function plot_phsd(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{Stri
     end
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -235,7 +235,7 @@ function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{S
 
     # prepare plot
     if variant === :w
-        plot_size = (1200, 600)
+        plot_size = (900, 450)
         p = GLMakie.Figure(size=plot_size)
         ax = GLMakie.Axis3(p[1, 1],
                            xlabel=xlabel,
@@ -276,7 +276,7 @@ function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{S
     else
         f1 = vsearch(flim[1], f)
         f2 = vsearch(flim[2], f)
-        plot_size = (1200, 600)
+        plot_size = (900, 450)
         p = GLMakie.Figure(size=plot_size)
         ax = GLMakie.Axis3(p[1, 1],
                            xlabel=xlabel,
@@ -349,17 +349,17 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
 
     # plot parameters
     if size(ph, 1) <= 64
-        mplot_size = 1000
+        plot_size = (1000, 1000)
         marker_size = (120, 80)
         xl = 1.2
         yl = 1.2
     elseif _in(size(ph, 1), (64, 100))
-        mplot_size = 1200
+        plot_size = (1200, 1200)
         marker_size = (120, 80)
         xl = 1.5
         yl = 1.5
     else
-        mplot_size = 1500
+        plot_size = (1500, 1500)
         marker_size = (85, 50)
         xl = 1.5
         yl = 1.5

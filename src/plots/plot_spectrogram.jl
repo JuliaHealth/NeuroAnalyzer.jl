@@ -305,19 +305,19 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
     end
 
     # plot parameters
-    if size(sp, 3) <= 64
-        plot_size = 1000
-        marker_size = (1200, 800) ./ 10
+    if size(ph, 1) <= 64
+        plot_size = (1000, 1000)
+        marker_size = (120, 100)
         xl = 1.2
         yl = 1.2
-    elseif _in(size(sp, 3), (64, 100))
-        plot_size = 1200
-        marker_size = (1200, 800) ./ 12
+    elseif _in(size(ph, 1), (64, 100))
+        plot_size = (1200, 1200)
+        marker_size = (120, 100)
         xl = 1.5
         yl = 1.5
     else
-        plot_size = 1500
-        marker_size = (1200, 800) ./ 14
+        plot_size = (1500, 1500)
+        marker_size = (85, 65)
         xl = 1.5
         yl = 1.5
     end

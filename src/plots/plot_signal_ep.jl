@@ -159,12 +159,12 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     # prepare plot
     if gui
         if type === :normal
-            plot_size = (1650, 950)
+            plot_size = (1250, 700)
         else
-            plot_size = (1600, 950)
+            plot_size = (1200, 700)
         end
     else
-        plot_size = (1600, 900)
+        plot_size = (1200, 650)
     end
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=(10, 20, 10, 10)) # L R B T)

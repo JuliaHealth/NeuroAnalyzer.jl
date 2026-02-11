@@ -1064,7 +1064,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
         end
 
         # prepare plot
-        plot_size = (1200, 600)
+        plot_size = (900, 450)
         p = GLMakie.Figure(size=plot_size)
         ax = GLMakie.Axis(p[1, 1],
                           xlabel=xl,
@@ -1102,7 +1102,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
         end
 
         # prepare plot
-        plot_size = (1200, 600)
+        plot_size = (900, 450)
         p = GLMakie.Figure(size=plot_size)
         ax1 = GLMakie.Axis(p[1, 1],
                            xlabel=xl,
@@ -1541,7 +1541,7 @@ function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                                "")
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xl,
@@ -1604,7 +1604,7 @@ function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                                "")
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xl,
@@ -1671,7 +1671,7 @@ function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad,
                                "")
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xl,

@@ -34,7 +34,7 @@ function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; flim::Tuple{Re
     end
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -109,7 +109,7 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
     end
 
     # prepare plot
-    plot_size = (1200, 600)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,

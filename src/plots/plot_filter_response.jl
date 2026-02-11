@@ -66,7 +66,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
         end
 
         # prepare plot
-        plot_size = (1200, 800)
+        plot_size = (900, 600)
         p = GLMakie.Figure(size=plot_size)
         ax1 = GLMakie.Axis(p[1, 1],
                           xlabel="Frequency [Hz]",
@@ -235,7 +235,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
         end
 
         # prepare plot
-        plot_size = (1200, 800)
+        plot_size = (900, 600)
         p = GLMakie.Figure(size=plot_size)
         ax1 = GLMakie.Axis(p[1, 1],
                           xlabel="Frequency [Hz]",

@@ -721,8 +721,8 @@ sp, sf, st = NeuroAnalyzer.spectrogram(e10, ch="Fp1", method=:cwt)
 @info "Test: spec_seg()"
 sp, sf, st = NeuroAnalyzer.spectrogram(e10, ch="all")
 sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
-@test size(sp) == (11, 30, 10)
-@test t == (1, 30)
+@test size(sp) == (11, 10, 10)
+@test t == (1, 10)
 @test f == (1, 11)
 
 @info "Test: stationarity()"

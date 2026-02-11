@@ -24,7 +24,7 @@ Plot MEP (single channel).
 function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xlabel::String="", ylabel::String="", title::String="", zl::Bool=true, yrev::Bool=false, mono::Bool=false)::GLMakie.Figure
 
     # prepare plot
-    plot_size = (1200, 450)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -103,7 +103,7 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; cl
     ch_n = size(s, 1)
 
     # prepare plot
-    plot_size = (1200, 450)
+    plot_size = (900, 450)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
