@@ -418,7 +418,6 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     end
 
     # prepare plot
-    plot_size = (plot_size, plot_size)
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],

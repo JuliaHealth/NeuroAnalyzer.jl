@@ -5,10 +5,9 @@
 # select region
 # select epoch
 # time format (SS:MS HH:MM:SS)
-# delete region
 # delete epoch
 # click channel to mark as bad
-# click label to get info / position
+# click channel to get info / position
 # change scaling
 # plot(obj1, obj2)
 

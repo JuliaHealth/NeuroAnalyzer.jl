@@ -411,7 +411,6 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
     end
 
     # prepare plot
-    plot_size = (mplot_size, mplot_size)
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],

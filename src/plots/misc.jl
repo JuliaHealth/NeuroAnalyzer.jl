@@ -23,15 +23,15 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::G
 
     @assert layout[1] * layout[2] >= length(p) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(p)))."
 
-    s =(0, 0)
+    plot_size =(0, 0)
     for idx in eachindex(p)
-        size(p[idx].scene) > s && (s = size(p[idx].scene))
+        size(p[idx].scene) > plot_size && (plot_size = size(p[idx].scene))
     end
     for idx in eachindex(p)
-        size(p[idx].scene) != s && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
+        size(p[idx].scene) != plot_size && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
     end
 
-    s = (s[1] * layout[2], s[2] * layout[1])
+    plot_size = (plot_size[1] * layout[2], plot_size[2] * layout[1])
 
     if length(p) < layout[1] * layout[2]
         for _ in 1:(layout[1] * layout[2]) - length(p)
@@ -39,7 +39,7 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::G
         end
     end
 
-    pc = GLMakie.Figure(size=s)
+    pc = GLMakie.Figure(size=plot_size)
     gl = pc[1, 1] = GridLayout(layout[1], layout[2])
     p_idx = 1
     for idx1 in 1:layout[1]

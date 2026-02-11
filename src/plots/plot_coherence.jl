@@ -13,14 +13,14 @@ Plot coherence.
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Coherence"`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", mono::Bool=false, frq::Symbol=:lin)::GLMakie.Figure
+function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="Coherence", title::String="", frq::Symbol=:lin, mono::Bool=false)::GLMakie.Figure
 
     @assert length(coh) == length(f) "Length of coherence vector must equal length of frequencies vector."
     _check_var(frq, [:lin, :log], "frq")
@@ -83,17 +83,17 @@ Plot multi-channel coherence.
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `avg::Bool=false`: if true, plot averaged PSD
 - `ci95::Bool=false`: if true, plot mean and ±95% CI of averaged PSDs
 - `leg::Bool=true`: if true, add legend with channel labels
+- `mono::Bool=false`: use color or gray palette
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=string.(1:size(coh, 1)), flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true)::GLMakie.Figure
+function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vector{String}=string.(1:size(coh, 1)), flim::Tuple{Real, Real}=(f[1], f[end]), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", frq::Symbol=:lin, avg::Bool=false, ci95::Bool=false, leg::Bool=true, mono::Bool=false)::GLMakie.Figure
 
     ch_n = size(coh, 1)
 

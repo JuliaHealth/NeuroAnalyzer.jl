@@ -193,7 +193,7 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
     sort!(unique(xticks))
 
     # prepare plot
-    plot_size = (800, 800)
+    plot_size = (800, 500)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,
@@ -848,7 +848,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
         xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of epochs")
 
         # prepare plot
-        plot_size = (1200, 800)
+        plot_size = (900, 450)
         p = GLMakie.Figure(size=plot_size)
         ax = GLMakie.Axis(p[1, 1],
                           xlabel=xl,
@@ -1102,7 +1102,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
         end
 
         # prepare plot
-        plot_size = (900, 450)
+        plot_size = (1200, 800)
         p = GLMakie.Figure(size=plot_size)
         ax1 = GLMakie.Axis(p[1, 1],
                            xlabel=xl,
@@ -1336,7 +1336,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
     pal = mono ? :grays : :bluesreds
 
     # prepare plot
-    plot_size = (1200, 800)
+    plot_size = (800, 500)
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.Axis(p[1, 1],
                       xlabel=xlabel,

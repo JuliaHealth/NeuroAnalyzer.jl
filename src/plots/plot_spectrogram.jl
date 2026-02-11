@@ -380,7 +380,6 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
     end
 
     # prepare plot
-    plot_size = (plot_size, plot_size)
     p = GLMakie.Figure(size=plot_size,
                        figure_padding=0)
     ax = GLMakie.Axis(p[1, 1],
