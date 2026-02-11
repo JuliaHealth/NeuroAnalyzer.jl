@@ -10,7 +10,7 @@ module NeuroAnalyzer
 
 # set constants
 
-const VER = v"0.26.2"
+const VER = v"0.26.3-dev"
 const allow_wip = occursin("dev", string(VER))          # false for the stable branch, true for the devel branch
 const data_types = ["eeg",
                     "ecog",
