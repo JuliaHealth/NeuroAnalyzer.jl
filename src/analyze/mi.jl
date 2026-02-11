@@ -75,7 +75,7 @@ function mutual_information(s::AbstractArray)::Array{Float64, 3}
     ep_n = size(s, 3)
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     m = zeros(ch_n, ch_n, ep_n)
 

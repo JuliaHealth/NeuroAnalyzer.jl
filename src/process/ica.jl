@@ -46,7 +46,7 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
     final_tol = nothing
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white))
+    progbar = Progress(iter * length(tol), dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for tol_idx in eachindex(tol)
         for _ in 1:iter
@@ -59,11 +59,12 @@ function ica_decompose(s::AbstractMatrix; n::Int64, iter::Int64=100, f::Symbol=:
             if err === nothing
                 # @info "Iteration: $iter_idx convergence error: $(err.lastchange)."
                 final_tol = tol[tol_idx]
+                println()
                 break
             end
 
             # update progress bar
-            progress_bar && next!(progbar)
+            next!(progbar)
 
         end
         final_tol !== nothing && break

@@ -537,8 +537,8 @@ function plot_violin(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
                     s[:],
                     strokecolor=:black,
                     strokewidth=0.25,
-                    color=color,
-                    colormap=pal)
+                    #colormap=pal,
+                    color=color)
 
     return p
 
@@ -730,12 +730,8 @@ function plot_polar(s::Union{AbstractVector, AbstractMatrix}; m::Tuple{Real, Rea
     p = GLMakie.Figure(size=plot_size)
     ax = GLMakie.PolarAxis(p[1, 1],
                            title=title,
-                           xzoomlock=true,
-                           yzoomlock=true,
-                           xpanlock=true,
-                           ypanlock=true,
-                           xrectzoom=false,
-                           yrectzoom=false)
+                           thetazoomlock=true,
+                           rzoomlock=true)
     !ticks && hidespines!(ax)
 
     if ndims(s) == 1

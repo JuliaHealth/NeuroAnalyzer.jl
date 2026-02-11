@@ -56,7 +56,7 @@ function cph(s::AbstractArray; fs::Int64)::@NamedTuple{ph::Array{Float64, 4}, f:
     ph = zeros(ch_n, ch_n, length(f), ep_n)
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n

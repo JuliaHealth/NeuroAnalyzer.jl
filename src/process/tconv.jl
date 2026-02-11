@@ -47,7 +47,7 @@ function tconv(s::AbstractArray; kernel::AbstractVector)::Union{Array{Float64, 3
     s_new = zeros(eltype(kernel), size(s))
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n

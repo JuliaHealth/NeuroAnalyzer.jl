@@ -186,7 +186,7 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}
     itpcz_s = zeros(frq_n, ep_len)
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(frq_n, dt=1, barlen=20, color=:white))
+    progbar = Progress(frq_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     Threads.@threads for frq_idx in 1:frq_n
         # create Morlet wavelet

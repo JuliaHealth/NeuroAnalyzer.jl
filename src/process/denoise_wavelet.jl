@@ -84,7 +84,7 @@ function denoise_cwd(s::AbstractArray; fs::Int64, wt::T=wavelet(Morlet(2π), β=
 
     _log_off()
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             s_new[ch_idx, :, ep_idx] = @views denoise_cwd(s[ch_idx, :, ep_idx], fs=fs, wt=wt, nf=nf, w=w, type=type)

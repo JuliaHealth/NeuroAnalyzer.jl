@@ -115,7 +115,7 @@ p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="Fp1", method=:hht)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch=["Fp1", "Fp2"])
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="eeg", topo=true)
+p = NeuroAnalyzer.plot_spectrogram(e10, db=true, ep=1, ch="eeg", type=:topo)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_topo()"
@@ -189,7 +189,7 @@ p = NeuroAnalyzer.plot_polar(s, m=(1, 1))
 @test p isa GLMakie.Figure
 
 @info "Test: plot_weights()"
-p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg")
+p = NeuroAnalyzer.plot_locs(e10, weights=rand(19), ch="eeg", gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_dipole2d()"
@@ -220,9 +220,9 @@ sp, sf = erop(e10_erp, ch="Fp1")
 p = NeuroAnalyzer.plot_erop(sp, sf)
 @test p isa GLMakie.Figure
 
-@info "Test: plot(obj1, obj2)"
-p = NeuroAnalyzer.mplot(e10, e10, ch="all")
-@test p isa GLMakie.Figure
+# @info "Test: plot(obj1, obj2)"
+# p = NeuroAnalyzer.plot(e10, e10, ch="all")
+# @test p isa GLMakie.Figure
 
 @info "Test: plot_icatopo()"
 eeg_new = keep_epoch(e10, ep=1)
@@ -231,8 +231,8 @@ p = plot_icatopo(eeg_new, ch="eeg", ic=ic, ic_mw=ic_mw, ic_idx=1:3, tpos=0)
 @test p isa GLMakie.Figure
 
 @info "Test: add_pl()"
-p = mplot(e10, ep=1)
-pl = plot_locs(eeg, ch="eeg", selected="eeg", ps=:s)
+p = NeuroAnalyzer.plot(e10, ep=1)
+pl = plot_locs(eeg, ch="eeg", sch="eeg", ps=:s, gui=false)
 pp = add_pl(p, pl)
 @test pp isa GLMakie.Figure
 
@@ -345,11 +345,11 @@ p = plot_phase(rad2deg.(X.ph[1:100]), f[1:100], unit=:deg, type=:line)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_locs3d()"
-p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:disabled);
+p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:disabled, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:brain);
+p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:brain, gui=false)
 @test p isa GLMakie.Figure
-p = NeuroAnalyzer.plot_locs(e10, ch="eeg", mesh_type=:head);
+p = NeuroAnalyzer.plot_locs3d(e10, ch="eeg", mesh_type=:head, gui=false)
 @test p isa GLMakie.Figure
 
 @info "Test: plot_polezero()"

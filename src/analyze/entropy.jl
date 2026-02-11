@@ -159,7 +159,7 @@ function negentropy(s::AbstractArray)::Matrix{Float64}
     ne = zeros(ch_n, ep_n)
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n

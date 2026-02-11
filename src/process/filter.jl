@@ -366,7 +366,7 @@ function filter_apply(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
     obj_new = deepcopy(obj)
 
     # initialize progress bar
-    progress_bar && (progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white))
+    progbar = Progress(ep_n * length(ch), dt=1, barlen=20, color=:white, enabled=progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(ch)

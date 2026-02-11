@@ -182,7 +182,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         s = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar
-        progress_bar && (progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white))
+        progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
 
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx in 1:ep_n
