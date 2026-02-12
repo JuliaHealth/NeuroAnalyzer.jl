@@ -42,7 +42,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     _check_var(fprototype, [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch], "fprototype")
 
     if fprototype === :fir
-        @assert isnothing(order) && isnothing(w) "Either order or w must be specified."
+        @assert isnothing(order) || isnothing(w) "Either order or w must be specified."
         if !isnothing(w)
             @assert length(w) > 0 "Length of w must be ≥ 1."
             order = length(w)

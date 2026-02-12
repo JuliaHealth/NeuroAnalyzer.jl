@@ -34,13 +34,14 @@ Plot continuous signal.
 - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
 - `n_channels::Int64=20`: number of visible channels
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `snap::Bool=true`: snap to grid when placing marker
 - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="all", seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, scale::Bool=true, group_ch::Bool=true, type::Symbol=:normal, avg::Bool=true, ci95::Bool=false, n_channels::Int64=20, res::Int64=1, gui::Bool=true)::GLMakie.Figure
+function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="all", seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, scale::Bool=true, group_ch::Bool=true, type::Symbol=:normal, avg::Bool=true, ci95::Bool=false, n_channels::Int64=20, res::Int64=1, snap::Bool=true, gui::Bool=true)::GLMakie.Figure
 
     @assert res >= 1 "res must be ≥ 1."
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
@@ -331,21 +332,9 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         end
     end
 
-    selection_seg = Observable((2, 4))
+    vmarker = Observable(NaN)
 
     if gui
-
-        # selection
-#        if selection_seg[] != (0, 0)
-#            selection_square = Rect(selection_seg[][1], ax1.limits[][2][1],
-#                                    selection_seg[][2], (ax1.limits[][2][2] - ax1.limits[][2][1]))
-#            GLMakie.poly!(ax1,
-#                          selection_square,
-#                          alpha=0.25,
-#                          color=:darkgrey,
-#                          strokecolor=:black,
-#                          strokewidth=2)
-#        end
 
         # time bar
         ax2 = GLMakie.Axis(p[2, 1],
@@ -433,6 +422,26 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
         end
 
+        # selection
+#        if selection_seg[] != (0, 0)
+#            selection_square = lift(selection_seg) do v
+#                Rect(selection_seg[][1], ax1.limits[][2][1],
+#                     selection_seg[][2], (ax1.limits[][2][2] - ax1.limits[][2][1]))
+#            end
+#            GLMakie.poly!(ax1,
+#                          selection_square,
+#                          alpha=0.25,
+#                          color=:green,
+#                          strokecolor=:black,
+#                          strokewidth=2)
+#        end
+
+        # marker
+        GLMakie.vlines!(ax1,
+                        vmarker,
+                        color=:green,
+                        linewidth=2)
+
         on(events(p).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]
             ax1_y = mouseposition(ax1)[2]
@@ -450,20 +459,29 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                             obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]] = !obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]]
                             notify(bad_ch)
                         end
+
+                        if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
+                            vmarker[] = NaN
+                            notify(vmarker)
+                        end
+
                     end
 
                 elseif event.button == Mouse.left
 
-                    # get channel info
                     if type === :normal
+
+                        # get channel info
                         if ax1_x < 0
                             channel_info(obj, ch=clabels[round(Int64, ax1_y)])
                         end
-                    end
 
-                    # place marker
-                    if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
-                        selection_seg[] = (round(Int64, ax1_x), round(Int64, ax1_x) + 2)
+                        # place marker
+                        if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
+                            vmarker[] = snap ? round(ax1_x, digits=1) : ax1_x
+                            notify(vmarker)
+                        end
+
                     end
 
                     # change time

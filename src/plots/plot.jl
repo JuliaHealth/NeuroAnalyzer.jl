@@ -38,6 +38,7 @@ Plot signal.
 - `zl::Bool=true`: draw line at t = 0 (for ERP/ERF/MEP)
 - `mono::Bool=false`: use color or gray palette
 - `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `snap::Bool=true`: snap to grid when placing marker
 - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
@@ -71,6 +72,7 @@ function plot(obj::NeuroAnalyzer.NEURO;
     zl::Bool=true,
     mono::Bool=false,
     res::Int64=1,
+    snap::Bool=true,
     gui::Bool=true)::GLMakie.Figure
 
     if datatype(obj) in ["erp", "erf"]
@@ -79,7 +81,7 @@ function plot(obj::NeuroAnalyzer.NEURO;
         p = plot_mep(obj, ch=ch, xlabel=xlabel, ylabel=ylabel, title=title, type=type, avg=avg, ci95=ci95, cb=cb, cb_title=cb_title, peaks=peaks, leg=leg, yrev=yrev, smooth=smooth, ks=ks, zl=zl, mono=mono, gui=gui)
     else
         if nepochs(obj) == 1
-            p = plot_cont(obj, ch=ch, seg=seg, xlabel=xlabel, ylabel=ylabel, title=title, markers=markers, scale=scale, group_ch=group_ch, type=type, avg=avg, ci95=ci95, n_channels=n_channels, mono=mono, res=res, gui=gui)
+            p = plot_cont(obj, ch=ch, seg=seg, xlabel=xlabel, ylabel=ylabel, title=title, markers=markers, scale=scale, group_ch=group_ch, type=type, avg=avg, ci95=ci95, n_channels=n_channels, mono=mono, res=res, snap=snap, gui=gui)
         else
             p = plot_ep(obj, ch=ch, ep=ep, xlabel=xlabel, ylabel=ylabel, title=title, markers=markers, scale=scale, group_ch=group_ch, type=type, avg=avg, ci95=ci95, n_channels=n_channels, n_epochs=n_epochs, mono=mono, res=res, gui=gui)
         end
@@ -124,7 +126,6 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO;
     scale::Bool=true,
     group_ch::Bool=true,
     n_channels::Int64=20,
-    n_epochs::Int64=5,
     res::Int64=1,
     gui::Bool=true)::GLMakie.Figure
 
