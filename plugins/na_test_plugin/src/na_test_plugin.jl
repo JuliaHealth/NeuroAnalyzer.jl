@@ -14,10 +14,13 @@ Nothing
 - `Nothing`
 """
 function na_test_plugin()::Nothing
-    @info "This is a test plugin for NeuroAnalyzer"
-    @info "Running na_info()"
+
+    _info("This is a test plugin for NeuroAnalyzer")
+    _info("Running na_info()")
+
     na_info()
-    @info "Test completed"
+
+    _info("Test completed")
 
     return nothing
 

@@ -5,15 +5,12 @@ export add_pl
 """
     plot_compose(p; <keyword arguments>)
 
-Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
-- `(2, 2)`: 2 × 2 plots, regular layout
-- `grid(4, 1, heights=[0.6, 0.1, 0.1, 0.1]`: 4 × 1 plots, irregular layout
-- `@layout [a{0.2w} b{0.8w};_ c{0.6}]`: complex layout using Plots.jl `@layout` macro
+Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is `(2, 2)`: 2 × 2 plots
 
 # Arguments
 
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
-- `layout::Tuple{Int64, Int64}`: layout
+- `layout::Tuple{Int64, Int64}`: layout, number of rows × number of columns
 
 # Returns
 

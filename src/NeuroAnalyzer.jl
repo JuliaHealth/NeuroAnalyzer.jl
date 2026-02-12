@@ -516,7 +516,6 @@ include("plots/plot_mep.jl")
 include("plots/plot_phsd.jl")
 include("plots/plot_psd.jl")
 include("plots/plot_spectrogram.jl")
-
 include("plots/plot.jl")
 include("plots/plot_signal_cont1.jl")
 include("plots/plot_signal_cont2.jl")

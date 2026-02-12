@@ -42,28 +42,26 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     _check_var(fprototype, [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch], "fprototype")
 
     if fprototype === :fir
-        @assert !(order isa Nothing && w isa Nothing) "Either order or w must be specified."
-        if !(w isa Nothing)
+        @assert isnothing(order) && isnothing(w) "Either order or w must be specified."
+        if !isnothing(w)
             @assert length(w) > 0 "Length of w must be ≥ 1."
-            if order isa Nothing
-                order = length(w)
-                ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "Length of w must be odd."
-            end
+            order = length(w)
+            ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "Length of w must be odd."
         end
-        if !(order isa Nothing)
+        if !isnothing(order)
             ftype in [:hp, :bp, :bs] && @assert mod(order, 2) != 0 "order must be odd."
-            w isa Nothing && (w = DSP.hamming(order))
+            w = DSP.hamming(order)
         end
         @assert length(w) == order "Length of w ($(length(w))) and order ($order) must be equal."
     end
 
     if fprototype !== :iirnotch
-        @assert order !== nothing "order must be specified."
-        @assert ftype !== nothing "ftype must be specified."
+        @assert !isnothing(order) "order must be specified."
+        @assert !isnothing(ftype) "ftype must be specified."
         _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     end
 
-    fprototype in [:firls, :remez, :iirnotch] && @assert !isa(bw, Nothing) "bw must be specified."
+    fprototype in [:firls, :remez, :iirnotch] && @assert !isnothing(bw) "bw must be specified."
     @assert fs >= 1 "fs must be ≥ 1."
 
     if length(cutoff) == 1
@@ -74,14 +72,14 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
         @assert cutoff[2] <= fs / 2 "cutoff[2] must be ≤ ($fs / 2) Hz."
     end
 
-    if !isa(bw, Nothing)
+    if !isnothing(bw)
         @assert bw > 0 "bw must be > 0."
         @assert bw < cutoff[1] "bw must be < $(cutoff[1])."
         @assert bw < fs - cutoff[1] "bw must be < $(fs - cutoff[1])."
         length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
     end
 
-    # !isa(order, Nothing) && @assert order <= n "order must be ≤ signal length ($n)."
+    # !isnothing(order) && @assert order <= n "order must be ≤ signal length ($n)."
 
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if ftype === :lp
@@ -128,7 +126,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 f2_stop = cutoff[2] + bw
                 flt_shape = [0, 0, 1, 1, 0, 0]
                 flt_frq = [0, f1_stop, f1_pass, f2_pass, f2_stop, fs / 2]
-                if !isa(w, Nothing)
+                if !isnothing(w)
                     @assert length(w) == 6 "Length of w must be 6."
                 else
                     w = ones(6)
@@ -140,7 +138,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 f2_pass = cutoff[2] + (bw / 2)
                 flt_shape = [1, 1, 0, 0, 1, 1]
                 flt_frq = [0, f1_pass, f1_stop, f2_stop, f2_pass, fs / 2]
-                if !isa(w, Nothing)
+                if !isnothing(w)
                     @assert length(w) == 6 "Length of w must be 6."
                 else
                     w = ones(6)
@@ -150,7 +148,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 f_stop = cutoff[1] + (bw / 2)
                 flt_shape = [1, 1, 0, 0]
                 flt_frq = [0, f_pass, f_stop, fs / 2]
-                if !isa(w, Nothing)
+                if !isnothing(w)
                     @assert length(w) == 4 "Length of w must be 4."
                 else
                     w = ones(4)
@@ -160,7 +158,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
                 f_stop = cutoff[1] - (bw / 2)
                 flt_shape = [0, 0, 1, 1]
                 flt_frq = [0, f_stop, f_pass, fs / 2]
-                if !isa(w, Nothing)
+                if !isnothing(w)
                     @assert length(w) == 4 "Length of w must be 4."
                 else
                     w = ones(4)
@@ -255,7 +253,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
 
-        if rp isa Nothing
+        if isnothing(rp)
             if fprototype === :elliptic
                 rp = 0.0025
             else
@@ -263,7 +261,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
             end
         end
 
-        if rs isa Nothing
+        if isnothing(rs)
             if fprototype === :elliptic
                 rs = 40
             else
@@ -292,7 +290,7 @@ function filter_create(; fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothi
     end
 
     if fprototype === :iirnotch
-        if !isa(ftype, Nothing)
+        if !isnothing(ftype)
             _info("For :iirnotch filter ftype is ignored")
         end
         @assert length(cutoff) == 1 "For :iirnotch filter cutoff must contain only one frequency."
@@ -457,9 +455,9 @@ Apply filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 
-If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
+If `preview=true`, it will return `GLMakie.Figure`.
 """
-function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{NeuroAnalyzer.NEURO, Plots.Plot{Plots.GRBackend}}
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
@@ -515,9 +513,9 @@ Apply filtering.
 
 - `Nothing`
 
-If `preview=true`, it will return `Plots.Plot{Plots.GRBackend}`.
+If `preview=true`, it will return `GLMakie.Figure`.
 """
-function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{Nothing, Plots.Plot{Plots.GRBackend}}
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}, order::Union{Nothing, Int64}=nothing, rp::Union{Nothing, Real}=nothing, rs::Union{Nothing, Real}=nothing, bw::Union{Nothing, Real}=nothing, w::Union{Nothing, AbstractVector}=nothing, preview::Bool=false, dir::Symbol=:twopass)::Union{Nothing, GLMakie.Figure}
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
