@@ -3,6 +3,17 @@ _log_off() = Logging.disable_logging(Logging.Warn)
 # restore console output
 _log_on() = Logging.disable_logging(Logging.Debug)
 
+function _error(s::String)::Nothing
+    if verbose
+        if colors
+            println(RED_FG("[ Error: "), s)
+        else
+            println("[ Error: $s")
+        end
+    end
+    return nothing
+end
+
 function _info(s::String)::Nothing
     if verbose
         if colors
@@ -24,6 +35,7 @@ function _warn(s::String)::Nothing
     end
     return nothing
 end
+
 function _deprecated(s::String)::Nothing
     if verbose
         if colors

@@ -53,7 +53,7 @@ function plot_psd(sf::Vector{Float64}, sp::Vector{Float64}; flim::Tuple{Real, Re
                       yrectzoom=false)
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(sp))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -134,7 +134,7 @@ function plot_psd(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{Stri
     else
         GLMakie.ylims!(ax, extrema(sp))
     end
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -261,7 +261,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                            yautolimitmargin=(0, 0),
                            zautolimitmargin=(0, 0))
         GLMakie.xlims!(ax, flim)
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -301,7 +301,7 @@ function plot_psd_3d(sf::Vector{Float64}, sp::Matrix{Float64}; clabels::Vector{S
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            zautolimitmargin=(0, 0))
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -437,7 +437,7 @@ function plot_psd_topo(locs::DataFrame, sf::Vector{Float64}, sp::Matrix{Float64}
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 20
+    ax.titlesize = 18
 
     if head
         # nose
@@ -532,7 +532,7 @@ Plot PSD (power spectrum density).
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
 - `gw::Real=5`: Gaussian width in Hz
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling

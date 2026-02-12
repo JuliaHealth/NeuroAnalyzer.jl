@@ -72,13 +72,13 @@ function plot_matrix(m::Matrix{<:Real}; xlabels::Vector{String}, ylabels::Vector
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
     ax.yticklabelsize = 12
 
-    hm = GLMakie.heatmap!(m,
+    hm = GLMakie.heatmap!(m',
                           colormap=pal)
     if cb
         Colorbar(p[1, 2],
@@ -98,26 +98,17 @@ Plot cross/auto-covariance/correlation.
 
 # Arguments
 
-- `m::Abstractvector`: covariance matrix
-- `lags::AbstractVector`: covariance lags
-- `xlabel::String="lag"`
+- `m::AbstractVector`
+- `lags::AbstractVector`
+- `xlabel::String="Lag [s]"`
 - `ylabel::String=""`
 - `title::String=""`
-- `cb_title::String=""`: colorbar title
 
 # Returns
 
 - `p::GLMakie.Figure`
 """
-function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [s]", ylabel::String="", title::String="")::GLMakie.Figure
-
-    if minimum(m) >= -1.0 && maximum(m) <= 1.0
-        ylim = (-1.0, 1.0)
-    else
-        ylim = extrema(m)
-    end
-
-    r = length(string(lags[1])) > 4 ? 90 : 0
+function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="Lag [s]", ylabel::String="", title::String="")::GLMakie.Figure
 
     # prepare plot
     plot_size = (800, 300)
@@ -126,8 +117,9 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
                       xlabel=xlabel,
                       ylabel=ylabel,
                       title=title,
-                      xticks=lags,
-                      xticklabelrotation=deg2rad(r),
+                      xticks=LinearTicks(20),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
                       xautolimitmargin=(0, 0),
                       yautolimitmargin=(0, 0),
                       xzoomlock=true,
@@ -136,8 +128,7 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    GLMakie.ylims!(ax, ylim)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -145,7 +136,7 @@ function plot_xac(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [
 
     GLMakie.lines!(lags,
                    m,
-                   linewidth=0.5,
+                   linewidth=1,
                    color=:black)
 
     return p
@@ -210,7 +201,7 @@ function plot_histogram(s::AbstractVector, x::Union{Nothing, Real}=nothing; type
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.xlims!(ax, extrema(xticks))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -286,7 +277,7 @@ function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="",
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -340,7 +331,7 @@ function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String=""
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -400,7 +391,7 @@ function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{St
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -467,7 +458,7 @@ function plot_box(s::AbstractArray; xlabels::Vector{String}, xlabel::String="", 
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -527,7 +518,7 @@ function plot_violin(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -587,7 +578,7 @@ function plot_dots(s::AbstractArray; xlabels::Vector{String}, xlabel::String="",
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -654,7 +645,7 @@ function plot_paired(s::AbstractArray; xlabels::Vector{String}, xlabel::String="
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -822,7 +813,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
             _warn("Lower frequency bound truncated to $(sf[2]) Hz")
             flim = (sf[2], flim[2])
         end
-        yt = round.(logspace(flim[1], flim[2], frq_n), digits=1)
+        yt = round.(logspace(flim[1], flim[2], nfrq), digits=1)
     end
 
     if smooth
@@ -868,7 +859,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                           xrectzoom=false,
                           yrectzoom=false)
         GLMakie.ylims!(ax, flim)
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -919,7 +910,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                            xrectzoom=false,
                            yrectzoom=false)
         GLMakie.ylims!(ax1, flim)
-        ax1.titlesize = 20
+        ax1.titlesize = 18
         ax1.xlabelsize = 18
         ax1.ylabelsize = 18
         ax1.xticklabelsize = 12
@@ -974,7 +965,7 @@ function plot_eros(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; db
                            xrectzoom=false,
                            yrectzoom=false)
         GLMakie.ylims!(ax2, flim)
-        ax2.titlesize = 20
+        ax2.titlesize = 18
         ax2.xlabelsize = 18
         ax2.ylabelsize = 18
         ax2.xticklabelsize = 12
@@ -1083,7 +1074,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                           xrectzoom=false,
                           yrectzoom=false)
         GLMakie.xlims!(ax, flim)
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -1121,7 +1112,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                            xrectzoom=false,
                            yrectzoom=false)
         GLMakie.xlims!(ax1, flim)
-        ax1.titlesize = 20
+        ax1.titlesize = 18
         ax1.xlabelsize = 18
         ax1.ylabelsize = 18
         ax1.xticklabelsize = 12
@@ -1156,7 +1147,7 @@ function plot_erop(sp::AbstractArray, sf::AbstractVector; db::Bool=true, xlabel:
                            xrectzoom=false,
                            yrectzoom=false)
         GLMakie.xlims!(ax2, flim)
-        ax2.titlesize = 20
+        ax2.titlesize = 18
         ax2.xlabelsize = 18
         ax2.ylabelsize = 18
         ax2.xticklabelsize = 12
@@ -1275,7 +1266,7 @@ function plot_ci(s::AbstractVector, s_l::AbstractVector, s_u::AbstractVector, t:
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yl)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -1352,7 +1343,7 @@ function plot_heatmap(m::AbstractMatrix; x::AbstractVector, y::AbstractVector, x
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -1443,7 +1434,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                                   xrectzoom=false,
                                   yrectzoom=false)
                 GLMakie.ylims!(ax, ylim)
-                ax.titlesize = 20
+                ax.titlesize = 18
                 ax.xlabelsize = 18
                 ax.ylabelsize = 18
                 ax.xticklabelsize = 12
@@ -1494,7 +1485,7 @@ function plot_imf(imf::Matrix{Float64}; n::Int64=size(imf, 1) - 1, t::AbstractVe
                           yrectzoom=false)
     end
     GLMakie.ylims!(ax, ylim)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -1559,7 +1550,7 @@ function plot_hs(sp::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.xlims!(ax, _xlims(st))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -1622,7 +1613,7 @@ function plot_fi(fi::Vector{Float64}, st::Vector{Float64}; xlabel::String="defau
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.xlims!(ax, _xlims(st))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -1689,7 +1680,7 @@ function plot_phase(ph::Vector{Float64}, sf::Vector{Float64}; unit::Symbol=:rad,
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.xlims!(ax, _xlims(sf))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -1825,7 +1816,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVect
                                   xrectzoom=false,
                                   yrectzoom=false)
                 GLMakie.ylims!(ax, ylim)
-                ax.titlesize = 20
+                ax.titlesize = 18
                 ax.xlabelsize = 18
                 ax.ylabelsize = 18
                 ax.xticklabelsize = 12
@@ -1859,7 +1850,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVect
                           xrectzoom=false,
                           yrectzoom=false)
         GLMakie.ylims!(ax, ylim)
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -1887,7 +1878,7 @@ function plot_dwc(dc::Matrix{Float64}; n::Int64=size(dc, 1) - 1, t::AbstractVect
                           yrectzoom=false)
         GLMakie.xlims!(ax, _xlims(t))
         GLMakie.ylims!(ax, ylim)
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12

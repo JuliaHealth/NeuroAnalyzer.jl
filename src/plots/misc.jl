@@ -23,12 +23,12 @@ function plot_compose(p::Vector{GLMakie.Figure}; layout::Tuple{Int64, Int64})::G
 
     @assert layout[1] * layout[2] >= length(p) "Layout size ($(layout[1]) × $(layout[2])) must be ≥ the number of plots ($(length(p)))."
 
-    plot_size =(0, 0)
+    plot_size = (0, 0)
     for idx in eachindex(p)
         size(p[idx].scene) > plot_size && (plot_size = size(p[idx].scene))
     end
     for idx in eachindex(p)
-        size(p[idx].scene) != plot_size && _warn("For best results all plots should have the size of $(s[1])×$(s[2]).")
+        size(p[idx].scene) != plot_size && _warn("For best results all plots should have the size of $(plot_size[1])×$(plot_size[2]).")
     end
 
     plot_size = (plot_size[1] * layout[2], plot_size[2] * layout[1])

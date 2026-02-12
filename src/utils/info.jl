@@ -599,28 +599,32 @@ Show channel info.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Int64`
+- `ch::String`
 - `pr::Bool=true`: if true, print to output, otherwise return a string
 
 # Returns
 
 - `channel_info::Union{Nothing, String}`
 """
-function channel_info(obj::NeuroAnalyzer.NEURO; ch::Int64, pr::Bool=true)::Union{Nothing, String}
+function channel_info(obj::NeuroAnalyzer.NEURO; ch::String, pr::Bool=true)::Union{Nothing, String}
 
-    _check_channels(obj, labels(obj)[ch])
+    ch = get_channel(obj, ch=ch)
+    length(ch) == 1 && (ch = ch[1])
+    chi = nothing
 
-    if obj.header.recording[:data_type] != "nirs"
-        chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) bad: $(obj.header.recording[:bad_channel][ch])"
-    else
-        if obj.header.recording[:channel_type][ch] !== "nirs_aux"
-            chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))"
+    if length(ch) == 1
+        if obj.header.recording[:data_type] != "nirs"
+            chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) bad: $(obj.header.recording[:bad_channel][ch])"
         else
-            chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))"
+            if obj.header.recording[:channel_type][ch] !== "nirs_aux"
+                chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8)) unit: $(rpad(obj.header.recording[:unit][ch], 8)) wavelength: $(rpad((obj.header.recording[:wavelength_index][ch]), 8))"
+            else
+                chi = " ch: $(rpad(string(ch), 4)) label: $(rpad(obj.header.recording[:label][ch], 8)) type: $(rpad(uppercase(obj.header.recording[:channel_type][ch]), 8))"
+            end
         end
     end
 
-    if pr
+    if pr && !isnothing(chi)
         println(chi)
         return nothing
     else

@@ -88,3 +88,52 @@ function plot(obj::NeuroAnalyzer.NEURO;
     return p
 
 end
+
+
+"""
+    plot(obj1, obj2; <keyword arguments>)
+
+Plot signal.
+
+# Arguments
+
+- `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+- `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `scale::Bool=true`: draw scales
+- `group_ch::Bool=true`: group channels by type
+- `n_channels::Int64=20`: number of visible channels
+- `n_epochs::Int64=5`: number of visible epochs
+- `res::Int64=1`: resampling factor (draw every res-nth sample)
+- `gui::Bool=true`: if true, keep window open and use it interactively
+
+# Returns
+
+- `p::GLMakie.Figure`
+"""
+function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}="all",
+    seg::Tuple{Real, Real}=(0, 10),
+    xlabel::String="default",
+    ylabel::String="default",
+    title::String="default",
+    scale::Bool=true,
+    group_ch::Bool=true,
+    n_channels::Int64=20,
+    n_epochs::Int64=5,
+    res::Int64=1,
+    gui::Bool=true)::GLMakie.Figure
+
+    @assert datatype(obj1) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
+    @assert datatype(obj2) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
+    @assert nepochs(obj1) == 1 "This function works for continuous EEG and MEG objects."
+
+    p = plot_cont(obj1, obj2, ch=ch, seg=seg, xlabel=xlabel, ylabel=ylabel, title=title, scale=scale, group_ch=group_ch, n_channels=n_channels, res=res, gui=gui)
+
+    return p
+
+end

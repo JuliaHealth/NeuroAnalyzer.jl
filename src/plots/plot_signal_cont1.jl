@@ -6,10 +6,7 @@
 # select epoch
 # time format (SS:MS HH:MM:SS)
 # delete region
-# click channel to mark as bad
-# click channel to get info / position
 # change scaling
-# plot(obj1, obj2)
 
 export plot_cont
 
@@ -191,7 +188,7 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
-    ax1.titlesize = 20
+    ax1.titlesize = 18
     ax1.xlabelsize = 12
     ax1.ylabelsize = 12
     ax1.xticklabelsize = 12
@@ -199,12 +196,14 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
     # draw channels
     if type === :normal
-        for idx in 1:ch_n
-            GLMakie.lines!(ax1,
-                           t[][1:res:end],
-                           @lift($s[idx, 1:res:end]),
-                           linewidth=1.5,
-                           color=bad_ch[][idx] ? :lightgray : :black)
+        @lift begin
+            for idx in 1:ch_n
+                GLMakie.lines!(ax1,
+                               t[][1:res:end],
+                               $s[idx, 1:res:end],
+                               linewidth=1.5,
+                               color=$bad_ch[idx] ? :lightgray : :black)
+            end
         end
     else
         if ci95
@@ -250,15 +249,6 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
             end
         end
     end
-    # draw epochs markers
-    # TODO: draw epoch numbers
-#    if !isnothing(emarkers)
-#        GLMakie.vlines!(ax1,
-#                        emarkers,
-#                        linestyle=:dot,
-#                        linewidth=0.5,
-#                        color=:blue)
-#    end
 
     # draw scale bars
     # TO DO: place scale values on the left side, below channel label
@@ -341,18 +331,21 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         end
     end
 
+    selection_seg = Observable((2, 4))
+
     if gui
 
         # selection
-        # define a square: Rect(x, y, width, height)
-#        square = Rect(2, ax1.limits[][2][1],
-#                      6, (ax1.limits[][2][2] - ax1.limits[][2][1]))
-#        GLMakie.poly!(ax1,
-#                      square,
-#                      alpha=0.25,
-#                      color=:darkgrey,
-#                      strokecolor=:black,
-#                      strokewidth=2)
+#        if selection_seg[] != (0, 0)
+#            selection_square = Rect(selection_seg[][1], ax1.limits[][2][1],
+#                                    selection_seg[][2], (ax1.limits[][2][2] - ax1.limits[][2][1]))
+#            GLMakie.poly!(ax1,
+#                          selection_square,
+#                          alpha=0.25,
+#                          color=:darkgrey,
+#                          strokecolor=:black,
+#                          strokewidth=2)
+#        end
 
         # time bar
         ax2 = GLMakie.Axis(p[2, 1],
@@ -438,26 +431,42 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                           strokewidth=2,
                           alpha=0.25)
 
-            # mark bad channels
-            for idx in 1:ch_n
-                if bad_ch[][idx]
-                    GLMakie.hlines!(ax3,
-                                    idx,
-                                    linestyle=:dots,
-                                    linewidth=5,
-                                    color=:black)
-                end
-            end
-
         end
 
         on(events(p).mousebutton) do event
-            if event.button == Mouse.left
-                if event.action == Mouse.press # || event.action == Mouse.release
+            ax1_x = mouseposition(ax1)[1]
+            ax1_y = mouseposition(ax1)[2]
+            ax2_x = mouseposition(ax2)[1]
+            ax2_y = mouseposition(ax2)[2]
+            ax3_x = mouseposition(ax3)[1]
+            ax3_y = mouseposition(ax3)[2]
+            if event.action == Mouse.press
+                if event.button == Mouse.right
+
+                    # mark channel as bad
+                    if type === :normal
+                        if ax1_x < 0
+                            bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
+                            obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]] = !obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]]
+                            notify(bad_ch)
+                        end
+                    end
+
+                elseif event.button == Mouse.left
+
+                    # get channel info
+                    if type === :normal
+                        if ax1_x < 0
+                            channel_info(obj, ch=clabels[round(Int64, ax1_y)])
+                        end
+                    end
+
+                    # place marker
+                    if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
+                        selection_seg[] = (round(Int64, ax1_x), round(Int64, ax1_x) + 2)
+                    end
 
                     # change time
-                    ax2_x = mouseposition(ax2)[1]
-                    ax2_y = mouseposition(ax2)[2]
                     seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
                     if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
                         ax1.limits[] = (seg, ax1.limits[][2])
@@ -466,8 +475,6 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
                     # change channels
                     if type === :normal
-                        ax3_x = mouseposition(ax3)[1]
-                        ax3_y = mouseposition(ax3)[2]
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 && ax3_y <= ax3.limits[][2][2]
                             ch1[] = floor(Int64, ax3_y)
                             ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
@@ -484,63 +491,75 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if type === :normal
+
                     if event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1
                             ch1[] += 1
                             update_ax3 = true
                         end
                     end
+
                     if event.key == Keyboard.up
                         if ch1[] > 1
                             ch1[] -= 1
                             update_ax3 = true
                         end
                     end
+
                     if ispressed(p, Keyboard.page_down)
                         if ch_n > 1 && nch[] > 1
                             nch[] -= 1
                             update_ax3 = true
                         end
                     end
+
                     if ispressed(p, Keyboard.page_up)
                         if ch_n > 1 && nch[] < ch_n && ch1[] + (nch[] - 1) < ch_n
                             nch[] += 1
                             update_ax3 = true
                         end
                     end
+
                 end
+
                 if event.key == Keyboard.home
                     seg_pos[] = 0
                     update_ax2 = true
                 end
+
                 if event.key == Keyboard._end
                     seg_pos[] = ceil(Int64, t[][end] - seg_len)
                     update_ax2 = true
                 end
+
                 if event.key == Keyboard.left
                     if seg_pos[] > 0
                         seg_pos[] -= 1
                         update_ax2 = true
                     end
                 end
+
                 if ispressed(p, Keyboard.left_shift & Keyboard.left)
                     if seg_pos[] >= 9
                         seg_pos[] -= 9
                         update_ax2 = true
                     end
                 end
+
                 if event.key == Keyboard.right
                     if seg_pos[] <= t[][end] - seg_len
                         seg_pos[] += 1
                         update_ax2 = true
                     end
                 end
+
                 if ispressed(p, Keyboard.left_shift & Keyboard.right)
                     if seg_pos[] <= t[][end] - seg_len - 9
                         seg_pos[] += 9
                         update_ax2 = true
                     end
                 end
+
                 if update_ax2
                     seg = (seg_pos[], seg_pos[] + seg_len)
                     ax1.limits[] = (seg, ax1.limits[][2])
@@ -554,294 +573,7 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         type === :normal && colsize!(p.layout, 2, GLMakie.Fixed(20))
         rowsize!(p.layout, 2, GLMakie.Fixed(20))
 
-    end
-
-    return p
-
-end
-
-"""
-    plot_signal(t, s; <keyword arguments>)
-
-Plot epoched signal.
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`: x-axis values (time points or samples)
-- `s::AbstractArray`: data to plot
-- `seg::Tuple{Real, Real}`: segment (from, to) in seconds to display
-- `clabels::Vector{String}=string.(1:size(s, 1))`: channel labels
-- `ctypes:::Vector{String}=repeat([""], size(s, 1))`: channel types
-- `cunits::Vector{String}=repeat([""], size(s, 1))`: channel units
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `scale::Bool=true`: draw scale
-- `bad::Vector{Bool}=zeros(Bool, size(s, 1))`: list of bad channels
-
-# Returns
-
-- `p::GLMakie.Figure`
-"""
-function plot_ep(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; seg::Tuple{Real, Real}, clabels::Vector{String}=string.(1:size(s, 1)), ctypes::Vector{String}=repeat([""], size(s, 1)), cunits::Vector{String}=repeat([""], size(s, 1)), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, bad::Vector{Bool}=zeros(Bool, size(s, 1)))::GLMakie.Figure
-
-    ch_n = size(s, 1)
-
-    if ch_n == 1
-
-        fs = round(Int64, 1/(t[2] - t[1]))
-        ep_len = size(s, 2) / fs
-        ep_n = size(s, 3)
-        seg = (0, 5 * ep_len)
-        seg_pos = Observable(seg[1])
-        seg_len = 5 * ep_len
-
-        # prepare plot
-        plot_size = (900, 450)
-        p = GLMakie.Figure(size=plot_size)
-        ax1 = GLMakie.Axis(p[1, 1],
-                           xlabel="",
-                           ylabel=ylabel,
-                           title=title,
-                           xticks=LinearTicks(10),
-                           xminorticksvisible=true,
-                           xminorticks=IntervalsBetween(10),
-                           xautolimitmargin=(0, 0),
-                           yautolimitmargin=(0, 0),
-                           xzoomlock=true,
-                           yzoomlock=true,
-                           xpanlock=true,
-                           ypanlock=true,
-                           xrectzoom=false,
-                           yrectzoom=false)
-        GLMakie.xlims!(ax1, seg)
-        if minimum(s) == 0
-            GLMakie.ylims!(ax1, 0, maximum(s)[2])
-        else
-            GLMakie.ylims!(ax1, extrema(s))
-        end
-        ax1.titlesize = 20
-        ax1.xlabelsize = 12
-        ax1.ylabelsize = 12
-        ax1.xticklabelsize = 12
-        ax1.yticklabelsize = 12
-
-        # plot signal
-        GLMakie.lines!(ax1,
-                       t,
-                       s[1, :, :][:],
-                       linewidth=1.5,
-                       color=bad ? :lightgray : :black)
-
-    else
-
-        ctypes_uni = unique(ctypes)
-        t_pos = zeros(Int64, length(ctypes_uni))
-        for idx in eachindex(ctypes_uni)
-             t_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
-        end
-        ctypes_uni_pos = zeros(Int64, length(ctypes))
-        ctypes_uni_pos[t_pos] .= 1
-
-        # get ranges of the original signal for the scales
-        # normalize and shift so all channels are visible
-        r = Float64[]
-        @inbounds for ch_idx in eachindex(ctypes_uni)
-            push!(r, round(_get_range(s[ctypes .== ctypes_uni[ch_idx], :])))
-            s[ctypes .== ctypes_uni[ch_idx], :] = @views normalize_minmax(s[ctypes .== ctypes_uni[ch_idx], :])
-        end
-        # reverse so 1st channel is on top
-        s = @views reverse(s[:, eachindex(t)], dims = 1)
-        bad = reverse(bad)
-        # each channel is between -1.0 and +1.0
-        # scale by 0.5 so maxima do not overlap
-        @inbounds for idx in 1:ch_n
-            s[idx, :] = @views (s[idx, :]) .+ (idx - 1)
-        end
-
-        # prepare plot
-        plot_size = (1200, 100 + 40 * ch_n)
-        p = GLMakie.Figure(size=plot_size)
-        ax = GLMakie.Axis(p[1, 1],
-                          xlabel=xlabel,
-                          ylabel=ylabel,
-                          title=title,
-                          xticks=LinearTicks(10),
-                          xminorticksvisible=true,
-                          xminorticks=IntervalsBetween(10),
-                          yticks=((ch_n - 1):-1:0, clabels),
-                          yticksvisible=false,
-                          xautolimitmargin=(0, 0),
-                          yautolimitmargin=(0, 0))
-        GLMakie.xlims!(ax, seg)
-        GLMakie.ylims!(ax, -1, ch_n)
-        ax.titlesize = 20
-        ax.xlabelsize = 18
-        ax.ylabelsize = 18
-        ax.xticklabelsize = 12
-        ax.yticklabelsize = ch_n <= 64 ? 12 : 10;
-
-        # plot channels
-        if length(ctypes_uni) > 1
-            cmap = GLMakie.resample_cmap(pal, length(ctypes_uni))
-        else
-            cmap = reverse(GLMakie.resample_cmap(pal, ch_n))
-        end
-
-        for idx in 1:ch_n
-            if !bad[idx]
-                if mono
-                    GLMakie.lines!(ax,
-                                   t,
-                                   s[idx, :],
-                                   linewidth=0.75,
-                                   color=:black)
-                else
-                    if length(ctypes_uni) > 1
-                        GLMakie.lines!(ax,
-                                       t,
-                                       s[idx, :],
-                                       linewidth=0.75,
-                                       color=cmap[channel_color[idx]],
-                                       colormap=pal,
-                                       colorrange=1:length(ctypes_uni))
-                    else
-                        GLMakie.lines!(ax,
-                                       t,
-                                       s[idx, :],
-                                       linewidth=0.75,
-                                       color=cmap[idx],
-                                       colormap=pal,
-                                       colorrange=1:ch_n)
-                    end
-                end
-            else
-                GLMakie.lines!(ax,
-                               t,
-                               s[idx, :],
-                               linewidth=0.75,
-                               alpha=0.2,
-                               color=:black)
-            end
-        end
-
-        # draw scales
-        if scale
-            idx2 = 1
-            for idx1 in 1:ch_n
-                if ctypes_uni_pos[idx1] == 1
-                    s_pos = ch_n - idx1 + 1
-                    GLMakie.lines!(ax,
-                                   #[_xlims(t)[1], _xlims(t)[1]],
-                                   [ax.limits[][1][1], ax.limits[][1][1]],
-                                   [(s_pos - 1.5), (s_pos - 0.5)],
-                                   color=:red,
-                                   linewidth=5)
-                    GLMakie.text!(ax,
-                                  (_xlims(t)[1], s_pos - 1),
-                                  text="$(r[idx2]) $(cunits[idx1])  ",
-                                  fontsize=8,
-                                  align=(:center, :top),
-                                  rotation=pi/2,
-                                  offset=(5, 0))
-                    idx2 += 1
-                end
-            end
-        end
-    end
-
-    if gui
-
-        ax2 = GLMakie.Axis(p[2, 1],
-                           xlabel="Epochs",
-                           ylabel="",
-                           title="",
-                           xticks=LinearTicks(25),
-                           yticksvisible=false,
-                           xautolimitmargin=(0, 0),
-                           yautolimitmargin=(0, 0),
-                           backgroundcolor = :white,
-                           xzoomlock=true,
-                           yzoomlock=true,
-                           xpanlock=true,
-                           ypanlock=true,
-                           xrectzoom=false,
-                           yrectzoom=false)
-        GLMakie.xlims!(ax2, 0, ep_n)
-        GLMakie.ylims!(ax2, 0, 1)
-        hideydecorations!(ax2)
-        ax2.xticklabelsize = 12
-
-        # epoch lengths
-        for idx in 1:ep_n
-            GLMakie.vlines!(ax1,
-                            idx * ep_len,
-                            linewidth=0.5,
-                            linestyle=:dash,
-                            color=:black)
-        end
-
-        # epoch marker
-        # define a square: Rect(x, y, width, height)
-        rectangle = lift(seg_pos) do seg_pos
-            Rect(seg_pos, 0, 5, 1)
-        end
-        poly!(ax2,
-              rectangle,
-              color=:darkgrey,
-              strokecolor=:black,
-              strokewidth=2)
-
-        ep_selected = zeros(Bool, ep_n)
-
-        on(events(p).mousebutton) do event
-            if event.button == Mouse.left
-                if event.action == Mouse.press
-                    ax1_x = mouseposition(ax1)[1]
-                    ax1_y = mouseposition(ax1)[2]
-                    nep = ceil(Int64, ax1_x / ep_len)
-                    if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
-                        ep_selected[nep] = !ep_selected[nep]
-                    end
-
-                    ax2_x = mouseposition(ax2)[1]
-                    ax2_y = mouseposition(ax2)[2]
-                    nep = round(Int64, ax2_x)
-                    nep < 1 && (nep = 1)
-                    seg = ((nep - 1) * ep_len, (nep + 4) * ep_len)
-                    if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
-                        ax1.limits[] = (seg, ax1.limits[][2])
-                        seg_pos[] = nep
-                    end
-                end
-            end
-        end
-
-        on(events(p).keyboardbutton) do event
-            if event.action == Keyboard.press || event.action == Keyboard.repeat
-                if event.key == Keyboard.home
-                    seg_pos[] = 0
-                end
-                if event.key == Keyboard._end
-                    seg_pos[] = ep_n - 5
-                end
-                if event.key == Keyboard.left
-                    if seg_pos[] >= 1
-                        seg_pos[] -= 1
-                    end
-                end
-                if event.key == Keyboard.right
-                    if seg_pos[] <= ep_n - 5
-                        seg_pos[] += 1
-                    end
-                end
-                seg = (seg_pos[] * ep_len, (seg_pos[] + 5) * ep_len)
-                ax1.limits[] = (seg, ax1.limits[][2])
-            end
-        end
-
-        rowsize!(p.layout, 2, GLMakie.Fixed(20))
+        wait(display(p))
 
     end
 

@@ -48,7 +48,7 @@ function plot_coherence(coh::Vector{Float64}, f::Vector{Float64}; flim::Tuple{Re
                       xautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -122,7 +122,7 @@ function plot_coherence(coh::Matrix{Float64}, f::Vector{Float64}; clabels::Vecto
                       xautolimitmargin=(0, 0))
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, -0.1, 1.1)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12

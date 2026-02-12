@@ -20,7 +20,7 @@ Calculate total power.
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
@@ -59,7 +59,7 @@ Calculate total power.
 - `wlen::Int64=fs`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(fs / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
 - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
@@ -103,7 +103,7 @@ Calculate total power.
 - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
 - `gw::Real=5`: Gaussian width in Hz
 
 # Returns

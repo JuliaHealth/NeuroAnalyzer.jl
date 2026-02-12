@@ -53,7 +53,7 @@ function plot_phsd(f::Vector{Float64}, ph::Vector{Float64}; flim::Tuple{Real, Re
                       yrectzoom=false)
     GLMakie.xlims!(ax, flim)
     GLMakie.ylims!(ax, extrema(ph))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -133,7 +133,7 @@ function plot_phsd(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{Stri
     else
         GLMakie.ylims!(ax, extrema(ph))
     end
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -256,7 +256,7 @@ function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{S
                            yautolimitmargin=(0, 0),
                            zautolimitmargin=(0, 0))
         GLMakie.xlims!(ax, flim)
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -296,7 +296,7 @@ function plot_phsd_3d(f::Vector{Float64}, ph::Matrix{Float64}; clabels::Vector{S
                            xautolimitmargin=(0, 0),
                            yautolimitmargin=(0, 0),
                            zautolimitmargin=(0, 0))
-        ax.titlesize = 20
+        ax.titlesize = 18
         ax.xlabelsize = 18
         ax.ylabelsize = 18
         ax.xticklabelsize = 12
@@ -424,7 +424,7 @@ function plot_phsd_topo(locs::DataFrame, f::Vector{Float64}, ph::Matrix{Float64}
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 20
+    ax.titlesize = 18
 
     if head
         # nose

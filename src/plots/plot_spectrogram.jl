@@ -48,9 +48,6 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
     _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
-    if cb_title == ""
-        cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
-    end
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
@@ -95,7 +92,7 @@ function plot_spectrogram(st::Vector{Float64}, sf::Vector{<:Real}, sp::Matrix{Fl
                       yrectzoom=false)
     GLMakie.xlims!(ax, (st[1], st[end]))
     GLMakie.ylims!(ax, flim)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -176,9 +173,6 @@ function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vect
     _check_tuple(flim, "flim")
 
     pal = mono ? :grays : :darktest
-    if cb_title == ""
-        cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"
-    end
 
     if smooth
         sp = imfilter(sp, Kernel.gaussian(n))
@@ -218,7 +212,7 @@ function plot_spectrogram(sf::Vector{<:Real}, sp::Matrix{Float64}; clabels::Vect
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.xlims!(ax, flim)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -399,7 +393,7 @@ function plot_spectrogram_topo(locs::DataFrame, st::Vector{Float64}, sf::Vector{
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 20
+    ax.titlesize = 18
 
     if head
         # nose
@@ -494,7 +488,7 @@ Plots spectrogram.
 - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
 - `w::Bool=true`: if true, apply Hanning window
 - `gw::Real=10`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], frq_n)`, where `frq_n` is the length of `0:(sr(obj) / 2)`
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
 - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `frq::Symbol=:lin`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: y-axis limits
@@ -553,7 +547,6 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         seg = (vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts))
         signal = @views obj.data[ch, seg[1]:seg[2], 1]
         t = obj.time_pts[seg[1]:seg[2]]
-        _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     else
         @assert ep != 0 "For epoched object, ep must be specified."
         t = obj.epoch_time
@@ -577,28 +570,28 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             if ep != 0
                 title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (short-time Fourier)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (short-time Fourier)")
             end
         elseif method === :mt
             sp, sf, st = NeuroAnalyzer.spectrogram(signal, fs=fs, db=false, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (multi-tapered)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (multi-tapered)")
             end
         elseif method === :mw
             _, sp, _, sf, st = NeuroAnalyzer.mwspectrogram(signal, fs=fs, ncyc=ncyc, db=false, w=w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (Morlet wavelet)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (Morlet wavelet)")
             end
         elseif method === :gh
             sp, _, sf, st = NeuroAnalyzer.ghtspectrogram(signal, fs=fs, db=false, gw=gw, w=w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)")
             end
         elseif method === :cwt
             _log_off()
@@ -609,7 +602,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             if ep != 0
                 title == "default" && (title = "CWT Scaleogram\n[epoch: $ep]")
             else
-                title == "default" && (title = "CWT Scaleogram\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "CWT Scaleogram")
             end
         elseif method === :hht
             imf = emd(signal, t)
@@ -617,7 +610,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             if ep != 0
                 title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (Hilbert-Huang)")
             end
         end
     elseif length(ch) > 1 && type === :normal
@@ -626,28 +619,28 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             if ep != 0
                 title == "default" && (title = "Spectrogram (short-time Fourier)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (short-time Fourier)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (short-time Fourier)")
             end
         elseif method === :mt
             sp, sf = psd(signal, fs=fs, db=db, method=:mt, nt=nt, wlen=wlen, woverlap=woverlap, w=w)
             if ep != 0
                 title == "default" && (title = "Spectrogram (multi-tapered)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (multi-tapered)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (multi-tapered)")
             end
         elseif method === :mw
             sp, sf = psd(signal, fs=fs, db=db, method=:mw, w=w, ncyc=ncyc)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Morlet wavelet)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (Morlet wavelet)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (Morlet wavelet)")
             end
         elseif method === :gh
             sp, sf = psd(signal, fs=fs, db=db, method=:gh, w=w, gw=gw)
             if ep != 0
                 title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (Gaussian-Hilbert)")
             end
         elseif method === :cwt
             _log_off()
@@ -658,7 +651,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             if ep != 0
                 title == "default" && (title = "CWT Scaleogram\n[epoch: $ep]")
             else
-                title == "default" && (title = "CWT Scaleogram\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "CWT Scaleogram")
             end
         elseif method === :hht
             imf = emd(signal[1, :], t)
@@ -672,7 +665,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
             if ep != 0
                 title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[epoch: $ep]")
             else
-                title == "default" && (title = "Spectrogram (Hilbert-Huang)\n[time window: $t_s1:$t_s2]")
+                title == "default" && (title = "Spectrogram (Hilbert-Huang)")
             end
         end
     end
@@ -692,6 +685,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         sp = sp[:, f1:f2]
     end
 
+    cb_title = method === :cwt ? "Magnitude" : "Power"
+    method !== :cwt && (cb_title *= db ? " [dB $units^2/Hz]" : " [$units^2/Hz]")
+
     if length(ch) == 1 && type === :normal
         xlabel == "default" && (xlabel = "Time [s]")
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -709,7 +705,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              smooth=smooth,
                              n=n,
                              cb=cb,
-                             cb_title=method === :cwt ? "Magnitude" : "",
+                             cb_title=cb_title,
                              threshold=threshold,
                              threshold_type=threshold_type)
     elseif length(ch) > 1 && type === :normal
@@ -729,7 +725,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                              smooth=smooth,
                              n=n,
                              cb=cb,
-                             cb_title=method === :cwt ? "Magnitude" : "",
+                             cb_title=cb_title,
                              threshold=threshold,
                              threshold_type=threshold_type)
     elseif type === :topo
@@ -757,7 +753,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
                                   smooth=smooth,
                                   n=n,
                                   cb=cb,
-                                  cb_title=method === :cwt ? "Magnitude" : "",
+                                  cb_title=cb_title,
                                   head=head)
     end
 
@@ -766,13 +762,6 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
         markers_desc = obj.markers[!, :value]
-        if gui
-            GLMakie.vlines!(p[2, 1],
-                            markers_pos,
-                            linestyle=:dash,
-                            linewidth=1,
-                            color=:black)
-        end
         for idx in eachindex(markers_pos)
             if _in(markers_pos[idx], (obj.time_pts[1], obj.time_pts[end]))
                 GLMakie.vlines!(p[1, 1],

@@ -46,7 +46,7 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; xl
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -125,7 +125,7 @@ function plot_mep(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; cl
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -250,7 +250,7 @@ function plot_mep_stack(t::AbstractVector, s::AbstractArray; clabels::Vector{Str
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12

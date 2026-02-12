@@ -59,7 +59,7 @@ function plot_efield2d(q::Vector{Int64}, qx::Vector{Float64}, qy::Vector{Float64
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12

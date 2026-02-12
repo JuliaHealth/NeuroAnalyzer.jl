@@ -58,7 +58,7 @@ function plot_connectivity_circle(m::AbstractMatrix; clabels=Vector{String}, tit
     hidedecorations!(ax)
     GLMakie.xlims!(ax, (-1.5, 1.5))
     GLMakie.ylims!(ax, (-1.5, 1.5))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12

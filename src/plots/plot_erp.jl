@@ -48,7 +48,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractVector; rt
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -138,7 +138,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, s::AbstractMatrix; rt
                       xrectzoom=false,
                       yrectzoom=false)
     GLMakie.ylims!(ax, yrev ? reverse(_ylims(s) .* 1.5) : (_ylims(s) .* 1.5))
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12
@@ -347,7 +347,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, s::Matrix{Float64}; 
     GLMakie.ylims!(ax, (-yl, yl))
     hidespines!(ax)
     hidedecorations!(ax)
-    ax.titlesize = 20
+    ax.titlesize = 18
 
     if head
         # nose
@@ -477,7 +477,7 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
                       ypanlock=true,
                       xrectzoom=false,
                       yrectzoom=false)
-    ax.titlesize = 20
+    ax.titlesize = 18
     ax.xlabelsize = 18
     ax.ylabelsize = 18
     ax.xticklabelsize = 12

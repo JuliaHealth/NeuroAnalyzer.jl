@@ -817,23 +817,29 @@ function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, AbstractRang
         push!(loc_x_range, (loc_x[idx] - 0.02, loc_x[idx] + 0.02))
         push!(loc_y_range, (loc_y[idx] - 0.02, loc_y[idx] + 0.02))
     end
-    on(events(p).mousebutton) do event
-        if event.button == Mouse.left
-            if event.action == Mouse.press
-                ax_x = mouseposition(ax)[1]
-                ax_y = mouseposition(ax)[2]
-                for idx in eachindex(loc_x)
-                    if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] && ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
-                            println(ch_info[idx])
-                            break
+
+    if gui
+        println()
+
+        on(events(p).mousebutton) do event
+            if event.button == Mouse.left
+                if event.action == Mouse.press
+                    ax_x = mouseposition(ax)[1]
+                    ax_y = mouseposition(ax)[2]
+                    for idx in eachindex(loc_x)
+                        if ax_x >= loc_x_range[idx][1] && ax_x <= loc_x_range[idx][2] && ax_y >= loc_y_range[idx][1] && ax_y <= loc_y_range[idx][2]
+                                println(ch_info[idx])
+                                break
+                        end
                     end
+                    
                 end
-                
             end
         end
-    end
 
-    gui && wait(display(p))
+        wait(display(p))
+
+    end
 
     return p
 
@@ -883,11 +889,9 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
 
-    ch = get_channel(obj, ch=ch)
     ch_info = String[]
-    for idx in eachindex(ch)
-        push!(ch_info, channel_info(obj, ch=idx, pr=false))
-    end
+    ch = get_channel(obj, ch=ch)
+    [push!(ch_info, channel_info(obj, ch=labels(obj)[ch[idx]], pr=false)) for idx in eachindex(ch)]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
     ch = collect(1:DataFrames.nrow(locs))

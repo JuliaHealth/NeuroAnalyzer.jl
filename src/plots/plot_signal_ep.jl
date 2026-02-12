@@ -6,8 +6,6 @@
 # select epoch
 # time format (SS:MS HH:MM:SS)
 # delete epoch
-# click channel to mark as bad
-# click channel to get info / position
 # change scaling
 # plot(obj1, obj2)
 
@@ -195,7 +193,7 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     else
         GLMakie.ylims!(ax1, ch_n + 0.5, 0.5)
     end
-    ax1.titlesize = 20
+    ax1.titlesize = 18
     ax1.xlabelsize = 12
     ax1.ylabelsize = 12
     ax1.xticklabelsize = 12
@@ -203,12 +201,14 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
 
     # draw channels
     if type === :normal
-        for idx in 1:ch_n
-            GLMakie.lines!(ax1,
-                           t[][1:res:end],
-                           @lift($s[idx, 1:res:end]),
-                           linewidth=1.5,
-                           color=bad_ch[][idx] ? :lightgray : :black)
+        @lift begin
+            for idx in 1:ch_n
+                GLMakie.lines!(ax1,
+                               t[][1:res:end],
+                               $s[idx, 1:res:end],
+                               linewidth=1.5,
+                               color=$bad_ch[idx] ? :lightgray : :black)
+            end
         end
     else
         if ci95
@@ -345,6 +345,7 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     end
 
     if gui
+        println()
 
         # time bar
         ax2 = GLMakie.Axis(p[2, 1],
@@ -429,34 +430,41 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
                           strokewidth=2,
                           alpha=0.25)
 
-            # mark bad channels
-            for idx in 1:ch_n
-                if bad_ch[][idx]
-                    GLMakie.hlines!(ax3,
-                                    idx,
-                                    linestyle=:dots,
-                                    linewidth=5,
-                                    color=:black)
-                end
-            end
-
         end
 
         on(events(p).mousebutton) do event
-            if event.button == Mouse.left
-                if event.action == Mouse.press # || event.action == Mouse.release
+            if event.action == Mouse.press
+                ax1_x = mouseposition(ax1)[1]
+                ax1_y = mouseposition(ax1)[2]
+                ax2_x = mouseposition(ax2)[1]
+                ax2_y = mouseposition(ax2)[2]
+                ax3_x = mouseposition(ax3)[1]
+                ax3_y = mouseposition(ax3)[2]
+                if event.button == Mouse.right
+
+                    # mark channel as bad
+                    if type === :normal
+                        if ax1_x < 0
+                            bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
+                            obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]] = !obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]]
+                            notify(bad_ch)
+                        end
+                    end
+
+                elseif event.button == Mouse.left
+
+                    # get channel info
+                    if ax1_x < 0
+                        channel_info(obj, ch=clabels[round(Int64, ax1_y)])
+                    end
 
                     # select / deselect epochs
-                    ax1_x = mouseposition(ax1)[1]
-                    ax1_y = mouseposition(ax1)[2]
                     nep = ceil(Int64, ax1_x / ep_len)
                     if ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
                         ep_selected[nep] = !ep_selected[nep]
                     end
 
                     # change time
-                    ax2_x = mouseposition(ax2)[1]
-                    ax2_y = mouseposition(ax2)[2]
                     nep = round(Int64, ax2_x)
                     nep < 1 && (nep = 1)
                     seg = ((nep - 1) * ep_len, (nep + n_epochs - 1) * ep_len)
@@ -467,8 +475,6 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
 
                     # change channels
                     if type === :normal
-                        ax3_x = mouseposition(ax3)[1]
-                        ax3_y = mouseposition(ax3)[2]
                         if ax3_x >= 0 && ax3_x <= 1 && ax3_y >= 0 && ax3_y <= ax3.limits[][2][2]
                             ch1[] = floor(Int64, ax3_y)
                             ch1[] > ch_n - nch[] + 1 && (ch1[] = ch_n - nch[] + 1)
@@ -485,24 +491,28 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if type === :normal
+
                     if event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1
                             ch1[] += 1
                             update_ax3 = true
                         end
                     end
+
                     if event.key == Keyboard.up
                         if ch1[] > 1
                             ch1[] -= 1
                             update_ax3 = true
                         end
                     end
+
                     if ispressed(p, Keyboard.page_down)
                         if ch_n > 1 && nch[] > 1
                             nch[] -= 1
                             update_ax3 = true
                         end
                     end
+
                     if ispressed(p, Keyboard.page_up)
                         if ch_n > 1 && nch[] < ch_n && ch1[] + (nch[] - 1) < ch_n
                             nch[] += 1
@@ -510,38 +520,45 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
                         end
                     end
                 end
+
                 if event.key == Keyboard.home
                     seg_pos[] = 0
                     update_ax2 = true
                 end
+
                 if event.key == Keyboard._end
                     seg_pos[] = ep_n[] - n_epochs
                     update_ax2 = true
                 end
+
                 if event.key == Keyboard.left
                     if seg_pos[] > 0
                         seg_pos[] -= 1
                         update_ax2 = true
                     end
                 end
+
                 if ispressed(p, Keyboard.left_shift & Keyboard.left)
                     if seg_pos[] >= (n_epochs - 1)
                         seg_pos[] -= (n_epochs - 1)
                         update_ax2 = true
                     end
                 end
+
                 if event.key == Keyboard.right
                     if seg_pos[] <= ep_n[] - (n_epochs - 1)
                         seg_pos[] += 1
                         update_ax2 = true
                     end
                 end
+
                 if ispressed(p, Keyboard.left_shift & Keyboard.right)
                     if seg_pos[] <= ep_n[] - seg_len - 9
                         seg_pos[] += (n_epochs - 1)
                         update_ax2 = true
                     end
                 end
+
                 if update_ax2
                     seg = (seg_pos[] * ep_len, (seg_pos[] + n_epochs) * ep_len)
                     ax1.limits[] = (seg, ax1.limits[][2])

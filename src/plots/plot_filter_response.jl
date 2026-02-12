@@ -85,7 +85,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           yrectzoom=false)
         GLMakie.xlims!(ax1, flim)
         GLMakie.ylims!(ax1, (-100, 20))
-        ax1.titlesize = 20
+        ax1.titlesize = 18
         ax1.xlabelsize = 18
         ax1.ylabelsize = 18
         ax1.xticklabelsize = 12
@@ -138,7 +138,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xrectzoom=false,
                           yrectzoom=false)
         GLMakie.xlims!(ax2, flim)
-        ax2.titlesize = 20
+        ax2.titlesize = 18
         ax2.xlabelsize = 18
         ax2.ylabelsize = 18
         ax2.xticklabelsize = 12
@@ -188,7 +188,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xrectzoom=false,
                           yrectzoom=false)
         GLMakie.xlims!(ax3, flim)
-        ax3.titlesize = 20
+        ax3.titlesize = 18
         ax3.xlabelsize = 18
         ax3.ylabelsize = 18
         ax3.xticklabelsize = 12
@@ -254,7 +254,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           yrectzoom=false)
         GLMakie.xlims!(ax1, flim)
         GLMakie.ylims!(ax1, (-100, 20))
-        ax1.titlesize = 20
+        ax1.titlesize = 18
         ax1.xlabelsize = 18
         ax1.ylabelsize = 18
         ax1.xticklabelsize = 12
@@ -308,7 +308,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                           xrectzoom=false,
                           yrectzoom=false)
         GLMakie.xlims!(ax2, flim)
-        ax2.titlesize = 20
+        ax2.titlesize = 18
         ax2.xlabelsize = 18
         ax2.ylabelsize = 18
         ax2.xticklabelsize = 12
@@ -358,7 +358,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Union{Noth
                            xrectzoom=false,
                            yrectzoom=false)
         GLMakie.xlims!(ax3, flim)
-        ax3.titlesize = 20
+        ax3.titlesize = 18
         ax3.xlabelsize = 18
         ax3.ylabelsize = 18
         ax3.xticklabelsize = 12

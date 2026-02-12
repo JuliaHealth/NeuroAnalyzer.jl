@@ -411,14 +411,14 @@ iv, izv, ia, ip = itpc(ones(1, 10, 10), t=1)
 @test izv == 10.0
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-iv, izv, ia, ip = itpc(e10, ch="Fp1", t=256)
-@test iv ≈ [0.9998240652404411]
-@test izv ≈ [9.996481614339217]
-@test ia ≈ [-0.002502999604530084]
-@test ip[1] ≈ 0.03175562541176744
+iv, izv, ia, ip = itpc(e10, ch="Fp1", t=1)
+@test iv ≈ [0.9997997474350548]
+@test izv ≈ [9.995995349711995]
+@test ia ≈ [-0.0036001408903651292]
+@test ip[1] ≈ 0.030644553057378048
 
 @info "Test: itpc_spec()"
-iv, izv, f = itpc_spec(e10, ch="Fp1", flim=(0, 4), frq_n=5)
+iv, izv, f = itpc_spec(e10, ch="Fp1", flim=(0, 4), nfrq=5)
 @test size(iv) == (5, 2560)
 @test size(izv) == (5, 2560)
 @test f == [0.01, 0.045, 0.2, 0.894, 4.0]
