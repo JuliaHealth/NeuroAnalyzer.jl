@@ -42,6 +42,8 @@ p = plot_erp(e10_erp, ch="Fp1", type=:stack)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:topo)
 @test p isa GLMakie.Figure
+p = plot_erp(e10_erp, ch=["Fp1", "Fp2"], type=:gfp)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_filter_response()"
 p = plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
