@@ -533,7 +533,7 @@ function plot_phsd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep:
     _check_var(type, [:normal, :w3d, :s3d, :topo], "type")
     _check_var(frq, [:lin, :log], "frq")
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1

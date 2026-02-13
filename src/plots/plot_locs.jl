@@ -890,7 +890,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     @assert datatype(obj) != "ecog" "Use plot_locs_ecog() for ECoG data."
 
     ch_info = String[]
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     [push!(ch_info, channel_info(obj, ch=labels(obj)[ch[idx]], pr=false)) for idx in eachindex(ch)]
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), obj.locs)
@@ -899,7 +899,7 @@ function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     if sch == ""
         sch = 0
     else
-        sch = get_channel(obj, ch=sch)
+        sch = exclude_bads ? get_channel(obj, ch=sch, exclude="bad") : get_channel(obj, ch=sch, exclude="")
         sch = intersect(locs[!, :label], labels(obj)[sch])
         sch = _find_bylabel(locs, sch)
     end

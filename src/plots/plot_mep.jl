@@ -321,7 +321,7 @@ function plot_mep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     _check_var(type, [:normal, :stack], "type")
 
     # check channels
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
 
     # set units

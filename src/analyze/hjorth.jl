@@ -77,7 +77,7 @@ function hjorth(s::AbstractArray)::@NamedTuple{h_act::Matrix{Float64}, h_mob::Ma
 end
 
 """
-    hjorth(obj)
+    hjorth(obj; <keyword arguments>)
 
 Calculate Hjorths parameters.
 

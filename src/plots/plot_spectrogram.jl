@@ -526,7 +526,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 1
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
     @assert n > 0 "n must be ≥ 1."
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     if method === :cwt
         if type === :normal
             @assert length(ch) == 1 "For :cwt method only one channel must be selected."

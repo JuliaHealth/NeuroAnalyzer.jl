@@ -563,7 +563,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real}=(0, 10), ep::
     _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :alpha_lower, :alpha_higher, :beta, :beta_lower, :beta_higher, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
     _check_var(frq, [:lin, :log], "frq")
 
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     length(ch) == 1 && (ch = ch[1])
 
     if nepochs(obj) == 1

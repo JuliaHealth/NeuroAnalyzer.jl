@@ -400,7 +400,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; data::Union{Nothing, AbstractArray}
     _check_var(nmethod, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :softmax, :sigmoid, :mad, :rank, :none], "nmethod")
 
     # get channels and selected channels
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     if !isnothing(sch)
         if isa(sch, String)
             @assert length(intersect(ch, get_channel(obj, ch=sch))) == 1 "sch channel was not found in ch."

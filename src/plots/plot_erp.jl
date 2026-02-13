@@ -1,6 +1,7 @@
 export plot_erp
 export plot_erp_topo
 export plot_erp_stack
+export plot_gfp
 
 """
     plot_erp(t, s; <keyword arguments>)
@@ -524,6 +525,92 @@ function plot_erp_stack(t::AbstractVector, s::AbstractMatrix; rt::Union{Nothing,
 end
 
 """
+    plot_gfp(t, s; <keyword arguments>)
+
+Plot Global Field Power.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `g::AbstractVector`: data to plot
+- `rt::Union{Nothing, Real}=nothing`: response time value(s)
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `zl::Bool=true`: draw line at t = 0
+- `mono::Bool=false`: use color or gray palette
+
+# Returns
+
+- `p::GLMakie.Figure`
+"""
+function plot_gfp(t::Union{AbstractVector, AbstractRange}, g::AbstractVector; rt::Union{Nothing, Real}=nothing, xlabel::String="", ylabel::String="", title::String="", yrev::Bool=false, zl::Bool=true, mono::Bool=false)::GLMakie.Figure
+
+    # prepare plot
+    plot_size = (900, 450)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      yticks=LinearTicks(10),
+                      yminorticksvisible=true,
+                      yminorticks=IntervalsBetween(2),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
+    GLMakie.ylims!(ax, 0, maximum(g) * 1.5)
+    ax.titlesize = 18
+    ax.xlabelsize = 18
+    ax.ylabelsize = 18
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
+
+    # plot 0 v-line
+    if zl
+        GLMakie.vlines!(ax,
+                        0,
+                        color=:gray,
+                        linestyle=:dash,
+                        linewidth=2)
+    end
+
+    # plot GFP
+    GLMakie.band!(ax,
+                  t,
+                  0,
+                  g,
+                  color=:gray)
+    GLMakie.lines!(ax,
+                   t,
+                   g,
+                   color=:black,
+                   linewidth=1)
+
+    # plot RT v-line
+    if !isnothing(rt)
+        if rt >= t[1] && rt <= t[end]
+            GLMakie.vlines!(ax,
+                            rt,
+                            linewidth=1,
+                            color=mono ? :black : :red)
+        end
+    end
+
+    return p
+
+end
+
+
+"""
     plot_erp(obj; <keyword arguments>)
 
 Plot ERP/ERF.
@@ -542,6 +629,7 @@ Plot ERP/ERF.
 - `leg::Bool=true`: if true, add legend with channel labels
 - `type::Symbol=:normal`: plot type:
     - `:normal`
+    - `:gfp`: plot Global Field Power
     - `:stack`: stacked epochs/channels
     - `:topo`: topographical plot of ERPs
 - `yrev::Bool=false`: reverse y-axis
@@ -562,12 +650,13 @@ Plot ERP/ERF.
 function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, tm::Union{Nothing, Int64, Vector{Int64}}=nothing, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", peaks::Bool=true, leg::Bool=true, type::Symbol=:normal, yrev::Bool=false, avg::Bool=true, ci95::Bool=false, smooth::Bool=false, ks::Int64=3, rt::Union{Nothing, Real, AbstractVector}=nothing, sort_epochs::Bool=false, zl::Bool=true, mono::Bool=false, gui::Bool=false)::GLMakie.Figure
 
     _check_datatype(obj, ["erp", "erf"])
-    _check_var(type, [:normal, :topo, :stack], "type")
+    _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
     # check channels
-    ch = get_channel(obj, ch=ch)
+    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
     @assert !(length(ch) > 1 && length(unique(obj.header.recording[:channel_type][ch])) > 1) "All channels must be of the same type."
     length(ch) > 1 && (eavg = false)
+    type === :gfp && @assert length(ch) > 1 "More than 1 channel must be selected."
 
     # set units
     units = _ch_units(obj, labels(obj)[ch[1]])
@@ -591,7 +680,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
     t = obj.epoch_time
 
     if length(ch) == 1
+
         if type === :stack
+
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
                                        title,
@@ -599,6 +690,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                        "Epochs",
                                        "ERP amplitude, $(clabels[1]), avgₑ: $ep_n")
             cb_title == "default" && (cb_title = "Amplitude [$units]")
+
             if sort_epochs
                 if !isnothing(rt)
                     rt_idx = sortperm(rt)
@@ -606,6 +698,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                     s = s[rt_idx, :]
                 end
             end
+
             p = plot_erp_stack(t,
                                s,
                                rt=rt,
@@ -617,7 +710,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                                ks=ks,
                                zl=zl,
                                mono=mono)
-        else
+
+        elseif type === :normal
+
             xl, yl, tt = _set_defaults(xlabel,
                                        ylabel,
                                        title,
@@ -633,8 +728,11 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                          yrev=yrev,
                          zl=zl,
                          mono=mono)
+
         end
+
     elseif type === :normal
+
         avg == false && (peaks = false)
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
@@ -657,6 +755,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                      mono=mono)
 
     elseif type === :stack
+
         cb_title == "default" && (cb_title = "Amplitude [$units]")
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
@@ -677,7 +776,27 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
                            ks=ks,
                            zl=zl,
                            mono=mono)
+
+    elseif type === :gfp
+
+        g = gfp(obj, ch=labels(obj)[ch])
+        xl, yl, tt = _set_defaults(xlabel,
+                                   ylabel,
+                                   title,
+                                   "Time [ms]",
+                                   "GFP [$units]",
+                                   "Global Field Power, $(length(ch)) channels, avgₑ: $ep_n")
+        p = plot_gfp(t,
+                     g,
+                     xlabel=xl,
+                     ylabel=yl,
+                     title=tt,
+                     rt=rt,
+                     zl=zl,
+                     mono=mono)
+
     elseif type === :topo
+
         _has_locs(obj)
         xl, yl, tt = _set_defaults(xlabel,
                                    ylabel,
