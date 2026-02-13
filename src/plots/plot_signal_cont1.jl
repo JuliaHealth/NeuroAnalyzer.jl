@@ -2,7 +2,6 @@
 
 # types by colors
 # add marker start : end
-# select region
 # select epoch
 # time format (SS:MS HH:MM:SS)
 # delete region
@@ -427,17 +426,17 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         # marker / range
         GLMakie.vlines!(ax1,
                         vmarker1,
-                        color=(:blue, 0.5),
+                        color=(:blue, 0.8),
                         linewidth=1)
         GLMakie.vlines!(ax1,
                         vmarker2,
-                        color=(:blue, 0.5),
+                        color=(:blue, 0.8),
                         linewidth=1)
         GLMakie.band!(ax1,
                       marker_range,
                       0.5,
                       ch_n + 0.5,
-                      color=(:blue, 0.2))
+                      color=(:blue, 0.1))
 
         on(events(p).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]
