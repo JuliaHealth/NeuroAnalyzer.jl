@@ -95,8 +95,8 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
     bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
 
     # displayed segment
-    seg_pos = Observable(seg[1])
-    seg_len = (seg[2] - seg[1])
+    seg_pos = Observable(Float64(seg[1]))
+    seg_len = (Float64(seg[2]) - Float64(seg[1]))
 
     if type === :normal
         nch = Observable(n_channels)
@@ -443,20 +443,24 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
             ax1_y = mouseposition(ax1)[2]
             ax2_x = mouseposition(ax2)[1]
             ax2_y = mouseposition(ax2)[2]
-            ax3_x = mouseposition(ax3)[1]
-            ax3_y = mouseposition(ax3)[2]
+            if type === :normal
+                ax3_x = mouseposition(ax3)[1]
+                ax3_y = mouseposition(ax3)[2]
+            end
 
             if event.action == Mouse.press
                 if event.button == Mouse.right
 
-                    # mark channel as bad
                     if type === :normal
+
+                        # mark channel as bad
                         if ax1_x < 0
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
                             obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]] = !obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]]
                             notify(bad_ch)
                         end
 
+                        # place marker
                         if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
                             vmarker1[] = NaN
                             vmarker2[] = NaN
@@ -499,10 +503,14 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                     end
 
                     # change time
-                    seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
-                    if ax2_x >= 0 && ax2_x <= ax2.limits[][1][2] && ax2_y >= 0 && ax2_y <= 1
+                    if ax2_x >= 0 && ax2_x <= (ax2.limits[][1][2] - seg_len) && ax2_y >= 0 && ax2_y <= 1
+                        seg = (round(Int64, ax2_x), round(Int64, ax2_x) + seg_len)
                         ax1.limits[] = (seg, ax1.limits[][2])
                         seg_pos[] = round(Int64, ax2_x)
+                    elseif ax2_x >= 0 && ax2_x > (ax2.limits[][1][2] - seg_len) && ax2_y >= 0 && ax2_y <= 1
+                        seg = (ceil(t[][end]) - seg_len, ceil(t[][end]))
+                        ax1.limits[] = (seg, ax1.limits[][2])
+                        seg_pos[] = seg[1]
                     end
 
                     # change channels
@@ -584,15 +592,15 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                 end
 
                 if event.key == Keyboard.right
-                    if seg_pos[] <= t[][end] - seg_len
+                    if seg_pos[] < t[][end] - seg_len
                         seg_pos[] += 1
                         update_ax2 = true
                     end
                 end
 
                 if ispressed(p, Keyboard.left_shift & Keyboard.right)
-                    if seg_pos[] <= t[][end] - seg_len - 9
-                        seg_pos[] += 9
+                    if seg_pos[] <= t[][end] - seg_len - (seg_len - 1)
+                        seg_pos[] += (seg_len - 1)
                         update_ax2 = true
                     end
                 end
