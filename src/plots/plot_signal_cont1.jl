@@ -332,7 +332,9 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
         end
     end
 
-    vmarker = Observable(NaN)
+    vmarker1 = Observable(NaN)
+    vmarker2 = Observable(NaN)
+    marker_range = Observable([NaN, NaN])
 
     if gui
 
@@ -422,25 +424,20 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
         end
 
-        # selection
-#        if selection_seg[] != (0, 0)
-#            selection_square = lift(selection_seg) do v
-#                Rect(selection_seg[][1], ax1.limits[][2][1],
-#                     selection_seg[][2], (ax1.limits[][2][2] - ax1.limits[][2][1]))
-#            end
-#            GLMakie.poly!(ax1,
-#                          selection_square,
-#                          alpha=0.25,
-#                          color=:green,
-#                          strokecolor=:black,
-#                          strokewidth=2)
-#        end
-
-        # marker
+        # marker / range
         GLMakie.vlines!(ax1,
-                        vmarker,
-                        color=:green,
-                        linewidth=2)
+                        vmarker1,
+                        color=(:blue, 0.5),
+                        linewidth=1)
+        GLMakie.vlines!(ax1,
+                        vmarker2,
+                        color=(:blue, 0.5),
+                        linewidth=1)
+        GLMakie.band!(ax1,
+                      marker_range,
+                      0.5,
+                      ch_n + 0.5,
+                      color=(:blue, 0.2))
 
         on(events(p).mousebutton) do event
             ax1_x = mouseposition(ax1)[1]
@@ -449,6 +446,7 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
             ax2_y = mouseposition(ax2)[2]
             ax3_x = mouseposition(ax3)[1]
             ax3_y = mouseposition(ax3)[2]
+
             if event.action == Mouse.press
                 if event.button == Mouse.right
 
@@ -461,8 +459,12 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
                         end
 
                         if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
-                            vmarker[] = NaN
-                            notify(vmarker)
+                            vmarker1[] = NaN
+                            vmarker2[] = NaN
+                            marker_range[] = [NaN, NaN]
+                            notify(vmarker1)
+                            notify(vmarker2)
+                            notify(marker_range)
                         end
 
                     end
@@ -478,8 +480,21 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
 
                         # place marker
                         if ax1_x >= ax1.limits[][1][1] && ax1_x <= ax1.limits[][1][2] && ax1_y >= ax1.limits[][2][1] && ax1_y <= ax1.limits[][2][2]
-                            vmarker[] = snap ? round(ax1_x, digits=1) : ax1_x
-                            notify(vmarker)
+                            vmarker_pos = snap ? round(ax1_x, digits=1) : ax1_x
+                            if isnan(vmarker1[])
+                                vmarker1[] = vmarker_pos
+                            else
+                                vmarker2[] = vmarker_pos
+                            end
+                            if vmarker1[] > vmarker2[]
+                                vmarker1[], vmarker2[] = vmarker2[], vmarker1[]
+                            end
+                            vmarker1[] > t[][end] && (vmarker1[] = t[][end])
+                            vmarker2[] > t[][end] && (vmarker2[] = t[][end])
+                            marker_range[] = [vmarker1[], vmarker2[]]
+                            notify(vmarker1)
+                            notify(vmarker2)
+                            notify(marker_range)
                         end
 
                     end
@@ -509,6 +524,11 @@ function plot_cont(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, R
             update_ax3 = false
             if event.action == Keyboard.press || event.action == Keyboard.repeat
                 if type === :normal
+
+                    if event.key == Keyboard.s
+                        snap = !snap
+                    end
+
 
                     if event.key == Keyboard.down
                         if ch1[] < ch_n - nch[] + 1
