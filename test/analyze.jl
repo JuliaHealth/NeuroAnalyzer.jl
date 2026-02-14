@@ -961,6 +961,13 @@ erp = average_epochs(e10)
 s = topo_var(erp, ch="eeg")
 @test length(s) == 2560
 
+@info "Test: gfp()"
+erp = average_epochs(e10)
+s = gfp(erp, ch="all")
+@test length(s) == 2560
+s = gfp(erp, ch="all", norm=true)
+@test size(s) == (19, 2560)
+
 @info "Test: diss()"
 erp = average_epochs(e10)
 gd, sc = diss(erp, erp, ch1="all", ch2="all")
