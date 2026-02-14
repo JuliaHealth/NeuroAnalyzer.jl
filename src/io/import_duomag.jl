@@ -64,9 +64,7 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
 
         # data matrix: signals × samples
         mep_signal = zeros((samples_count[1], signal_count))
-        for idx in axes(mep_signal)[1]
-            mep_signal[idx, :] = parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.'))
-        end
+        [mep_signal[idx, :] = parse.(Float64, replace.(split(strip(readline(f)), ' '), ',' => '.')) for idx in axes(mep_signal)[1]]
 
         close(f)
     elseif splitext(file_name)[2] == ".m"

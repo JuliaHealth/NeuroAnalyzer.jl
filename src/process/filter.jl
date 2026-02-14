@@ -91,8 +91,6 @@ function filter_create(;
         length(cutoff) == 2 && (@assert bw < fs - cutoff[2] "bw must be < $(fs - cutoff[2]).")
     end
 
-    # !isnothing(order) && @assert order <= n "order must be ≤ signal length ($n)."
-
     if fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic]
         if ftype === :lp
             @assert length(cutoff) == 1 "For :lp filter, cutoff must specify only one frequency."

@@ -63,50 +63,48 @@ function import_edf_annotations(file_name::String)::DataFrame
     header = zeros(UInt8, ch_n * 16)
     readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
-    for idx in 1:ch_n
-        clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)])
-    end
-
+    [clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)]) for idx in 1:ch_n]
+    
     header = zeros(UInt8, ch_n * 80)
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    [transducers[idx] in strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
+    [transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [units[idx] in strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
+    [units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
     units = replace(lowercase.(units), "uv"=>"μV")
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [physical_minimum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [physical_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [physical_maximum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [physical_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [digital_minimum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [digital_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [digital_maximum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [digital_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 80)
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    [prefiltering[idx] in strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
+    [prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [samples_per_datarecord[idx] in parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
+    [samples_per_datarecord[idx] = parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     close(fid)
 

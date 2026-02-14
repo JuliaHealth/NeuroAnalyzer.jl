@@ -61,9 +61,26 @@ const channel_types = [
     "eda",
     "other",
 ]
-const channel_units = ["μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s", ""]
+const channel_units = [
+    "μV",
+    "mV",
+    "V",
+    "μV/m²",
+    "fT",
+    "fT/cm",
+    "μM/mm",
+    "m/s²",
+    "µT",
+    "°",
+    "μS",
+    "rad/s",
+    "",
+]
 const fiducial_points = (
-    nasion = (0.0, 1.03, -0.2), inion = (0.0, -1.03, -0.2), lpa = (-1.04, 0.2, -0.2), rpa = (1.04, 0.2, -0.2)
+    nasion = (0.0, 1.03, -0.2),
+    inion = (0.0, -1.03, -0.2),
+    lpa = (-1.04, 0.2, -0.2),
+    rpa = (1.04, 0.2, -0.2),
 )
 begin
     tmp = pwd()
@@ -507,7 +524,7 @@ include("analyze/zip.jl")
 # plots
 include("plots/cairo.jl")
 include("plots/misc.jl")
-include("plots/plot_filter_response.jl")
+include("plots/plot_filter.jl")
 include("plots/plot_locs.jl")
 include("plots/plot_locs3d.jl")
 include("plots/plot_locs_nirs.jl")
@@ -536,7 +553,6 @@ include("plots/plot_signal_ep.jl")
 # include("gui/ipsd.jl")
 # include("gui/ispectrogram.jl")
 # include("gui/itopo.jl")
-# include("gui/iview.jl")
 # include("gui/iview_ica.jl")
 
 # recorder

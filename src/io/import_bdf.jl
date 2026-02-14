@@ -211,11 +211,10 @@ function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         units[idx] == "" && (units[idx] = "μV")
         if ch_type[idx] == "eeg"
             if lowercase(units[idx]) == "mv"
-                lowercase(units[idx]) = "μV"
+                units[idx] = "μV"
                 data[idx, :] .*= 1000
-            end
-            if lowercase(units[idx]) == "nv"
-                lowercase(units[idx]) = "μV"
+            elseif lowercase(units[idx]) == "nv"
+                units[idx] = "μV"
                 data[idx, :] ./= 1000
             end
         end

@@ -1,7 +1,7 @@
-export plot_filter_response
+export plot_filter
 
 """
-    plot_filter_response(<keyword arguments>)
+    plot_filter(<keyword arguments>)
 
 Plot filter response.
 
@@ -35,7 +35,7 @@ Plot filter response.
 
   - `p::GLMakie.Figure`
 """
-function plot_filter_response(;
+function plot_filter(;
     fs::Int64,
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,
@@ -52,20 +52,59 @@ function plot_filter_response(;
     pal = mono ? :grays : :darktest
     _check_tuple(flim, "flim", (0, fs / 2))
 
-    flt = filter_create(;
-        fprototype = fprototype,
-        ftype = ftype,
-        cutoff = cutoff,
-        fs = fs,
-        order = order,
-        rp = rp,
-        rs = rs,
-        bw = bw,
-        w = w,
-    )
+    # prepare plot
+    plot_size = (1400, 900)
+    p = GLMakie.Figure(; size = plot_size)
+
+    grid = p[4, 1] = GridLayout()
+    if ftype in [:hp, :lp]
+        lab1 = Label(grid[1, 1], "Cutoff", fontsize = 15)
+        lab1 = Label(grid[2, 1], "Order", fontsize = 15)
+        sliders = [
+            Slider(grid[1, 2], range = 0.1:0.1:(div(fs, 2) - 0.1), startvalue = cutoff, horizontal = true),
+            Slider(grid[2, 2], range = 1:1:1000, startvalue = order, horizontal = true)
+        ]
+    else
+        lab1 = Label(grid[1, 1], "Cutoff", fontsize = 15)
+        lab1 = Label(grid[2, 1], "Order", fontsize = 15)
+        sliders = [
+            IntervalSlider(grid[1, 2], range = 0.1:0.1:(div(fs, 2) - 0.1), startvalues = cutoff, horizontal = true),
+            Slider(grid[2, 2], range = 1:2:1001, startvalue = order, horizontal = true)
+        ]
+    end
+
+    if ftype in [:hp, :lp]
+        flt = lift(sliders[1].value, sliders[2].value) do c, o
+            filter_create(;
+                fprototype = fprototype,
+                ftype = ftype,
+                cutoff = c,
+                fs = fs,
+                order = o,
+                rp = rp,
+                rs = rs,
+                bw = bw,
+                w = nothing,
+            )
+        end
+    else
+        flt = lift(sliders[1].range, sliders[2].value) do c, o
+            filter_create(;
+                fprototype = fprototype,
+                ftype = ftype,
+                cutoff = (c[1], c[2]),
+                fs = fs,
+                order = o,
+                rp = rp,
+                rs = rs,
+                bw = bw,
+                w = nothing,
+            )
+        end
+    end
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
-        H, w = freqresp(flt)
+        H, w = freqresp(flt[])
         # convert to dB
         H = 20 * log10.(abs.(H))
         # convert rad/sample to Hz
@@ -79,9 +118,6 @@ function plot_filter_response(;
             title = "Filter: $(fname), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz\n\nFrequency response"
         end
 
-        # prepare plot
-        plot_size = (1400, 900)
-        p = GLMakie.Figure(; size = plot_size)
         ax1 = GLMakie.Axis(
             p[1, 1];
             xlabel = "Frequency [Hz]",
@@ -116,7 +152,7 @@ function plot_filter_response(;
             GLMakie.vlines!(ax1, cutoff[2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
         end
 
-        phi, w = phaseresp(flt)
+        phi, w = phaseresp(flt[])
         phi = rad2deg.(phi)
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
@@ -189,12 +225,14 @@ function plot_filter_response(;
             GLMakie.vlines!(ax3, cutoff[2]; linestyle = :dash, linewidth = 0.5, color = :green, colormap = pal)
         end
     else
-        w = range(0; stop = pi, length = 1024)
-        H = _fir_response(flt, w)
+        f = range(0; stop = pi, length = 1024)
         # convert to dB
-        H = amp2db.(abs.(H))
+        H = Observable(amp2db.(abs.(_fir_response(flt[], f))))
         # convert rad/sample to Hz
-        w = w .* fs / 2 / pi
+        w = Observable(collect(f .* fs / 2 / pi))
+        @show H[]
+        @show w[]
+
         if fprototype === :fir
             title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, order: $order\n\nFrequency response"
         elseif fprototype === :firls
@@ -203,9 +241,6 @@ function plot_filter_response(;
             title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $(round.(cutoff, digits=1)) Hz, transition band width: $bw Hz, order: $order\n\nFrequency response"
         end
 
-        # prepare plot
-        plot_size = (900, 600)
-        p = GLMakie.Figure(; size = plot_size)
         ax1 = GLMakie.Axis(
             p[1, 1];
             xlabel = "Frequency [Hz]",
@@ -231,7 +266,12 @@ function plot_filter_response(;
         ax1.xticklabelsize = 12
         ax1.yticklabelsize = 12
 
-        GLMakie.lines!(ax1, w, H; colormap = pal)
+        GLMakie.lines!(
+            ax1,
+            w[],
+            H[];
+            colormap = pal,
+        )
 
         if length(cutoff) == 1
             GLMakie.vlines!(ax1, cutoff; linestyle = :dash, linewidth = 0.5, colormap = pal)
@@ -241,7 +281,7 @@ function plot_filter_response(;
         end
 
         w = range(0; stop = pi, length = 1024)
-        phi = _fir_response(flt, w)
+        phi = _fir_response(flt[], w)
         phi = rad2deg.(-atan.(imag(phi), real(phi)))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
@@ -320,7 +360,7 @@ function plot_filter_response(;
 end
 
 """
-    plot_filter_response(obj, <keyword arguments>)
+    plot_filter(obj, <keyword arguments>)
 
 Plot filter response.
 
@@ -355,7 +395,7 @@ Plot filter response.
 
   - `p::GLMakie.Figure`
 """
-function plot_filter_response(
+function plot_filter(
     obj::NeuroAnalyzer.NEURO;
     fprototype::Symbol,
     ftype::Union{Nothing, Symbol} = nothing,
@@ -369,7 +409,7 @@ function plot_filter_response(
     flim::Tuple{Real, Real} = (0, sr(obj) / 2),
 )::GLMakie.Figure
 
-    p = plot_filter_response(;
+    p = plot_filter(;
         fs = sr(obj),
         fprototype = fprototype,
         ftype = ftype,

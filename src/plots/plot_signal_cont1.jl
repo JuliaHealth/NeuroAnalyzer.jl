@@ -155,6 +155,8 @@ function plot_cont(
     else
         ytc = repeat([:black], ch_n)
     end
+
+    # prepare markers
     if markers
         markers_pos = obj.markers[!, :start]
         markers_id = obj.markers[!, :id]
