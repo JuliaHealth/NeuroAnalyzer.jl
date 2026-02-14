@@ -117,17 +117,7 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex}="all",
-    seg::Tuple{Real, Real}=(0, 10),
-    xlabel::String="default",
-    ylabel::String="default",
-    title::String="default",
-    scale::Bool=true,
-    group_ch::Bool=true,
-    n_channels::Int64=20,
-    res::Int64=1,
-    gui::Bool=true)::GLMakie.Figure
+function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="all", seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, group_ch::Bool=true, n_channels::Int64=20, res::Int64=1, gui::Bool=true)::GLMakie.Figure
 
     @assert datatype(obj1) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
     @assert datatype(obj2) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."

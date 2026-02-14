@@ -71,7 +71,7 @@ function plot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Uni
 
     t = obj_tmp1.time_pts
     s1 = obj_tmp1.data[ch_order, :, 1]
-    s2 = obj_tmp1.data[ch_order, :, 1]
+    s2 = obj_tmp2.data[ch_order, :, 1]
 
     xl, yl, tt = _set_defaults(xlabel,
                                ylabel,
@@ -157,12 +157,13 @@ function plot_cont(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Uni
                        t[1:res:end],
                        s1[idx, 1:res:end],
                        linewidth=1.5,
-                       color=:black)
+                       alpha=0.4,
+                       color=:blue)
         GLMakie.lines!(ax1,
                        t[1:res:end],
                        s2[idx, 1:res:end],
                        linewidth=1.5,
-                       color=:blue)
+                       color=:black)
     end
 
     # draw scale bars

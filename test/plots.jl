@@ -90,7 +90,11 @@ NeuroAnalyzer.plot_save(p, file_name="test.png")
 isfile("test.png") && rm("test.png")
 
 @info "Test: plot()"
-p = NeuroAnalyzer.plot(e10, ch="Fp1", gui=false);
+t = 0:0.1:1
+s = sin.(t)
+p = NeuroAnalyzer.plot(t, s)
+@test p isa GLMakie.Figure
+p = NeuroAnalyzer.plot(e10, ch="Fp1", gui=false)
 @test p isa GLMakie.Figure
 p = NeuroAnalyzer.plot(e10, ch=["Fp1", "Fp2"], type=:butterfly)
 @test p isa GLMakie.Figure
@@ -221,9 +225,9 @@ sp, sf = erop(e10_erp, ch="Fp1")
 p = plot_erop(sp, sf)
 @test p isa GLMakie.Figure
 
-# @info "Test: plot(obj1, obj2)"
-# p = NeuroAnalyzer.plot(e10, e10, ch="all")
-# @test p isa GLMakie.Figure
+@info "Test: plot(obj1, obj2)"
+p = NeuroAnalyzer.plot(eeg, eeg, ch="all", gui=false)
+@test p isa GLMakie.Figure
 
 @info "Test: plot_icatopo()"
 eeg_new = keep_epoch(e10, ep=1)
