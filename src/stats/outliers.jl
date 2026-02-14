@@ -8,17 +8,17 @@ Detect outliers.
 
 # Arguments
 
-- `x::AbstractVector`
-- `method::Symbol=iqr`: detecting methods:
-    - `:iqr`: interquartile range
-    - `:z`: z-score
-    - `:g`: Grubbs test
+  - `x::AbstractVector`
+  - `method::Symbol=iqr`: detecting methods:
+      + `:iqr`: interquartile range
+      + `:z`: z-score
+      + `:g`: Grubbs test
 
 # Returns
 
-- `o::Vector{Bool}`: index of outliers
+  - `o::Vector{Bool}`: index of outliers
 """
-function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
+function outlier_detect(x::AbstractVector; method::Symbol = :iqr)::Vector{Bool}
 
     @assert length(x) > 0 "Length of x must be > 0."
     _check_var(method, [:iqr, :z, :g], "method")
@@ -38,7 +38,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
         x_tmp = deepcopy(x)
         for _ in length(x_tmp):-1:6
             _, m_idx = findmax(x_tmp)
-            if grubbs(x_tmp, t=1)
+            if grubbs(x_tmp; t = 1)
                 o[m_idx] = true
                 deleteat!(x_tmp, m_idx)
             end
@@ -46,7 +46,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)::Vector{Bool}
         x_tmp = deepcopy(x)
         for _ in length(x_tmp):-1:6
             _, m_idx = findmin(x_tmp)
-            if grubbs(x_tmp, t=-1)
+            if grubbs(x_tmp; t = -1)
                 o[m_idx] = true
                 deleteat!(x_tmp, m_idx)
             end
@@ -64,18 +64,18 @@ Perform Grubbs test for outlier.
 
 # Arguments
 
-- `x::AbstractVector`
-- `alpha::Float64=0.95`
-- `t::Int64=0`: test type:
-    - `-1`: test whether the minimum value is an outlier
-    - `0`: two-tiled test
-    - `1`: test whether the maximum value is an outlier
+  - `x::AbstractVector`
+  - `alpha::Float64=0.95`
+  - `t::Int64=0`: test type:
+      + `-1`: test whether the minimum value is an outlier
+      + `0`: two-tiled test
+      + `1`: test whether the maximum value is an outlier
 
 # Returns
 
-- `g::Bool`: true: outlier exists, false: there is no outlier
+  - `g::Bool`: true: outlier exists, false: there is no outlier
 """
-function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)::Bool
+function grubbs(x::AbstractVector; alpha::Float64 = 0.95, t::Int64 = 0)::Bool
 
     @assert length(x) > 0 "Length of x must be > 0."
     n = length(x)

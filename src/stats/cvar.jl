@@ -9,11 +9,11 @@ Calculate coefficient of variation for a mean.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `cvm::Float64`
+  - `cvm::Float64`
 """
 function cvm(x::AbstractVector)::Float64
 
@@ -30,11 +30,11 @@ Calculate coefficient of variation for a median.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `cvmd::Float64`
+  - `cvmd::Float64`
 """
 function cvmd(x::AbstractVector)::Float64
 
@@ -51,11 +51,11 @@ Calculate Fano factor.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `fano::Float64`
+  - `fano::Float64`
 """
 function fano(x::AbstractVector)::Float64
 

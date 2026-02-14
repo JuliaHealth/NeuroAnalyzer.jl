@@ -8,14 +8,14 @@ Perform continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `s::AbstractVector`
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+  - `s::AbstractVector`
+  - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-- `ct::Matrix{Float64}`: CWT coefficients (by rows)
+  - `ct::Matrix{Float64}`: CWT coefficients (by rows)
 """
-function cwd(s::AbstractVector; wt::T=wavelet(Morlet(2π), β=2))::Matrix{Float64} where {T<:CWT}
+function cwd(s::AbstractVector; wt::T = wavelet(Morlet(2π), β = 2))::Matrix{Float64} where {T <: CWT}
 
     ct = Matrix(real.(ContinuousWavelets.cwt(s, wt))')
 
@@ -30,14 +30,14 @@ Perform continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `s::AbstractArray`
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+  - `s::AbstractArray`
+  - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-- `ct::Array{Float64, 4}`: CWT coefficients (by rows)
+  - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cwd(s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2))::Array{Float64, 4} where {T<:CWT}
+function cwd(s::AbstractArray; wt::T = wavelet(Morlet(2π), β = 2))::Array{Float64, 4} where {T <: CWT}
 
     _chk3d(s)
     ch_n, ep_len, ep_n = size(s)
@@ -48,7 +48,7 @@ function cwd(s::AbstractArray; wt::T=wavelet(Morlet(2π), β=2))::Array{Float64,
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ct[ch_idx, :, :, ep_idx] = @views cwd(s[ch_idx, :, ep_idx], wt=wt)
+            ct[ch_idx, :, :, ep_idx] = @views cwd(s[ch_idx, :, ep_idx], wt = wt)
         end
     end
     _log_on()
@@ -64,18 +64,20 @@ Perform continuous wavelet decomposition (CWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
-- `ct::Array{Float64, 4}`: CWT coefficients (by rows)
+  - `ct::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(Morlet(2π), β=2))::Array{Float64, 4} where {T<:CWT}
+function cwd(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T = wavelet(Morlet(2π), β = 2)
+)::Array{Float64, 4} where {T <: CWT}
 
-    ch = get_channel(obj, ch=ch)
-    ct = @views cwd(obj.data[ch, :, :], wt=wt)
+    ch = get_channel(obj; ch = ch)
+    ct = @views cwd(obj.data[ch, :, :], wt = wt)
 
     return ct
 
@@ -88,18 +90,20 @@ Perform inverse continuous wavelet transformation (iCWT).
 
 # Arguments
 
-- `ct::Matrix{Float64}`: CWT coefficients (by rows)
-- `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `type::Symbol=:pd`: inverse style type:
-    - `:pd`: PenroseDelta
-    - `:nd`: NaiveDelta
-    - `:df`: DualFrames
+  - `ct::Matrix{Float64}`: CWT coefficients (by rows)
+  - `wt<:CWT=wavelet(Morlet(2π), β=2)`: continuous wavelet, see ContinuousWavelets.jl documentation for the list of available wavelets
+  - `type::Symbol=:pd`: inverse style type:
+      + `:pd`: PenroseDelta
+      + `:nd`: NaiveDelta
+      + `:df`: DualFrames
 
 # Returns
 
-- `s::Vector{Float64}`: reconstructed signal
+  - `s::Vector{Float64}`: reconstructed signal
 """
-function icwd(ct::Matrix{Float64}; wt::T=wavelet(Morlet(2π), β=2), type::Symbol=:pd)::Vector{Float64} where {T<:CWT}
+function icwd(
+    ct::Matrix{Float64}; wt::T = wavelet(Morlet(2π), β = 2), type::Symbol = :pd
+)::Vector{Float64} where {T <: CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 

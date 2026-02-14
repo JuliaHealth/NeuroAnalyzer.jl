@@ -7,14 +7,14 @@ Calculate covariance matrix of `s * s'`.
 
 # Arguments
 
-- `s::AbstractVector`
-- `norm::Bool=false`: normalize covariance
+  - `s::AbstractVector`
+  - `norm::Bool=false`: normalize covariance
 
 # Returns
 
-- `cm::Matrix{Float64}`: covariance matrix
+  - `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s::AbstractVector; norm::Bool=false)::Matrix{Float64}
+function covm(s::AbstractVector; norm::Bool = false)::Matrix{Float64}
 
     # channels-vs-channels
     cm = cov(s * s')
@@ -33,15 +33,15 @@ Calculate covariance matrix of `s1 * s2'`.
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
-- `norm::Bool=false`: normalize covariance
+  - `s1::AbstractVector`
+  - `s2::AbstractVector`
+  - `norm::Bool=false`: normalize covariance
 
 # Returns
 
-- `cm::Matrix{Float64}`: covariance matrix
+  - `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool=false)::Matrix{Float64}
+function covm(s1::AbstractVector, s2::AbstractVector; norm::Bool = false)::Matrix{Float64}
 
     @assert length(s1) == length(s2) "s1 and s2 must have the same length."
 
@@ -62,14 +62,14 @@ Calculate covariance matrix of channels × time points matrix.
 
 # Arguments
 
-- `s::AbstractMatrix`
-- `norm::Bool=false`: normalize covariance
+  - `s::AbstractMatrix`
+  - `norm::Bool=false`: normalize covariance
 
 # Returns
 
-- `cm::Matrix{Float64}`: covariance matrix
+  - `cm::Matrix{Float64}`: covariance matrix
 """
-function covm(s::AbstractMatrix; norm::Bool=false)::Matrix{Float64}
+function covm(s::AbstractMatrix; norm::Bool = false)::Matrix{Float64}
 
     # channels-vs-channels
     cm = cov(s')
@@ -88,14 +88,14 @@ Calculate covariance matrix.
 
 # Arguments
 
-- `s::AbstractArray`
-- `norm::Bool=false`: normalize covariance
+  - `s::AbstractArray`
+  - `norm::Bool=false`: normalize covariance
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix
+  - `cm::Array{Float64, 3}`: covariance matrix
 """
-function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
+function covm(s::AbstractArray; norm::Bool = false)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -104,7 +104,7 @@ function covm(s::AbstractArray; norm::Bool=false)::Array{Float64, 3}
     cm = zeros(ch_n, ch_n, ep_n)
 
     @inbounds for ep_idx in 1:ep_n
-        @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm=norm)
+        @views @inbounds cm[:, :, ep_idx] = covm(s[:, :, ep_idx], norm = norm)
     end
 
     return cm
@@ -118,19 +118,19 @@ Calculate covariance matrix of `signal * signal'`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}: list of channels
-- `norm::Bool=false`: normalize matrix
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}: list of channels
+  - `norm::Bool=false`: normalize matrix
 
 # Returns
 
-- `cm::Array{Float64, 3}`: covariance matrix for each epoch
+  - `cm::Array{Float64, 3}`: covariance matrix for each epoch
 """
-function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Array{Float64, 3}
+function covm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false)::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
-    cm = covm(obj.data[ch, :, :], norm=norm)
+    cm = covm(obj.data[ch, :, :]; norm = norm)
 
     return cm
 

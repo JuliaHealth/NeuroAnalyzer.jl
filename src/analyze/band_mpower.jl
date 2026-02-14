@@ -7,36 +7,50 @@ Calculate mean and maximum band power and its frequency and amplitude.
 
 # Arguments
 
-- `s::AbstractVector`
-- `fs::Int64`: sampling rate
-- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch's periodogram
-    - `:fft`: fast Fourier transform
-    - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
-    - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
+  - `s::AbstractVector`
+  - `fs::Int64`: sampling rate
+  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+  - `method::Symbol=:welch`: method used to calculate PSD:
+      + `:welch`: Welch's periodogram
+      + `:fft`: fast Fourier transform
+      + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
+      + `:mw`: Morlet wavelet convolution
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `w::Bool=true`: if true, apply Hanning window
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
 Named tuple containing:
-- `mbp::Float64`: mean band power
-- `maxfrq::Float64`: frequency of maximum band power
-- `maxbp::Float64`: power at maximum band frequency
-- `maxba::Float64`: power at maximum band frequency
+
+  - `mbp::Float64`: mean band power
+  - `maxfrq::Float64`: frequency of maximum band power
+  - `maxbp::Float64`: power at maximum band frequency
+  - `maxba::Float64`: power at maximum band frequency
 """
-function band_mpower(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
+function band_mpower(
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.90),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+)::@NamedTuple{mbp::Float64, maxfrq::Float64, maxbp::Float64, maxba::Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, "flim", (0, fs / 2))
 
-    pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    pw, pf = psd(
+        s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
+    )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -45,7 +59,7 @@ function band_mpower(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, meth
     maxbp = pw[vsearch(maxfrq, pf)]
     maxba = sqrt(maxbp)
 
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)
+    return (mbp = mbp, maxfrq = maxfrq, maxbp = maxbp, maxba = maxba)
 end
 
 """
@@ -55,31 +69,43 @@ Calculate mean and maximum band power and its frequency and amplitude.
 
 # Arguments
 
-- `s::AbstractArray`
-- `fs::Int64`: sampling rate
-- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch's periodogram
-    - `:fft`: fast Fourier transform
-    - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
-    - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
+  - `s::AbstractArray`
+  - `fs::Int64`: sampling rate
+  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+  - `method::Symbol=:welch`: method used to calculate PSD:
+      + `:welch`: Welch's periodogram
+      + `:fft`: fast Fourier transform
+      + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
+      + `:mw`: Morlet wavelet convolution
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `w::Bool=true`: if true, apply Hanning window
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
 Named tuple containing:
-- `mbp::Matrix{Float64}`: mean band power per channel per epoch
-- `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
-- `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
-- `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
+
+  - `mbp::Matrix{Float64}`: mean band power per channel per epoch
+  - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
+  - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
+  - `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
 """
-function band_mpower(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+function band_mpower(
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.90),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -91,11 +117,22 @@ function band_mpower(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, metho
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx], maxba[ch_idx, ep_idx] = @views band_mpower(s[ch_idx, :, ep_idx], fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx], maxba[ch_idx, ep_idx] = @views band_mpower(
+                s[ch_idx, :, ep_idx],
+                fs = fs,
+                flim = flim,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                gw = gw,
+            )
         end
     end
 
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)
+    return (mbp = mbp, maxfrq = maxfrq, maxbp = maxbp, maxba = maxba)
 
 end
 
@@ -106,38 +143,61 @@ Calculate mean and maximum band power and its frequency and amplitude.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch's periodogram
-    - `:fft`: fast Fourier transform
-    - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
-    - `:mw`: Morlet wavelet convolution
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
-- `gw::Real=5`: Gaussian width in Hz
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+  - `method::Symbol=:welch`: method used to calculate PSD:
+      + `:welch`: Welch's periodogram
+      + `:fft`: fast Fourier transform
+      + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
+      + `:mw`: Morlet wavelet convolution
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `w::Bool=true`: if true, apply Hanning window
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
 Named tuple containing:
-- `mbp::Matrix{Float64}`: mean band power per channel per epoch
-- `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
-- `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
-- `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
-"""
-function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+  - `mbp::Matrix{Float64}`: mean band power per channel per epoch
+  - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
+  - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
+  - `maxba::Matrix{Float64}`: amplitude at maximum band frequency per channel per epoch
+"""
+function band_mpower(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.90),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+)::@NamedTuple{mbp::Matrix{Float64}, maxfrq::Matrix{Float64}, maxbp::Matrix{Float64}, maxba::Matrix{Float64}}
+
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     _log_off()
-    mbp, maxfrq, maxbp, maxba = @views band_mpower(obj.data[ch, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    mbp, maxfrq, maxbp, maxba = @views band_mpower(
+        obj.data[ch, :, :],
+        fs = sr(obj),
+        flim = flim,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+    )
     _log_on()
 
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp, maxba=maxba)
+    return (mbp = mbp, maxfrq = maxfrq, maxbp = maxbp, maxba = maxba)
 
 end

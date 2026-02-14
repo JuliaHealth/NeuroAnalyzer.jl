@@ -8,12 +8,12 @@ Join two NeuroAnalyzer objects. Each `obj2` epoch are horizontally concatenated 
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+  - `obj1::NeuroAnalyzer.NEURO`
+  - `obj2::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -32,7 +32,8 @@ function join(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyz
 
     # merge markers
     DataFrames.nrow(obj2.markers) > 0 && (obj_new.markers = vcat(obj1.markers, obj2.markers))
-    DataFrames.nrow(obj1.markers) > 0 && (obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (signal_len(obj1) / sr(obj1)))
+    DataFrames.nrow(obj1.markers) > 0 &&
+        (obj_new.markers[(DataFrames.nrow(obj1.markers) + 1):end, :start] .+= (signal_len(obj1) / sr(obj1)))
 
 
     push!(obj_new.history, "join(OBJ1, OBJ2)")
@@ -48,12 +49,12 @@ Join two NeuroAnalyzer objects into the first object. Each `obj2` epoch are hori
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+  - `obj1::NeuroAnalyzer.NEURO`
+  - `obj2::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
 

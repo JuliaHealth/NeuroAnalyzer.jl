@@ -28,7 +28,7 @@ function _chk4d(a::AbstractArray)::Nothing
     return nothing
 end
 
-function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}}=nothing)::Nothing
+function _check_tuple(t::Tuple{Real, Real}, name::String, range::Union{Nothing, Tuple{Real, Real}} = nothing)::Nothing
     @assert t == tuple_order(t) "$name must contain two values in ascending order."
     @assert t[1] < t[2] "$name must contain two different values in ascending order."
     if range !== nothing
@@ -44,12 +44,12 @@ function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, Abstr
 end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex})::Nothing
-    _check_channels(get_channel(obj, type="all"), ch)
+    _check_channels(get_channel(obj; type = "all"), ch)
     return nothing
 end
 
 function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{String, Vector{String}, Regex}, type::String)::Nothing
-    _check_channels(get_channel(obj, type=type), ch)
+    _check_channels(get_channel(obj; type = type), ch)
     return nothing
 end
 
@@ -143,8 +143,8 @@ end
 
 function _check_svec(s::String)::Bool
     s = replace(s, " "=>"")
-    s = replace(s, "["=>"", count=1)
-    s = replace(s, "]"=>"", count=1)
+    s = replace(s, "["=>""; count = 1)
+    s = replace(s, "]"=>""; count = 1)
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [","]) || return false
     end
@@ -160,7 +160,12 @@ function _check_srange(s::String)::Bool
     for idx in eachindex(s)
         string(s[idx]) in vcat(string.(0:9), [":"]) || return false
     end
-    if occursin(":", s) && length(split(s, ":")) == 2 && length(s) > 0 && length(split(s, ":")[1]) > 0 && length(split(s, ":")[end]) > 0 && parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
+    if occursin(":", s) &&
+        length(split(s, ":")) == 2 &&
+        length(s) > 0 &&
+        length(split(s, ":")[1]) > 0 &&
+        length(split(s, ":")[end]) > 0 &&
+        parse(Int64, split(s, ":")[1]) < parse(Int64, split(s, ":")[end])
         return true
     else
         return false

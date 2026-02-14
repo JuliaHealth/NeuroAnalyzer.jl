@@ -17,30 +17,34 @@ Show markers.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
 
     @assert _has_markers(obj) "OBJ has no markers."
 
-    println(rpad("n", 5) *
-            rpad("ID", 24) *
-            rpad("start [s]", 12) *
-            rpad("length [s]", 12) *
-            rpad("value", 24) *
-            rpad("channel", 1))
+    println(
+        rpad("n", 5) *
+        rpad("ID", 24) *
+        rpad("start [s]", 12) *
+        rpad("length [s]", 12) *
+        rpad("value", 24) *
+        rpad("channel", 1),
+    )
 
     for mrk_idx in 1:DataFrames.nrow(obj.markers)
-        println(rpad(string(mrk_idx), 5) *
-                rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
-                rpad(string(round(obj.markers[mrk_idx, :start], digits=3)), 12) *
-                rpad(string(round(obj.markers[mrk_idx, :length], digits=3)), 12) *
-                rpad("'" * obj.markers[mrk_idx, :value] * "'", 24) *
-                rpad(string(obj.markers[mrk_idx, :channel]), 1))
+        println(
+            rpad(string(mrk_idx), 5) *
+            rpad("'" * obj.markers[mrk_idx, :id] * "'", 24) *
+            rpad(string(round(obj.markers[mrk_idx, :start]; digits = 3)), 12) *
+            rpad(string(round(obj.markers[mrk_idx, :length]; digits = 3)), 12) *
+            rpad("'" * obj.markers[mrk_idx, :value] * "'", 24) *
+            rpad(string(obj.markers[mrk_idx, :channel]), 1),
+        )
     end
 
 end
@@ -52,12 +56,12 @@ Delete marker.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `n::Int64`: marker number
+  - `obj::NeuroAnalyzer.NEURO`
+  - `n::Int64`: marker number
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
 
@@ -80,16 +84,16 @@ Delete marker.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `n::Int64`: marker number
+  - `obj::NeuroAnalyzer.NEURO`
+  - `n::Int64`: marker number
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
 
-    obj_new = delete_marker(obj, n=n)
+    obj_new = delete_marker(obj; n = n)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -104,18 +108,20 @@ Add marker.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `id::String`: marker ID
-- `start::Real`: marker time in seconds
-- `len::Real=1.0`: marker length in seconds
-- `value::String`: marker value
-- `ch::Int64=0`: channel number, if 0 then marker is related to all channels
+  - `obj::NeuroAnalyzer.NEURO`
+  - `id::String`: marker ID
+  - `start::Real`: marker time in seconds
+  - `len::Real=1.0`: marker length in seconds
+  - `value::String`: marker value
+  - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::NeuroAnalyzer.NEURO
+function add_marker(
+    obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real = 1.0, value::String, ch::Int64 = 0
+)::NeuroAnalyzer.NEURO
 
     @assert start >= 0 "start must be ≥ 0."
     @assert len > 0 "len must be > 0."
@@ -138,20 +144,22 @@ Add marker.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `id::String`: marker ID
-- `start::Real`: marker time in seconds
-- `len::Real=1.0`: marker length in seconds
-- `value::String`: marker value
-- `ch::Int64=0`: channel number, if 0 then marker is related to all channels
+  - `obj::NeuroAnalyzer.NEURO`
+  - `id::String`: marker ID
+  - `start::Real`: marker time in seconds
+  - `len::Real=1.0`: marker length in seconds
+  - `value::String`: marker value
+  - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::Nothing
+function add_marker!(
+    obj::NeuroAnalyzer.NEURO; id::String, start::Real, len::Real = 1.0, value::String, ch::Int64 = 0
+)::Nothing
 
-    obj_new = add_marker(obj, id=id, start=start, len=len, value=value, ch=ch)
+    obj_new = add_marker(obj; id = id, start = start, len = len, value = value, ch = ch)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -166,19 +174,21 @@ Edit marker.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `n::Int64`: marker number
-- `id::String`: marker ID
-- `start::Real`: marker time in seconds
-- `len::Real=1.0`: marker length in seconds
-- `value::String`: marker value
-- `ch::Int64=0`: channel number, if 0 then marker is related to all channels
+  - `obj::NeuroAnalyzer.NEURO`
+  - `n::Int64`: marker number
+  - `id::String`: marker ID
+  - `start::Real`: marker time in seconds
+  - `len::Real=1.0`: marker length in seconds
+  - `value::String`: marker value
+  - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::NeuroAnalyzer.NEURO
+function edit_marker(
+    obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real = 1.0, value::String, ch::Int64 = 0
+)::NeuroAnalyzer.NEURO
 
     @assert _has_markers(obj) "OBJ has no markers."
     @assert start > 0 "start must be > 0."
@@ -190,7 +200,7 @@ function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real
     @assert !(n < 1 || n > nn) "n must be in [1, $nn]."
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :value=>value, :channel=>ch)
-     sort!(obj_new.markers, :start)
+    sort!(obj_new.markers, :start)
     push!(obj_new.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, value=$value, ch=$ch)")
 
     return obj_new
@@ -204,21 +214,23 @@ Edit marker.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `n::Int64`: marker number
-- `id::String`: marker ID
-- `start::Real`: marker time in seconds
-- `len::Real=1`: marker length in seconds
-- `value::String`: marker value
-- `ch::Int64=0`: channel number, if 0 then marker is related to all channels
+  - `obj::NeuroAnalyzer.NEURO`
+  - `n::Int64`: marker number
+  - `id::String`: marker ID
+  - `start::Real`: marker time in seconds
+  - `len::Real=1`: marker length in seconds
+  - `value::String`: marker value
+  - `ch::Int64=0`: channel number, if 0 then marker is related to all channels
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real=1.0, value::String, ch::Int64=0)::Nothing
+function edit_marker!(
+    obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Real, len::Real = 1.0, value::String, ch::Int64 = 0
+)::Nothing
 
-    obj_new = edit_marker(obj, n=n, id=id, start=start, len=len, value=value, ch=ch)
+    obj_new = edit_marker(obj; n = n, id = id, start = start, len = len, value = value, ch = ch)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -233,20 +245,22 @@ Convert event channel to markers.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `v::Real=1.0`: event channel value interpreted as an event
-- `id::String`: prefix for marker ID; default is based on event channel name (e.g. "stim1_")
-- `value::String=""`: marker value; default is based on event channel name (e.g. "stim1")
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `v::Real=1.0`: event channel value interpreted as an event
+  - `id::String`: prefix for marker ID; default is based on event channel name (e.g. "stim1_")
+  - `value::String=""`: marker value; default is based on event channel name (e.g. "stim1")
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function channel2marker(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", value::String="")::NeuroAnalyzer.NEURO
+function channel2marker(
+    obj::NeuroAnalyzer.NEURO; ch::String, v::Real = 1.0, id::String = "", value::String = ""
+)::NeuroAnalyzer.NEURO
 
-    stim_ch = get_channel(obj, type="mrk")
-    ch = get_channel(obj, ch=ch)[1]
+    stim_ch = get_channel(obj; type = "mrk")
+    ch = get_channel(obj; ch = ch)[1]
 
     # check if the event channel contain events
     ev_ch = obj.data[ch, :, :][:]
@@ -297,7 +311,12 @@ function channel2marker(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::S
     _info("$(length(ev_start)) events added")
 
     obj_new = deepcopy(obj)
-    append!(obj_new.markers, DataFrame(:id=>ev_id, :start=>(ev_start ./ sr(obj)), :length=>(ev_len ./ sr(obj)), :value=>ev_desc, :channel=>ev_ch))
+    append!(
+        obj_new.markers,
+        DataFrame(
+            :id=>ev_id, :start=>(ev_start ./ sr(obj)), :length=>(ev_len ./ sr(obj)), :value=>ev_desc, :channel=>ev_ch
+        ),
+    )
     sort!(obj_new.markers, :start)
     push!(obj_new.history, "channel2marker(OBJ, ch=$ch, v=$v, id=$id, value=$value")
 
@@ -312,19 +331,21 @@ Convert event channel to markers.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `v::Real=1.0`: event channel value interpreted as an event
-- `id::String`: prefix for marker ID; default is "mrk_"
-- `value::String=""`: prefix for marker value; default is based on event channel name (e.g. "stim1_")
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `v::Real=1.0`: event channel value interpreted as an event
+  - `id::String`: prefix for marker ID; default is "mrk_"
+  - `value::String=""`: prefix for marker value; default is based on event channel name (e.g. "stim1_")
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function channel2marker!(obj::NeuroAnalyzer.NEURO; ch::String, v::Real=1.0, id::String="", value::String="")::Nothing
+function channel2marker!(
+    obj::NeuroAnalyzer.NEURO; ch::String, v::Real = 1.0, id::String = "", value::String = ""
+)::Nothing
 
-    obj_new = channel2marker(obj, ch=ch, v=v, id=id, value=value)
+    obj_new = channel2marker(obj; ch = ch, v = v, id = id, value = value)
     obj.history = obj_new.history
     obj.markers = obj_new.markers
 
@@ -339,12 +360,12 @@ Add markers.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `markers::DataFrame`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `markers::DataFrame`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyzer.NEURO
 
@@ -363,12 +384,12 @@ Add markers.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `markers::DataFrame`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `markers::DataFrame`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function add_markers!(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::Nothing
 

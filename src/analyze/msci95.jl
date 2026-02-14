@@ -7,19 +7,22 @@ Calculate mean, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `s::AbstractVector`
-- `n::Int64=3`: number of bootstraps
-- `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
+  - `s::AbstractVector`
+  - `n::Int64=3`: number of bootstraps
+  - `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
 
 # Returns
 
 Named tuple containing:
-- `sm::Float64`: mean
-- `ss::Float64`: standard deviation
-- `su::Float64`: upper 95% CI
-- `sl::Float64`: lower 95% CI
+
+  - `sm::Float64`: mean
+  - `ss::Float64`: standard deviation
+  - `su::Float64`: upper 95% CI
+  - `sl::Float64`: lower 95% CI
 """
-function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Float64, ss::Float64, su::Float64, sl::Float64}
+function msci95(
+    s::AbstractVector; n::Int64 = 3, method::Symbol = :normal
+)::@NamedTuple{sm::Float64, ss::Float64, su::Float64, sl::Float64}
 
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
@@ -47,7 +50,7 @@ function msci95(s::AbstractVector; n::Int64=3, method::Symbol=:normal)::@NamedTu
         su = ssorted[round(Int, 0.975 * length(s_tmp1)), :]
     end
 
-    return (sm=sm, ss=ss, su=su, sl=sl)
+    return (sm = sm, ss = ss, su = su, sl = sl)
 
 end
 
@@ -58,26 +61,29 @@ Calculate mean, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `s::AbstractMatrix`
-- `n::Int64=3`: number of bootstraps
-- `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
+  - `s::AbstractMatrix`
+  - `n::Int64=3`: number of bootstraps
+  - `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
 
 # Returns
 
 Named tuple containing:
-- `sm::Vector{Float64}`: mean
-- `ss::Vector{Float64}`: standard deviation
-- `su::Vector{Float64}`: upper 95% CI
-- `sl::Vector{Float64}`: lower 95% CI
+
+  - `sm::Vector{Float64}`: mean
+  - `ss::Vector{Float64}`: standard deviation
+  - `su::Vector{Float64}`: upper 95% CI
+  - `sl::Vector{Float64}`: lower 95% CI
 """
-function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Vector{Float64}, ss::Vector{Float64}, su::Vector{Float64}, sl::Vector{Float64}}
+function msci95(
+    s::AbstractMatrix; n::Int64 = 3, method::Symbol = :normal
+)::@NamedTuple{sm::Vector{Float64}, ss::Vector{Float64}, su::Vector{Float64}, sl::Vector{Float64}}
 
     _check_var(method, [:normal, :boot], "method")
     @assert n >= 1 "n must be ≥ 1."
 
     if method === :normal
-        sm = mean(s, dims=1)'
-        ss = std(s, dims=1)' / sqrt(size(s, 1))
+        sm = mean(s; dims = 1)'
+        ss = std(s; dims = 1)' / sqrt(size(s, 1))
         su = sm + 1.96 * ss
         sl = sm - 1.96 * ss
     else
@@ -88,17 +94,17 @@ function msci95(s::AbstractMatrix; n::Int64=3, method::Symbol=:normal)::@NamedTu
             @inbounds for idx2 in axes(s, 1)
                 s_tmp2[idx2, :] = s[sample_idx[idx2], :]'
             end
-            s_tmp1[idx1, :] = mean(s_tmp2, dims=1)
+            s_tmp1[idx1, :] = mean(s_tmp2, dims = 1)
         end
 
-        sm = mean(s_tmp1, dims=1)'
-        ss = std(s_tmp1, dims=1)' / sqrt(size(s_tmp1, 1))
-        ssorted = sort(s_tmp1, dims=1)
+        sm = mean(s_tmp1; dims = 1)'
+        ss = std(s_tmp1; dims = 1)' / sqrt(size(s_tmp1, 1))
+        ssorted = sort(s_tmp1; dims = 1)
         sl = ssorted[round(Int, 0.025 * size(s_tmp1, 1)), :]
         su = ssorted[round(Int, 0.975 * size(s_tmp1, 1)), :]
     end
 
-    return (sm=vec(sm[:, 1]), ss=vec(ss[:, 1]), su=vec(su[:, 1]), sl=vec(sl[:, 1]))
+    return (sm = vec(sm[:, 1]), ss = vec(ss[:, 1]), su = vec(su[:, 1]), sl = vec(sl[:, 1]))
 
 end
 
@@ -109,19 +115,22 @@ Calculate mean, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `s::AbstractArray`
-- `n::Int64=3`: number of bootstraps
-- `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
+  - `s::AbstractArray`
+  - `n::Int64=3`: number of bootstraps
+  - `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
 
 # Returns
 
 Named tuple containing:
-- `sm::Matrix{Float64}`: mean
-- `ss::Matrix{Float64}`: standard deviation
-- `su::Matrix{Float64}`: upper 95% CI
-- `sl::Matrix{Float64}`: lower 95% CI
+
+  - `sm::Matrix{Float64}`: mean
+  - `ss::Matrix{Float64}`: standard deviation
+  - `su::Matrix{Float64}`: upper 95% CI
+  - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+function msci95(
+    s::AbstractArray; n::Int64 = 3, method::Symbol = :normal
+)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     _check_var(method, [:normal, :boot], "method")
 
@@ -134,10 +143,12 @@ function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)::@NamedTup
     sl = zeros(ep_n, ep_len)
 
     Threads.@threads for ep_idx in 1:ep_n
-        @inbounds sm[ep_idx, :], ss[ep_idx, :], su[ep_idx, :], sl[ep_idx, :] = @views msci95(s[:, :, ep_idx], n=n, method=method)
+        @inbounds sm[ep_idx, :], ss[ep_idx, :], su[ep_idx, :], sl[ep_idx, :] = @views msci95(
+            s[:, :, ep_idx], n = n, method = method
+        )
     end
 
-    return (sm=sm, ss=ss, su=su, sl=sl)
+    return (sm = sm, ss = ss, su = su, sl = sl)
 
 end
 
@@ -148,16 +159,17 @@ Calculate mean difference, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+  - `s1::AbstractVector`
+  - `s2::AbstractVector`
 
 # Returns
 
 Named tuple containing:
-- `sm::Float64`: mean
-- `ss::Float64`: standard deviation
-- `su::Float64`: upper 95% CI
-- `sl::Float64`: lower 95% CI
+
+  - `sm::Float64`: mean
+  - `ss::Float64`: standard deviation
+  - `su::Float64`: upper 95% CI
+  - `sl::Float64`: lower 95% CI
 """
 function msci95(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{sm::Float64, ss::Float64, su::Float64, sl::Float64}
 
@@ -177,7 +189,7 @@ function msci95(s1::AbstractVector, s2::AbstractVector)::@NamedTuple{sm::Float64
     su = sm + 1.96 * ss
     sl = sm - 1.96 * ss
 
-    return (sm=sm, ss=ss, su=su, sl=sl)
+    return (sm = sm, ss = ss, su = su, sl = sl)
 
 end
 
@@ -188,18 +200,21 @@ Calculate mean difference, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+  - `s1::AbstractArray`
+  - `s2::AbstractArray`
 
 # Returns
 
 Named tuple containing:
-- `sm::Matrix{Float64}`: mean
-- `ss::Matrix{Float64}`: standard deviation
-- `su::Matrix{Float64}`: upper 95% CI
-- `sl::Matrix{Float64}`: lower 95% CI
+
+  - `sm::Matrix{Float64}`: mean
+  - `ss::Matrix{Float64}`: standard deviation
+  - `su::Matrix{Float64}`: upper 95% CI
+  - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(s1::AbstractArray, s2::AbstractArray)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+function msci95(
+    s1::AbstractArray, s2::AbstractArray
+)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
@@ -213,11 +228,13 @@ function msci95(s1::AbstractArray, s2::AbstractArray)::@NamedTuple{sm::Matrix{Fl
 
     Threads.@threads for ep_idx in 1:ep_n
         @inbounds for ch_idx in 1:ch_n
-            sm[ch_idx, ep_idx], ss[ch_idx, ep_idx], su[ch_idx, ep_idx], sl[ch_idx, ep_idx] = @views msci95(s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx])
+            sm[ch_idx, ep_idx], ss[ch_idx, ep_idx], su[ch_idx, ep_idx], sl[ch_idx, ep_idx] = @views msci95(
+                s1[ch_idx, :, ep_idx], s2[ch_idx, :, ep_idx]
+            )
         end
     end
 
-    return (sm=sm, ss=ss, su=su, sl=sl)
+    return (sm = sm, ss = ss, su = su, sl = sl)
 
 end
 
@@ -228,25 +245,28 @@ Calculate mean, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `n::Int64=3`: number of bootstraps
-- `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `n::Int64=3`: number of bootstraps
+  - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
 # Returns
 
 Named tuple containing:
-- `sm::Matrix{Float64}`: mean
-- `ss::Matrix{Float64}`: standard deviation
-- `su::Matrix{Float64}`: upper 95% CI
-- `sl::Matrix{Float64}`: lower 95% CI
+
+  - `sm::Matrix{Float64}`: mean
+  - `ss::Matrix{Float64}`: standard deviation
+  - `su::Matrix{Float64}`: upper 95% CI
+  - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64=3, method::Symbol=:normal)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+function msci95(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Int64 = 3, method::Symbol = :normal
+)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj.data[ch, :, :], n=n, method=method)
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj.data[ch, :, :], n = n, method = method)
 
-    return (sm=sm, ss=ss, su=su, sl=sl)
+    return (sm = sm, ss = ss, su = su, sl = sl)
 
 end
 
@@ -257,26 +277,34 @@ Calculate mean difference, standard deviation and 95% confidence interval.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2:NeuroAnalyzer.NEURO`
-- `ch1::Union{String, Vector{String}}`: list of channels
-- `ch2::Union{String, Vector{String}}`: list of channels
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
+  - `obj1::NeuroAnalyzer.NEURO`
+  - `obj2:NeuroAnalyzer.NEURO`
+  - `ch1::Union{String, Vector{String}}`: list of channels
+  - `ch2::Union{String, Vector{String}}`: list of channels
+  - `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1))`: default use all epochs
+  - `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2))`: default use all epochs
 
 # Returns
 
 Named tuple containing:
-- `sm::Matrix{Float64}`: mean
-- `ss::Matrix{Float64}`: standard deviation
-- `su::Matrix{Float64}`: upper 95% CI bound
-- `sl::Matrix{Float64}`: lower 95% CI bound
+
+  - `sm::Matrix{Float64}`: mean
+  - `ss::Matrix{Float64}`: standard deviation
+  - `su::Matrix{Float64}`: upper 95% CI bound
+  - `sl::Matrix{Float64}`: lower 95% CI bound
 """
-function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{String, Vector{String}}, ch2::Union{String, Vector{String}}, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(nepochs(obj2)))::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
+function msci95(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch1::Union{String, Vector{String}},
+    ch2::Union{String, Vector{String}},
+    ep1::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj1)),
+    ep2::Union{Int64, Vector{Int64}, AbstractRange} = _c(nepochs(obj2)),
+)::@NamedTuple{sm::Matrix{Float64}, ss::Matrix{Float64}, su::Matrix{Float64}, sl::Matrix{Float64}}
 
     # check channels
-    ch1 = exclude_bads ? get_channel(obj1, ch=ch1, exclude="bad") : get_channel(obj1, ch=ch1, exclude="")
-    ch2 = exclude_bads ? get_channel(obj2, ch=ch2, exclude="bad") : get_channel(obj2, ch=ch2, exclude="")
+    ch1 = exclude_bads ? get_channel(obj1; ch = ch1, exclude = "bad") : get_channel(obj1; ch = ch1, exclude = "")
+    ch2 = exclude_bads ? get_channel(obj2; ch = ch2, exclude = "bad") : get_channel(obj2; ch = ch2, exclude = "")
     @assert length(ch1) == length(ch2) "Lengths of ch1 ($(length(ch1)) and ch2 ($(length(ch2)) must be equal."
 
     # check epochs
@@ -290,6 +318,6 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union
 
     sm, ss, su, sl = @views NeuroAnalyzer.msci95(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
 
-    return (sm=sm, ss=ss, su=su, sl=sl)
+    return (sm = sm, ss = ss, su = su, sl = sl)
 
 end

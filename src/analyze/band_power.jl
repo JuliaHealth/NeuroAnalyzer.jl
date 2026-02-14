@@ -7,33 +7,46 @@ Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `s::AbstractVector`
-- `fs::Int64`: sampling rate
-- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch's periodogram
-    - `:fft`: fast Fourier transform
-    - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
-    - `:mw`: Morlet wavelet convolution
-    - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
+  - `s::AbstractVector`
+  - `fs::Int64`: sampling rate
+  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+  - `method::Symbol=:welch`: method used to calculate PSD:
+      + `:welch`: Welch's periodogram
+      + `:fft`: fast Fourier transform
+      + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
+      + `:mw`: Morlet wavelet convolution
+      + `:gh`: Gaussian and Hilbert transform
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=fs`: window length (in samples), default is 1 second
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `w::Bool=true`: if true, apply Hanning window
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `bp::Float64`: band power
+  - `bp::Float64`: band power
 """
-function band_power(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::Float64
+function band_power(
+    s::AbstractVector;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.90),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+)::Float64
 
     @assert fs >= 1 "fs must be ≥ 1."
     _check_tuple(flim, "flim", (0, fs / 2))
 
-    pw, pf = psd(s, fs=fs, db=false, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    pw, pf = psd(
+        s; fs = fs, db = false, method = method, nt = nt, wlen = wlen, woverlap = woverlap, w = w, ncyc = ncyc, gw = gw
+    )
 
     f1_idx = vsearch(flim[1], pf)
     f2_idx = vsearch(flim[2], pf)
@@ -43,7 +56,7 @@ function band_power(s::AbstractVector; fs::Int64, flim::Tuple{Real, Real}, metho
     dx = pf[2] - pf[1]
 
     # integrate
-    bp = simpson(pw[frq_idx[1]:frq_idx[2]], pf[frq_idx[1]:frq_idx[2]], dx=dx)
+    bp = simpson(pw[frq_idx[1]:frq_idx[2]], pf[frq_idx[1]:frq_idx[2]]; dx = dx)
 
     return bp
 
@@ -56,28 +69,39 @@ Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `s::AbstractArray`
-- `fs::Int64`: sampling rate
-- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch's periodogram
-    - `:fft`: fast Fourier transform
-    - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
-    - `:mw`: Morlet wavelet convolution
-    - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=fs`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
-- `gw::Real=5`: Gaussian width in Hz
+  - `s::AbstractArray`
+  - `fs::Int64`: sampling rate
+  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+  - `method::Symbol=:welch`: method used to calculate PSD:
+      + `:welch`: Welch's periodogram
+      + `:fft`: fast Fourier transform
+      + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
+      + `:mw`: Morlet wavelet convolution
+      + `:gh`: Gaussian and Hilbert transform
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=fs`: window length (in samples), default is 1 second
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `w::Bool=true`: if true, apply Hanning window
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(fs / 2)`
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `bp::Matrix{Float64}`: band power
+  - `bp::Matrix{Float64}`: band power
 """
-function band_power(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=fs, woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::Matrix{Float64}
+function band_power(
+    s::AbstractArray;
+    fs::Int64,
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = fs,
+    woverlap::Int64 = round(Int64, wlen * 0.90),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+)::Matrix{Float64}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -86,7 +110,18 @@ function band_power(s::AbstractArray; fs::Int64, flim::Tuple{Real, Real}, method
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            bp[ch_idx, ep_idx] = @views band_power(s[ch_idx, :, ep_idx], fs=fs, flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+            bp[ch_idx, ep_idx] = @views band_power(
+                s[ch_idx, :, ep_idx],
+                fs = fs,
+                flim = flim,
+                method = method,
+                nt = nt,
+                wlen = wlen,
+                woverlap = woverlap,
+                w = w,
+                ncyc = ncyc,
+                gw = gw,
+            )
         end
     end
 
@@ -101,33 +136,55 @@ Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `flim::Tuple{Real, Real}`: lower and upper frequency bounds
-- `method::Symbol=:welch`: method used to calculate PSD:
-    - `:welch`: Welch's periodogram
-    - `:fft`: fast Fourier transform
-    - `:mt`: multi-tapered periodogram
-    - `:stft`: short time Fourier transform
-    - `:mw`: Morlet wavelet convolution
-    - `:gh`: Gaussian and Hilbert transform
-- `nt::Int64=7`: number of Slepian tapers
-- `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
-- `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
-- `w::Bool=true`: if true, apply Hanning window
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
-- `gw::Real=5`: Gaussian width in Hz
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
+  - `method::Symbol=:welch`: method used to calculate PSD:
+      + `:welch`: Welch's periodogram
+      + `:fft`: fast Fourier transform
+      + `:mt`: multi-tapered periodogram
+      + `:stft`: short time Fourier transform
+      + `:mw`: Morlet wavelet convolution
+      + `:gh`: Gaussian and Hilbert transform
+  - `nt::Int64=7`: number of Slepian tapers
+  - `wlen::Int64=sr(obj)`: window length (in samples), default is 1 second
+  - `woverlap::Int64=round(Int64, wlen * 0.90)`: window overlap (in samples)
+  - `w::Bool=true`: if true, apply Hanning window
+  - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc=linspace(ncyc[1], ncyc[2], nfrq)`, where `nfrq` is the length of `0:(sr(obj) / 2)`
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `bp::Matrix{Float64}`: band power
+  - `bp::Matrix{Float64}`: band power
 """
-function band_power(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, flim::Tuple{Real, Real}, method::Symbol=:welch, nt::Int64=7, wlen::Int64=sr(obj), woverlap::Int64=round(Int64, wlen * 0.90), w::Bool=true, ncyc::Union{Int64, Tuple{Int64, Int64}}=32, gw::Real=5)::Matrix{Float64}
+function band_power(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    flim::Tuple{Real, Real},
+    method::Symbol = :welch,
+    nt::Int64 = 7,
+    wlen::Int64 = sr(obj),
+    woverlap::Int64 = round(Int64, wlen * 0.90),
+    w::Bool = true,
+    ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
+    gw::Real = 5,
+)::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     _log_off()
-    bp = @views band_power(obj.data[ch, :, :], fs=sr(obj), flim=flim, method=method, nt=nt, wlen=wlen, woverlap=woverlap, w=w, ncyc=ncyc, gw=gw)
+    bp = @views band_power(
+        obj.data[ch, :, :],
+        fs = sr(obj),
+        flim = flim,
+        method = method,
+        nt = nt,
+        wlen = wlen,
+        woverlap = woverlap,
+        w = w,
+        ncyc = ncyc,
+        gw = gw,
+    )
     _log_on()
 
     return bp

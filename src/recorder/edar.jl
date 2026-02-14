@@ -8,33 +8,35 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
-- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
+  - `duration::Int64=20`: recording duration in seconds
+  - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
+function iedar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
-    sp = _serial_open(port_name, baudrate=19200)
+    sp = _serial_open(port_name; baudrate = 19200)
     @assert !isnothing(sp) _info("Serial port $port_name is not available")
 
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
-    t = collect(0:1/fs:duration)
+    t = collect(0:(1 / fs):duration)
     eda_signal = repeat([NaN], length(t))
 
-    p = Plots.plot(ylims=(0, 10),
-                   xlims=(t[1], t[end]),
-                   legend=false,
-                   palette=:darktest,
-                   size=(800, 400),
-                   margins=20Plots.px,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=8,
-                   ytickfontsize=8)
+    p = Plots.plot(;
+        ylims = (0, 10),
+        xlims = (t[1], t[end]),
+        legend = false,
+        palette = :darktest,
+        size = (800, 400),
+        margins = 20Plots.px,
+        xlabelfontsize = 8,
+        ylabelfontsize = 8,
+        xtickfontsize = 8,
+        ytickfontsize = 8,
+    )
 
     function _activate(app)
 
@@ -74,22 +76,24 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
         Gtk4.show(win)
 
         @guarded draw(can) do widget
-            p = Plots.plot(t,
-                           eda_signal,
-                           mc=:black,
-                           ms=0.5,
-                           lw=0.5,
-                           lc=:black,
-                           ylims=(0, 10),
-                           xlims=(t[1], t[end]),
-                           legend=false,
-                           palette=:darktest,
-                           size=(800, 400),
-                           margins=20Plots.px,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=8,
-                           ytickfontsize=8)
+            p = Plots.plot(
+                t,
+                eda_signal,
+                mc = :black,
+                ms = 0.5,
+                lw = 0.5,
+                lc = :black,
+                ylims = (0, 10),
+                xlims = (t[1], t[end]),
+                legend = false,
+                palette = :darktest,
+                size = (800, 400),
+                margins = 20Plots.px,
+                xlabelfontsize = 8,
+                ylabelfontsize = 8,
+                xtickfontsize = 8,
+                ytickfontsize = 8,
+            )
             ctx = getgc(can)
             withenv("GKSwstype" => "100") do
                 png(p, io)
@@ -143,12 +147,12 @@ function iedar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAna
     Gtk4.run(app)
 
     eda_signal = eda_signal[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits=4)
+    t = round.(t[1:(end - 1)]; digits = 4)
     eda_signal = reshape(eda_signal, 1, :, 1)
 
-    obj = create_object(data_type="eda")
-    add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
-    create_time!(obj, fs=fs)
+    obj = create_object(; data_type = "eda")
+    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
+    create_time!(obj; fs = fs)
 
     return obj
 
@@ -161,16 +165,16 @@ Record electrodermal activity (EDA), also called Galvanic Skin Response (GSR) or
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
-- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
+  - `duration::Int64=20`: recording duration in seconds
+  - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function edar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
+function edar(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
-    sp = _serial_open(port_name, baudrate=19200)
+    sp = _serial_open(port_name; baudrate = 19200)
     @assert !isnothing(sp) "Serial port $port_name is not available"
 
     println("NeuroRecorder: EDA")
@@ -182,10 +186,10 @@ function edar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     println()
 
     while true
-        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, true)
+        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, true)
         ret == 0 || error("Unable to switch to raw mode.")
         kbd_key = read(stdin, Char)
-        ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, false)
+        ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, false)
         if kbd_key == ' '
             break
         else
@@ -204,7 +208,7 @@ function edar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
 
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
-    t = collect(0:1/fs:duration)
+    t = collect(0:(1 / fs):duration)
     eda_signal = zeros(length(t))
 
     idx = 1
@@ -232,13 +236,13 @@ function edar(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     println("Recording finished.")
 
     eda_signal = eda_signal[1:(end - 1)]
-    t = round.(t[1:(end - 1)], digits=4)
+    t = round.(t[1:(end - 1)]; digits = 4)
     eda_signal = reshape(eda_signal, 1, :, 1)
 
-    obj = create_object(data_type="eda")
-    add_channel!(obj, data=eda_signal, label=["eda1"], type=["eda"], unit=["µS"])
-    create_time!(obj, fs=fs)
+    obj = create_object(; data_type = "eda")
+    add_channel!(obj; data = eda_signal, label = ["eda1"], type = ["eda"], unit = ["µS"])
+    create_time!(obj; fs = fs)
 
-        return obj
+    return obj
 
 end

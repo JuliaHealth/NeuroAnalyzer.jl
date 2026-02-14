@@ -8,12 +8,12 @@ Delete optodes) and channels associated with removed optodes.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `opt::Union{Int64, Vector{Int64}, AbstractRange}`: optode number(s) to be removed
+  - `obj::NeuroAnalyzer.NEURO`
+  - `opt::Union{Int64, Vector{Int64}, AbstractRange}`: optode number(s) to be removed
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange})::NeuroAnalyzer.NEURO
 
@@ -21,7 +21,7 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
 
     typeof(opt) <: AbstractRange && (opt = collect(opt))
     opt_n = length(obj.header.recording[:optode_labels])
-    length(opt) > 1 && (opt = sort!(opt, rev=true))
+    length(opt) > 1 && (opt = sort!(opt; rev = true))
     @assert length(opt) < opt_n "Number of optodes to delete ($(length(opt))) must be smaller than number of all optodes ($opt_n)."
     @assert opt in 1:opt_n "Opt must be in [1, $opt_n]."
 
@@ -64,7 +64,7 @@ function delete_optode(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}
 
     chs_to_delete = labels(obj_new)[sort(unique(chs_to_delete))]
     _info("Deleting the following NIRS channels: $chs_to_delete")
-    delete_channel!(obj_new, ch=chs_to_delete, del_opt=true)
+    delete_channel!(obj_new; ch = chs_to_delete, del_opt = true)
 
     return obj_new
 
@@ -77,16 +77,16 @@ Delete optopode(s).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `opt::Union{Int64, Vector{Int64}, AbstractRange}`: optopode number(s) to be removed
+  - `obj::NeuroAnalyzer.NEURO`
+  - `opt::Union{Int64, Vector{Int64}, AbstractRange}`: optopode number(s) to be removed
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function delete_optode!(obj::NeuroAnalyzer.NEURO; opt::Union{Int64, Vector{Int64}, AbstractRange})::Nothing
 
-    obj_new = delete_optode(obj, opt=opt)
+    obj_new = delete_optode(obj; opt = opt)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

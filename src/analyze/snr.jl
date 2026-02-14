@@ -8,12 +8,12 @@ Calculate SNR between two signals
 
 # Arguments
 
-- `s1::AbstractVector`
-- `s2::AbstractVector`
+  - `s1::AbstractVector`
+  - `s2::AbstractVector`
 
 # Returns
 
-- `snr::Float64`: SNR
+  - `snr::Float64`: SNR
 """
 function snr(s1::AbstractVector, s2::AbstractVector)::Float64
 
@@ -28,11 +28,11 @@ Calculate mean-based SNR.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `snr::Float64`: SNR
+  - `snr::Float64`: SNR
 
 # Source
 
@@ -51,11 +51,11 @@ Calculate RMS-based SNR.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `snr2::Float64`: SNR
+  - `snr2::Float64`: SNR
 """
 function snr2(s::AbstractVector)::Float64
 
@@ -71,19 +71,22 @@ Calculate SNR.
 
 # Arguments
 
-- `s::AbstractArray`
-- `t::Vector{Float64}`: epoch time
-- `type::Symbol=:rms`: SNR type:
-    - `:mean`: mean-based
-    - `:rms`: RMS-based
+  - `s::AbstractArray`
+  - `t::Vector{Float64}`: epoch time
+  - `type::Symbol=:rms`: SNR type:
+      + `:mean`: mean-based
+      + `:rms`: RMS-based
 
 # Returns
 
 Named tuple containing:
-- `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
-- `f::Vector{Float64}`: frequencies
+
+  - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
+  - `f::Vector{Float64}`: frequencies
 """
-function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
+function snr(
+    s::AbstractArray; t::Vector{Float64}, type::Symbol = :rms
+)::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
 
     _check_var(type, [:mean, :rms], "type")
     _chk3d(s)
@@ -116,7 +119,7 @@ function snr(s::AbstractArray; t::Vector{Float64}, type::Symbol=:rms)::@NamedTup
         end
     end
 
-    return (sn=sn, f=f)
+    return (sn = sn, f = f)
 
 end
 
@@ -127,23 +130,26 @@ Calculate SNR.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `type::Symbol=:rms`: SNR type:
-    - `:mean`: mean-based
-    - `:rms`: RMS-based
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `type::Symbol=:rms`: SNR type:
+      + `:mean`: mean-based
+      + `:rms`: RMS-based
 
 # Returns
 
 Named tuple containing:
-- `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
-- `f::Vector{Float64}`: frequencies
+
+  - `sn::Matrix{Float64}`: SNR for each channel over frequencies 1:Nyquist
+  - `f::Vector{Float64}`: frequencies
 """
-function snr(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol=:rms)::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
+function snr(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, type::Symbol = :rms
+)::@NamedTuple{sn::Matrix{Float64}, f::Vector{Float64}}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    sn, f = @views snr(obj.data[ch, :, :], t=obj.epoch_time, type=type)
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    sn, f = @views snr(obj.data[ch, :, :], t = obj.epoch_time, type = type)
 
-    return (sn=sn, f=f)
+    return (sn = sn, f = f)
 
 end

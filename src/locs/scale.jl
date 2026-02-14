@@ -10,17 +10,17 @@ Scale channel locations.
 
 # Arguments
 
-- `locs::DataFrame`
-- `r::Real`: scaling factor
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `r::Real`: scaling factor
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
-function locs_scale(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
+function locs_scale(locs::DataFrame; r::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -33,7 +33,9 @@ function locs_scale(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true,
         locs_cart2sph!(locs_tmp)
         locs_tmp[!, :loc_radius_sph] .*= r
         locs_sph2cart!(locs_tmp)
-        locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = locs_tmp[!, :loc_x], locs_tmp[!, :loc_y], locs_tmp[!, :loc_z]
+        locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = locs_tmp[!, :loc_x],
+        locs_tmp[!, :loc_y],
+        locs_tmp[!, :loc_z]
     end
 
     _locs_round!(locs_new)
@@ -50,19 +52,19 @@ Scale channel locations.
 
 # Arguments
 
-- `locs::DataFrame`
-- `r::Real`: scaling factor
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `r::Real`: scaling factor
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_scale!(locs::DataFrame; r::Real, polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
+function locs_scale!(locs::DataFrame; r::Real, polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
-    locs[!, :] = locs_scale(locs, r=r, polar=polar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_scale(locs; r = r, polar = polar, cart = cart, spherical = spherical)[!, :]
 
     return nothing
 
@@ -75,16 +77,16 @@ Normalize channel locations to fit the unit sphere.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
-function locs_normalize(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
+function locs_normalize(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -110,7 +112,9 @@ function locs_normalize(locs::DataFrame; polar::Bool=true, cart::Bool=true, sphe
         r = maximum(r2) / maximum(r1)
         locs_tmp[!, :loc_radius_sph] .*= r
         locs_sph2cart!(locs_tmp)
-        locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = locs_tmp[!, :loc_x], locs_tmp[!, :loc_y], locs_tmp[!, :loc_z]
+        locs_new[!, :loc_x], locs_new[!, :loc_y], locs_new[!, :loc_z] = locs_tmp[!, :loc_x],
+        locs_tmp[!, :loc_y],
+        locs_tmp[!, :loc_z]
     end
 
     _locs_round!(locs_new)
@@ -127,18 +131,18 @@ Normalize channel locations to fit the unit sphere.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_normalize!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
+function locs_normalize!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
-    locs[!, :] = locs_normalize(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_normalize(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
     return nothing
 

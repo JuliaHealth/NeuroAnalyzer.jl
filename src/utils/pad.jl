@@ -9,12 +9,12 @@ Pad row(s) with zeros. Works with 1-, 2- and 3-dimensional arrays.
 
 # Arguments
 
-- `x::Union{AbstractVector, AbstractArray}`
-- `n::Int64`: padding length (number of zeros to add)
+  - `x::Union{AbstractVector, AbstractArray}`
+  - `n::Int64`: padding length (number of zeros to add)
 
 # Returns
 
-- `pad0::Union{AbstractVector, AbstractArray}`
+  - `pad0::Union{AbstractVector, AbstractArray}`
 """
 function pad0(x::Union{AbstractVector, AbstractArray}, n::Int64)::Union{AbstractVector, AbstractArray}
 
@@ -34,11 +34,11 @@ Pad row(s) with zeros to the nearest power of 2 length. Works with 1-, 2- and 3-
 
 # Arguments
 
-- `x::Union{AbstractVector, AbstractArray}`
+  - `x::Union{AbstractVector, AbstractArray}`
 
 # Returns
 
-- `pad2::Union{AbstractVector, AbstractArray}`
+  - `pad2::Union{AbstractVector, AbstractArray}`
 """
 function pad2(x::Union{AbstractVector, AbstractArray})::Union{AbstractVector, AbstractArray}
 
@@ -57,17 +57,19 @@ Pad row(s) with mean value(s). Works with 1-, 2- and 3-dimensional arrays.
 
 # Arguments
 
-- `x::Union{AbstractVector, AbstractArray}`
-- `n::Int64`: padding length (number of values to add)
-- `mode::Symbol=:row`: how the mean is calculated:
-    - `:all`: mean of all rows
-    - `:row`: separate mean per each row
+  - `x::Union{AbstractVector, AbstractArray}`
+  - `n::Int64`: padding length (number of values to add)
+  - `mode::Symbol=:row`: how the mean is calculated:
+      + `:all`: mean of all rows
+      + `:row`: separate mean per each row
 
 # Returns
 
-- `padm::Union{AbstractVector, AbstractArray}`
+  - `padm::Union{AbstractVector, AbstractArray}`
 """
-function padm(x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol=:all)::Union{AbstractVector, AbstractArray}
+function padm(
+    x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol = :all
+)::Union{AbstractVector, AbstractArray}
 
     _check_var(mode, [:all, :row], "mode")
     @assert n >= 0 "n must be ≥ 0."
@@ -78,11 +80,11 @@ function padm(x::Union{AbstractVector, AbstractArray}, n::Int64; mode::Symbol=:a
         return vcat(x, m .* ones(eltype(x), n))
     elseif ndims(x) == 2
         mode === :all && (m = mean(x))
-        mode === :row && (m = mean(x, dims=2))
+        mode === :row && (m = mean(x; dims = 2))
         return hcat(x, m .* ones(eltype(x), size(x, 1), n))
     elseif ndims(x) == 3
         mode === :all && (m = mean(x))
-        mode === :row && (m = mean(x, dims=2))
+        mode === :row && (m = mean(x; dims = 2))
         return hcat(x, m .* ones(eltype(x), size(x, 1), n, size(x, 3)))
     end
 

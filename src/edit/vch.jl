@@ -7,12 +7,12 @@ Calculate virtual channel using formula `f`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `f::String`: channel calculation formula, e.g. `"cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the OBJ object
+  - `obj::NeuroAnalyzer.NEURO`
+  - `f::String`: channel calculation formula, e.g. `"cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the OBJ object
 
 # Returns
 
-- `vc::Array{Float64, 3}`: single channel × time × epochs
+  - `vc::Array{Float64, 3}`: single channel × time × epochs
 """
 function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
 
@@ -23,7 +23,8 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)::Array{Float64, 3}
     Threads.@threads for ep_idx in 1:ep_n
         f_tmp = f
         @inbounds for ch_idx in eachindex(clabels)
-            occursin(clabels[ch_idx], f) && (f_tmp = replace(f_tmp, clabels[ch_idx] => "$(obj.data[ch_idx, :, ep_idx])"))
+            occursin(clabels[ch_idx], f) &&
+                (f_tmp = replace(f_tmp, clabels[ch_idx] => "$(obj.data[ch_idx, :, ep_idx])"))
         end
         try
             @inbounds vc[1, :, ep_idx] = eval(Meta.parse("@. " * f_tmp))

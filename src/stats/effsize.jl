@@ -10,26 +10,27 @@ Calculate effect sizes.
 
 # Arguments
 
-- `x1::AbstractVector`
-- `x2::AbstractVector`
+  - `x1::AbstractVector`
+  - `x2::AbstractVector`
 
 # Returns
 
 Named tuple containing:
-- `d::Float64`: Cohen's d
-- `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin
-- `Δ::Float64`: Glass' Δ
+
+  - `d::Float64`: Cohen's d
+  - `g::Float64`: Hedges g, uses maximum likelihood estimator by Hedges and Olkin
+  - `Δ::Float64`: Glass' Δ
 """
 function efs(x1::AbstractVector, x2::AbstractVector)::@NamedTuple{d::Float64, g::Float64, Δ::Float64}
 
     @assert std(x1) != 0 "std(x1) must not be equal 0."
     @assert std(x2) != 0 "std(x2) must not be equal 0."
 
-    d = (mean(x1) - mean(x2)) / stdp(x1, x2, type=:cohen)
-    g = (mean(x1) - mean(x2)) / stdp(x1, x2, type=:hedges)
+    d = (mean(x1) - mean(x2)) / stdp(x1, x2; type = :cohen)
+    g = (mean(x1) - mean(x2)) / stdp(x1, x2; type = :hedges)
     Δ = (mean(x1) - mean(x2)) / std(x2)
 
-    return (d=d, g=g, Δ=Δ)
+    return (d = d, g = g, Δ = Δ)
 
 end
 
@@ -40,11 +41,11 @@ Calculate Cohen's h effect size for one proportion.
 
 # Arguments
 
-- `p::Float64`: proportion
+  - `p::Float64`: proportion
 
 # Returns
 
-- `h::Float64`
+  - `h::Float64`
 """
 function efs_p1g(p::Float64)::Float64
 
@@ -63,15 +64,15 @@ Calculate Cohen's h effect size for two proportions `p1` and `p2`.
 
 # Arguments
 
-- `p1::Float64`: 1st proportion, e.g. 0.7
-- `p2::Float64`: 2nd proportion, e.g. 0.3
-- `nd::Bool=false`: if true, calculate non-directional h value
+  - `p1::Float64`: 1st proportion, e.g. 0.7
+  - `p2::Float64`: 2nd proportion, e.g. 0.3
+  - `nd::Bool=false`: if true, calculate non-directional h value
 
 # Returns
 
-- `h::Float64`
+  - `h::Float64`
 """
-function efs_p2g(p1::Float64, p2::Float64; nd::Bool=false)::Float64
+function efs_p2g(p1::Float64, p2::Float64; nd::Bool = false)::Float64
 
     _in(p1, (0.0, 1.0), "p1")
     _in(p2, (0.0, 1.0), "p2")
@@ -90,20 +91,21 @@ Calculate pooled standard deviation.
 
 # Arguments
 
-- `x1::AbstractVector`
-- `x2::AbstractVector`
-- `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
+  - `x1::AbstractVector`
+  - `x2::AbstractVector`
+  - `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
 
 # Returns
 
-- `sp::Float64`
+  - `sp::Float64`
 """
-function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol=:cohen)::Float64
+function stdp(x1::AbstractVector, x2::AbstractVector; type::Symbol = :cohen)::Float64
 
     @assert length(x1) > 0 "Length of x1 cannot be 0."
     @assert length(x2) > 0 "Length of x2 cannot be 0."
     _check_var(type, [:cohen, :hedges], "type")
-    type === :cohen && (@assert length(x1) + length(x2) > 2 "For :cohen equation length of x1 + length of x2 must be > 2.")
+    type === :cohen &&
+        (@assert length(x1) + length(x2) > 2 "For :cohen equation length of x1 + length of x2 must be > 2.")
 
     s1 = std(x1)
     s2 = std(x2)
@@ -127,17 +129,17 @@ Calculate pooled standard deviation when number of subjects in groups are differ
 
 # Arguments
 
-- `s1::Real`
-- `s2::Real`
-- `n1::Int64`
-- `n2::Int64`
-- `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
+  - `s1::Real`
+  - `s2::Real`
+  - `n1::Int64`
+  - `n2::Int64`
+  - `type::Symbol=:cohen`: use Cohen's equation (`:cohen`) or maximum likelihood estimator by Hedges and Olkin (`:hedges`)
 
 # Returns
 
-- `ps::Float64`
+  - `ps::Float64`
 """
-function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol=:cohen)::Float64
+function stdp(s1::Real, s2::Real, n1::Int64, n2::Int64; type::Symbol = :cohen)::Float64
 
     @assert n1 > 0 "n1 must be > 0."
     @assert n2 > 0 "n2 must be > 0."
@@ -162,12 +164,12 @@ Calculate pooled standard deviation when number of subjects in groups are equal.
 
 # Arguments
 
-- `s1::Real`
-- `s2::Real`
+  - `s1::Real`
+  - `s2::Real`
 
 # Returns
 
-- `ps::Float64`
+  - `ps::Float64`
 """
 function stdp(s1::Real, s2::Real)::Float64
 

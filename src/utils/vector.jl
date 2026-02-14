@@ -11,12 +11,12 @@ Return the positions of the string in the vector of strings.
 
 # Arguments
 
-- `y::String`: value of interest
-- `x::Vector{String}`: vector to search within
+  - `y::String`: value of interest
+  - `x::Vector{String}`: vector to search within
 
 # Returns
 
-- `idx::Union{Int64, Nothing}`
+  - `idx::Union{Int64, Nothing}`
 """
 function vsearch(y::String, x::Vector{String})::Union{Int64, Nothing}
 
@@ -36,16 +36,16 @@ Return the positions of the value in the vector.
 
 # Arguments
 
-- `y::Real`: value of interest
-- `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[idx]`
+  - `y::Real`: value of interest
+  - `x::AbstractVector`: vector to search within
+  - `acc::Bool=false`: if true, return the difference between `y` and `x[idx]`
 
 # Returns
 
-- `idx::Int64`
-- `d::Real`: the difference between `y` and `x[idx]`
+  - `idx::Int64`
+  - `d::Real`: the difference between `y` and `x[idx]`
 """
-function vsearch(y::Real, x::AbstractVector; acc::Bool=false)::Union{Int64, Tuple{Int64, Real}}
+function vsearch(y::Real, x::AbstractVector; acc::Bool = false)::Union{Int64, Tuple{Int64, Real}}
 
     @assert length(x) > 0 "Length of x must be > 0."
     d, idx = findmin(abs.(x .- y))
@@ -61,16 +61,18 @@ Return the positions of the value in the vector.
 
 # Arguments
 
-- `y::AbstractVector`: vector of interest
-- `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[idx:idx + length(y)]`
+  - `y::AbstractVector`: vector of interest
+  - `x::AbstractVector`: vector to search within
+  - `acc::Bool=false`: if true, return the difference between `y` and `x[idx:idx + length(y)]`
 
 # Returns
 
-- `idx::Int64`
-- `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
+  - `idx::Int64`
+  - `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
 """
-function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
+function vsearch(
+    y::AbstractVector, x::AbstractVector; acc::Bool = false
+)::Union{AbstractVector, Tuple{AbstractVector, AbstractVector}}
 
     @assert length(x) > 0 "Length of x must be > 0."
     @assert length(y) <= length(x) "Length of y must be ≤ length 'x'"
@@ -93,14 +95,14 @@ Splits vector into pieces.
 
 # Argument
 
-- `x::AbstractVector`
-- `n::Int64`: length of one piece
+  - `x::AbstractVector`
+  - `n::Int64`: length of one piece
 
 # Returns
 
-- `x::Vector{AbstractVector}`
+  - `x::Vector{AbstractVector}`
 """
-function vsplit(x::AbstractVector, n::Int64=1)::Vector{AbstractVector}
+function vsplit(x::AbstractVector, n::Int64 = 1)::Vector{AbstractVector}
 
     @assert length(x) > 0 "Length of x must be > 0."
     @assert n >= 1 "n must be ≥ 1."
@@ -123,13 +125,13 @@ Find minimum value of one vector and return value at its index from another vect
 
 # Argument
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+  - `x::AbstractVector`
+  - `y::AbstractVector`
 
 # Returns
 
-- `value::Real`
-- `idx::Int64`
+  - `value::Real`
+  - `idx::Int64`
 """
 function minat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
@@ -151,13 +153,13 @@ Find maximum value of one vector and return value at its index from another vect
 
 # Argument
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+  - `x::AbstractVector`
+  - `y::AbstractVector`
 
 # Returns
 
-- `value::Real`
-- `idx::Int64`
+  - `value::Real`
+  - `idx::Int64`
 """
 function maxat(x::AbstractVector, y::AbstractVector)::Tuple{Real, Int64}
 
@@ -179,16 +181,16 @@ Reduce two vectors at indices of the second vector being multiplications of a co
 
 # Arguments
 
-- `x::AbstractVector`: e.g. signal data
-- `f::AbstractVector`: e.g. frequencies
-- `n::Float64=0.5`: reduce at multiplications of this value
+  - `x::AbstractVector`: e.g. signal data
+  - `f::AbstractVector`: e.g. frequencies
+  - `n::Float64=0.5`: reduce at multiplications of this value
 
 # Returns
 
-- `x_new::AbstractVector`
-- `f_new::AbstractVector`
+  - `x_new::AbstractVector`
+  - `f_new::AbstractVector`
 """
-function vreduce(x::AbstractVector, f::AbstractVector; n::Float64=0.5)::Tuple{AbstractVector, AbstractVector}
+function vreduce(x::AbstractVector, f::AbstractVector; n::Float64 = 0.5)::Tuple{AbstractVector, AbstractVector}
 
     @assert length(x) > 0 "Length of x must be > 0."
     @assert length(f) > 0 "Length of f must be > 0."

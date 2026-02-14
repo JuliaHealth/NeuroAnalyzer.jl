@@ -8,15 +8,15 @@ Interactive spectrogram of continuous signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::String`: channel name
-- `zoom::Real=10`: how many seconds are displayed in one segment
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `ch::String`: channel name
+  - `zoom::Real=10`: how many seconds are displayed in one segment
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Nothing
+function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real = 10)::Nothing
 
     @assert nepochs(obj) == 1 "For epoched object ispectrogram_ep() must be used."
 
@@ -26,13 +26,13 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
     @assert zoom <= signal_len(obj) / sr(obj) "zoom must be ≤ $(signal_len(obj) / sr(obj))."
 
     ch_init = ch
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch])
+    p = NeuroAnalyzer.plot_spectrogram(obj; ch = clabels[ch])
 
     function _activate(app)
 
@@ -122,7 +122,9 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
         cb_smooth.active = true
 
         combo_method = GtkComboBoxText()
-        spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"]
+        spectrogram_methods = [
+            "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"
+        ]
         for idx in spectrogram_methods
             push!(combo_method, idx)
         end
@@ -209,7 +211,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
         lab_n = GtkLabel("Kernel size:")
         lab_n.halign = 2
 
-        signal_slider = GtkScale(:h, obj.time_pts[1]:obj.time_pts[end] - zoom)
+        signal_slider = GtkScale(:h, obj.time_pts[1]:(obj.time_pts[end] - zoom))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Time position"
 
@@ -314,7 +316,7 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1
+            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1
                 warn_dialog(_nill, "For multi-channel spectrogram plot, all channels must be of the same type.", win)
                 no_error = false
             end
@@ -323,26 +325,28 @@ function ispectrogram(obj::NeuroAnalyzer.NEURO; ch::String, zoom::Real=10)::Noth
                 time1 = entry_time.value
                 time2 = time1 + zoom
                 time2 > obj.time_pts[end] && (time2 = obj.time_pts[end])
-                p = NeuroAnalyzer.plot_spectrogram(obj,
-                                                   ch=ch,
-                                                   seg=(time1, time2),
-                                                   mono=mono,
-                                                   title=title,
-                                                   xlabel=xlab,
-                                                   ylabel=ylab,
-                                                   db=db,
-                                                   method=method,
-                                                   flim=(frq1, frq2),
-                                                   ncyc=ncyc,
-                                                   nt=nt,
-                                                   wlen=wlen,
-                                                   woverlap=woverlap,
-                                                   w=hw,
-                                                   wt=wt,
-                                                   gw=gw,
-                                                   frq=frq,
-                                                   smooth=smooth,
-                                                   n=n)
+                p = NeuroAnalyzer.plot_spectrogram(
+                    obj,
+                    ch = ch,
+                    seg = (time1, time2),
+                    mono = mono,
+                    title = title,
+                    xlabel = xlab,
+                    ylabel = ylab,
+                    db = db,
+                    method = method,
+                    flim = (frq1, frq2),
+                    ncyc = ncyc,
+                    nt = nt,
+                    wlen = wlen,
+                    woverlap = woverlap,
+                    w = hw,
+                    wt = wt,
+                    gw = gw,
+                    frq = frq,
+                    smooth = smooth,
+                    n = n,
+                )
                 img = read_from_png(io)
                 can.content_width = p.attr[:size][1]
                 can.content_height = p.attr[:size][2]
@@ -641,25 +645,25 @@ Interactive spectrogram of epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::String`: channel name
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `ch::String`: channel name
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
 
     @assert nepochs(obj) > 1 "For continuous object ispectrogram() must be used."
 
     ch_init = ch
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     clabels = labels(obj)
 
     k = nothing
     mono = false
 
-    p = NeuroAnalyzer.plot_spectrogram(obj, ch=clabels[ch], ep=1)
+    p = NeuroAnalyzer.plot_spectrogram(obj; ch = clabels[ch], ep = 1)
 
     function _activate(app)
 
@@ -743,7 +747,9 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
         cb_smooth.active = true
 
         combo_method = GtkComboBoxText()
-        spectrogram_methods = ["short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"]
+        spectrogram_methods = [
+            "short-time Fourier transform", "multi-taper", "Morlet wavelet", "Gaussian and Hilbert transform", "CWT"
+        ]
         for idx in spectrogram_methods
             push!(combo_method, idx)
         end
@@ -933,33 +939,35 @@ function ispectrogram_ep(obj::NeuroAnalyzer.NEURO; ch::String)::Nothing
             elseif woverlap >= wlen
                 warn_dialog(_nill, "Window overlap must be < window length.", win)
                 no_error = false
-            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch=ch)])) > 1
+            elseif length(unique(obj.header.recording[:channel_type][get_channel(obj, ch = ch)])) > 1
                 warn_dialog(_nill, "For multi-channel spectrogram plot, all channels must be of the same type.", win)
                 no_error = false
             end
 
             if no_error
                 ep = Int64(entry_epoch.value)
-                p = NeuroAnalyzer.plot_spectrogram(obj,
-                                                   ch=ch,
-                                                   ep=ep,
-                                                   mono=mono,
-                                                   title=title,
-                                                   xlabel=xlab,
-                                                   ylabel=ylab,
-                                                   db=db,
-                                                   method=method,
-                                                   flim=(frq1, frq2),
-                                                   ncyc=ncyc,
-                                                   nt=nt,
-                                                   wlen=wlen,
-                                                   woverlap=woverlap,
-                                                   w=hw,
-                                                   wt=wt,
-                                                   gw=gw,
-                                                   frq=frq,
-                                                   smooth=smooth,
-                                                   n=n)
+                p = NeuroAnalyzer.plot_spectrogram(
+                    obj,
+                    ch = ch,
+                    ep = ep,
+                    mono = mono,
+                    title = title,
+                    xlabel = xlab,
+                    ylabel = ylab,
+                    db = db,
+                    method = method,
+                    flim = (frq1, frq2),
+                    ncyc = ncyc,
+                    nt = nt,
+                    wlen = wlen,
+                    woverlap = woverlap,
+                    w = hw,
+                    wt = wt,
+                    gw = gw,
+                    frq = frq,
+                    smooth = smooth,
+                    n = n,
+                )
                 img = read_from_png(io)
                 can.content_width = p.attr[:size][1]
                 can.content_height = p.attr[:size][2]

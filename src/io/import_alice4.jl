@@ -7,18 +7,18 @@ Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+  - `file_name::String`: name of the file to load
+  - `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 
 EDF files exported from Alice 4 have incorrect value of `data_records` (-1) and multiple sampling rate; channels are upsampled to the highest rate.
 """
-function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
+function import_alice4(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -52,7 +52,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
     data_records = parse(Int, strip(header[237:244]))
     @assert data_records == -1 "This seems to be a regular EDF file, use import_edf()."
     # we get 1.0 here
-    data_records_duration  = parse(Float64, strip(header[245:252]))
+    data_records_duration = parse(Float64, strip(header[245:252]))
     ch_n = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)
@@ -67,48 +67,48 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
 
     header = _v2s(_fread(fid, ch_n * 16, :s))
     for idx in 1:ch_n
-        clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
+        clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)])
     end
 
     header = _v2s(_fread(fid, ch_n * 80, :s))
     for idx in 1:ch_n
-        transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
+        transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)])
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
+        units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
     end
     units = replace(lowercase.(units), "uv"=>"μV")
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        physical_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        physical_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        digital_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        digital_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = _v2s(_fread(fid, ch_n * 80, :s))
     for idx in 1:ch_n
-        prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
+        prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)])
     end
 
     header = _v2s(_fread(fid, ch_n * 8, :s))
     for idx in 1:ch_n
-        samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        samples_per_datarecord[idx] = parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     close(fid)
@@ -158,7 +158,8 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
                 else
                     signal = map(ltoh, reinterpret(Int16, signal))
                 end
-                data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
+                data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] =
+                    signal .* gain[idx2]
             end
         end
         close(fid)
@@ -177,7 +178,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
 
         data_size = filesize(file_name) - data_offset
         data = zeros(UInt8, data_size)
-        readbytes!(fid, data, data_size, all=true)
+        readbytes!(fid, data, data_size; all = true)
         signal = map(ltoh, reinterpret(Int16, data))
         data_records = length(signal) ÷ sum(sampling_rate)
         data = zeros(ch_n, data_records * max_sampling_rate)
@@ -193,10 +194,12 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
                 # tmp = @. (tmp - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
                 tmp .*= gain[idx2]
                 if sampling_rate[idx2] == max_sampling_rate
-                    data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = tmp
+                    data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] = tmp
                 else
                     tmp_upsampled = FourierTools.resample(tmp, max_sampling_rate)
-                    data[idx2, ((idx1 - 1) * data_segment + 1):idx1 * data_segment] = FourierTools.resample(tmp, max_sampling_rate)
+                    data[idx2, ((idx1 - 1) * data_segment + 1):(idx1 * data_segment)] = FourierTools.resample(
+                        tmp, max_sampling_rate
+                    )
                 end
             end
         end
@@ -211,22 +214,18 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
         units[idx] == "" && (units[idx] = "μV")
         if ch_type[idx] == "eeg"
             if lowercase(units[idx]) == "mv"
-                lowercase(units[idx]) == "μV"
+                lowercase(units[idx]) = "μV"
                 data[idx, :] .*= 1000
             end
             if lowercase(units[idx]) == "nv"
-                lowercase(units[idx]) == "μV"
+                lowercase(units[idx]) = "μV"
                 data[idx, :] ./= 1000
             end
         end
     end
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
     else
         markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
@@ -238,45 +237,49 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
         ch_n -= length(annotation_channels)
     end
 
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+    )
+    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name=string(patient),
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording=string(recording),
-                              recording_date=recording_date,
-                              recording_time=replace(recording_time, '.'=>':'),
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels,
-                              units=units,
-                              transducers=transducers,
-                              prefiltering=prefiltering,
-                              line_frequency=50,
-                              sampling_rate=max_sampling_rate,
-                              gain=gain,
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = string(patient),
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = string(recording),
+        recording_date = recording_date,
+        recording_time = replace(recording_time, '.'=>':'),
+        recording_notes = "",
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = _detect_montage(clabels, ch_type, data_type),
+        clabels = clabels,
+        units = units,
+        transducers = transducers,
+        prefiltering = prefiltering,
+        line_frequency = 50,
+        sampling_rate = max_sampling_rate,
+        gain = gain,
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
@@ -285,7 +288,11 @@ function import_alice4(file_name::String; detect_type::Bool=true)::NeuroAnalyzer
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

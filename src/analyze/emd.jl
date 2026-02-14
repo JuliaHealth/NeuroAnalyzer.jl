@@ -7,15 +7,15 @@ Perform Empirical Mode Decomposition (EMD).
 
 # Arguments
 
-- `s::AbstractVector`
-- `x::AbstractVector`: x-axis points (e.g. time points)
-- `epsilon::Real=0.3`: decomposition stops when sum of the difference is lower than `epsilon`
+  - `s::AbstractVector`
+  - `x::AbstractVector`: x-axis points (e.g. time points)
+  - `epsilon::Real=0.3`: decomposition stops when sum of the difference is lower than `epsilon`
 
 # Returns
 
-- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) (by rows) and residue (last row in the matrix)
+  - `imf::Matrix{Float64}`: intrinsic mode functions (IMF) (by rows) and residue (last row in the matrix)
 """
-function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Float64}
+function emd(s::AbstractVector, x::AbstractVector; epsilon::Real = 0.3)::Matrix{Float64}
 
     @assert epsilon > 0 "epsilon must be > 0."
 
@@ -30,19 +30,19 @@ function emd(s::AbstractVector, x::AbstractVector; epsilon::Real=0.3)::Matrix{Fl
         # s_tmp must not contain 0s
         s_tmp[s_tmp .== 0] .= eps()
         # cubic spline envelopes of all local extremas
-        e_max = env_up(s_tmp, x, d=2)
-        e_min = env_lo(s_tmp, x, d=2)
+        e_max = env_up(s_tmp, x; d = 2)
+        e_min = env_lo(s_tmp, x; d = 2)
         e_avg = @. (e_max + e_min) / 2
         imf_tmp = @. s_tmp - e_avg
 
-        maxs = findpeaks(imf_tmp, d=2)
-        mins = findpeaks(_flipx(imf_tmp), d=2)
+        maxs = findpeaks(imf_tmp; d = 2)
+        mins = findpeaks(_flipx(imf_tmp); d = 2)
         n_extrema = length(maxs) + length(mins)
 
         n_roots = _zeros(imf_tmp)
 
         res = @. s_tmp - imf_tmp
-        sd = sum(@. abs2(s_tmp - imf_tmp) / s_tmp^2 )
+        sd = sum(@. abs2(s_tmp - imf_tmp) / s_tmp^2)
 
         # check IMF basic conditions
         if n_roots >= n_extrema - 1 &&
@@ -89,20 +89,20 @@ Perform Empirical Mode Decomposition (EMD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `ep::Int64`: epoch number
-- `epsilon::Real=0.3`: decomposition stops when sum of the difference is lower than `epsilon`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `ep::Int64`: epoch number
+  - `epsilon::Real=0.3`: decomposition stops when sum of the difference is lower than `epsilon`
 
 # Returns
 
-- `imf::Matrix{Float64}`: intrinsic mode functions (IMF) (by rows) and residue (last row in the matrix)
+  - `imf::Matrix{Float64}`: intrinsic mode functions (IMF) (by rows) and residue (last row in the matrix)
 """
-function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real=0.3)::Matrix{Float64}
+function emd(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, epsilon::Real = 0.3)::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad")[1] : get_channel(obj, ch=ch, exclude="")[1]
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad")[1] : get_channel(obj; ch = ch, exclude = "")[1]
     _check_epochs(obj, ep)
-    imf = @views emd(obj.data[ch, :, ep], obj.epoch_time, epsilon=epsilon)
+    imf = @views emd(obj.data[ch, :, ep], obj.epoch_time, epsilon = epsilon)
     size(imf, 1) > 0 && _info("$(size(imf, 1) - 1) IMFs were calculated")
 
     return imf

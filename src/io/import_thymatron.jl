@@ -9,23 +9,23 @@ Usually there are three images: baseline, during seizure activity and after seiz
 
 Image properties:
 
-- 100 DPI
-- 490 x 100 px
-- height 2.5 cm
-- width 12.5 cm
+  - 100 DPI
+  - 490 x 100 px
+  - height 2.5 cm
+  - width 12.5 cm
 
 # Arguments
 
-- `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load
-- `dpi::Int64=100`: DPI of the scanned images
+  - `file_name::Union{String, Vector{String}}`: name(s) of the file(s) to load
+  - `dpi::Int64=100`: DPI of the scanned images
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Source
 
-1. Wysokiński A. EEG_ADC: Digitizer and Analyzer of Electroconvulsive Therapy Paper Electroencephalogram Recordings. JECT 2022; 4: 255-256
+ 1. Wysokiński A. EEG_ADC: Digitizer and Analyzer of Electroconvulsive Therapy Paper Electroencephalogram Recordings. JECT 2022; 4: 255-256
 """
 function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyzer.NEURO
 
@@ -108,7 +108,7 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
             eeg_time[idx] = idx * px_s
         end
 
-        eeg_signal = round.(eeg_signal, digits=3)
+        eeg_signal = round.(eeg_signal; digits = 3)
 
         push!(data_tmp, eeg_signal)
 
@@ -125,55 +125,59 @@ function import_thymatron(file_name::Union{String, Vector{String}})::NeuroAnalyz
     for idx in 1:ch_n
         clabels[idx] *= string(idx)
     end
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+    )
+    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name="",
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type="eeg",
-                              file_name=file_name[1],
-                              file_size_mb=0,
-                              file_type="Thymatron",
-                              recording="",
-                              recording_date="",
-                              recording_time="",
-                              recording_notes="",
-                              channel_type=repeat(["eeg"], ch_n),
-                              channel_order=_sort_channels(repeat(["eeg"], ch_n)),
-                              reference="physical",
-                              clabels=clabels,
-                              units=repeat(["μV"], ch_n),
-                              transducers=repeat([""], ch_n),
-                              prefiltering=repeat([""], ch_n),
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=ones(ch_n),
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = "",
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = "eeg",
+        file_name = file_name[1],
+        file_size_mb = 0,
+        file_type = "Thymatron",
+        recording = "",
+        recording_date = "",
+        recording_time = "",
+        recording_notes = "",
+        channel_type = repeat(["eeg"], ch_n),
+        channel_order = _sort_channels(repeat(["eeg"], ch_n)),
+        reference = "physical",
+        clabels = clabels,
+        units = repeat(["μV"], ch_n),
+        transducers = repeat([""], ch_n),
+        prefiltering = repeat([""], ch_n),
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = ones(ch_n),
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

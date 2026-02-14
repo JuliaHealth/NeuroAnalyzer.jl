@@ -11,12 +11,12 @@ Convert time in seconds to sample number.
 
 # Arguments
 
-- `t::Real`: time in s
-- `fs::Int64`: sampling rate
+  - `t::Real`: time in s
+  - `fs::Int64`: sampling rate
 
 # Returns
 
-- `t2s::Int64`: sample number
+  - `t2s::Int64`: sample number
 """
 function t2s(t::Real, fs::Int64)::Int64
 
@@ -33,12 +33,12 @@ Convert sample number to time in seconds.
 
 # Arguments
 
-- `s::Real`: sample number
-- `fs::Int64`: sampling rate
+  - `s::Real`: sample number
+  - `fs::Int64`: sampling rate
 
 # Returns
 
-- `s2t::Float64`: time in s
+  - `s2t::Float64`: time in s
 """
 function s2t(s::Real, fs::Int64)::Float64
 
@@ -47,7 +47,7 @@ function s2t(s::Real, fs::Int64)::Float64
         s = 1
     end
 
-    return round(s / fs - (1/fs), digits=4)
+    return round(s / fs - (1/fs); digits = 4)
 
 end
 
@@ -58,12 +58,12 @@ Convert time in seconds to sample number.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `t::Real`: time in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `t::Real`: time in seconds
 
 # Returns
 
-- `t2s::Int64`: sample number
+  - `t2s::Int64`: sample number
 """
 function t2s(obj::NeuroAnalyzer.NEURO; t::Real)::Int64
 
@@ -78,12 +78,12 @@ Convert time in samples to seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `s::Int64`: time in samples
+  - `obj::NeuroAnalyzer.NEURO`
+  - `s::Int64`: time in samples
 
 # Returns
 
-- `s2t::Float64`: time in seconds
+  - `s2t::Float64`: time in seconds
 """
 function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)::Float64
 
@@ -98,12 +98,12 @@ Convert markers start and length from samples to seconds.
 
 # Arguments
 
-- `m::DataFrame`: markers
-- `fs::Int64`: sampling rate
+  - `m::DataFrame`: markers
+  - `fs::Int64`: sampling rate
 
 # Returns
 
-- `m_new::DataFrame`
+  - `m_new::DataFrame`
 """
 function markers_s2t(m::DataFrame; fs::Int64)::DataFrame
 
@@ -122,12 +122,12 @@ Convert markers start and length from samples to seconds.
 
 # Arguments
 
-- `m::DataFrame`: markers
-- `fs::Int64`: sampling rate
+  - `m::DataFrame`: markers
+  - `fs::Int64`: sampling rate
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function markers_s2t!(m::DataFrame; fs::Int64)::Nothing
 
@@ -145,11 +145,11 @@ Convert markers start and length from samples to seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `m_new::DataFrame`
+  - `m_new::DataFrame`
 """
 function markers_s2t(obj::NeuroAnalyzer.NEURO)::DataFrame
 
@@ -169,11 +169,11 @@ Convert markers start and length from samples to seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function markers_s2t!(obj::NeuroAnalyzer.NEURO)::Nothing
 
@@ -192,12 +192,12 @@ Convert epoch number to time segment in seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ep::Int64`: epoch number
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ep::Int64`: epoch number
 
 # Returns
 
-- `e2t::Tuple{Real, Real}`: time in seconds
+  - `e2t::Tuple{Real, Real}`: time in seconds
 """
 function e2t(obj::NeuroAnalyzer.NEURO, ep::Int64)::Tuple{Real, Real}
 
@@ -217,12 +217,12 @@ Convert epoch number to time segment in seconds.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ep::AbstractVector`: epoch number
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ep::AbstractVector`: epoch number
 
 # Returns
 
-- `e2t::Tuple{Real, Real}`: time in seconds
+  - `e2t::Tuple{Real, Real}`: time in seconds
 """
 function e2t(obj::NeuroAnalyzer.NEURO, ep::AbstractVector)::Tuple{Real, Real}
 

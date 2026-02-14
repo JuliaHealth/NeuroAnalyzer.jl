@@ -9,16 +9,19 @@ Generate SSP projectors from embedded projections.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
+  - `obj::NeuroAnalyzer.NEURO`
+  - `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
 
 # Returns
 
 Named tuple containing:
-- `ssp_projectors::Matrix{Float64}`: projectors
-- `U::Matrix{Float64}}`: SVD U orthogonal matrix
+
+  - `ssp_projectors::Matrix{Float64}`: projectors
+  - `U::Matrix{Float64}}`: SVD U orthogonal matrix
 """
-function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
+function generate_ssp_projectors(
+    obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0
+)::@NamedTuple{ssp_projectors::Matrix{Float64}, U::Matrix{Float64}}
 
     _check_datatype(obj, "meg")
 
@@ -50,7 +53,7 @@ function generate_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Ve
     # create projectors
     ssp_projectors = I(count(obj.header.recording[:ssp_channels])) .- (U * U')
 
-    return (ssp_projectors=ssp_projectors, U=U)
+    return (ssp_projectors = ssp_projectors, U = U)
 
 end
 
@@ -61,25 +64,26 @@ Apply SSP projectors from embedded projections.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
+  - `obj::NeuroAnalyzer.NEURO`
+  - `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::NeuroAnalyzer.NEURO
+function apply_ssp_projectors(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "meg")
 
     obj_new = deepcopy(obj)
 
     # generate
-    ssp_projectors, U = generate_ssp_projectors(obj, proj=proj)
+    ssp_projectors, U = generate_ssp_projectors(obj; proj = proj)
 
     # apply
     _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
-    obj_new.data[obj.header.recording[:ssp_channels], :, 1] = ssp_projectors * obj.data[obj.header.recording[:ssp_channels], :, 1]
+    obj_new.data[obj.header.recording[:ssp_channels], :, 1] =
+        ssp_projectors * obj.data[obj.header.recording[:ssp_channels], :, 1]
 
     push!(obj_new.history, "apply_ssp_projectors(OBJ, proj=$proj)")
 
@@ -94,16 +98,16 @@ Apply SSP projectors from embedded projections.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
+  - `obj::NeuroAnalyzer.NEURO`
+  - `proj::Union{Int64, Vector{Int64}}=0`: list of projections used for generating projectors, by default use all available projections
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function apply_ssp_projectors!(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}}=0)::Nothing
+function apply_ssp_projectors!(obj::NeuroAnalyzer.NEURO; proj::Union{Int64, Vector{Int64}} = 0)::Nothing
 
-    obj_new = apply_ssp_projectors(obj, proj=proj)
+    obj_new = apply_ssp_projectors(obj; proj = proj)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

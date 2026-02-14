@@ -10,11 +10,11 @@ Convert MNI coordinates to Talairach coordinates: redo the affine transform of T
 
 # Arguments
 
-- `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
+  - `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
 
 # Returns
 
-- `t::Vector{Float64}`: Talairach X, Y, Z coordinates
+  - `t::Vector{Float64}`: Talairach X, Y, Z coordinates
 
 # Source
 
@@ -41,11 +41,11 @@ Convert Talairach coordinates to MNI coordinates: do the affine transform of MNI
 
 # Arguments
 
-- `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
+  - `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
 
 # Returns
 
-- `t::Vector{Float64}`: MNI X, Y, Z coordinates
+  - `t::Vector{Float64}`: MNI X, Y, Z coordinates
 
 # Source
 
@@ -72,11 +72,11 @@ Convert MNI coordinates to Talairach coordinates: a non-linear transform of MNI 
 
 # Arguments
 
-- `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
+  - `pts::Vector{<:Number}`: MNI X, Y, Z coordinates
 
 # Returns
 
-- `t::Vector{Float64}`: Talairach X, Y, Z coordinates
+  - `t::Vector{Float64}`: Talairach X, Y, Z coordinates
 
 # Source
 
@@ -107,11 +107,11 @@ Convert Talairach coordinates to MNI coordinates: a non-linear transform of MNI 
 
 # Arguments
 
-- `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
+  - `pts::Vector{<:Number}`: Talairach X, Y, Z coordinates
 
 # Returns
 
-- `m::Vector{Float64}`: MNI X, Y, Z coordinates
+  - `m::Vector{Float64}`: MNI X, Y, Z coordinates
 
 # Source
 
@@ -123,12 +123,12 @@ function tal2mni(pts::Vector{<:Number})::Vector{Float64}
 
     if pts[3] >= 0
         x_prime = pts[1] / 0.9900
-        y_prime = 4.4819869616310097*10^-8 * (22972500 * pts[2] - 1150000 * pts[3])
-        z_prime = 4.4819869616310097*10^-8 * (24220000 * pts[3] + 1212500 * pts[2])
+        y_prime = 4.4819869616310097 * 10^-8 * (22972500 * pts[2] - 1150000 * pts[3])
+        z_prime = 4.4819869616310097 * 10^-8 * (24220000 * pts[3] + 1212500 * pts[2])
     else
         x_prime = 0.9900 * pts[1]
-        y_prime = 2.454408743978415*10^-7 * (4195000 * pts[2] - 210000 * pts[2])
-        z_prime = 2.454408743978415*10^-7 * (4844000 * pts[2] + 242500 * pts[2])
+        y_prime = 2.454408743978415 * 10^-7 * (4195000 * pts[2] - 210000 * pts[2])
+        z_prime = 2.454408743978415 * 10^-7 * (4844000 * pts[2] + 242500 * pts[2])
     end
 
     m = ([x_prime, y_prime, z_prime])

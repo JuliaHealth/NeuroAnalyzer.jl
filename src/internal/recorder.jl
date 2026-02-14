@@ -26,14 +26,16 @@ function _kbd_listener(c::Channel)::Nothing
     return nothing
 end
 
-function _serial_open(port_name::String="/dev/ttyACM0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ)::SerialPort
+function _serial_open(
+    port_name::String = "/dev/ttyACM0"; baudrate::Int64 = 115200, m = LibSerialPort.SP_MODE_READ
+)::SerialPort
     @assert port_name in LibSerialPort.get_port_list() "$port_name does not exist."
     if Sys.isunix()
         @assert "dialout" in split(readchomp(`groups`), ' ') "User $(readchomp(`sh -c 'echo $USER'`)) does not belong to the dialout group."
     end
     sp = nothing
     try
-        sp = LibSerialPort.open(port_name, baudrate, mode=m)
+        sp = LibSerialPort.open(port_name, baudrate; mode = m)
         sleep(1)
     catch
         error("Serial port $port_name cannot be opened.")
@@ -62,7 +64,14 @@ function _serial_close(port_name::String)::Nothing
     return nothing
 end
 
-function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=115200, m=LibSerialPort.SP_MODE_READ, blocks::Int64=256, n::Int64=1, t::Real=0)::DataFrame
+function _serial_recorder(
+    port_name::String = "/dev/ttyUSB0";
+    baudrate::Int64 = 115200,
+    m = LibSerialPort.SP_MODE_READ,
+    blocks::Int64 = 256,
+    n::Int64 = 1,
+    t::Real = 0,
+)::DataFrame
     # `blocks`: number of data blocks to record
     # `n`: number of records per block
     # `t`: recording time in seconds; if t > 0, blocks ignored and calculated based on recorded data
@@ -75,7 +84,7 @@ function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=1152
 
     sp = nothing
     try
-        sp = LibSerialPort.open(port_name, baudrate, mode=m)
+        sp = LibSerialPort.open(port_name, baudrate; mode = m)
         sleep(1)
     catch
         error("Serial port $port_name cannot be opened.")
@@ -120,7 +129,7 @@ function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=1152
     # calculate sampling rate
     sr = round(Int64, 1 / (tp[end] - tp[end - 1]))
     _info("Sampling rate: $sr Hz")
-    tp = round.(tp, digits=4)
+    tp = round.(tp; digits = 4)
 
     # create data frame
     names = String[]
@@ -131,7 +140,7 @@ function _serial_recorder(port_name::String="/dev/ttyUSB0"; baudrate::Int64=1152
     data = zeros(blocks, n + 1)
     idx = 1
     for idx1 in 1:n:length(tmp_data)
-        block = split.(tmp_data[idx1:idx1 + (n - 1)], ':')
+        block = split.(tmp_data[idx1:(idx1 + (n - 1))], ':')
         for idx2 in 1:n
             data[idx, idx2 + 1] = parse(Float64, block[idx2][2])
         end

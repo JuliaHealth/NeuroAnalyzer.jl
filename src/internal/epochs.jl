@@ -1,4 +1,6 @@
-function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)::Array{Float64, 3}
+function _make_epochs(
+    s::AbstractMatrix; ep_n::Union{Int64, Nothing} = nothing, ep_len::Union{Int64, Nothing} = nothing
+)::Array{Float64, 3}
 
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
     ep_len !== nothing && @assert ep_n === nothing "Either ep_n or ep_len must be specified."
@@ -23,7 +25,9 @@ function _make_epochs(s::AbstractMatrix; ep_n::Union{Int64, Nothing}=nothing, ep
     return epochs
 end
 
-function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)::Array{Float64, 3}
+function _make_epochs(
+    s::AbstractArray; ep_n::Union{Int64, Nothing} = nothing, ep_len::Union{Int64, Nothing} = nothing
+)::Array{Float64, 3}
 
     _chk3d(s)
     ep_len === nothing && @assert ep_n !== nothing "Either ep_n or ep_len must be specified."
@@ -45,7 +49,15 @@ function _make_epochs(s::AbstractArray; ep_n::Union{Int64, Nothing}=nothing, ep_
     return epochs
 end
 
-function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataFrame, marker_start::Vector{Int64}, offset::Int64, ep_len::Int64, fs::Int64)::Tuple{Array{Float64, 3}, DataFrame}
+function _make_epochs_bymarkers(
+    s::AbstractArray;
+    marker::String,
+    markers::DataFrame,
+    marker_start::Vector{Int64},
+    offset::Int64,
+    ep_len::Int64,
+    fs::Int64,
+)::Tuple{Array{Float64, 3}, DataFrame}
 
     _chk3d(s)
     if size(s, 3) > 1
@@ -76,9 +88,7 @@ function _make_epochs_bymarkers(s::AbstractArray; marker::String, markers::DataF
 
     epochs = zeros(size(s, 1), ep_len, mrk_n)
     @inbounds for mrk_idx in 1:mrk_n
-        epochs[:, :, mrk_idx] = @views reshape(s[:, ep_start[mrk_idx]:ep_end[mrk_idx], :],
-                                               size(s, 1),
-                                               ep_len)
+        epochs[:, :, mrk_idx] = @views reshape(s[:, ep_start[mrk_idx]:ep_end[mrk_idx], :], size(s, 1), ep_len)
     end
 
     # remove markers outside epoch limits
@@ -129,7 +139,9 @@ function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     epochs_tps = _epochs_tps(obj)
     for mrk_idx in eachindex(mrk_start)
         for ep_idx in 1:nepochs(obj)
-            mrk_start[mrk_idx] >= epochs_tps[1, ep_idx] && mrk_start[mrk_idx] <= epochs_tps[2, ep_idx] && (mrk_epoch[mrk_idx] = ep_idx)
+            mrk_start[mrk_idx] >= epochs_tps[1, ep_idx] &&
+                mrk_start[mrk_idx] <= epochs_tps[2, ep_idx] &&
+                (mrk_epoch[mrk_idx] = ep_idx)
         end
     end
     return mrk_epoch

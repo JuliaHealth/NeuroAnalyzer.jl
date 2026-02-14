@@ -7,17 +7,17 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-- `s::AbstractVector`
-- `fs::Int64`: sampling rate
-- `pad::Int64=0`: number of zeros to add
-- `f::Real`: filter frequency
-- `gw::Real=5`: Gaussian width in Hz
+  - `s::AbstractVector`
+  - `fs::Int64`: sampling rate
+  - `pad::Int64=0`: number of zeros to add
+  - `f::Real`: filter frequency
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `s_new::Vector{Float64}`
+  - `s_new::Vector{Float64}`
 """
-function filter_g(s::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)::Vector{Float64}
+function filter_g(s::AbstractVector; fs::Int64, pad::Int64 = 0, f::Real, gw::Real = 5)::Vector{Float64}
 
     @assert fs >= 1 "fs must be ≥ 1."
     @assert f >= 0 "f must be ≥ 0."
@@ -45,17 +45,17 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-- `s::AbstractArray`
-- `fs::Int64`: sampling rate
-- `pad::Int64=0`: number of zeros to add
-- `f::Real`: filter frequency
-- `gw::Real=5`: Gaussian width in Hz
+  - `s::AbstractArray`
+  - `fs::Int64`: sampling rate
+  - `pad::Int64=0`: number of zeros to add
+  - `f::Real`: filter frequency
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+  - `s_new::Array{Float64, 3}`
 """
-function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)::Array{Float64, 3}
+function filter_g(s::AbstractArray; fs::Int64, pad::Int64 = 0, f::Real, gw::Real = 5)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -64,7 +64,7 @@ function filter_g(s::AbstractArray; fs::Int64, pad::Int64=0, f::Real, gw::Real=5
     s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views filter_g(s[ch_idx, :, ep_idx], fs=fs, pad=pad, f=f, gw=gw)
+            s_new[ch_idx, :, ep_idx] = @views filter_g(s[ch_idx, :, ep_idx], fs = fs, pad = pad, f = f, gw = gw)
         end
     end
 
@@ -79,21 +79,23 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `pad::Int64=0`: number of zeros to add
-- `f::Real`: filter frequency
-- `gw::Real=5`: Gaussian width in Hz
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `pad::Int64=0`: number of zeros to add
+  - `f::Real`: filter frequency
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, f::Real, gw::Real=5)::NeuroAnalyzer.NEURO
+function filter_g(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
+)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs=sr(obj), pad=pad, f=f, gw=gw)
+    obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs = sr(obj), pad = pad, f = f, gw = gw)
     push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
 
     return obj_new
@@ -107,19 +109,21 @@ Filter using Gaussian in the frequency domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `pad::Int64=0`: number of zeros to add
-- `f::Real`: filter frequency
-- `gw::Real=5`: Gaussian width in Hz
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `pad::Int64=0`: number of zeros to add
+  - `f::Real`: filter frequency
+  - `gw::Real=5`: Gaussian width in Hz
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, f::Real, gw::Real=5)::Nothing
+function filter_g!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, f::Real, gw::Real = 5
+)::Nothing
 
-    obj_new = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
+    obj_new = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

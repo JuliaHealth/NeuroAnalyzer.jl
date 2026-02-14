@@ -7,14 +7,14 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+  - `file_name::String`: name of the file to load
+  - `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 """
-function import_digitrack(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
+function import_digitrack(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
 
@@ -43,12 +43,12 @@ function import_digitrack(file_name::String; detect_type::Bool=true)::NeuroAnaly
     buffer = readline(fid)
 
     channels = Vector{String}()
-    while buffer !=""
+    while buffer != ""
         buffer = readline(fid)
         push!(channels, buffer)
     end
     deleteat!(channels, length(channels))
-    ch_n  = length(channels)
+    ch_n = length(channels)
 
     clabels = Vector{String}(undef, ch_n)
     prefiltering = Vector{String}(undef, ch_n)
@@ -82,51 +82,51 @@ function import_digitrack(file_name::String; detect_type::Bool=true)::NeuroAnaly
         data[:, idx, 1] = parse.(Float64, signals)
     end
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+    )
+    epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name=string(patient),
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording=string(recording),
-                              recording_date=string(recording_date),
-                              recording_time=replace(string(recording_time), '.'=>':'),
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels,
-                              transducers=transducers,
-                              units=units,
-                              prefiltering=prefiltering,
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=gain,
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = string(patient),
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = string(recording),
+        recording_date = string(recording_date),
+        recording_time = replace(string(recording_time), '.'=>':'),
+        recording_notes = "",
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = _detect_montage(clabels, ch_type, data_type),
+        clabels = clabels,
+        transducers = transducers,
+        units = units,
+        prefiltering = prefiltering,
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = gain,
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
@@ -135,7 +135,11 @@ function import_digitrack(file_name::String; detect_type::Bool=true)::NeuroAnaly
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

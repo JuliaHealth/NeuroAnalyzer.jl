@@ -10,7 +10,7 @@ function _gdf_etp(etp::Vector{UInt8})::String
     etp[1] == 0x01 && etp[2] == 0x08 && (event = "artifact:breathing")
     etp[1] == 0x01 && etp[2] == 0x09 && (event = "artifact:pulse")
     etp[1] == 0x01 && etp[2] == 0x0a && (event = "artifact:EOG (slow)")
-    etp[1] == 0x01 && etp[2] == 0x0f && (event = "calibration" )
+    etp[1] == 0x01 && etp[2] == 0x0f && (event = "calibration")
     etp[1] == 0x01 && etp[2] == 0x11 && (event = "EEG:Sleep spindles")
     etp[1] == 0x01 && etp[2] == 0x12 && (event = "EEG:K-complexes")
     etp[1] == 0x01 && etp[2] == 0x13 && (event = "EEG:Saw-tooth waves")

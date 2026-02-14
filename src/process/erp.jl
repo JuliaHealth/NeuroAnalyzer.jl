@@ -10,24 +10,26 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `bl::Tuple{Real, Real}=(0, 0)`: baseline is from `b[1]` to `b[2]` seconds; if `bl` is greater than (0, 0), DC value is calculated as mean of the `b[1]` to `b[2]` seconds and subtracted from the signal
-- `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
+  - `obj::NeuroAnalyzer.NEURO`
+  - `bl::Tuple{Real, Real}=(0, 0)`: baseline is from `b[1]` to `b[2]` seconds; if `bl` is greater than (0, 0), DC value is calculated as mean of the `b[1]` to `b[2]` seconds and subtracted from the signal
+  - `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::NeuroAnalyzer.NEURO
+function average_epochs(
+    obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real} = (0, 0), blfirst::Bool = false
+)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, ["eeg", "meg"])
 
-    nchannels(obj) > length(get_channel(obj, type=datatype(obj))) && _warn("Non-signal channels will be removed.")
+    nchannels(obj) > length(get_channel(obj; type = datatype(obj))) && _warn("Non-signal channels will be removed.")
 
     if datatype(obj) == "eeg"
-        obj_new = keep_channel(obj, ch=get_channel(obj, type=datatype(obj)))
+        obj_new = keep_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     else
-        obj_new = keep_channel(obj, ch=["meg", "mag", "grad"])
+        obj_new = keep_channel(obj; ch = ["meg", "mag", "grad"])
     end
 
     # remove baseline prior to averaging
@@ -39,7 +41,7 @@ function average_epochs(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), 
         end
     end
 
-    obj_new.data = cat(mean(obj_new.data, dims=3)[:, :, :], obj_new.data, dims=3)
+    obj_new.data = cat(mean(obj_new.data; dims = 3)[:, :, :], obj_new.data; dims = 3)
     if datatype(obj) == "eeg"
         obj_new.header.recording[:data_type] = "erp"
     else
@@ -75,17 +77,17 @@ Average EEG/MEG epochs. Non-EEG/MEG channels are removed. `OBJ.header.recording[
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `bl::Tuple{Real, Real}=(0, 0)`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
-- `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
+  - `obj::NeuroAnalyzer.NEURO`
+  - `bl::Tuple{Real, Real}=(0, 0)`: baseline is the first `bl` seconds; if `bl` is greater than 0, DC value is calculated as mean of the first `n` samples and subtracted from the signal
+  - `blfirst::Bool=false`: if true, subtract the baseline segment prior to averaging
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real}=(0, 0), blfirst::Bool=false)::Nothing
+function average_epochs!(obj::NeuroAnalyzer.NEURO; bl::Tuple{Real, Real} = (0, 0), blfirst::Bool = false)::Nothing
 
-    obj_new = average_epochs(obj, bl=bl, blfirst=blfirst)
+    obj_new = average_epochs(obj; bl = bl, blfirst = blfirst)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.header = obj_new.header
@@ -104,12 +106,12 @@ Sort epochs.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `s::Vector{Int64}`: vector of sorting indices
+  - `obj::NeuroAnalyzer.NEURO`
+  - `s::Vector{Int64}`: vector of sorting indices
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function sort_epochs(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::NeuroAnalyzer.NEURO
 
@@ -135,16 +137,16 @@ Sort epochs.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `s::Vector{Int64}`: vector of sorting indices
+  - `obj::NeuroAnalyzer.NEURO`
+  - `s::Vector{Int64}`: vector of sorting indices
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
 
-    obj_new = sort_epochs(obj, s=s)
+    obj_new = sort_epochs(obj; s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.markers = obj_new.markers

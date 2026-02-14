@@ -12,51 +12,59 @@ module NeuroAnalyzer
 
 const VER = v"0.26.3-dev"
 const allow_wip = occursin("dev", string(VER))          # false for the stable branch, true for the devel branch
-const data_types = ["eeg",
-                    "ecog",
-                    "seeg",
-                    "ieeg",
-                    "csd",
-                    "meg",
-                    "nirs",
-                    "sensors",
-                    "eda",
-                    "mep",
-                    "erp",
-                    "erf",
-                    "tpt"]
-const channel_types = ["all",
-                       "eeg", "ecog", "seeg", "ieeg",
-                       "csd",
-                       "meg", "grad", "mag",
-                       "csd",
-                       "nirs", "nirs_int", "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar", "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt", "nirs_hrf_bfi", "nirs_aux",
-                       "ecg",
-                       "emg",
-                       "eog",
-                       "ref",
-                       "mrk",
-                       "sensors", "accel", "magfld", "orient", "angvel",
-                       "mep",
-                       "eda",
-                       "other"]
-const channel_units = ["μV",
-                       "mV",
-                       "V",
-                       "μV/m²",
-                       "fT",
-                       "fT/cm",
-                       "μM/mm",
-                       "m/s²",
-                       "µT",
-                       "°",
-                       "μS",
-                       "rad/s",
-                       ""]
-const fiducial_points = (nasion = (0.0, 1.03, -0.2),
-                         inion  = (0.0, -1.03, -0.2),
-                         lpa    = (-1.04, 0.2, -0.2),
-                         rpa    = (1.04, 0.2, -0.2))
+const data_types = ["eeg", "ecog", "seeg", "ieeg", "csd", "meg", "nirs", "sensors", "eda", "mep", "erp", "erf", "tpt"]
+const channel_types = [
+    "all",
+    "eeg",
+    "ecog",
+    "seeg",
+    "ieeg",
+    "csd",
+    "meg",
+    "grad",
+    "mag",
+    "csd",
+    "nirs",
+    "nirs_int",
+    "nirs_od",
+    "nirs_dmean",
+    "nirs_dvar",
+    "nirs_dskew",
+    "nirs_mua",
+    "nirs_musp",
+    "nirs_hbo",
+    "nirs_hbr",
+    "nirs_hbt",
+    "nirs_h2o",
+    "nirs_lipid",
+    "nirs_bfi",
+    "nirs_hrf_dod",
+    "nirs_hrf_dmean",
+    "nirs_hrf_dvar",
+    "nirs_hrf_dskew",
+    "nirs_hrf_hbo",
+    "nirs_hrf_hbr",
+    "nirs_hrf_hbt",
+    "nirs_hrf_bfi",
+    "nirs_aux",
+    "ecg",
+    "emg",
+    "eog",
+    "ref",
+    "mrk",
+    "sensors",
+    "accel",
+    "magfld",
+    "orient",
+    "angvel",
+    "mep",
+    "eda",
+    "other",
+]
+const channel_units = ["μV", "mV", "V", "μV/m²", "fT", "fT/cm", "μM/mm", "m/s²", "µT", "°", "μS", "rad/s", ""]
+const fiducial_points = (
+    nasion = (0.0, 1.03, -0.2), inion = (0.0, -1.03, -0.2), lpa = (-1.04, 0.2, -0.2), rpa = (1.04, 0.2, -0.2)
+)
 begin
     tmp = pwd()
     cd(joinpath(dirname(pathof(NeuroAnalyzer)), ".."))
@@ -176,7 +184,7 @@ global progress_bar = @load_preference("progress_bar", true)
 global verbose = @load_preference("verbose", true)
 global exclude_bads = @load_preference("exclude_bads", false)
 global colors = @load_preference("colors", true)
-na_set_prefs(progress_bar=progress_bar, verbose=verbose, exclude_bads=exclude_bads, colors=colors)
+na_set_prefs(; progress_bar = progress_bar, verbose = verbose, exclude_bads = exclude_bads, colors = colors)
 
 # show major parameters
 

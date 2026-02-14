@@ -8,26 +8,29 @@ Calculate Confidence Interval using bootstrapping.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal (time points × epochs)
-- `n1::Int64=3000`: number of stage 1 resamplings - number of samples in the resampled signal
-- `n2::Int64=1000`: number of stage 2 resamplings - number of samples sampled from the signal
-- `cl::Float64=0.95`: confidence level
+  - `s::AbstractMatrix`: signal (time points × epochs)
+  - `n1::Int64=3000`: number of stage 1 resamplings - number of samples in the resampled signal
+  - `n2::Int64=1000`: number of stage 2 resamplings - number of samples sampled from the signal
+  - `cl::Float64=0.95`: confidence level
 
 # Returns
 
 Named tuple containing:
-- `s_avg::Vector{Float64}`: averaged signal
-- `s_ci_l::Vector{Float64}`: lower bound of the confidence interval
-- `s_ci_h::Vector{Float64}`: upper bound of the confidence interval
+
+  - `s_avg::Vector{Float64}`: averaged signal
+  - `s_ci_l::Vector{Float64}`: lower bound of the confidence interval
+  - `s_ci_h::Vector{Float64}`: upper bound of the confidence interval
 """
-function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, cl::Float64=0.95)::@NamedTuple{s_avg::Vector{Float64}, s_ci_l::Vector{Float64}, s_ci_h::Vector{Float64}}
+function bootstrap_ci(
+    s::AbstractMatrix; n1::Int64 = 3000, n2::Int64 = 1000, cl::Float64 = 0.95
+)::@NamedTuple{s_avg::Vector{Float64}, s_ci_l::Vector{Float64}, s_ci_h::Vector{Float64}}
 
     _bin(cl, (0.0, 1.0), "cl")
     @assert n1 > 0 "n1 must be > 0."
     @assert n2 > 0 "n2 must be > 0."
 
     # initialize progress bar
-    progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     s_avg = zeros(n1, size(s, 1))
     @inbounds for idx1 in 1:n1
@@ -36,7 +39,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, cl::Flo
             ep_idx = rand(1:size(s, 2))
             s_tmp[:, idx2] = @views s[:, ep_idx]
         end
-        s_avg[idx1, :] = vec(mean(s_tmp, dims=2))
+        s_avg[idx1, :] = vec(mean(s_tmp, dims = 2))
 
         # update progress bar
         progress_bar && next!(progbar)
@@ -45,7 +48,7 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, cl::Flo
     s_ci_l = zeros(size(s_avg, 2))
     s_ci_h = zeros(size(s_avg, 2))
 
-    ci_l = round((1.0 - cl) / 2, digits=3)
+    ci_l = round((1.0 - cl) / 2; digits = 3)
     ci_h = 1.0 - ci_l
 
     @inbounds for idx in axes(s_avg, 2)
@@ -56,9 +59,9 @@ function bootstrap_ci(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, cl::Flo
         s_ci_h[idx] = tpt[ci_h_idx]
     end
 
-    s_avg = vec(mean(s_avg, dims=1))
+    s_avg = vec(mean(s_avg; dims = 1))
 
-    return (s_avg=s_avg, s_ci_l=s_ci_l, s_ci_h=s_ci_h)
+    return (s_avg = s_avg, s_ci_l = s_ci_l, s_ci_h = s_ci_h)
 
 end
 
@@ -69,16 +72,16 @@ Calculate signal statistic using bootstrapping.
 
 # Arguments
 
-- `s::AbstractMatrix`: signal (time points × epochs)
-- `n1::Int64=3000`: number of stage 1 resamplings - number of samples in the resampled signal
-- `n2::Int64=1000`: number of stage 2 resamplings - number of samples sampled from the signal
-- `f::String`: statistic function to be applied, e.g. `f="abs(maximum(obj))"; signal is given using variable `obj` here.
+  - `s::AbstractMatrix`: signal (time points × epochs)
+  - `n1::Int64=3000`: number of stage 1 resamplings - number of samples in the resampled signal
+  - `n2::Int64=1000`: number of stage 2 resamplings - number of samples sampled from the signal
+  - `f::String`: statistic function to be applied, e.g. `f="abs(maximum(obj))"; signal is given using variable `obj` here.
 
 # Returns
 
-- `out::AbstractVector`
+  - `out::AbstractVector`
 """
-function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::String)::AbstractVector
+function bootstrap_stat(s::AbstractMatrix; n1::Int64 = 3000, n2::Int64 = 1000, f::String)::AbstractVector
 
     @assert n1 > 0 "n1 must be > 0."
     @assert n2 > 0 "n2 must be > 0."
@@ -93,7 +96,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::St
     out = zeros(typeof(out_tmp), n1)
 
     # initialize progress bar
-    progbar = Progress(n1, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(n1; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     s_avg = zeros(n1, size(s, 1))
     @inbounds for idx1 in 1:n1
@@ -102,7 +105,7 @@ function bootstrap_stat(s::AbstractMatrix; n1::Int64=3000, n2::Int64=1000, f::St
             ep_idx = rand(1:size(s, 2))
             s_tmp[:, idx2] = @views s[:, ep_idx]
         end
-        s_avg[idx1, :] = mean(s_tmp, dims=2)
+        s_avg[idx1, :] = mean(s_tmp, dims = 2)
         f_tmp = replace(f, "obj" => "$(s_avg[idx1, :])")
         out[idx1] = eval(Meta.parse(f_tmp))
 

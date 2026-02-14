@@ -7,11 +7,11 @@ Calculate phases.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `phases::Vector{Float64}`
+  - `phases::Vector{Float64}`
 """
 function phases(s::AbstractVector)::Vector{Float64}
 

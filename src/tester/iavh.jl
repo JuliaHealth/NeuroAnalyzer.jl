@@ -15,7 +15,7 @@ Nothing
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function iavh()::Nothing
 
@@ -480,7 +480,7 @@ function iavh()::Nothing
             vol < 1.0 && (vol += 0.1)
             vol > 0.1 && (bt_vol_down.sensitive = 1)
             vol == 1.0 && (bt_vol_up.sensitive = 0)
-            vol = round(vol, digits=1)
+            vol = round(vol; digits = 1)
 
             type = types[Int64(combo_type.active) + 1]
             lang = langs[Int64(combo_lang.active) + 1]
@@ -586,7 +586,7 @@ function iavh()::Nothing
             vol > 0.1 && (vol -= 0.1)
             vol == 0.1 && (bt_vol_down.sensitive = 0)
             vol < 1.0 && (bt_vol_up.sensitive = 1)
-            vol = round(vol, digits=1)
+            vol = round(vol; digits = 1)
 
             type = types[Int64(combo_type.active) + 1]
             lang = langs[Int64(combo_lang.active) + 1]
@@ -810,8 +810,8 @@ function iavh()::Nothing
                     Gtk4.reveal(widget)
                 end
 
-                x_pos = round((x_pos / 800) - 0.5, digits=2)
-                y_pos = round((y_pos / 800) - 0.5, digits=2)
+                x_pos = round((x_pos / 800) - 0.5, digits = 2)
+                y_pos = round((y_pos / 800) - 0.5, digits = 2)
 
                 y_pos = -y_pos
                 y_pos == -0.0 && (y_pos = 0)
@@ -827,8 +827,8 @@ function iavh()::Nothing
                 d_l > d_r && (d_r *= 0.75)
                 d_r > d_l && (d_l *= 0.75)
 
-                d_l = round(d_l, digits=2)
-                d_r = round(d_r, digits=2)
+                d_l = round(d_l, digits = 2)
+                d_r = round(d_r, digits = 2)
 
                 type = types[Int64(combo_type.active) + 1]
                 lang = langs[Int64(combo_lang.active) + 1]

@@ -8,17 +8,17 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `s_new::AbstractVector`
+  - `s_new::AbstractVector`
 """
 function derivative(s::AbstractVector)::AbstractVector
 
     @assert length(s) > 2 "Signal length must be > 2."
 
-    dv  = diff(s) / 2       # half the derivative
+    dv = diff(s) / 2       # half the derivative
     s_new = [dv[1]; dv]     # copies first element
     s_new .+= [dv; dv[end]] # copies last element, add both results to compute average
 
@@ -33,11 +33,11 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-- `s::AbstractArray`
+  - `s::AbstractArray`
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+  - `s_new::Array{Float64, 3}`
 """
 function derivative(s::AbstractArray)::Array{Float64, 3}
 
@@ -63,16 +63,16 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])
     push!(obj_new.history, "derivative(OBJ, ch=$ch)")
@@ -88,16 +88,16 @@ Return derivative (calculated using symmetric difference quotient) of a discrete
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = derivative(obj, ch=ch)
+    obj_new = derivative(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

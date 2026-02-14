@@ -17,20 +17,21 @@ Calculate number of categories for a given sample size `n`.
 
 # Arguments
 
-- `n::Int64`: sample size
+  - `n::Int64`: sample size
 
 # Returns
 
 Named tuple containing:
-- `k1::Float64`: sqrt(n)
-- `k2::Float64`: 1 + 3.222 * log10(n)
+
+  - `k1::Float64`: sqrt(n)
+  - `k2::Float64`: 1 + 3.222 * log10(n)
 """
 function k_categories(n::Int64)::@NamedTuple{k1::Float64, k2::Float64}
 
     k1 = sqrt(n)
     k2 = 1 + 3.222 * log10(n)
 
-    return (k1=k1, k2=k2)
+    return (k1 = k1, k2 = k2)
 
 end
 
@@ -41,12 +42,12 @@ Calculate slope of the line crossing two points.
 
 # Arguments
 
-- `p1::Tuple{Real, Real}`
-- `p2::Tuple{Real, Real}`
+  - `p1::Tuple{Real, Real}`
+  - `p2::Tuple{Real, Real}`
 
 # Returns
 
-- `s::Float64`: slope
+  - `s::Float64`: slope
 """
 function slope(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
@@ -65,12 +66,12 @@ Calculate distance between two points.
 
 # Arguments
 
-- `p1::Tuple{Real, Real}`
-- `p2::Tuple{Real, Real}`
+  - `p1::Tuple{Real, Real}`
+  - `p2::Tuple{Real, Real}`
 
 # Returns
 
-- `d::Float64`: distance
+  - `d::Float64`: distance
 """
 function distance(p1::Tuple{Real, Real}, p2::Tuple{Real, Real})::Float64
 
@@ -87,22 +88,23 @@ Collect thresholded elements, e.g. in a topographical map.
 
 # Arguments
 
-- `x::AbstractMatrix`
-- `t::Real`: threshold value
-- `t_type::Symbol=:g`: rule for thresholding:
-    - `:eq`: =
-    - `:geq`: ≥
-    - `:leq`: ≤
-    - `:g`: >
-    - `:l`: <
+  - `x::AbstractMatrix`
+  - `t::Real`: threshold value
+  - `t_type::Symbol=:g`: rule for thresholding:
+      + `:eq`: =
+      + `:geq`: ≥
+      + `:leq`: ≤
+      + `:g`: >
+      + `:l`: <
 
 # Returns
 
 Named tuple containing:
-- `x_t::Matrix{Bool}`: thresholded matrix
-- `n::Int64`: number of elements
+
+  - `x_t::Matrix{Bool}`: thresholded matrix
+  - `n::Int64`: number of elements
 """
-function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
+function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol = :g)::@NamedTuple{x_t::Matrix{Bool}, n::Int64}
 
     _check_var(t_type, [:eq, :geq, :leq, :g, :l], "t_type")
 
@@ -122,7 +124,7 @@ function count_thresh(x::AbstractMatrix; t::Real, t_type::Symbol=:g)::@NamedTupl
 
     n = count(==(true), x_t)
 
-    return (x_t=x_t, n=n)
+    return (x_t = x_t, n = n)
 
 end
 
@@ -133,15 +135,15 @@ Calculate proportion of elements below or above a given statistic value.
 
 # Arguments
 
-- `stat_dist::AbstractVector`: statistic values distribution
-- `v::Real`: statistic value
-- `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `v`
+  - `stat_dist::AbstractVector`: statistic values distribution
+  - `v::Real`: statistic value
+  - `type::Symbol=:g`: calculation proportion of elements greater (`:g`) or lesser (`:l`) than `v`
 
 # Returns
 
-- `p::Float64`
+  - `p::Float64`
 """
-function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol=:g)::Float64
+function cmp_stat(stat_dist::AbstractVector, v::Real; type::Symbol = :g)::Float64
 
     _check_var(type, [:g, :l], "type")
     @assert length(stat_dist) > 0 "Length of stat_dist is 0, cannot compute."
@@ -158,12 +160,12 @@ Permute signal data.
 
 # Arguments
 
-- `s::AbstractVector`
-- `n::Int64`: number of permutations
+  - `s::AbstractVector`
+  - `n::Int64`: number of permutations
 
 # Returns
 
-- `s_new::Matrix{Float64}`
+  - `s_new::Matrix{Float64}`
 """
 function permute(s::AbstractVector, n::Int64)::Matrix{Float64}
 
@@ -188,12 +190,12 @@ Permute signal data.
 
 # Arguments
 
-- `s::AbstractArray`
-- `n::Int64`: number of permutations
+  - `s::AbstractArray`
+  - `n::Int64`: number of permutations
 
 # Returns
 
-- `s_new::Union{Array{Float64, 3}, Array{Float64, 4}}`
+  - `s_new::Union{Array{Float64, 3}, Array{Float64, 4}}`
 """
 function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Float64, 4}}
 
@@ -201,7 +203,7 @@ function permute(s::AbstractArray, n::Int64)::Union{Array{Float64, 3}, Array{Flo
     @assert ndims(s) <= 3 "permute() only works for arrays of ≤ 3 dimensions."
 
     if ndims(s) == 2
-        s_new = zeros(n, size(s,1 ), size(s,2 ))
+        s_new = zeros(n, size(s, 1), size(s, 2))
         @inbounds for idx1 in 1:n
             Threads.@threads for idx2 in axes(s, 1)
                 x = rand(2:size(s, 2))
@@ -235,11 +237,11 @@ Convert proportion to logit.
 
 # Arguments
 
-- `p::Float64`: proportion
+  - `p::Float64`: proportion
 
 # Returns
 
-- `l::Float64`
+  - `l::Float64`
 """
 function logit(p::Float64)::Float64
 
@@ -258,16 +260,16 @@ Calculate sum of squares.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `s::Float64`
+  - `s::Float64`
 """
 function sumsq(x::AbstractVector)::Float64
 
     m = mean(x)
-    s = sum((x .- m).^2)
+    s = sum((x .- m) .^ 2)
 
     return s
 
@@ -280,11 +282,11 @@ Return values of x ignoring NaNs and Missing values.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `x::Vector{Float64}`
+  - `x::Vector{Float64}`
 """
 function rmna(x::AbstractVector)::Vector{Float64}
 
@@ -303,11 +305,11 @@ Calculate degrees of freedom.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `df::Int64`
+  - `df::Int64`
 """
 function df(x::AbstractVector)::Int64
 
@@ -322,11 +324,11 @@ Center values by subtracting mean.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `x::Vector{Float64}`
+  - `x::Vector{Float64}`
 """
 function center(x::AbstractVector)::Vector{Float64}
 

@@ -8,11 +8,11 @@ Generate spherical coordinates according to 10/10 system.
 
 # Arguments
 
-- `locs::DataFrame`
+  - `locs::DataFrame`
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
 function locs_generate(locs::DataFrame)::DataFrame
 
@@ -34,7 +34,111 @@ function locs_generate(locs::DataFrame)::DataFrame
     y = zeros(length(lab))
     z = zeros(length(lab))
 
-    e_labels = ["cz", "c2", "c4", "c6", "t4", "t8", "t10", "c1", "c3", "c5", "t3", "t7", "t9", "fcz", "fc2", "fc4", "fc6", "fc8", "ft8", "fc10", "ft10", "fc1", "fc3", "fc5", "fc7", "ft7", "fc9", "ft9", "fz", "f2", "f4", "f6", "f8", "f10", "f1", "f3", "f5", "f7", "f9", "afz", "af2", "af4", "af6", "af1", "af3", "af7", "fpz", "fp2", "fp1", "cpz", "cp2", "cp4", "cp6", "cp8", "tp8", "tp10", "cp1", "cp3", "cp5", "cp7", "tp7", "tp9", "pz", "p2", "p4", "p6", "p8", "p10", "t6", "p1", "p3", "p5", "p7", "p9", "t5", "poz", "po2", "po4", "po6", "po8", "po1", "po3", "po5", "po7", "oz", "o2", "o1", "a1", "a2", "m1", "m2", "emg1", "emg2", "eog1", "eog2", "veog1", "veog2", "heog1", "heog2", "veog", "heog", "reog", "leog"]
+    e_labels = [
+        "cz",
+        "c2",
+        "c4",
+        "c6",
+        "t4",
+        "t8",
+        "t10",
+        "c1",
+        "c3",
+        "c5",
+        "t3",
+        "t7",
+        "t9",
+        "fcz",
+        "fc2",
+        "fc4",
+        "fc6",
+        "fc8",
+        "ft8",
+        "fc10",
+        "ft10",
+        "fc1",
+        "fc3",
+        "fc5",
+        "fc7",
+        "ft7",
+        "fc9",
+        "ft9",
+        "fz",
+        "f2",
+        "f4",
+        "f6",
+        "f8",
+        "f10",
+        "f1",
+        "f3",
+        "f5",
+        "f7",
+        "f9",
+        "afz",
+        "af2",
+        "af4",
+        "af6",
+        "af1",
+        "af3",
+        "af7",
+        "fpz",
+        "fp2",
+        "fp1",
+        "cpz",
+        "cp2",
+        "cp4",
+        "cp6",
+        "cp8",
+        "tp8",
+        "tp10",
+        "cp1",
+        "cp3",
+        "cp5",
+        "cp7",
+        "tp7",
+        "tp9",
+        "pz",
+        "p2",
+        "p4",
+        "p6",
+        "p8",
+        "p10",
+        "t6",
+        "p1",
+        "p3",
+        "p5",
+        "p7",
+        "p9",
+        "t5",
+        "poz",
+        "po2",
+        "po4",
+        "po6",
+        "po8",
+        "po1",
+        "po3",
+        "po5",
+        "po7",
+        "oz",
+        "o2",
+        "o1",
+        "a1",
+        "a2",
+        "m1",
+        "m2",
+        "emg1",
+        "emg2",
+        "eog1",
+        "eog2",
+        "veog1",
+        "veog2",
+        "heog1",
+        "heog2",
+        "veog",
+        "heog",
+        "reog",
+        "leog",
+    ]
 
     x[lab .== "cz"] .= sph2cart(1.0, 0, 90)[1]
     y[lab .== "cz"] .= sph2cart(1.0, 0, 90)[2]
@@ -408,9 +512,9 @@ function locs_generate(locs::DataFrame)::DataFrame
     y[lab .== "heog"] .= 0.77
     z[lab .== "heog"] .= -0.04
 
-    x = round.(x, digits=3)
-    y = round.(y, digits=3)
-    z = round.(z, digits=3)
+    x = round.(x; digits = 3)
+    y = round.(y; digits = 3)
+    z = round.(z; digits = 3)
 
     locs_new[:, :loc_x] = x
     locs_new[:, :loc_y] = y
@@ -433,11 +537,11 @@ Generate spherical coordinates according to 10/5 system.
 
 # Arguments
 
-- `locs::DataFrame`
+  - `locs::DataFrame`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function locs_generate!(locs::DataFrame)::Nothing
 
@@ -463,11 +567,11 @@ Generate spherical coordinates according to 10/5 system.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function locs_generate(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 
@@ -489,11 +593,11 @@ Generate spherical coordinates according to 10/5 system.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function locs_generate!(obj::NeuroAnalyzer.NEURO)::Nothing
 

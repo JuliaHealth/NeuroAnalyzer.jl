@@ -10,11 +10,11 @@ Convert Plots.Plot to CairoSurfaceBase.
 
 # Arguments
 
-- `p::Plots.Plot{Plots.GRBackend}`
+  - `p::Plots.Plot{Plots.GRBackend}`
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+  - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function plot2canvas(p::Plots.Plot{Plots.GRBackend})::Cairo.CairoSurfaceBase{UInt32}
 
@@ -39,11 +39,11 @@ Convert Plots.Plot to CairoSurfaceBase.
 
 # Arguments
 
-- `p::GLMakie.Figure`
+  - `p::GLMakie.Figure`
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+  - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
 function plot2canvas(p::GLMakie.Figure)::Cairo.CairoSurfaceBase{UInt32}
 
@@ -68,12 +68,12 @@ Resize CairoSurfaceBase by a factor.
 
 # Arguments
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
-- `r::Real`: resizing factor
+  - `c::Cairo.CairoSurfaceBase{UInt32}`
+  - `r::Real`: resizing factor
 
 # Returns
 
-- `c_new::Cairo.CairoSurfaceBase{UInt32}`
+  - `c_new::Cairo.CairoSurfaceBase{UInt32}`
 """
 function resize_canvas(c::Cairo.CairoSurfaceBase{UInt32}; r::Real)::Cairo.CairoSurfaceBase{UInt32}
 
@@ -97,14 +97,16 @@ Resize CairoSurfaceBase to make space for another canvas
 
 # Arguments
 
-- `c1::Cairo.CairoSurfaceBase{UInt32}`
-- `c2::Cairo.CairoSurfaceBase{UInt32}`
+  - `c1::Cairo.CairoSurfaceBase{UInt32}`
+  - `c2::Cairo.CairoSurfaceBase{UInt32}`
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+  - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_topmargin_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32})::Cairo.CairoSurfaceBase{UInt32}
+function add_topmargin_canvas(
+    c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}
+)::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height + c2.height)
     cr = CairoContext(c)
@@ -125,19 +127,27 @@ Place CairoSurfaceBase at another canvas at `x, y`. If `file_name` is provided, 
 
 # Arguments
 
-- `c1::Cairo.CairoSurfaceBase{UInt32}`
-- `c2::Cairo.CairoSurfaceBase{UInt32}`
-- `x::Int64`
-- `y::Int64`
-- `title::String=""`: title of the subplot
-- `view::Bool=true`: view the output image
-- `file_name::String=""`: output image filename
+  - `c1::Cairo.CairoSurfaceBase{UInt32}`
+  - `c2::Cairo.CairoSurfaceBase{UInt32}`
+  - `x::Int64`
+  - `y::Int64`
+  - `title::String=""`: title of the subplot
+  - `view::Bool=true`: view the output image
+  - `file_name::String=""`: output image filename
 
 # Returns
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+  - `c::Cairo.CairoSurfaceBase{UInt32}`
 """
-function add_to_canvas(c1::Cairo.CairoSurfaceBase{UInt32}, c2::Cairo.CairoSurfaceBase{UInt32}; x::Int64, y::Int64, title::String="", view::Bool=true, file_name::String="")::Cairo.CairoSurfaceBase{UInt32}
+function add_to_canvas(
+    c1::Cairo.CairoSurfaceBase{UInt32},
+    c2::Cairo.CairoSurfaceBase{UInt32};
+    x::Int64,
+    y::Int64,
+    title::String = "",
+    view::Bool = true,
+    file_name::String = "",
+)::Cairo.CairoSurfaceBase{UInt32}
 
     c = CairoRGBSurface(c1.width, c1.height)
     cr = CairoContext(c)

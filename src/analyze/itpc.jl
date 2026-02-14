@@ -8,23 +8,26 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
 # Arguments
 
-- `s::AbstractArray`: one channel over epochs
-- `t::Int64`: time point (sample number) at which ITPC is calculated
-- `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+  - `s::AbstractArray`: one channel over epochs
+  - `t::Int64`: time point (sample number) at which ITPC is calculated
+  - `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 Named tuple containing:
-- `itpc_val::Float64`: ITPC value
-- `itpcz_val::Float64`: Rayleigh's ITPC z value
-- `itpc_ang::Float64`: ITPC angle
-- `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
+
+  - `itpc_val::Float64`: ITPC value
+  - `itpcz_val::Float64`: Rayleigh's ITPC z value
+  - `itpc_ang::Float64`: ITPC angle
+  - `itpc_ph::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 
 # Source
 
-1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
+ 1. Cohen, M. X. (2014). Analyzing Neural Time Series Data: Theory and Practice.Cambridge: MIT Press
 """
-function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
+function itpc(
+    s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing} = nothing
+)::@NamedTuple{itpc_val::Float64, itpcz_val::Float64, itpc_ang::Float64, itpc_ph::Vector{Float64}}
 
     _chk3d(s)
     @assert t >= 1 "t must be ≥ 1."
@@ -48,7 +51,7 @@ function itpc(s::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=noth
     itpc_ang = DSP.angle.(mean(exp.(1im .* itpc_ph .* w)))
     itpcz_val = ep_n * itpc_val^2
 
-    return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
+    return (itpc_val = itpc_val, itpcz_val = itpcz_val, itpc_ang = itpc_ang, itpc_ph = itpc_ph)
 
 end
 
@@ -59,24 +62,32 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `t::Real`: time point at which ITPC is calculated
-- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `t::Real`: time point at which ITPC is calculated
+  - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 Named tuple containing:
-- `itpc_val::Vector{Float64}`: ITPC or wITPC value
-- `itpcz_val::Vector{Float64}`: Rayleigh's ITPC z value
-- `itpc_ang::Vector{Float64}`: ITPC angle
-- `itpc_ph::Matrix{Float64}`: phase difference (channel2 - channel1)
+
+  - `itpc_val::Vector{Float64}`: ITPC or wITPC value
+  - `itpcz_val::Vector{Float64}`: Rayleigh's ITPC z value
+  - `itpc_ang::Vector{Float64}`: ITPC angle
+  - `itpc_ph::Matrix{Float64}`: phase difference (channel2 - channel1)
 """
-function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Real, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
+function itpc(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    t::Real,
+    w::Union{Vector{<:Real}, Nothing} = nothing,
+)::@NamedTuple{
+    itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}
+}
 
     ep_n = nepochs(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
     t_idx = vsearch(t, obj.epoch_time)
 
@@ -86,10 +97,12 @@ function itpc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
     itpc_ph = zeros(ch_n, ep_n)
 
     Threads.@threads for ch_idx in 1:ch_n
-        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t=t_idx, w=w)
+        @inbounds itpc_val[ch_idx], itpcz_val[ch_idx], itpc_ang[ch_idx], itpc_ph[ch_idx, :] = @views itpc(
+            reshape(obj.data[ch[ch_idx], :, :], 1, :, ep_n), t = t_idx, w = w
+        )
     end
 
-    return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
+    return (itpc_val = itpc_val, itpcz_val = itpcz_val, itpc_ang = itpc_ang, itpc_ph = itpc_ph)
 
 end
 
@@ -100,18 +113,23 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 # Arguments
 
-- `s::AbstractArray`: one channel over epochs
-- `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+  - `s::AbstractArray`: one channel over epochs
+  - `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 Named tuple containing:
-- `itpc_val::Vector{Float64}`: ITPC values
-- `itpcz_val::Vector{Float64}`: Rayleigh's ITPC z values
-- `itpc_ang::Vector{Float64}`: ITPC angles
-- `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
+
+  - `itpc_val::Vector{Float64}`: ITPC values
+  - `itpcz_val::Vector{Float64}`: Rayleigh's ITPC z values
+  - `itpc_ang::Vector{Float64}`: ITPC angles
+  - `itpc_ph::Matrix{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing)::@NamedTuple{itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}}
+function itpc_spec(
+    s::AbstractArray; w::Union{AbstractVector, Nothing} = nothing
+)::@NamedTuple{
+    itpc_val::Vector{Float64}, itpcz_val::Vector{Float64}, itpc_ang::Vector{Float64}, itpc_ph::Matrix{Float64}
+}
 
     _chk3d(s)
     @assert size(s, 1) == 1 "s must have 1 channel."
@@ -138,7 +156,7 @@ function itpc_spec(s::AbstractArray; w::Union{AbstractVector, Nothing}=nothing):
         itpcz_val[idx] = @views ep_n * itpc_val[idx]^2
     end
 
-    return (itpc_val=itpc_val, itpcz_val=itpcz_val, itpc_ang=itpc_ang, itpc_ph=itpc_ph)
+    return (itpc_val = itpc_val, itpcz_val = itpcz_val, itpc_ang = itpc_ang, itpc_ph = itpc_ph)
 
 end
 
@@ -149,21 +167,29 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel to analyze
-- `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
-- `nfrq::Int64=_tlength(flim)`: number of frequencies
-- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
-- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel to analyze
+  - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
+  - `nfrq::Int64=_tlength(flim)`: number of frequencies
+  - `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies scaling
+  - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 Named tuple containing:
-- `itpc_s::Matrix{Float64}`: spectrogram of ITPC values
-- `itpcz_s::Matrix{Float64}`: spectrogram of ITPCZ values
-- `f::Vector{Float64}`: frequencies list
+
+  - `itpc_s::Matrix{Float64}`: spectrogram of ITPC values
+  - `itpcz_s::Matrix{Float64}`: spectrogram of ITPCZ values
+  - `f::Vector{Float64}`: frequencies list
 """
-function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}=(0, sr(obj) / 2), nfrq::Int64=_tlength(flim), frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, f::Vector{Float64}}
+function itpc_spec(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    flim::Tuple{Real, Real} = (0, sr(obj) / 2),
+    nfrq::Int64 = _tlength(flim),
+    frq::Symbol = :log,
+    w::Union{Vector{<:Real}, Nothing} = nothing,
+)::@NamedTuple{itpc_s::Matrix{Float64}, itpcz_s::Matrix{Float64}, f::Vector{Float64}}
 
     _check_var(frq, [:log, :lin], "frq")
     _check_tuple(flim, "flim", (0, sr(obj) / 2))
@@ -171,12 +197,12 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}
     if frq === :log
         flim = flim[1] == 0 ? (0.01, flim[2]) : (flim[1], flim[2])
         flim = (flim[1], flim[2])
-        f = round.(logspace(flim[1], flim[2], nfrq), digits=3)
+        f = round.(logspace(flim[1], flim[2], nfrq); digits = 3)
     else
         f = linspace(flim[1], flim[2], nfrq)
     end
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")[1]
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")[1]
     ep_n = nepochs(obj)
     ep_len = epoch_len(obj)
     @assert ep_n >= 2 "OBJ must contain ≥ 2 epochs."
@@ -185,11 +211,11 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}
     itpcz_s = zeros(nfrq, ep_len)
 
     # initialize progress bar
-    progbar = Progress(nfrq, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(nfrq; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     Threads.@threads for frq_idx in 1:nfrq
         # create Morlet wavelet
-        kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc=10)
+        kernel = generate_morlet(sr(obj), f[frq_idx], 1, ncyc = 10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(Float64, 1, ep_len, ep_n)
         # convolute with Morlet wavelet
@@ -197,12 +223,12 @@ function itpc_spec(obj::NeuroAnalyzer.NEURO; ch::String, flim::Tuple{Real, Real}
             s_conv[1, :, ep_idx] = @views DSP.conv(obj.data[ch, :, ep_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
-        itpc_s[frq_idx, :], itpcz_s[frq_idx, :], _, _ = itpc_spec(s_conv, w=w)
+        itpc_s[frq_idx, :], itpcz_s[frq_idx, :], _, _ = itpc_spec(s_conv, w = w)
 
         # update progress bar
         progress_bar && next!(progbar)
     end
 
-    return (itpc_s=itpc_s, itpcz_s=itpcz_s, f=f)
+    return (itpc_s = itpc_s, itpcz_s = itpcz_s, f = f)
 
 end

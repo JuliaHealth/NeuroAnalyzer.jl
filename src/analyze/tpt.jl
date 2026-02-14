@@ -8,11 +8,11 @@ Detect pinches in TPT recording.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `p_idx::Vector{Int64}`: index of pinches locations
+  - `p_idx::Vector{Int64}`: index of pinches locations
 """
 function tpt_detect(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 
@@ -35,22 +35,25 @@ Analyze pinches in TPT recording.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
 Named tuple containing:
-- `n::Int64`: number of pinches
-- `t_mean::Float64`: mean interval between pinches [ms]
-- `t_median::Float64`: median interval between pinches [ms]
-- `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches [ms]
-- `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches [ms]
+
+  - `n::Int64`: number of pinches
+  - `t_mean::Float64`: mean interval between pinches [ms]
+  - `t_median::Float64`: median interval between pinches [ms]
+  - `t_rmssd::Float64`: ("root mean square of successive differences"), the square root of the mean of the squares of the successive differences between adjacent pinches [ms]
+  - `t_sdsd::Float64`: ("standard deviation of successive differences"), the standard deviation of the successive differences between adjacent pinches [ms]
 
 # Note
 
 Return nothing if no pinches are detected.
 """
-function tpt_analyze(obj::NeuroAnalyzer.NEURO)::Union{@NamedTuple{n::Int64, t_mean::Float64, t_median::Float64, t_rmssd::Float64, t_sdsd::Float64}, Nothing}
+function tpt_analyze(
+    obj::NeuroAnalyzer.NEURO
+)::Union{@NamedTuple{n::Int64, t_mean::Float64, t_median::Float64, t_rmssd::Float64, t_sdsd::Float64}, Nothing}
 
     p_idx = tpt_detect(obj)
     t = obj.time_pts[p_idx] .* 1000
@@ -60,12 +63,12 @@ function tpt_analyze(obj::NeuroAnalyzer.NEURO)::Union{@NamedTuple{n::Int64, t_me
         _warn("Only 1 pinch was detected, intervals cannot be calculated.")
         return nothing
     elseif n > 0
-        t_diff = round.(diff(t), digits=1)
-        t_mean = round(mean(t_diff), digits=1)
-        t_median = round(median(t_diff), digits=1)
-        t_rmssd = round(sqrt(mean(t_diff .^ 2)), digits=1)
-        t_sdsd = round(std(t_diff), digits=1)
-        return (n=n, t_mean=t_mean, t_median=t_median, t_rmssd=t_rmssd, t_sdsd=t_sdsd)
+        t_diff = round.(diff(t); digits = 1)
+        t_mean = round(mean(t_diff); digits = 1)
+        t_median = round(median(t_diff); digits = 1)
+        t_rmssd = round(sqrt(mean(t_diff .^ 2)); digits = 1)
+        t_sdsd = round(std(t_diff); digits = 1)
+        return (n = n, t_mean = t_mean, t_median = t_median, t_rmssd = t_rmssd, t_sdsd = t_sdsd)
     else
         return nothing
     end

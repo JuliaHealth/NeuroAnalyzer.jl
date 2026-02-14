@@ -8,12 +8,12 @@ Interactive topographical map of continuous signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}, Regex}`: channels to plot
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
@@ -21,7 +21,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    p = NeuroAnalyzer.plot_topo(obj, ch=ch)
+    p = NeuroAnalyzer.plot_topo(obj; ch = ch)
 
     function _activate(app)
 
@@ -86,7 +86,9 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         cb_contour.active = true
 
         combo_imethod = GtkComboBoxText()
-        imethod_types = ["shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"]
+        imethod_types = [
+            "shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"
+        ]
         for idx in imethod_types
             push!(combo_imethod, idx)
         end
@@ -103,7 +105,9 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         combo_amethod.sensitive = false
 
         combo_nmethod = GtkComboBoxText()
-        nmethod_types = ["zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"]
+        nmethod_types = [
+            "zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"
+        ]
         for idx in nmethod_types
             push!(combo_nmethod, idx)
         end
@@ -179,7 +183,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         Gtk4.show(win)
 
         @guarded draw(can) do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value), digits = 3)
             title = entry_title.text
             cblab = entry_cblab.text
             cb = cb_cb.active
@@ -210,19 +214,21 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
             plot_electrodes = cb_elec.active
             cart = cb_cart.active
             large = cb_large.active
-            p = NeuroAnalyzer.plot_topo(obj,
-                                        ch=ch,
-                                        seg=seg,
-                                        title=title,
-                                        cb=cb,
-                                        cb_label=cblab,
-                                        amethod=amethod,
-                                        imethod=imethod,
-                                        nmethod=nmethod,
-                                        large=large,
-                                        plot_contours=plot_contours,
-                                        plot_electrodes=plot_electrodes,
-                                        cart=cart)
+            p = NeuroAnalyzer.plot_topo(
+                obj,
+                ch = ch,
+                seg = seg,
+                title = title,
+                cb = cb,
+                cb_label = cblab,
+                amethod = amethod,
+                imethod = imethod,
+                nmethod = nmethod,
+                large = large,
+                plot_contours = plot_contours,
+                plot_electrodes = plot_electrodes,
+                cart = cart,
+            )
             ctx = getgc(can)
             if p.attr[:size][1] > 900
                 Gtk4.rectangle(ctx, 0, 0, 999, 999)
@@ -247,7 +253,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         end
 
         signal_connect(entry_ts1, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits = 3)
             if seg[1] > seg[2]
                 warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
             else
@@ -258,7 +264,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
         end
 
         signal_connect(entry_ts2, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits = 3)
             if seg[1] > seg[2]
                 warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
             else
@@ -343,12 +349,12 @@ Interactive topographical map of epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}, Regex}`: channels to plot
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `ch::Union{String, Vector{String}, Regex}`: channels to plot
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
@@ -356,7 +362,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
 
     _check_datatype(obj, ["eeg", "meg", "erp"])
 
-    p = NeuroAnalyzer.plot_topo(obj, ch=ch)
+    p = NeuroAnalyzer.plot_topo(obj; ch = ch)
 
     function _activate(app)
 
@@ -368,7 +374,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             can.content_height = 1000
         else
             win = GtkApplicationWindow(app, "NeuroAnalyzer: itopo_ep()")
-        Gtk4.default_size(win, p.attr[:size][1] + 100, 800)
+            Gtk4.default_size(win, p.attr[:size][1] + 100, 800)
             can = GtkCanvas()
             can.content_width = 800
             can.content_height = 800
@@ -426,7 +432,9 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         cb_contour.active = true
 
         combo_imethod = GtkComboBoxText()
-        imethod_types = ["shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"]
+        imethod_types = [
+            "shepard", "multiquadratic", "inv multiquadratic", "thin plate", "nearest neighbour", "gaussian"
+        ]
         for idx in imethod_types
             push!(combo_imethod, idx)
         end
@@ -443,7 +451,9 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         combo_amethod.sensitive = false
 
         combo_nmethod = GtkComboBoxText()
-        nmethod_types = ["zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"]
+        nmethod_types = [
+            "zscore", "gauss", "invroot", "log", "minmax", "neg", "neglog", "neglog10", "perc", "pos", "softmax", "none"
+        ]
         for idx in nmethod_types
             push!(combo_nmethod, idx)
         end
@@ -528,7 +538,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             ts2 = entry_ts2.value
             ts1 = (epoch_len(obj) / sr(obj) * (ep - 1)) + obj.epoch_time[1] + ts1
             ts2 = (epoch_len(obj) / sr(obj) * (ep - 1)) + obj.epoch_time[1] + ts2
-            seg = round.((ts1, ts2), digits=3)
+            seg = round.((ts1, ts2), digits = 3)
             title = entry_title.text
             cblab = entry_cblab.text
             cb = cb_cb.active
@@ -559,19 +569,21 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
             plot_electrodes = cb_elec.active
             cart = cb_cart.active
             large = cb_large.active
-            p = NeuroAnalyzer.plot_topo(obj,
-                                        ch=ch,
-                                        seg=seg,
-                                        title=title,
-                                        cb=cb,
-                                        cb_label=cblab,
-                                        amethod=amethod,
-                                        imethod=imethod,
-                                        nmethod=nmethod,
-                                        large=large,
-                                        plot_contours=plot_contours,
-                                        plot_electrodes=plot_electrodes,
-                                        cart=cart)
+            p = NeuroAnalyzer.plot_topo(
+                obj,
+                ch = ch,
+                seg = seg,
+                title = title,
+                cb = cb,
+                cb_label = cblab,
+                amethod = amethod,
+                imethod = imethod,
+                nmethod = nmethod,
+                large = large,
+                plot_contours = plot_contours,
+                plot_electrodes = plot_electrodes,
+                cart = cart,
+            )
             ctx = getgc(can)
             if p.attr[:size][1] > 900
                 Gtk4.rectangle(ctx, 0, 0, 999, 999)
@@ -596,7 +608,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         end
 
         signal_connect(entry_ts1, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits = 3)
             if seg[1] > seg[2]
                 warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
             else
@@ -607,7 +619,7 @@ function itopo_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Re
         end
 
         signal_connect(entry_ts2, "value-changed") do widget
-            seg = round.((entry_ts1.value, entry_ts2.value), digits=3)
+            seg = round.((entry_ts1.value, entry_ts2.value); digits = 3)
             if seg[1] > seg[2]
                 warn_dialog(_nill, "Cannot plot!\nSegment start is larger than segment end.", win)
             else

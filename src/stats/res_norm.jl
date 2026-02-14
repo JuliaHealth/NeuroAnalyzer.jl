@@ -7,20 +7,23 @@ Test normal distribution of residuals.
 
 # Arguments
 
-- `x::AbstractVector`: data values
-- `g::Vector{Int64}`: group(s) to which each data value belongs
+  - `x::AbstractVector`: data values
+  - `g::Vector{Int64}`: group(s) to which each data value belongs
 
 # Returns
 
 Named tuple containing:
-- `adt_p::Vector{Float64}`: p values for k-sample Anderson–Darling test vs normal distribution
-- `ks_p::Vector{Float64}`: p values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
+
+  - `adt_p::Vector{Float64}`: p values for k-sample Anderson–Darling test vs normal distribution
+  - `ks_p::Vector{Float64}`: p values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
 
 # Notes
 
 p values are reported for each group and for the whole sample. If there is only one group, p values are returned only for the whole sample p values are reported.
 """
-function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::@NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
+function res_norm(
+    x::AbstractVector, g::Vector{Int64} = repeat([1], length(x))
+)::@NamedTuple{adt_p::Vector{Float64}, ks_p::Vector{Float64}}
 
     groups = sort(unique(g))
 
@@ -48,6 +51,6 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))::@
     adt_p[end] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
     ks_p[end] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
 
-    return (adt_p=adt_p, ks_p=ks_p)
+    return (adt_p = adt_p, ks_p = ks_p)
 
 end

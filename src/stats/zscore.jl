@@ -7,11 +7,11 @@ Calculate z-scores for each value of the vector `x`.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `z::Vector{Float64}`
+  - `z::Vector{Float64}`
 """
 function zscore(x::AbstractVector)::Vector{Float64}
 
@@ -30,13 +30,13 @@ Calculate z-score for `x`.
 
 # Arguments
 
-- `x::Real`
-- `m::Real`: mean
-- `sd::Real`: standard deviation
+  - `x::Real`
+  - `m::Real`: mean
+  - `sd::Real`: standard deviation
 
 # Returns
 
-- `z::Float64`
+  - `z::Float64`
 """
 function zscore(x::Real, m::Real, sd::Real)::Float64
 

@@ -7,18 +7,18 @@ Load Shared Near Infrared Spectroscopy Format (SNIRF) file and return `NeuroAnal
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `n::Int64=0`: subject number to extract in case of multi-subject file
+  - `file_name::String`: name of the file to load
+  - `n::Int64=0`: subject number to extract in case of multi-subject file
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Source
 
-1. https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
+ 1. https://github.com/fNIRS/snirf/blob/v1.1/snirf_specification.md
 """
-function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
+function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".snirf" "This is not SNIRF file."
@@ -40,8 +40,8 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
 
     # check for multi-subject recordings
     n_id = "nirs"
-    n != 0 && @assert !any(occursin.("nirs$n" , keys(nirs))) "No data for subject $n found in the recording."
-    if any(occursin.("nirs1" , keys(nirs)))
+    n != 0 && @assert !any(occursin.("nirs$n", keys(nirs))) "No data for subject $n found in the recording."
+    if any(occursin.("nirs1", keys(nirs)))
         @assert n != 0 "This is a multi-subject SNIRF file. Subject number must be specified via 'n' parameter."
         n_id = "nirs$n"
     end
@@ -172,7 +172,9 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
         end
     end
     data_n -= 1
-    data_n > 1 && _warn("Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    data_n > 1 && _warn(
+        "Multiple data SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     d_id = "data1"
 
@@ -183,7 +185,7 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
         sampling_rate = 1 / (time_pts[2] - time_pts[1])
     else
         sampling_rate = 1 / time_pts[2]
-        time_pts = collect(time_pts[1]:1/sampling_rate:time_pts[1]+size(data, 2)*time_pts[2])[1:(end - 1)]
+        time_pts = collect(time_pts[1]:(1 / sampling_rate):(time_pts[1] + size(data, 2) * time_pts[2]))[1:(end - 1)]
     end
     time_pts .-= time_pts[1]
     epoch_time = time_pts
@@ -339,7 +341,13 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
     for idx in 1:ch_n
         opt_pairs[idx, :] = hcat(source_index[idx], detector_index[idx])
         if length(wavelength_index) == ch_n
-            clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx]) * " " * string(wavelengths[wavelength_index[idx]])
+            clabels[idx] =
+                "S" *
+                string(source_index[idx]) *
+                "_D" *
+                string(detector_index[idx]) *
+                " " *
+                string(wavelengths[wavelength_index[idx]])
         else
             clabels[idx] = "S" * string(source_index[idx]) * "_D" * string(detector_index[idx])
         end
@@ -374,7 +382,9 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
         end
     end
     stim_n -= 1
-    stim_n > 1 && _warn("Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    stim_n > 1 && _warn(
+        "Multiple stimulus SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     s_id = "stim1"
     stim_data = nothing
@@ -394,22 +404,21 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
     k in keys(nirs) && (stim_labels = nirs[k])
 
     if stim_data !== nothing
-        markers = DataFrame(:id=>repeat([""], size(stim_data, 2)),
-                            :start=>stim_data[1, :],
-                            :length=>stim_data[2, :],
-                            :value=>stim_name,
-                            :channel=>repeat([0], size(stim_data, 2)))
+        markers = DataFrame(
+            :id=>repeat([""], size(stim_data, 2)),
+            :start=>stim_data[1, :],
+            :length=>stim_data[2, :],
+            :value=>stim_name,
+            :channel=>repeat([0], size(stim_data, 2)),
+        )
         # generate unique IDs
         value = unique(markers[!, :value])
         for idx1 in 1:DataFrames.nrow(markers), idx2 in eachindex(value)
+
             markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
         end
     else
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
     end
 
     # auxiliary measurements
@@ -423,7 +432,9 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
         end
     end
     aux_n -= 1
-    aux_n > 1 && _warn("Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    aux_n > 1 && _warn(
+        "Multiple aux SNIRF files are not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     a_id = "aux$aux_n"
     aux_data = nothing
@@ -508,60 +519,68 @@ function import_snirf(file_name::String; n::Int64=0)::NeuroAnalyzer.NEURO
     radius_sph = zeros(length(opt_labels))
     theta_sph = zeros(length(opt_labels))
     phi_sph = zeros(length(opt_labels))
-    locs = DataFrame(:label=>opt_labels,
-                     :loc_radius=>radius,
-                     :loc_theta=>theta,
-                     :loc_x=>x,
-                     :loc_y=>y,
-                     :loc_z=>z,
-                     :loc_radius_sph=>radius_sph,
-                     :loc_theta_sph=>theta_sph,
-                     :loc_phi_sph=>phi_sph)
+    locs = DataFrame(
+        :label=>opt_labels,
+        :loc_radius=>radius,
+        :loc_theta=>theta,
+        :loc_x=>x,
+        :loc_y=>y,
+        :loc_z=>z,
+        :loc_radius_sph=>radius_sph,
+        :loc_theta_sph=>theta_sph,
+        :loc_phi_sph=>phi_sph,
+    )
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
-    s = _create_subject(id=subject_id,
-                        first_name="",
-                        middle_name="",
-                        last_name="",
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_nirs(data_type="nirs",
-                               file_name=file_name,
-                               file_size_mb=file_size_mb,
-                               file_type=file_type,
-                               recording="",
-                               recording_date=recording_date,
-                               recording_time=recording_time,
-                               recording_notes="",
-                               wavelengths=wavelengths,
-                               wavelength_index=wavelength_index,
-                               optode_pairs=opt_pairs,
-                               channel_type=data_type_label,
-                               channel_order=_sort_channels(data_type_label),
-                               clabels=clabels,
-                               units=data_unit,
-                               src_labels=src_labels,
-                               det_labels=det_labels,
-                               opt_labels=opt_labels,
-                               sampling_rate=round(Int64, sampling_rate),
-                               bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = subject_id,
+        first_name = "",
+        middle_name = "",
+        last_name = "",
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_nirs(;
+        data_type = "nirs",
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = "",
+        recording_date = recording_date,
+        recording_time = recording_time,
+        recording_notes = "",
+        wavelengths = wavelengths,
+        wavelength_index = wavelength_index,
+        optode_pairs = opt_pairs,
+        channel_type = data_type_label,
+        channel_order = _sort_channels(data_type_label),
+        clabels = clabels,
+        units = data_unit,
+        src_labels = src_labels,
+        det_labels = det_labels,
+        opt_labels = opt_labels,
+        sampling_rate = round(Int64, sampling_rate),
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

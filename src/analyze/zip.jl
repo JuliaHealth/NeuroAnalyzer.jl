@@ -7,11 +7,11 @@ Calculate zip ratio for the object data (ratio of zip-compressed to uncompressed
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `zip_ratio::Array{Float64, 3}`
+  - `zip_ratio::Array{Float64, 3}`
 
 # Notes
 
@@ -24,7 +24,17 @@ function zipratio(obj::NeuroAnalyzer.NEURO)
     tmp_name, _ = mktemp()
     zip_name = tmp_name * ".zip"
     tmp_name *= ".csv"
-    export_csv(obj, file_name=tmp_name, names=false, header=false, epoch_time=false, markers=false, locs=false, history=false, overwrite=true)
+    export_csv(
+        obj;
+        file_name = tmp_name,
+        names = false,
+        header = false,
+        epoch_time = false,
+        markers = false,
+        locs = false,
+        history = false,
+        overwrite = true,
+    )
 
     zip_cmd = ""
     if Sys.iswindows()

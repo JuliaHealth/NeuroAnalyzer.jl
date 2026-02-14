@@ -7,11 +7,11 @@ Calculate Dirichlet energy.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `dn::Float64`
+  - `dn::Float64`
 """
 function dirinrg(s::AbstractVector)::Float64
 
@@ -28,11 +28,11 @@ Calculate Dirichlet energy.
 
 # Arguments
 
-- `s::AbstractArray`
+  - `s::AbstractArray`
 
 # Returns
 
-- `dn::Matrix{Float64}`
+  - `dn::Matrix{Float64}`
 """
 function dirinrg(s::AbstractArray)::Matrix{Float64}
 
@@ -59,16 +59,16 @@ Calculate Dirichlet energy.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `dn::Matrix{Float64}`
+  - `dn::Matrix{Float64}`
 """
 function dirinrg(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     dn = @views dirinrg(obj.data[ch, :, :])
 

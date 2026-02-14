@@ -7,19 +7,19 @@ Load Neuroscan continuous signal file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
-- `data_format::Symbol=:i32`: Neuroscan stores data either in 16-bit (`:i16`) or 32-bit (`:i32`) representation, but does not say so in the file format
+  - `file_name::String`: name of the file to load
+  - `detect_type::Bool=true`: detect channel type based on its label
+  - `data_format::Symbol=:i32`: Neuroscan stores data either in 16-bit (`:i16`) or 32-bit (`:i32`) representation, but does not say so in the file format
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 
 Based on loadcnt.m by Sean Fitzgibbon and Arnaud Delorme (https://cnl.salk.edu/~arno/cntload/index.html)
 """
-function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bool=true)::NeuroAnalyzer.NEURO
+function import_cnt(file_name::String; data_format::Symbol = :i32, detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
     _check_var(data_format, [:i32, :i16], "data_format")
 
@@ -36,7 +36,9 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     file_type = "CNT"
 
     rev = _vint2str(_fread(fid, 12, :c))
-    rev != "Version 3.0" && _warn("CNT files with version number other than 3.0 may not be imported properly; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    rev != "Version 3.0" && _warn(
+        "CNT files with version number other than 3.0 may not be imported properly; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
     nextfile = _fread(fid, 1, :l)
     prevfile = _fread(fid, 1, :ul)
     type = _fread(fid, 1, :c)
@@ -49,20 +51,20 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     age = _fread(fid, 1, :i16)
     sex = _fread(fid, 1, :c)
     hand = _fread(fid, 1, :c)
-    med = _vint2str(_fread(fid, 20 , :c))
-    category = _vint2str(_fread(fid, 20 , :c))
-    state = _vint2str(_fread(fid, 20 , :c))
-    label = _vint2str(_fread(fid, 20 , :c))
-    recording_date = _vint2str(_fread(fid, 10 , :c))
-    recording_time = _vint2str(_fread(fid, 12 , :c))
+    med = _vint2str(_fread(fid, 20, :c))
+    category = _vint2str(_fread(fid, 20, :c))
+    state = _vint2str(_fread(fid, 20, :c))
+    label = _vint2str(_fread(fid, 20, :c))
+    recording_date = _vint2str(_fread(fid, 10, :c))
+    recording_time = _vint2str(_fread(fid, 12, :c))
     mean_age = _fread(fid, 1, :f32)
     stdev = _fread(fid, 1, :f32)
     n = _fread(fid, 1, :i16)
-    compfile = _fread(fid, 38 ,:c)
+    compfile = _fread(fid, 38, :c)
     spectwincomp = _fread(fid, 1, :f32)
     meanaccuracy = _fread(fid, 1, :f32)
     meanlatency = _fread(fid, 1, :f32)
-    sortfile = _fread(fid, 46 ,:c)
+    sortfile = _fread(fid, 46, :c)
     numevents = _fread(fid, 1, :i)
     compoper = _fread(fid, 1, :c)
     avgmode = _fread(fid, 1, :c)
@@ -143,12 +145,12 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     common = _fread(fid, 1, :c)
     savemode = _fread(fid, 1, :c)
     manmode = _fread(fid, 1, :c)
-    ref = _fread(fid, 10 ,:c)
+    ref = _fread(fid, 10, :c)
     rectify = _fread(fid, 1, :c)
     displayxmin = _fread(fid, 1, :f32)
     displayxmax = _fread(fid, 1, :f32)
     phase = _fread(fid, 1, :c)
-    screen = _fread(fid, 16 ,:c)
+    screen = _fread(fid, 16, :c)
     calmode = _fread(fid, 1, :i16)
     calmethod = _fread(fid, 1, :i16)
     calupdate = _fread(fid, 1, :i16)
@@ -159,8 +161,8 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     calpulsestart = _fread(fid, 1, :f32)
     calpulsestop = _fread(fid, 1, :f32)
     calfreq = _fread(fid, 1, :f32)
-    taskfile = _fread(fid, 34 ,:c)
-    seqfile = _fread(fid, 34 ,:c)
+    taskfile = _fread(fid, 34, :c)
+    seqfile = _fread(fid, 34, :c)
     spectmethod = _fread(fid, 1, :c)
     spectscaling = _fread(fid, 1, :c)
     spectwindow = _fread(fid, 1, :c)
@@ -180,8 +182,8 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     fspalpha = _fread(fid, 1, :f32)
     fspnoise = _fread(fid, 1, :f32)
     fspv1 = _fread(fid, 1, :i16)
-    montage = _fread(fid, 40 ,:c)
-    eventfile = _fread(fid, 40 ,:c)
+    montage = _fread(fid, 40, :c)
+    eventfile = _fread(fid, 40, :c)
     fratio = _fread(fid, 1, :f32)
     minor_rev = _fread(fid, 1, :c)
     eegupdate = _fread(fid, 1, :i16)
@@ -338,15 +340,15 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
         if nevents > 0
             for i in 1:nevents
                 push!(stimtype, _fread(fid, 1, :ui16))
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :ui8)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :ui8)
                 push!(offset, _fread(fid, 1, :i32))
                 push!(type, _fread(fid, 1, :i16))
                 push!(code, _fread(fid, 1, :i16))
-               _fread(fid, 1, :f32)
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :c)
+                _fread(fid, 1, :f32)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :c)
             end
         end
     elseif teeg == 3 # type 3 is similar to type 2 except the offset field encodes the global sample frame
@@ -357,18 +359,18 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
         code = Int64[]
         if nevents > 0
             bytes_per_samp = data_format === :i32 ? 4 : 2
-            for i=1:nevents
+            for i in 1:nevents
                 push!(stimtype, _fread(fid, 1, :ui16))
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :ui8)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :ui8)
                 os = _fread(fid, 1, :ui32)
                 push!(offset, os * bytes_per_samp * ch_n)
                 push!(type, _fread(fid, 1, :i16))
                 push!(code, _fread(fid, 1, :i16))
-               _fread(fid, 1, :f32)
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :c)
+                _fread(fid, 1, :f32)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :c)
             end
         end
     elseif teeg == 1
@@ -380,8 +382,8 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
         if nevents > 0
             for i in 1:nevents
                 push!(stimtype, _fread(fid, 1, :ui16))
-               _fread(fid, 1, :c)
-               _fread(fid, 1, :ui8)
+                _fread(fid, 1, :c)
+                _fread(fid, 1, :ui8)
                 push!(offset, _fread(fid, 1, :i32))
             end
         end
@@ -422,52 +424,50 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
-    time_pts = round.(collect(0:1/sampling_rate:nums / sampling_rate)[1:end-1], digits=4)
-    ep_time = round.((collect(0:1/sampling_rate:nums / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(collect(0:(1 / sampling_rate):(nums / sampling_rate))[1:(end - 1)]; digits = 4)
+    ep_time = round.((collect(0:(1 / sampling_rate):(nums / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name=patient,
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = patient,
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
 
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording="",
-                              recording_date=recording_date,
-                              recording_time=replace(recording_time, '.'=>':'),
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels,
-                              transducers=repeat([""], ch_n),
-                              units=units,
-                              prefiltering=repeat([""], ch_n),
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=ones(ch_n),
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = "",
+        recording_date = recording_date,
+        recording_time = replace(recording_time, '.'=>':'),
+        recording_notes = "",
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = _detect_montage(clabels, ch_type, data_type),
+        clabels = clabels,
+        transducers = repeat([""], ch_n),
+        units = units,
+        prefiltering = repeat([""], ch_n),
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = ones(ch_n),
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
@@ -476,7 +476,11 @@ function import_cnt(file_name::String; data_format::Symbol=:i32, detect_type::Bo
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

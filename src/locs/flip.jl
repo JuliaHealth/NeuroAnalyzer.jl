@@ -12,16 +12,16 @@ Flip channel locations along y axis.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
-function locs_flipy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
+function locs_flipy(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -66,18 +66,18 @@ Flip channel locations along y axis.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_flipy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
+function locs_flipy!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
-    locs[!, :] = locs_flipy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_flipy(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
     return nothing
 
@@ -90,16 +90,16 @@ Flip channel locations along x axis.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
-function locs_flipx(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
+function locs_flipx(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -141,18 +141,18 @@ Flip channel locations along x axis.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_flipx!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
+function locs_flipx!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
-    locs[!, :] = locs_flipx(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_flipx(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
     return nothing
 
@@ -165,16 +165,16 @@ Flip channel locations along z axis.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
-function locs_flipz(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
+function locs_flipz(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
     locs_new = deepcopy(locs)
 
@@ -208,18 +208,18 @@ Flip channel locations along z axis.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_flipz!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
+function locs_flipz!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
-    locs[!, :] = locs_flipz(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_flipz(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
     return nothing
 

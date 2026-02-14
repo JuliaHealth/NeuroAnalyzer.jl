@@ -7,11 +7,11 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `hd::Float64`
+  - `hd::Float64`
 """
 function hfd(s::AbstractVector)::Float64
 
@@ -28,11 +28,11 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Arguments
 
-- `s::AbstractArray`
+  - `s::AbstractArray`
 
 # Returns
 
-- `hd::Matrix{Float64}`
+  - `hd::Matrix{Float64}`
 """
 function hfd(s::AbstractArray)::Matrix{Float64}
 
@@ -59,16 +59,16 @@ Calculate the Higuchi fractal dimension (Higuchi, 1988).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `hd::Matrix{Float64}`
+  - `hd::Matrix{Float64}`
 """
 function hfd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Matrix{Float64}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
 
     hd = @views hfd(obj.data[ch, :, :])
 

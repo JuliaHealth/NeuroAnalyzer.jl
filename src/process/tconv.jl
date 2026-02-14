@@ -8,12 +8,12 @@ Performs convolution in the time domain.
 
 # Arguments
 
-- `s::AbstractVector`
-- `kernel::AbstractVector`
+  - `s::AbstractVector`
+  - `kernel::AbstractVector`
 
 # Returns
 
-- `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
+  - `s_new::Union{Vector{Float64}, Vector{ComplexF64}}`: convoluted signal
 """
 function tconv(s::AbstractVector; kernel::AbstractVector)::Union{Vector{Float64}, Vector{ComplexF64}}
 
@@ -31,12 +31,12 @@ Perform convolution in the time domain.
 
 # Arguments
 
-- `s::AbstractArray`
-- `kernel::AbstractVector`: convolution kernel
+  - `s::AbstractArray`
+  - `kernel::AbstractVector`: convolution kernel
 
 # Returns
 
-- `s_new::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+  - `s_new::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
 function tconv(s::AbstractArray; kernel::AbstractVector)::Union{Array{Float64, 3}, Array{ComplexF64, 3}}
 
@@ -47,11 +47,11 @@ function tconv(s::AbstractArray; kernel::AbstractVector)::Union{Array{Float64, 3
     s_new = zeros(eltype(kernel), size(s))
 
     # initialize progress bar
-    progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+    progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = tconv(s[ch_idx, :, ep_idx], kernel=kernel)
+            s_new[ch_idx, :, ep_idx] = tconv(s[ch_idx, :, ep_idx], kernel = kernel)
 
             # update progress bar
             progress_bar && next!(progbar)
@@ -69,26 +69,28 @@ Perform convolution in the time domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `kernel::AbstractVector`: convolution kernel
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `kernel::AbstractVector`: convolution kernel
 
 # Returns
 
-- `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
+  - `Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}`: convoluted signal
 """
-function tconv(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector)::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
+function tconv(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector
+)::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
 
     _info("Group delay: $(_group_delay(kernel)) samples")
 
     if eltype(kernel) == ComplexF64
-        return tconv(obj.data[ch, :, :], kernel=kernel)
+        return tconv(obj.data[ch, :, :]; kernel = kernel)
     else
-        obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :], kernel=kernel)
-            push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
+        obj_new.data[ch, :, :] = tconv(obj.data[ch, :, :]; kernel = kernel)
+        push!(obj_new.history, "tconv(OBJ, ch=$ch, kernel=kernel)")
         return obj_new
     end
 
@@ -101,18 +103,20 @@ Perform convolution in the time domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `kernel::AbstractVector`: convolution kernel
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `kernel::AbstractVector`: convolution kernel
 """
-function tconv!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector)::Union{Nothing, Array{ComplexF64, 3}}
+function tconv!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, kernel::AbstractVector
+)::Union{Nothing, Array{ComplexF64, 3}}
 
     if eltype(kernel) == ComplexF64
-        return tconv(obj.data, ch=ch, kernel=kernel)
+        return tconv(obj.data; ch = ch, kernel = kernel)
     else
-        obj_new = tconv(obj, ch=ch, kernel=kernel)
+        obj_new = tconv(obj; ch = ch, kernel = kernel)
         obj.data = obj_new.data
-            obj.history = obj_new.history
+        obj.history = obj_new.history
         return nothing
     end
 

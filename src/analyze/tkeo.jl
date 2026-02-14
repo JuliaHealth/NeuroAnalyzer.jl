@@ -7,18 +7,18 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 # Arguments
 
-- `s::AbstractVector`
-- `t::AbstractVector=collect(1:length(s))`: time points
-- `method::Symbol=:pow`:
-    - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
-    - `:der`: TKEO = f'(t) - f(t) × f''(t)
-    - `:amp`: TKEO = envelope(amplitude)^2
+  - `s::AbstractVector`
+  - `t::AbstractVector=collect(1:length(s))`: time points
+  - `method::Symbol=:pow`:
+      + `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
+      + `:der`: TKEO = f'(t) - f(t) × f''(t)
+      + `:amp`: TKEO = envelope(amplitude)^2
 
 # Returns
 
-- `tk::Vector{Float64}`
+  - `tk::Vector{Float64}`
 """
-function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Vector{Float64}
+function tkeo(s::AbstractVector, t::AbstractVector = collect(1:length(s)); method::Symbol = :pow)::Vector{Float64}
 
     _check_var(method, [:pow, :der, :amp], "method")
 
@@ -36,7 +36,7 @@ function tkeo(s::AbstractVector, t::AbstractVector=collect(1:length(s)); method:
         d2 = derivative(d1)
         tk = @. d1 - s * d2
     else
-        tk = env_up(s, t, d=8).^2
+        tk = env_up(s, t; d = 8) .^ 2
     end
 
     return tk
@@ -50,25 +50,25 @@ Calculate Teager-Kaiser energy-tracking operator
 
 # Arguments
 
-- `s::AbstractArray`
-- `t::AbstractArray=collect(1:length(s))`: time points
-- `method::Symbol=:pow`:
-    - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
-    - `:der`: TKEO = f'(t) - f(t) × f''(t)
-    - `:amp`: TKEO = envelope(amplitude)^2
+  - `s::AbstractArray`
+  - `t::AbstractArray=collect(1:length(s))`: time points
+  - `method::Symbol=:pow`:
+      + `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
+      + `:der`: TKEO = f'(t) - f(t) × f''(t)
+      + `:amp`: TKEO = envelope(amplitude)^2
 
 # Returns
 
-- `tk::Array{Float64, 3}`
+  - `tk::Array{Float64, 3}`
 """
-function tkeo(s::AbstractArray, t::AbstractVector=collect(1:length(s)); method::Symbol=:pow)::Array{Float64, 3}
+function tkeo(s::AbstractArray, t::AbstractVector = collect(1:length(s)); method::Symbol = :pow)::Array{Float64, 3}
 
     _chk3d(s)
 
     tk = similar(s)
     @inbounds for ep_idx in axes(s, 3)
         Threads.@threads for ch_idx in axes(s, 1)
-            tk[ch_idx, :, ep_idx] = @views tkeo(s[ch_idx, :, ep_idx], t, method=method)
+            tk[ch_idx, :, ep_idx] = @views tkeo(s[ch_idx, :, ep_idx], t, method = method)
         end
     end
 
@@ -83,21 +83,23 @@ Calculate Teager-Kaiser energy-tracking operator.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}: list of channels
-- `method::Symbol=:pow`:
-    - `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
-    - `:der`: TKEO = f'(t) - f(t) × f''(t)
-    - `:amp`: TKEO = envelope(amplitude)^2
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}: list of channels
+  - `method::Symbol=:pow`:
+      + `:pow`: TKEO = x(t)^2 - x(t-1) × x(t+1)
+      + `:der`: TKEO = f'(t) - f(t) × f''(t)
+      + `:amp`: TKEO = envelope(amplitude)^2
 
 # Returns
 
-- `tk::Array{Float64, 3}`
+  - `tk::Array{Float64, 3}`
 """
-function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol=:pow)::Array{Float64, 3}
+function tkeo(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, method::Symbol = :pow
+)::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-    tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method=method)
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
+    tk = @views tkeo(obj.data[ch, :, :], obj.epoch_time, method = method)
 
     return tk
 

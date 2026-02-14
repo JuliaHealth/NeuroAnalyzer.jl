@@ -7,26 +7,26 @@ Load GDF file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+  - `file_name::String`: name of the file to load
+  - `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 
-- sampling_rate = n.samples ÷ data.record.duration
-- gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
-- value = (value - digital minimum ) × gain + physical minimum
+  - sampling_rate = n.samples ÷ data.record.duration
+  - gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
+  - value = (value - digital minimum ) × gain + physical minimum
 
 # Source
 
-1. Schlögl A, Filz O, Ramoser H, Pfurtscheller G. GDF - A General Dataformat for Biosignals Version 1.25. 1998
-2. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.12. 2009
-3. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.51. 2013
+ 1. Schlögl A, Filz O, Ramoser H, Pfurtscheller G. GDF - A General Dataformat for Biosignals Version 1.25. 1998
+ 2. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.12. 2009
+ 3. Schlögl, A. GDF - A General Dataformat for Biosignals Version 2.51. 2013
 """
-function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
+function import_gdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".gdf" "This is not GDF file."
@@ -46,7 +46,8 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     file_type_ver = parse(Float64, String(Char.(header[5:8])))
     @assert file_type == "GDF" "File $file_name is not GDF file."
 
-    (file_type_ver == 1.25 || file_type_ver == 2.20) || _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly.")
+    (file_type_ver == 1.25 || file_type_ver == 2.20) ||
+        _warn("GDF versions other than 1.25 and 2.20 may not be supported correctly.")
 
     if file_type_ver < 2.00
 
@@ -314,9 +315,9 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         loc_x[findall(isnan, loc_x)] .= 0
         loc_y[findall(isnan, loc_y)] .= 0
         loc_z[findall(isnan, loc_z)] .= 0
-        loc_x = round.(loc_x, digits=3)
-        loc_y = round.(loc_y, digits=3)
-        loc_z = round.(loc_z, digits=3)
+        loc_x = round.(loc_x; digits = 3)
+        loc_y = round.(loc_y; digits = 3)
+        loc_z = round.(loc_z; digits = 3)
 
         imp = UInt8[]
         if file_type_ver >= 2.19
@@ -327,7 +328,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                 unit[idx] == 4256 || unit[idx] == 4288 && (imp[idx] = reinterpret(Float32, buf[1:4])[1])
             end
             imp[findall(isnan, imp)] .= 0
-            imp = round.(imp, digits=3)
+            imp = round.(imp; digits = 3)
         else
             buf = UInt8[]
             for _ in 1:ch_n
@@ -434,11 +435,7 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     gain = @. (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
     data .*= gain
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
     if file_type_ver < 2.0
         if header_bytes + data_bytes < filesize(file_name)
@@ -490,17 +487,21 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                 end
             end
             if etp_sr == 0
-                markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ sampling_rate, digits=4),
-                                    :length=>round.(len ./ sampling_rate, digits=4),
-                                    :value=>value,
-                                    :channel=>ch)
+                markers = DataFrame(
+                    :id=>id,
+                    :start=>round.(start ./ sampling_rate; digits = 4),
+                    :length=>round.(len ./ sampling_rate; digits = 4),
+                    :value=>value,
+                    :channel=>ch,
+                )
             else
-                markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ etp_sr, digits=4),
-                                    :length=>round.(len ./ sampling_rate, digits=4),
-                                    :value=>value,
-                                    :channel=>ch)
+                markers = DataFrame(
+                    :id=>id,
+                    :start=>round.(start ./ etp_sr; digits = 4),
+                    :length=>round.(len ./ sampling_rate; digits = 4),
+                    :value=>value,
+                    :channel=>ch,
+                )
             end
         end
     else
@@ -553,17 +554,21 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                 end
             end
             if etp_sr == 0
-                markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ sampling_rate, digits=4),
-                                    :length=>round.(len ./ sampling_rate, digits=4),
-                                    :value=>value,
-                                    :channel=>ch)
+                markers = DataFrame(
+                    :id=>id,
+                    :start=>round.(start ./ sampling_rate; digits = 4),
+                    :length=>round.(len ./ sampling_rate; digits = 4),
+                    :value=>value,
+                    :channel=>ch,
+                )
             else
-                markers = DataFrame(:id=>id,
-                                    :start=>round.(start ./ etp_sr, digits=4),
-                                    :length=>round.(len ./ sampling_rate, digits=4),
-                                    :value=>value,
-                                    :channel=>ch)
+                markers = DataFrame(
+                    :id=>id,
+                    :start=>round.(start ./ etp_sr; digits = 4),
+                    :length=>round.(len ./ sampling_rate; digits = 4),
+                    :value=>value,
+                    :channel=>ch,
+                )
             end
         end
     end
@@ -575,48 +580,52 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         ch_type = repeat(["eeg"], ch_n)
     end
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+    )
+    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     "eeg" in ch_type && (data_type = "eeg")
     "meg" in ch_type && (data_type = "meg")
     "mag" in ch_type && (data_type = "meg")
     "grad" in ch_type && (data_type = "meg")
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name=patient,
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording=recording,
-                              recording_date=recording_date,
-                              recording_time=replace(recording_time, '.'=>':'),
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels,
-                              transducers=transducers,
-                              units=units,
-                              prefiltering=prefiltering,
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=gain,
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = patient,
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = recording,
+        recording_date = recording_date,
+        recording_time = replace(recording_time, '.'=>':'),
+        recording_notes = "",
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = _detect_montage(clabels, ch_type, data_type),
+        clabels = clabels,
+        transducers = transducers,
+        units = units,
+        prefiltering = prefiltering,
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = gain,
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
@@ -625,7 +634,11 @@ function import_gdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

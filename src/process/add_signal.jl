@@ -8,12 +8,12 @@ Add signal.
 
 # Arguments
 
-- `s1::AbstractVector`: target signal
-- `s2::AbstractVector`: signal to be added
+  - `s1::AbstractVector`: target signal
+  - `s2::AbstractVector`: signal to be added
 
 # Returns
 
-- `s_noisy::AbstractVector`
+  - `s_noisy::AbstractVector`
 """
 function add_signal(s1::AbstractVector, s2::AbstractVector)::AbstractVector
 
@@ -30,17 +30,19 @@ Add signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `s::AbstractVector`: signal to be added to each channel
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `s::AbstractVector`: signal to be added to each channel
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::NeuroAnalyzer.NEURO
+function add_signal(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector
+)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -64,17 +66,17 @@ Add signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `s::AbstractVector`: signal to be added to each channel
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `s::AbstractVector`: signal to be added to each channel
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, s::AbstractVector)::Nothing
 
-    obj_new = add_signal(obj, ch=ch, s=s)
+    obj_new = add_signal(obj; ch = ch, s = s)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

@@ -7,15 +7,16 @@ Calculate D'Agostino-Pearson Omnibus Test for normality.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
 Named tuple containing:
-- `zs::Float64`: skewness test
-- `zk::Float64`: kurtosis test
-- `d::Float64`: test statistic
-- `p::Float64`: p value
+
+  - `zs::Float64`: skewness test
+  - `zk::Float64`: kurtosis test
+  - `d::Float64`: test statistic
+  - `p::Float64`: p value
 """
 function dap(x::AbstractVector)::@NamedTuple{zs::Float64, zk::Float64, d::Float64, p::Float64}
 
@@ -30,6 +31,6 @@ function dap(x::AbstractVector)::@NamedTuple{zs::Float64, zk::Float64, d::Float6
     # calculate p value for d from Chi2(df=2) distribution
     p = ccdf(Distributions.Chisq(2), d)
 
-    return (zs=zs, zk=zk, d=d, p=p)
+    return (zs = zs, zk = zk, d = d, p = p)
 
 end

@@ -7,11 +7,11 @@ Load annotations from EDF+ file and return `markers` DataFrame. This function is
 
 # Arguments
 
-- `file_name::String`: name of the file to load
+  - `file_name::String`: name of the file to load
 
 # Returns
 
-- `markers::DataFrame`
+  - `markers::DataFrame`
 """
 function import_edf_annotations(file_name::String)::DataFrame
 
@@ -38,7 +38,7 @@ function import_edf_annotations(file_name::String)::DataFrame
     patient = strip(header[9:88])
     recording = strip(header[89:168])
     # EDF exported from Alice does not conform EDF standard
-    occursin("Alice 4", recording) && return import_alice4(file_name, detect_type=detect_type)
+    occursin("Alice 4", recording) && return import_alice4(file_name; detect_type = detect_type)
     recording_date = header[169:176]
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
@@ -46,9 +46,9 @@ function import_edf_annotations(file_name::String)::DataFrame
     @assert reserved != "EDF+D" "EDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
-    data_records_duration  = parse(Float64, strip(header[245:252]))
+    data_records_duration = parse(Float64, strip(header[245:252]))
     @assert data_records_duration == 0 "This file is a regular $file_type file, use import_edf()."
-    ch_n  = parse(Int, strip(header[253:256]))
+    ch_n = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)
     transducers = Vector{String}(undef, ch_n)
@@ -64,57 +64,64 @@ function import_edf_annotations(file_name::String)::DataFrame
     readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
     for idx in 1:ch_n
-        clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
+        clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)])
     end
 
     header = zeros(UInt8, ch_n * 80)
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    [transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)]) for idx in 1:ch_n]
+    [transducers[idx] in strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)]) for idx in 1:ch_n]
+    [units[idx] in strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]) for idx in 1:ch_n]
     units = replace(lowercase.(units), "uv"=>"μV")
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
+    [physical_minimum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
+    [physical_maximum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
+    [digital_minimum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
+    [digital_maximum[idx] in parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 80)
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    [prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)]) for idx in 1:ch_n]
+    [prefiltering[idx] in strip(header[(1 + ((idx - 1) * 80)):(idx * 80)]) for idx in 1:ch_n]
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    [samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)])) for idx in 1:ch_n]
+    [samples_per_datarecord[idx] in parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])) for idx in 1:ch_n]
 
     close(fid)
 
-    annotation_channels = file_type == "EDF" ? Int64[] : sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+    annotation_channels = if file_type == "EDF"
+        Int64[]
+    else
+        sort(getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))
+    end
 
     # we assume that all channels have the same sampling rate
     gain = Vector{Float64}(undef, ch_n)
-    [gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx]) for idx in 1:ch_n]
+    [
+        gain[idx] in (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx]) for
+        idx in 1:ch_n
+    ]
 
     fid = nothing
     try
@@ -132,17 +139,14 @@ function import_edf_annotations(file_name::String)::DataFrame
             readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
             push!(annotations, String(Char.(signal)))
             signal = zeros(samples_per_datarecord[idx2])
-            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
+            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] =
+                signal .* gain[idx2]
         end
     end
     close(fid)
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
     else
         markers = _a2df(annotations)
     end

@@ -8,16 +8,16 @@ Swap channel locations x and y axes.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::DataFrame
+function locs_swapxy(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::DataFrame
 
     locs_new = deepcopy(locs)
     # locs_new = locs_rotz(locs, a=90)
@@ -38,7 +38,7 @@ function locs_swapxy(locs::DataFrame; polar::Bool=true, cart::Bool=true, spheric
         locs_new[!, :loc_phi_sph] = locs_tmp[!, :loc_phi_sph]
     end
 
-    polar && locs_rotz!(locs_new, a=90, polar=true, cart=false, spherical=false)
+    polar && locs_rotz!(locs_new; a = 90, polar = true, cart = false, spherical = false)
 
     _locs_round!(locs_new)
     _locs_remove_nans!(locs_new)
@@ -54,18 +54,18 @@ Swap channel locations x and y axes.
 
 # Arguments
 
-- `locs::DataFrame`
-- `polar::Bool=true`: modify polar coordinates
-- `cart::Bool=true`: modify Cartesian coordinates
-- `spherical::Bool=true`: modify spherical coordinates
+  - `locs::DataFrame`
+  - `polar::Bool=true`: modify polar coordinates
+  - `cart::Bool=true`: modify Cartesian coordinates
+  - `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_swapxy!(locs::DataFrame; polar::Bool=true, cart::Bool=true, spherical::Bool=true)::Nothing
+function locs_swapxy!(locs::DataFrame; polar::Bool = true, cart::Bool = true, spherical::Bool = true)::Nothing
 
-    locs[!, :] = locs_swapxy(locs, polar=polar, cart=cart, spherical=spherical)[!, :]
+    locs[!, :] = locs_swapxy(locs; polar = polar, cart = cart, spherical = spherical)[!, :]
 
     return nothing
 

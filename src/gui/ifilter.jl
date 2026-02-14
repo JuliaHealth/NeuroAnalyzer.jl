@@ -7,17 +7,19 @@ Interactive filter design.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `flt::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
+  - `flt::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 
 # Notes
 
 The returned filter is based on sampling rate and epoch length of the OBJ used for designing the filter. Therefore, it should not be applied for objects of different sampling rate or epoch length.
 """
-function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
+function ifilter(
+    obj::NeuroAnalyzer.NEURO
+)::Union{Nothing, Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}
 
     fprototypes = [:fir, :firls, :remez, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
     fprototype = fprototypes[1]
@@ -182,7 +184,18 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
             if fprototype === :fir && ftype in [:hp, :bp, :bs] && mod(order, 2) == 0
                 _warn("order must be odd. Filter was not generated.")
             else
-                p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, w=w, mono=mono)
+                p = plot_filter_response(
+                    fs = fs,
+                    fprototype = fprototype,
+                    ftype = ftype,
+                    cutoff = cutoff,
+                    order = order,
+                    rp = rp,
+                    rs = rs,
+                    bw = bw,
+                    w = w,
+                    mono = mono,
+                )
                 withenv("GKSwstype" => "100") do
                     png(p, io)
                 end
@@ -240,11 +253,11 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
             @idle_add Gtk4.adjustment(entry_bw, bw_adj)
 
             cutoff2_adj = GtkAdjustment(entry_cutoff2)
-            cutoff2_adj.lower = round(entry_cutoff1.value + 0.1, digits=1)
+            cutoff2_adj.lower = round(entry_cutoff1.value + 0.1; digits = 1)
             cutoff2_adj.upper = fs / 2
             @idle_add Gtk4.adjustment(entry_cutoff2, cutoff2_adj)
 
-            @idle_add entry_cutoff2.value = round(entry_cutoff1.value + 0.1, digits=1)
+            @idle_add entry_cutoff2.value = round(entry_cutoff1.value + 0.1, digits = 1)
 
             draw(can)
         end
@@ -302,7 +315,9 @@ function ifilter(obj::NeuroAnalyzer.NEURO)::Union{Nothing, Vector{Float64}, Zero
         _warn("order must be odd. Filter was not generated.")
         return nothing
     else
-        return filter_create(; fprototype=fprototype, ftype=ftype, cutoff=cutoff, fs=fs, order=order, rp=rp, rs=rs, bw=bw)
+        return filter_create(;
+            fprototype = fprototype, ftype = ftype, cutoff = cutoff, fs = fs, order = order, rp = rp, rs = rs, bw = bw
+        )
     end
 
 end

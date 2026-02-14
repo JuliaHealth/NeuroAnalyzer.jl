@@ -7,11 +7,11 @@ Export object data as DataFrames.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `df::DataFrame`: DataFrame containing time points and channels
+  - `df::DataFrame`: DataFrame containing time points and channels
 """
 function to_df(obj::NeuroAnalyzer.NEURO)::DataFrame
 

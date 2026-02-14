@@ -62,15 +62,25 @@ function _wip()::Nothing
     if verbose
         if allow_wip
             if colors
-                println(YELLOW_FG("[ Warning: "), "This function has the WIP (Work In Progress) status and is not ready for production use.")
+                println(
+                    YELLOW_FG("[ Warning: "),
+                    "This function has the WIP (Work In Progress) status and is not ready for production use.",
+                )
             else
-                println("[ Warning: This function has the WIP (Work In Progress) status and is not ready for production use.")
+                println(
+                    "[ Warning: This function has the WIP (Work In Progress) status and is not ready for production use.",
+                )
             end
         else
             if colors
-                println(RED_FG("[ Error: "), "This function has the WIP (Work In Progress) status and is not ready for production use.")
+                println(
+                    RED_FG("[ Error: "),
+                    "This function has the WIP (Work In Progress) status and is not ready for production use.",
+                )
             else
-                println("[ Error: This function has the WIP (Work In Progress) status and is not ready for production use.")
+                println(
+                    "[ Error: This function has the WIP (Work In Progress) status and is not ready for production use."
+                )
             end
         end
     end

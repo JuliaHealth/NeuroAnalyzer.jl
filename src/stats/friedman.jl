@@ -7,20 +7,21 @@ Estimate Friedman's nonparametric two-way analysis of variance (and Kendall's co
 
 # Arguments
 
-- `m::AbstractArray`: values × groups
+  - `m::AbstractArray`: values × groups
 
 # Returns
 
 Named tuple containing:
-- `q::Float64`: Friedman's Q statistics
-- `w::Float64`: Kendall's coefficient of concordance
-- `p::Float64`: p value
+
+  - `q::Float64`: Friedman's Q statistics
+  - `w::Float64`: Kendall's coefficient of concordance
+  - `p::Float64`: p value
 
 # Notes
 
-- H0 (Friedman) is that the treatments are equal
-- H0 (Kendall) is that there is agreement between rankings or test results
-- Kendall's coefficient of concordance ranges from 0 to 1, with 0 meaning no agreement across raters (judges)
+  - H0 (Friedman) is that the treatments are equal
+  - H0 (Kendall) is that there is agreement between rankings or test results
+  - Kendall's coefficient of concordance ranges from 0 to 1, with 0 meaning no agreement across raters (judges)
 """
 function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Float64}
 
@@ -32,7 +33,7 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
         r = ordinalrank(m[:, idx])
         rs .+= r
     end
-    rs2 = rs.^2
+    rs2 = rs .^ 2
 
     s = sum(rs2) - (((k^2) * n * (n + 1)^2) / 4)
     q = (12 * s) / (k * n * (n + 1))
@@ -40,6 +41,6 @@ function friedman(m::AbstractMatrix)::@NamedTuple{q::Float64, w::Float64, p::Flo
     p = k * (n - 1) * w
     p = pdf(Distributions.Chisq(n - 1), p) * 2
 
-    return (q=q, w=w, p=p)
+    return (q = q, w = w, p = p)
 
 end

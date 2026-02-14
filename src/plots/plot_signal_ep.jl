@@ -18,31 +18,49 @@ Plot epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
-- `ep::Int64=1`: first epoch to plot
-- `xlabel::String="default"`: x-axis label, default is Time [s]
-- `ylabel::String="default"`: y-axis label, default is no label
-- `title::String="default"`: plot title
-- `mono::Bool=false`: use color or gray palette
-- `markers::Bool`: draw markers if available
-- `scale::Bool=true`: draw scale
-- `group_ch::Bool=true`: group channels by type
-- `type::Symbol=:normal`: plot type:
-    - `:normal`
-    - `:butterfly`: butterfly plot
-- `avg::Bool=false`: plot averaged channel in butterfly plot
-- `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
-- `n_channels::Int64=20`: number of visible channels
-- `n_epochs::Int64=5`: number of visible epochs
-- `res::Int64=1`: resampling factor (draw every res-nth sample)
-- `gui::Bool=true`: if true, keep window open and use it interactively
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `ch::Union{String, Vector{String}, Regex}="all"`: channel name or list of channel names
+  - `ep::Int64=1`: first epoch to plot
+  - `xlabel::String="default"`: x-axis label, default is Time [s]
+  - `ylabel::String="default"`: y-axis label, default is no label
+  - `title::String="default"`: plot title
+  - `mono::Bool=false`: use color or gray palette
+  - `markers::Bool`: draw markers if available
+  - `scale::Bool=true`: draw scale
+  - `group_ch::Bool=true`: group channels by type
+  - `type::Symbol=:normal`: plot type:
+      + `:normal`
+      + `:butterfly`: butterfly plot
+  - `avg::Bool=false`: plot averaged channel in butterfly plot
+  - `ci95::Bool=false`: plot averaged channels and 95% CI in butterfly plot
+  - `n_channels::Int64=20`: number of visible channels
+  - `n_epochs::Int64=5`: number of visible epochs
+  - `res::Int64=1`: resampling factor (draw every res-nth sample)
+  - `gui::Bool=true`: if true, keep window open and use it interactively
 
 # Returns
 
-- `p::GLMakie.Figure`
+  - `p::GLMakie.Figure`
 """
-function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="all", ep::Int64=1, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, scale::Bool=true, group_ch::Bool=true, type::Symbol=:normal, avg::Bool=true, ci95::Bool=false, n_channels::Int64=20, n_epochs::Int64=5, res::Int64=1, gui::Bool=true)::GLMakie.Figure
+function plot_ep(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+    ep::Int64 = 1,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+    markers::Bool = true,
+    scale::Bool = true,
+    group_ch::Bool = true,
+    type::Symbol = :normal,
+    avg::Bool = true,
+    ci95::Bool = false,
+    n_channels::Int64 = 20,
+    n_epochs::Int64 = 5,
+    res::Int64 = 1,
+    gui::Bool = true,
+)::GLMakie.Figure
 
     @assert res >= 1 "res must be ≥ 1."
     res > 10 && _warn("At res > 10 plot will be inaccurate.")
@@ -62,10 +80,10 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     ep_selected = zeros(Bool, ep_n[])
 
     # check channels and meta data
-    _ = get_channel(obj, ch=ch)
+    _ = get_channel(obj; ch = ch)
     obj_tmp = deepcopy(obj)
-    keep_channel!(obj_tmp, ch=ch)
-    epoch!(obj_tmp, ep_n=1)
+    keep_channel!(obj_tmp; ch = ch)
+    epoch!(obj_tmp; ep_n = 1)
     ch_n = nchannels(obj_tmp)
     if group_ch
         ch_order = _sort_channels(obj_tmp.header.recording[:channel_type])
@@ -81,7 +99,7 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     ctypes_uni = unique(ctypes)
     ctypes_pos = zeros(Int64, length(ctypes_uni))
     for idx in eachindex(ctypes_uni)
-         ctypes_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
+        ctypes_pos[idx] = findfirst(isequal(ctypes_uni[idx]), ctypes)
     end
     ctypes_uni_pos = zeros(Int64, ch_n)
     ctypes_uni_pos[ctypes_pos] .= 1
@@ -89,12 +107,7 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     t = Observable(obj_tmp.time_pts)
     s = Observable(obj_tmp.data[ch_order, :, 1])
 
-    xl, yl, tt = _set_defaults(xlabel,
-                               ylabel,
-                               title,
-                               "Epochs",
-                               "",
-                               "")
+    xl, yl, tt = _set_defaults(xlabel, ylabel, title, "Epochs", "", "")
 
     # list of bad channels
     bad_ch = Observable(obj_tmp.header.recording[:bad_channel])
@@ -163,26 +176,27 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     else
         plot_size = (1200, 650)
     end
-    p = GLMakie.Figure(size=plot_size,
-                       figure_padding=(10, 20, 10, 10)) # L R B T)
-    ax1 = GLMakie.Axis(p[1, 1],
-                       xlabel="",
-                       ylabel=yl,
-                       title=tt,
-                       xticks=LinearTicks(10),
-                       xminorticksvisible=true,
-                       xminorticks=IntervalsBetween(10),
-                       yticks=(1:ch_n, clabels),
-                       # TO DO: yticklabelcolor=ytc[1:end],
-                       xautolimitmargin=(0, 0),
-                       yautolimitmargin=(0, 0),
-                       xzoomlock=true,
-                       yzoomlock=true,
-                       xpanlock=true,
-                       ypanlock=true,
-                       xrectzoom=false,
-                       yrectzoom=false,
-                       yticklabelspace=60.0)
+    p = GLMakie.Figure(; size = plot_size, figure_padding = (10, 20, 10, 10)) # L R B T)
+    ax1 = GLMakie.Axis(
+        p[1, 1];
+        xlabel = "",
+        ylabel = yl,
+        title = tt,
+        xticks = LinearTicks(10),
+        xminorticksvisible = true,
+        xminorticks = IntervalsBetween(10),
+        yticks = (1:ch_n, clabels),
+        # TO DO: yticklabelcolor=ytc[1:end],
+        xautolimitmargin = (0, 0),
+        yautolimitmargin = (0, 0),
+        xzoomlock = true,
+        yzoomlock = true,
+        xpanlock = true,
+        ypanlock = true,
+        xrectzoom = false,
+        yrectzoom = false,
+        yticklabelspace = 60.0,
+    )
     GLMakie.xlims!(ax1, seg)
     if gui
         if ch_n > nch[]
@@ -203,11 +217,9 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
     if type === :normal
         @lift begin
             for idx in 1:ch_n
-                GLMakie.lines!(ax1,
-                               t[][1:res:end],
-                               $s[idx, 1:res:end],
-                               linewidth=1.5,
-                               color=$bad_ch[idx] ? :lightgray : :black)
+                GLMakie.lines!(
+                    ax1, t[][1:res:end], $s[idx, 1:res:end], linewidth = 1.5, color = $bad_ch[idx] ? :lightgray : :black
+                )
             end
         end
     else
@@ -215,41 +227,31 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
             for idx in eachindex(ctypes_uni)
                 s_m, _, s_u, s_l = NeuroAnalyzer.msci95(s[][ctypes .== ctypes_uni[idx], :])
                 # draw 95% CI
-                Makie.band!(ax1,
-                            t[][1:res:end],
-                            s_u[1:res:end],
-                            s_l[1:res:end],
-                            alpha=0.25,
-                            color=:grey,
-                            strokewidth=0.5)
+                Makie.band!(
+                    ax1, t[][1:res:end], s_u[1:res:end], s_l[1:res:end]; alpha = 0.25, color = :grey, strokewidth = 0.5
+                )
                 # draw mean
-                Makie.lines!(ax1,
-                             t[][1:res:end],
-                             s_m[1:res:end],
-                             color=:black,
-                             linewidth=2)
+                Makie.lines!(ax1, t[][1:res:end], s_m[1:res:end]; color = :black, linewidth = 2)
             end
         else
             !mono && (cmap = GLMakie.resample_cmap(pal, size(s[], 1)))
             for idx in axes(s[], 1)
-                GLMakie.lines!(ax1,
-                               t[][1:res:end],
-                               @lift($s[idx, 1:res:end]),
-                               color=mono ? :black : cmap[idx],
-                               colormap=pal,
-                               colorrange=1:size(s[], 1),
-                               linewidth=0.5)
+                GLMakie.lines!(
+                    ax1,
+                    t[][1:res:end],
+                    @lift($s[idx, 1:res:end]);
+                    color = mono ? :black : cmap[idx],
+                    colormap = pal,
+                    colorrange = 1:size(s[], 1),
+                    linewidth = 0.5,
+                )
             end
 
             # plot averaged channels
             if avg
                 for idx in eachindex(ctypes_uni)
-                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :], dims=1)[:]
-                    GLMakie.lines!(ax1,
-                                   t[][1:res:end],
-                                   s_avg[1:res:end],
-                                   linewidth=2,
-                                   color=:black)
+                    s_avg = mean(s[][ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
+                    GLMakie.lines!(ax1, t[][1:res:end], s_avg[1:res:end]; linewidth = 2, color = :black)
                 end
             end
         end
@@ -257,11 +259,7 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
 
     # draw epochs markers
     # TO DO: draw epoch numbers
-    GLMakie.vlines!(ax1,
-                    epmarkers,
-                    linestyle=:dot,
-                    linewidth=0.5,
-                    color=mono ? :black : :blue)
+    GLMakie.vlines!(ax1, epmarkers; linestyle = :dot, linewidth = 0.5, color = mono ? :black : :blue)
 
     # draw scale bars
     # TO DO: place scale values on the left side, below channel label
@@ -276,20 +274,18 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
                     l_pos = lift(seg_pos) do seg_pos
                         (seg_pos + 0.01, idx1 + 0.49)
                     end
-                    GLMakie.poly!(ax1,
-                                  s_rectangle,
-                                  color=:red,
-                                  strokecolor=:red,
-                                  strokewidth=2)
-                    GLMakie.text!(ax1,
-                                  l_pos,
-                                  markerspace=:pixel,
-                                  text=string(r[][idx2]) * " " * cunits[idx1],
-                                  fontsize=10,
-                                  color=:red,
-                                  align=(:left, :bottom),
-                                  #rotation=pi/2,
-                                  offset=(5, 0))
+                    GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                    GLMakie.text!(
+                        ax1,
+                        l_pos;
+                        markerspace = :pixel,
+                        text = string(r[][idx2]) * " " * cunits[idx1],
+                        fontsize = 10,
+                        color = :red,
+                        align = (:left, :bottom),
+                        #rotation=pi/2,
+                        offset = (5, 0),
+                    )
                     idx2 += 1
                 end
             end
@@ -301,46 +297,42 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
                 l_pos = lift(seg_pos) do seg_pos
                     (seg_pos, idx + 0.5)
                 end
-                GLMakie.poly!(ax1,
-                              s_rectangle,
-                              color=:red,
-                              strokecolor=:red,
-                              strokewidth=2)
-                GLMakie.text!(ax1,
-                              l_pos,
-                              text=string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
-                              markerspace=:pixel,
-                              fontsize=10,
-                              color=:red,
-                              align=(:left, :bottom),
-                              #rotation=pi/2,
-                              offset=(5, 0))
+                GLMakie.poly!(ax1, s_rectangle; color = :red, strokecolor = :red, strokewidth = 2)
+                GLMakie.text!(
+                    ax1,
+                    l_pos;
+                    text = string(r[][idx]) * " " * cunits[ctypes .== ctypes_uni[idx]][1],
+                    markerspace = :pixel,
+                    fontsize = 10,
+                    color = :red,
+                    align = (:left, :bottom),
+                    #rotation=pi/2,
+                    offset = (5, 0),
+                )
             end
         end
     end
 
     # plot markers if available
     if markers
-        GLMakie.vlines!(ax1,
-                        markers_pos,
-                        linestyle=:dash,
-                        linewidth=1,
-                        color=:black)
+        GLMakie.vlines!(ax1, markers_pos; linestyle = :dash, linewidth = 1, color = :black)
         for idx in eachindex(markers_pos)
             markers_ypos = lift(ch1, nch) do v1, v2
                 (markers_pos[idx], v1 + (v2 - 1) + 0.5)
             end
-            GLMakie.textlabel!(ax1,
-                               markers_ypos,
-                               text="$(markers_id[idx]) / $(markers_desc[idx])",
-                               text_align=(:left, :center),
-                               fontsize=8,
-                               cornerradius=0,
-                               cornervertices=2,
-                               padding=2,
-                               strokewidth=1,
-                               offset=(0, 5),
-                               text_rotation=pi/2)
+            GLMakie.textlabel!(
+                ax1,
+                markers_ypos;
+                text = "$(markers_id[idx]) / $(markers_desc[idx])",
+                text_align = (:left, :center),
+                fontsize = 8,
+                cornerradius = 0,
+                cornervertices = 2,
+                padding = 2,
+                strokewidth = 1,
+                offset = (0, 5),
+                text_rotation = pi/2,
+            )
         end
     end
 
@@ -348,87 +340,74 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
         println()
 
         # time bar
-        ax2 = GLMakie.Axis(p[2, 1],
-                           xlabel=xl,
-                           ylabel="",
-                           title="",
-                           xticks=LinearTicks(25),
-                           yticksvisible=false,
-                           xautolimitmargin=(0, 0),
-                           yautolimitmargin=(0, 0),
-                           backgroundcolor = :white,
-                           xzoomlock=true,
-                           yzoomlock=true,
-                           xpanlock=true,
-                           ypanlock=true,
-                           xrectzoom=false,
-                           yrectzoom=false)
+        ax2 = GLMakie.Axis(
+            p[2, 1];
+            xlabel = xl,
+            ylabel = "",
+            title = "",
+            xticks = LinearTicks(25),
+            yticksvisible = false,
+            xautolimitmargin = (0, 0),
+            yautolimitmargin = (0, 0),
+            backgroundcolor = :white,
+            xzoomlock = true,
+            yzoomlock = true,
+            xpanlock = true,
+            ypanlock = true,
+            xrectzoom = false,
+            yrectzoom = false,
+        )
         GLMakie.xlims!(ax2, 0, ep_n[])
         GLMakie.ylims!(ax2, 0, 1)
         hideydecorations!(ax2)
-        hidexdecorations!(ax2, label=false, ticks=false, ticklabels=false)
+        hidexdecorations!(ax2; label = false, ticks = false, ticklabels = false)
         ax2.xticklabelsize = 12
 
         # epoch markers
-        GLMakie.vlines!(ax2,
-                        1:ep_n[],
-                        linestyle=:dash,
-                        linewidth=1,
-                        color=:black)
+        GLMakie.vlines!(ax2, 1:ep_n[]; linestyle = :dash, linewidth = 1, color = :black)
 
         # time line marker
         # define a square: Rect(x, y, width, height)
         t_rectangle = lift(seg_pos) do v
             Rect(v, 0, n_epochs, 1)
         end
-        poly!(ax2,
-              t_rectangle,
-              color=:darkgrey,
-              strokecolor=:black,
-              strokewidth=2,
-              alpha=0.5)
+        poly!(ax2, t_rectangle; color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.5)
 
         # channel bar
         if type === :normal
-            ax3 = GLMakie.Axis(p[1, 2],
-                               xlabel="",
-                               ylabel="",
-                               title="",
-                               yticks=1:ch_n,
-                               xticksvisible=false,
-                               yticksvisible=false,
-                               yreversed=true,
-                               xautolimitmargin=(0, 0),
-                               yautolimitmargin=(0, 0),
-                               backgroundcolor = :white,
-                               xzoomlock=true,
-                               yzoomlock=true,
-                               xpanlock=true,
-                               ypanlock=true,
-                               xrectzoom=false,
-                               yrectzoom=false)
+            ax3 = GLMakie.Axis(
+                p[1, 2];
+                xlabel = "",
+                ylabel = "",
+                title = "",
+                yticks = 1:ch_n,
+                xticksvisible = false,
+                yticksvisible = false,
+                yreversed = true,
+                xautolimitmargin = (0, 0),
+                yautolimitmargin = (0, 0),
+                backgroundcolor = :white,
+                xzoomlock = true,
+                yzoomlock = true,
+                xpanlock = true,
+                ypanlock = true,
+                xrectzoom = false,
+                yrectzoom = false,
+            )
             ch_n > 1 && (GLMakie.ylims!(ax3, ch_n, 1))
             hidedecorations!(ax3)
 
             # mark channel types
             if group_ch
                 for idx in eachindex(ctypes_pos)
-                    GLMakie.hlines!(ax3,
-                                    ctypes_pos[idx],
-                                    linewidth=5,
-                                    color=:black)
+                    GLMakie.hlines!(ax3, ctypes_pos[idx]; linewidth = 5, color = :black)
                 end
             end
 
             # channel marker
             # define a square: Rect(x, y, width, height)
             ch_rectangle = @lift(Rect(0, $ch1, 1, $nch - 1))
-            GLMakie.poly!(ax3,
-                          ch_rectangle,
-                          color=:darkgrey,
-                          strokecolor=:black,
-                          strokewidth=2,
-                          alpha=0.25)
+            GLMakie.poly!(ax3, ch_rectangle; color = :darkgrey, strokecolor = :black, strokewidth = 2, alpha = 0.25)
 
         end
 
@@ -446,7 +425,10 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
                     if type === :normal
                         if ax1_x < 0
                             bad_ch[][round(Int64, ax1_y)] = !bad_ch[][round(Int64, ax1_y)]
-                            obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]] = !obj.header.recording[:bad_channel][get_channel(obj, ch=clabels[round(Int64, ax1_y)])[1]]
+                            obj.header.recording[:bad_channel][get_channel(obj; ch = clabels[round(Int64, ax1_y)])[1]] =
+                                !obj.header.recording[:bad_channel][get_channel(
+                                    obj; ch = clabels[round(Int64, ax1_y)]
+                                )[1]]
                             notify(bad_ch)
                         end
                     end
@@ -455,7 +437,7 @@ function plot_ep(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Reg
 
                     # get channel info
                     if ax1_x < 0
-                        channel_info(obj, ch=clabels[round(Int64, ax1_y)])
+                        channel_info(obj; ch = clabels[round(Int64, ax1_y)])
                     end
 
                     # select / deselect epochs

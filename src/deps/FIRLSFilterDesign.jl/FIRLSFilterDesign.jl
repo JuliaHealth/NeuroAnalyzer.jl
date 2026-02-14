@@ -36,7 +36,7 @@ The result is a `fir_type`, which can be:
 
 # Outputs
 - `fir_type::FIR`
-""" 
+"""
 function infer_fir_type(is_odd, is_antisymmetric)
     if !is_antisymmetric
         fir_type = is_odd ? FIR_I : FIR_II
@@ -66,20 +66,20 @@ end
 
 function validate_bands_D(bands_D, D, fs)
     validate_bands(bands_D, fs)
-    @assert size(bands_D,2) == size(D,2) == 2 "Frequency bands and desired response should be N x 2 matrices"
-    @assert size(bands_D,1) == size(D,1) "Frequency bands and desired response should be N x 2 matrices"
+    @assert size(bands_D, 2) == size(D, 2) == 2 "Frequency bands and desired response should be N x 2 matrices"
+    @assert size(bands_D, 1) == size(D, 1) "Frequency bands and desired response should be N x 2 matrices"
 end
 
 function validate_bands_W(bands_W, W, fs)
     validate_bands(bands_W, fs)
-    @assert size(bands_W,2) == size(W,2) == 2 "Frequency band and weight matrix should be N x 2."
-    @assert size(bands_W,1) == size(W,1) "Number of frequency bands should match number of weights."
+    @assert size(bands_W, 2) == size(W, 2) == 2 "Frequency band and weight matrix should be N x 2."
+    @assert size(bands_W, 1) == size(W, 1) "Number of frequency bands should match number of weights."
 end
 
-function validate_bands(fbands::Matrix{T}, fs) where T
+function validate_bands(fbands::Matrix{T}, fs) where {T}
     @assert fbands[1] == 0 "Frequency bands should start at 0."
     @assert fbands[end] == fs * (1//2) "Frequency bands should end at fs/2"
-    @views @assert all((fbands[2:end,1] .- fbands[1:end-1,2]) .== zero(T)) "Frequency bands should cover entire [0,fs/2] interval, without gaps or overlaps."
+    @views @assert all((fbands[2:end, 1] .- fbands[1:(end - 1), 2]) .== zero(T)) "Frequency bands should cover entire [0,fs/2] interval, without gaps or overlaps."
 end
 
 @doc """
@@ -101,9 +101,9 @@ function get_flength_M(filter_order)
 end
 
 
-to_matrix_simple(v::Vector) = hcat(v,v)
+to_matrix_simple(v::Vector) = hcat(v, v)
 to_matrix_simple(m::Matrix) = m
-knotpoints_to_matrix(v::Vector) = @views hcat(v[1:end-1], v[2:end])
+knotpoints_to_matrix(v::Vector) = @views hcat(v[1:(end - 1)], v[2:end])
 
 @doc """
     firls_design(filter_order::Integer, bands_DW::Matrix, D::Matrix, W::Matrix, antisymmetric::Bool; fs::Real = 1, solver::Function = \\)
@@ -122,7 +122,15 @@ Designs a linear-phase FIR filter.
 # Outputs
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
-function firls_design(filter_order::Integer, bands_DW::Matrix, D::Matrix, W::Matrix, antisymmetric::Bool; fs::Real = 1, solver::Function = \)
+function firls_design(
+    filter_order::Integer,
+    bands_DW::Matrix,
+    D::Matrix,
+    W::Matrix,
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
     validate_inputs(filter_order, bands_DW, D, W, fs)
     filter_length, M = get_flength_M(filter_order)
     fir_type = infer_fir_type(isodd(filter_length), antisymmetric)
@@ -144,8 +152,18 @@ end
 # Outputs
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
-function firls_design(filter_order::Integer, bands_DW::Matrix, D::Union{Vector,Matrix}, W::Union{Vector,Matrix}, antisymmetric::Bool; fs::Real = 1, solver::Function = \)
-    firls_design(filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric; fs = fs, solver = solver)
+function firls_design(
+    filter_order::Integer,
+    bands_DW::Matrix,
+    D::Union{Vector, Matrix},
+    W::Union{Vector, Matrix},
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
+    firls_design(
+        filter_order, bands_DW, to_matrix_simple(D), to_matrix_simple(W), antisymmetric; fs = fs, solver = solver
+    )
 end
 
 @doc """
@@ -163,8 +181,24 @@ end
 # Outputs
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
-function firls_design(filter_order::Integer, knotpoints_DW::Vector, D::Vector, W::Vector, antisymmetric::Bool; fs::Real = 1, solver::Function = \)
-    firls_design(filter_order, knotpoints_to_matrix(knotpoints_DW), knotpoints_to_matrix(D), knotpoints_to_matrix(W), antisymmetric; fs = fs, solver = solver)
+function firls_design(
+    filter_order::Integer,
+    knotpoints_DW::Vector,
+    D::Vector,
+    W::Vector,
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
+    firls_design(
+        filter_order,
+        knotpoints_to_matrix(knotpoints_DW),
+        knotpoints_to_matrix(D),
+        knotpoints_to_matrix(W),
+        antisymmetric;
+        fs = fs,
+        solver = solver,
+    )
 end
 
 @doc """
@@ -181,7 +215,14 @@ end
 # Outputs
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
-function firls_design(filter_order::Integer, bands_DW::Matrix, D::Union{Vector,Matrix}, antisymmetric::Bool; fs::Real = 1, solver::Function = \)
+function firls_design(
+    filter_order::Integer,
+    bands_DW::Matrix,
+    D::Union{Vector, Matrix},
+    antisymmetric::Bool;
+    fs::Real = 1,
+    solver::Function = \,
+)
     D = to_matrix_simple(D)
     validate_inputs(filter_order, bands_DW, D, fs)
     filter_length, M = get_flength_M(filter_order)
@@ -204,8 +245,17 @@ end
 # Outputs
 - `h` : a vector of linear-phase FIR filter coefficients.
 """
-function firls_design(filter_order::Integer, knotpoints_D::Vector, D::Vector, antisymmetric::Bool; fs::Real = 1, solver::Function = \)
-    firls_design(filter_order, knotpoints_to_matrix(knotpoints_D), knotpoints_to_matrix(D), antisymmetric; fs = fs, solver = solver)
+function firls_design(
+    filter_order::Integer, knotpoints_D::Vector, D::Vector, antisymmetric::Bool; fs::Real = 1, solver::Function = \
+)
+    firls_design(
+        filter_order,
+        knotpoints_to_matrix(knotpoints_D),
+        knotpoints_to_matrix(D),
+        antisymmetric;
+        fs = fs,
+        solver = solver,
+    )
 end
 
 function calc_amplitude_coeff(M, bands_DW, D, W, solver, fir_type)
@@ -223,7 +273,7 @@ solve(Q, b, solver, fir_type) = solver(Q, b)
 function solve(Q, b, solver, fir_type::FIR_III)
     a = zeros(length(b))
     if length(a) > 1
-        @views a[2:end] .= solver(Q[2:end,2:end], b[2:end])
+        @views a[2:end] .= solver(Q[2:end, 2:end], b[2:end])
     end
     return a
 end
@@ -241,13 +291,15 @@ end
 Constructs the matrix ``Q`` used in the equation ``Qa = b``, based on a set of weights.
 
 # Arguments
-- `M::Integer`      : indicator of the amount of elements needed.
-- `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
-- `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
-- `fir_type::FIR`   : indicates the type of FIR filter.
+
+  - `M::Integer`      : indicator of the amount of elements needed.
+  - `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
+  - `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
+  - `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
-- `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
+
+  - `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
 """
 function get_Q(M, f, W, fir_type)
     q = get_q(M, f, W, fir_type)
@@ -260,11 +312,13 @@ end
 Constructs the matrix ``Q`` used in the equation ``Qa = b``, when there are no weights. Which results in ``Q`` being the identity matrix.
 
 # Arguments
-- `M::Integer`      : indicator of the amount of elements needed.
-- `fir_type::FIR`   : indicates the type of FIR filter.
+
+  - `M::Integer`      : indicator of the amount of elements needed.
+  - `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
-- `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
+
+  - `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
 """
 get_Q(M, fir_type) = I
 """
@@ -273,54 +327,61 @@ get_Q(M, fir_type) = I
 Constructs the matrix ``Q`` used in the equation ``Qa = b``, when there are no weights and the FIR filter is of type I.
 
 # Arguments
-- `M::Integer`      : indicator of the amount of elements needed.
-- `fir_type::FIR_I`   : indicates the type of FIR filter is I.
+
+  - `M::Integer`      : indicator of the amount of elements needed.
+  - `fir_type::FIR_I`   : indicates the type of FIR filter is I.
 
 # Outputs
-- `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
+
+  - `Q::Matrix` : the matrix ``Q`` used in the equation ``Qa = b``.
 """
 function get_Q(M, fir_type::FIR_I)
-    v_diag = fill(1., M+1)
+    v_diag = fill(1.0, M+1)
     v_diag[1] *= 2
     Q = Diagonal(v_diag)
 end
 
-function q_to_Q1Q2(q, M, fir_type::Union{FIR_I,FIR_III})
-    Q1 = @views to_toeplitz(q[1:M+1])
-    Q2 = @views to_hankel(q[1:M+1], q[M+1:end])
+function q_to_Q1Q2(q, M, fir_type::Union{FIR_I, FIR_III})
+    Q1 = @views to_toeplitz(q[1:(M + 1)])
+    Q2 = @views to_hankel(q[1:(M + 1)], q[(M + 1):end])
     return Q1, Q2
 end
-function q_to_Q1Q2(q, M, fir_type::Union{FIR_II,FIR_IV})
-    Q1 = @views to_toeplitz(q[1:M+1])
-    Q2 = @views to_hankel(q[1+1:M+1+1], q[M+1+1:end])
+function q_to_Q1Q2(q, M, fir_type::Union{FIR_II, FIR_IV})
+    Q1 = @views to_toeplitz(q[1:(M + 1)])
+    Q2 = @views to_hankel(q[(1 + 1):(M + 1 + 1)], q[(M + 1 + 1):end])
     return Q1, Q2
 end
 
-Q1Q2_to_Q(Q1, Q2, fir_type::Union{FIR_I,FIR_II}) = Q1 .+ Q2
-Q1Q2_to_Q(Q1, Q2, fir_type::Union{FIR_III,FIR_IV}) = Q1 .- Q2
+Q1Q2_to_Q(Q1, Q2, fir_type::Union{FIR_I, FIR_II}) = Q1 .+ Q2
+Q1Q2_to_Q(Q1, Q2, fir_type::Union{FIR_III, FIR_IV}) = Q1 .- Q2
 
 """
     get_q(M, f, W, fir_type)
 
 Finds the vector ``q`` which is used to populate the matrix ``Q``.
 ...
+
 # Arguments
-- `M::Integer`      : indicator of the amount of elements needed.
-- `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
-- `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
-- `fir_type::FIR`   : indicates the type of FIR filter.
+
+  - `M::Integer`      : indicator of the amount of elements needed.
+  - `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning [0, fs/2].
+  - `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
+  - `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
-- `q_out::Vector`   : a vector of q-values that are used to fill in the Q-matrix.
-...
+
+  - `q_out::Vector`   : a vector of q-values that are used to fill in the Q-matrix.
+    ...
 """
 function get_q(M, f, W, fir_type)
     a, b, α, β, γ, k = constants_q(f, W)
     _αn, _βn⁻¹, _γ⁻² = copy(α), copy(β), copy(γ)
     q_out, _qn = allocate_q(M, fir_type), zeros(size(f))
     q_out[1] = qn!(_qn, k, f, a, b)
-    for idx = 2:length(q_out)
-        _αn .= α; _βn⁻¹ .= β; _γ⁻² .= γ
+    for idx in 2:length(q_out)
+        _αn .= α;
+        _βn⁻¹ .= β;
+        _γ⁻² .= γ
         n = idx2n_q(idx, fir_type)
         q_out[idx] = qn!(_qn, n, k, _αn, _βn⁻¹, _γ⁻²)
     end
@@ -328,20 +389,21 @@ function get_q(M, f, W, fir_type)
 end
 
 function constants_q(f, W)
-    fs = 2f[end,2]; k = 2/fs
-    a = @views @. (W[:,2] - W[:,1]) / (f[:,2] - f[:,1])
-    b = @views @. W[:,1] - f[:,1]*a
+    fs = 2f[end, 2];
+    k = 2/fs
+    a = @views @. (W[:, 2] - W[:, 1]) / (f[:, 2] - f[:, 1])
+    b = @views @. W[:, 1] - f[:, 1]*a
     α = @. π*k*f
     β = @. (1/(π*k)) * (a*f + b)
     γ = @. (1/(π*k)^2) * a
     return a, b, α, β, γ, k
 end
 
-allocate_q(M, fir_type::Union{FIR_I,FIR_III}) = q_out = zeros(2M+1)
-allocate_q(M, fir_type::Union{FIR_II,FIR_IV}) = q_out = zeros(2M+1+1)
+allocate_q(M, fir_type::Union{FIR_I, FIR_III}) = q_out = zeros(2M+1)
+allocate_q(M, fir_type::Union{FIR_II, FIR_IV}) = q_out = zeros(2M+1+1)
 
-idx2n_q(idx, fir_type::Union{FIR_I,FIR_III}) = idx-1.
-idx2n_q(idx, fir_type::Union{FIR_II,FIR_IV}) = idx-1.
+idx2n_q(idx, fir_type::Union{FIR_I, FIR_III}) = idx-1.0
+idx2n_q(idx, fir_type::Union{FIR_II, FIR_IV}) = idx-1.0
 
 function qn!(_qn, k, f, a, b)
     # Fallback for when n = 0
@@ -352,7 +414,7 @@ function qn!(_qn, k, f, a, b)
     @. _qn *= 2
     @. _qn += a*f^2
     nan2zero!(_qn)
-    bn = @views k/2 * (sum(_qn[:,2]) - sum(_qn[:,1]))
+    bn = @views k/2 * (sum(_qn[:, 2]) - sum(_qn[:, 1]))
 end
 
 function qn!(_qn, n, k, _αn, _βn⁻¹, _γn⁻²)
@@ -361,7 +423,7 @@ function qn!(_qn, n, k, _αn, _βn⁻¹, _γn⁻²)
     @. _γn⁻² *= 1/n^2
     @. _qn = _βn⁻¹ * sin(_αn) + _γn⁻² * cos(_αn)
     nan2zero!(_qn)
-    bn = @views k * (sum(_qn[:,2]) - sum(_qn[:,1]))
+    bn = @views k * (sum(_qn[:, 2]) - sum(_qn[:, 1]))
 end
 
 """
@@ -369,24 +431,29 @@ end
 
 Finds the vector ``b`` used in the equation ``Qa = b``.
 ...
+
 # Arguments
-- `M::Integer`      : Size of the `b` vector is `M+1` .
-- `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning the interval [0, fs/2].
-- `D::Matrix`       : a matrix of size `(N,2)` which contains rows of desired frequency response values for the frequency bands in `f`. The first and second columns indicate the desired response at the lower and upper bound of the frequency bands, interpolated linearly in between.
-- `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
-- `fir_type::FIR`   : indicates the type of FIR filter.
+
+  - `M::Integer`      : Size of the `b` vector is `M+1` .
+  - `f::Matrix`       : a matrix of size `(N,2)` which contains rows of sequential frequency bands, spanning the interval [0, fs/2].
+  - `D::Matrix`       : a matrix of size `(N,2)` which contains rows of desired frequency response values for the frequency bands in `f`. The first and second columns indicate the desired response at the lower and upper bound of the frequency bands, interpolated linearly in between.
+  - `W::Matrix`       : a matrix of size `(N,2)` which contains rows of weighting coefficients for the frequency bands in `f`. The first and second columns indicate the weighting at the lower and upper bound of the frequency bands, interpolated linearly in between.
+  - `fir_type::FIR`   : indicates the type of FIR filter.
 
 # Outputs
-- `b_out::Vector`   : a vector of size `(M+1,)`, the b-vector used in the equation ``Qa = b``.
-...
+
+  - `b_out::Vector`   : a vector of size `(M+1,)`, the b-vector used in the equation ``Qa = b``.
+    ...
 """
 function get_b(M, f, D, W, fir_type)
     a, b, c, d, α, β, γ, δ, k = constants_b(f, D, W)
     _αn, _βn², _δn = copy(α), copy(β), copy(δ)
     b_out, _bn = zeros(M+1), zeros(size(f))
     b_out[1] = bn_n0!(_bn, idx2n_b(1, fir_type), k, f, a, b, c, d, _αn, _βn², γ, _δn, fir_type)
-    for idx = 2:length(b_out)
-        _αn .= α; _βn² .= β; _δn .= δ
+    for idx in 2:length(b_out)
+        _αn .= α;
+        _βn² .= β;
+        _δn .= δ
         n = idx2n_b(idx, fir_type)
         b_out[idx] = bn!(_bn, n, k, _αn, _βn², γ, _δn, fir_type)
     end
@@ -406,15 +473,16 @@ Calculates data that is reused at every evaluation of [`bn!`](@ref).
 ...
 """
 function constants_b(f, D, W)
-    fs = 2f[end,2]; k = 2/fs
-    a = @views @. (D[:,2] - D[:,1]) / (f[:,2] - f[:,1])
-    b = @views @. D[:,1] - f[:,1]*a
-    c = @views @. (W[:,2] - W[:,1]) / (f[:,2] - f[:,1])
-    d = @views @. W[:,1] - f[:,1]*c
+    fs = 2f[end, 2];
+    k = 2/fs
+    a = @views @. (D[:, 2] - D[:, 1]) / (f[:, 2] - f[:, 1])
+    b = @views @. D[:, 1] - f[:, 1]*a
+    c = @views @. (W[:, 2] - W[:, 1]) / (f[:, 2] - f[:, 1])
+    d = @views @. W[:, 1] - f[:, 1]*c
     α = @. k*π*f
     β = @. (k*π)^2 * (a*c*f^2 + (a*d+b*c)*f + b*d)
     γ = @. -2a*c
-    δ = @. k*π * (2a*c*f + a*d + b*c) 
+    δ = @. k * π * (2a*c*f + a*d + b*c)
     return a, b, c, d, α, β, γ, δ, k
 end
 
@@ -446,7 +514,7 @@ Based on page 10 and 12 of [this](https://eeweb.engineering.nyu.edu/iselesni/EL7
 - `n::Real`
 ...
 """
-idx2n_b(i, fir_type::Union{FIR_I,FIR_III}) = n = i-1.
+idx2n_b(i, fir_type::Union{FIR_I, FIR_III}) = n = i-1.0
 @doc raw"""
     idx2n_b(idx, fir_type::Union{FIR_II,FIR_IV})
 
@@ -463,7 +531,7 @@ Based on page 11 and 13 of [this](https://eeweb.engineering.nyu.edu/iselesni/EL7
 - `n::Real`
 ...
 """
-idx2n_b(i, fir_type::Union{FIR_II,FIR_IV}) = n = i-0.5
+idx2n_b(i, fir_type::Union{FIR_II, FIR_IV}) = n = i-0.5
 
 @doc raw"""
     bn!(_bn, n, k, _αn, _βn², γ, _δn, fir_type)
@@ -519,7 +587,7 @@ function bn!(_bn, n, k, _αn, _βn², γ, _δn, fir_type)
     @. _δn *= n
     @. _bn = sin(_αn)*(_βn² + γ) + _δn*cos(_αn)
     nan2zero!(_bn)
-    bn = @views k/(π*n*k)^3 * (sum(_bn[:,2]) - sum(_bn[:,1]))
+    bn = @views k/(π*n*k)^3 * (sum(_bn[:, 2]) - sum(_bn[:, 1]))
 end
 
 @doc raw"""
@@ -554,7 +622,7 @@ function bn!(_bn, k, f, a, b, c, d)
     @. _bn *= 3/2
     @. _bn += a*c*f^3
     nan2zero!(_bn)
-    bn = @views k/3 * (sum(_bn[:,2]) - sum(_bn[:,1]))
+    bn = @views k/3 * (sum(_bn[:, 2]) - sum(_bn[:, 1]))
 end
 
 @doc raw"""
@@ -569,7 +637,7 @@ Updates the argument of the trigonometric functions in [`bn!`](@ref) by multiply
 - `fir_type{Union{FIR_I,FIR_II}}`
 ...
 """
-_update_trig_arg_b!(_αn, n, fir_type::Union{FIR_I,FIR_II}) = _αn .*= n
+_update_trig_arg_b!(_αn, n, fir_type::Union{FIR_I, FIR_II}) = _αn .*= n
 @doc raw"""
     _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_III,FIR_IV})
     
@@ -583,7 +651,7 @@ The subtraction of ``\pi`` is necessary because when the filter is antisymmetric
 - `fir_type::Union{FIR_III,FIR_IV}`
 ...
 """
-function _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_III,FIR_IV})
+function _update_trig_arg_b!(_αn, n, fir_type::Union{FIR_III, FIR_IV})
     _αn .*= n
     _αn .-= π/2
 end
@@ -610,9 +678,9 @@ For type I FIR filters:
 function _to_impulse_response(a, fir_type::FIR_I)
     filter_length = 2length(a) - 1
     N_a, h = length(a), zeros(eltype(a), filter_length)
-    h[1:N_a-1] .= @view(a[end:-1:2])
+    h[1:(N_a - 1)] .= @view(a[end:-1:2])
     h[N_a] = 2a[1]
-    h[N_a+1:end] .= @view(a[2:end])
+    h[(N_a + 1):end] .= @view(a[2:end])
     return h
 end
 @doc raw"""
@@ -625,7 +693,7 @@ function _to_impulse_response(a, fir_type::FIR_II)
     filter_length = 2length(a)
     N_a, h = length(a), zeros(eltype(a), filter_length)
     h[1:N_a] .= @view(a[end:-1:1])
-    h[N_a+1:end] .= a
+    h[(N_a + 1):end] .= a
     return h
 end
 @doc raw"""
@@ -637,8 +705,8 @@ For type III FIR filters:
 function _to_impulse_response(a, fir_type::FIR_III)
     filter_length = 2length(a)-1
     N_a, h = length(a), zeros(eltype(a), filter_length)
-    h[1:N_a-1] .= @view(a[end:-1:2])
-    h[N_a+1:end] .-= @view(a[2:end])
+    h[1:(N_a - 1)] .= @view(a[end:-1:2])
+    h[(N_a + 1):end] .-= @view(a[2:end])
     return h
 end
 @doc raw"""
@@ -651,10 +719,8 @@ function _to_impulse_response(a, fir_type::FIR_IV)
     filter_length = 2length(a)
     N_a, h = length(a), zeros(eltype(a), filter_length)
     h[1:N_a] .= @view(a[end:-1:1])
-    h[N_a+1:end] .-= a
+    h[(N_a + 1):end] .-= a
     return h
 end
 
 end
-
-

@@ -8,17 +8,17 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `s::AbstractVector`
-- `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+  - `s::AbstractVector`
+  - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `s_new::Vector{Float64}`
+  - `s_new::Vector{Float64}`
 """
-function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}}=0)::Vector{Float64}
+function remove_dc(s::AbstractVector, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Vector{Float64}
 
     if isa(n, Int64)
-        @assert n >=0 "n must be ≥ 0."
+        @assert n >= 0 "n must be ≥ 0."
         @assert n <= length(s) "n must be ≤ $(length(s))."
 
         s_new = n == 0 ? s .- mean(s) : s .- mean(s[1:n])
@@ -39,14 +39,14 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `s::AbstractMatrix`
-- `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+  - `s::AbstractMatrix`
+  - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `s::Matrix{Float64}`
+  - `s::Matrix{Float64}`
 """
-function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}}=0)::Matrix{Float64}
+function remove_dc(s::AbstractMatrix, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Matrix{Float64}
 
     ch_n = size(s, 1)
 
@@ -66,14 +66,14 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `s::AbstractArray`
-- `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+  - `s::AbstractArray`
+  - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `s::Array{Float64, 3}`
+  - `s::Array{Float64, 3}`
 """
-function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}}=0)::Array{Float64, 3}
+function remove_dc(s::AbstractArray, n::Union{Int64, Tuple{Int64, Int64}} = 0)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -97,17 +97,19 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}}=0)::NeuroAnalyzer.NEURO
+function remove_dc(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
+)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :], n)
     push!(obj_new.history, "remove_dc(OBJ, ch=$ch, n=$n)")
@@ -123,17 +125,19 @@ Remove mean value (DC offset).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `n::Union{Int64, Tuple{Int64, Int64}}=0`: if `n` is greater than 0, mean value is calculated for the first `n` samples or if `n` is a tuple greater than (0, 0), mean value is calculated for `n[1]` to `n[2]` samples
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}}=0)::Nothing
+function remove_dc!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, n::Union{Int64, Tuple{Int64, Int64}} = 0
+)::Nothing
 
-    obj_new = remove_dc(obj, ch=ch, n=n)
+    obj_new = remove_dc(obj; ch = ch, n = n)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

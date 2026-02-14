@@ -9,21 +9,26 @@ Return spectrogram segment.
 
 # Arguments
 
-- `sp::Matrix{Float64}`: spectrogram powers
-- `sf::Vector{Float64}`: spectrogram frequencies
-- `st::Vector{Float64}`: spectrogram time
-- `t::Tuple{Real, Real}`: time bounds
-- `f::Tuple{Real, Real}`: frequency bounds
+  - `sp::Matrix{Float64}`: spectrogram powers
+  - `sf::Vector{Float64}`: spectrogram frequencies
+  - `st::Vector{Float64}`: spectrogram time
+  - `t::Tuple{Real, Real}`: time bounds
+  - `f::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
 Named tuple containing:
-- `segp::Matrix{Float64}`: powers
-- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
-- `tidx::Tuple{Real, Real}`: time indices
-- `fidx::Tuple{Real, Real}`: frequency indices
+
+  - `segp::Matrix{Float64}`: powers
+  - `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
+  - `tidx::Tuple{Real, Real}`: time indices
+  - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})::@NamedTuple{segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}}
+function spec_seg(
+    sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real}
+)::@NamedTuple{
+    segp::Matrix{Float64}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
+}
 
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
@@ -36,7 +41,7 @@ function spec_seg(sp::Matrix{Float64}, sf::Vector{Float64}, st::Vector{Float64};
     segp = sp[fidx1:fidx2, tidx1:tidx2]
     segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
 
-    return (segp=segp, segs=segs, tidx=(tidx1, tidx2), fidx=(fidx1, fidx2))
+    return (segp = segp, segs = segs, tidx = (tidx1, tidx2), fidx = (fidx1, fidx2))
 
 end
 
@@ -47,22 +52,27 @@ Return spectrogram segment.
 
 # Arguments
 
-- `sp::AbstractArray`: spectrogram powers
-- `sf::AbstractVector`: spectrogram frequencies
-- `st::AbstractVector`: spectrogram time
-- `ch::Int64`: channel
-- `t::Tuple{Real, Real}`: time bounds
-- `f::Tuple{Real, Real}`: frequency bounds
+  - `sp::AbstractArray`: spectrogram powers
+  - `sf::AbstractVector`: spectrogram frequencies
+  - `st::AbstractVector`: spectrogram time
+  - `ch::Int64`: channel
+  - `t::Tuple{Real, Real}`: time bounds
+  - `f::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
 Named tuple containing:
-- `segp::Array{Float64, 3}`: segment of powers
-- `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
-- `tidx::Tuple{Real, Real}`: time indices
-- `fidx::Tuple{Real, Real}`: frequency indices
+
+  - `segp::Array{Float64, 3}`: segment of powers
+  - `segs::Vector{Tuple{Float64, Float64}}`: segment coordinates, for plotting should be converted by `Plots.Shape(segs)`
+  - `tidx::Tuple{Real, Real}`: time indices
+  - `fidx::Tuple{Real, Real}`: frequency indices
 """
-function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})::@NamedTuple{segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}}
+function spec_seg(
+    sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real}
+)::@NamedTuple{
+    segp::Array{Float64, 3}, segs::Vector{Tuple{Float64, Float64}}, tidx::Tuple{Real, Real}, fidx::Tuple{Real, Real}
+}
 
     _check_tuple(t, "t", (st[1], st[end]))
     _check_tuple(f, "f", (sf[1], sf[end]))
@@ -75,7 +85,7 @@ function spec_seg(sp::AbstractArray, sf::AbstractVector, st::AbstractVector; ch:
     segp = sp[fidx1:fidx2, tidx1:tidx2, ch, :]
     segs = ([(st[tidx1], sf[fidx1]), (st[tidx2], sf[fidx1]), (st[tidx2], sf[fidx2]), (st[tidx1], sf[fidx2])])
 
-    return (segp=segp, segs=segs, tidx=(tidx1, tidx2), fidx=(fidx1, fidx2))
+    return (segp = segp, segs = segs, tidx = (tidx1, tidx2), fidx = (fidx1, fidx2))
 
 end
 
@@ -86,17 +96,20 @@ Trim power spectrum or spectrogram array to a range of frequencies.
 
 # Arguments
 
-- `p::AbstractArray`: powers
-- `f::AbstractVector`: frequencies
-- `flim::Tuple{Real, Real}`: frequency bounds
+  - `p::AbstractArray`: powers
+  - `f::AbstractVector`: frequencies
+  - `flim::Tuple{Real, Real}`: frequency bounds
 
 # Returns
 
 Named tuple containing:
-- `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
-- `f::Vector{Float64}`: frequencies
+
+  - `p::Union{Array{Float64, 3}, Array{Float64, 4}}`: powers
+  - `f::Vector{Float64}`: frequencies
 """
-function flim(p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real})::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
+function flim(
+    p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real}
+)::@NamedTuple{p::Union{Array{Float64, 3}, Array{Float64, 4}}, f::Vector{Float64}}
 
     @assert ndims(p) in [3, 4] "Input array must have 3 (power spectrum) or 4 (spectrogram) dimensions."
 
@@ -114,7 +127,7 @@ function flim(p::AbstractArray, f::AbstractVector; flim::Tuple{Real, Real})::@Na
         p_new = p[f1_idx:f2_idx, :, :, :]
     end
 
-    return (p=p_new, f=f_new)
+    return (p = p_new, f = f_new)
 
 end
 
@@ -125,17 +138,20 @@ Trim spectrogram array to a range of time points.
 
 # Arguments
 
-- `p::AbstractArray`: powers
-- `t::AbstractVector`: time points
-- `seg::Tuple{Real, Real}`: time segment
+  - `p::AbstractArray`: powers
+  - `t::AbstractVector`: time points
+  - `seg::Tuple{Real, Real}`: time segment
 
 # Returns
 
 Named tuple containing:
-- `p::Array{Float64, 4}`: powers
-- `t::Vector{Float64}`: time points
+
+  - `p::Array{Float64, 4}`: powers
+  - `t::Vector{Float64}`: time points
 """
-function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
+function tlim(
+    p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real}
+)::@NamedTuple{p::Array{Float64, 4}, t::Vector{Float64}}
 
     _chk4d(p)
     _check_tuple(seg, "seg", (t[1], t[end]))
@@ -145,6 +161,6 @@ function tlim(p::AbstractArray, t::AbstractVector; seg::Tuple{Real, Real})::@Nam
     t_new = t[t1_idx:t2_idx]
     p_new = p[:, t1_idx:t2_idx, :, :]
 
-    return (p=p_new, t=t_new)
+    return (p = p_new, t = t_new)
 
 end

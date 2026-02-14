@@ -8,12 +8,12 @@ Calculate Jaccard similarity between two vectors.
 
 # Arguments
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+  - `x::AbstractVector`
+  - `y::AbstractVector`
 
 # Returns
 
-- `j::Float64`
+  - `j::Float64`
 
 # Notes
 
@@ -37,28 +37,29 @@ Calculate Sorensen-Dice similarity index between two vectors.
 
 # Arguments
 
-- `x::AbstractVector`
-- `y::AbstractVector`
+  - `x::AbstractVector`
+  - `y::AbstractVector`
 
 # Returns
 
-- `sdi::Float64`
+  - `sdi::Float64`
 
 # Notes
 
 Sorensen-Dice Index values range from 0 to 1:
-- 0.80-1.00: very high similarity
-- 0.60-0.79: high similarity
-- 0.40-0.59: moderate similarity
-- 0.20-0.39: low similarity
-- 0.00-0.19: very low similarity
+
+  - 0.80-1.00: very high similarity
+  - 0.60-0.79: high similarity
+  - 0.40-0.59: moderate similarity
+  - 0.20-0.39: low similarity
+  - 0.00-0.19: very low similarity
 """
 function sdi(x::AbstractVector, y::AbstractVector)::Float64
 
     a = length(x)
     b = length(y)
     c = float(length(intersect(x, y)))
-    
-    return round((2 * c) / (a + b), digits=2)
+
+    return round((2 * c) / (a + b); digits = 2)
 
 end

@@ -8,12 +8,12 @@ Taper the signal.
 
 # Arguments
 
-- `s::AbstractVector`
-- `t::Vector{<:Real}`
+  - `s::AbstractVector`
+  - `t::Vector{<:Real}`
 
 # Returns
 
-- `s_new::Vector{Float64}`
+  - `s_new::Vector{Float64}`
 """
 function taper(s::AbstractVector; t::Vector{<:Real})::Vector{Float64}
 
@@ -30,12 +30,12 @@ Taper the signal.
 
 # Arguments
 
-- `s::AbstractArray`
-- `t::Vector{<:Real}`
+  - `s::AbstractArray`
+  - `t::Vector{<:Real}`
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+  - `s_new::Array{Float64, 3}`
 """
 function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
 
@@ -47,7 +47,7 @@ function taper(s::AbstractArray; t::Vector{<:Real})::Array{Float64, 3}
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx] = @views taper(s[ch_idx, :, ep_idx], t=t)
+            s_new[ch_idx, :, ep_idx] = @views taper(s[ch_idx, :, ep_idx], t = t)
         end
     end
 
@@ -62,19 +62,21 @@ Taper the signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `t::Vector{<:Real}`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `t::Vector{<:Real}`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function taper(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::NeuroAnalyzer.NEURO
+function taper(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real}
+)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = taper(obj.data[ch, :, :], t=t)
+    obj_new.data[ch, :, :] = taper(obj.data[ch, :, :]; t = t)
     push!(obj_new.history, "taper(OBJ, ch=$ch), t=$t")
 
     return obj_new
@@ -88,17 +90,17 @@ Taper the signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `t::Vector{<:Real}`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `t::Vector{<:Real}`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function taper!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, t::Vector{<:Real})::Nothing
 
-    obj_new = taper(obj, ch=ch, t=t)
+    obj_new = taper(obj; ch = ch, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

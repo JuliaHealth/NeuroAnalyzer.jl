@@ -12,16 +12,16 @@ Perform zeros-padded FFT.
 
 # Arguments
 
-- `x::AbstractVector`
-- `n::Int64`: number of zeros to add
+  - `x::AbstractVector`
+  - `n::Int64`: number of zeros to add
 
 # Returns
 
-- `fft0::Vector{ComplexF64}`
+  - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
+function fft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    @assert n >=0 "n must be ≥ 0."
+    @assert n >= 0 "n must be ≥ 0."
 
     if n == 0
         return fft(x)
@@ -38,14 +38,14 @@ Perform IFFT of zero-padded vector.
 
 # Arguments
 
-- `x::AbstractVector`
-- `n::Int64`: number of zeros added to `x`
+  - `x::AbstractVector`
+  - `n::Int64`: number of zeros added to `x`
 
 # Returns
 
-- `ifft0::Vector{ComplexF64}`: reconstructed signal trimmed to original length
+  - `ifft0::Vector{ComplexF64}`: reconstructed signal trimmed to original length
 """
-function ifft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
+function ifft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
     @assert n >= 0 "n must be ≥ 0."
 
@@ -60,11 +60,11 @@ Perform zeros-padded FFT, so the length of padded vector is a power of 2.
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `fft2::Vector{ComplexF64}`
+  - `fft2::Vector{ComplexF64}`
 """
 function fft2(x::AbstractVector)::Vector{ComplexF64}
 
@@ -81,11 +81,11 @@ Return the next power of 2 for a given number.
 
 # Argument
 
-- `x::Int64`
+  - `x::Int64`
 
 # Returns
 
-- `nextpow2::Int64`
+  - `nextpow2::Int64`
 """
 function nextpow2(x::Int64)::Int64
 
@@ -101,16 +101,16 @@ Perform zeros-padded single-sided FFT.
 
 # Arguments
 
-- `x::AbstractVector`
-- `n::Int64`: number of zeros to add
+  - `x::AbstractVector`
+  - `n::Int64`: number of zeros to add
 
 # Returns
 
-- `rfft0::Vector{ComplexF64}`
+  - `rfft0::Vector{ComplexF64}`
 """
-function rfft0(x::AbstractVector, n::Int64=0)::Vector{ComplexF64}
+function rfft0(x::AbstractVector, n::Int64 = 0)::Vector{ComplexF64}
 
-    @assert n >=0 "n must be ≥ 0."
+    @assert n >= 0 "n must be ≥ 0."
 
     if n == 0
         return rfft(x)
@@ -127,11 +127,11 @@ Perform zeros-padded single-sided FFT, so the length of padded vector is a power
 
 # Arguments
 
-- `x::AbstractVector`
+  - `x::AbstractVector`
 
 # Returns
 
-- `rfft2::Vector{ComplexF64}`
+  - `rfft2::Vector{ComplexF64}`
 """
 function rfft2(x::AbstractVector)::Vector{ComplexF64}
 

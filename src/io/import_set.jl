@@ -7,18 +7,18 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on its label
+  - `file_name::String`: name of the file to load
+  - `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Source
 
-1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
+ 1. https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html
 """
-function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
+function import_set(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".set" "This is not SET file."
@@ -160,19 +160,26 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             chanlocs["sph_theta"][:][idx] isa Float64 && (theta_sph[idx] = chanlocs["sph_theta"][:][idx])
         end
         radius_sph == zeros(ch_n) && (radius_sph = radius)
-        locs = DataFrame(:label=>clabels,
-                         :loc_theta=>theta,
-                         :loc_radius=>radius,
-                         :loc_x=>x,
-                         :loc_y=>y,
-                         :loc_z=>z,
-                         :loc_radius_sph=>radius_sph,
-                         :loc_theta_sph=>theta_sph,
-                         :loc_phi_sph=>phi_sph)
+        locs = DataFrame(
+            :label=>clabels,
+            :loc_theta=>theta,
+            :loc_radius=>radius,
+            :loc_x=>x,
+            :loc_y=>y,
+            :loc_z=>z,
+            :loc_radius_sph=>radius_sph,
+            :loc_theta_sph=>theta_sph,
+            :loc_phi_sph=>phi_sph,
+        )
         for idx in DataFrames.nrow(locs):-1:1
-            (chanlocs["X"][:][idx] isa Float64 && chanlocs["Y"][:][idx] isa Float64 && chanlocs["Z"][:][idx] isa Float64) || deleteat!(locs, idx)
+            (
+                chanlocs["X"][:][idx] isa Float64 &&
+                chanlocs["Y"][:][idx] isa Float64 &&
+                chanlocs["Z"][:][idx] isa Float64
+            ) || deleteat!(locs, idx)
         end
-        DataFrames.nrow(locs) > 0 && _info("Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found")
+        DataFrames.nrow(locs) > 0 &&
+            _info("Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found")
         if DataFrames.nrow(locs) > 0
             dataset["chaninfo"]["nosedir"] == "+X" && locs_swapxy!(locs)
             locs_normalize!(locs)
@@ -182,11 +189,7 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     end
 
     # MARKERS
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
     if "event" in keys(dataset)
         events = dataset["event"]
@@ -199,7 +202,9 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
             len = zeros(length(start))
             desc = String.(events["type"][:])
             id = repeat(["stim"], length(start))
-            markers = DataFrame(:id=>id, :start=>start, :length=>len, :value=>desc, :channel=>zeros(Int64, length(start)))
+            markers = DataFrame(
+                :id=>id, :start=>start, :length=>len, :value=>desc, :channel=>zeros(Int64, length(start))
+            )
         end
     end
     # dataset["eventdescription"]
@@ -210,65 +215,75 @@ function import_set(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         if length(dataset["times"][:]) > 0
             epoch_time = dataset["times"][:]
         else
-            epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+            epoch_time = round.(
+                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4
+            )
         end
-        time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
+        time_pts = round.(
+            collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        )
     else
         # if length(dataset["times"][:]) > 0
         #     time_pts = dataset["times"][:]
         # end
-        time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-        epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+        time_pts = round.(
+            collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+        )
+        epoch_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
     end
 
     if data_src isa String
-        file_size_mb = round(filesize(data_src) / 1024^2, digits=2)
+        file_size_mb = round(filesize(data_src) / 1024^2; digits = 2)
     else
-        file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+        file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
     end
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name=string(patient),
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording="",
-                              recording_date="",
-                              recording_time="",
-                              recording_notes=string(dataset["setname"]),
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference=ref,
-                              clabels=clabels,
-                              transducers=repeat([""], ch_n),
-                              units=units,
-                              prefiltering=repeat([""], ch_n),
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=gain,
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="",
-                           notes=note,
-                           design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = string(patient),
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = "",
+        recording_date = "",
+        recording_time = "",
+        recording_notes = string(dataset["setname"]),
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = ref,
+        clabels = clabels,
+        transducers = repeat([""], ch_n),
+        units = units,
+        prefiltering = repeat([""], ch_n),
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = gain,
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = note, design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

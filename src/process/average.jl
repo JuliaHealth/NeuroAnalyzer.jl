@@ -7,15 +7,15 @@ Average all channels.
 
 # Arguments
 
-- `s::AbstractArray`
+  - `s::AbstractArray`
 
 # Returns
 
-- `average::AbstractArray`
+  - `average::AbstractArray`
 """
 function average(s::AbstractArray)::AbstractArray
 
-    return mean(s, dims=1)
+    return mean(s; dims = 1)
 
 end
 
@@ -26,16 +26,16 @@ Averages two signals.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+  - `s1::AbstractArray`
+  - `s2::AbstractArray`
 
 # Returns
 
-- `average::AbstractArray`
+  - `average::AbstractArray`
 """
 function average(s1::AbstractArray, s2::AbstractArray)::AbstractArray
 
-    return mean(hcat(s1, s2), dims=2)
+    return mean(hcat(s1, s2); dims = 2)
 
 end
 
@@ -46,18 +46,18 @@ Return the average signal of channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function average(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
-    keep_channel!(obj_new, ch=labels(obj)[1])
+    keep_channel!(obj_new; ch = labels(obj)[1])
     obj_new.data = @views average(obj.data[ch, :, :])
     obj_new.header.recording[:label]=["averaged ch"]
     push!(obj_new.history, "average(OBJ, ch=$ch)")
@@ -73,16 +73,16 @@ Return the average signal of channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function average!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = average(obj, ch=ch)
+    obj_new = average(obj; ch = ch)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -98,12 +98,12 @@ Return the average signal of two objects.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
+  - `obj1::NeuroAnalyzer.NEURO`
+  - `obj2::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
 

@@ -10,11 +10,11 @@ Calculate phase stationarity using Hilbert transformation.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `stph::Vector{Float64}`
+  - `stph::Vector{Float64}`
 """
 function stationarity_hilbert(s::AbstractVector)::Vector{Float64}
 
@@ -31,12 +31,12 @@ Calculate mean stationarity. Signal is split into `window`-long windows and aver
 
 # Arguments
 
-- `s::AbstractVector`
-- `window::Int64`: time window in samples
+  - `s::AbstractVector`
+  - `window::Int64`: time window in samples
 
 # Returns
 
-- `stm::Vector{Float64}`
+  - `stm::Vector{Float64}`
 """
 function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
 
@@ -46,7 +46,7 @@ function stationarity_mean(s::AbstractVector; window::Int64)::Vector{Float64}
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
 
-    stm = mean(s, dims=1)[:]
+    stm = mean(s; dims = 1)[:]
 
     return stm
 
@@ -59,12 +59,12 @@ Calculate variance stationarity. Signal is split into `window`-long windows and 
 
 # Arguments
 
-- `s::AbstractVector`
-- `window::Int64`: time window in samples
+  - `s::AbstractVector`
+  - `window::Int64`: time window in samples
 
 # Returns
 
-- `stv::Vector{Float64}`
+  - `stv::Vector{Float64}`
 """
 function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
 
@@ -74,7 +74,7 @@ function stationarity_var(s::AbstractVector; window::Int64)::Vector{Float64}
     s = s[1:(window * floor(Int64, length(s) / window))]
     s = reshape(s, Int(length(s) / window), window)
 
-    stv = var(s, dims=1)[:]
+    stv = var(s; dims = 1)[:]
 
     return stv
 
@@ -87,27 +87,29 @@ Calculate stationarity.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}: list of channels
-- `window::Int64=10`: time window in samples
-- `method::Symbol=:euclid`: stationarity method:
-    - `:mean`: mean across `window`-long windows
-    - `:var`: variance across `window`-long windows
-    - `:cov`: covariance stationarity based on Euclidean distance between covariance matrix of adjacent time windows
-    - `:hilbert`: phase stationarity using Hilbert transformation
-    - `:adf`: Augmented Dickey–Fuller test; returns ADF-test value and p-value (H0: signal is non-stationary; p-value < alpha means that signal is stationary)
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}: list of channels
+  - `window::Int64=10`: time window in samples
+  - `method::Symbol=:euclid`: stationarity method:
+      + `:mean`: mean across `window`-long windows
+      + `:var`: variance across `window`-long windows
+      + `:cov`: covariance stationarity based on Euclidean distance between covariance matrix of adjacent time windows
+      + `:hilbert`: phase stationarity using Hilbert transformation
+      + `:adf`: Augmented Dickey–Fuller test; returns ADF-test value and p-value (H0: signal is non-stationary; p-value < alpha means that signal is stationary)
 
 # Returns
 
-- `s::Union{Matrix{Float64}, Array{Float64, 3}}`
+  - `s::Union{Matrix{Float64}, Array{Float64, 3}}`
 """
-function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64=10, method::Symbol=:hilbert)::Union{Matrix{Float64}, Array{Float64, 3}}
+function stationarity(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, window::Int64 = 10, method::Symbol = :hilbert
+)::Union{Matrix{Float64}, Array{Float64, 3}}
 
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     @assert window >= 1 "window must be ≥ 1."
     @assert window <= epoch_len(obj) "window must be ≤ $(epoch_len(obj))."
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     ch_n = length(ch)
     ep_n = nepochs(obj)
 
@@ -117,7 +119,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window=window)
+                s[ch_idx, :, ep_idx] = @views stationarity_mean(obj.data[ch[ch_idx], :, ep_idx], window = window)
             end
         end
         return s
@@ -129,7 +131,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         @inbounds for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
-                s[ch_idx, :, ep_idx] = @views stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window=window)
+                s[ch_idx, :, ep_idx] = @views stationarity_var(obj.data[ch[ch_idx], :, ep_idx], window = window)
             end
         end
         return s
@@ -160,16 +162,20 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
 
         # create covariance matrices per each window
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for window_idx = 1:window_n
-                cov_mat[:, :, window_idx, ep_idx] = @views covm(obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx])
+            Threads.@threads for window_idx in 1:window_n
+                cov_mat[:, :, window_idx, ep_idx] = @views covm(
+                    obj.data[ch, window_idx, ep_idx], obj.data[ch, window_idx, ep_idx]
+                )
             end
         end
 
         # calculate Euclidean distance between adjacent matrices
         @inbounds for ep_idx in 1:ep_n
             w_idx = 1
-            Threads.@threads for window_idx = 2:window:window_n
-                s[w_idx, ep_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, ep_idx], cov_mat[:, :, window_idx, ep_idx])
+            Threads.@threads for window_idx in 2:window:window_n
+                s[w_idx, ep_idx] = @views euclidean(
+                    cov_mat[:, :, window_idx - 1, ep_idx], cov_mat[:, :, window_idx, ep_idx]
+                )
                 w_idx += 1
             end
         end
@@ -182,17 +188,17 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}
         s = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar
-        progbar = Progress(ep_n * ch_n, dt=1, barlen=20, color=:white, enabled=progress_bar)
+        progbar = Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
         # perform Augmented Dickey–Fuller test
         @inbounds for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx = 1:ch_n
+            Threads.@threads for ch_idx in 1:ch_n
                 adf = @views HypothesisTests.ADFTest(obj.data[ch_idx, :, ep_idx], :none, 1)
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)
-                a = round(a, digits=2)
-                p = round(p, digits=4)
+                a = round(a, digits = 2)
+                p = round(p, digits = 4)
                 p == 0.0 && (p = 0.0001)
                 s[ch_idx, :, ep_idx] = [a, p]
 

@@ -7,11 +7,11 @@ Load Neuralinx Continuously Sampled Channels (CSC) and return `NeuroAnalyzer.NEU
 
 # Arguments
 
-- `file_name::String`: name of the file to load
+  - `file_name::String`: name of the file to load
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 """
 function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
 
@@ -91,57 +91,59 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     end
 
     ch_n = length(unique(dwChannelNumber))
-    ch_n > 1 && _warn("Multi-channel files are not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+    ch_n > 1 && _warn(
+        "Multi-channel files are not implemented yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+    )
 
     clabels = ["Ch$ADChannel"]
     ch_type = repeat(["ieeg"], ch_n)
     units = [_ch_units(ch_type[idx]) for idx in 1:ch_n]
 
-    markers = DataFrame(:id=>String[],
-                        :start=>Float64[],
-                        :length=>Float64[],
-                        :value=>String[],
-                        :channel=>Int64[])
+    markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=6)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=6)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 6
+    )
+    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 6)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     data_type = "ieeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name="",
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording="",
-                              recording_date="",
-                              recording_time="",
-                              recording_notes="filter: $filter",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference="",
-                              clabels=clabels,
-                              transducers=repeat([""], ch_n),
-                              units=units,
-                              prefiltering=repeat([""], ch_n),
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=ones(ch_n),
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = "",
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = "",
+        recording_date = "",
+        recording_time = "",
+        recording_notes = "filter: $filter",
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = "",
+        clabels = clabels,
+        transducers = repeat([""], ch_n),
+        units = units,
+        prefiltering = repeat([""], ch_n),
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = ones(ch_n),
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
@@ -150,7 +152,11 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

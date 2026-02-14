@@ -7,24 +7,24 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `detect_type::Bool=true`: detect channel type based on channel label
+  - `file_name::String`: name of the file to load
+  - `detect_type::Bool=true`: detect channel type based on channel label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 
-- sampling_rate = n.samples ÷ data.record.duration
-- gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
-- value = (value - digital minimum ) × gain + physical minimum
+  - sampling_rate = n.samples ÷ data.record.duration
+  - gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
+  - value = (value - digital minimum ) × gain + physical minimum
 
 # Source
 
-1. https://www.biosemi.com/faq/file_format.htm
+ 1. https://www.biosemi.com/faq/file_format.htm
 """
-function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NEURO
+function import_bdf(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.NEURO
 
     @assert isfile(file_name) "File $file_name cannot be loaded."
     @assert lowercase(splitext(file_name)[2]) == ".bdf" "This is not BDF file."
@@ -51,12 +51,12 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     recording_date = header[170:177]
     recording_time = header[178:185]
     data_offset = parse(Int, strip(header[186:192]))
-    reserved  = strip(header[193:236])
+    reserved = strip(header[193:236])
     @assert reserved != "BDF+D" "BDF+D format (interrupted recordings) is not supported yet; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org"
     reserved == "BDF+C" && (file_type = "BDF+")
     data_records = parse(Int, strip(header[237:244]))
-    data_records_duration  = parse(Float64, strip(header[245:252]))
-    ch_n  = parse(Int, strip(header[253:256]))
+    data_records_duration = parse(Float64, strip(header[245:252]))
+    ch_n = parse(Int, strip(header[253:256]))
 
     clabels = Vector{String}(undef, ch_n)
     transducers = Vector{String}(undef, ch_n)
@@ -72,21 +72,21 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
     for idx in 1:ch_n
-        clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
+        clabels[idx] = strip(header[(1 + ((idx - 1) * 16)):(idx * 16)])
     end
 
     header = zeros(UInt8, ch_n * 80)
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
     for idx in 1:ch_n
-        transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
+        transducers[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)])
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
+        units[idx] = strip(header[(1 + ((idx - 1) * 8)):(idx * 8)])
     end
     units = replace(lowercase.(units), "uv"=>"μV")
 
@@ -94,42 +94,42 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        physical_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        physical_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        digital_minimum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        digital_maximum[idx] = parse(Float64, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     header = zeros(UInt8, ch_n * 80)
     readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
     for idx in 1:ch_n
-        prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
+        prefiltering[idx] = strip(header[(1 + ((idx - 1) * 80)):(idx * 80)])
     end
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
+        samples_per_datarecord[idx] = parse(Int, strip(header[(1 + ((idx - 1) * 8)):(idx * 8)]))
     end
 
     close(fid)
@@ -149,7 +149,9 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         markers_channel = ch_n
     else
         # in BDF+ files the last channel is always the Status channel + additional annotations channels are possible
-        annotation_channels = sort(unique(vcat(ch_n, getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1))))
+        annotation_channels = sort(
+            unique(vcat(ch_n, getindex.(findall(occursin.("annotation", lowercase.(clabels))), 1)))
+        )
         markers_channel = getindex.(findall(ch_type .== "mrk"), 1)
     end
 
@@ -178,6 +180,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                 if idx2 in markers_channel
                     # status = Vector{Int64}()
                     for byte_idx in 1:3:length(signal24)
+
                         b1 = Int32(signal24[byte_idx])
                         b2 = Int32(signal24[byte_idx + 1])
                         # b3 = Int64(signal24[byte_idx + 2])
@@ -187,6 +190,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                     end
                 else
                     for byte_idx in 1:3:length(signal24)
+
                         b1 = Int32(signal24[byte_idx]) << 8
                         b2 = Int32(signal24[byte_idx + 1]) << 16
                         b3 = -Int32(-signal24[byte_idx + 2]) << 24
@@ -195,7 +199,8 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
                     end
                 end
             end
-            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
+            data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] =
+                signal
         end
     end
 
@@ -206,11 +211,11 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
         units[idx] == "" && (units[idx] = "μV")
         if ch_type[idx] == "eeg"
             if lowercase(units[idx]) == "mv"
-                lowercase(units[idx]) == "μV"
+                lowercase(units[idx]) = "μV"
                 data[idx, :] .*= 1000
             end
             if lowercase(units[idx]) == "nv"
-                lowercase(units[idx]) == "μV"
+                lowercase(units[idx]) = "μV"
                 data[idx, :] ./= 1000
             end
         end
@@ -219,11 +224,7 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     close(fid)
 
     if length(annotation_channels) == 0
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
     else
         markers = _a2df(annotations)
         deleteat!(ch_type, annotation_channels)
@@ -236,45 +237,49 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     end
 
 
-    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
-    ep_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
+    time_pts = round.(
+        collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+    )
+    ep_time = round.((collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4)
 
-    file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    file_size_mb = round(filesize(file_name) / 1024^2; digits = 2)
 
     data_type = "eeg"
 
-    s = _create_subject(id="",
-                        first_name="",
-                        middle_name="",
-                        last_name=string(patient),
-                        head_circumference=-1,
-                        handedness="",
-                        weight=-1,
-                        height=-1)
-    r = _create_recording_eeg(data_type=data_type,
-                              file_name=file_name,
-                              file_size_mb=file_size_mb,
-                              file_type=file_type,
-                              recording=string(recording),
-                              recording_date=recording_date,
-                              recording_time=replace(recording_time, '.'=>':'),
-                              recording_notes="",
-                              channel_type=ch_type,
-                              channel_order=_sort_channels(ch_type),
-                              reference=_detect_montage(clabels, ch_type, data_type),
-                              clabels=clabels,
-                              transducers=transducers,
-                              units=units,
-                              prefiltering=prefiltering,
-                              line_frequency=50,
-                              sampling_rate=sampling_rate,
-                              gain=gain,
-                              bad_channels=zeros(Bool, size(data, 1)))
-    e = _create_experiment(name="", notes="", design="")
+    s = _create_subject(;
+        id = "",
+        first_name = "",
+        middle_name = "",
+        last_name = string(patient),
+        head_circumference = -1,
+        handedness = "",
+        weight = -1,
+        height = -1,
+    )
+    r = _create_recording_eeg(;
+        data_type = data_type,
+        file_name = file_name,
+        file_size_mb = file_size_mb,
+        file_type = file_type,
+        recording = string(recording),
+        recording_date = recording_date,
+        recording_time = replace(recording_time, '.'=>':'),
+        recording_notes = "",
+        channel_type = ch_type,
+        channel_order = _sort_channels(ch_type),
+        reference = _detect_montage(clabels, ch_type, data_type),
+        clabels = clabels,
+        transducers = transducers,
+        units = units,
+        prefiltering = prefiltering,
+        line_frequency = 50,
+        sampling_rate = sampling_rate,
+        gain = gain,
+        bad_channels = zeros(Bool, size(data, 1)),
+    )
+    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(s,
-                         r,
-                         e)
+    hdr = _create_header(s, r, e)
 
 
     history = String[]
@@ -283,7 +288,11 @@ function import_bdf(file_name::String; detect_type::Bool=true)::NeuroAnalyzer.NE
     obj = NeuroAnalyzer.NEURO(hdr, time_pts, ep_time, data, markers, locs, history)
     _initialize_locs!(obj)
 
-    _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+    _info(
+        "Imported: " *
+        uppercase(obj.header.recording[:data_type]) *
+        " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+    )
 
     return obj
 

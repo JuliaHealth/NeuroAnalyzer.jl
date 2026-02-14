@@ -12,17 +12,23 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `marker::String=""`: marker value to split at
-- `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
-- `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
-- `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `marker::String=""`: marker value to split at
+  - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
+  - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
+  - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::NeuroAnalyzer.NEURO
+function epoch(
+    obj::NeuroAnalyzer.NEURO;
+    marker::String = "",
+    offset::Real = 0,
+    ep_n::Union{Int64, Nothing} = nothing,
+    ep_len::Union{Real, Nothing} = nothing,
+)::NeuroAnalyzer.NEURO
 
     obj_new = deepcopy(obj)
 
@@ -59,7 +65,15 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
         @assert offset + ep_len >= maximum(mrk_len) "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length)."
 
         # split into epochs
-        epochs, obj_new.markers = _make_epochs_bymarkers(obj_new.data, marker=marker, markers=deepcopy(obj_new.markers), marker_start=round.(Int64, mrk_start * sr(obj)), offset=round(Int64, offset * sr(obj)), ep_len=round(Int64, ep_len * sr(obj)), fs=sr(obj))
+        epochs, obj_new.markers = _make_epochs_bymarkers(
+            obj_new.data;
+            marker = marker,
+            markers = deepcopy(obj_new.markers),
+            marker_start = round.(Int64, mrk_start * sr(obj)),
+            offset = round(Int64, offset * sr(obj)),
+            ep_len = round(Int64, ep_len * sr(obj)),
+            fs = sr(obj),
+        )
 
     else
         if ep_len !== nothing
@@ -67,11 +81,13 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n
             ep_len = round(Int64, ep_len * sr(obj))
         end
         # split by ep_len or ep_n
-        epochs = _make_epochs(obj.data, ep_n=ep_n, ep_len=ep_len)
+        epochs = _make_epochs(obj.data; ep_n = ep_n, ep_len = ep_len)
 
         # delete markers outside epochs
         for marker_idx in DataFrames.nrow(obj_new.markers):-1:1
-            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:size(epochs, 2) * size(epochs, 3) || deleteat!(obj_new.markers, marker_idx)
+
+            round(Int64, sr(obj) * obj_new.markers[marker_idx, :start]) in 0:(size(epochs, 2) * size(epochs, 3)) ||
+                deleteat!(obj_new.markers, marker_idx)
         end
     end
 
@@ -101,19 +117,25 @@ Split into epochs. Return signal that is split either by markers (if specified),
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `marker::String=""`: marker value to split at
-- `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
-- `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
-- `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `marker::String=""`: marker value to split at
+  - `offset::Real=0`: time offset (in seconds) for marker-based epoching (each epoch time will start at `marker time - offset`)
+  - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
+  - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Real, Nothing}=nothing)::Nothing
+function epoch!(
+    obj::NeuroAnalyzer.NEURO;
+    marker::String = "",
+    offset::Real = 0,
+    ep_n::Union{Int64, Nothing} = nothing,
+    ep_len::Union{Real, Nothing} = nothing,
+)::Nothing
 
-    obj_new = epoch(obj, marker=marker, offset=offset, ep_n=ep_n, ep_len=ep_len)
+    obj_new = epoch(obj; marker = marker, offset = offset, ep_n = ep_n, ep_len = ep_len)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -131,12 +153,12 @@ Edit epochs time start.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ts::Real`: time start in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ts::Real`: time start in seconds
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
 
@@ -156,16 +178,16 @@ Edit OBJ epochs time start.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ts::Real`: time start in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ts::Real`: time start in seconds
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)::Nothing
 
-    obj_new = epoch_ts(obj, ts=ts)
+    obj_new = epoch_ts(obj; ts = ts)
     obj.history = obj_new.history
     obj.epoch_time = obj_new.epoch_time
 
@@ -180,13 +202,13 @@ Extract sub-epochs with a reduced time range.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ep_start::Real`: sub-epoch start
-- `ep_end::Real`: sub-epoch end
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ep_start::Real`: sub-epoch start
+  - `ep_end::Real`: sub-epoch end
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::NeuroAnalyzer.NEURO
 
@@ -222,9 +244,11 @@ function subepoch(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Neuro
     # shift markers time points
     mrk_start = deepcopy(obj_new.markers[!, :start])
     for mrk_idx in eachindex(mrk_start)
-        mrk_start[mrk_idx] -= (ep_start + ((mrk_epoch[mrk_idx] - 1) * (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end))))
+        mrk_start[mrk_idx] -= (
+            ep_start + ((mrk_epoch[mrk_idx] - 1) * (ep_start + (obj.time_pts[(epoch_len(obj))] - ep_end)))
+        )
     end
-    mrk_start = round.(mrk_start, digits=3)
+    mrk_start = round.(mrk_start; digits = 3)
 
     obj_new.markers[!, :start] = mrk_start
 
@@ -241,17 +265,17 @@ Extract sub-epochs with a reduced time range.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ep_start::Real`: sub-epoch start
-- `ep_end::Real`: sub-epoch end
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ep_start::Real`: sub-epoch start
+  - `ep_end::Real`: sub-epoch end
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Nothing
 
-    obj_new = subepoch(obj, ep_start=ep_start, ep_end=ep_end)
+    obj_new = subepoch(obj; ep_start = ep_start, ep_end = ep_end)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history

@@ -8,17 +8,18 @@ Perform FFT denoising.
 
 # Arguments
 
-- `s::AbstractVector`
-- `pad::Int64=0`: number of zeros to add
-- `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
+  - `s::AbstractVector`
+  - `pad::Int64=0`: number of zeros to add
+  - `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
 
 Named tuple containing:
-- `s::Vector{Float64}`: denoised signal
-- `f_idx::BitVector`: index of components zeroed
+
+  - `s::Vector{Float64}`: denoised signal
+  - `f_idx::BitVector`: index of components zeroed
 """
-function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)::@NamedTuple{s::Vector{Float64}, f_idx::BitVector}
+function denoise_fft(s::AbstractVector; pad::Int64 = 0, t::Real = 0)::@NamedTuple{s::Vector{Float64}, f_idx::BitVector}
 
     # pad == 0 ? s_fft = fft(s) : fft(pad0(s, pad))
     s_fft = fft0(s, pad)
@@ -30,7 +31,7 @@ function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)::@NamedTuple{s:
     f_idx = s_pow .> t
     s_fft[f_idx] .= Complex(0, 0)
 
-    return (s=abs.(ifft0(s_fft, pad)), f_idx=f_idx)
+    return (s = abs.(ifft0(s_fft, pad)), f_idx = f_idx)
 
 end
 
@@ -41,15 +42,15 @@ Perform FFT denoising.
 
 # Arguments
 
-- `s::AbstractArray`
-- `pad::Int64=0`: number of zeros to add
-- `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
+  - `s::AbstractArray`
+  - `pad::Int64=0`: number of zeros to add
+  - `t::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
 
-- `s_new::Array{Float64, 3}`
+  - `s_new::Array{Float64, 3}`
 """
-function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)::Array{Float64, 3}
+function denoise_fft(s::AbstractArray; pad::Int64 = 0, t::Real = 0)::Array{Float64, 3}
 
     _chk3d(s)
     ch_n = size(s, 1)
@@ -59,7 +60,7 @@ function denoise_fft(s::AbstractArray; pad::Int64=0, t::Real=0)::Array{Float64, 
 
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad=pad, t=t)
+            s_new[ch_idx, :, ep_idx], _ = @views denoise_fft(s[ch_idx, :, ep_idx], pad = pad, t = t)
         end
     end
 
@@ -73,20 +74,22 @@ Perform FFT denoising.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `pad::Int64=0`: number of zeros to add signal for FFT
-- `t::Int64=100`: PSD threshold for keeping frequency components
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `pad::Int64=0`: number of zeros to add signal for FFT
+  - `t::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, t::Int64=100)::NeuroAnalyzer.NEURO
+function denoise_fft(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
+)::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
-    obj_new.data[ch, :, :] = @views denoise_fft(obj.data[ch, :, :], pad=pad, t=t)
+    obj_new.data[ch, :, :] = @views denoise_fft(obj.data[ch, :, :], pad = pad, t = t)
     push!(obj_new.history, "denoise_fft(OBJ, ch=$ch, pad=$pad, t=$t)")
 
     return obj_new
@@ -100,22 +103,23 @@ Perform FFT denoising.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `pad::Int64=0`: number of zeros to add signal for FFT
-- `t::Int64=100`: PSD threshold for keeping frequency components
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `pad::Int64=0`: number of zeros to add signal for FFT
+  - `t::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64=0, t::Int64=100)::Nothing
+function denoise_fft!(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, pad::Int64 = 0, t::Int64 = 100
+)::Nothing
 
-    obj_new = denoise_fft(obj, ch=ch, pad=pad, t=t)
+    obj_new = denoise_fft(obj; ch = ch, pad = pad, t = t)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
     return nothing
 
 end
-

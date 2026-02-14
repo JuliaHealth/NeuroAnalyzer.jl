@@ -7,20 +7,20 @@ Load FieldTrip file (.mat) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `file_name::String`: name of the file to load
-- `type::Symbol`: type of imported data
-    - `:eeg`: EEG
-    - `:meg`: MEG
-    - `:nirs`: fNIRS
-    - `:events`: events
-- `detect_type::Bool=false`: detect channel type based on its label
+  - `file_name::String`: name of the file to load
+  - `type::Symbol`: type of imported data
+      + `:eeg`: EEG
+      + `:meg`: MEG
+      + `:nirs`: fNIRS
+      + `:events`: events
+  - `detect_type::Bool=false`: detect channel type based on its label
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
-- `markers::DataFrame` - for events
+  - `obj::NeuroAnalyzer.NEURO` - for EEG, MEG, fNIRS data
+  - `markers::DataFrame` - for events
 """
-function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Union{NeuroAnalyzer.NEURO, DataFrame}
+function import_ft(file_name::String; type::Symbol, detect_type::Bool = false)::Union{NeuroAnalyzer.NEURO, DataFrame}
 
     _wip()
 
@@ -70,12 +70,16 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
         start = start[value_idx]
         value = value[value_idx]
 
-        markers = DataFrame(:id=>string.(id),
-                            :start=>Float64.(start),
-                            :length=>Float64.(duration),
-                            :value=>strip.(string.(value)),
-                            :channel=>zeros(Int64, length(id)))
-        _info("Imported: $(DataFrames.nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds")
+        markers = DataFrame(
+            :id=>string.(id),
+            :start=>Float64.(start),
+            :length=>Float64.(duration),
+            :value=>strip.(string.(value)),
+            :channel=>zeros(Int64, length(id)),
+        )
+        _info(
+            "Imported: $(DataFrames.nrow(markers)) events; events start and length are in samples, use `markers_s2t()` to convert to seconds",
+        )
 
         return markers
 
@@ -146,23 +150,28 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 else
                     time_pts .+= abs(time_pts[1])
                 end
-                epoch_time = round.(epoch_time, digits=4)
-                time_pts = round.(time_pts, digits=4)
+                epoch_time = round.(epoch_time; digits = 4)
+                time_pts = round.(time_pts; digits = 4)
             else
-                epoch_time = round.(dataset["time"][1][:], digits=4)
-                time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
+                epoch_time = round.(dataset["time"][1][:]; digits = 4)
+                time_pts = round.(
+                    collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)];
+                    digits = 4,
+                )
             end
         else
-            epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=4)
-            time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=4)
+            epoch_time = round.(
+                (collect(0:(1 / sampling_rate):(size(data, 2) / sampling_rate)))[1:(end - 1)]; digits = 4
+            )
+            time_pts = round.(
+                collect(0:(1 / sampling_rate):(size(data, 2) * size(data, 3) / sampling_rate))[1:(end - 1)]; digits = 4
+            )
         end
 
-        _info("FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`")
-        markers = DataFrame(:id=>String[],
-                            :start=>Float64[],
-                            :length=>Float64[],
-                            :value=>String[],
-                            :channel=>Int64[])
+        _info(
+            "FieldTrip markers are stored separately and must be imported using `import_ft(file_name, type=:events)` and added manually using `add_markers()`",
+        )
+        markers = DataFrame(:id=>String[], :start=>Float64[], :length=>Float64[], :value=>String[], :channel=>Int64[])
 
         if data_type == "eeg"
 
@@ -170,7 +179,9 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
 
             # TO DO: get referencing
             if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
-                _info("Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+                _info(
+                    "Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+                )
             else
                 ref = _detect_montage(clabels, ch_type, data_type)
             end
@@ -183,25 +194,35 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 end
             end
 
-            r = _create_recording_eeg(data_type=data_type,
-                                      file_name=file_name,
-                                      file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
-                                      file_type=file_type,
-                                      recording="RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
-                                      recording_date="",
-                                      recording_time="",
-                                      recording_notes="",
-                                      channel_type=ch_type,
-                                      channel_order=_sort_channels(ch_type),
-                                      reference=ref,
-                                      clabels=clabels,
-                                      transducers="Transducer" in keys(hdr["orig"]) ? string.(strip.(hdr["orig"]["Transducer"])) : repeat([""], ch_n),
-                                      units=units,
-                                      prefiltering="PreFilt" in keys(hdr["orig"]) ? string.(strip.(hdr["orig"]["PreFilt"])) : repeat([""], ch_n),
-                                      line_frequency=50,
-                                      sampling_rate=sampling_rate,
-                                      gain=ones(ch_n),
-                                      bad_channels=zeros(Bool, size(data, 1)))
+            r = _create_recording_eeg(;
+                data_type = data_type,
+                file_name = file_name,
+                file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+                file_type = file_type,
+                recording = "RID" in keys(hdr["orig"]) ? string(hdr["orig"]["RID"]) : "",
+                recording_date = "",
+                recording_time = "",
+                recording_notes = "",
+                channel_type = ch_type,
+                channel_order = _sort_channels(ch_type),
+                reference = ref,
+                clabels = clabels,
+                transducers = if "Transducer" in keys(hdr["orig"])
+                    string.(strip.(hdr["orig"]["Transducer"]))
+                else
+                    repeat([""], ch_n)
+                end,
+                units = units,
+                prefiltering = if "PreFilt" in keys(hdr["orig"])
+                    string.(strip.(hdr["orig"]["PreFilt"]))
+                else
+                    repeat([""], ch_n)
+                end,
+                line_frequency = 50,
+                sampling_rate = sampling_rate,
+                gain = ones(ch_n),
+                bad_channels = zeros(Bool, size(data, 1)),
+            )
 
         elseif data_type == "meg"
 
@@ -253,11 +274,21 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 x = dataset["grad"]["chanpos"][:, 1]
                 y = dataset["grad"]["chanpos"][:, 2]
                 z = dataset["grad"]["chanpos"][:, 3]
-                meg_locs = DataFrame(:label=>meg_labels, :loc_radius=>zeros(length(meg_labels)), :loc_theta=>zeros(length(meg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(meg_labels)), :loc_theta_sph=>zeros(length(meg_labels)), :loc_phi_sph=>zeros(length(meg_labels)))
+                meg_locs = DataFrame(
+                    :label=>meg_labels,
+                    :loc_radius=>zeros(length(meg_labels)),
+                    :loc_theta=>zeros(length(meg_labels)),
+                    :loc_x=>x,
+                    :loc_y=>y,
+                    :loc_z=>z,
+                    :loc_radius_sph=>zeros(length(meg_labels)),
+                    :loc_theta_sph=>zeros(length(meg_labels)),
+                    :loc_phi_sph=>zeros(length(meg_labels)),
+                )
                 locs_normalize!(meg_locs)
                 locs_cart2sph!(meg_locs)
                 locs_sph2pol!(meg_locs)
-                locs_scale!(meg_locs, r=1.5)
+                locs_scale!(meg_locs; r = 1.5)
             else
                 locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
             end
@@ -268,17 +299,29 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 x = dataset["elec"]["chanpos"][:, 1]
                 y = dataset["elec"]["chanpos"][:, 2]
                 z = dataset["elec"]["chanpos"][:, 3]
-                eeg_locs = DataFrame(:label=>eeg_labels, :loc_radius=>zeros(length(eeg_labels)), :loc_theta=>zeros(length(eeg_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(eeg_labels)), :loc_theta_sph=>zeros(length(eeg_labels)), :loc_phi_sph=>zeros(length(eeg_labels)))
+                eeg_locs = DataFrame(
+                    :label=>eeg_labels,
+                    :loc_radius=>zeros(length(eeg_labels)),
+                    :loc_theta=>zeros(length(eeg_labels)),
+                    :loc_x=>x,
+                    :loc_y=>y,
+                    :loc_z=>z,
+                    :loc_radius_sph=>zeros(length(eeg_labels)),
+                    :loc_theta_sph=>zeros(length(eeg_labels)),
+                    :loc_phi_sph=>zeros(length(eeg_labels)),
+                )
                 locs_normalize!(eeg_locs)
                 locs_cart2sph!(eeg_locs)
                 locs_sph2pol!(eeg_locs)
-                locs_scale!(eeg_locs, r=1.5)
+                locs_scale!(eeg_locs; r = 1.5)
                 global locs = vcat(meg_locs, eeg_locs)
             end
 
             # TO DO: get referencing
             if "reref" in keys(dataset["cfg"]) && dataset["cfg"]["reref"] != "no"
-                _info("Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org")
+                _info(
+                    "Embedded referencing is not supported; if you have such a file, please send it to adam.wysokinski@neuroanalyzer.org",
+                )
             else
                 ref = _detect_montage(clabels, ch_type, data_type)
             end
@@ -310,32 +353,46 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
                 end
             end
 
-            lp = "lowpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["lowpass"][1], digits=1)) : "?"
-            hp = "highpass" in keys(hdr["orig"]) ? string(round(hdr["orig"]["highpass"][1], digits=1)) : "?"
+            lp = if "lowpass" in keys(hdr["orig"])
+                string(round(hdr["orig"]["lowpass"][1]; digits = 1))
+            else
+                "?"
+            end
+            hp = if "highpass" in keys(hdr["orig"])
+                string(round(hdr["orig"]["highpass"][1]; digits = 1))
+            else
+                "?"
+            end
 
-            r = _create_recording_meg(data_type=data_type,
-                                      file_name=file_name,
-                                      file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
-                                      file_type="FT",
-                                      recording="dataformat" in keys(dataset["cfg"]) ? string(dataset["cfg"]["dataformat"]) : "",
-                                      recording_date="",
-                                      recording_time="",
-                                      recording_notes="",
-                                      channel_type=ch_type,
-                                      channel_order=_sort_channels(ch_type),
-                                      reference="",
-                                      clabels=clabels,
-                                      units=units,
-                                      prefiltering=repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
-                                      line_frequency=50,
-                                      sampling_rate=sampling_rate,
-                                      magnetometers=magnetometers,
-                                      gradiometers=gradiometers,
-                                      coil_type=coil_type,
-                                      bad_channels=zeros(Bool, size(data, 1)),
-                                      ssp_labels=ssp_labels,
-                                      ssp_channels=ssp_channels,
-                                      ssp_data=ssp_data)
+            r = _create_recording_meg(;
+                data_type = data_type,
+                file_name = file_name,
+                file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+                file_type = "FT",
+                recording = if "dataformat" in keys(dataset["cfg"])
+                    string(dataset["cfg"]["dataformat"])
+                else
+                    ""
+                end,
+                recording_date = "",
+                recording_time = "",
+                recording_notes = "",
+                channel_type = ch_type,
+                channel_order = _sort_channels(ch_type),
+                reference = "",
+                clabels = clabels,
+                units = units,
+                prefiltering = repeat(["LP: $lp Hz; HP: $hp Hz"], ch_n),
+                line_frequency = 50,
+                sampling_rate = sampling_rate,
+                magnetometers = magnetometers,
+                gradiometers = gradiometers,
+                coil_type = coil_type,
+                bad_channels = zeros(Bool, size(data, 1)),
+                ssp_labels = ssp_labels,
+                ssp_channels = ssp_channels,
+                ssp_data = ssp_data,
+            )
 
         elseif data_type == "nirs"
 
@@ -350,7 +407,8 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
             for idx1 in eachindex(ch_type)
                 if ch_type[idx1] == "nirs"
                     for idx2 in eachindex(wavelengths)
-                        occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1]) && push!(wavelength_index, idx2)
+                        occursin(string(round(Int64, wavelengths[idx2])), clabels[idx1]) &&
+                            push!(wavelength_index, idx2)
                     end
                 end
             end
@@ -380,56 +438,70 @@ function import_ft(file_name::String; type::Symbol, detect_type::Bool=false)::Un
             x = opto["optopos"][:, 1]
             y = opto["optopos"][:, 2]
             z = opto["optopos"][:, 3]
-            global locs = DataFrame(:label=>opt_labels, :loc_radius=>zeros(length(opt_labels)), :loc_theta=>zeros(length(opt_labels)), :loc_x=>x, :loc_y=>y, :loc_z=>z, :loc_radius_sph=>zeros(length(opt_labels)), :loc_theta_sph=>zeros(length(opt_labels)), :loc_phi_sph=>zeros(length(opt_labels)))
+            global locs = DataFrame(
+                :label=>opt_labels,
+                :loc_radius=>zeros(length(opt_labels)),
+                :loc_theta=>zeros(length(opt_labels)),
+                :loc_x=>x,
+                :loc_y=>y,
+                :loc_z=>z,
+                :loc_radius_sph=>zeros(length(opt_labels)),
+                :loc_theta_sph=>zeros(length(opt_labels)),
+                :loc_phi_sph=>zeros(length(opt_labels)),
+            )
             locs_normalize!(locs)
             locs_cart2sph!(locs)
             locs_cart2pol!(locs)
 
-            r = _create_recording_nirs(data_type=data_type,
-                                       file_name=file_name,
-                                       file_size_mb=round(filesize(file_name) / 1024^2, digits=2),
-                                       file_type=file_type,
-                                       recording="",
-                                       recording_date="",
-                                       recording_time="",
-                                       recording_notes="",
-                                       wavelengths=wavelengths,
-                                       wavelength_index=wavelength_index,
-                                       optode_pairs=opt_pairs,
-                                       channel_type=ch_type,
-                                       channel_order=_sort_channels(ch_type),
-                                       clabels=clabels,
-                                       units=units,
-                                       src_labels=src_labels,
-                                       det_labels=det_labels,
-                                       opt_labels=opt_labels,
-                                       sampling_rate=sampling_rate,
-                                       bad_channels=zeros(Bool, size(data, 1)))
+            r = _create_recording_nirs(;
+                data_type = data_type,
+                file_name = file_name,
+                file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
+                file_type = file_type,
+                recording = "",
+                recording_date = "",
+                recording_time = "",
+                recording_notes = "",
+                wavelengths = wavelengths,
+                wavelength_index = wavelength_index,
+                optode_pairs = opt_pairs,
+                channel_type = ch_type,
+                channel_order = _sort_channels(ch_type),
+                clabels = clabels,
+                units = units,
+                src_labels = src_labels,
+                det_labels = det_labels,
+                opt_labels = opt_labels,
+                sampling_rate = sampling_rate,
+                bad_channels = zeros(Bool, size(data, 1)),
+            )
         end
 
-        s = _create_subject(id="",
-                            first_name="",
-                            middle_name="",
-                            last_name="",
-                            head_circumference=-1,
-                            handedness="",
-                            weight=-1,
-                            height=-1)
-        e = _create_experiment(name="",
-                               notes="",
-                               design="")
+        s = _create_subject(;
+            id = "",
+            first_name = "",
+            middle_name = "",
+            last_name = "",
+            head_circumference = -1,
+            handedness = "",
+            weight = -1,
+            height = -1,
+        )
+        e = _create_experiment(; name = "", notes = "", design = "")
 
-        hdr = _create_header(s,
-                             r,
-                             e)
+        hdr = _create_header(s, r, e)
 
-            history = [""]
+        history = [""]
 
         obj = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, markers, locs, history)
 
         data_type == "eeg" && _initialize_locs!(obj)
 
-        _info("Imported: " * uppercase(obj.header.recording[:data_type]) * " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)")
+        _info(
+            "Imported: " *
+            uppercase(obj.header.recording[:data_type]) *
+            " ($(nchannels(obj)) × $(epoch_len(obj)) × $(nepochs(obj)); $(round(obj.time_pts[end], digits=2)) s)",
+        )
 
         return obj
 

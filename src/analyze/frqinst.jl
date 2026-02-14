@@ -7,11 +7,11 @@ Calculate instantaneous frequencies.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `f::Vector{Float64}`: instantaneous frequencies (in rad/s)
+  - `f::Vector{Float64}`: instantaneous frequencies (in rad/s)
 """
 function frqinst(s::AbstractVector)::Vector{Float64}
 
@@ -30,11 +30,11 @@ Calculate instantaneous frequencies.
 
 # Arguments
 
-- `s::AbstractVector`
+  - `s::AbstractVector`
 
 # Returns
 
-- `f::Array{Float64, 3}`: instantaneous frequencies (in rad/s)
+  - `f::Array{Float64, 3}`: instantaneous frequencies (in rad/s)
 """
 function frqinst(s::AbstractArray)::Array{Float64, 3}
 
@@ -60,16 +60,16 @@ Calculate instantaneous frequencies.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `f::Array{Float64, 3}`: instantaneous frequencies (in Hz)
+  - `f::Array{Float64, 3}`: instantaneous frequencies (in Hz)
 """
 function frqinst(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Array{Float64, 3}
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     f = @views frqinst(obj.data[ch, :, :]) .* sr(obj)
 
     return f

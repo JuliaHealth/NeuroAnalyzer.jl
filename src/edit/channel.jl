@@ -20,17 +20,23 @@ Return list of channel names of specified type or their numbers if names are spe
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
-- `type::Union{String, Vector{String}}="all"`: channels types
-- `wl::Real`: return NIRS channels for wavelength (in nm)
-- `exclude::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names to exclude from the list
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names
+  - `type::Union{String, Vector{String}}="all"`: channels types
+  - `wl::Real`: return NIRS channels for wavelength (in nm)
+  - `exclude::Union{String, Vector{String}, Regex}=""`: channel name or list of channel names to exclude from the list
 
 # Returns
 
-- `ch::Union{Vector{String}, Vector{Int64}}`
+  - `ch::Union{Vector{String}, Vector{Int64}}`
 """
-function get_channel(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="", type::Union{String, Vector{String}}="all", wl::Real=0, exclude::Union{String, Vector{String}, Regex}="")::Union{Vector{String}, Vector{Int64}}
+function get_channel(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "",
+    type::Union{String, Vector{String}} = "all",
+    wl::Real = 0,
+    exclude::Union{String, Vector{String}, Regex} = "",
+)::Union{Vector{String}, Vector{Int64}}
 
     # return physical channel numbers
     if ch != ""
@@ -83,16 +89,16 @@ Get channel type.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
 
 # Returns
 
-- `cht::String`
+  - `cht::String`
 """
 function channel_type(obj::NeuroAnalyzer.NEURO; ch::String)::String
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     cht = obj.header.recording[:channel_type][ch]
 
     return cht[1]
@@ -106,13 +112,13 @@ Set channel type.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `type::String`: new type
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `type::String`: new type
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::NeuroAnalyzer.NEURO
 
@@ -121,7 +127,7 @@ function set_channel_type(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::N
 
     # create new dataset
     obj_new = deepcopy(obj)
-    ch = get_channel(obj_new, ch=ch)[1]
+    ch = get_channel(obj_new; ch = ch)[1]
     obj_new.header.recording[:channel_type][ch] = type
 
     # add entry to :history field
@@ -138,17 +144,17 @@ Set channel type.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `type::String`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `type::String`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::Nothing
 
-    obj_new = set_channel_type(obj, ch=ch, type=type)
+    obj_new = set_channel_type(obj; ch = ch, type = type)
     obj.header = obj_new.header
     obj.history = obj_new.history
 
@@ -163,13 +169,13 @@ Rename channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `name::String`: new name
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `name::String`: new name
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function rename_channel(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::NeuroAnalyzer.NEURO
 
@@ -178,7 +184,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::Neu
     clabels = obj_new.header.recording[:label]
     @assert !(name in clabels) "Channel $name already exist."
 
-    ch = get_channel(obj, ch=ch)[1]
+    ch = get_channel(obj; ch = ch)[1]
     obj_new.header.recording[:label][ch] = name
 
     # rename label in locs
@@ -198,17 +204,17 @@ Rename channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `name::String`: new name
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `name::String`: new name
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::Nothing
 
-    obj_new = rename_channel(obj, ch=ch, name=name)
+    obj_new = rename_channel(obj; ch = ch, name = name)
     obj.header = obj_new.header
     obj.history = obj_new.history
     obj.locs = obj_new.locs
@@ -224,19 +230,19 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `field::Symbol`
-- `value::String`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `field::Symbol`
+  - `value::String`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function edit_channel(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String)::NeuroAnalyzer.NEURO
 
     @assert value !== nothing "value cannot be empty."
-    ch = get_channel(obj, ch=ch)[1]
+    ch = get_channel(obj; ch = ch)[1]
     _check_var(field, [:channel_type, :label], "field")
 
     obj_new = deepcopy(obj)
@@ -255,18 +261,18 @@ Edit channel properties (`:channel_type` or `:label`) in `OBJ.header.recording`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `field::Symbol`
-- `value::String`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `field::Symbol`
+  - `value::String`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::String, field::Symbol, value::String)::Nothing
 
-    obj_new = edit_channel(obj, ch=ch, field=field, value=value)
+    obj_new = edit_channel(obj; ch = ch, field = field, value = value)
     obj.header = obj_new.header
     obj.history = obj_new.history
 
@@ -281,21 +287,22 @@ Replace channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `s::AbstractArray`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `s::AbstractArray`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function replace_channel(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)::NeuroAnalyzer.NEURO
 
     _chk3d(s)
     @assert size(s) == (1, epoch_len(obj), nepochs(obj)) "signal size ($(size(s))) must be the same as channel size ($(size(obj.data[ch, :, :]))."
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) &&
+        _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
-    ch = get_channel(obj, ch=ch)[1]
+    ch = get_channel(obj; ch = ch)[1]
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = s
 
@@ -312,17 +319,17 @@ Replace channel.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel name
-- `s::Array{Float64, 3}`: signal to replace with
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel name
+  - `s::Array{Float64, 3}`: signal to replace with
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64,3})::Nothing
+function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::Array{Float64, 3})::Nothing
 
-    obj_new = replace_channel(obj, ch=ch, s=s)
+    obj_new = replace_channel(obj; ch = ch, s = s)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
@@ -338,12 +345,12 @@ Add channel labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `clabels::Vector{String}`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `clabels::Vector{String}`
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnalyzer.NEURO
 
@@ -365,16 +372,16 @@ Add channel labels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `clabels::Vector{String}`
+  - `obj::NeuroAnalyzer.NEURO`
+  - `clabels::Vector{String}`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
 
-    obj_new = add_label(obj, clabels=clabels)
+    obj_new = add_label(obj; clabels = clabels)
     obj.header = obj_new.header
     obj.history = obj_new.history
 
@@ -389,16 +396,22 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `data::Array{<:Number, 3}`: channels data
-- `label::Union{String, Vector{String}}`: channels labels
-- `type::Union{String, Vector{String}}`: channels types
+  - `obj::NeuroAnalyzer.NEURO`
+  - `data::Array{<:Number, 3}`: channels data
+  - `label::Union{String, Vector{String}}`: channels labels
+  - `type::Union{String, Vector{String}}`: channels types
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::Union{String,Vector{String}}, type::Union{String,Vector{String}}, unit::Union{String,Vector{String}})::NeuroAnalyzer.NEURO
+function add_channel(
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+)::NeuroAnalyzer.NEURO
 
     if length(obj.data) > 0
         @assert signal_len(obj) == size(data, 2) "Epoch length of the new data ($(size(data, 2))) and the object data ($(signal_len(obj)))must be equal."
@@ -412,16 +425,30 @@ function add_channel(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::U
         @assert type[idx] in channel_types "Unknown channel type $(type[idx])."
     end
 
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) && _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data]) != (0,)) &&
+        _warn("OBJ contains SSP projections data, you should apply them before modifying OBJ data.")
 
     obj_new = deepcopy(obj)
     if length(obj.data) > 0
         obj_new.data = [obj.data; data]
         obj_new.header.recording[:label] = [obj.header.recording[:label]; label]
-        obj_new.header.recording[:channel_type] = [obj.header.recording[:channel_type]; string.(type)]
+        obj_new.header.recording[:channel_type] = [
+            obj.header.recording[:channel_type];
+            string.(type)
+        ]
         obj_new.header.recording[:unit] = [obj.header.recording[:unit]; unit]
-        obj_new.header.recording[:channel_order] = [obj_new.header.recording[:channel_order]; collect(maximum(obj_new.header.recording[:channel_order]):maximum(obj_new.header.recording[:channel_order]) + size(data, 1))]
-        obj_new.header.recording[:bad_channel] = [obj_new.header.recording[:bad_channel]; zeros(Bool, size(data, 1))]
+        obj_new.header.recording[:channel_order] = [
+            obj_new.header.recording[:channel_order];
+            collect(
+                maximum(obj_new.header.recording[:channel_order]):(maximum(obj_new.header.recording[:channel_order]) + size(
+                    data, 1
+                )),
+            )
+        ]
+        obj_new.header.recording[:bad_channel] = [
+            obj_new.header.recording[:bad_channel];
+            zeros(Bool, size(data, 1))
+        ]
     else
         obj_new.data = data
         obj_new.header.recording[:label] = label
@@ -444,18 +471,24 @@ Add channels data to an empty `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `data::Array{<:Number, 3}`: channels data
-- `label::Union{String, Vector{String}}`: channels labels
-- `type::Union{String, Vector{String}}`: channels types
+  - `obj::NeuroAnalyzer.NEURO`
+  - `data::Array{<:Number, 3}`: channels data
+  - `label::Union{String, Vector{String}}`: channels labels
+  - `type::Union{String, Vector{String}}`: channels types
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function add_channel!(obj::NeuroAnalyzer.NEURO; data::Array{<:Number,3}, label::Union{String,Vector{String}}, type::Union{String,Vector{String}}, unit::Union{String,Vector{String}})::Nothing
+function add_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+)::Nothing
 
-    obj_new = add_channel(obj, data=data, label=label, type=type, unit=unit)
+    obj_new = add_channel(obj; data = data, label = label, type = type, unit = unit)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.time_pts = obj_new.time_pts

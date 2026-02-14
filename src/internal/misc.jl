@@ -3,11 +3,12 @@ _pl(x::Union{AbstractRange, AbstractVector})::String = length(collect(x)) > 1 ? 
 _pl(x::Real)::String = x > 1 ? "s" : ""
 
 # _get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
-_get_range(s::Union{AbstractVector, AbstractArray})::Float64 = round(rng(s), digits=0)
+_get_range(s::Union{AbstractVector, AbstractArray})::Float64 = round(rng(s), digits = 0)
 
 _c(n)::Vector{Int64} = collect(1:n)
 
-_tuple_max(t::Tuple{Real, Real})::Tuple{Real, Real} = abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1])) : (-abs(t[2]), abs(t[2]))
+_tuple_max(t::Tuple{Real, Real})::Tuple{Real, Real} =
+    abs(t[1]) > abs(t[2]) ? (-abs(t[1]), abs(t[1])) : (-abs(t[2]), abs(t[2]))
 
 # number to vector
 _n2v(s::Union{<:Number, Vector{<:Number}})::Vector{<:Number} = typeof(s) <: Number ? [s] : s

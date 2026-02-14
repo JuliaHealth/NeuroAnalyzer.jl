@@ -8,11 +8,11 @@ Calculate percentile ranks.
 
 # Arguments
 
-- `x::AbstractVector`: the vector to analyze
+  - `x::AbstractVector`: the vector to analyze
 
 # Returns
 
-- `p::Vector{Float64}`: percentile ranks
+  - `p::Vector{Float64}`: percentile ranks
 """
 function prank(x::AbstractVector)::Vector{Float64}
 
@@ -36,18 +36,18 @@ Calculate ranks scaled in 0..nbins.
 
 # Arguments
 
-- `x::AbstractArray`: some continuous variable, such as reaction time (the time it takes to indicate the response)
-- `nbins::Int64`: number of bins, default is Sturges' formula (`nbins = 1 + log2(length(x)))`)
+  - `x::AbstractArray`: some continuous variable, such as reaction time (the time it takes to indicate the response)
+  - `nbins::Int64`: number of bins, default is Sturges' formula (`nbins = 1 + log2(length(x)))`)
 
 # Returns
 
-- `sr::Array{Int64}`
+  - `sr::Array{Int64}`
 """
-function dranks(x::AbstractArray, nbins::Int64=round(Int64, 1 + log2(length(x))))::Array{Int64}
+function dranks(x::AbstractArray, nbins::Int64 = round(Int64, 1 + log2(length(x))))::Array{Int64}
 
     # scale ranks in 0..1
     r = tiedrank(x) ./ length(x)
-    
+
     # scale ranks in 0..nbins
     sr = ceil.(Int64, r .* nbins)
 

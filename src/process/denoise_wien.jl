@@ -8,11 +8,11 @@ Perform Wiener deconvolution denoising.
 
 # Arguments
 
-- `s::AbstractArray`
+  - `s::AbstractArray`
 
 # Returns
 
-- `s_new::AbstractArray`
+  - `s_new::AbstractArray`
 """
 function denoise_wien(s::AbstractArray)::AbstractArray
 
@@ -21,7 +21,7 @@ function denoise_wien(s::AbstractArray)::AbstractArray
     s_new = similar(s)
 
     @inbounds for ep_idx in 1:ep_n
-        s_m = @views mean(s[:, :, ep_idx], dims=1)'[:, 1]
+        s_m = @views mean(s[:, :, ep_idx], dims = 1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m
         Threads.@threads for ch_idx in 1:ch_n
@@ -40,15 +40,16 @@ Perform Wiener deconvolution denoising.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
-- `obj_new::NeuroAnalyzer.NEURO`
+
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
 function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::NeuroAnalyzer.NEURO
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_wien(obj_new.data[ch, :, :])
     push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
@@ -63,16 +64,16 @@ Perform Wiener deconvolution denoising.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Nothing
 
-    obj_new = denoise_wien(obj, ch=ch)
+    obj_new = denoise_wien(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

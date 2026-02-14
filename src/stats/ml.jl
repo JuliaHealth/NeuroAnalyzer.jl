@@ -8,20 +8,21 @@ export mscr
 Assess performance of the classification model using Matthews correlation coefficient (MCC).
 
 MCC’s value ranges from -1 to 1, depending on:
-- a score of -1 denotes a complete discrepancy between expected and actual classes
-- 0 is equivalent to making an entirely arbitrary guess
-- total agreement between expected and actual classes is indicated by a score of 1
+
+  - a score of -1 denotes a complete discrepancy between expected and actual classes
+  - 0 is equivalent to making an entirely arbitrary guess
+  - total agreement between expected and actual classes is indicated by a score of 1
 
 # Arguments
 
-- `tp::Int64`: number of true positives
-- `tn::Int64`: number of true negatives
-- `fp::Int64`: number of false positives
-- `fn::Int64`: number of false negatives
+  - `tp::Int64`: number of true positives
+  - `tn::Int64`: number of true negatives
+  - `fp::Int64`: number of false positives
+  - `fn::Int64`: number of false negatives
 
 # Returns
 
-- `mcc::Float64`
+  - `mcc::Float64`
 
 # Source
 
@@ -42,17 +43,18 @@ Assess performance of the classification model using F1-score. F1-score value ra
 
 # Arguments
 
-- `tp::Int64`: number of true positives
-- `tn::Int64`: number of true negatives
-- `fp::Int64`: number of false positives
-- `fn::Int64`: number of false negatives
+  - `tp::Int64`: number of true positives
+  - `tn::Int64`: number of true negatives
+  - `fp::Int64`: number of false positives
+  - `fn::Int64`: number of false negatives
 
 # Returns
 
 Named tuple containing:
-- `f1::Float64`: F1-score
-- `p::Float64`: precision
-- `r::Float64`: recall
+
+  - `f1::Float64`: F1-score
+  - `p::Float64`: precision
+  - `r::Float64`: recall
 
 # Source
 
@@ -64,7 +66,7 @@ function f1(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{f1::Float
     r = tp / (tp + fn)
     f1 = 2 * (p * r) / (p + r)
 
-    return (f1=f1, p=p, r=r)
+    return (f1 = f1, p = p, r = r)
 
 end
 
@@ -75,16 +77,17 @@ Assess performance of the classification model using misclassification rate.
 
 # Arguments
 
-- `tp::Int64`: number of true positives
-- `tn::Int64`: number of true negatives
-- `fp::Int64`: number of false positives
-- `fn::Int64`: number of false negatives
+  - `tp::Int64`: number of true positives
+  - `tn::Int64`: number of true negatives
+  - `fp::Int64`: number of false positives
+  - `fn::Int64`: number of false negatives
 
 # Returns
 
 Named tuple containing:
-- `mr::Float64`: misclassification rate
-- `acc::Float64`: accuracy
+
+  - `mr::Float64`: misclassification rate
+  - `acc::Float64`: accuracy
 
 # Source
 
@@ -96,6 +99,6 @@ function mscr(; tp::Int64, tn::Int64, fp::Int64, fn::Int64)::@NamedTuple{mr::Flo
     mr = (fp + fn) / (tp + tn + fp + fn)
     acc = 1 - mr
 
-    return (mr=mr, acc=acc)
+    return (mr = mr, acc = acc)
 
 end

@@ -7,14 +7,14 @@ Create model of TES stimulation.
 
 # Arguments
 
-- `anode::String`: anode location
-- `cathode::String`: cathode location
-- `anode_curr::Real=2.0`: anode current [mA]
-- `cathode_curr::Real=-2.0`: cathode current [mA]
+  - `anode::String`: anode location
+  - `cathode::String`: cathode location
+  - `anode_curr::Real=2.0`: anode current [mA]
+  - `cathode_curr::Real=-2.0`: cathode current [mA]
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+  - `p::Plots.Plot{Plots.GRBackend}`
 
 # Notes
 
@@ -24,7 +24,9 @@ This is a very initial version, simplified model - just superficial spread of th
 
 Model spread of electric field at the cortical surface - reduce charge for skull resistance
 """
-function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, cathode_curr::Real=-2.0)::Plots.Plot{Plots.GRBackend}
+function tes_model(;
+    anode::String, cathode::String, anode_curr::Real = 2.0, cathode_curr::Real = -2.0
+)::Plots.Plot{Plots.GRBackend}
 
     _wip()
 
@@ -70,15 +72,15 @@ function tes_model(; anode::String, cathode::String, anode_curr::Real=2.0, catho
     E[anode_ch] = anode_curr
     E[cathode_ch] = cathode_curr
 
-    obj_tmp = create(data_type="eeg")
+    obj_tmp = create(; data_type = "eeg")
     obj_tmp.data = reshape(repeat(E, 1, 2), DataFrames.nrow(locs), 2, 1)
     obj_tmp.header.recording[:label] = locs[!, :label]
     obj_tmp.header.recording[:channel_type] = repeat(["EEG"], DataFrames.nrow(locs))
     obj_tmp.locs = locs
-    create_time!(obj_tmp, fs=1)
+    create_time!(obj_tmp; fs = 1)
     obj_tmp.time_pts
 
-    p = plot_topo(obj_tmp, seg=(0, 1), title="", nmethod=:none)
+    p = plot_topo(obj_tmp; seg = (0, 1), title = "", nmethod = :none)
 
     return p
 

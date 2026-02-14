@@ -11,11 +11,11 @@ Detect a pair of positive and negative peaks of ERP.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
+  - `obj::NeuroAnalyzer.NEURO`
 
 # Returns
 
-- `p::Matrix{Int64}`: peaks: channels × positive peak position, negative peak position
+  - `p::Matrix{Int64}`: peaks: channels × positive peak position, negative peak position
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)::Matrix{Int64}
 
@@ -40,12 +40,12 @@ Calculate amplitude at given time.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `t::Real`: time in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `t::Real`: time in seconds
 
 # Returns
 
-- `p::Matrix{Float64}`: amplitude for each channel per epoch
+  - `p::Matrix{Float64}`: amplitude for each channel per epoch
 """
 function amp_at(obj::NeuroAnalyzer.NEURO; t::Real)::Matrix{Float64}
 
@@ -89,12 +89,12 @@ Calculate average amplitude at given time segment.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `t::Tuple{Real, Real}`: time segment in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
 
-- `p::Matrix{Float64}`: mean amplitude for each channel per epoch
+  - `p::Matrix{Float64}`: mean amplitude for each channel per epoch
 """
 function avgamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
@@ -142,12 +142,12 @@ Calculate maximum amplitude at given time segment.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `t::Tuple{Real, Real}`: time segment in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
 
-- `p::Matrix{Float64}`: maximum amplitude for each channel per epoch
+  - `p::Matrix{Float64}`: maximum amplitude for each channel per epoch
 """
 function maxamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 
@@ -195,12 +195,12 @@ Calculate minimum amplitude at given time segment.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `t::Tuple{Real, Real}`: time segment in seconds
+  - `obj::NeuroAnalyzer.NEURO`
+  - `t::Tuple{Real, Real}`: time segment in seconds
 
 # Returns
 
-- `p::Matrix{Float64}`: minimum amplitude for each channel per epoch
+  - `p::Matrix{Float64}`: minimum amplitude for each channel per epoch
 """
 function minamp_at(obj::NeuroAnalyzer.NEURO; t::Tuple{Real, Real})::Matrix{Float64}
 

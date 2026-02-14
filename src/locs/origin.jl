@@ -8,16 +8,16 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `x::Real=0`: move origin along X axis
-- `y::Real=0`: move origin along Y axis
-- `z::Real=0`: move origin along Z axis
+  - `obj::NeuroAnalyzer.NEURO`
+  - `x::Real=0`: move origin along X axis
+  - `y::Real=0`: move origin along Y axis
+  - `z::Real=0`: move origin along Z axis
 
 # Returns
 
-- `locs_new::DataFrame`
+  - `locs_new::DataFrame`
 """
-function locs_origin(locs::DataFrame; x::Real=0, y::Real=0, z::Real=0)::DataFrame
+function locs_origin(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::DataFrame
 
     locs_new = deepcopy(locs)
     locs_new[:, :loc_x] .+= x
@@ -37,18 +37,18 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `x::Real=0`: move origin along X axis
-- `y::Real=0`: move origin along Y axis
-- `z::Real=0`: move origin along Z axis
+  - `obj::NeuroAnalyzer.NEURO`
+  - `x::Real=0`: move origin along X axis
+  - `y::Real=0`: move origin along Y axis
+  - `z::Real=0`: move origin along Z axis
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_origin!(obj::NeuroAnalyzer.NEURO; x::Real=0, y::Real=0, z::Real=0)::Nothing
+function locs_origin!(obj::NeuroAnalyzer.NEURO; x::Real = 0, y::Real = 0, z::Real = 0)::Nothing
 
-    obj.locs = locs_origin(obj.locs, x=x, y=y, z=z)
+    obj.locs = locs_origin(obj.locs; x = x, y = y, z = z)
 
     return nothing
 
@@ -61,18 +61,18 @@ Move locs origin ([0, 0, 0]) along the axes.
 
 # Arguments
 
-- `locs::DataFrame`
-- `x::Real=0`: move origin along X axis
-- `y::Real=0`: move origin along Y axis
-- `z::Real=0`: move origin along Z axis
+  - `locs::DataFrame`
+  - `x::Real=0`: move origin along X axis
+  - `y::Real=0`: move origin along Y axis
+  - `z::Real=0`: move origin along Z axis
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function locs_origin!(locs::DataFrame; x::Real=0, y::Real=0, z::Real=0)::Nothing
+function locs_origin!(locs::DataFrame; x::Real = 0, y::Real = 0, z::Real = 0)::Nothing
 
-    locs[!, :] = locs_origin(locs, x=x, y=y, z=z)[!, :]
+    locs[!, :] = locs_origin(locs; x = x, y = y, z = z)[!, :]
 
     return nothing
 

@@ -8,21 +8,21 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
-- `n::Int64=8`: Legendre polynomial order
-- `lambda::Float64=10^-5`: smoothing factor
+  - `obj::NeuroAnalyzer.NEURO`
+  - `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
+  - `n::Int64=8`: Legendre polynomial order
+  - `lambda::Float64=10^-5`: smoothing factor
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`: with `csd` channel types and `µV/m²` units
+  - `obj_new::NeuroAnalyzer.NEURO`: with `csd` channel types and `µV/m²` units
 
 # Source
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-187
 Kayser J, Tenke CE. Principal components analysis of Laplacian waveforms as a generic method for identifying ERP generator patterns: I. Evaluation with auditory oddball tasks. Clin Neurophysiol 2006;117(2):348-368
 """
-function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)::NeuroAnalyzer.NEURO
+function csd(obj::NeuroAnalyzer.NEURO; m::Int64 = 4, n::Int64 = 8, lambda::Float64 = 10^-5)::NeuroAnalyzer.NEURO
 
     _check_datatype(obj, "eeg")
     _has_locs(obj)
@@ -30,14 +30,14 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     @assert n >= 1 "n must be ≥ 1."
     @assert lambda > 0 "lambda must be > 0."
 
-    ch = get_channel(obj, ch=get_channel(obj, type=datatype(obj)))
+    ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
     locs = Base.filter(:label => in(intersect(obj.locs[!, :label], labels(obj)[ch])), obj.locs)
     _check_ch_locs(ch, labels(obj), obj.locs[!, :label])
 
     ch_n = DataFrames.nrow(locs)
     ep_n = nepochs(obj)
 
-    G, H = gh(locs, m=m, n=n)
+    G, H = gh(locs; m = m, n = n)
 
     # add smoothing factor to the diagonal
     Gs = G + I(ch_n) * lambda
@@ -46,7 +46,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
     Gs_inv = inv(Gs)
 
     # sum per row
-    Gs_rs = sum(Gs_inv, dims=2)
+    Gs_rs = sum(Gs_inv; dims = 2)
     Gs_inv_sum = sum(Gs_rs)
 
     obj_new = deepcopy(obj)
@@ -55,7 +55,7 @@ function csd(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=1
         # dataGs = data[ch, :]' / Gs
         dataGs = Gs / data'
         # C = dataGs .- (sum(dataGs,dims=2)/sum(Gs_inv_sum))*Gs_inv_sum
-        C = data .- (sum(dataGs, dims=2) / sum(Gs_inv_sum)) * Gs_inv_sum
+        C = data .- (sum(dataGs, dims = 2) / sum(Gs_inv_sum)) * Gs_inv_sum
         # compute surface Laplacian
         obj_new.data[ch, :, ep_idx] = (C'*H)'
     end
@@ -77,22 +77,22 @@ Transform data using Current Source Density (CSD) transformation based on spheri
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
-- `n::Int64=8`: Legendre polynomial order
-- `lambda::Float64=10^-5`: smoothing factor
+  - `obj::NeuroAnalyzer.NEURO`
+  - `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
+  - `n::Int64=8`: Legendre polynomial order
+  - `lambda::Float64=10^-5`: smoothing factor
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 
 # Source
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function csd!(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)::Nothing
+function csd!(obj::NeuroAnalyzer.NEURO; m::Int64 = 4, n::Int64 = 8, lambda::Float64 = 10^-5)::Nothing
 
-    obj_new = csd(obj, m=m, n=n, lambda=lambda)
+    obj_new = csd(obj; m = m, n = n, lambda = lambda)
     obj.data = obj_new.data
     obj.header = obj_new.header
     obj.history = obj_new.history
@@ -108,21 +108,22 @@ Generate G and H matrices.
 
 # Arguments
 
-- `locs::DataFrame`
-- `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
-- `n::Int64=8`: Legendre polynomial order
+  - `locs::DataFrame`
+  - `m::Int64=4`: positive integer constant that affects spherical spline flexibility, higher `m` values mean increased rigidity
+  - `n::Int64=8`: Legendre polynomial order
 
 # Returns
 
 Named tuple containing:
-- `G::Matrix{Float64}`: transformation matrix (SP spline)
-- `H::Matrix{Float64}`: transformation matrix (CSD spline)
+
+  - `G::Matrix{Float64}`: transformation matrix (SP spline)
+  - `H::Matrix{Float64}`: transformation matrix (CSD spline)
 
 # Source
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::@NamedTuple{G::Matrix{Float64}, H::Matrix{Float64}}
+function gh(locs::DataFrame; m::Int64 = 4, n::Int64 = 8)::@NamedTuple{G::Matrix{Float64}, H::Matrix{Float64}}
 
     @assert !(m < 2 || m > 10) "m must be in [2, 10]."
     @assert n >= 1 "n must be ≥ 1."
@@ -144,9 +145,9 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::@NamedTuple{G::Matrix{Floa
     x, y, z = _locs_norm(x, y, z)
 
     # compute all cosine distances
-    Threads.@threads for i = 1:ch_n
-        @inbounds  for j = 1:ch_n
-            cosdist[i, j]  =  1 - (( (x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2 ) / 2 )
+    Threads.@threads for i in 1:ch_n
+        @inbounds for j in 1:ch_n
+            cosdist[i, j] = 1 - (((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2) / 2)
         end
     end
 
@@ -159,19 +160,19 @@ function gh(locs::DataFrame; m::Int64=4, n::Int64=8)::@NamedTuple{G::Matrix{Floa
     end
 
     # compute G and H
-    Threads.@threads for i = 1:ch_n
-        @inbounds for j = 1:ch_n
+    Threads.@threads for i in 1:ch_n
+        @inbounds for j in 1:ch_n
             g = 0
             h = 0
-            @inbounds for idx_n = 1:n
+            @inbounds for idx_n in 1:n
                 g = g + ((2.0 * idx_n + 1.0) * legpoly[idx_n, i, j] / ((idx_n * (idx_n + idx_n))^m))
                 h = h - ((2.0 * (idx_n + 1.0) * legpoly[idx_n, i, j]) / ((idx_n * (idx_n + idx_n))^(m - 1)))
             end
-            G[i, j] =  g / 4 / pi
+            G[i, j] = g / 4 / pi
             H[i, j] = -h / 4 / pi
         end
     end
 
-    return (G=G, H=H)
+    return (G = G, H = H)
 
 end

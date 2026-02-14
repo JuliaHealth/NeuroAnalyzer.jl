@@ -8,18 +8,20 @@ Perform discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `s::AbstractVector`
-- `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: decomposition type:
-    - `:sdwt`: stationary discrete wavelet transform
-    - `:acdwt`: discrete autocorrelation wavelet transform
-- `l::Int64=maxtransformlevels(s)`: number of levels, default maximum number of levels available or total transformation
+  - `s::AbstractVector`
+  - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
+  - `type::Symbol`: decomposition type:
+      + `:sdwt`: stationary discrete wavelet transform
+      + `:acdwt`: discrete autocorrelation wavelet transform
+  - `l::Int64=maxtransformlevels(s)`: number of levels, default maximum number of levels available or total transformation
 
 # Returns
 
-- `dc::Matrix{Float64}`: DWD coefficients (by rows)
+  - `dc::Matrix{Float64}`: DWD coefficients (by rows)
 """
-function dwd(s::AbstractVector; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s))::Matrix{Float64} where {T <: DiscreteWavelet}
+function dwd(
+    s::AbstractVector; wt::T = wavelet(WT.haar), type::Symbol, l::Int64 = maxtransformlevels(s)
+)::Matrix{Float64} where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
 
@@ -42,18 +44,20 @@ Perform discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `s::AbstractArray`
-- `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type:
-    - `:sdwt`: stationary discrete wavelet transform
-    - `:acdwt`: discrete autocorrelation wavelet transform
-- `l::Int64=maxtransformlevels(s[1, :, 1])`: number of levels, default is the maximum number of levels available or total transformation
+  - `s::AbstractArray`
+  - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
+  - `type::Symbol`: transformation type:
+      + `:sdwt`: stationary discrete wavelet transform
+      + `:acdwt`: discrete autocorrelation wavelet transform
+  - `l::Int64=maxtransformlevels(s[1, :, 1])`: number of levels, default is the maximum number of levels available or total transformation
 
 # Returns
 
-- `dc::Array{Float64, 4}`: DWD coefficients
+  - `dc::Array{Float64, 4}`: DWD coefficients
 """
-function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=maxtransformlevels(s[1, :, 1]))::Array{Float64, 4} where {T <: DiscreteWavelet}
+function dwd(
+    s::AbstractArray; wt::T = wavelet(WT.haar), type::Symbol, l::Int64 = maxtransformlevels(s[1, :, 1])
+)::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     _chk3d(s)
 
@@ -65,7 +69,7 @@ function dwd(s::AbstractArray; wt::T=wavelet(WT.haar), type::Symbol, l::Int64=ma
     _log_off()
     @inbounds for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            dc[ch_idx, :, :, ep_idx] = @views dwd(s[ch_idx, :, ep_idx], wt=wt, type=type, l=l)
+            dc[ch_idx, :, :, ep_idx] = @views dwd(s[ch_idx, :, ep_idx], wt = wt, type = type, l = l)
         end
     end
     _log_on()
@@ -81,27 +85,33 @@ Perform discrete wavelet decomposition (DWD).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type:
-    - `:sdwt`: stationary discrete wavelet transform
-    - `:acdwt`: discrete autocorrelation wavelet transform
-- `l::Int64=0`: number of levels, default is the maximum number of levels available or total transformation
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
+  - `type::Symbol`: transformation type:
+      + `:sdwt`: stationary discrete wavelet transform
+      + `:acdwt`: discrete autocorrelation wavelet transform
+  - `l::Int64=0`: number of levels, default is the maximum number of levels available or total transformation
 
 # Returns
 
-- `dc::Array{Float64, 4}`: DWD coefficients
+  - `dc::Array{Float64, 4}`: DWD coefficients
 """
-function dwd(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, wt::T=wavelet(WT.haar), type::Symbol, l::Int64=0)::Array{Float64, 4} where {T <: DiscreteWavelet}
+function dwd(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    wt::T = wavelet(WT.haar),
+    type::Symbol,
+    l::Int64 = 0,
+)::Array{Float64, 4} where {T <: DiscreteWavelet}
 
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])
         _info("Calculating DWD using maximum level: $l")
     end
 
-    ch = get_channel(obj, ch=ch)
-    dc = @views dwd(obj.data[ch, :, :], wt=wt, type=type, l=l)
+    ch = get_channel(obj; ch = ch)
+    dc = @views dwd(obj.data[ch, :, :], wt = wt, type = type, l = l)
 
     return dc
 
@@ -114,18 +124,23 @@ Perform inverse discrete wavelet decomposition (iDWD).
 
 # Arguments
 
-- `dc::Matrix{Float64}`: DWD coefficients (by rows)
-- `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type:
-    - `:sdwt`: average-based stationary discrete wavelet transform
-    - `:acdwt`: discrete autocorrelation wavelet transform
-- `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: which coefficients are used for reconstruction, default is all coefficients
+  - `dc::Matrix{Float64}`: DWD coefficients (by rows)
+  - `wt<:DiscreteWavelet=wavelet(WT.haar)`: discrete wavelet, see Wavelets.jl documentation for the list of available wavelets
+  - `type::Symbol`: transformation type:
+      + `:sdwt`: average-based stationary discrete wavelet transform
+      + `:acdwt`: discrete autocorrelation wavelet transform
+  - `c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1)`: which coefficients are used for reconstruction, default is all coefficients
 
 # Returns
 
-- `s::AbstractArray`: reconstructed signal
+  - `s::AbstractArray`: reconstructed signal
 """
-function idwd(dc::Matrix{Float64}; wt::T=wavelet(WT.haar), type::Symbol, c::Union{Int64, Vector{Int64}, AbstractRange}=axes(dc, 1))::AbstractArray where {T <: DiscreteWavelet}
+function idwd(
+    dc::Matrix{Float64};
+    wt::T = wavelet(WT.haar),
+    type::Symbol,
+    c::Union{Int64, Vector{Int64}, AbstractRange} = axes(dc, 1),
+)::AbstractArray where {T <: DiscreteWavelet}
 
     _check_var(type, [:sdwt, :acdwt], "type")
 

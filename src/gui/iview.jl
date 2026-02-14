@@ -8,17 +8,19 @@ Interactive view of continuous signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
-- `zoom::Real=10`: how many seconds are displayed in one segment
-- `bad::Bool=true`: list of bad channels; if not false - plot bad channels using this list
-- `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
+  - `zoom::Real=10`: how many seconds are displayed in one segment
+  - `bad::Bool=true`: list of bad channels; if not false - plot bad channels using this list
+  - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 
 # Returns
 
-- `seg::Union{Nothing, Tuple{Float64, Float64}}`
+  - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
+function iview(
+    obj::NeuroAnalyzer.NEURO; mch::Bool = true, zoom::Real = 10, bad::Bool = true, snap::Bool = true
+)::Union{Nothing, Tuple{Float64, Float64}}
 
     @assert nepochs(obj) == 1 "For epoched object iview_ep() must be used."
 
@@ -54,9 +56,9 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
     end
 
     if mch
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], title="", bad=bad)
+        p = NeuroAnalyzer.plot(obj; ch = cl[ch_first:ch_last], title = "", bad = bad)
     else
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], title="Channel: $(cl[ch_first])")
+        p = NeuroAnalyzer.plot(obj; ch = cl[ch_first], title = "Channel: $(cl[ch_first])")
     end
 
     function _activate(app)
@@ -106,7 +108,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
         combo_ch = GtkComboBoxText()
         ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
         for idx in ch_types
-            length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+            length(get_channel(obj; type = lowercase(idx))) > 1 && push!(combo_ch, idx)
         end
         combo_ch.active = 0
         combo_ch.sensitive = false
@@ -114,15 +116,15 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
 
         if !mch
             ch_slider = GtkScale(:v, 1:nchannels(obj))
-            ch_slider.draw_value =  false
+            ch_slider.draw_value = false
         else
             if length(ch) > 15
                 ch_slider = GtkScale(:v, ch[ch_first]:(ch[end] - 14))
-                ch_slider.draw_value =  false
+                ch_slider.draw_value = false
             else
                 ch_slider = GtkScale(:v, ch[1]:ch[end])
-                ch_slider.draw_value =  false
-                ch_slider.sensitive =  false
+                ch_slider.draw_value = false
+                ch_slider.sensitive = false
             end
         end
         ch_slider.tooltip_text = "Scroll channels"
@@ -160,38 +162,46 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             channel_type = lowercase.(ch_types)[combo_ch.active + 1]
             if mch
                 if plot_type == 0
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=cl[ch_first:ch_last],
-                                           seg=(time1, time2),
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           title="",
-                                           scale=scale)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch = cl[ch_first:ch_last],
+                        seg = (time1, time2),
+                        s_pos = (ts1, ts2),
+                        mono = mono,
+                        title = "",
+                        scale = scale,
+                    )
                 elseif plot_type == 1
-                    p =  NeuroAnalyzer.plot(obj,
-                                            ch=get_channel(obj, type=channel_type),
-                                            seg=(time1, time2),
-                                            s_pos=(ts1, ts2),
-                                            mono=mono,
-                                            type=:butterfly,
-                                            avg=false)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch = get_channel(obj, type = channel_type),
+                        seg = (time1, time2),
+                        s_pos = (ts1, ts2),
+                        mono = mono,
+                        type = :butterfly,
+                        avg = false,
+                    )
                 elseif plot_type == 2
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=get_channel(obj, type=channel_type),
-                                           seg=(time1, time2),
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           type=:mean)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch = get_channel(obj, type = channel_type),
+                        seg = (time1, time2),
+                        s_pos = (ts1, ts2),
+                        mono = mono,
+                        type = :mean,
+                    )
                 end
             else
-                p = NeuroAnalyzer.plot(obj,
-                                       ch=cl[ch_first],
-                                       seg=(time1, time2),
-                                       s_pos=(ts1, ts2),
-                                       mono=mono,
-                                       title="Channel: $(cl[ch_first])",
-                                       scale=scale,
-                                       bad=bad)
+                p = NeuroAnalyzer.plot(
+                    obj,
+                    ch = cl[ch_first],
+                    seg = (time1, time2),
+                    s_pos = (ts1, ts2),
+                    mono = mono,
+                    title = "Channel: $(cl[ch_first])",
+                    scale = scale,
+                    bad = bad,
+                )
             end
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
@@ -215,18 +225,18 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
+                    !isnothing(ch_idx) && channel_info(obj; ch = obj.header.recording[:channel_order][ch_idx])
                 end
             else
                 time_current = entry_time.value
                 x > 1172 && (x = 1172)
                 if time_current + zoom < obj.time_pts[end]
-                    ts1 = time_current + round((x - 82) / (1090 / zoom), digits=3)
+                    ts1 = time_current + round((x - 82) / (1090 / zoom); digits = 3)
                 else
-                    ts1 = time_current + round((x - 82) / (1090 / (obj.time_pts[end] - time_current)), digits=3)
+                    ts1 = time_current + round((x - 82) / (1090 / (obj.time_pts[end] - time_current)); digits = 3)
                 end
                 snap && (ts1 = round(ts1 * 4) / 4)
-                @idle_add entry_ts1.value = round(ts1, digits=3)
+                @idle_add entry_ts1.value = round(ts1, digits = 3)
             end
         end
         ggc_l = GtkGestureClick()
@@ -244,7 +254,10 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]])
+                    !isnothing(ch_idx) && (
+                        obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]] =
+                            !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx, 1]]
+                    )
                     draw(can)
                 end
             else
@@ -256,7 +269,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                     ts2 = time_current + ((x - 82) / (1090 / (obj.time_pts[end] - time_current)))
                 end
                 snap && (ts2 = round(ts2 * 4) / 4)
-                @idle_add entry_ts2.value = round(ts2, digits=3)
+                @idle_add entry_ts2.value = round(ts2, digits = 3)
             end
         end
         ggc_r = GtkGestureClick()
@@ -387,7 +400,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
             elseif time1 < time2
                 ask_dialog("Delete segment $time1:$time2 ?", win) do ans
                     if ans
-                        trim!(obj, seg=(time1, time2), remove_epochs=false)
+                        trim!(obj; seg = (time1, time2), remove_epochs = false)
                         _info("Deleted segment: $time1:$time2")
 
                         if time1 == time_current && time2 > obj.time_pts[end]
@@ -397,7 +410,8 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                             if obj.time_pts[end] % zoom == 0
                                 time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
                             else
-                                time_current >= (obj.time_pts[end] - (obj.time_pts[end] % zoom)) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                                time_current >= (obj.time_pts[end] - (obj.time_pts[end] % zoom)) &&
+                                    (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
                             end
                             time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                         end
@@ -581,7 +595,7 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                 if !mch
                     _info("Playing current segment as audio")
                     time_current = entry_time.value
-                    play(obj, ch=cl[ch_first], seg=(time_current, time_current+zoom), ep=1)
+                    play(obj; ch = cl[ch_first], seg = (time_current, time_current+zoom), ep = 1)
                 end
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == 0x0000ff0d) # Enter
                 quit = false
@@ -633,16 +647,18 @@ function iview(obj::NeuroAnalyzer.NEURO; mch::Bool=true, zoom::Real=10, bad::Boo
                 elseif time1 < time2
                     ask_dialog("Delete segment $time1:$time2 ?", win) do ans
                         if ans
-                            trim!(obj, seg=(time1, time2), remove_epochs=false)
+                            trim!(obj; seg = (time1, time2), remove_epochs = false)
                             _info("Deleted segment: $time1:$time2")
                             if time1 == time_current && time2 > obj.time_pts[end]
                                 time_current = obj.time_pts[end] - zoom
                                 time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                             else
                                 if obj.time_pts[end] % zoom == 0
-                                    time_current >= (obj.time_pts[end] - zoom) && (time_current = obj.time_pts[end] - zoom)
+                                    time_current >= (obj.time_pts[end] - zoom) &&
+                                        (time_current = obj.time_pts[end] - zoom)
                                 else
-                                    time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) && (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
+                                    time_current >= obj.time_pts[end] - (obj.time_pts[end] % zoom) &&
+                                        (time_current = obj.time_pts[end] - (obj.time_pts[end] % zoom))
                                 end
                                 time_current < obj.time_pts[1] && (time_current = obj.time_pts[1])
                             end
@@ -700,17 +716,19 @@ Interactive view of epoched signal.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
-- `ep::Int64=1`: initial epoch to display
-- `bad::Bool=true`: list of bad channels; if not false - plot bad channels using this list
-- `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
+  - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `mch::Bool=true`: draw multichannel signal (up to 20 channels in one plot)
+  - `ep::Int64=1`: initial epoch to display
+  - `bad::Bool=true`: list of bad channels; if not false - plot bad channels using this list
+  - `snap::Bool=true`: snap region markers to grid at 0.0, 0.25, 0.5 and 0.75 time points
 
 # Returns
 
-- `seg::Union{Nothing, Tuple{Float64, Float64}}`
+  - `seg::Union{Nothing, Tuple{Float64, Float64}}`
 """
-function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bool=true, snap::Bool=true)::Union{Nothing, Tuple{Float64, Float64}}
+function iview_ep(
+    obj::NeuroAnalyzer.NEURO; mch::Bool = true, ep::Int64 = 1, bad::Bool = true, snap::Bool = true
+)::Union{Nothing, Tuple{Float64, Float64}}
 
     @assert nepochs(obj) > 1 "For continuous object iview() must be used."
     _check_epochs(obj, ep)
@@ -741,9 +759,9 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
     end
 
     if mch
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first:ch_last], ep=ep, title="", bad=bad)
+        p = NeuroAnalyzer.plot(obj; ch = cl[ch_first:ch_last], ep = ep, title = "", bad = bad)
     else
-        p = NeuroAnalyzer.plot(obj, ch=cl[ch_first], ep=ep, title="Channel: $(cl[ch_first])")
+        p = NeuroAnalyzer.plot(obj; ch = cl[ch_first], ep = ep, title = "Channel: $(cl[ch_first])")
     end
 
     function _activate(app)
@@ -802,7 +820,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
         combo_ch = GtkComboBoxText()
         ch_types = uppercase.(unique(obj.header.recording[:channel_type]))
         for idx in ch_types
-            length(get_channel(obj, type=lowercase(idx))) > 1 && push!(combo_ch, idx)
+            length(get_channel(obj; type = lowercase(idx))) > 1 && push!(combo_ch, idx)
         end
         combo_ch.active = 0
         combo_ch.sensitive = false
@@ -840,38 +858,46 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
             channel_type = lowercase.(ch_types)[combo_ch.active + 1]
             if mch
                 if plot_type == 0
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=cl[ch_first:ch_last],
-                                           ep=ep,
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           title="",
-                                           scale=scale)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch = cl[ch_first:ch_last],
+                        ep = ep,
+                        s_pos = (ts1, ts2),
+                        mono = mono,
+                        title = "",
+                        scale = scale,
+                    )
                 elseif plot_type == 1
-                    p =  NeuroAnalyzer.plot(obj,
-                                            ch=get_channel(obj, type=channel_type),
-                                            ep=ep,
-                                            s_pos=(ts1, ts2),
-                                            mono=mono,
-                                            type=:butterfly,
-                                            avg=false)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch = get_channel(obj, type = channel_type),
+                        ep = ep,
+                        s_pos = (ts1, ts2),
+                        mono = mono,
+                        type = :butterfly,
+                        avg = false,
+                    )
                 elseif plot_type == 2
-                    p = NeuroAnalyzer.plot(obj,
-                                           ch=get_channel(obj, type=channel_type),
-                                           ep=ep,
-                                           s_pos=(ts1, ts2),
-                                           mono=mono,
-                                           type=:mean)
+                    p = NeuroAnalyzer.plot(
+                        obj,
+                        ch = get_channel(obj, type = channel_type),
+                        ep = ep,
+                        s_pos = (ts1, ts2),
+                        mono = mono,
+                        type = :mean,
+                    )
                 end
             else
-                p = NeuroAnalyzer.plot(obj,
-                                       ch=cl[ch_first],
-                                       ep=ep,
-                                       s_pos=(ts1, ts2),
-                                       mono=mono,
-                                       title="Channel: $(cl[ch_first])",
-                                       scale=scale,
-                                       bad=bad)
+                p = NeuroAnalyzer.plot(
+                    obj,
+                    ch = cl[ch_first],
+                    ep = ep,
+                    s_pos = (ts1, ts2),
+                    mono = mono,
+                    title = "Channel: $(cl[ch_first])",
+                    scale = scale,
+                    bad = bad,
+                )
             end
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
@@ -895,14 +921,17 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && channel_info(obj, ch=obj.header.recording[:channel_order][ch_idx])
+                    !isnothing(ch_idx) && channel_info(obj; ch = obj.header.recording[:channel_order][ch_idx])
                 end
             else
                 x > 1172 && (x = 1172)
                 ep = Int64(entry_epoch.value)
-                ts1 = ((epoch_len(obj) / sr(obj)) * (ep - 1)) + obj.epoch_time[1] + (x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
+                ts1 =
+                    ((epoch_len(obj) / sr(obj)) * (ep - 1)) +
+                    obj.epoch_time[1] +
+                    (x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1]))
                 snap && (ts1 = round(ts1 * 4) / 4)
-                @idle_add entry_ts1.value = round(ts1, digits=3)
+                @idle_add entry_ts1.value = round(ts1, digits = 3)
             end
         end
         ggc_l = GtkGestureClick()
@@ -921,15 +950,21 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                             ch_idx = idx + ch_first - 1
                         end
                     end
-                    !isnothing(ch_idx) && (obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep] = !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep])
+                    !isnothing(ch_idx) && (
+                        obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep] =
+                            !obj.header.recording[:bad_channel][obj.header.recording[:channel_order][ch_idx], ep]
+                    )
                     draw(can)
                 end
             else
                 x > 1172 && (x = 1172)
                 ep = Int64(entry_epoch.value)
-                ts2 = ((epoch_len(obj) / sr(obj)) * (ep - 1)) + obj.epoch_time[1] + ((x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
+                ts2 =
+                    ((epoch_len(obj) / sr(obj)) * (ep - 1)) +
+                    obj.epoch_time[1] +
+                    ((x - 82) / (1090 / (obj.epoch_time[end] - obj.epoch_time[1])))
                 snap && (ts2 = round(ts2 * 4) / 4)
-                @idle_add entry_ts2.value = round(ts2, digits=3)
+                @idle_add entry_ts2.value = round(ts2, digits = 3)
             end
         end
         ggc_r = GtkGestureClick()
@@ -1020,7 +1055,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 ep = Int64(entry_epoch.value)
                 ask_dialog("Delete epoch: $ep", win) do ans
                     if ans
-                        delete_epoch!(obj, ep=ep)
+                        delete_epoch!(obj; ep = ep)
                         _info("Deleted epoch: $ep")
                         @idle_add entry_epoch.value = ep
 
@@ -1118,7 +1153,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 if !mch
                     _info("Playing current segment as audio")
                     time_current = entry_time.value
-                    play(obj, ch=cl[ch_first], seg=(time_current, time_current + ep_len(obj)), ep=1)
+                    play(obj; ch = cl[ch_first], seg = (time_current, time_current + ep_len(obj)), ep = 1)
                 end
             elseif ((ModifierType(state & Gtk4.MODIFIER_MASK) & mask_ctrl == mask_ctrl) && keyval == 0x0000ff0d) # Enter
                 quit = false
@@ -1161,7 +1196,7 @@ function iview_ep(obj::NeuroAnalyzer.NEURO; mch::Bool=true, ep::Int64=1, bad::Bo
                 ep = Int64(entry_epoch.value)
                 ask_dialog("Delete epoch $ep ?", win) do ans
                     if ans
-                        delete_epoch!(obj, ep=ep)
+                        delete_epoch!(obj; ep = ep)
                         _info("Deleted epoch: $ep")
                         ep = ep > 1 ? ep -= 1 : ep = 1
                         @idle_add entry_epoch.value = ep
@@ -1206,15 +1241,15 @@ Interactive view of two continuous signals.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `zoom::Real=10`: how many seconds are displayed in one segment
+  - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `zoom::Real=10`: how many seconds are displayed in one segment
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=10)::Nothing
+function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real = 10)::Nothing
 
     @assert nepochs(obj1) == 1 "For epoched object iview_ep() must be used."
 
@@ -1241,7 +1276,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         ch_last = length(ch)
     end
 
-    p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], title="")
+    p = NeuroAnalyzer.plot(obj1, obj2; ch = cl[ch_first:ch_last], title = "")
 
     function _activate(app)
 
@@ -1286,7 +1321,7 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
         end
         ch_slider.tooltip_text = "Scroll channels"
 
-        signal_slider = GtkScale(:h, 1:obj1.time_pts[end] - zoom)
+        signal_slider = GtkScale(:h, 1:(obj1.time_pts[end] - zoom))
         signal_slider.draw_value = false
         signal_slider.tooltip_text = "Time position"
 
@@ -1309,11 +1344,9 @@ function iview(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; zoom::Real=
             time2 = time1 + zoom
             time2 > obj1.time_pts[end] && (time2 = obj1.time_pts[end])
             ctx = getgc(can)
-            p = NeuroAnalyzer.plot(obj1, obj2,
-                                   ch=cl[ch_first:ch_last],
-                                   seg=(time1, time2),
-                                   title="",
-                                   scale=scale)
+            p = NeuroAnalyzer.plot(
+                obj1, obj2, ch = cl[ch_first:ch_last], seg = (time1, time2), title = "", scale = scale
+            )
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
@@ -1560,15 +1593,15 @@ Interactive view of two epoched signals.
 
 # Arguments
 
-- `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `ep::Int64=1`: initial epoch to display
+  - `obj1::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `obj2::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
+  - `ep::Int64=1`: initial epoch to display
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
-function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64=1)::Nothing
+function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int64 = 1)::Nothing
 
 
     @assert obj1.header.recording[:channel_order] == obj2.header.recording[:channel_order] "Both signals must have the same order."
@@ -1593,7 +1626,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         ch_last = length(ch)
     end
 
-    p = NeuroAnalyzer.plot(obj1, obj2, ch=cl[ch_first:ch_last], ep=ep, title="")
+    p = NeuroAnalyzer.plot(obj1, obj2; ch = cl[ch_first:ch_last], ep = ep, title = "")
 
     function _activate(app)
 
@@ -1653,11 +1686,7 @@ function iview_ep(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ep::Int6
         @guarded draw(can) do widget
             ep = Int64(entry_epoch.value)
             ctx = getgc(can)
-            p = NeuroAnalyzer.plot(obj1, obj2,
-                                   ch=cl[ch_first:ch_last],
-                                   ep=ep,
-                                   title="",
-                                   scale=scale)
+            p = NeuroAnalyzer.plot(obj1, obj2, ch = cl[ch_first:ch_last], ep = ep, title = "", scale = scale)
             io = PipeBuffer()
             withenv("GKSwstype" => "100") do
                 png(p, io)
@@ -1818,11 +1847,11 @@ View plot object.
 
 # Arguments
 
-- `p::Plots.Plot{Plots.GRBackend}`
+  - `p::Plots.Plot{Plots.GRBackend}`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function iview(p::Plots.Plot{Plots.GRBackend})::Nothing
 
@@ -1887,11 +1916,11 @@ View PNG image.
 
 # Arguments
 
-- `file_name::String`
+  - `file_name::String`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function iview(file_name::String)::Nothing
 
@@ -1946,11 +1975,11 @@ View Cairo surface object.
 
 # Arguments
 
-- `c::Cairo.CairoSurfaceBase{UInt32}`
+  - `c::Cairo.CairoSurfaceBase{UInt32}`
 
 # Returns
 
-- `Nothing`
+  - `Nothing`
 """
 function iview(c::Cairo.CairoSurfaceBase{UInt32})::Nothing
 

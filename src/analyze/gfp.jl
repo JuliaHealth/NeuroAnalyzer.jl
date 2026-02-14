@@ -8,15 +8,15 @@ Calculate GFP (Global Field Power).
 
 # Arguments
 
-- `s::AbstractMatrix`
+  - `s::AbstractMatrix`
 
 # Returns
 
-- `g::Vector{Float64}`: GFP values over time points
+  - `g::Vector{Float64}`: GFP values over time points
 """
 function gfp(s::AbstractMatrix)::Vector{Float64}
 
-    g = std(s, dims=1)[:]
+    g = std(s; dims = 1)[:]
 
     return g
 
@@ -29,11 +29,11 @@ Calculate signal normalized for GFP (Global Field Power).
 
 # Arguments
 
-- `s::AbstractMatrix`
+  - `s::AbstractMatrix`
 
 # Returns
 
-- `gn::Matrix{Float64}`: normalized signal
+  - `gn::Matrix{Float64}`: normalized signal
 """
 function gfp_norm(s::AbstractMatrix)::Matrix{Float64}
 
@@ -54,23 +54,25 @@ Calculate Global Field Power (GFP).
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
-- `norm::Bool=false`: if true, calculate signal normalized for GFP
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `norm::Bool=false`: if true, calculate signal normalized for GFP
 
 # Returns
 
-- `gfp::Union{Vector{Float64}, Matrix{Float64}}`
+  - `gfp::Union{Vector{Float64}, Matrix{Float64}}`
 
 # Notes
 
 Global field power is a measure of agreement of the signals picked up by all sensors across the entire scalp: if all sensors have the same value at a given time point, the GFP will be zero at that time point; if the signals differ, the GFP will be non-zero at that time point. GFP peaks may reflect “interesting” brain activity, warranting further investigation. Mathematically, the GFP is the population standard deviation across all sensors, calculated separately for every time point.
 """
-function gfp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool=false)::Union{Vector{Float64}, Matrix{Float64}}
+function gfp(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}, norm::Bool = false
+)::Union{Vector{Float64}, Matrix{Float64}}
 
     _check_datatype(obj, ["erp", "erf"])
 
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
+    ch = exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") : get_channel(obj; ch = ch, exclude = "")
     @assert length(ch) > 1 "More than 1 channel must be selected."
 
     s = @views obj.data[ch, :, 1]

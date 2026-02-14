@@ -8,19 +8,25 @@ Interpolate channel using a machine-learning model.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel to interpolate
-- `ep::Int64`: epoch number within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
-- `model<:MLJ.Model`: MLJ regressor model
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel to interpolate
+  - `ep::Int64`: epoch number within to interpolate
+  - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
+  - `model<:MLJ.Model`: MLJ regressor model
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function mlinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep), model::T)::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
+function mlinterpolate_channel(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    model::T,
+)::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
 
-    channels = get_channel(obj, type=datatype(obj))
+    channels = get_channel(obj; type = datatype(obj))
     @assert length(channels) > 1 "signal must contain > 1 signal channel."
     @assert ch in channels "ch must be a signal channel; cannot interpolate non-signal channels."
     @assert nepochs(obj) > 1 "Training the model requires the signal to have > 1 epoch."
@@ -29,8 +35,8 @@ function mlinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, 
     @assert !(ep in ep_ref) "ep must not be in ep_rep."
 
     ch_ref = setdiff(channels, ch)
-    signal_ref = _make_epochs(obj.data[get_channel(obj, ch=channels), :, ep_ref], ep_n=1)[:, :]
-    ch = get_channel(obj, ch=ch)[1]
+    signal_ref = _make_epochs(obj.data[get_channel(obj; ch = channels), :, ep_ref]; ep_n = 1)[:, :]
+    ch = get_channel(obj; ch = ch)[1]
 
     # train
     y = signal_ref[ch, :, 1]
@@ -64,19 +70,25 @@ Interpolate channel using linear regression.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::String`: channel to interpolate
-- `ep::Int64`: epoch number within to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
-- `model::T where T <: DataType`: MLJ regressor model
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::String`: channel to interpolate
+  - `ep::Int64`: epoch number within to interpolate
+  - `ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep)`: reference epoch(s), default is all epochs except the interpolated one
+  - `model::T where T <: DataType`: MLJ regressor model
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function mlinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::String, ep::Int64, ep_ref::Union{Int64, Vector{Int64}, AbstractRange}=setdiff(_c(nepochs(obj)), ep), model::T)::Nothing where {T <: MLJ.Model}
+function mlinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractRange} = setdiff(_c(nepochs(obj)), ep),
+    model::T,
+)::Nothing where {T <: MLJ.Model}
 
-    obj_new = mlinterpolate_channel(obj, ch=ch, ep=ep, ep_ref=ep_ref, model=model)
+    obj_new = mlinterpolate_channel(obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model)
     obj.data = obj_new.data
     obj.history = obj_new.history
 

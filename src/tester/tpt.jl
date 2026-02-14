@@ -8,16 +8,16 @@ Perform Two-point Pinch Test (TPT) in GUI mode. TPT is recorded using MMA7660 ac
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
-- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
+  - `duration::Int64=20`: recording duration in seconds
+  - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
+function itpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
-    sp = _serial_open(port_name, baudrate=19200)
+    sp = _serial_open(port_name; baudrate = 19200)
     @assert !isnothing(sp) _info("Serial port $port_name is not available")
 
     img1 = read_from_png(joinpath(res_path, "finger_nopinch.png"))
@@ -25,7 +25,7 @@ function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
 
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
-    t = collect(0:1/fs:duration)
+    t = collect(0:(1 / fs):duration)
     tpt_ch_x = zeros(length(t))
     tpt_ch_y = zeros(length(t))
     tpt_ch_z = zeros(length(t))
@@ -91,7 +91,10 @@ function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
                 while idx <= length(tpt_ch_x)
                     sp_signal = _serial_listener(sp)
                     if !isnothing(sp_signal)
-                        m = match(r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)", sp_signal)
+                        m = match(
+                            r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)",
+                            sp_signal,
+                        )
                         if !isnothing(m)
                             if length(m.captures) == 7
                                 tpt_ch_x[idx] = parse(Float64, m.captures[2])
@@ -127,9 +130,15 @@ function itpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnal
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)
 
-    obj = create_object(data_type="tpt")
-    add_channel!(obj, data=tpt_signal, label=["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"], type=["orient", "orient", "orient", "accel", "accel", "accel"], unit=["", "", "", "m/s²", "m/s²", "m/s²"])
-    create_time!(obj, fs=fs)
+    obj = create_object(; data_type = "tpt")
+    add_channel!(
+        obj;
+        data = tpt_signal,
+        label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
+        type = ["orient", "orient", "orient", "accel", "accel", "accel"],
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
+    )
+    create_time!(obj; fs = fs)
 
     return obj
 
@@ -142,16 +151,16 @@ Perform Two-point Pinch Test (TPT) in CLI mode. TPT is recorded using MMA7660 ac
 
 # Arguments
 
-- `duration::Int64=20`: recording duration in seconds
-- `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
+  - `duration::Int64=20`: recording duration in seconds
+  - `port_name::String="/dev/ttyUSB0"`: serial port to which the Arduino is connected
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
+  - `obj_new::NeuroAnalyzer.NEURO`
 """
-function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnalyzer.NEURO
+function tpt(; duration::Int64 = 20, port_name::String = "/dev/ttyUSB0")::NeuroAnalyzer.NEURO
 
-    sp = _serial_open(port_name, baudrate=19200)
+    sp = _serial_open(port_name; baudrate = 19200)
     @assert !isnothing(sp) "Serial port $port_name is not available"
 
     println("NeuroTester: TPT")
@@ -163,10 +172,10 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
     println()
 
     while true
-        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, true)
+        ret = ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, true)
         ret == 0 || error("Unable to switch to raw mode.")
         kbd_key = read(stdin, Char)
-        ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid},Int32), stdin.handle, false)
+        ccall(:jl_tty_set_mode, Int32, (Ptr{Cvoid}, Int32), stdin.handle, false)
         if kbd_key == ' '
             break
         else
@@ -185,7 +194,7 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
 
     # sampling rate is 50 Hz = 20 ms per loop
     fs = 50
-    t = collect(0:1/fs:duration)
+    t = collect(0:(1 / fs):duration)
     t = t[1:(end - 1)]
     tpt_ch_x = zeros(length(t))
     tpt_ch_y = zeros(length(t))
@@ -198,7 +207,10 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
     while idx <= length(tpt_ch_x)
         sp_signal = _serial_listener(sp)
         if !isnothing(sp_signal)
-            m = match(r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)", sp_signal)
+            m = match(
+                r"(tpt\: )(\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+) (\-*[0-9]+\.[0-9]+)",
+                sp_signal,
+            )
             if !isnothing(m)
                 if length(m.captures) == 7
                     tpt_ch_x[idx] = parse(Float64, m.captures[2])
@@ -220,9 +232,15 @@ function tpt(; duration::Int64=20, port_name::String="/dev/ttyUSB0")::NeuroAnaly
     tpt_signal = Matrix([tpt_ch_x tpt_ch_y tpt_ch_z tpt_ch_accx tpt_ch_accy tpt_ch_accz]')
     tpt_signal = reshape(tpt_signal, 6, :, 1)
 
-    obj = create_object(data_type="tpt")
-    add_channel!(obj, data=tpt_signal, label=["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"], type=["orient", "orient", "orient", "accel", "accel", "accel"], unit=["", "", "", "m/s²", "m/s²", "m/s²"])
-    create_time!(obj, fs=fs)
+    obj = create_object(; data_type = "tpt")
+    add_channel!(
+        obj;
+        data = tpt_signal,
+        label = ["pos_x", "pos_y", "pos_z", "acc_x", "acc_y", "acc_z"],
+        type = ["orient", "orient", "orient", "accel", "accel", "accel"],
+        unit = ["", "", "", "m/s²", "m/s²", "m/s²"],
+    )
+    create_time!(obj; fs = fs)
 
     return obj
 

@@ -8,12 +8,12 @@ Standardize channels.
 
 # Arguments
 
-- `s::AbstractArray`
+  - `s::AbstractArray`
 
 # Returns
 
-- `s_new::Array{Float64, 3}`:
-- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+  - `s_new::Array{Float64, 3}`:
+  - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize(s::AbstractArray)::Tuple{Array{Float64, 3}, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
@@ -24,7 +24,7 @@ function standardize(s::AbstractArray)::Tuple{Array{Float64, 3}, Vector{ZScoreTr
 
     s_new = similar(s)
     @inbounds for ep_idx in 1:ep_n
-        @views push!(scaler, StatsBase.fit(ZScoreTransform, s[:, :, ep_idx], dims=2))
+        @views push!(scaler, StatsBase.fit(ZScoreTransform, s[:, :, ep_idx], dims = 2))
         @views s_new[:, :, ep_idx] = StatsBase.transform(scaler[ep_idx], s[:, :, ep_idx])
     end
 
@@ -39,17 +39,19 @@ Standardize channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `obj_new::NeuroAnalyzer.NEURO`
-- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+  - `obj_new::NeuroAnalyzer.NEURO`
+  - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
-function standardize(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex})::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
+function standardize(
+    obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}
+)::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
 
-    ch = get_channel(obj, ch=ch)
+    ch = get_channel(obj; ch = ch)
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :], scaler = standardize(obj.data[ch, :, :])
     push!(obj_new.history, "standardize(OBJ)")
@@ -65,16 +67,16 @@ Standardize channels.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
+  - `obj::NeuroAnalyzer.NEURO`
+  - `ch::Union{String, Vector{String}, Regex}`: channel name or list of channel names
 
 # Returns
 
-- `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
+  - `scaler::Vector{ZScoreTransform{Float64, Vector{Float64}}}`
 """
 function standardize!(obj::NeuroAnalyzer.NEURO)::Vector{ZScoreTransform{Float64, Vector{Float64}}}
 
-    obj_new, scaler = standardize(obj, ch=ch)
+    obj_new, scaler = standardize(obj; ch = ch)
     obj.data = obj_new.data
     obj.history = obj_new.history
 
