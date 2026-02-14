@@ -45,7 +45,8 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function plot(obj::NeuroAnalyzer.NEURO;
+function plot(
+    obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex}="all",
     ep::Int64=1,
     seg::Tuple{Real, Real}=(0, 10),
@@ -73,7 +74,8 @@ function plot(obj::NeuroAnalyzer.NEURO;
     mono::Bool=false,
     res::Int64=1,
     snap::Bool=true,
-    gui::Bool=true)::GLMakie.Figure
+    gui::Bool=true
+    )::GLMakie.Figure
 
     if datatype(obj) in ["erp", "erf"]
         p = plot_erp(obj, ch=ch, tm=tm, rt=rt, xlabel=xlabel, ylabel=ylabel, title=title, type=type, avg=avg, ci95=ci95, cb=cb, cb_title=cb_title, peaks=peaks, leg=leg, yrev=yrev, smooth=smooth, ks=ks, zl=zl, mono=mono, gui=gui)
@@ -117,7 +119,20 @@ Plot signal.
 
 - `p::GLMakie.Figure`
 """
-function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex}="all", seg::Tuple{Real, Real}=(0, 10), xlabel::String="default", ylabel::String="default", title::String="default", scale::Bool=true, group_ch::Bool=true, n_channels::Int64=20, res::Int64=1, gui::Bool=true)::GLMakie.Figure
+function plot(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex}="all",
+    seg::Tuple{Real, Real}=(0, 10),
+    xlabel::String="default",
+    ylabel::String="default",
+    title::String="default",
+    scale::Bool=true,
+    group_ch::Bool=true,
+    n_channels::Int64=20,
+    res::Int64=1,
+    gui::Bool=true
+    )::GLMakie.Figure
 
     @assert datatype(obj1) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
     @assert datatype(obj2) in ["eeg", "meg"] "This function works for continuous EEG and MEG objects."
@@ -148,7 +163,13 @@ Plot continuous signal.
 
 - `p::GLMakie.Figure`
 """
-function plot(t::AbstractVector, s::AbstractVector; xlabel::String="Time [s]", ylabel::String="Amplitude", title::String="")::GLMakie.Figure
+function plot(
+    t::AbstractVector,
+    s::AbstractVector;
+    xlabel::String="Time [s]",
+    ylabel::String="Amplitude",
+    title::String=""
+    )::GLMakie.Figure
 
     @assert length(t) == length(s) "Length of s must equal length of t."
 

@@ -1,6 +1,4 @@
 export topo_var
-export gfp
-export gfp_norm
 export diss
 
 """
@@ -29,106 +27,6 @@ function topo_var(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::
 end
 
 """
-    gfp(s)
-
-Calculate GFP (Global Field Power).
-
-# Arguments
-
-- `s::AbstractMatrix`
-
-# Returns
-
-- `g::Vector{Float64}`: GFP values over time points
-"""
-function gfp(s::AbstractMatrix)::Vector{Float64}
-
-    ch_n = size(s, 1)
-    g = zeros(size(s, 2))
-    Threads.@threads for tp_idx in axes(s, 2)
-        g[tp_idx] = @views sum(s[:, tp_idx] .^2) / ch_n
-    end
-
-    return g
-
-end
-
-"""
-    gfp_norm(s)
-
-Calculate signal normalized for GFP (Global Field Power).
-
-# Arguments
-
-- `s::AbstractMatrix`
-
-# Returns
-
-- `gn::Matrix{Float64}`: normalized signal
-"""
-function gfp_norm(s::AbstractMatrix)::Matrix{Float64}
-
-    g = gfp(s)
-    gn = similar(s)
-    Threads.@threads for tp_idx in axes(s, 2)
-        @views gn[:, tp_idx] = s[:, tp_idx] ./ g[tp_idx]
-    end
-
-    return gn
-
-end
-
-"""
-    gfp(obj; <keyword arguments>)
-
-Calculate global field power (GFP). This works for ERP/ERF object only and calculates GFP for the first epoch (ERP/ERF) only.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channels to analyze
-
-# Returns
-
-- `g::Vector{Float64}`: GFP values over time points
-"""
-function gfp(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
-
-    @assert datatype(obj) in ["erp", "erf"] "gfp() should be applied for ERP or ERF object only."
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-
-    g = @views gfp(obj.data[ch, :, 1])[:]
-
-    return g
-
-end
-
-"""
-    gfp_norm(obj; <keyword arguments>)
-
-Calculate signal normalized for GFP (Global Field Power). This works for ERP/ERF object only and normalizes the first epoch (ERP/ERF) only.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{String, Vector{String}}`: channels to analyze
-
-# Returns
-
-- `gn::Vector{Float64}`: normalized signal
-"""
-function gfp_norm(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}})::Vector{Float64}
-
-    @assert datatype(obj) in ["erp", "erf"] "gfp() should be applied for ERP or ERF object only."
-    ch = exclude_bads ? get_channel(obj, ch=ch, exclude="bad") : get_channel(obj, ch=ch, exclude="")
-
-    gn = @views gfp_norm(obj.data[ch, :, 1])
-
-    return gn
-
-end
-
-"""
     diss(s1, s2)
 
 Calculate DISS (global dissimilarity) and spatial correlation (channels vs channels).
@@ -149,14 +47,14 @@ function diss(s1::AbstractMatrix, s2::AbstractMatrix)::@NamedTuple{gd::Vector{Fl
     @assert size(s1) == size(s2) "s1 and s2 must have the same size."
 
     n_ch = size(s1, 1)
-    gfp_norm1 = gfp_norm(s1)
-    gfp_norm2 = gfp_norm(s2)
+    g1 = gfp_norm(s1)
+    g2 = gfp_norm(s2)
 
     gd = zeros(size(s1, 2))
     sc = zeros(size(s1, 2))
-    Threads.@threads for tp_idx in axes(s1, 2)
-        gd[tp_idx] = sqrt(sum((gfp_norm1[:, tp_idx] .- gfp_norm2[:, tp_idx]).^2) / n_ch)
-        sc[tp_idx] = 0.5 * (2 - gd[tp_idx]^2)
+    Threads.@threads for idx in axes(s1, 2)
+        gd[idx] = sqrt(sum((g1[:, idx] .- g2[:, idx]).^2) / n_ch)
+        sc[idx] = 0.5 * (2 - gd[idx]^2)
     end
 
     return (gd=gd, sc=sc)
