@@ -138,3 +138,64 @@ function plot(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO;
     return p
 
 end
+
+export plot
+
+"""
+    plot(t, s; <keyword arguments>)
+
+Plot continuous signal.
+
+# Arguments
+
+- `t::AbstractVector`: time points
+- `s::AbstractVector`: signal data
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude"`: y-axis label
+- `title::String=""`: plot title
+
+# Returns
+
+- `p::GLMakie.Figure`
+"""
+function plot(t::AbstractVector, s::AbstractVector; xlabel::String="Time [s]", ylabel::String="Amplitude", title::String="")::GLMakie.Figure
+
+    @assert length(t) == length(s) "Length of s must equal length of t."
+
+    # prepare plot
+    plot_size = (900, 450)
+    p = GLMakie.Figure(size=plot_size)
+    ax = GLMakie.Axis(p[1, 1],
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      xticks=LinearTicks(10),
+                      xminorticksvisible=true,
+                      xminorticks=IntervalsBetween(10),
+                      xautolimitmargin=(0, 0),
+                      yautolimitmargin=(0, 0),
+                      xzoomlock=true,
+                      yzoomlock=true,
+                      xpanlock=true,
+                      ypanlock=true,
+                      xrectzoom=false,
+                      yrectzoom=false)
+    if minimum(s) == 0
+        GLMakie.ylims!(ax, 0, maximum(s)[2] * 1.1)
+    else
+        GLMakie.ylims!(ax, extrema(s) .* 1.1)
+    end
+    ax.titlesize = 18
+    ax.xlabelsize = 12
+    ax.ylabelsize = 12
+    ax.xticklabelsize = 12
+    ax.yticklabelsize = 12
+
+    GLMakie.lines!(ax,
+                   t,
+                   s,
+                   color=:black)
+
+    return p
+
+end
