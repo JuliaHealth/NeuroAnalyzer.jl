@@ -99,8 +99,6 @@ When opening a pull request, please add a short but meaningful description of th
 
 For each feature you want to contribute, please file a separate PR to keep the complexity down and time to merge short. Add PRs in draft mode if you want to discuss your approach first.
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for other guidelines on how to contribute to this project.
-
 ## Contributors
 
 Below is the list of contributors and their affiliations.
