@@ -18,6 +18,21 @@ You may also follow NeuroAnalyzer on [Mastodon](https://fediscience.org/web/tags
 
 Note: this toolbox is under active development and is subject to change without prior notice.
 
+## Installation / Getting Started
+
+NeuroAnalyzer can be installed using the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```julia
+pkg> add NeuroAnalyzer
+```
+
+Or, equivalently, via the `Pkg` API:
+
+```julia
+using Pkg
+Pkg.add("NeuroAnalyzer")
+```
+
 ## Quickstart
 
 Start NeuroAnalyzer:
@@ -83,6 +98,8 @@ If you want to suggest a new feature, for example functionality that other plott
 When opening a pull request, please add a short but meaningful description of the changes/features you implemented. Moreover, please add tests (where appropriate) to ensure that your code is working as expected.
 
 For each feature you want to contribute, please file a separate PR to keep the complexity down and time to merge short. Add PRs in draft mode if you want to discuss your approach first.
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for other guidelines on how to contribute to this project.
 
 ## Contributors
 
